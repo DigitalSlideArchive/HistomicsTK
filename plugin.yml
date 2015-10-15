@@ -1,0 +1,5 @@
+name: Color deconvolution test
+description: hello world
+version: 1.0.0
+dependencies:
+    - romanesco
