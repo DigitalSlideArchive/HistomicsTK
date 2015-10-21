@@ -5,11 +5,9 @@ from girder.api import access
 from girder.api.describe import Description
 from girder.constants import AccessType
 
-
 class DeepakTest(Resource):
     def __init__(self):
         self.resourceName = 'deepak_test'
-
         self.route('POST', ('analysis',), self.doAnalysis)
 
     @access.user
@@ -34,19 +32,20 @@ class DeepakTest(Resource):
                 'mode': 'python',
                 'script': codeToRun,
                 'inputs': [{
-                    'id': 'imageFile',
+                    'id': 'inputImageFile',
                     'type': 'string',
                     'format': 'string',
                     'target': 'filepath'
                 }],
                 'outputs': [{
-                    'id': 'resultImage',
+                    'id': 'outputImageFile',
                     'type': 'string',
-                    'format': 'string'
+                    'format': 'string',
+                    'target': 'filepath'
                 }]
             },
             'inputs': {
-                'imageFile': {
+                'inputImageFile': {
                     "mode": "girder",
                     "id": str(item['_id']),
                     "name": item['name'],
@@ -59,14 +58,16 @@ class DeepakTest(Resource):
                 }
             },
             'outputs': {
-                'resultImage': {
+                'outputImageFile': {
                     "mode": "girder",
                     "parent_id": str(folder['_id']),
+                    "name": 'out_' + item['name'],
                     "host": 'localhost',
                     "format": "string",
                     "type": "string",
                     'port': 8080,
                     'token': token,
+                    'resource_type': 'item',
                     'parent_type': 'folder'
                 }
             },
