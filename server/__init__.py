@@ -5,9 +5,9 @@ from girder.api import access
 from girder.api.describe import Description
 from girder.constants import AccessType
 
-class DeepakTest(Resource):
+class ColorDeconvolution(Resource):
     def __init__(self):
-        self.resourceName = 'deepak_test'
+        self.resourceName = 'ColorDeconvolution'
         self.route('POST', ('analysis',), self.doAnalysis)
 
     @access.user
@@ -20,15 +20,16 @@ class DeepakTest(Resource):
         jobModel = self.model('job', 'jobs')
         user = self.getCurrentUser()
 
-        job = jobModel.createJob(
-            title='test', type='deepak_test', handler='romanesco_handler',
-            user=user)
+        job = jobModel.createJob(title='ColorDeconvolution',
+                                 type='ColorDeconvolution',
+                                 handler='romanesco_handler',
+                                 user=user)
         jobToken = jobModel.createJobToken(job)
         token = self.getCurrentToken()['_id']
 
         kwargs = {
             'task': {
-                'name': 'Deepak test',
+                'name': 'ColorDeconvolution',
                 'mode': 'python',
                 'script': codeToRun,
                 'inputs': [{
@@ -92,4 +93,4 @@ class DeepakTest(Resource):
         .param('folderId', 'ID of the output folder.'))
 
 def load(info):
-    info['apiRoot'].deepak_test = DeepakTest()
+    info['apiRoot'].ColorDeconvolution = ColorDeconvolution()
