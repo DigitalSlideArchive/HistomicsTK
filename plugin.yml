@@ -1,5 +1,5 @@
-name: Color deconvolution test
-description: hello world
+name: Histomics
+description: A RESTFul API for Histopathology Image Analysis
 version: 1.0.0
 dependencies:
     - romanesco
