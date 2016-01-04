@@ -29,7 +29,9 @@ def ColorDeconvolution ( I, W ):
 
     #complement stain matrix if needed
     if(numpy.linalg.norm(W[:,2]) <= 1e-16):
-        Wc = ComplementStainMatrix(W)    
+        Wc = ComplementStainMatrix(W)
+    else:
+        Wc = W.copy()            
 
     #normalize stains to unit-norm
     for i in range(Wc.shape[1]):
@@ -63,4 +65,7 @@ def ColorDeconvolution ( I, W ):
     Stains = Stains.astype(numpy.uint8)
     
     #return 
-    return (Stains, StainsFloat, Wc)
+    Unmixed = collections.namedtuple('Unmixed', ['Stains', 'StainsFloat', 'Wc'])
+    Output = Unmixed(Stains, StainsFloat, Wc)
+    
+    return (Output)

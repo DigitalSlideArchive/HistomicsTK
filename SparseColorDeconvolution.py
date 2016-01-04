@@ -19,12 +19,15 @@ def SparseColorDeconvolution (I, Winit, Beta):
         Winit (matrix, optional) - a 3xK matrix containing the color vectors in 
                     columns. Should not be complemented with ComplementStainMatrix 
                     for sparse decomposition to work correctly.
-        Beta (scalar) - regularization factor for sparsity of "H".
+        Beta (scalar) - regularization factor for sparsity of "H" - recommended 0.5
     *Outputs (tuple):
+        Stains (rgbimage) - an rgb image with deconvolved stain intensities in 
+                            each channel, values ranging from [0, 255], suitable for display.
+        StainsFloat (matrix) - an intensity image of deconvolved stains that is 
+                            unbounded, suitable for reconstructing color images 
+                            of deconvolved stains with ColorConvolution. Corresponds
+                            to the K x N coefficient matrix of deconvolved.
         W (matrix) - the final 3 x K stain matrix produced by the NMF decomposition.
-        H (matrix) - the corresponding K x N coefficient matrix of deconvolved 
-                     stain intensities for each pixel (pixels in columns, stains
-                     in rows).
     '''
     
     #get number of output stains
@@ -59,16 +62,24 @@ def SparseColorDeconvolution (I, Winit, Beta):
     Factorization()
     
     #extract solutions and make columns of "W" unit-norm
-    W = Factorization.basis()
-    H = Factorization.coef()
-    for i in range(k):
+    W = numpy.asarray(Factorization.basis())
+    H = numpy.asarray(Factorization.coef())
+    for i in range(K):
         Norm = numpy.linalg.norm(W[:,i])
         W[:,i] /= Norm
         H[i,:] *= Norm
         
+    #reshape H matrix to image
+    StainsFloat = numpy.reshape(numpy.transpose(H), (m,n,K))
+    
+    #transform type  
+    Stains = numpy.copy(StainsFloat)
+    Stains[Stains > 255] = 255
+    Stains = Stains.astype(numpy.uint8)
+    
     #build named tuple for outputs
-    SparseColorDecomp = collections.namedtuple('SparseColorDecomp', ['W', 'H'])
-    Output = SparseColorDecomp(W, H)
+    Unmixed = collections.namedtuple('Unmixed', ['Stains', 'StainsFloat', 'W', 'H'])
+    Output = Unmixed(Stains, StainsFloat, W, H)
     
     #return solution
     return(Output)

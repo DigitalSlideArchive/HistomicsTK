@@ -51,14 +51,14 @@ def TilingSchedule(File, Magnification, Tile):
     Mismatch = tuple(x-Magnification for x in Available)
     AbsMismatch = tuple(abs(x) for x in Mismatch)
     if(min(AbsMismatch) <= tol):
-        Level = min(AbsMismatch)
+        Level = int(AbsMismatch.index(min(AbsMismatch)))
         Factor = 1
     else: #pick next highest level, downsample
-        Level = max([i for (i, val) in enumerate(Mismatch) if val > 0])
+        Level = int(max([i for (i, val) in enumerate(Mismatch) if val > 0]))
         Factor = Magnification / Available[Level]
         
     #adjust tilesize based on resizing factor
-    Tout = round(Tile / Factor)
+    Tout = int(round(Tile / Factor))
     
     #generate X, Y coordinates for tiling
     Stride = Tout * Available[0] / Available[Level]
