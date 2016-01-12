@@ -1,2 +1,12 @@
 *.pyc
 __pycache__/
+*~
+*#
+.#*
+*.bak
+doc/_build
+.coverage
+*.egg
+*.egg-info
+.tox
+.cache
