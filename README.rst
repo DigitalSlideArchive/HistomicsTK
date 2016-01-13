@@ -1,5 +1,5 @@
 =========================
-HistomicsTk
+HistomicsTK
 =========================
 
 A Python API for Histopathology Image Analysis
