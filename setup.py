@@ -8,6 +8,7 @@ except ImportError:
     from distutils.core import setup
 
 import json
+from pkg_resources import parse_requirements
 
 
 with open('README.rst') as readme_file:
@@ -22,9 +23,12 @@ with open('plugin.json') as f:
 with open('LICENSE') as f:
     license = f.read()
 
-requirements = [
-    # TODO: put package requirements here
-]
+try:
+    with open('requirements.txt') as f:
+        ireqs = parse_requirements(f.read())
+except Exception:
+    pass
+requirements = [str(req) for req in ireqs]
 
 test_requirements = [
     # TODO: put package test requirements here
@@ -36,7 +40,7 @@ setup(name='histomicstk',
       long_description=readme + '\n\n' + history,
       author="Deepak Roy Chittajallu",
       author_email='cdeepakroy@gmail.com',
-      url='https://github.com/DigitalSlideArchive/image_analysis',
+      url='https://github.com/DigitalSlideArchive/HistomicsTK',
       packages=['histomicstk'],
       package_dir={'histomicstk':
                    'histomicstk'},
@@ -46,11 +50,13 @@ setup(name='histomicstk',
       zip_safe=False,
       keywords='histomicstk',
       classifiers=[
-          'Development Status :: 4 - Beta',
+          'Development Status :: 2 - Pre-Alpha',
           'Environment :: Console',
           'License :: OSI Approved :: Apache Software License',
           'Operating System :: OS Independent',
-          'Programming Language :: Python :: 2'
+          'Programming Language :: Python :: 2',
+          'Topic :: Scientific/Engineering :: Artificial Intelligence',
+          'Topic :: Software Development :: Libraries :: Python Modules',
       ],
       test_suite='tests',
       tests_require=test_requirements)
