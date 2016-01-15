@@ -1,6 +1,6 @@
 import numpy
 
-def ColorDeconvolution ( I, W ):
+def ColorDeconvolution(I, W):
     '''
     Implements color deconvolution. The input image "I" consisting of RGB values is
     first transformed into optical density space, and then projected onto the stain
