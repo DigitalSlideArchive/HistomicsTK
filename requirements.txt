@@ -1,4 +1,5 @@
-virtualenv
-pytest==2.8.1
 coverage==3.7.1
+coveralls==1.1
+pytest==2.8.1
 pytest-cov==2.2.0
+virtualenv==13.1.2
