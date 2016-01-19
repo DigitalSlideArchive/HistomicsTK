@@ -27,13 +27,13 @@ LABStandard = RudermanLABFwd(Standard)
 m = Standard.shape[0]
 n = Standard.shape[1]
 Mu = LABStandard.sum(axis=0).sum(axis=0) / (m*n)
-LABStandard[:,:,0] = LABStandard[:,:,0] - Mu[0]
-LABStandard[:,:,1] = LABStandard[:,:,1] - Mu[1]
-LABStandard[:,:,2] = LABStandard[:,:,2] - Mu[2]
+LABStandard[:, :, 0] = LABStandard[:, :, 0] - Mu[0]
+LABStandard[:, :, 1] = LABStandard[:, :, 1] - Mu[1]
+LABStandard[:, :, 2] = LABStandard[:, :, 2] - Mu[2]
 Sigma = ((LABStandard*LABStandard).sum(axis=0).sum(axis=0) / (m*n-1))**0.5
-LABStandard[:,:,0] = LABStandard[:,:,0] / Sigma[0]
-LABStandard[:,:,1] = LABStandard[:,:,1] / Sigma[1]
-LABStandard[:,:,2] = LABStandard[:,:,2] / Sigma[2]
+LABStandard[:, :, 0] = LABStandard[:, :, 0] / Sigma[0]
+LABStandard[:, :, 1] = LABStandard[:, :, 1] / Sigma[1]
+LABStandard[:, :, 2] = LABStandard[:, :, 2] / Sigma[2]
 
 #normalize input image
 Normalized = ReinhardNorm(Input, Mu, Sigma)

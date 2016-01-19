@@ -5,14 +5,19 @@ from girder.api import access
 from girder.api.describe import Description
 from girder.constants import AccessType
 
+
 class ColorDeconvolution(Resource):
     def __init__(self):
         self.resourceName = 'ColorDeconvolution'
         self.route('POST', ('analysis',), self.doAnalysis)
 
     @access.user
-    @loadmodel(map={'itemId': 'item'}, model='item', level=AccessType.READ)
-    @loadmodel(map={'folderId': 'folder'}, model='folder', level=AccessType.WRITE)
+    @loadmodel(map={'itemId': 'item'},
+               model='item',
+               level=AccessType.READ)
+    @loadmodel(map={'folderId': 'folder'},
+               model='folder',
+               level=AccessType.WRITE)
     def doAnalysis(self, item, folder, params):
         with open(os.path.join(os.path.dirname(__file__), 'script.py')) as f:
             codeToRun = f.read()
@@ -91,6 +96,7 @@ class ColorDeconvolution(Resource):
         Description('Run color deconvolution on an image.')
         .param('itemId', 'ID of the item containing the image.')
         .param('folderId', 'ID of the output folder.'))
+
 
 def load(info):
     info['apiRoot'].ColorDeconvolution = ColorDeconvolution()
