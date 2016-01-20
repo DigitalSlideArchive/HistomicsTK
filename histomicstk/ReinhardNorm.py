@@ -1,18 +1,27 @@
 import numpy
 
-def ReinhardNorm(I, TargetMu, TargetSigma):
+def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
     '''
     Performs Reinhard color normalization to transform the color characteristics of an image to 
     a desired standard. The standard is defined by the mean and standard deviations of
     the target image in LAB color space defined by Ruderman. The input image is converted to 
     Ruderman's LAB space, the LAB channels are each centered and scaled to zero-mean unit 
-    variance, and then rescaled and shifted to match the target image statistics.
+    variance, and then rescaled and shifted to match the target image statistics. If the LAB
+    statistics for the input image are provided ('SourceMu' and 'SourceSigma') then these
+    will be used in the normalization, otherwise they will be derived from the input imagesource
+    LAB
     *Inputs:
     	I (rgbimage) - an RGB image of type unsigned char.
-    	TargetMu - a 3-element list containing the means of the target image channels in LAB 
+    	TargetMu (array) - a 3-element list containing the means of the target image channels in LAB 
     				color space.
-    	TargetSigma - a 3-element list containing the standard deviations of the target image
+    	TargetSigma (array) - a 3-element list containing the standard deviations of the target image
     					channels in LAB color space.
+      SourceMu (array, optional) - a 3-element list containing the means of the source image channels in LAB 
+    				color space. Used with ReinhardSample for uniform normalization of tiles
+                        tiles from a slide.
+    	SourceSigma (array, optional) - a 3-element list containing the standard deviations of the source image
+    				channels in LAB color space. Used with ReinhardSample for uniform normalization of tiles
+                        tiles from a slide.
     *Outputs:
     	Normalized (rgbimage) - a normalized RGB image with corrected color characteristics.
     *Related functions:
@@ -25,25 +34,35 @@ def ReinhardNorm(I, TargetMu, TargetSigma):
     #get input image dimensions
     m = I.shape[0]
     n = I.shape[1]
-    
+
     #convert input image to LAB color space
     LAB = RudermanLABFwd(I)
-    
-    #center and scale to zero-mean and unit variance
-    Mu = LAB.sum(axis=0).sum(axis=0) / (m*n)
-    LAB[:,:,0] = LAB[:,:,0] - Mu[0]
-    LAB[:,:,1] = LAB[:,:,1] - Mu[1]
-    LAB[:,:,2] = LAB[:,:,2] - Mu[2]
-    Sigma = ((LAB*LAB).sum(axis=0).sum(axis=0) / (m*n-1)) ** 0.5
-    LAB[:,:,0] = LAB[:,:,0] / Sigma[0]
-    LAB[:,:,1] = LAB[:,:,1] / Sigma[1]
-    LAB[:,:,2] = LAB[:,:,2] / Sigma[2]
-    
+
+    #calculate SourceMu if not provided
+    if SourceMu is None:
+        SourceMu = LAB.sum(axis=0).sum(axis=0) / (m*n)
+        print(SourceMu)
+
+    #center to zero-mean
+    LAB[:,:,0] = LAB[:,:,0] - SourceMu[0]
+    LAB[:,:,1] = LAB[:,:,1] - SourceMu[1]
+    LAB[:,:,2] = LAB[:,:,2] - SourceMu[2]
+
+    #calculate SourceSigma if not provided
+    if SourceSigma is None:
+        SourceSigma = ((LAB*LAB).sum(axis=0).sum(axis=0) / (m*n-1)) ** 0.5
+        print(SourceSigma)
+
+    #scale to unit variance
+    LAB[:,:,0] = LAB[:,:,0] / SourceSigma[0]
+    LAB[:,:,1] = LAB[:,:,1] / SourceSigma[1]
+    LAB[:,:,2] = LAB[:,:,2] / SourceSigma[2]
+
     #rescale and recenter to match target statistics
     LAB[:,:,0] = LAB[:,:,0] * TargetSigma[0] + TargetMu[0]
     LAB[:,:,1] = LAB[:,:,1] * TargetSigma[1] + TargetMu[1]
     LAB[:,:,2] = LAB[:,:,2] * TargetSigma[2] + TargetMu[2]
-    
+
     #convert back to RGB colorspace
     Normalized = RudermanLABInv(LAB)
     Normalized[Normalized > 255] = 255

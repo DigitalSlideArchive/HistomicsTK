@@ -24,6 +24,7 @@ def RudermanLABFwd(I):
     #calculate LMS values from RGB
     I = numpy.reshape(I, (m*n,3))
     LMS = numpy.dot(RGB2LMS, numpy.transpose(I))
+    LMS[LMS == 0] = numpy.spacing(1)
     logLMS = numpy.log(LMS)
 
     #calculate LAB values from LMS
