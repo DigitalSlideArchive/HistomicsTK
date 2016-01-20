@@ -25,7 +25,7 @@ def RudermanLABInv(I):
     I = numpy.reshape(I, (m*n,3))
     LMS = numpy.dot(LAB2LMS, numpy.transpose(I))
     expLMS = numpy.exp(LMS)
-    
+
     #calculate RGB values from LMS
     RGB = LMS2RGB.dot(expLMS)
     
