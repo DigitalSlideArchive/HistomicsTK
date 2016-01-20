@@ -1,9 +1,9 @@
 coverage==3.7.1
 coveralls==1.1
 nimfa==1.2.2
-numpy==1.9.2
+numpy==1.10.2
 openslide-python==1.1.0
-pytest==2.8.1
+pytest==2.8.5
 pytest-cov==2.2.0
-scipy==0.15.1
+scipy==0.16.1
 virtualenv==13.1.2
