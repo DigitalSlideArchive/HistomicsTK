@@ -1,7 +1,61 @@
 language: python
 python:
     - "2.7"
-install: 
-    - "pip install -r requirements.txt"
-script: 
-    - "python setup.py test"
+
+cache:
+    directories:
+        - $HOME/.cache
+
+addons:
+    apt:
+        packages:
+            - gfortran
+            - libblas-dev
+            - liblapack-dev
+            - cython
+            - libatlas-base-dev
+
+sudo: false
+
+compiler:
+    - gcc
+
+before_install:
+    - main_path=$PWD
+    - build_path=$PWD/build
+    - mkdir -p $build_path
+
+    - girder_path=$build_path/girder
+    - rm -fr $girder_path
+    - git clone https://github.com/girder/girder.git $girder_path && git -C $girder_path checkout 710f83404ce21ca70c17b9ef593a030b33ec0141
+    - ln -sf $main_path $girder_path/plugins/
+    - ls -l $girder_path/plugins
+
+    - export MONGO_VERSION=2.6.11
+    - export PY_COVG="ON"
+    - CACHE=$HOME/.cache source $girder_path/scripts/install_mongo.sh
+    - mkdir /tmp/db
+    - mongod --dbpath=/tmp/db >/dev/null 2>/dev/null &
+    - mongod --version
+
+    - CACHE=$HOME/.cache CMAKE_VERSION=3.1.0 CMAKE_SHORT_VERSION=3.1 source $girder_path/scripts/install_cmake.sh
+    - cmake --version
+
+    - npm install -g npm
+    - npm --version
+
+    -
+    - pip install -U pip virtualenv
+
+install:
+    - cd $girder_path
+    - pip install numpy==1.10.4 # needed because libtiff doesn't install correctly without it
+    - pip install scipy==0.16.1 # needed because scikit-image doesn't install correctly without it
+    - pip install -U -r requirements.txt -r requirements-dev.txt -r $main_path/requirements.txt -e .
+    - npm install
+
+script:
+    - mkdir _build
+    - cd _build
+    - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} ..
+    - JASMINE_TIMEOUT=15000 ctest -VV -R HistomicsTK
