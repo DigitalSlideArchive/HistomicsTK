@@ -23,18 +23,18 @@ def SubmitTorque(JobString, JobID = None, Mem = 512):
     '''
 
     #create job file in working directory
-    Script = open('job.sh', 'w');
+    Script = open('/Users/lcoop22/Desktop/job.sh', 'w');
 
     #add command to CD to working directory
     Script.write('cd #PBS_O_WORKDIR\n')
 
     #print command to file
-    if(~JobString[-1] ~= '\n'):
+    if JobString[-1] != '\n':
         JobString = JobString + '\n'
     Script.write(JobString)
 
     #print wait command to job file
-    Script.write('wait $(ps | grep python | awk ''{print $2}'') && cat %s\n' + JobID + '.txt'])
+    Script.write('wait $(ps | grep python | awk ''{print $2}'') && cat %s ' + JobID + '.txt\n')
 
     #close job file
     Script.close()
