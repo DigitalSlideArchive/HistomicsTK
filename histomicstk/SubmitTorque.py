@@ -51,7 +51,7 @@ def SubmitTorque(JobString, JobID, Mem = 512):
     except subprocess.CalledProcessError as error:
         Result = error
 
-    print('qsub -V -N ' + JobID + ' ' + JobID + '.sh')
+    print('qsub -N ' + JobID + ' ' + JobID + '.sh')
 
     #delete job file
     os.remove(JobID + '.pbs')
