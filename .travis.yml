@@ -16,7 +16,7 @@ before_install:
     - export PATH="$HOME/miniconda/bin:$PATH"
     - conda update --yes conda
 install: 
-    - conda install --yes numpy scipy
+    - conda install --yes pip numpy scipy
     - pip install -r requirements.txt
 script: 
     - python setup.py test
