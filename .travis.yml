@@ -16,7 +16,7 @@ before_install:
     - export PATH="$HOME/miniconda/bin:$PATH"
     - conda update --yes conda
 install: 
-    - conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
+    - conda create -n test-environment
     - source activate test-environment
     - conda install --yes pip numpy scipy
     - pip install -r requirements.txt
