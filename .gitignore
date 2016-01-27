@@ -8,6 +8,5 @@ doc/_build
 .coverage
 *.egg
 *.egg-info
-.tox
 .cache
 .idea

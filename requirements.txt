@@ -1,5 +1,5 @@
-coverage==3.7.1
-coveralls==1.1
-pytest==2.8.1
-pytest-cov==2.2.0
-virtualenv==13.1.2
+matplotlib==1.5.1
+# Conda does not contain any numpy>1.10.2
+numpy==1.10.2
+scikit-image==0.11.3
+scipy==0.16.1

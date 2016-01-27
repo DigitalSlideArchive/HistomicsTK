@@ -1,7 +1,57 @@
 language: python
 python:
     - "2.7"
-install: 
-    - "pip install -r requirements.txt"
-script: 
-    - "python setup.py test"
+
+cache:
+    directories:
+        - $HOME/.cache
+
+sudo: false
+
+compiler:
+    - gcc
+
+before_install:
+    - main_path=$PWD
+    - build_path=$PWD/build
+    - mkdir -p $build_path
+
+    - girder_path=$build_path/girder
+    - rm -fr $girder_path
+    - git clone https://github.com/girder/girder.git $girder_path && git -C $girder_path checkout 7d859e03ff533f9a830ee45e0adb007b36e8da91
+    - ln -sf $main_path $girder_path/plugins/
+    - ls -l $girder_path/plugins
+
+    - romanesco_path=$girder_path/plugins/romanesco
+    - git clone https://github.com/Kitware/romanesco.git $romanesco_path && git -C $romanesco_path checkout da82cd17e8f8da011b55ddf826a5d0d7b2d558ab
+
+    - export MONGO_VERSION=2.6.11
+    - export PY_COVG="ON"
+    - CACHE=$HOME/.cache source $girder_path/scripts/install_mongo.sh
+    - mkdir /tmp/db
+    - mongod --dbpath=/tmp/db >/dev/null 2>/dev/null &
+    - mongod --version
+
+    - CACHE=$HOME/.cache CMAKE_VERSION=3.1.0 CMAKE_SHORT_VERSION=3.1 source $girder_path/scripts/install_cmake.sh
+    - cmake --version
+
+    - npm install -g npm
+    - npm --version
+
+    - wget -O $build_path/install_miniconda.sh https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
+    - bash $build_path/install_miniconda.sh -b -p $build_path/miniconda
+    - source $build_path/miniconda/bin/activate $build_path/miniconda
+    - conda update --yes --all
+
+install:
+    # https://github.com/pypa/pip/issues/2751
+    - conda install --yes --file $main_path/requirements.txt setuptools==19.4
+    - cd $girder_path
+    - pip install -U -r requirements.txt -r requirements-dev.txt -r $main_path/requirements.txt setuptools==19.4
+    - npm install
+
+script:
+    - mkdir -p $build_path/girder_testing_build
+    - cd $build_path/girder_testing_build
+    - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} $girder_path
+    - JASMINE_TIMEOUT=15000 ctest -VV -R HistomicsTK

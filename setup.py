@@ -7,22 +7,7 @@ except ImportError:
     from distutils.core import setup
 
 import json
-import sys
 from pkg_resources import parse_requirements
-from setuptools.command.test import test as TestCommand
-
-
-class Tox(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        # import here, cause outside the eggs aren't loaded
-        import tox
-        errcode = tox.cmdline(self.test_args)
-        sys.exit(errcode)
 
 
 with open('README.rst') as readme_file:
@@ -45,8 +30,7 @@ except Exception:
 requirements = [str(req) for req in ireqs]
 
 test_requirements = [
-    # TODO: put package test requirements here
-    'tox'
+    # TODO: Should we list Girder here?
 ]
 
 setup(name='histomicstk',
@@ -74,5 +58,4 @@ setup(name='histomicstk',
           'Topic :: Software Development :: Libraries :: Python Modules',
       ],
       test_suite='tests',
-      tests_require=test_requirements,
-      cmdclass={'test': Tox})
+      tests_require=test_requirements)
