@@ -11,8 +11,8 @@ import numpy
 import skimage.io as io
 
 #Define input image, initial H&E color matrix, and sparsity coefficient
-InputFile = './A.png'
-StandardFile = './B.png'
+InputFile = './testing/A.png'
+StandardFile = './testing/B.png'
 
 #open images
 Input = io.imread(InputFile)
