@@ -1,5 +1,4 @@
 import numpy
-import matplotlib.pyplot as plt
 from skimage import color
 from sklearn.neighbors.kde import KernelDensity
 from scipy.stats import norm
@@ -27,11 +26,12 @@ def SimpleMask(I):
     '''
     
     #parameters
-    BW = 2  #bandwidth for kernel density estimation - used for tissue segmentation
-    MinPeak = 10 #peak widths for finding identifying peaks in KDE histogram - used in initializing curve fitting process
-    MaxPeak = 25
+    BW = 2  #bandwidth for kernel density estimation - used for smoothing grayscale histogram
     DefaultBGScale = 2.5 #default standard deviation of background gaussian, used if estimation fails
     DefaultTissueScale = 30 #default standard deviation of tissue gaussian, used if estimation fails
+    MinPeak = 10 #peak widths for finding identifying peaks in KDE histogram - used in initializing curve fitting process
+    MaxPeak = 25
+    Percent = 0.10 #percentage of pixels to sample for building foreground/background model
     MinProb = 0.05 #minimum probability to qualify as tissue pixel
 
     #convert image to grayscale, flatten and sample
@@ -145,8 +145,6 @@ def SimpleMask(I):
     sigmaBackground = Parameters[2]
     sigmaTissue = Parameters[3]
     p = Parameters[4]
-    plt.plot(xHist, yHist)
-    plt.plot(xHist, GaussianMixture(xHist, muBackground, muTissue, sigmaBackground, sigmaTissue, p))
 
     #create mask based on Gaussian mixture model
     Background = norm(loc=muBackground, scale=sigmaBackground)

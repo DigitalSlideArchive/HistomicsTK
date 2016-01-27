@@ -1,4 +1,6 @@
 import numpy
+import RudermanLABFwd as rlf
+import RudermanLABInv as rli
 
 def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
     '''
@@ -36,7 +38,7 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
     n = I.shape[1]
 
     #convert input image to LAB color space
-    LAB = RudermanLABFwd(I)
+    LAB = rlf.RudermanLABFwd(I)
 
     #calculate SourceMu if not provided
     if SourceMu is None:
@@ -64,7 +66,7 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
     LAB[:,:,2] = LAB[:,:,2] * TargetSigma[2] + TargetMu[2]
 
     #convert back to RGB colorspace
-    Normalized = RudermanLABInv(LAB)
+    Normalized = rli.RudermanLABInv(LAB)
     Normalized[Normalized > 255] = 255
     Normalized[Normalized < 0] = 0
     Normalized = Normalized.astype(numpy.uint8)
