@@ -15,7 +15,6 @@ Contents:
    installation
    usage
    contributing
-   testing
    authors
    history
 
