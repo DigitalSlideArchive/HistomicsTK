@@ -1,6 +1,9 @@
 import numpy
 import openslide
 import scipy
+import TilingSchedule as ts
+import ConvertSchedule as cs
+import SimpleMask as sm
 
 def Sample(File, Magnification, Percent, Tile):
     '''
@@ -26,13 +29,15 @@ def Sample(File, Magnification, Percent, Tile):
     Slide = openslide.OpenSlide(File)
 
     #generate tiling schedule for desired sampling magnification
-    Schedule = TilingSchedule(File, Magnification, Tile)
+    Schedule = ts.TilingSchedule(File, Magnification, Tile)
 
     #convert tiling schedule to low-resolution for tissue mapping
-    lrSchedule = ConvertSchedule(Schedule, MappingMag)
-    lrHeight = lrSchedule.Tout * lrSchedule.Y.shape[0]
-    lrWidth = lrSchedule.Tout * lrSchedule.X.shape[1]
-
+    lrSchedule = cs.ConvertSchedule(Schedule, MappingMag)
+    
+    #get width, height of image at low-res reading magnification
+    lrHeight = Slide.level_dimensions[lrSchedule.Level][1]
+    lrWidth = Slide.level_dimensions[lrSchedule.Level][0]
+    
     #NEED TO CHECK lrSchedule.Factor to make sure we don't read a huge buffer in.
     #This would only happen if there are no low-resolution images available
 
@@ -48,7 +53,13 @@ def Sample(File, Magnification, Percent, Tile):
         LR = scipy.misc.imresize(LR, lrSchedule.Factor)
 
     #mask
-    LRMask = SimpleMask(LR)
+    Mask = sm.SimpleMask(LR)
+    
+    #pad mask to match overall size of evenly tiled image
+    MaskHeight = lrSchedule.Tout * lrSchedule.Y.shape[0]
+    MaskWidth = lrSchedule.Tout * lrSchedule.X.shape[1]
+    LRMask = numpy.zeros((MaskHeight, MaskWidth), dtype=numpy.uint8)
+    LRMask[0:lrHeight,0:lrWidth] = Mask
 
     #sample from tile at full resolution that contain more than 1/2 foreground
     Pixels = list()

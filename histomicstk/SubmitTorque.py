@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-def SubmitTorque(JobString, JobID = None, Mem = 512):
+def SubmitTorque(JobString, JobID, Mem = 512):
     '''
     Submits a job to a Torque scheduler using qsub. Takes as input
     a string representing the contents of the job script file. This
@@ -14,47 +14,47 @@ def SubmitTorque(JobString, JobID = None, Mem = 512):
     String (string) - Formatted string to invoke python function
                         defining arguments.
     JobID (string) - string to assign name to job in PBS scheduler
-                    (-N option).
+                    (-N option). Required.
     Mem (scalar) - free memory parameter for 'mem_free', in MB, as
-                    defined by qsub.
+                    defined by qsub. Optional.
     *Outputs:
 
     *Related Functions:
     '''
 
     #create job file in working directory
-    Script = open('job.sh', 'w');
+    Script = open(JobID + '.pbs', 'w');
 
-    #add command to CD to working directory
-    Script.write('cd #PBS_O_WORKDIR\n')
+    #add commands to CD to working directory
+    Script.write('#!/bin/bash\n')
+    Script.write('#PBS -j oe\n')
+    Script.write('#PBS -k oe\n')
+    Script.write('#PBS -V\n')
+    Script.write('cd ${PBS_O_WORKDIR}\n\n')
 
     #print command to file
-    if(~JobString[-1] ~= '\n'):
+    if JobString[-1] != '\n':
         JobString = JobString + '\n'
     Script.write(JobString)
 
     #print wait command to job file
-    Script.write('wait $(ps | grep python | awk ''{print $2}'') && cat %s\n' + JobID + '.txt'])
+    #Script.write('wait $(ps | grep python | awk ''{print $2}'') && cat %s ' + JobID + '.txt\n')
 
     #close job file
     Script.close()
 
     #submit job through qsub via system call
-    if(JobString is None): #submit job without -N option
-        try:
-            subprocess.check_output('qsub -q matlab -o /dev/null -e /dev/null -V -l mem=' + str(Mem) + ' job.sh', stderr = subprocess.STDOUT, shell = True)
-        except subprocess.CalledProcessError as error:
-            Result = error
-    else: #submit job with -N option
-        if(not JobID[0].isalpha()):
-            JobID = '.' + JobID
-        try:
-            subprocess.check_output('qsub -q matlab -o /dev/null -e /dev/null -V -l mem=' + str(Mem) + ' -N ' + JobID + ' job.sh', stderr=subprocess.STDOUT, shell=True)
-        except subprocess.CalledProcessError as error:
-            Result = error
+    if(not JobID[0].isalpha()):
+        JobID = '.' + JobID
+    try:
+        Result = subprocess.check_output('qsub -N ' + JobID + ' ' + JobID + '.pbs', stderr=subprocess.STDOUT, shell=True)
+    except subprocess.CalledProcessError as error:
+        Result = error
+
+    print('qsub -N ' + JobID + ' ' + JobID + '.sh')
 
     #delete job file
-    os.remove('job.sh')
+    os.remove(JobID + '.pbs')
 
     #return output
     return(Result)

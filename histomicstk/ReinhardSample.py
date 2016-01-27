@@ -1,4 +1,7 @@
 import numpy
+import Sample as smp
+import RudermanLABFwd as rlf
+import collections
 
 def ReinhardSample(File, Magnification, Percent, Tile):
     '''
@@ -26,24 +29,24 @@ def ReinhardSample(File, Magnification, Percent, Tile):
     *References:
     '''
     
-#generate a sampling of RGB pixels from whole-slide image
-RGB = Sample(File, Magnification, Percent, Tile)
+    #generate a sampling of RGB pixels from whole-slide image
+    RGB = smp.Sample(File, Magnification, Percent, Tile)
 
-#reshape the 3xN pixel array into an image for RudermanLABFwd
-RGB = numpy.reshape(RGB.transpose(), (1,RGB.shape[1],3))
+    #reshape the 3xN pixel array into an image for RudermanLABFwd
+    RGB = numpy.reshape(RGB.transpose(), (1,RGB.shape[1],3))
 
-#perform forward LAB transformation
-LAB = RudermanLABFwd(RGB)
+    #perform forward LAB transformation
+    LAB = rlf.RudermanLABFwd(RGB)
 
-#compute statistics of LAB channels
-Mu = LAB.sum(axis=0).sum(axis=0) / (LAB.size / 3)
-LAB[:,:,0] = LAB[:,:,0] - Mu[0]
-LAB[:,:,1] = LAB[:,:,1] - Mu[1]
-LAB[:,:,2] = LAB[:,:,2] - Mu[2]
-Sigma = ((LAB*LAB).sum(axis=0).sum(axis=0) / (LAB.size / 3 - 1)) ** 0.5
+    #compute statistics of LAB channels
+    Mu = LAB.sum(axis=0).sum(axis=0) / (LAB.size / 3)
+    LAB[:,:,0] = LAB[:,:,0] - Mu[0]
+    LAB[:,:,1] = LAB[:,:,1] - Mu[1]
+    LAB[:,:,2] = LAB[:,:,2] - Mu[2]
+    Sigma = ((LAB*LAB).sum(axis=0).sum(axis=0) / (LAB.size / 3 - 1)) ** 0.5
 
-#build named tuple for output
-OutTuple = collections.namedtuple('Statistics', ['Mu', 'Sigma'])
-Output = OutTuple(Mu, Sigma)
+    #build named tuple for output
+    OutTuple = collections.namedtuple('Statistics', ['Mu', 'Sigma'])
+    Output = OutTuple(Mu, Sigma)
 
-return(Output)
+    return(Output)

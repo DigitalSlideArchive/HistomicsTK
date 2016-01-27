@@ -9,20 +9,21 @@ import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy
 import openslide
+import histomicstk as htk
 
 #Define input slides, subregions
-StandardFile = '/Users/lcoop22/Git/HistomicsTK/testing/TCGA-02-0003-01Z-00-DX2.c7652d8d-d78f-49ae-8259-bb2bdb5d50fb.svs'
+StandardFile = '/Users/lcoop22/Desktop/ExampleData/TCGA-02-0003-01Z-00-DX2.c7652d8d-d78f-49ae-8259-bb2bdb5d50fb.svs'
 StandardX = 22000
 StandardY = 12800
-#InputFile = '/Users/lcoop22/Git/HistomicsTK/testing/TCGA-02-0009-01Z-00-DX3.BAA1276B-E4D7-43D4-BDDF-807532462518.svs'
+#InputFile = '/Users/lcoop22/Desktop/ExampleData/TCGA-02-0009-01Z-00-DX3.BAA1276B-E4D7-43D4-BDDF-807532462518.svs'
 #InputX = 64500
 #InputY = 22900
-# InputFile = '/Users/lcoop22/Git/HistomicsTK/testing/TCGA-02-0010-01Z-00-DX2.5334831b-8e1f-4b61-bbf6-0f6e950a1b2f.svs'
+# InputFile = '/Users/lcoop22/Desktop/ExampleData/TCGA-02-0010-01Z-00-DX2.5334831b-8e1f-4b61-bbf6-0f6e950a1b2f.svs'
 # InputX1 = 32400
 # InputY1 = 19000
 # InputX2 = 35000
 # InputY2 = 19000
-InputFile = '/Users/lcoop22/Git/HistomicsTK/testing/TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs'
+InputFile = '/Users/lcoop22/Desktop/ExampleData/TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs'
 InputX1 = 13900
 InputY1 = 15000
 InputX2 = 6500
@@ -30,10 +31,10 @@ InputY2 = 15000
 T = 2048
 
 #sample from standard slide to generate target parameters
-TargetStats = ReinhardSample(StandardFile, 20, 0.001, 128)
+TargetStats = htk.ReinhardSample(StandardFile, 20, 0.001, 128)
 
 # #sample from input slide to generate input parameters
-InputStats = ReinhardSample(InputFile, 20, 0.001, 128)
+InputStats = htk.ReinhardSample(InputFile, 20, 0.001, 128)
 
 #open slides and import regions
 StandardSlide = openslide.OpenSlide(StandardFile)
@@ -51,14 +52,14 @@ StandardTile = numpy.asarray(StandardTile)
 StandardTile = StandardTile[:,:,:3]
 
 #normalize inputs to standard (global)
-Input1Standard = ReinhardNorm(InputTile1, TargetStats.Mu, TargetStats.Sigma,
+Input1Standard = htk.ReinhardNorm(InputTile1, TargetStats.Mu, TargetStats.Sigma,
                               InputStats.Mu, InputStats.Sigma)
-Input2Standard = ReinhardNorm(InputTile2, TargetStats.Mu, TargetStats.Sigma,
+Input2Standard = htk.ReinhardNorm(InputTile2, TargetStats.Mu, TargetStats.Sigma,
                               InputStats.Mu, InputStats.Sigma)
 
 #normalize input to standard (local)
-lInput1Standard = ReinhardNorm(InputTile1, TargetStats.Mu, TargetStats.Sigma)
-lInput2Standard = ReinhardNorm(InputTile2, TargetStats.Mu, TargetStats.Sigma)
+lInput1Standard = htk.ReinhardNorm(InputTile1, TargetStats.Mu, TargetStats.Sigma)
+lInput2Standard = htk.ReinhardNorm(InputTile2, TargetStats.Mu, TargetStats.Sigma)
 
 
 #view output - check if coherent
