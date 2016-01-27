@@ -2,7 +2,7 @@
 HistomicsTK |build-status| |docs-status|
 ==========================================
 
-A Python API for Histopathology Image Analysis
+A Python and REST API for Histopathology Image Analysis
 
 Documentation for this API can be found at https://histomicstk.readthedocs.org.
 
