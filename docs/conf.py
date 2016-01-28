@@ -15,6 +15,14 @@
 
 import sys
 import os
+import mock
+
+MOCK_MODULES = ['numpy',
+                'scipy',
+                'matplotlib']
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 # on_rtd is whether we are on readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -37,8 +45,6 @@ project_root = os.path.abspath('..')
 # This lets us ensure that the source package is imported, and that its
 # version is used.
 sys.path.insert(0, project_root)
-
-import histomicstk
 
 # -- General configuration ---------------------------------------------
 
