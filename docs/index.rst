@@ -8,12 +8,10 @@ A Python and REST API for Histopathology Image Analysis
 
    installation
    usage
+   api-docs
    contributing
-   testing
    authors
    history
-
-.. automodule:: histomicstk
 
 Indices and tables
 ==================
