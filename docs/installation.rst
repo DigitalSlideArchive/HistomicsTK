@@ -4,9 +4,9 @@
 Installation
 ============
 
-At the command line::
+At the command line type::
 
-    $ easy_install histomicstk
+    $ pip install histomicstk
 
 Or, if you have virtualenvwrapper installed::
 

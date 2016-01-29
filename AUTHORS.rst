@@ -5,7 +5,8 @@ Credits
 Development Lead
 ----------------
 
-* Deepak Roy Chittajallu <cdeepakroy@gmail.com>
+* Brian Helba <brian.helba@kitware.com>
+* Deepak Roy Chittajallu <deepak.chittajallu@kitware.com>
 * Lee Cooper <cooperle@gmail.com>
 * Zach Mullen <zach.mullen@kitware.com>
 
