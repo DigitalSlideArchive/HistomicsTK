@@ -5,6 +5,7 @@ __pycache__/
 .#*
 *.bak
 doc/_build
+build
 .coverage
 *.egg
 *.egg-info
