@@ -6,9 +6,9 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import os
 import json
 from pkg_resources import parse_requirements
-
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -28,6 +28,17 @@ try:
 except Exception:
     pass
 requirements = [str(req) for req in ireqs]
+
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
+if not on_rtd:
+    try:
+        with open('requirements_c.txt') as f:
+            ireqs_c = parse_requirements(f.read())
+    except Exception:
+            pass
+    requirements_c = [str(req) for req in ireqs_c]
+    requirements = requirements + requirements_c
 
 test_requirements = [
     # TODO: Should we list Girder here?
@@ -57,5 +68,5 @@ setup(name='histomicstk',
           'Topic :: Scientific/Engineering :: Artificial Intelligence',
           'Topic :: Software Development :: Libraries :: Python Modules',
       ],
-      test_suite='tests',
+      test_suite='plugin_tests',
       tests_require=test_requirements)
