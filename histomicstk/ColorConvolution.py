@@ -1,4 +1,6 @@
 import numpy
+import OpticalDensityFwd as odf
+import OpticalDensityInv as odi
 
 def ColorConvolution ( I, W ):
     '''
@@ -24,9 +26,9 @@ def ColorConvolution ( I, W ):
 
     #transform input stains to optical density values and convolve, tfm back to stain
     I = I.astype(dtype=numpy.float32)
-    ODfwd = OpticalDensityFwd(I)
+    ODfwd = odf.OpticalDensityFwd(I)
     ODdeconv = numpy.dot(ODfwd, numpy.transpose(W))
-    ODinv = OpticalDensityInv(ODdeconv)
+    ODinv = odi.OpticalDensityInv(ODdeconv)
 
     #reshape output, transform type
     RGB = numpy.reshape(ODinv, (m,n,3))
