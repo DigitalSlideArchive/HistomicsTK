@@ -1,6 +1,7 @@
+import collections
 import nimfa
 import numpy
-import collections
+import OpticalDensityFwd as ofd
 
 def SparseColorDeconvolution (I, Winit, Beta):
     '''
@@ -51,7 +52,7 @@ def SparseColorDeconvolution (I, Winit, Beta):
     #transform input RGB to optical density values
     I = I.astype(dtype=numpy.float32)
     I[I == 0] = 1e-16
-    ODfwd = OpticalDensityFwd(I)
+    ODfwd = ofd.OpticalDensityFwd(I)
     
     #estimate initial H given p
     Hinit = numpy.dot(numpy.linalg.pinv(Winit), ODfwd)

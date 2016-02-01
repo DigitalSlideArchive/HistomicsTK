@@ -170,4 +170,4 @@ def SimpleMask(I):
     Mask = (I <= ML) & (I >= Endpoints[0]) & (I <= Endpoints[1])
     Mask = Mask.astype(numpy.uint8)
     
-    return(Mask)
+    return Mask, I, xHist, yHist, GaussianMixture(xHist, muTissue, muBackground, sigmaTissue, sigmaBackground, p)

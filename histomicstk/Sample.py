@@ -1,5 +1,6 @@
 import numpy
 import openslide
+from os import path
 import scipy
 import TilingSchedule as ts
 import ConvertSchedule as cs
@@ -53,8 +54,16 @@ def Sample(File, Magnification, Percent, Tile):
         LR = scipy.misc.imresize(LR, lrSchedule.Factor)
 
     #mask
-    Mask = sm.SimpleMask(LR)
-    
+    Mask, I, xHist, yHist, Fit = sm.SimpleMask(LR)
+
+    #DEBUGGING FOR CLUSTER
+    Split = path.split(File)
+    numpy.save(path.expanduser('~/') + Split[1] + '.Mask', Mask)
+    numpy.save(path.expanduser('~/') + Split[1] + '.Gray', I)
+    numpy.save(path.expanduser('~/') + Split[1] + '.xHist', xHist)
+    numpy.save(path.expanduser('~/') + Split[1] + '.yHist', yHist)
+    numpy.save(path.expanduser('~/') + Split[1] + '.Fit', Fit)
+
     #pad mask to match overall size of evenly tiled image
     MaskHeight = lrSchedule.Tout * lrSchedule.Y.shape[0]
     MaskWidth = lrSchedule.Tout * lrSchedule.X.shape[1]

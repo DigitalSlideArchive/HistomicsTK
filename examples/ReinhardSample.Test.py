@@ -5,7 +5,6 @@
 #RudermanLABFwd.py
 #RudermanLABInv.py
 
-import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy
 import openslide
@@ -28,13 +27,13 @@ InputX1 = 13900
 InputY1 = 15000
 InputX2 = 6500
 InputY2 = 15000
-T = 2048
+T = 1024
 
 #sample from standard slide to generate target parameters
-TargetStats = htk.ReinhardSample(StandardFile, 20, 0.001, 128)
+TargetStats = htk.ReinhardSample(StandardFile, 20, 0.001, 1024)
 
 # #sample from input slide to generate input parameters
-InputStats = htk.ReinhardSample(InputFile, 20, 0.001, 128)
+InputStats = htk.ReinhardSample(InputFile, 20, 0.001, 1024)
 
 #open slides and import regions
 StandardSlide = openslide.OpenSlide(StandardFile)
@@ -53,9 +52,9 @@ StandardTile = StandardTile[:,:,:3]
 
 #normalize inputs to standard (global)
 Input1Standard = htk.ReinhardNorm(InputTile1, TargetStats.Mu, TargetStats.Sigma,
-                              InputStats.Mu, InputStats.Sigma)
+                            InputStats.Mu, InputStats.Sigma)
 Input2Standard = htk.ReinhardNorm(InputTile2, TargetStats.Mu, TargetStats.Sigma,
-                              InputStats.Mu, InputStats.Sigma)
+                            InputStats.Mu, InputStats.Sigma)
 
 #normalize input to standard (local)
 lInput1Standard = htk.ReinhardNorm(InputTile1, TargetStats.Mu, TargetStats.Sigma)

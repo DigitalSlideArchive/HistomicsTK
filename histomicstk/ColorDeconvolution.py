@@ -1,4 +1,8 @@
+import collections
 import numpy
+import ComplementStainMatrix as csm
+import OpticalDensityFwd as odf
+import OpticalDensityInv as odi
 
 def ColorDeconvolution(I, W):
     '''
@@ -29,7 +33,7 @@ def ColorDeconvolution(I, W):
 
     #complement stain matrix if needed
     if(numpy.linalg.norm(W[:,2]) <= 1e-16):
-        Wc = ComplementStainMatrix(W)
+        Wc = csm.ComplementStainMatrix(W)
     else:
         Wc = W.copy()            
 
@@ -52,9 +56,9 @@ def ColorDeconvolution(I, W):
     #transform input RGB to optical density values and deconvolve, tfm back to RGB
     I = I.astype(dtype=numpy.float32)
     I[I == 0] = 1e-16
-    ODfwd = OpticalDensityFwd(I)
+    ODfwd = odf.OpticalDensityFwd(I)
     ODdeconv = numpy.dot(ODfwd, numpy.transpose(Q))
-    ODinv = OpticalDensityInv(ODdeconv)
+    ODinv = odi.OpticalDensityInv(ODdeconv)
 
     #reshape output
     StainsFloat = numpy.reshape(ODinv, (m,n,3))
