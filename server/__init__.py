@@ -1,9 +1,12 @@
 import os
-
+import sys
 from girder.api.rest import Resource, loadmodel, getApiUrl
 from girder.api import access
 from girder.api.describe import Description
 from girder.constants import AccessType
+
+# add repo root to sys.path to allow import of histomicstk
+sys.path.insert(0, os.path.abspath('..'))
 
 
 class ColorDeconvolution(Resource):
