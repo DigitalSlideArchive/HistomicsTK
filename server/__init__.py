@@ -5,9 +5,6 @@ from girder.api import access
 from girder.api.describe import Description
 from girder.constants import AccessType
 
-# add repo root to sys.path to allow import of histomicstk
-sys.path.insert(0, os.path.abspath('..'))
-
 
 class ColorDeconvolution(Resource):
     def __init__(self):
@@ -47,7 +44,17 @@ class ColorDeconvolution(Resource):
                     'target': 'filepath'
                 }],
                 'outputs': [{
-                    'id': 'outputImageFile',
+                    'id': 'outputStainImageFile_1',
+                    'type': 'string',
+                    'format': 'string',
+                    'target': 'filepath'
+                }, {
+                    'id': 'outputStainImageFile_2',
+                    'type': 'string',
+                    'format': 'string',
+                    'target': 'filepath'
+                }, {
+                    'id': 'outputStainImageFile_3',
                     'type': 'string',
                     'format': 'string',
                     'target': 'filepath'
@@ -67,10 +74,34 @@ class ColorDeconvolution(Resource):
                 }
             },
             'outputs': {
-                'outputImageFile': {
+                'outputStainImageFile_1': {
                     "mode": "girder",
                     "parent_id": str(folder['_id']),
-                    "name": 'out_' + item['name'],
+                    "name": 'stain_1_' + item['name'],
+                    "host": 'localhost',
+                    "format": "string",
+                    "type": "string",
+                    'port': 8080,
+                    'token': token,
+                    'resource_type': 'item',
+                    'parent_type': 'folder'
+                },
+                'outputStainImageFile_2': {
+                    "mode": "girder",
+                    "parent_id": str(folder['_id']),
+                    "name": 'stain_2_' + item['name'],
+                    "host": 'localhost',
+                    "format": "string",
+                    "type": "string",
+                    'port': 8080,
+                    'token': token,
+                    'resource_type': 'item',
+                    'parent_type': 'folder'
+                },
+                'outputStainImageFile_3': {
+                    "mode": "girder",
+                    "parent_id": str(folder['_id']),
+                    "name": 'stain_3_' + item['name'],
                     "host": 'localhost',
                     "format": "string",
                     "type": "string",

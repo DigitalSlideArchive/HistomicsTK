@@ -1,7 +1,8 @@
 import collections
 import numpy
-from . import ComplementStainMatrix
-from . import OpticalDensityFwd, OpticalDensityInv
+from ComplementStainMatrix import ComplementStainMatrix
+from OpticalDensityFwd import OpticalDensityFwd
+from OpticalDensityInv import OpticalDensityInv
 
 
 def ColorDeconvolution(I, W):

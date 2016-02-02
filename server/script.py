@@ -1,22 +1,25 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import os
+import numpy as np
+import PIL
 
 import histomicstk as htk
 
-print('starting')
+# Read Input Image
+OAinputImage = np.array(PIL.Image.open(inputImageFile))
 
-print(inputImageFile)
-
-outputImageFile = os.path.join(_tempdir,
-                               'out_'+ os.path.split(inputImageFile)[1])
-print(outputImageFile)
-
-inputImage = plt.imread(inputImageFile)
-
+# Perform color deconvolution
 W = np.array([[0.650, 0.072, 0], [0.704, 0.990, 0], [0.286, 0.105, 0]])
-outputImage = htk.ColorDeconvolution(inputImage, W)
+res = htk.ColorDeconvolution(inputImage, W)
 
-plt.imsave(outputImageFile, outputImage)
+# write stain images to output
+outFileSuffix = os.path.split(inputImageFile)[1]
 
+outputStainImageFile_1 = os.path.join(_tempdir, 'stain_1_' + outFileSuffix)
+PIL.Image.fromarray(res.Stains[:, :, 0]).save(outputStainImageFile_1)
 
+outputStainImageFile_2 = os.path.join(_tempdir, 'stain_2_' + outFileSuffix)
+PIL.Image.fromarray(res.Stains[:, :, 1]).save(outputStainImageFile_2)
+
+outputStainImageFile_3 = os.path.join(_tempdir, 'stain_3_' + outFileSuffix)
+PIL.Image.fromarray(res.Stains[:, :, 2]).save(outputStainImageFile_3)
+ 
