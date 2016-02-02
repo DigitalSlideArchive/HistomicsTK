@@ -22,7 +22,7 @@ def SubmitTorque(JobString, JobID, Mem=512):
     """
 
     # create job file in working directory
-    Script = open(JobID + '.pbs', 'w')
+    Script = open('%s.pbs' % JobID, 'w')
 
     # add commands to CD to working directory
     Script.write('#!/bin/bash\n')
@@ -33,7 +33,7 @@ def SubmitTorque(JobString, JobID, Mem=512):
 
     # print command to file
     if JobString[-1] != '\n':
-        JobString = JobString + '\n'
+        JobString += '\n'
     Script.write(JobString)
 
     # print wait command to job file
@@ -44,19 +44,18 @@ def SubmitTorque(JobString, JobID, Mem=512):
     Script.close()
 
     # submit job through qsub via system call
-    if(not JobID[0].isalpha()):
+    if not JobID[0].isalpha():
         JobID = '.' + JobID
     try:
-        Result = subprocess.check_output('qsub -N ' + JobID + ' ' +
-                                         JobID + '.pbs',
+        Result = subprocess.check_output('qsub -N %s %s.pbs' % (JobID, JobID),
                                          stderr=subprocess.STDOUT, shell=True)
     except subprocess.CalledProcessError as error:
         Result = error
 
-    print('qsub -N ' + JobID + ' ' + JobID + '.sh')
+    print('qsub -N %s %s.sh' % (JobID, JobID))
 
     # delete job file
-    os.remove(JobID + '.pbs')
+    os.remove('%s.pbs' % JobID)
 
     # return output
-    return(Result)
+    return Result
