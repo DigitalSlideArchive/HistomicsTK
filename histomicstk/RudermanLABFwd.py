@@ -33,14 +33,14 @@ def RudermanLABFwd(I):
     RGB2LMS = np.array([[0.3811, 0.5783, 0.0402],
                         [0.1967, 0.7244, 0.0782],
                         [0.0241, 0.1288, 0.8444]])
-    LMS2LAB = np.array([[1/(3**(0.5)), 0, 0],
-                        [0, 1/(6**(0.5)), 0],
-                        [0, 0, 1/(2**(0.5))]]).dot(np.array([[1, 1, 1],
-                                                             [1, 1, -2],
-                                                             [1, -1, 0]]))
+    LMS2LAB = np.array([[1 / (3**0.5), 0, 0],
+                        [0, 1 / (6**0.5), 0],
+                        [0, 0, 1 / (2**0.5)]]).dot(np.array([[1, 1, 1],
+                                                            [1, 1, -2],
+                                                            [1, -1, 0]]))
 
     # calculate LMS values from RGB
-    I = np.reshape(I, (m*n, 3))
+    I = np.reshape(I, (m * n, 3))
     LMS = np.dot(RGB2LMS, np.transpose(I))
     LMS[LMS == 0] = np.spacing(1)
     logLMS = np.log(LMS)
@@ -51,4 +51,4 @@ def RudermanLABFwd(I):
     # reshape to 3-channel image
     I_LAB = np.reshape(I_LAB.transpose(), (m, n, 3))
 
-    return(I_LAB)
+    return I_LAB

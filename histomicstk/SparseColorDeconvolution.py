@@ -52,39 +52,39 @@ def SparseColorDeconvolution(I, Winit, Beta):
     --------
     ColorDeconvolution
     """
-    
+
     # get number of output stains
     K = Winit.shape[1]
-    
+
     # normalize stains to unit-norm
     for i in range(K):
         Norm = np.linalg.norm(Winit[:, i])
-        if(Norm >= 1e-16):
+        if Norm >= 1e-16:
             Winit[:, i] /= Norm
         else:
             print 'error'  # throw error
-    
+
     # transform 3D input image to 2D RGB matrix format
     m = I.shape[0]
     n = I.shape[1]
-    if(I.shape[2] == 4):
+    if I.shape[2] == 4:
         I = I[:, :, (0, 1, 2)]
-    I = np.reshape(I, (m*n, 3)).transpose()
-    
+    I = np.reshape(I, (m * n, 3)).transpose()
+
     # transform input RGB to optical density values
     I = I.astype(dtype=np.float32)
     I[I == 0] = 1e-16
     ODfwd = OpticalDensityFwd(I)
-    
+
     # estimate initial H given p
     Hinit = np.dot(np.linalg.pinv(Winit), ODfwd)
     Hinit[Hinit < 0] = 0
-    
+
     # perform NMF
     Factorization = nimfa.Snmf(V=ODfwd, seed=None, W=Winit, H=Hinit,
                                rank=K, version='r', beta=Beta)
     Factorization()
-    
+
     # extract solutions and make columns of "W" unit-norm
     W = np.asarray(Factorization.basis())
     H = np.asarray(Factorization.coef())
@@ -92,19 +92,19 @@ def SparseColorDeconvolution(I, Winit, Beta):
         Norm = np.linalg.norm(W[:, i])
         W[:, i] /= Norm
         H[i, :] *= Norm
-        
+
     # reshape H matrix to image
     StainsFloat = np.reshape(np.transpose(H), (m, n, K))
-    
+
     # transform type
     Stains = np.copy(StainsFloat)
     Stains[Stains > 255] = 255
     Stains = Stains.astype(np.uint8)
-    
+
     # build named tuple for outputs
     Unmixed = collections.namedtuple('Unmixed',
                                      ['Stains', 'StainsFloat', 'W', 'H'])
     Output = Unmixed(Stains, StainsFloat, W, H)
-    
+
     # return solution
-    return(Output)
+    return Output

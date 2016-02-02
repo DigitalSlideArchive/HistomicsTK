@@ -14,7 +14,7 @@ def ConvertSchedule(Schedule, Magnification, tol=0.002):
     tol : double, optional
         Acceptable mismatch percentage for desired magnification.
         Default value is 0.002.
-    
+
     Returns
     -------
     Level : int
@@ -49,7 +49,7 @@ def ConvertSchedule(Schedule, Magnification, tol=0.002):
     --------
     TilingSchedule
     """
-    
+
     # check if slide can be opened
     try:
         Slide = openslide.OpenSlide(Schedule.File)
@@ -59,18 +59,18 @@ def ConvertSchedule(Schedule, Magnification, tol=0.002):
     except openslide.OpenSlideUnsupportedFormatError:
         print("Slide format not supported. Consult OpenSlide documentation")
         return
-    
+
     # get slide dimensions, zoom levels, and objective information
-    Dims = Slide.level_dimensions
+    Dims = Slide.level_dimensions  # noqa
     Factors = Slide.level_downsamples
     Objective = float(Slide.properties[
         openslide.PROPERTY_NAME_OBJECTIVE_POWER])
-    
+
     # determine if desired magnification is avilable in file
     Available = tuple(Objective / x for x in Factors)
-    Mismatch = tuple(x-Magnification for x in Available)
+    Mismatch = tuple(x - Magnification for x in Available)
     AbsMismatch = tuple(abs(x) for x in Mismatch)
-    if(min(AbsMismatch) <= tol):
+    if min(AbsMismatch) <= tol:
         Level = int(AbsMismatch.index(min(AbsMismatch)))
         Factor = 1
     else:
@@ -81,16 +81,16 @@ def ConvertSchedule(Schedule, Magnification, tol=0.002):
     # translate parameters of input tiling schedule into new schedule
     Tout = int(round(((Schedule.Tout * Schedule.Factor) /
                       Schedule.Magnification) * Magnification / Factor))
-    
-    Stride = Tout * Available[0] / Available[Level]
+
+    Stride = Tout * Available[0] / Available[Level]  # noqa
     X = Schedule.X
     Y = Schedule.Y
     dX = Schedule.dX
     dY = Schedule.dY
-    
+
     # calculate scale difference between base and desired magnifications
     Scale = Magnification / Objective
-    
+
     # collect outputs in container
     TilingSchedule = collections.namedtuple('TilingSchedule',
                                             ['Level', 'Scale',
@@ -104,5 +104,5 @@ def ConvertSchedule(Schedule, Magnification, tol=0.002):
                                Magnification,
                                Schedule.File,
                                X, Y, dX, dY)
-    
-    return(Converted)
+
+    return Converted
