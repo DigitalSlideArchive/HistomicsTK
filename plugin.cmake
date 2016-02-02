@@ -15,8 +15,13 @@
 ###############################################################################
 
 add_python_style_test(
-  python_static_analysis_HistomicsTK
+  python_static_analysis_HistomicsTK_api
   "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/server"
+)
+
+add_python_style_test(
+  python_static_analysis_HistomicsTK_algorithms
+  "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/histomicstk"
 )
 
 add_python_test(example PLUGIN HistomicsTK)
