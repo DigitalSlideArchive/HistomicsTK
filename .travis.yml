@@ -18,12 +18,12 @@ before_install:
 
     - girder_path=$build_path/girder
     - rm -fr $girder_path
-    - git clone https://github.com/girder/girder.git $girder_path && git -C $girder_path checkout 7d859e03ff533f9a830ee45e0adb007b36e8da91
+    - git clone https://github.com/girder/girder.git $girder_path && git -C $girder_path checkout 114b5dda576bc0611617a92f88942f3a55dabe7d
     - ln -sf $main_path $girder_path/plugins/
     - ls -l $girder_path/plugins
 
     - romanesco_path=$girder_path/plugins/romanesco
-    - git clone https://github.com/Kitware/romanesco.git $romanesco_path && git -C $romanesco_path checkout da82cd17e8f8da011b55ddf826a5d0d7b2d558ab
+    - git clone https://github.com/Kitware/romanesco.git $romanesco_path && git -C $romanesco_path checkout 14a38e1e918d79446e59d4eb0d9e46571e2b8458
 
     - export MONGO_VERSION=2.6.11
     - export PY_COVG="ON"
