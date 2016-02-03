@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import PIL
+import skimage.io
 import histomicstk as htk
 
 # Define Romanesco globals for the style checker
@@ -10,7 +10,7 @@ _tempdir = _tempdir   # noqa
 # Read Input Image
 print('>> Reading input image')
 print(inputImageFile)
-inputImage = np.array(PIL.Image.open(inputImageFile))
+inputImage = skimage.io.imread(inputImageFile)
 
 # Perform color deconvolution
 print('>> Performing color deconvolution')
@@ -22,10 +22,10 @@ print('>> Outputting individual stain images')
 outFileSuffix = os.path.split(inputImageFile)[1]
 
 outputStainImageFile_1 = os.path.join(_tempdir, 'stain_1_' + outFileSuffix)
-PIL.Image.fromarray(res.Stains[:, :, 0]).save(outputStainImageFile_1)
+skimage.io.imsave(outputStainImageFile_1, res.Stains[:, :, 0])
 
 outputStainImageFile_2 = os.path.join(_tempdir, 'stain_2_' + outFileSuffix)
-PIL.Image.fromarray(res.Stains[:, :, 1]).save(outputStainImageFile_2)
+skimage.io.imsave(outputStainImageFile_2, res.Stains[:, :, 1])
 
 outputStainImageFile_3 = os.path.join(_tempdir, 'stain_3_' + outFileSuffix)
-PIL.Image.fromarray(res.Stains[:, :, 2]).save(outputStainImageFile_3)
+skimage.io.imsave(outputStainImageFile_3, res.Stains[:, :, 2])
