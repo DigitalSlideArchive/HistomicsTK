@@ -1,5 +1,4 @@
 import os
-import sys
 from girder.api.rest import Resource, loadmodel, getApiUrl
 from girder.api import access
 from girder.api.describe import Description
@@ -8,6 +7,7 @@ from girder.constants import AccessType
 
 class ColorDeconvolution(Resource):
     def __init__(self):
+        super(ColorDeconvolution, self).__init__()
         self.resourceName = 'ColorDeconvolution'
         self.route('POST', ('analysis',), self.doAnalysis)
 

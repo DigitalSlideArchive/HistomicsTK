@@ -8,7 +8,7 @@ except ImportError:
 
 import os
 import json
-from pkg_resources import parse_requirements
+from pkg_resources import parse_requirements, RequirementParseError
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -20,13 +20,13 @@ with open('plugin.json') as f:
     pkginfo = json.load(f)
 
 with open('LICENSE') as f:
-    license = f.read()
+    license_str = f.read()
 
 try:
     with open('requirements.txt') as f:
         ireqs = parse_requirements(f.read())
-except Exception:
-    pass
+except RequirementParseError:
+    raise
 requirements = [str(req) for req in ireqs]
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -35,8 +35,8 @@ if not on_rtd:
     try:
         with open('requirements_c.txt') as f:
             ireqs_c = parse_requirements(f.read())
-    except Exception:
-            pass
+    except RequirementParseError:
+        raise
     requirements_c = [str(req) for req in ireqs_c]
     requirements = requirements + requirements_c
 
@@ -56,7 +56,7 @@ setup(name='histomicstk',
                    'histomicstk'},
       include_package_data=True,
       install_requires=requirements,
-      license=license,
+      license=license_str,
       zip_safe=False,
       keywords='histomicstk',
       classifiers=[

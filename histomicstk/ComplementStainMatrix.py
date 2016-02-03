@@ -22,27 +22,27 @@ def ComplementStainMatrix(W):
     --------
     ColorDeconvolution
     """
-    
+
     # copy input to output for initialization
     WComp = W
 
-    # calculatoe directed cross-product of first two columns
-    if ((W[0, 0]**2 + W[0, 1]**2) > 1):
+    # calculate directed cross-product of first two columns
+    if (W[0, 0]**2 + W[0, 1]**2) > 1:
         WComp[0, 2] = 0
     else:
         WComp[0, 2] = (1 - (W[0, 0]**2 + W[0, 1]**2))**0.5
 
-    if ((W[1, 0]**2 + W[1, 1]**2) > 1):
+    if (W[1, 0]**2 + W[1, 1]**2) > 1:
         WComp[1, 2] = 0
     else:
         WComp[1, 2] = (1 - (W[1, 0]**2 + W[1, 1]**2))**0.5
-    
-    if ((W[2, 0]**2 + W[2, 1]**2) > 1):
+
+    if (W[2, 0]**2 + W[2, 1]**2) > 1:
         WComp[2, 2] = 0
     else:
         WComp[2, 2] = (1 - (W[2, 0]**2 + W[2, 1]**2))**0.5
-    
+
     # normalize new vector to unit-norm
     WComp[:, 2] = WComp[:, 2] / np.linalg.norm(WComp[:, 2])
-    
-    return(WComp)
+
+    return WComp

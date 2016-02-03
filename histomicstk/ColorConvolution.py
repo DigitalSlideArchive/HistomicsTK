@@ -35,7 +35,7 @@ def ColorConvolution(I, W):
     # transform 3D input stain image to 2D stain matrix format
     m = I.shape[0]
     n = I.shape[1]
-    I = np.reshape(I, (m*n, 3))
+    I = np.reshape(I, (m * n, 3))
 
     # transform input stains to optical density values, convolve and
     # tfm back to stain
@@ -48,5 +48,5 @@ def ColorConvolution(I, W):
     IOut = np.reshape(ODinv, (m, n, 3))
     IOut[IOut > 255] = 255
     IOut = IOut.astype(np.uint8)
-    
-    return(IOut)
+
+    return IOut

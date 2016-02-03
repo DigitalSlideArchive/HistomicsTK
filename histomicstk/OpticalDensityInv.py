@@ -4,7 +4,7 @@ import numpy as np
 def OpticalDensityInv(I):
     """Transforms input RGB image `I` into optical density space for
     color deconvolution.
-    
+
     Parameters
     ----------
     I : array_like
@@ -21,7 +21,7 @@ def OpticalDensityInv(I):
     --------
     OpticalDensityFwd, ColorDeconvolution, ColorConvolution
     """
-    
-    IOut = np.exp(-(I - 255)*np.log(255)/255)
+
+    IOut = np.exp(-(I - 255) * np.log(255) / 255)
 
     return IOut

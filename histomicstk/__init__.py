@@ -19,7 +19,7 @@ from TilingSchedule import TilingSchedule
 
 __version__ = '0.1.0'
 
-__all__ = ['AdaptiveColorNorm',
+__all__ = ('AdaptiveColorNorm',
            'ColorConvolution',
            'ColorDeconvolution',
            'ComplementStainMatrix',
@@ -34,4 +34,4 @@ __all__ = ['AdaptiveColorNorm',
            'SimpleMask',
            'SparseColorDeconvolution',
            'SubmitTorque',
-           'TilingSchedule']
+           'TilingSchedule')
