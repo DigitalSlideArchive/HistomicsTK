@@ -5,7 +5,7 @@ import PIL
 import histomicstk as htk
 
 # Read Input Image
-OAinputImage = np.array(PIL.Image.open(inputImageFile))
+inputImage = np.array(PIL.Image.open(inputImageFile))
 
 # Perform color deconvolution
 W = np.array([[0.650, 0.072, 0], [0.704, 0.990, 0], [0.286, 0.105, 0]])
