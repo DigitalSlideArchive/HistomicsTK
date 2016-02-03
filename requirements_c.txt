@@ -6,6 +6,6 @@
 matplotlib==1.5.1
 # Conda does not contain any numpy>1.10.2
 numpy==1.10.2
-openslide==1.1.0
+openslide-python==1.1.0
 scikit-image==0.11.3
 scipy==0.16.1
