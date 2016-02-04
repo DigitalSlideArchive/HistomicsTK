@@ -102,7 +102,7 @@ def SparseColorDeconvolution(I, Winit, Beta):
 
         # perform regularized NMF
         Factorization = nimfa.Snmf(V=ODfwd, seed=None, W=Winit,
-                                   H = Hinit, rank=K,
+                                   H=Hinit, rank=K,
                                    version='r', beta=Beta)
         Factorization()
 
