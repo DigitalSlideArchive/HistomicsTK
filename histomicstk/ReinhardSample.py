@@ -1,6 +1,6 @@
 import numpy as np
-import Sample as smp
-import RudermanLABFwd as rlf
+from . import Sample
+from . import RudermanLABFwd
 import collections
 
 
@@ -48,13 +48,13 @@ def ReinhardSample(File, Magnification, Percent, Tile):
     """
 
     # generate a sampling of RGB pixels from whole-slide image
-    RGB = smp.Sample(File, Magnification, Percent, Tile)
+    RGB = Sample(File, Magnification, Percent, Tile)
 
     # reshape the 3xN pixel array into an image for RudermanLABFwd
     RGB = np.reshape(RGB.transpose(), (1, RGB.shape[1], 3))
 
     # perform forward LAB transformation
-    LAB = rlf.RudermanLABFwd(RGB)
+    LAB = RudermanLABFwd(RGB)
 
     # compute statistics of LAB channels
     Mu = LAB.sum(axis=0).sum(axis=0) / (LAB.size / 3)

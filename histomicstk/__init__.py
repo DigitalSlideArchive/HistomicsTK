@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from .AdaptiveColorNorm import AdaptiveColorNorm
 from .ColorConvolution import ColorConvolution
 from .ColorDeconvolution import ColorDeconvolution
 from .ComplementStainMatrix import ComplementStainMatrix
 from .ConvertSchedule import ConvertSchedule
+from .GaussianVoting import GaussianVoting
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
 from .ReinhardNorm import ReinhardNorm
@@ -19,11 +19,11 @@ from .TilingSchedule import TilingSchedule
 
 __version__ = '0.1.0'
 
-__all__ = ('AdaptiveColorNorm',
-           'ColorConvolution',
+__all__ = ('ColorConvolution',
            'ColorDeconvolution',
            'ComplementStainMatrix',
            'ConvertSchedule',
+           'GaussianVoting',
            'OpticalDensityFwd',
            'OpticalDensityInv',
            'ReinhardNorm',

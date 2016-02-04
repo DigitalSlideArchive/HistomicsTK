@@ -30,7 +30,7 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,  # noqa
         grayscale histogram. Default value = 2.
     DefaultBGScale : double, optional
         Standard deviation of background gaussian to be used if
-        estimation fails. Defaule value = 2.5.
+        estimation fails. Default value = 2.5.
     DefaultTissueScale: double, optional
         Standard deviation of tissue gaussian to be used if estimation fails.
         Default value = 30.

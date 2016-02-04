@@ -63,7 +63,6 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
     # calculate SourceMu if not provided
     if SourceMu is None:
         SourceMu = I_LAB.sum(axis=0).sum(axis=0) / (m * n)
-        print(SourceMu)
 
     # center to zero-mean
     I_LAB[:, :, 0] = I_LAB[:, :, 0] - SourceMu[0]
@@ -74,7 +73,6 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
     if SourceSigma is None:
         SourceSigma = ((I_LAB * I_LAB).sum(axis=0).sum(axis=0) /
                        (m * n - 1)) ** 0.5
-        print(SourceSigma)
 
     # scale to unit variance
     I_LAB[:, :, 0] = I_LAB[:, :, 0] / SourceSigma[0]
