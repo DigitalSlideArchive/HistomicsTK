@@ -4,6 +4,7 @@ from .ColorConvolution import ColorConvolution
 from .ColorDeconvolution import ColorDeconvolution
 from .ComplementStainMatrix import ComplementStainMatrix
 from .ConvertSchedule import ConvertSchedule
+from .EstimateVariance import EstimateVariance
 from .GaussianVoting import GaussianVoting
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
@@ -23,6 +24,7 @@ __all__ = ('ColorConvolution',
            'ColorDeconvolution',
            'ComplementStainMatrix',
            'ConvertSchedule',
+           'EstimateVariance',
            'GaussianVoting',
            'OpticalDensityFwd',
            'OpticalDensityInv',

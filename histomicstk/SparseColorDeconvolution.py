@@ -2,7 +2,7 @@ import nimfa
 import numpy as np
 import collections
 
-from . import OpticalDensityFwd
+from OpticalDensityFwd import OpticalDensityFwd
 
 
 def SparseColorDeconvolution(I, Winit, Beta):

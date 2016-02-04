@@ -1,6 +1,6 @@
 import numpy as np
-from . import Sample
-from . import RudermanLABFwd
+from Sample import Sample
+from RudermanLABFwd import RudermanLABFwd
 import collections
 
 

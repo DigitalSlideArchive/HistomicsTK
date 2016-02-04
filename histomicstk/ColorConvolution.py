@@ -1,7 +1,7 @@
 import numpy as np
 
-from . import OpticalDensityFwd
-from . import OpticalDensityInv
+from OpticalDensityFwd import OpticalDensityFwd
+from OpticalDensityInv import OpticalDensityInv
 
 
 def ColorConvolution(I, W):
