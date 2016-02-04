@@ -33,6 +33,7 @@ def GaussianVoting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
     Psi : double
         Lower limit threshold on votes. Expressed as a percentage of
         the maximum vote, ranges from [0, 1). Default value = 0.3.
+    
     Returns
     -------
     Centroids : array_like
