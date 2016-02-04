@@ -1,3 +1,4 @@
+from EstimateVariance import EstimateVariance
 import numpy as np
 from skimage import color
 from sklearn.neighbors.kde import KernelDensity
@@ -30,7 +31,7 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,  # noqa
         grayscale histogram. Default value = 2.
     DefaultBGScale : double, optional
         Standard deviation of background gaussian to be used if
-        estimation fails. Defaule value = 2.5.
+        estimation fails. Default value = 2.5.
     DefaultTissueScale: double, optional
         Standard deviation of tissue gaussian to be used if estimation fails.
         Default value = 30.
@@ -78,80 +79,14 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,  # noqa
     TissuePeak = Peaks[yHist[Peaks[1:]].argmax() + 1]
 
     # analyze background peak to estimate variance parameter via FWHM
-    Left = BGPeak
-    while yHist[Left] > yHist[BGPeak] / 2 and Left >= 0:
-        Left -= 1
-        if Left == -1:
-            break
-    Right = BGPeak
-    while yHist[Right] > yHist[BGPeak] / 2 and Right < yHist.size:
-        Right += 1
-        if Right == yHist.size:
-            break
-    if Left != -1 and Right != yHist.size:
-        LeftSlope = yHist[Left + 1] - yHist[Left] / (xHist[Left + 1] -
-                                                     xHist[Left])
-        Left = (yHist[BGPeak] / 2 - yHist[Left]) / LeftSlope + xHist[Left]
-        RightSlope = yHist[Right] - yHist[Right - 1] / (xHist[Right] -
-                                                        xHist[Right - 1])
-        Right = (yHist[BGPeak] / 2 - yHist[Right]) / RightSlope + xHist[Right]
-        BGScale = (Right - Left) / 2.355
-    if Left == -1:
-        if Right == yHist.size:
-            BGScale = DefaultBGScale
-        else:
-            RightSlope = yHist[Right] - yHist[Right - 1] / (xHist[Right] -
-                                                            xHist[Right - 1])
-            Right = (yHist[BGPeak] / 2 -
-                     yHist[Right]) / RightSlope + xHist[Right]
-            BGScale = 2 * (Right - xHist[BGPeak]) / 2.355
-    if Right == yHist.size:
-        if Left == -1:
-            BGScale = DefaultBGScale
-        else:
-            LeftSlope = yHist[Left + 1] - yHist[Left] / (xHist[Left + 1] -
-                                                         xHist[Left])
-            Left = (yHist[BGPeak] / 2 - yHist[Left]) / LeftSlope + xHist[Left]
-            BGScale = 2 * (xHist[BGPeak] - Left) / 2.355
+    BGScale = EstimateVariance(xHist, yHist, BGPeak)
+    if BGScale == -1:
+        BGScale = DefaultBGScale
 
     # analyze tissue peak to estimate variance parameter via FWHM
-    Left = TissuePeak
-    while yHist[Left] > yHist[TissuePeak] / 2 and Left >= 0:
-        Left -= -1
-        if Left == -1:
-            break
-    Right = TissuePeak
-    while yHist[Right] > yHist[TissuePeak] / 2 and Right < yHist.size:
-        Right += 1
-        if Right == yHist.size:
-            break
-    if Left != -1 and Right != yHist.size:
-        LeftSlope = yHist[Left + 1] - yHist[Left] / (xHist[Left + 1] -
-                                                     xHist[Left])
-        Left = (yHist[TissuePeak] / 2 - yHist[Left]) / LeftSlope + xHist[Left]
-        RightSlope = yHist[Right] - yHist[Right - 1] / (xHist[Right] -
-                                                        xHist[Right - 1])
-        Right = (yHist[TissuePeak] / 2 -
-                 yHist[Right]) / RightSlope + xHist[Right]
-        TissueScale = (Right - Left) / 2.355
-    if Left == -1:
-        if Right == yHist.size:
-            TissueScale = DefaultTissueScale
-        else:
-            RightSlope = yHist[Right] - yHist[Right - 1] / (xHist[Right] -
-                                                            xHist[Right - 1])
-            Right = (yHist[TissuePeak] / 2 -
-                     yHist[Right]) / RightSlope + xHist[Right]
-            TissueScale = 2 * (Right - xHist[TissuePeak]) / 2.355
-    if Right == yHist.size:
-        if Left == -1:
-            TissueScale = DefaultTissueScale
-        else:
-            LeftSlope = yHist[Left + 1] - yHist[Left] / (xHist[Left + 1] -
-                                                         xHist[Left])
-            Left = (yHist[TissuePeak] / 2 -
-                    yHist[Left]) / LeftSlope + xHist[Left]
-            TissueScale = 2 * (xHist[TissuePeak] - Left) / 2.355
+    TissueScale = EstimateVariance(xHist, yHist, TissuePeak)
+    if TissuePeak == -1:
+        TissueScale = DefaultTissueScale
 
     # solve for mixing parameter
     Mix = yHist[BGPeak] * (BGScale * (2 * np.pi)**0.5)
