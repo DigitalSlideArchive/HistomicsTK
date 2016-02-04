@@ -33,7 +33,7 @@ def GaussianVoting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
     Psi : double
         Lower limit threshold on votes. Expressed as a percentage of
         the maximum vote, ranges from [0, 1). Default value = 0.3.
-    
+
     Returns
     -------
     Centroids : array_like
@@ -64,9 +64,9 @@ def GaussianVoting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
     r = (rmax + rmin) / 2
 
     # generate separable gaussian derivative kernels
-    x = np.linspace(0, 2 * 3 * sSigma, 2 * 3 * sSigma + 1)  # independent variables
+    x = np.linspace(0, 2 * 3 * sSigma, 2 * 3 * sSigma + 1)
     y = np.linspace(0, 2 * 3 * sSigma, 2 * 3 * sSigma + 1)
-    x -= 2 * 3 * sSigma / 2  # center at zero
+    x -= 2 * 3 * sSigma / 2  # center independent variables at zero
     y -= 2 * 3 * sSigma / 2
     x = np.reshape(x, (1, x.size))  # reshape to 2D row and column vectors
     y = np.reshape(y, (y.size, 1))
