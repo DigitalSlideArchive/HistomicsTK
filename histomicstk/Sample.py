@@ -1,9 +1,9 @@
 import numpy as np
 import openslide
 import scipy
-import TilingSchedule as ts
-import ConvertSchedule as cs
-import SimpleMask as sm
+from TilingSchedule import TilingSchedule
+from ConvertSchedule import ConvertSchedule
+from SimpleMask import SimpleMask
 
 
 def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
@@ -41,10 +41,10 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
     Slide = openslide.OpenSlide(File)
 
     # generate tiling schedule for desired sampling magnification
-    Schedule = ts.TilingSchedule(File, Magnification, Tile)
+    Schedule = TilingSchedule(File, Magnification, Tile)
 
     # convert tiling schedule to low-resolution for tissue mapping
-    lrSchedule = cs.ConvertSchedule(Schedule, MappingMag)
+    lrSchedule = ConvertSchedule(Schedule, MappingMag)
 
     # get width, height of image at low-res reading magnification
     lrHeight = Slide.level_dimensions[lrSchedule.Level][1]
@@ -66,7 +66,7 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
         LR = scipy.misc.imresize(LR, lrSchedule.Factor)
 
     # mask
-    Mask = sm.SimpleMask(LR)
+    Mask = SimpleMask(LR)
 
     # pad mask to match overall size of evenly tiled image
     MaskHeight = lrSchedule.Tout * lrSchedule.Y.shape[0]
