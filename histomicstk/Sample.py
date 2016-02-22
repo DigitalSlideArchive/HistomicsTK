@@ -96,7 +96,9 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
 
                 # resize if desired magnification is not provided by the file
                 if Schedule.Factor != 1.0:
-                    Tile = scipy.misc.imresize(Tile, Schedule.Factor)
+                    Tile = scipy.misc.imresize(Tile,
+                                               Schedule.Factor,
+                                               interp='nearest')
 
                 # upsample tile mask from low-resolution to high-resolution
                 TileMask = scipy.misc.imresize(lrTileMask,
