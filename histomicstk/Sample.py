@@ -64,6 +64,8 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
     # resize if desired magnification is not provided by the file
     if lrSchedule.Factor != 1.0:
         LR = scipy.misc.imresize(LR, lrSchedule.Factor)
+        lrHeight = LR.shape[0]
+        lrWidth = LR.shape[1]
 
     # mask
     Mask = SimpleMask(LR)
@@ -84,12 +86,7 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
             TissueCount = sum(lrTileMask.flatten().astype(
                 np.float)) / (lrSchedule.Tout**2)
             if TissueCount > 0.5:
-                # upsample mask from low-resolution version, and read in color
                 # region from desired magnfication
-                TileMask = scipy.misc.imresize(lrTileMask,
-                                               Schedule.Magnification /
-                                               lrSchedule.Magnification,
-                                               interp='nearest')
                 Tile = Slide.read_region((int(Schedule.X[i, j]),
                                           int(Schedule.Y[i, j])),
                                          Schedule.Level,
@@ -100,6 +97,11 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
                 # resize if desired magnification is not provided by the file
                 if Schedule.Factor != 1.0:
                     Tile = scipy.misc.imresize(Tile, Schedule.Factor)
+
+                # upsample tile mask from low-resolution to high-resolution
+                TileMask = scipy.misc.imresize(lrTileMask,
+                                               Tile.shape,
+                                               interp='nearest')
 
                 # generate linear indices of pixels in mask
                 Indices = np.nonzero(TileMask.flatten())[0]
