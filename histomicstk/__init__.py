@@ -4,9 +4,11 @@ from .ColorConvolution import ColorConvolution
 from .ColorDeconvolution import ColorDeconvolution
 from .ComplementStainMatrix import ComplementStainMatrix
 from .ConvertSchedule import ConvertSchedule
+from .EmbedBounds import EmbedBounds
 from .EstimateVariance import EstimateVariance
 from .GaussianGradient import GaussianGradient
 from .GaussianVoting import GaussianVoting
+from .LabelPerimeter import LabelPerimeter
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
 from .ReinhardNorm import ReinhardNorm
@@ -25,9 +27,11 @@ __all__ = ('ColorConvolution',
            'ColorDeconvolution',
            'ComplementStainMatrix',
            'ConvertSchedule',
+           'EmbedBounds',
            'EstimateVariance',
            'GaussianGradient',
            'GaussianVoting',
+           'LabelPerimeter',
            'OpticalDensityFwd',
            'OpticalDensityInv',
            'ReinhardNorm',
