@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from .ChanVese import ChanVese
 from .ColorConvolution import ColorConvolution
 from .ColorDeconvolution import ColorDeconvolution
 from .ComplementStainMatrix import ComplementStainMatrix
 from .ConvertSchedule import ConvertSchedule
+from .Del2 import Del2
+from .DregEdge import DregEdge
 from .EmbedBounds import EmbedBounds
 from .EstimateVariance import EstimateVariance
 from .GaussianGradient import GaussianGradient
@@ -23,10 +26,13 @@ from .TilingSchedule import TilingSchedule
 
 __version__ = '0.1.0'
 
-__all__ = ('ColorConvolution',
+__all__ = ('ChanVese',
+           'ColorConvolution',
            'ColorDeconvolution',
            'ComplementStainMatrix',
            'ConvertSchedule',
+           'Del2',
+           'DregEdge',
            'EmbedBounds',
            'EstimateVariance',
            'GaussianGradient',
