@@ -1,4 +1,5 @@
 import os
+import json
 from girder.api.rest import Resource, loadmodel, getApiUrl
 from girder.api import access
 from girder.api.describe import Description, describeRoute
@@ -6,7 +7,6 @@ from girder.constants import AccessType
 from girder.plugins import worker
 
 from lxml import etree
-from io import StringIO
 
  
 class HistomicsTK(Resource):
@@ -233,39 +233,136 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                         'inputs': [],
                         'outputs': []}
 
-            slicerToGirderTypeMap = {'integer': 'integer',
-                                     'float': 'number',
-                                     'double': 'number',
-                                     'string': 'string',
-                                     'integer-vector': 'integer-list',
-                                     'float-vector': 'float-list',
-                                     'double-vector': 'double-list',
-                                     'string-vector': 'string-list',
-                                     'file': 'string',
-                                     'directory': 'string',
-                                     'image': 'string'}
+            slicerToGirderTypeMap = {
+                'boolean': 'boolean',
+                'integer': 'integer',
+                'float': 'number',
+                'string': 'string',
+                'integer-vector': 'integer-list',
+                'float-vector': 'number-list',
+                'double-vector': 'number-list',
+                'string-vector': 'string-list',
+                'integer-enumeration': 'integer',
+                'float-enumeration': 'number',
+                'double-enumeration': 'number',
+                'string-enumeration': 'string',
+                'file': 'string',
+                'directory': 'string',
+                'image': 'string'}
 
+            def getDefaultValFromString(strVal, typeVal):
+                if typeVal in ['integer', 'integer-enumeration']:
+                    return int(strVal)
+                elif typeVal in ['float', 'float-enumeration',
+                                 'double', 'double-enumeration']:
+                    return float(strVal)
+                elif typeVal == 'integer-vector':
+                    return [int(e.strip()) for e in strVal.split(',')]
+                elif typeVal in ['float-vector', 'double-vector']:
+                    return [float(e.strip()) for e in strVal.split(',')]
+                elif typeVal == 'string-vector':
+                    return [int(e.strip()) for e in strVal.split(',')]
+                else:
+                    return typeVal
+            
             ioXMLElements = []
             paramXMLElements = []
-            for pgelt in f.getiterator('parameters'):
+            for pgelt in clixml.getiterator('parameters'):
                 for pelt in pgelt:
+
                     if pelt.tag in ['description', 'label']:
                         continue
+
+                    if pelt.tag not in slicerToGirderTypeMap.keys():
+                        raise Exception(
+                            'Parameter type %s is currently not supported' %
+                            pelt.tag)
+
                     channel = pelt.findtext('channel')
                     if channel is not None:
+                        if channel.lower() not in ['input', 'output']:
+                            raise Exception('channel must be input or output.')
                         ioXMLElements.append(pelt)
                     else:
                         paramXMLElements.append(pelt)
             
             ioXMLElements = sorted(ioXMLElements,
                                    key=lambda elt: elt.findtext('index'))
+
+            inputXMLElements = []
+            outputXMLElements = []
             for elt in ioXMLElements:
                 if elt.findtext('channel').lower() == 'input':
                     inputXMLElements.append(elt)
                 else:
+                    if elt.tag not in ['image', 'file', 'directory']:
+                        raise Exception(
+                            'outputs of type other than image, file, or '
+                            'directory are not currently supported.')
                     outputXMLElements.append(elt)
-            
-            def cliHandler(self, item, folder, params):
+
+            # generate task spec for inputs
+            for elt in inputXMLElements:
+                curTaskSpec = {}
+                curTaskSpec['id'] = elt.findtext('name')
+                curTaskSpec['type'] = slicerToGirderTypeMap[elt.tag]
+                curTaskSpec['format'] = slicerToGirderTypeMap[elt.tag]
+                curTaskSpec['target'] = 'filepath'
+                taskSpec['inputs'].append(curTaskSpec)
+
+                handlerDesc.param(elt.findtext('name') + '_itemId',
+                                  'Girder item ID of ' +
+                                  elt.findtext('description'))
+
+            # generate task spec for optional parameters
+            for elt in paramXMLElements:
+                curTaskSpec = {}
+                curTaskSpec['id'] = elt.findtext('name')
+                curTaskSpec['type'] = slicerToGirderTypeMap[elt.tag]
+                curTaskSpec['format'] = slicerToGirderTypeMap[elt.tag]
+                
+                if elt.tag in ['image', 'file', 'directory']:
+                    curTaskSpec['target'] = 'filepath'
+
+                defaultValSpec = {}
+                defaultValSpec['format'] = curTaskSpec['format']
+                strDefaultVal = elt.findtext('default')
+                if strDefaultVal is not None:
+                    defaultVal = getDefaultValFromString(strDefaultVal,
+                                                         elt.tag)
+                elif elt.tag == 'boolean':
+                    defaultVal = False
+                else:
+                    raise Exception(
+                        'All parameters of type other than boolean must '
+                        'provide a default value in the xml')
+                defaultValSpec['data'] = defaultVal
+                curTaskSpec['default'] = defaultValSpec
+                taskSpec['inputs'].append(curTaskSpec)
+
+                handlerDesc.param(elt.findtext('name'),
+                                  elt.findtext('description'),
+                                  dataType='string',
+                                  required=False,
+                                  default=json.dumps(defaultVal))
+                    
+            # generate task spec for outputs
+            for elt in outputXMLElements:
+                curTaskSpec = {}
+                curTaskSpec['id'] = elt.findtext('name')
+                curTaskSpec['type'] = slicerToGirderTypeMap[elt.tag]
+                curTaskSpec['format'] = slicerToGirderTypeMap[elt.tag]
+                
+                if elt.tag in ['image', 'file', 'directory']:
+                    curTaskSpec['target'] = 'filepath'
+                
+                taskSpec['outputs'].append(curTaskSpec)
+
+                handlerDesc.param(elt.findtext('name') + '_folderId',
+                                  'Output Girder folder ID of ' +
+                                  elt.findtext('description'))
+
+            def cliHandler(self, ioargs, params):
 
                 user = self.getCurrentUser()
                 token = self.getCurrentToken()['_id']
@@ -302,10 +399,13 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
 
             handlerFunc = cliHandler
 
-            # loadmodel stuff for inputs stored in girder
+            # loadmodel stuff for inputs and outputs in girder
 
             # add route description to the handler
             handlerFunc = describeRoute(handlerDesc)(handlerFunc)
+
+            # add user access
+            handlerFunc = access.user(handlerFunc)
 
             return handlerFunc
 
