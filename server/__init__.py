@@ -209,6 +209,8 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
 
         xmlPath, xmlNameWExt = os.path.split(xmlFile)
         xmlName = os.path.splitext(xmlNameWExt)[0]
+
+        # TODO: check if the xml adheres to slicer execution model
         
         # check if sdir contains a .py file with the same name
         scriptFile = os.path.join(xmlPath, xmlName + '.py')
@@ -314,7 +316,7 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 taskSpec['inputs'].append(curTaskSpec)
 
                 handlerDesc.param(elt.findtext('name') + '_itemId',
-                                  'Girder ID of input - ' +
+                                  'Girder ID of input %s: ' % elt.findtext('name') +
                                   elt.findtext('description'))
 
             # generate task spec for optional parameters
@@ -362,10 +364,10 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 taskSpec['outputs'].append(curTaskSpec)
 
                 handlerDesc.param(elt.findtext('name') + '_folderId',
-                                  'Girder ID of parent folder for output - ' +
+                                  'Girder ID of parent folder for %s: ' % elt.findtext('name') +
                                   elt.findtext('description'))
 
-            def cliHandler(self, ioargs, params):
+            def cliHandler(self, *ioargs, **params):
 
                 user = self.getCurrentUser()
                 token = self.getCurrentToken()['_id']
