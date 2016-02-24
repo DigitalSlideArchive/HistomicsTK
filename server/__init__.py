@@ -1,12 +1,13 @@
 import os
+import sys
 import json
+from lxml import etree
+
 from girder.api.rest import Resource, loadmodel, getApiUrl
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.plugins import worker
-
-from lxml import etree
 
  
 class HistomicsTK(Resource):
@@ -265,8 +266,12 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 else:
                     return typeVal
             
+            # identify xml elements of input, output, and optional params
             ioXMLElements = []
             paramXMLElements = []
+            inputXMLElements = []
+            outputXMLElements = []
+
             for pgelt in clixml.getiterator('parameters'):
                 for pelt in pgelt:
 
@@ -289,8 +294,6 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
             ioXMLElements = sorted(ioXMLElements,
                                    key=lambda elt: elt.findtext('index'))
 
-            inputXMLElements = []
-            outputXMLElements = []
             for elt in ioXMLElements:
                 if elt.findtext('channel').lower() == 'input':
                     inputXMLElements.append(elt)
@@ -311,7 +314,7 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 taskSpec['inputs'].append(curTaskSpec)
 
                 handlerDesc.param(elt.findtext('name') + '_itemId',
-                                  'Girder item ID of ' +
+                                  'Girder ID of input - ' +
                                   elt.findtext('description'))
 
             # generate task spec for optional parameters
@@ -359,7 +362,7 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 taskSpec['outputs'].append(curTaskSpec)
 
                 handlerDesc.param(elt.findtext('name') + '_folderId',
-                                  'Output Girder folder ID of ' +
+                                  'Girder ID of parent folder for output - ' +
                                   elt.findtext('description'))
 
             def cliHandler(self, ioargs, params):
@@ -410,11 +413,19 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
             return handlerFunc
 
         # create a POST REST route that runs the CLI by invoking the handler
-        handlerName = 'run_' + xmlName
-        setattr(restResource, handlerName, genCLIHandler())
+        try:
+            cliHandlerFunc = genCLIHandler()
+        except:
+            e = sys.exec_info()[0]
+            print "Failed to create REST endpoints for %s" % xmlPath
+            print e
+            continue
+
+        cliHandlerName = 'run_' + xmlName
+        setattr(restResource, cliHandlerName, cliHandlerFunc)
         restResource.route('POST',
                            (xmlName, 'run'),
-                           getattr(restResource, handlerName))
+                           getattr(restResource, cliHandlerName))
 
     setattr(info['apiRoot'], restResourceName, restResource)
 
