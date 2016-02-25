@@ -43,7 +43,9 @@ class HistomicsTK(Resource):
                level=AccessType.WRITE)
     def runColorDeconvolution(self, item, folder, params):
 
-        with open(os.path.join(os.path.dirname(__file__), 'script.py')) as f:
+        with open(os.path.join(os.path.dirname(__file__),
+                               'ColorDeconvolution'
+                               'ColorDeconvolution.py')) as f:
             codeToRun = f.read()
 
         jobModel = self.model('job', 'jobs')
@@ -537,6 +539,6 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
 
 
 def load(info):
-    # info['apiRoot'].HistomicsTK = HistomicsTK()
-    genRESTRouteForSlicerCLI(info, 'HistomicsTK')
+    info['apiRoot'].HistomicsTK = HistomicsTK()
+    # genRESTRouteForSlicerCLI(info, 'HistomicsTK')
 

@@ -5,16 +5,26 @@ import histomicstk as htk
 
 # Define Romanesco globals for the style checker
 inputImageFile = inputImageFile  # noqa
-_tempdir = _tempdir   # noqa
+stainColor_1 = stainColor_1      # noqa
+stainColor_2 = stainColor_2      # noqa
+stainColor_3 = stainColor_3      # noqa
+_tempdir = _tempdir              # noqa
 
 # Read Input Image
 print('>> Reading input image')
+
 print(inputImageFile)
+
 inputImage = skimage.io.imread(inputImageFile)
+
+# Create stain matrix
+print('>> Creating stain matrix')
+
+W = np.array([stainColor_1, stainColor_2, stainColor_3]).T
+print W
 
 # Perform color deconvolution
 print('>> Performing color deconvolution')
-W = np.array([[0.650, 0.072, 0], [0.704, 0.990, 0], [0.286, 0.105, 0]])
 res = htk.ColorDeconvolution(inputImage, W)
 
 # write stain images to output
