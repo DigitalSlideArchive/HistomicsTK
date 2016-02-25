@@ -9,7 +9,7 @@ from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.plugins import worker
 
- 
+
 class HistomicsTK(Resource):
     def __init__(self):
 
@@ -218,15 +218,17 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
         if not os.path.isfile(scriptFile):
             continue
 
+        # parse xml of cli
+        clixml = etree.parse(xmlFile)
+
+        print xmlFile
+
+        # read the script file containing the code into a string
+        with open(scriptFile) as f:
+            codeToRun = f.read()
+
         # create a handler to run the CLI using girder_worker
         def genCLIHandler():
-
-            # read the script file containing the code into a string
-            with open(scriptFile) as f:
-                codeToRun = f.read()
-            
-            # parse xml of cli
-            clixml = etree.parse(xmlFile)
 
             # do stuff needed to create REST endpoint for cLI
             handlerDesc = Description(clixml.find('description'))
@@ -252,6 +254,10 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 'file': 'string',
                 'directory': 'string',
                 'image': 'string'}
+
+            inGirderSuffix = '_girderId'
+            outGirderSuffix = '_girderFolderId'
+            outGirderNameSuffix = '_name'
 
             def getDefaultValFromString(strVal, typeVal):
                 if typeVal in ['integer', 'integer-enumeration']:
@@ -291,6 +297,10 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                             raise Exception('channel must be input or output.')
                         ioXMLElements.append(pelt)
                     else:
+                        if pelt.tag in ['image', 'file', 'directory']:
+                            raise Exception('optional parameters of type'
+                                            'image, file, or directory are '
+                                            'currently not supported')
                         paramXMLElements.append(pelt)
             
             ioXMLElements = sorted(ioXMLElements,
@@ -312,11 +322,44 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 curTaskSpec['id'] = elt.findtext('name')
                 curTaskSpec['type'] = slicerToGirderTypeMap[elt.tag]
                 curTaskSpec['format'] = slicerToGirderTypeMap[elt.tag]
-                curTaskSpec['target'] = 'filepath'
+
+                if elt.tag in ['image', 'file', 'directory']:
+                    curTaskSpec['target'] = 'filepath'  # check
+                    handlerDesc.param(elt.findtext('name') + inGirderSuffix,
+                                      'Girder ID of input %s: '
+                                      % elt.findtext('name') +
+                                      elt.findtext('description'))
+                else:
+                    handlerDesc.param(elt.findtext('name'),
+                                      elt.findtext('description'),
+                                      dataType='string')
+
                 taskSpec['inputs'].append(curTaskSpec)
 
-                handlerDesc.param(elt.findtext('name') + '_itemId',
-                                  'Girder ID of input %s: ' % elt.findtext('name') +
+            # generate task spec for outputs
+            for elt in outputXMLElements:
+
+                # task spec for the current output
+                curTaskSpec = {}
+                curTaskSpec['id'] = elt.findtext('name')
+                curTaskSpec['type'] = slicerToGirderTypeMap[elt.tag]
+                curTaskSpec['format'] = slicerToGirderTypeMap[elt.tag]
+
+                if elt.tag in ['image', 'file', 'directory']:
+                    curTaskSpec['target'] = 'filepath'
+
+                taskSpec['outputs'].append(curTaskSpec)
+
+                # param for parent folder
+                handlerDesc.param(elt.findtext('name') + outGirderSuffix,
+                                  'Girder ID of parent folder for output %s: '
+                                  % elt.findtext('name') +
+                                  elt.findtext('description'))
+
+                # param for name by which to store the current output
+                handlerDesc.param(elt.findtext('name') + outGirderNameSuffix,
+                                  'Name of output %s: '
+                                  % elt.findtext('name') +
                                   elt.findtext('description'))
 
             # generate task spec for optional parameters
@@ -326,9 +369,6 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 curTaskSpec['type'] = slicerToGirderTypeMap[elt.tag]
                 curTaskSpec['format'] = slicerToGirderTypeMap[elt.tag]
                 
-                if elt.tag in ['image', 'file', 'directory']:
-                    curTaskSpec['target'] = 'filepath'
-
                 defaultValSpec = {}
                 defaultValSpec['format'] = curTaskSpec['format']
                 strDefaultVal = elt.findtext('default')
@@ -343,31 +383,16 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                         'provide a default value in the xml')
                 defaultValSpec['data'] = defaultVal
                 curTaskSpec['default'] = defaultValSpec
-                taskSpec['inputs'].append(curTaskSpec)
 
                 handlerDesc.param(elt.findtext('name'),
                                   elt.findtext('description'),
                                   dataType='string',
                                   required=False,
                                   default=json.dumps(defaultVal))
-                    
-            # generate task spec for outputs
-            for elt in outputXMLElements:
-                curTaskSpec = {}
-                curTaskSpec['id'] = elt.findtext('name')
-                curTaskSpec['type'] = slicerToGirderTypeMap[elt.tag]
-                curTaskSpec['format'] = slicerToGirderTypeMap[elt.tag]
-                
-                if elt.tag in ['image', 'file', 'directory']:
-                    curTaskSpec['target'] = 'filepath'
-                
-                taskSpec['outputs'].append(curTaskSpec)
 
-                handlerDesc.param(elt.findtext('name') + '_folderId',
-                                  'Girder ID of parent folder for %s: ' % elt.findtext('name') +
-                                  elt.findtext('description'))
+                taskSpec['inputs'].append(curTaskSpec)
 
-            def cliHandler(self, *ioargs, **params):
+            def cliHandler(self, **params):
 
                 user = self.getCurrentUser()
                 token = self.getCurrentToken()['_id']
@@ -390,9 +415,46 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 
                 # create input bindings
                 kwargs['inputs'] = {}
-                
+                for elt in inputXMLElements:
+                    curName = elt.findtext('name')
+                    curType = elt.tag
+
+                    curBindingSpec = {}
+                    if curType in ['image', 'file', 'directory']:
+                        # inputs of type image, file, or directory
+                        # should be located on girder
+                        if curType in ['image', 'file']:
+                            curGirderType = 'file'
+                        else:
+                            curGirderType = 'folder'
+                        curBindingSpec = worker.utils.girderInputSpec(
+                            params[curName], curGirderType, token=token)
+                    else:
+                        # inputs that are not of type image, file, or directory
+                        # should be passed inline as string from json.dumps()
+                        curBindingSpec['mode'] = 'inline'
+                        curBindingSpec['type'] = slicerToGirderTypeMap[curType]
+                        curBindingSpec['format'] = 'json'
+                        curBindingSpec['data'] = params[curName]
+
+                    kwargs['inputs'][curName] = curBindingSpec
+                        
                 # create output boundings
                 kwargs['outputs'] = {}
+                for elt in outputXMLElements:
+                    curName = elt.findtext('name')
+                    curType = elt.tag
+
+                    if curType in ['image', 'file']:
+                        curGirderType = 'file'
+                    else:
+                        curGirderType = 'folder'
+
+                    curBindingSpec = worker.utils.girderOutputSpec(
+                        params[curName], token,
+                        name=params[curName + outGirderNameSuffix])
+
+                    kwargs['outputs'][curName] = curBindingSpec
 
                 # schedule job
                 job['kwargs'] = kwargs
@@ -404,13 +466,42 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
 
             handlerFunc = cliHandler
 
-            # loadmodel stuff for inputs and outputs in girder
+            # loadmodel stuff for inputs in girder
+            for elt in inputXMLElements:
+                curName = elt.findtext('name')
+                curType = elt.tag
+
+                if curType in ['image', 'file']:
+                    curModel = 'file'
+                elif curType == 'directory':
+                    curModel = 'folder'
+                else:
+                    continue
+                curMap = {curName + inGirderSuffix: curName}
+
+                handlerFunc = loadmodel(map=curMap,
+                                        model=curModel,
+                                        level=AccessType.READ)(handlerFunc)
+
+            # loadmodel stuff for outputs to girder
+            for elt in outputXMLElements:
+                curName = elt.findtext('name')
+                curType = elt.tag
+
+                curModel = 'folder'
+                curMap = {curName + outGirderSuffix: curName}
+
+                handlerFunc = loadmodel(map=curMap,
+                                        model=curModel,
+                                        level=AccessType.WRITE)(handlerFunc)
 
             # add route description to the handler
             handlerFunc = describeRoute(handlerDesc)(handlerFunc)
 
             # add user access
             handlerFunc = access.user(handlerFunc)
+
+            print taskSpec
 
             return handlerFunc
 
@@ -429,10 +520,23 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                            (xmlName, 'run'),
                            getattr(restResource, cliHandlerName))
 
+        # create GET REST route that returns the xml of the CLI
+        def getXMLSpec(self, **params):
+            return etree.tostring(clixml)
+
+        cliGetXMLSpecHandlerName = 'get_xml_' + xmlName
+        setattr(restResource,
+                cliGetXMLSpecHandlerName,
+                access.user(getXMLSpec))
+        restResource.route('GET',
+                           (xmlName, 'getXMLSpec'),
+                           getattr(restResource, cliGetXMLSpecHandlerName))
+
+    # expose the generated REST resource via apiRoot
     setattr(info['apiRoot'], restResourceName, restResource)
 
 
 def load(info):
-    info['apiRoot'].HistomicsTK = HistomicsTK()
-    # genRESTRouteForSlicerCLI(info, 'HistomicsTK')
+    # info['apiRoot'].HistomicsTK = HistomicsTK()
+    genRESTRouteForSlicerCLI(info, 'HistomicsTK')
 
