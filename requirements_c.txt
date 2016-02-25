@@ -3,8 +3,7 @@
 # Add all python packages that depend on C libraries here
 #
 #########################################################
-matplotlib==1.5.1
 numpy==1.10.4
 openslide-python==1.1.0
 scikit-image==0.11.3
-scipy==0.16.1
+scipy==0.17.0
