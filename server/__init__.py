@@ -7,7 +7,12 @@ from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
+from girder.utility.webroot import Webroot
 
+_template = os.path.join(
+    os.path.dirname(__file__),
+    'webroot.mako'
+)
 
 slicerToGirderTypeMap = {
     'boolean': 'boolean',
@@ -560,5 +565,14 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
 
 
 def load(info):
+    apiRoot = info['apiRoot']
+    girderRoot = info['serverRoot']
+    histomicsRoot = Webroot(_template)
+    histomicsRoot.updateHtmlVars(girderRoot.vars)
+    histomicsRoot.updateHtmlVars({'title': 'HistomicsTK'})
+
+    info['serverRoot'].histomicstk = histomicsRoot
+    info['serverRoot'].girder = girderRoot
+
     cliRootDir = os.path.dirname(__file__)
     genRESTEndPointsForSlicerCLIsInSubDirs(info, 'HistomicsTK', cliRootDir)
