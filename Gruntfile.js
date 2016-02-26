@@ -32,6 +32,13 @@ module.exports = function (grunt) {
                 ]
             }
         },
+        jade: {
+            'plugin-HistomicsTK': {
+                options: {
+                    namespace: 'histomicstk.templates'
+                }
+            },
+        },
         default: {
             'uglify:histomics-main': {}
         },

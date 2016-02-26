@@ -1,0 +1,16 @@
+@import 'nib'
+
+$headerHeight = 52px
+
+html
+    height: 100%
+
+body
+    height: 100%
+
+#g-app-body-container
+    height "calc(100% - %s)" % $headerHeight
+    position relative
+    top $headerHeight
+
+@import '*/*.styl'
