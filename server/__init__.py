@@ -44,9 +44,10 @@ class HistomicsTK(Resource):
                level=AccessType.WRITE)
     def runColorDeconvolution(self, item, folder, params):
 
-        with open(os.path.join(os.path.dirname(__file__),
-                               'ColorDeconvolution'
-                               'ColorDeconvolution.py')) as f:
+        script_file = os.path.join(os.path.dirname(__file__),
+                                   'ColorDeconvolution',
+                                   'ColorDeconvolution.py')
+        with open(script_file) as f:
             codeToRun = f.read()
 
         jobModel = self.model('job', 'jobs')
@@ -205,6 +206,8 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                   for child in os.listdir(rootDir)
                   if os.path.isdir(os.path.join(rootDir, child))]
 
+    print subdirList
+
     for sdir in subdirList:
       
         # check if sdir contains a .xml file with the same name
@@ -237,7 +240,7 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
         def genCLIHandler():
 
             # do stuff needed to create REST endpoint for cLI
-            handlerDesc = Description(clixml.findtext('description'))
+            handlerDesc = Description(clixml.findtext('title'))
             taskSpec = {'name': xmlName,
                         'mode': 'python',
                         'script': codeToRun,
@@ -248,6 +251,7 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 'boolean': 'boolean',
                 'integer': 'integer',
                 'float': 'number',
+                'double': 'number',
                 'string': 'string',
                 'integer-vector': 'integer-list',
                 'float-vector': 'number-list',
@@ -540,10 +544,8 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
         # create a POST REST route that runs the CLI by invoking the handler
         try:
             cliHandlerFunc = genCLIHandler()
-        except:
-            e = sys.exec_info()[0]
-            print "Failed to create REST endpoints for %s" % xmlPath
-            print e
+        except Exception as e:
+            print "Failed to create REST endpoints for %s: %s" % (xmlName, e)
             continue
 
         cliHandlerName = 'run_' + xmlName
