@@ -391,7 +391,7 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                     defaultVal = False
                 else:
                     raise Exception(
-                        'Pptional parameters of type %s must '
+                        'optional parameters of type %s must '
                         'provide a default value in the xml' % curType)
                 defaultValSpec['data'] = defaultVal
                 curTaskSpec['default'] = defaultValSpec
@@ -405,6 +405,7 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                 taskSpec['inputs'].append(curTaskSpec)
 
             pprint.pprint(taskSpec)
+            pprint.pprint(handlerDesc)
 
             def cliHandler(self, **args):
 
@@ -447,6 +448,7 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                         curBindingSpec = wutils.girderInputSpec(
                             args[curName],
                             resourceType=curGirderType,
+                            dataType='string', dataFormat='string',
                             token=token)
                     else:
                         # inputs that are not of type image, file, or directory
@@ -479,7 +481,8 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                     curBindingSpec = wutils.girderOutputSpec(
                         args[curName],
                         token,
-                        name=args['params'][curName + outGirderNameSuffix])
+                        name=args['params'][curName + outGirderNameSuffix],
+                        dataType='string', dataFormat='string')
 
                     kwargs['outputs'][curName] = curBindingSpec
 
