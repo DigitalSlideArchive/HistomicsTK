@@ -19,6 +19,7 @@ module.exports = function (grunt) {
             root: '<%= pluginDir %>/HistomicsTK',
             extjs: '<%= histomics.root %>/web_client/js/ext',
             extcss: '<%= histomics.root %>/web_client/stylesheets/ext',
+            extextra: '<%= histomics.root %>/web_client/extra',
             npm: '<%= histomics.root %>/node_modules',
             external: '<%= histomics.root %>/web_main',
             static: '<%= staticDir %>/built/plugins/HistomicsTK'
@@ -48,6 +49,17 @@ module.exports = function (grunt) {
                     '<%= histomics.extjs %>/bootstrap-slider.js': '<%= histomics.npm %>/bootstrap-slider/dist/bootstrap-slider.js',
                     '<%= histomics.extcss %>/bootstrap-slider.css': '<%= histomics.npm %>/bootstrap-slider/dist/css/bootstrap-slider.css'
                 }]
+            },
+            'bootstrap-colorpicker': {
+                files: [{
+                    '<%= histomics.extjs %>/bootstrap-colorpicker.js': '<%= histomics.npm %>/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js',
+                    '<%= histomics.extcss %>/bootstrap-colorpicker.css': '<%= histomics.npm %>/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.css'
+                }, {
+                    expand: true,
+                    cwd: '<%= histomics.npm %>/bootstrap-colorpicker/dist/img',
+                    src: ['bootstrap-colorpicker/*.png'],
+                    dest: '<%= histomics.extextra %>'
+                }]
             }
         },
         stylus: {
@@ -58,7 +70,16 @@ module.exports = function (grunt) {
             }
         },
         init: {
-            'copy:bootstrap-slider': {}
+            'copy:bootstrap-slider': {
+                dependencies: [
+                    'shell:plugin-HistomicsTK'
+                ]
+            },
+            'copy:bootstrap-colorpicker': {
+                dependencies: [
+                    'shell:plugin-HistomicsTK'
+                ]
+            }
         },
         default: {
             'uglify:histomics-main': {}

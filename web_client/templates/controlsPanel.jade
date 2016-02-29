@@ -9,8 +9,18 @@ block content
           input.form-control(
             name='#{control.title}'
             type='text'
-            id='##{control.id}'
+            id='#{control.id}'
             data-slider-min='#{control.min || 0}'
             data-slider-max='#{control.max || 1}'
             data-slider-step='#{control.step || 1}'
             data-slider-value='#{control.value || 0}')
+        else if control.type === 'color'
+          label(for='#{control.id}') #{control.title}
+          .input-group
+            input.form-control(
+              name='#{control.title}'
+              type='text'
+              id='#{control.id}'
+              value='#{control.value || "#000000"}')
+            .input-group-addon
+              i

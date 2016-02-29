@@ -17,9 +17,15 @@ histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
                 max: 1,
                 step: 0.01,
                 value: 0.25
+            }, {
+                type: 'color',
+                title: 'Select a color',
+                id: 'h-control-color',
+                value: '#00aabb'
             }
         ];
         this.$el.html(histomicstk.templates.controlsPanel(this.spec));
         this.$('.h-control-item[data-type="range"] input').slider();
+        this.$('.h-control-item[data-type="color"] .input-group').colorpicker({});
     }
 });
