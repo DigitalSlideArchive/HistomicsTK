@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 from lxml import etree
 import pprint
@@ -11,189 +10,389 @@ from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
 
 
-class HistomicsTK(Resource):
-    def __init__(self):
+def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
+    """Generates a handler to run CLI using girder_worker
 
-        super(HistomicsTK, self).__init__()
+    Parameters
+    ----------
+    restResource : girder.api.rest.Resource
+        The object of a class derived from girder.api.rest.Resource to which
+        this handler will be attached
+    xmlFile : str
+        Full path to xml file of the CLI
+    scriptFile : str
+        Full path to .py file containing the code of the clu
 
-        self.resourceName = 'HistomicsTK'
+    Returns
+    -------
+    function
+        Returns a function that runs the CLI using girder_worker
+    """
 
-        self.route('POST',
-                   ('ColorDeconvolution', 'run',),
-                   self.runColorDeconvolution)
+    xmlPath, xmlNameWExt = os.path.split(xmlFile)
+    xmlName = os.path.splitext(xmlNameWExt)[0]
 
+    # parse xml of cli
+    clixml = etree.parse(xmlFile)
+
+    # read the script file containing the code into a string
+    with open(scriptFile) as f:
+        codeToRun = f.read()
+
+    # do stuff needed to create REST endpoint for cLI
+    handlerDesc = Description(clixml.findtext('title'))
+    taskSpec = {'name': xmlName,
+                'mode': 'python',
+                'inputs': [],
+                'outputs': []}
+
+    slicerToGirderTypeMap = {
+        'boolean': 'boolean',
+        'integer': 'integer',
+        'float': 'number',
+        'double': 'number',
+        'string': 'string',
+        'integer-vector': 'integer_list',
+        'float-vector': 'number_list',
+        'double-vector': 'number_list',
+        'string-vector': 'string_list',
+        'integer-enumeration': 'integer',
+        'float-enumeration': 'number',
+        'double-enumeration': 'number',
+        'string-enumeration': 'string',
+        'file': 'string',
+        'directory': 'string',
+        'image': 'string'}
+
+    inputGirderSuffix = '_girderId'
+    outputGirderSuffix = '_folder_girderId'
+    outGirderNameSuffix = '_name'
+
+    def getDefaultValFromString(strVal, typeVal):
+        if typeVal in ['integer', 'integer-enumeration']:
+            return int(strVal)
+        elif typeVal in ['float', 'float-enumeration',
+                         'double', 'double-enumeration']:
+            return float(strVal)
+        elif typeVal == 'integer-vector':
+            return [int(e.strip()) for e in strVal.split(',')]
+        elif typeVal in ['float-vector', 'double-vector']:
+            return [float(e.strip()) for e in strVal.split(',')]
+        elif typeVal == 'string-vector':
+            return [str(e.strip()) for e in strVal.split(',')]
+        else:
+            return typeVal
+
+    # identify xml elements of input, output, and optional params
+    ioXMLElements = []
+    paramXMLElements = []
+    inputXMLElements = []
+    outputXMLElements = []
+
+    for pgelt in clixml.getiterator('parameters'):
+        for pelt in pgelt:
+            if pelt.tag in ['description', 'label']:
+                continue
+
+            if pelt.tag not in slicerToGirderTypeMap.keys():
+                raise Exception(
+                    'Parameter type %s is currently not supported' %
+                    pelt.tag)
+
+            channel = pelt.findtext('channel')
+            if channel is not None:
+                if channel.lower() not in ['input', 'output']:
+                    raise Exception('channel must be input or output.')
+                ioXMLElements.append(pelt)
+            else:
+                if pelt.tag in ['image', 'file', 'directory']:
+                    raise Exception('optional parameters of type'
+                                    'image, file, or directory are '
+                                    'currently not supported')
+                paramXMLElements.append(pelt)
+
+    ioXMLElements = sorted(ioXMLElements,
+                           key=lambda elt: elt.findtext('index'))
+
+    for elt in ioXMLElements:
+        if elt.findtext('channel').lower() == 'input':
+            inputXMLElements.append(elt)
+        else:
+            if elt.tag not in ['image', 'file', 'directory']:
+                raise Exception(
+                    'outputs of type other than image, file, or '
+                    'directory are not currently supported.')
+            outputXMLElements.append(elt)
+
+    # generate task spec for inputs
+    for elt in inputXMLElements:
+        curName = elt.findtext('name')
+        curType = elt.tag
+        curDesc = elt.findtext('description')
+
+        curTaskSpec = dict()
+        curTaskSpec['id'] = curName
+        curTaskSpec['type'] = slicerToGirderTypeMap[curType]
+        curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+
+        if curType in ['image', 'file', 'directory']:
+            curTaskSpec['target'] = 'filepath'  # check
+            handlerDesc.param(curName + inputGirderSuffix,
+                              'Girder ID of input %s - %s: %s'
+                              % (curType, curName, curDesc),
+                              dataType='string')
+        else:
+            handlerDesc.param(curName, curDesc, dataType='string')
+
+        taskSpec['inputs'].append(curTaskSpec)
+
+    # generate task spec for optional parameters
+    for elt in paramXMLElements:
+        curName = elt.findtext('name')
+        curType = elt.tag
+        curDesc = elt.findtext('description')
+
+        curTaskSpec = dict()
+        curTaskSpec['id'] = curName
+        curTaskSpec['type'] = slicerToGirderTypeMap[curType]
+        curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+
+        defaultValSpec = dict()
+        defaultValSpec['format'] = curTaskSpec['format']
+        strDefaultVal = elt.findtext('default')
+        if strDefaultVal is not None:
+            defaultVal = getDefaultValFromString(strDefaultVal,
+                                                 curType)
+        elif curType == 'boolean':
+            defaultVal = False
+        else:
+            raise Exception(
+                'optional parameters of type %s must '
+                'provide a default value in the xml' % curType)
+        defaultValSpec['data'] = defaultVal
+        curTaskSpec['default'] = defaultValSpec
+
+        handlerDesc.param(curName,
+                          curDesc,
+                          dataType='string',
+                          required=False,
+                          default=json.dumps(defaultVal))
+
+        taskSpec['inputs'].append(curTaskSpec)
+
+    # generate task spec for outputs
+    for elt in outputXMLElements:
+        curName = elt.findtext('name')
+        curType = elt.tag
+        curDesc = elt.findtext('description')
+
+        # task spec for the current output
+        curTaskSpec = dict()
+        curTaskSpec['id'] = curName
+        curTaskSpec['type'] = slicerToGirderTypeMap[curType]
+        curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+
+        if curType in ['image', 'file', 'directory']:
+            curTaskSpec['target'] = 'filepath'  # check
+
+        taskSpec['outputs'].append(curTaskSpec)
+
+        # param for parent folder
+        handlerDesc.param(curName + outputGirderSuffix,
+                          'Girder ID of parent folder '
+                          'for output %s - %s: %s'
+                          % (curType, curName, curDesc),
+                          dataType='string')
+
+        # param for name by which to store the current output
+        handlerDesc.param(curName + outGirderNameSuffix,
+                          'Name of output %s - %s: %s'
+                          % (curType, curName, curDesc),
+                          dataType='string')
+
+    # define CLI handler function
+    @boundHandler(restResource)
     @access.user
-    @describeRoute(
-        Description('Run color deconvolution on an image.')
-        .param('itemId', 'ID of the item containing the image.')
-        .param('folderId', 'ID of the output folder.')
-        .param('stainColor_1',
-               'A 3-element list containing the RGB color values of stain-1',
-               dataType='string')
-        .param('stainColor_2',
-               'A 3-element list specifying the RGB color values of stain-2',
-               dataType='string')
-        .param('stainColor_3',
-               'A 3-element list specifying the RGB color values of stain-3',
-               dataType='string', required=False, default="[0, 0, 0]"))
-    @loadmodel(map={'itemId': 'item'},
-               model='item',
-               level=AccessType.READ)
-    @loadmodel(map={'folderId': 'folder'},
-               model='folder',
-               level=AccessType.WRITE)
-    def runColorDeconvolution(self, item, folder, params):
+    @describeRoute(handlerDesc)
+    def cliHandler(self, **args):
 
-        script_file = os.path.join(os.path.dirname(__file__),
-                                   'ColorDeconvolution',
-                                   'ColorDeconvolution.py')
-        with open(script_file) as f:
-            codeToRun = f.read()
-
-        jobModel = self.model('job', 'jobs')
         user = self.getCurrentUser()
-
-        job = jobModel.createJob(title='ColorDeconvolution',
-                                 type='ColorDeconvolution',
-                                 handler='worker_handler',
-                                 user=user)
-        jobToken = jobModel.createJobToken(job)
         token = self.getCurrentToken()['_id']
 
-        outFPrefix, outFSuffix = os.path.splitext(item['name'])
-        outFPrefix = outFPrefix + '_'
-
+        # create job
+        jobModel = self.model('job', 'jobs')
+        jobTitle = '.'.join((restResource.resourceName, xmlName))
+        job = jobModel.createJob(title=jobTitle,
+                                 type=jobTitle,
+                                 handler='worker_handler',
+                                 user=user)
         kwargs = {
-            'task': {
-                'name': 'ColorDeconvolution',
-                'mode': 'python',
-                'script': codeToRun,
-                'inputs': [{
-                    'id': 'inputImageFile',
-                    'type': 'string',
-                    'format': 'string',
-                    'target': 'filepath'
-                }, {
-                    'id': 'stainColor_1',
-                    'type': 'number_list',
-                    'format': 'number_list'
-                }, {
-                    'id': 'stainColor_2',
-                    'type': 'number_list',
-                    'format': 'number_list'
-                }, {
-                    'id': 'stainColor_3',
-                    'type': 'number_list',
-                    'format': 'number_list',
-                    'default': {
-                        'format': 'number_list',
-                        'data': [0, 0, 0]
-                        }
-                }],
-                'outputs': [{
-                    'id': 'outputStainImageFile_1',
-                    'type': 'string',
-                    'format': 'string',
-                    'target': 'filepath'
-                }, {
-                    'id': 'outputStainImageFile_2',
-                    'type': 'string',
-                    'format': 'string',
-                    'target': 'filepath'
-                }, {
-                    'id': 'outputStainImageFile_3',
-                    'type': 'string',
-                    'format': 'string',
-                    'target': 'filepath'
-                }]
-            },
-            'inputs': {
-                'inputImageFile': {
-                    'mode': 'girder',
-                    'id': str(item['_id']),
-                    'name': item['name'],
-                    'host': 'localhost',
-                    'format': 'string',
-                    'type': 'string',
-                    'port': 8080,
-                    'token': token,
-                    'resource_type': 'item'
-                },
-                'stainColor_1': {
-                    'mode': 'inline',
-                    'type': 'number_list',
-                    'format': 'json',
-                    'data': params['stainColor_1']
-                },
-                'stainColor_2': {
-                    'mode': 'inline',
-                    'type': 'number_list',
-                    'format': 'json',
-                    'data': params['stainColor_2']
-                },
-                'stainColor_3': {
-                    'mode': 'inline',
-                    'type': 'number_list',
-                    'format': 'json',
-                    'data': params['stainColor_3']
-                }
-            },
-            'outputs': {
-                'outputStainImageFile_1': {
-                    'mode': 'girder',
-                    'parent_id': str(folder['_id']),
-                    'name': outFPrefix + 'stain_1' + outFSuffix,
-                    'host': 'localhost',
-                    'format': 'string',
-                    'type': 'string',
-                    'port': 8080,
-                    'token': token,
-                    'resource_type': 'item',
-                    'parent_type': 'folder'
-                },
-                'outputStainImageFile_2': {
-                    'mode': 'girder',
-                    'parent_id': str(folder['_id']),
-                    'name': outFPrefix + 'stain_2' + outFSuffix,
-                    'host': 'localhost',
-                    'format': 'string',
-                    'type': 'string',
-                    'port': 8080,
-                    'token': token,
-                    'resource_type': 'item',
-                    'parent_type': 'folder'
-                },
-                'outputStainImageFile_3': {
-                    'mode': 'girder',
-                    'parent_id': str(folder['_id']),
-                    'name': outFPrefix + 'stain_3' + outFSuffix,
-                    'host': 'localhost',
-                    'format': 'string',
-                    'type': 'string',
-                    'port': 8080,
-                    'token': token,
-                    'resource_type': 'item',
-                    'parent_type': 'folder'
-                }
-            },
-            'jobInfo': {
-                'method': 'PUT',
-                'url': '/'.join((getApiUrl(), 'job', str(job['_id']))),
-                'headers': {'Girder-Token': jobToken['_id']},
-                'logPrint': True
-            },
             'validate': False,
             'auto_convert': True,
-            'cleanup': True
-        }
+            'cleanup': True}
+        taskSpec['script'] = codeToRun
+
+        # create job info
+        jobToken = jobModel.createJobToken(job)
+        kwargs['jobInfo'] = wutils.jobInfoSpec(job, jobToken)
+
+        # create input bindings
+        kwargs['inputs'] = dict()
+        for elt in inputXMLElements:
+            curName = elt.findtext('name')
+            curType = elt.tag
+
+            curBindingSpec = dict()
+            if curType in ['image', 'file', 'directory']:
+                # inputs of type image, file, or directory
+                # should be located on girder
+                if curType in ['image', 'file']:
+                    curGirderType = 'item'
+                else:
+                    curGirderType = 'folder'
+                curBindingSpec = wutils.girderInputSpec(
+                    args[curName],
+                    resourceType=curGirderType,
+                    dataType='string', dataFormat='string',
+                    token=token)
+            else:
+                # inputs that are not of type image, file, or directory
+                # should be passed inline as string from json.dumps()
+                curBindingSpec['mode'] = 'inline'
+                curBindingSpec['type'] = slicerToGirderTypeMap[curType]
+                curBindingSpec['format'] = 'json'
+                curBindingSpec['data'] = args['params'][curName]
+
+            kwargs['inputs'][curName] = curBindingSpec
+
+        # create optional parameter bindings
+        for elt in paramXMLElements:
+            curName = elt.findtext('name')
+            curType = elt.tag
+
+            curBindingSpec = dict()
+            curBindingSpec['mode'] = 'inline'
+            curBindingSpec['type'] = slicerToGirderTypeMap[curType]
+            curBindingSpec['format'] = 'json'
+            curBindingSpec['data'] = args['params'][curName]
+
+            kwargs['inputs'][curName] = curBindingSpec
+
+        # create output boundings
+        kwargs['outputs'] = dict()
+        for elt in outputXMLElements:
+            curName = elt.findtext('name')
+
+            curBindingSpec = wutils.girderOutputSpec(
+                args[curName],
+                token,
+                name=args['params'][curName + outGirderNameSuffix],
+                dataType='string', dataFormat='string')
+            kwargs['outputs'][curName] = curBindingSpec
+
+            codeToSetOutputPath = "%s = os.path.join(_tempdir, '%s')" % (
+                curName, args['params'][curName + outGirderNameSuffix])
+            taskSpec['script'] = '\n'.join((codeToSetOutputPath,
+                                           taskSpec['script']))
+
+        # create task spec
+        taskSpec['script'] = '\n'.join(("import os", taskSpec['script']))
+        kwargs['task'] = taskSpec
+
+        # schedule job
         job['kwargs'] = kwargs
         job = jobModel.save(job)
         jobModel.scheduleJob(job)
 
+        # return result
         return jobModel.filter(job, user)
 
+    handlerFunc = cliHandler
 
-def genRESTRouteForSlicerCLI(info, restResourceName):
+    # loadmodel stuff for inputs in girder
+    for elt in inputXMLElements:
+        curName = elt.findtext('name')
+        curType = elt.tag
+
+        if curType in ['image', 'file']:
+            curModel = 'item'
+        elif curType == 'directory':
+            curModel = 'folder'
+        else:
+            continue
+        curMap = {curName + inputGirderSuffix: curName}
+
+        handlerFunc = loadmodel(map=curMap,
+                                model=curModel,
+                                level=AccessType.READ)(handlerFunc)
+
+    # loadmodel stuff for outputs to girder
+    for elt in outputXMLElements:
+        curName = elt.findtext('name')
+
+        curModel = 'folder'
+        curMap = {curName + outputGirderSuffix: curName}
+
+        handlerFunc = loadmodel(map=curMap,
+                                model=curModel,
+                                level=AccessType.WRITE)(handlerFunc)
+
+    return handlerFunc
+
+
+# create a handler that returns the xml spec of a cli
+def genHandlerToGetCLIXmlSpec(restResource, xmlFile):
+    """Generates a handler that returns the XML spec of the CLI
+
+    Parameters
+    ----------
+    restResource : girder.api.rest.Resource
+        The object of a class derived from girder.api.rest.Resource to which
+        this handler will be attached
+    xmlFile : str
+        Full path to xml file of the CLI
+
+    Returns
+    -------
+    function
+        Returns a function that returns the xml spec of the CLI
+    """
+
+    xmlPath, xmlNameWExt = os.path.split(xmlFile)
+    xmlName = os.path.splitext(xmlNameWExt)[0]
+
+    # parse xml of cli
+    clixml = etree.parse(xmlFile)
+
+    # define the handler that returns the CLI's xml spec
+    @boundHandler(restResource)
+    @access.user
+    @describeRoute(
+        Description('Get XML spec of %s CLI' % xmlName)
+    )
+    def getXMLSpecHandler(self, *args, **kwargs):
+        return etree.tostring(clixml)
+
+    return getXMLSpecHandler
+
+
+def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
+    """Generates REST end points for slicer CLIs placed in subdirectories of a
+    given root directory and attaches them to a REST resource with the given
+    name.
+
+    Parameters
+    ----------
+    info
+    restResourceName : str
+        Name of the REST resource to which the end-points should be attached
+    cliRootDir : str
+        Full path of root directory containing the CLIs
+
+    Returns
+    -------
+
+    """
 
     # create REST resource
     restResource = type(restResourceName,
@@ -201,17 +400,16 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
                         {'resourceName': restResourceName})()
 
     # Add REST route for slicer CLIs located in subdirectories
-    rootDir = os.path.dirname(__file__)
     subdirList = [child
-                  for child in os.listdir(rootDir)
-                  if os.path.isdir(os.path.join(rootDir, child))]
+                  for child in os.listdir(cliRootDir)
+                  if os.path.isdir(os.path.join(cliRootDir, child))]
 
     print subdirList
 
-    for sdir in subdirList:
-      
-        # check if sdir contains a .xml file with the same name
-        xmlFile = os.path.join(rootDir, sdir, sdir + '.xml')
+    for subdir in subdirList:
+
+        # check if subdir contains a .xml file with the same name
+        xmlFile = os.path.join(cliRootDir, subdir, subdir + '.xml')
 
         if not os.path.isfile(xmlFile):
             continue
@@ -222,351 +420,39 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
         xmlName = os.path.splitext(xmlNameWExt)[0]
 
         # TODO: check if the xml adheres to slicer execution model xml schema
-        
-        # check if sdir contains a .py file with the same name
+
+        # check if subdir contains a .py file with the same name
         scriptFile = os.path.join(xmlPath, xmlName + '.py')
 
         if not os.path.isfile(scriptFile):
             continue
 
-        # parse xml of cli
-        clixml = etree.parse(xmlFile)
-
-        # read the script file containing the code into a string
-        with open(scriptFile) as f:
-            codeToRun = f.read()
-
-        # create a handler to run the CLI using girder_worker
-        def genCLIHandler():
-
-            # do stuff needed to create REST endpoint for cLI
-            handlerDesc = Description(clixml.findtext('title'))
-            taskSpec = {'name': xmlName,
-                        'mode': 'python',
-                        'script': codeToRun,
-                        'inputs': [],
-                        'outputs': []}
-
-            slicerToGirderTypeMap = {
-                'boolean': 'boolean',
-                'integer': 'integer',
-                'float': 'number',
-                'double': 'number',
-                'string': 'string',
-                'integer-vector': 'integer-list',
-                'float-vector': 'number-list',
-                'double-vector': 'number-list',
-                'string-vector': 'string-list',
-                'integer-enumeration': 'integer',
-                'float-enumeration': 'number',
-                'double-enumeration': 'number',
-                'string-enumeration': 'string',
-                'file': 'string',
-                'directory': 'string',
-                'image': 'string'}
-
-            inGirderSuffix = '_girderId'
-            outGirderSuffix = '_girderFolderId'
-            outGirderNameSuffix = '_name'
-
-            def getDefaultValFromString(strVal, typeVal):
-                if typeVal in ['integer', 'integer-enumeration']:
-                    return int(strVal)
-                elif typeVal in ['float', 'float-enumeration',
-                                 'double', 'double-enumeration']:
-                    return float(strVal)
-                elif typeVal == 'integer-vector':
-                    return [int(e.strip()) for e in strVal.split(',')]
-                elif typeVal in ['float-vector', 'double-vector']:
-                    return [float(e.strip()) for e in strVal.split(',')]
-                elif typeVal == 'string-vector':
-                    return [str(e.strip()) for e in strVal.split(',')]
-                else:
-                    return typeVal
-            
-            # identify xml elements of input, output, and optional params
-            ioXMLElements = []
-            paramXMLElements = []
-            inputXMLElements = []
-            outputXMLElements = []
-
-            for pgelt in clixml.getiterator('parameters'):
-                for pelt in pgelt:
-                    if pelt.tag in ['description', 'label']:
-                        continue
-
-                    if pelt.tag not in slicerToGirderTypeMap.keys():
-                        raise Exception(
-                            'Parameter type %s is currently not supported' %
-                            pelt.tag)
-
-                    channel = pelt.findtext('channel')
-                    if channel is not None:
-                        if channel.lower() not in ['input', 'output']:
-                            raise Exception('channel must be input or output.')
-                        ioXMLElements.append(pelt)
-                    else:
-                        if pelt.tag in ['image', 'file', 'directory']:
-                            raise Exception('optional parameters of type'
-                                            'image, file, or directory are '
-                                            'currently not supported')
-                        paramXMLElements.append(pelt)
-            
-            ioXMLElements = sorted(ioXMLElements,
-                                   key=lambda elt: elt.findtext('index'))
-
-            for elt in ioXMLElements:
-                if elt.findtext('channel').lower() == 'input':
-                    inputXMLElements.append(elt)
-                else:
-                    if elt.tag not in ['image', 'file', 'directory']:
-                        raise Exception(
-                            'outputs of type other than image, file, or '
-                            'directory are not currently supported.')
-                    outputXMLElements.append(elt)
-
-            # generate task spec for inputs
-            for elt in inputXMLElements:
-                curName = elt.findtext('name')
-                curType = elt.tag
-                curDesc = elt.findtext('description')
-
-                curTaskSpec = {}
-                curTaskSpec['id'] = curName
-                curTaskSpec['type'] = slicerToGirderTypeMap[curType]
-                curTaskSpec['format'] = slicerToGirderTypeMap[curType]
-
-                if curType in ['image', 'file', 'directory']:
-                    curTaskSpec['target'] = 'filepath'  # check
-                    handlerDesc.param(curName + inGirderSuffix,
-                                      'Girder ID of input %s - %s: %s'
-                                      % (curType, curName, curDesc))
-                else:
-                    handlerDesc.param(curName, curDesc, dataType='string')
-
-                taskSpec['inputs'].append(curTaskSpec)
-
-            # generate task spec for outputs
-            for elt in outputXMLElements:
-                curName = elt.findtext('name')
-                curType = elt.tag
-                curDesc = elt.findtext('description')
-
-                # task spec for the current output
-                curTaskSpec = {}
-                curTaskSpec['id'] = curName
-                curTaskSpec['type'] = slicerToGirderTypeMap[curType]
-                curTaskSpec['format'] = slicerToGirderTypeMap[curType]
-
-                if curType in ['image', 'file', 'directory']:
-                    curTaskSpec['target'] = 'filepath'  # check
-
-                taskSpec['outputs'].append(curTaskSpec)
-
-                # param for parent folder
-                handlerDesc.param(curName + outGirderSuffix,
-                                  'Girder ID of parent folder '
-                                  'for output %s - %s: %s'
-                                  % (curType, curName, curDesc))
-
-                # param for name by which to store the current output
-                handlerDesc.param(curName + outGirderNameSuffix,
-                                  'Name of output %s - %s: %s'
-                                  % (curType, curName, curDesc))
-
-            # generate task spec for optional parameters
-            for elt in paramXMLElements:
-                curName = elt.findtext('name')
-                curType = elt.tag
-                curDesc = elt.findtext('description')
-
-                curTaskSpec = {}
-                curTaskSpec['id'] = curName
-                curTaskSpec['type'] = slicerToGirderTypeMap[curType]
-                curTaskSpec['format'] = slicerToGirderTypeMap[curType]
-                
-                defaultValSpec = {}
-                defaultValSpec['format'] = curTaskSpec['format']
-                strDefaultVal = elt.findtext('default')
-                if strDefaultVal is not None:
-                    defaultVal = getDefaultValFromString(strDefaultVal,
-                                                         curType)
-                elif curType == 'boolean':
-                    defaultVal = False
-                else:
-                    raise Exception(
-                        'optional parameters of type %s must '
-                        'provide a default value in the xml' % curType)
-                defaultValSpec['data'] = defaultVal
-                curTaskSpec['default'] = defaultValSpec
-
-                handlerDesc.param(curName,
-                                  curDesc,
-                                  dataType='string',
-                                  required=False,
-                                  default=json.dumps(defaultVal))
-
-                taskSpec['inputs'].append(curTaskSpec)
-
-            pprint.pprint(taskSpec)
-            pprint.pprint(handlerDesc)
-
-            def cliHandler(self, **args):
-
-                user = self.getCurrentUser()
-                token = self.getCurrentToken()['_id']
-
-                # create job
-                jobModel = self.model('job', 'jobs')
-                jobTitle = '.'.join((restResourceName, xmlName))
-                job = jobModel.createJob(title=jobTitle,
-                                         type=jobTitle,
-                                         handler='worker_handler',
-                                         user=user)
-                kwargs = {
-                    'validate': False,
-                    'auto_convert': True,
-                    'cleanup': True}
-
-                # create job info
-                jobToken = jobModel.createJobToken(job)
-                kwargs['jobInfo'] = wutils.jobInfoSpec(job, jobToken)
-
-                # create task spec
-                kwargs['task'] = taskSpec
-
-                # create input bindings
-                kwargs['inputs'] = {}
-                for elt in inputXMLElements:
-                    curName = elt.findtext('name')
-                    curType = elt.tag
-
-                    curBindingSpec = {}
-                    if curType in ['image', 'file', 'directory']:
-                        # inputs of type image, file, or directory
-                        # should be located on girder
-                        if curType in ['image', 'file']:
-                            curGirderType = 'item'
-                        else:
-                            curGirderType = 'folder'
-                        curBindingSpec = wutils.girderInputSpec(
-                            args[curName],
-                            resourceType=curGirderType,
-                            dataType='string', dataFormat='string',
-                            token=token)
-                    else:
-                        # inputs that are not of type image, file, or directory
-                        # should be passed inline as string from json.dumps()
-                        curBindingSpec['mode'] = 'inline'
-                        curBindingSpec['type'] = slicerToGirderTypeMap[curType]
-                        curBindingSpec['format'] = 'json'
-                        curBindingSpec['data'] = args['params'][curName]
-
-                    kwargs['inputs'][curName] = curBindingSpec
-
-                # create optional parameter bindings
-                for elt in paramXMLElements:
-                    curName = elt.findtext('name')
-                    curType = elt.tag
-
-                    curBindingSpec = {}
-                    curBindingSpec['mode'] = 'inline'
-                    curBindingSpec['type'] = slicerToGirderTypeMap[curType]
-                    curBindingSpec['format'] = 'json'
-                    curBindingSpec['data'] = args['params'][curName]
-
-                    kwargs['inputs'][curName] = curBindingSpec
-
-                # create output boundings
-                kwargs['outputs'] = {}
-                for elt in outputXMLElements:
-                    curName = elt.findtext('name')
-
-                    curBindingSpec = wutils.girderOutputSpec(
-                        args[curName],
-                        token,
-                        name=args['params'][curName + outGirderNameSuffix],
-                        dataType='string', dataFormat='string')
-
-                    kwargs['outputs'][curName] = curBindingSpec
-
-                # schedule job
-                job['kwargs'] = kwargs
-                job = jobModel.save(job)
-                jobModel.scheduleJob(job)
-
-                pprint.pprint(kwargs)
-
-                # return result
-                return jobModel.filter(job, user)
-
-            handlerFunc = cliHandler
-
-            # loadmodel stuff for inputs in girder
-            for elt in inputXMLElements:
-                curName = elt.findtext('name')
-                curType = elt.tag
-
-                if curType in ['image', 'file']:
-                    curModel = 'item'
-                elif curType == 'directory':
-                    curModel = 'folder'
-                else:
-                    continue
-                curMap = {curName + inGirderSuffix: curName}
-
-                handlerFunc = loadmodel(map=curMap,
-                                        model=curModel,
-                                        level=AccessType.READ)(handlerFunc)
-
-            # loadmodel stuff for outputs to girder
-            for elt in outputXMLElements:
-                curName = elt.findtext('name')
-
-                curModel = 'folder'
-                curMap = {curName + outGirderSuffix: curName}
-
-                handlerFunc = loadmodel(map=curMap,
-                                        model=curModel,
-                                        level=AccessType.WRITE)(handlerFunc)
-
-            # add route description to the handler
-            handlerFunc = describeRoute(handlerDesc)(handlerFunc)
-
-            # add user access
-            handlerFunc = access.user(handlerFunc)
-
-            # bind handler
-            handlerFunc = boundHandler(restResource)(handlerFunc)
-
-            return handlerFunc
-
         # create a POST REST route that runs the CLI by invoking the handler
         try:
-            cliHandlerFunc = genCLIHandler()
+            cliRunHandler = genHandlerToRunCLI(restResource,
+                                                 xmlFile, scriptFile)
         except Exception as e:
             print "Failed to create REST endpoints for %s: %s" % (xmlName, e)
             continue
 
-        cliHandlerName = 'run_' + xmlName
-        setattr(restResource, cliHandlerName, cliHandlerFunc)
+        cliRunHandlerName = 'run_' + xmlName
+        setattr(restResource, cliRunHandlerName, cliRunHandler)
         restResource.route('POST',
                            (xmlName, 'run'),
-                           getattr(restResource, cliHandlerName))
+                           getattr(restResource, cliRunHandlerName))
 
         # create GET REST route that returns the xml of the CLI
-        @boundHandler(restResource)
-        @access.user
-        @describeRoute(
-            Description('Get XML spec of %s CLI' % xmlName)
-        )
-        def getXMLSpec(self, *args, **kwargs):
-            return etree.tostring(clixml)
+        try:
+            cliGetXMLSpecHandler = genHandlerToGetCLIXmlSpec(restResource,
+                                                             xmlFile)
+        except Exception as e:
+            print "Failed to create REST endpoints for %s: %s" % (xmlName, e)
+            continue
 
         cliGetXMLSpecHandlerName = 'get_xml_' + xmlName
         setattr(restResource,
                 cliGetXMLSpecHandlerName,
-                getXMLSpec)
+                cliGetXMLSpecHandler)
         restResource.route('GET',
                            (xmlName, 'xmlspec',),
                            getattr(restResource, cliGetXMLSpecHandlerName))
@@ -577,5 +463,6 @@ def genRESTRouteForSlicerCLI(info, restResourceName):
 
 def load(info):
     # info['apiRoot'].HistomicsTK = HistomicsTK()
-    genRESTRouteForSlicerCLI(info, 'HistomicsTK')
+    cliRootDir = os.path.dirname(__file__)
+    genRESTEndPointsForSlicerCLIsInSubDirs(info, 'HistomicsTK', cliRootDir)
 
