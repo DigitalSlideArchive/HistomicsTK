@@ -1,0 +1,16 @@
+extends ./panel.jade
+
+block content
+  form
+    each control in controls
+      .form-group.h-control-item(data-type='#{control.type}')
+        if control.type === 'range'
+          label(for='#{control.id}') #{control.title}
+          input.form-control(
+            name='#{control.title}'
+            type='text'
+            id='##{control.id}'
+            data-slider-min='#{control.min || 0}'
+            data-slider-max='#{control.max || 1}'
+            data-slider-step='#{control.step || 1}'
+            data-slider-value='#{control.value || 0}')

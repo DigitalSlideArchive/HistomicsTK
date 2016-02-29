@@ -17,6 +17,9 @@ module.exports = function (grunt) {
     grunt.config.merge({
         histomics: {
             root: '<%= pluginDir %>/HistomicsTK',
+            extjs: '<%= histomics.root %>/web_client/js/ext',
+            extcss: '<%= histomics.root %>/web_client/stylesheets/ext',
+            npm: '<%= histomics.root %>/node_modules',
             external: '<%= histomics.root %>/web_main',
             static: '<%= staticDir %>/built/plugins/HistomicsTK'
         },
@@ -38,6 +41,24 @@ module.exports = function (grunt) {
                     namespace: 'histomicstk.templates'
                 }
             },
+        },
+        copy: {
+            'bootstrap-slider': {
+                files: [{
+                    '<%= histomics.extjs %>/bootstrap-slider.js': '<%= histomics.npm %>/bootstrap-slider/dist/bootstrap-slider.js',
+                    '<%= histomics.extcss %>/bootstrap-slider.css': '<%= histomics.npm %>/bootstrap-slider/dist/css/bootstrap-slider.css'
+                }]
+            }
+        },
+        stylus: {
+            'plugin-HistomicsTK': {
+                options: {
+                    'include css': true
+                }
+            }
+        },
+        init: {
+            'copy:bootstrap-slider': {}
         },
         default: {
             'uglify:histomics-main': {}

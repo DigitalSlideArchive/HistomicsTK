@@ -1,9 +1,9 @@
 .h-panel-title
-  | #{title}
-  span
-    i(class='icon-up-open',
-      data-toggle='collapse',
-      data-target='##{id} > .h-panel-content')
-    i(class='icon-cancel h-remove-panel',
-      data-target='##{id}')
+  span.h-panel-title
+    block title
+      | #{title}
+  span.h-panel-controls
+    i.icon-up-open
+    i.icon-cancel.h-remove-panel(data-target='##{id}')
 .h-panel-content.collapse.in
+  block content

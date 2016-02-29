@@ -5,16 +5,16 @@ histomicstk.views.PanelGroup = girder.View.extend({
     initialize: function (settings) {
         this.panels = [
             {
-                title: 'Test panel #1',
-                type: 'h-test-panel',
+                title: 'Item browser',
+                type: 'BrowserPanel',
                 id: _.uniqueId('panel-')
             }, {
-                title: 'Test panel #2',
-                type: 'h-test-panel',
+                title: 'Controls',
+                type: 'ControlsPanel',
                 id: _.uniqueId('panel-')
             }, {
-                title: 'Test panel #3',
-                type: 'h-test-panel',
+                title: 'Generic panel',
+                type: 'Panel',
                 id: _.uniqueId('panel-')
             }
         ];
@@ -28,7 +28,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
             view.remove();
         });
         this.panels.forEach(_.bind(function (panel) {
-            this._panelViews[panel.id] = new histomicstk.views.Panel({
+            this._panelViews[panel.id] = new histomicstk.views[panel.type]({
                 parentView: this,
                 spec: panel,
                 el: this.$el.find('#' + panel.id)
