@@ -1,14 +1,18 @@
 histomicstk.views.Panel = girder.View.extend({
     events: {
-        'click .h-remove-panel': 'askRemove',
         'show.bs.collapse': 'expand',
         'hide.bs.collapse': 'collapse'
     },
-
-    askRemove: function () {
-        girder.confirm({
-            text: 'Are you sure you want to remove this panel?',
-            confirmCallback: _.bind(this.remove, this)
-        });
+    initialize: function (settings) {
+        this.spec = settings.spec;
+    },
+    render: function () {
+        this.$el.html(histomicstk.templates.panel(this.spec));
+    },
+    expand: function (e) {
+        $(e.currentTarget).find('.icon-down-open').attr('class', 'icon-up-open');
+    },
+    collapse: function (e) {
+        $(e.currentTarget).find('.icon-up-open').attr('class', 'icon-down-open');
     }
 });

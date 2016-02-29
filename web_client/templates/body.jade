@@ -3,15 +3,4 @@
   #h-vis-container
 
   //- contains "panels" for controlling the visualization
-  #h-panel-container
-    each panel in panels
-      .h-panel(class='#{panel.class}', id='#{panel.id}')
-        .h-panel-title
-          | #{panel.title}
-          span
-            i(class='icon-up-open',
-              data-toggle='collapse',
-              data-target='##{panel.id} > .h-panel-content')
-            i(class='icon-cancel h-remove-panel',
-              data-target='##{panel.id}')
-        .h-panel-content.collapse.in
+  #h-panel-group-container
