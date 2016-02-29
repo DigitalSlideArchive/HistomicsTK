@@ -13,6 +13,10 @@ histomicstk.views.PanelGroup = girder.View.extend({
                 type: 'ControlsPanel',
                 id: _.uniqueId('panel-')
             }, {
+                title: 'Jobs',
+                type: 'JobsPanel',
+                id: _.uniqueId('panel-')
+            }, {
                 title: 'Generic panel',
                 type: 'Panel',
                 id: _.uniqueId('panel-')
