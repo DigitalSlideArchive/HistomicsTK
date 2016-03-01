@@ -2,5 +2,5 @@
     "name": "HistomicsTK",
     "description": "A Python and REST API for Histopathology Image Analysis",
     "version": "0.1.0",
-    "dependencies": ["romanesco"]
+    "dependencies": ["worker"]
 }

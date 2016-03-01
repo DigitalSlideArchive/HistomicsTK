@@ -27,7 +27,7 @@ class ColorDeconvolution(Resource):
 
         job = jobModel.createJob(title='ColorDeconvolution',
                                  type='ColorDeconvolution',
-                                 handler='romanesco_handler',
+                                 handler='worker_handler',
                                  user=user)
         jobToken = jobModel.createJobToken(job)
         token = self.getCurrentToken()['_id']
