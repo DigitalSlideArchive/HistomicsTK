@@ -3,6 +3,7 @@
 # Add all python packages that depend on C libraries here
 #
 #########################################################
+nimfa==1.2.3
 numpy==1.10.4
 openslide-python==1.1.0
 scikit-image==0.11.3
