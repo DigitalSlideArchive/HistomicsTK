@@ -3,7 +3,6 @@ import skimage.io
 import histomicstk as htk
 
 # Define Romanesco globals for the style checker
-tempdir = _tempdir               # noqa
 inputImageFile = inputImageFile  # noqa
 stainColor_1 = stainColor_1      # noqa
 stainColor_2 = stainColor_2      # noqa
