@@ -55,7 +55,7 @@ autodoc_mock_imports = ['numpy',
                         'nimfa',
                         'matplotlib', 'matplotlib.pyplot',
                         'skimage',
-                        'sklearn.neighbors.kde',
+                        'sklearn.neighbors.kde', 'sklearn.cluster',
                         'openslide']
 
 # Add any paths that contain templates here, relative to this directory.
