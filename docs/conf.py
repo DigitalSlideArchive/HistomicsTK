@@ -50,7 +50,7 @@ extensions = ['sphinx.ext.autodoc',
 
 autodoc_mock_imports = ['numpy',
                         'scipy', 'scipy.stats', 'scipy.optimize',
-                        'scipy.ndimage.morphology',
+                        'scipy.ndimage.morphology', 'scipy.ndimage.filters',
                         'nimfa',
                         'matplotlib', 'matplotlib.pyplot',
                         'skimage',
