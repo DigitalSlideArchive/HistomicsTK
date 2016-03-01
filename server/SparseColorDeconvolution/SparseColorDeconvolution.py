@@ -18,7 +18,7 @@ print('>> Reading input image')
 
 print(inputImageFile)
 
-inputImage = skimage.io.imread(inputImageFile)[:,:,:3]
+inputImage = skimage.io.imread(inputImageFile)[:, :, :3]
 
 # Create stain matrix
 print('>> Creating stain matrix')

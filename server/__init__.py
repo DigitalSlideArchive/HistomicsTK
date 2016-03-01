@@ -1,9 +1,8 @@
 import os
 import json
 from lxml import etree
-import pprint
 
-from girder.api.rest import Resource, loadmodel, getApiUrl, boundHandler
+from girder.api.rest import Resource, loadmodel, boundHandler
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
@@ -430,7 +429,7 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
         # create a POST REST route that runs the CLI by invoking the handler
         try:
             cliRunHandler = genHandlerToRunCLI(restResource,
-                                                 xmlFile, scriptFile)
+                                               xmlFile, scriptFile)
         except Exception as e:
             print "Failed to create REST endpoints for %s: %s" % (xmlName, e)
             continue
@@ -462,7 +461,5 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
 
 
 def load(info):
-    # info['apiRoot'].HistomicsTK = HistomicsTK()
     cliRootDir = os.path.dirname(__file__)
     genRESTEndPointsForSlicerCLIsInSubDirs(info, 'HistomicsTK', cliRootDir)
-
