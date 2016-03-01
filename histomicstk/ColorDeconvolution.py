@@ -1,7 +1,8 @@
 import collections
 import numpy
-from . import ComplementStainMatrix
-from . import OpticalDensityFwd, OpticalDensityInv
+import ComplementStainMatrix as csm
+import OpticalDensityFwd as odf
+import OpticalDensityInv as odi
 
 
 def ColorDeconvolution(I, W):
@@ -46,15 +47,15 @@ def ColorDeconvolution(I, W):
     """
 
     # complement stain matrix if needed
-    if(numpy.linalg.norm(W[:, 2]) <= 1e-16):
-        Wc = ComplementStainMatrix(W)
+    if numpy.linalg.norm(W[:, 2]) <= 1e-16:
+        Wc = csm.ComplementStainMatrix(W)
     else:
         Wc = W.copy()
 
     # normalize stains to unit-norm
     for i in range(Wc.shape[1]):
         Norm = numpy.linalg.norm(Wc[:, i])
-        if(Norm >= 1e-16):
+        if Norm >= 1e-16:
             Wc[:, i] /= Norm
 
     # invert stain matrix
@@ -63,29 +64,29 @@ def ColorDeconvolution(I, W):
     # transform 3D input image to 2D RGB matrix format
     m = I.shape[0]
     n = I.shape[1]
-    if(I.shape[2] == 4):
+    if I.shape[2] == 4:
         I = I[:, :, (0, 1, 2)]
-    I = numpy.reshape(I, (m*n, 3))
+    I = numpy.reshape(I, (m * n, 3))
 
     # transform input RGB to optical density values and deconvolve,
     # tfm back to RGB
     I = I.astype(dtype=numpy.float32)
     I[I == 0] = 1e-16
-    ODfwd = OpticalDensityFwd(I)
+    ODfwd = odf.OpticalDensityFwd(I)
     ODdeconv = numpy.dot(ODfwd, numpy.transpose(Q))
-    ODinv = OpticalDensityInv(ODdeconv)
+    ODinv = odi.OpticalDensityInv(ODdeconv)
 
     # reshape output
     StainsFloat = numpy.reshape(ODinv, (m, n, 3))
-    
+
     # transform type
     Stains = numpy.copy(StainsFloat)
     Stains[Stains > 255] = 255
     Stains = Stains.astype(numpy.uint8)
-    
+
     # return
     Unmixed = collections.namedtuple('Unmixed',
                                      ['Stains', 'StainsFloat', 'Wc'])
     Output = Unmixed(Stains, StainsFloat, Wc)
-    
-    return (Output)
+
+    return Output
