@@ -3,7 +3,7 @@ import numpy as np
 import skimage.io
 import histomicstk as htk
 
-# Define Romanesco globals for the style checker
+# Define Girder Worker globals for the style checker
 inputImageFile = inputImageFile  # noqa
 _tempdir = _tempdir   # noqa
 
