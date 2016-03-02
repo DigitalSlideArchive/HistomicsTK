@@ -4,7 +4,8 @@ block content
   form
     each control in controls
       .form-group.h-control-item(data-type='#{control.type}')
-        label.control-label(for='#{control.id}') #{control.title}
+        if control.type !== 'boolean'
+          label.control-label(for='#{control.id}') #{control.title}
         if control.type === 'range'
           input.form-control(
             name='#{control.title}'
@@ -35,6 +36,16 @@ block content
             min='#{control.min !== undefined ? control.min : false}'
             max='#{control.max !== undefined ? control.max : false}'
             data-type='#{control.type}')
+        else if control.type === 'boolean'
+          .checkbox
+            label.control-label(for='#{control.id}')
+              input(
+                name='#{control.title}'
+                type='checkbox'
+                id='#{control.id}'
+                data-type='#{control.type}'
+                checked= !!control.value)
+              | #{control.title}
         else if control.type === 'string'
           input.form-control(
             name='#{control.title}'

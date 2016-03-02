@@ -38,6 +38,11 @@ histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
                 step: 0.01,
                 value: 4.5
             }, {
+                type: 'boolean',
+                title: 'enable an option',
+                id: 'h-control-bool',
+                value: true
+            }, {
                 type: 'string',
                 title: 'Enter a string vector',
                 id: 'h-control-string',
