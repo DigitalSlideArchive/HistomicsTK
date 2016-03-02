@@ -12,3 +12,4 @@ build
 .cache
 .idea
 node_modules/
+.*.swp
