@@ -339,7 +339,6 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     return handlerFunc
 
 
-# create a handler that returns the xml spec of a cli
 def genHandlerToGetCLIXmlSpec(restResource, xmlFile):
     """Generates a handler that returns the XML spec of the CLI
 
@@ -403,7 +402,7 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
                   for child in os.listdir(cliRootDir)
                   if os.path.isdir(os.path.join(cliRootDir, child))]
 
-    print subdirList
+    cliList = []
 
     for subdir in subdirList:
 
@@ -455,6 +454,21 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
         restResource.route('GET',
                            (xmlName, 'xmlspec',),
                            getattr(restResource, cliGetXMLSpecHandlerName))
+
+        cliList.append(xmlName)
+
+    # create GET route that returns a list of relative routes to all CLIs
+    @boundHandler(restResource)
+    @access.user
+    @describeRoute(
+        Description('Get list of relative routes to all CLIs')
+    )
+    def getCLIListHandler(self, *args, **kwargs):
+        return cliList
+
+    getCLIListHandlerName = 'get_cli_list'
+    setattr(restResource, getCLIListHandlerName, getCLIListHandler)
+    restResource.route('GET', (), getattr(restResource, getCLIListHandlerName))
 
     # expose the generated REST resource via apiRoot
     setattr(info['apiRoot'], restResourceName, restResource)
