@@ -379,6 +379,14 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
     given root directory and attaches them to a REST resource with the given
     name.
 
+    For each CLI, it creates:
+    * a GET Route (<apiURL>/`restResourceName`/<cliName>) that returns the
+      xml spec of the CLI
+    * a POST Route (<apiURL>/`restResourceName`/<cliName>/run) that runs the CLI
+
+    It also creates a GET route (<apiURL>/`restResourceName`) that returns a
+    list of relative routes to all CLIs attached to the generated REST resource
+
     Parameters
     ----------
     info
