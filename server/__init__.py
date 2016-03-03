@@ -413,58 +413,63 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
 
     cliList = []
 
-    for subdir in subdirList:
+    for parentdir, dirnames, filenames in os.walk(cliRootDir):
+        for subdir in dirnames:
+            curCLIRelPath = os.path.relpath(os.path.join(parentdir, subdir),
+                                            cliRootDir)
 
-        # check if subdir contains a .xml file with the same name
-        xmlFile = os.path.join(cliRootDir, subdir, subdir + '.xml')
+            # check if subdir contains a .xml file with the same name
+            xmlFile = os.path.join(parentdir, subdir, subdir + '.xml')
 
-        if not os.path.isfile(xmlFile):
-            continue
+            if not os.path.isfile(xmlFile):
+                continue
 
-        print xmlFile
+            xmlPath, xmlNameWExt = os.path.split(xmlFile)
+            xmlName = os.path.splitext(xmlNameWExt)[0]
 
-        xmlPath, xmlNameWExt = os.path.split(xmlFile)
-        xmlName = os.path.splitext(xmlNameWExt)[0]
+            # check if subdir contains a .py file with the same name
+            scriptFile = os.path.join(xmlPath, xmlName + '.py')
 
-        # TODO: check if the xml adheres to slicer execution model xml schema
+            if not os.path.isfile(scriptFile):
+                continue
 
-        # check if subdir contains a .py file with the same name
-        scriptFile = os.path.join(xmlPath, xmlName + '.py')
+            print curCLIRelPath
 
-        if not os.path.isfile(scriptFile):
-            continue
+            # TODO: check if xml adheres to slicer execution model xml schema
 
-        # create a POST REST route that runs the CLI by invoking the handler
-        try:
-            cliRunHandler = genHandlerToRunCLI(restResource,
-                                               xmlFile, scriptFile)
-        except Exception as e:
-            print "Failed to create REST endpoints for %s: %s" % (xmlName, e)
-            continue
+            # create a POST REST route that runs the CLI by invoking the handler
+            try:
+                cliRunHandler = genHandlerToRunCLI(restResource,
+                                                   xmlFile, scriptFile)
+            except Exception as e:
+                print "Failed to create REST endpoints for %s: %s" % (
+                    curCLIRelPath, e)
+                continue
 
-        cliRunHandlerName = 'run_' + xmlName
-        setattr(restResource, cliRunHandlerName, cliRunHandler)
-        restResource.route('POST',
-                           (xmlName, 'run'),
-                           getattr(restResource, cliRunHandlerName))
+            cliRunHandlerName = 'run_' + xmlName
+            setattr(restResource, cliRunHandlerName, cliRunHandler)
+            restResource.route('POST',
+                               (curCLIRelPath, 'run'),
+                               getattr(restResource, cliRunHandlerName))
 
-        # create GET REST route that returns the xml of the CLI
-        try:
-            cliGetXMLSpecHandler = genHandlerToGetCLIXmlSpec(restResource,
-                                                             xmlFile)
-        except Exception as e:
-            print "Failed to create REST endpoints for %s: %s" % (xmlName, e)
-            continue
+            # create GET REST route that returns the xml of the CLI
+            try:
+                cliGetXMLSpecHandler = genHandlerToGetCLIXmlSpec(restResource,
+                                                                 xmlFile)
+            except Exception as e:
+                print "Failed to create REST endpoints for %s: %s" % (
+                    curCLIRelPath, e)
+                continue
 
-        cliGetXMLSpecHandlerName = 'get_xml_' + xmlName
-        setattr(restResource,
-                cliGetXMLSpecHandlerName,
-                cliGetXMLSpecHandler)
-        restResource.route('GET',
-                           (xmlName, 'xmlspec',),
-                           getattr(restResource, cliGetXMLSpecHandlerName))
+            cliGetXMLSpecHandlerName = 'get_xml_' + xmlName
+            setattr(restResource,
+                    cliGetXMLSpecHandlerName,
+                    cliGetXMLSpecHandler)
+            restResource.route('GET',
+                               (curCLIRelPath, 'xmlspec',),
+                               getattr(restResource, cliGetXMLSpecHandlerName))
 
-        cliList.append(xmlName)
+            cliList.append(curCLIRelPath)
 
     # create GET route that returns a list of relative routes to all CLIs
     @boundHandler(restResource)
