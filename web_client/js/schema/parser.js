@@ -81,7 +81,6 @@ histomicstk.schema = {
             case 'string':
 
                 return this._parseScalarParam(type, param);
-                break;
 
             case 'integer-vector':
             case 'float-vector':
@@ -89,7 +88,6 @@ histomicstk.schema = {
             case 'string-vector':
 
                 return this._parseVecterParam(type, param);
-                break;
 
             // todo file, directory, image, etc.
         }
@@ -114,24 +112,34 @@ histomicstk.schema = {
             {
                 type: widgetTypeMap[type],
                 slicerType: type,
-                id: $param.find('> name').text() || $param.find('> longflag'),
-                title: $param.find('> label').text(),
-                description: $param.find('> description').text(),
-                value: $param.find('> default').text()
+                id: $param.find('name').text() || $param.find('longflag').text(),
+                title: $param.find('label').text(),
+                description: $param.find('description').text()
             },
-            this._parseConstraints($param.find('> constraints').get(0))
+            this._parseDefault(type, $param.find('default')),
+            this._parseConstraints($param.find('constraints').get(0))
         );
+    },
+
+    /**
+     * Parse a `default` tag returning an empty object when no default is given.
+     */
+    _parseDefault: function (type, value) {
+        if (value.length) {
+            return {value: value.text()};
+        }
+        return {};
     },
 
     /**
      * Parse a `contraints` tag.
      */
-    _parseContraints: function (contraints) {
+    _parseConstraints: function (constraints) {
         var $c = $(constraints);
         var spec = {};
-        var min = $c.find('> minimum').text();
-        var max = $c.find('> maximum').text();
-        var step = $c.find('> step').text();
+        var min = $c.find('minimum').text();
+        var max = $c.find('maximum').text();
+        var step = $c.find('step').text();
         if (min) {
             spec.min = min;
         }

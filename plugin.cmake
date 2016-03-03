@@ -32,3 +32,7 @@ add_python_style_test(
 )
 
 add_python_test(example PLUGIN HistomicsTK)
+
+add_web_client_test(
+    HistomicsTK_schema "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/parser.js"
+    ENABLEDPLUGINS "HistomicsTK")
