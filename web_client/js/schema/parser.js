@@ -27,17 +27,21 @@ histomicstk.schema = {
         // top level metadata
         gui = {
             title: $spec.find('executable > title').text(),
-            description: $spec.find('executable > description').text(),
-            version: $spec.find('executable > version').text(),
-            'documentation-url': $spec.find('executable > documentation-url'),
-            license: $spec.find('executable > license').text(),
-            contributor: $spec.find('executable > contributor').text(),
-            acknowledgements: $spec.find('executable > acknowledgements').text()
+            description: $spec.find('executable > description').text()
         };
 
-        // parameter panels
-        gui.panels = _.map($spec.find('executable > parameters'), _.bind(this._parsePanel, this));
+        // optional metadata
+        _.each(
+            ['version', 'documentation-url', 'license', 'contributor', 'acknowledgements'],
+            function (key) {
+                var val = $spec.find('executable > ' + key + ':first');
+                if (val.length) {
+                    gui[key] = val.text();
+                }
+            }
+        );
 
+        gui.panels = _.map($spec.find('executable > parameters'), _.bind(this._parsePanel, this));
         return gui;
     },
 
@@ -46,10 +50,9 @@ histomicstk.schema = {
      */
     _parsePanel: function (panel) {
         var $panel = $(panel);
-
         return {
-            advanced: $panel.attr('advanced') || false,
-            groups: _.map($panel.find('> label'), _.bind(this._parseGroup, this))
+            advanced: $panel.attr('advanced') === 'true',
+            groups: _.map($panel.find('parameters > label'), _.bind(this._parseGroup, this))
         };
     },
 
@@ -64,8 +67,8 @@ histomicstk.schema = {
 
         return {
             label: $label.text(),
-            description: $description,
-            parameters: _.map($description.next(), _.bind(this._parseParam, this))
+            description: $description.text(),
+            parameters: _.map($description.nextUntil('label'), _.bind(this._parseParam, this))
         };
     },
 
@@ -87,7 +90,7 @@ histomicstk.schema = {
             case 'double-vector':
             case 'string-vector':
 
-                return this._parseVecterParam(type, param);
+                // return this._parseVecterParam(type, param);
 
             // todo file, directory, image, etc.
         }
@@ -104,6 +107,7 @@ histomicstk.schema = {
         var widgetTypeMap = {
             integer: 'number',
             float: 'number',
+            double: 'number',
             boolean: 'boolean',
             string: 'string'
         };
