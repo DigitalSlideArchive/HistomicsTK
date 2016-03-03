@@ -1,5 +1,5 @@
 histomicstk.views.Body = girder.View.extend({
-    initialize: function (settings) {
+    initialize: function () {
         this.visView = new histomicstk.views.Visualization({
             parentView: this
         });
@@ -12,5 +12,5 @@ histomicstk.views.Body = girder.View.extend({
         this.$el.html(histomicstk.templates.body());
         this.visView.setElement(this.$('#h-vis-container')).render();
         this.panelGroupView.setElement(this.$('#h-panel-group-container')).render();
-    },
+    }
 });

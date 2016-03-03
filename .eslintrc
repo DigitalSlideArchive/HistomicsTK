@@ -1,0 +1,14 @@
+{
+  "extends": "eslint:recommended",
+  "root": true,
+  "globals": {
+    "girder": true,
+    "histomicstk": true,
+    "$": true,
+    "_": true,
+    "Backbone": true
+  },
+  "env": {
+    "browser": true
+  }
+}

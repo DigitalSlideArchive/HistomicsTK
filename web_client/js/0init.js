@@ -8,5 +8,5 @@ _.extend(histomicstk, {
     collections: {},
     views: {},
     router: new Backbone.Router(),
-    events: _.clone(Backbone.Events),
+    events: _.clone(Backbone.Events)
 });

@@ -92,7 +92,7 @@ histomicstk.schema = {
             // todo file, directory, image, etc.
         }
 
-        console.warn('Unhandled parameter type "' + type + '"');
+        console.warn('Unhandled parameter type "' + type + '"'); // eslint-disable-line no-console
         return {}; // todo: filter out invalid params
     },
 

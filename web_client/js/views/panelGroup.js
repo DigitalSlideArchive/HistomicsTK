@@ -1,8 +1,8 @@
 histomicstk.views.PanelGroup = girder.View.extend({
     events: {
-        'click .h-remove-panel': 'removePanel',
+        'click .h-remove-panel': 'removePanel'
     },
-    initialize: function (settings) {
+    initialize: function () {
         this.panels = [
             {
                 title: 'Item browser',
@@ -52,5 +52,5 @@ histomicstk.views.PanelGroup = girder.View.extend({
                 this.render();
             }, this)
         });
-    },
+    }
 });

@@ -1,0 +1,8 @@
+{
+  "globals": {
+    "girderTest": true
+  },
+  "env": {
+    "jasmine": true
+  }
+}
