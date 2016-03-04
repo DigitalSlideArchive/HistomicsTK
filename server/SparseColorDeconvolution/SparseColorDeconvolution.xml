@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Performs Adaptive Color Deconvolution</title>
+  <description>Uses sparse non-negative matrix factorization to adaptively deconvolve a given RGB image into intensity images representing distinct stains.</description>
+  <version>0.1.0</version>
+  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Deepak Roy Chittajallu (Kitware)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters.</description>
+    <image>
+      <name>inputImageFile</name>
+      <label>Input Image</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description>Input image to be deconvolved</description>
+    </image>
+    <double-vector>
+      <name>stainColor_1</name>
+      <label>Initial estimate of color of stain-1</label>
+      <description>RGB Color of stain-1</description>
+      <channel>input</channel>
+      <index>1</index>
+    </double-vector>
+    <double-vector>
+      <name>stainColor_2</name>
+      <label>Initial estimate of color of stain-2</label>
+      <description>RGB Color of stain-2</description>
+      <channel>input</channel>
+      <index>2</index>
+    </double-vector>
+    <image>
+      <name>outputStainImageFile_1</name>
+      <label>Output Image of Stain 1</label>
+      <description>Output Image of Stain 1</description>
+      <channel>output</channel>
+      <index>3</index>
+    </image>
+    <image>
+      <name>outputStainImageFile_2</name>
+      <label>Output Image of Stain 2</label>
+      <description>Output Image of Stain 2</description>
+      <channel>output</channel>
+      <index>4</index>
+    </image>
+    <image>
+      <name>outputStainImageFile_3</name>
+      <label>Output Image of Stain 3</label>
+      <description>Output Image of Stain 3</description>
+      <channel>output</channel>
+      <index>5</index>
+    </image>
+    <double>
+      <name>beta</name>
+      <label>A parameter to control sparsity of stain concentrations</label>
+      <description>RGB Color of stain-3</description>
+      <default>0.5</default>
+    </double>
+  </parameters>
+</executable>

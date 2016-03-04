@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Performs Color Deconvolution</title>
+  <description>Unmixes the stains of a composite image given the stain colors</description>
+  <version>0.1.0</version>
+  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Deepak Roy Chittajallu (Kitware)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters.</description>
+    <image>
+      <name>inputImageFile</name>
+      <label>Input Image</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description>Input image to be deconvolved</description>
+    </image>
+    <double-vector>
+      <name>stainColor_1</name>
+      <label>Color of stain-1</label>
+      <channel>input</channel>
+      <index>1</index>
+      <description>RGB Color of stain-1</description>
+    </double-vector>
+    <double-vector>
+      <name>stainColor_2</name>
+      <label>Color of stain-2</label>
+      <channel>input</channel>
+      <index>2</index>
+      <description>RGB Color of stain-2</description>
+    </double-vector>
+    <image>
+      <name>outputStainImageFile_1</name>
+      <label>Output Image of Stain 1</label>
+      <channel>output</channel>
+      <index>3</index>
+      <description>Output Image of Stain 1</description>
+    </image>
+    <image>
+      <name>outputStainImageFile_2</name>
+      <label>Output Image of Stain 2</label>
+      <channel>output</channel>
+      <index>4</index>
+      <description>Output Image of Stain 2</description>
+    </image>
+    <image>
+      <name>outputStainImageFile_3</name>
+      <label>Output Image of Stain 3</label>
+      <channel>output</channel>
+      <index>5</index>
+      <description>Output Image of Stain 3</description>
+    </image>
+    <double-vector>
+      <name>stainColor_3</name>
+      <label>Color of stain-3</label>
+      <description>RGB Color of stain-3</description>
+      <default>0,0,0</default>
+    </double-vector>
+  </parameters>
+</executable>
