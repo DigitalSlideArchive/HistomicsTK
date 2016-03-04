@@ -9,6 +9,25 @@ from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
 
 
+slicerToGirderTypeMap = {
+    'boolean': 'boolean',
+    'integer': 'integer',
+    'float': 'number',
+    'double': 'number',
+    'string': 'string',
+    'integer-vector': 'integer_list',
+    'float-vector': 'number_list',
+    'double-vector': 'number_list',
+    'string-vector': 'string_list',
+    'integer-enumeration': 'integer',
+    'float-enumeration': 'number',
+    'double-enumeration': 'number',
+    'string-enumeration': 'string',
+    'file': 'string',
+    'directory': 'string',
+    'image': 'string'}
+
+
 def getDefaultValFromString(strVal, typeVal):
     if typeVal in ['integer', 'integer-enumeration']:
         return int(strVal)
@@ -22,68 +41,10 @@ def getDefaultValFromString(strVal, typeVal):
     elif typeVal == 'string-vector':
         return [str(e.strip()) for e in strVal.split(',')]
     else:
-        return typeVal
+        return strVal
 
 
-def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
-    """Generates a handler to run CLI using girder_worker
-
-    Parameters
-    ----------
-    restResource : girder.api.rest.Resource
-        The object of a class derived from girder.api.rest.Resource to which
-        this handler will be attached
-    xmlFile : str
-        Full path to xml file of the CLI
-    scriptFile : str
-        Full path to .py file containing the code of the clu
-
-    Returns
-    -------
-    function
-        Returns a function that runs the CLI using girder_worker
-    """
-
-    xmlPath, xmlNameWExt = os.path.split(xmlFile)
-    xmlName = os.path.splitext(xmlNameWExt)[0]
-
-    # parse xml of cli
-    clixml = etree.parse(xmlFile)
-
-    # read the script file containing the code into a string
-    with open(scriptFile) as f:
-        codeToRun = f.read()
-
-    # do stuff needed to create REST endpoint for cLI
-    handlerDesc = Description(clixml.findtext('title'))
-    taskSpec = {'name': xmlName,
-                'mode': 'python',
-                'inputs': [],
-                'outputs': []}
-
-    slicerToGirderTypeMap = {
-        'boolean': 'boolean',
-        'integer': 'integer',
-        'float': 'number',
-        'double': 'number',
-        'string': 'string',
-        'integer-vector': 'integer_list',
-        'float-vector': 'number_list',
-        'double-vector': 'number_list',
-        'string-vector': 'string_list',
-        'integer-enumeration': 'integer',
-        'float-enumeration': 'number',
-        'double-enumeration': 'number',
-        'string-enumeration': 'string',
-        'file': 'string',
-        'directory': 'string',
-        'image': 'string'}
-
-    inputGirderSuffix = '_girderId'
-    outputGirderSuffix = '_folder_girderId'
-    outGirderNameSuffix = '_name'
-
-    # identify xml elements of input, output, and optional params
+def getInputParamOutputElementsFromXML(clixml):
     ioXMLElements = []
     paramXMLElements = []
     inputXMLElements = []
@@ -123,6 +84,53 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                     'outputs of type other than image, file, or '
                     'directory are not currently supported.')
             outputXMLElements.append(elt)
+
+    return inputXMLElements, paramXMLElements, outputXMLElements
+
+
+def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
+    """Generates a handler to run CLI using girder_worker
+
+    Parameters
+    ----------
+    restResource : girder.api.rest.Resource
+        The object of a class derived from girder.api.rest.Resource to which
+        this handler will be attached
+    xmlFile : str
+        Full path to xml file of the CLI
+    scriptFile : str
+        Full path to .py file containing the code of the clu
+
+    Returns
+    -------
+    function
+        Returns a function that runs the CLI using girder_worker
+    """
+
+    xmlPath, xmlNameWExt = os.path.split(xmlFile)
+    xmlName = os.path.splitext(xmlNameWExt)[0]
+
+    # parse xml of cli
+    clixml = etree.parse(xmlFile)
+
+    # read the script file containing the code into a string
+    with open(scriptFile) as f:
+        codeToRun = f.read()
+
+    # do stuff needed to create REST endpoint for cLI
+    handlerDesc = Description(clixml.findtext('title'))
+    taskSpec = {'name': xmlName,
+                'mode': 'python',
+                'inputs': [],
+                'outputs': []}
+
+    inputGirderSuffix = '_girderId'
+    outputGirderSuffix = '_folder_girderId'
+    outGirderNameSuffix = '_name'
+
+    # identify xml elements of input, output, and optional params
+    inputXMLElements, paramXMLElements, outputXMLElements =\
+        getInputParamOutputElementsFromXML(clixml)
 
     # generate task spec for inputs
     for elt in inputXMLElements:
