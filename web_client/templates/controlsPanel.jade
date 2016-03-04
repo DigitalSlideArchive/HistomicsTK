@@ -78,11 +78,10 @@ block content
                 value='#{control.value[i] || ""}'
                 data-type='#{control.type}'
                 data-vector-component='#{i}')
-        else if control.type === 'enumeration'
+        else if control.type === 'number-enumeration' || control.type === 'string-enumeration'
           select.form-control(
             id='#{control.id}'
             name='#{control.title}'
-            data-type='#{control.type}'
-            data-numeric=control.numeric)
+            data-type='#{control.type}')
               each v in control.values
                 option(selected=v === control.value) #{v}

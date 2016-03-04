@@ -73,85 +73,112 @@ histomicstk.schema = {
     },
 
     /**
-     * Parse an individual parameter element.
+     * Parse a parameter spec.
+     * @param {XML} param The parameter spec
+     * @returns {object}
      */
     _parseParam: function (param) {
-        var type = $(param).get(0).tagName;
-        switch (type) {
-            case 'integer':
-            case 'double':
-            case 'boolean':
-            case 'string':
+        var $param = $(param);
+        var type = this._widgetType(param);
+        var values = {};
 
-                return this._parseScalarParam(type, param);
-
-            case 'integer-vector':
-            case 'float-vector':
-            case 'double-vector':
-            case 'string-vector':
-
-                // return this._parseVecterParam(type, param);
-
-            // todo file, directory, image, etc.
+        if (!type) {
+            console.warn('Unhandled parameter type "' + param.tagName + '"'); // eslint-disable-line no-console
         }
 
-        console.warn('Unhandled parameter type "' + type + '"'); // eslint-disable-line no-console
-        return {}; // todo: filter out invalid params
-    },
-
-    /**
-     * Parse a scalar parameter type.
-     */
-    _parseScalarParam: function (type, param) {
-        var $param = $(param);
-        var widgetTypeMap = {
-            integer: 'number',
-            float: 'number',
-            double: 'number',
-            boolean: 'boolean',
-            string: 'string'
-        };
+        if (type === 'string-enumeration' || type === 'number-enumeration') {
+            values = {
+                values: _.map($param.find('element'), _.bind(function (el) {
+                    return this.convertValue(type, $(el).text());
+                }, this))
+            };
+        }
 
         return _.extend(
             {
-                type: widgetTypeMap[type],
-                slicerType: type,
+                type: type,
+                slicerType: param.tagName,
                 id: $param.find('name').text() || $param.find('longflag').text(),
                 title: $param.find('label').text(),
                 description: $param.find('description').text()
             },
+            values,
             this._parseDefault(type, $param.find('default')),
-            this._parseConstraints($param.find('constraints').get(0))
+            this._parseConstraints(type, $param.find('constraints').get(0))
         );
+    },
+
+    /**
+     * Mapping from slicer parameter specs to control widget types.
+     * @param {XML} param The full xml parameter spec
+     * @return {string} The widget type
+     */
+    _widgetType: function (param) {
+        var typeMap = {
+            integer: 'number',
+            float: 'number',
+            double: 'number',
+            boolean: 'boolean',
+            string: 'string',
+            'integer-vector': 'number-vector',
+            'float-vector': 'number-vector',
+            'double-vector': 'number-vector',
+            'string-vector': 'string-vector',
+            'integer-enumeration': 'number-enumeration',
+            'float-enumeration': 'number-enumeration',
+            'double-enumeration': 'number-enumeration',
+            'string-enumeration': 'string-enumeration'
+        };
+        return typeMap[param.tagName];
+    },
+
+    /**
+     * Convert from a string to the given value type.
+     * @param {string} type A widget type
+     * @param {string} value The value to be converted
+     * @returns {*} The converted value
+     */
+    convertValue: function (type, value) {
+        if (type === 'number' || type === 'number-enumeration') {
+            value = parseFloat(value);
+        } else if (type === 'boolean') {
+            value = (value.toLowerCase() === 'true');
+        } else if (type === 'number-vector') {
+            value = _.map(value.split(','), parseFloat);
+        } else if (type === 'string-vector') {
+            value = value.split(',');
+        }
+        return value;
     },
 
     /**
      * Parse a `default` tag returning an empty object when no default is given.
      */
     _parseDefault: function (type, value) {
+        var output = {};
         if (value.length) {
-            return {value: value.text()};
+            output = {value: this.convertValue(type, value.text())};
         }
-        return {};
+        return output;
     },
 
     /**
      * Parse a `contraints` tag.
      */
-    _parseConstraints: function (constraints) {
+    _parseConstraints: function (type, constraints) {
         var $c = $(constraints);
         var spec = {};
         var min = $c.find('minimum').text();
         var max = $c.find('maximum').text();
         var step = $c.find('step').text();
         if (min) {
-            spec.min = min;
+            spec.min = this.convertValue(type, min);
         }
         if (max) {
-            spec.max = max;
+            spec.max = this.convertValue(type, max);
         }
         if (step) {
-            spec.step = step;
+            spec.step = this.convertValue(type, step);
         }
         return spec;
     }

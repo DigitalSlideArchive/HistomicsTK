@@ -12,9 +12,42 @@ beforeEach(function () {
 });
 
 describe('XML Schema parser', function () {
+    describe('type conversion', function () {
+        it('number', function () {
+            var type = 'number';
+            expect(histomicstk.schema.convertValue(type, '1')).toBe(1);
+        });
+        it('string', function () {
+            var type = 'string';
+            expect(histomicstk.schema.convertValue(type, '1')).toBe('1');
+        });
+        it('boolean', function () {
+            var type = 'boolean';
+            expect(histomicstk.schema.convertValue(type, 'true')).toBe(true);
+            expect(histomicstk.schema.convertValue(type, 'false')).toBe(false);
+            expect(histomicstk.schema.convertValue(type, '')).toBe(false);
+        });
+        it('string-vector', function () {
+            var type = 'string-vector';
+            expect(histomicstk.schema.convertValue(type, '1,2,3')).toEqual(['1', '2', '3']);
+        });
+        it('number-vector', function () {
+            var type = 'number-vector';
+            expect(histomicstk.schema.convertValue(type, '1,2,3')).toEqual([1, 2, 3]);
+        });
+        it('number-enumeration', function () {
+            var type = 'number-enumeration';
+            expect(histomicstk.schema.convertValue(type, '1')).toEqual(1);
+        });
+        it('string-enumeration', function () {
+            var type = 'string-enumeration';
+            expect(histomicstk.schema.convertValue(type, '1')).toEqual('1');
+        });
+    });
+
     describe('constraints', function () {
         it('empty', function () {
-            expect(histomicstk.schema._parseConstraints())
+            expect(histomicstk.schema._parseConstraints('number'))
                 .toEqual({});
         });
         it('missing step', function () {
@@ -22,20 +55,23 @@ describe('XML Schema parser', function () {
                 '<constraints><minimum>1</minimum><maximum>3</maximum></constraints>'
             );
             expect(histomicstk.schema._parseConstraints(
+                'number',
                 xml
-            )).toEqual({min: '1', max: '3'});
+            )).toEqual({min: 1, max: 3});
         });
         it('full spec', function () {
             var xml = $.parseXML(
                 '<constraints><minimum>0</minimum><maximum>2</maximum><step>0.5</step></constraints>'
             );
             expect(histomicstk.schema._parseConstraints(
+                'number',
                 xml
-            )).toEqual({min: '0', max: '2', step: '0.5'});
+            )).toEqual({min: 0, max: 2, step: 0.5});
         });
     });
-    describe('scalar parameter', function () {
-        it('basic spec', function () {
+
+    describe('parameters', function () {
+        it('integer', function () {
             var xml = $.parseXML(
                 '<integer>' +
                 '<longflag>foo</longflag>' +
@@ -43,8 +79,8 @@ describe('XML Schema parser', function () {
                 '<description>An integer</description>' +
                 '</integer>'
             );
-            expect(histomicstk.schema._parseScalarParam(
-                'integer', xml
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('integer').get(0)
             )).toEqual({
                 type: 'number',
                 slicerType: 'integer',
@@ -53,7 +89,125 @@ describe('XML Schema parser', function () {
                 description: 'An integer'
             });
         });
+        it('string', function () {
+            var xml = $.parseXML(
+                '<string>' +
+                '<longflag>foo</longflag>' +
+                '<label>arg1</label>' +
+                '<description>A description</description>' +
+                '</string>'
+            );
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('string').get(0)
+            )).toEqual({
+                type: 'string',
+                slicerType: 'string',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A description'
+            });
+        });
+        it('boolean', function () {
+            var xml = $.parseXML(
+                '<boolean>' +
+                '<longflag>foo</longflag>' +
+                '<label>arg1</label>' +
+                '<description>A description</description>' +
+                '</boolean>'
+            );
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('boolean').get(0)
+            )).toEqual({
+                type: 'boolean',
+                slicerType: 'boolean',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A description'
+            });
+        });
+        it('double-vector', function () {
+            var xml = $.parseXML(
+                '<double-vector>' +
+                '<longflag>foo</longflag>' +
+                '<label>arg1</label>' +
+                '<description>A vector</description>' +
+                '<default>1.5,2.0,2.5</default>' +
+                '</double-vector>'
+            );
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('double-vector').get(0)
+            )).toEqual({
+                type: 'number-vector',
+                slicerType: 'double-vector',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A vector',
+                value: [1.5, 2.0, 2.5]
+            });
+        });
+        it('string-vector', function () {
+            var xml = $.parseXML(
+                '<string-vector>' +
+                '<longflag>foo</longflag>' +
+                '<label>arg1</label>' +
+                '<description>A description</description>' +
+                '</string-vector>'
+            );
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('string-vector').get(0)
+            )).toEqual({
+                type: 'string-vector',
+                slicerType: 'string-vector',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A description'
+            });
+        });
+        it('double-enumeration', function () {
+            var xml = $.parseXML(
+                '<double-enumeration>' +
+                '<longflag>foo</longflag>' +
+                '<label>arg1</label>' +
+                '<description>A choice</description>' +
+                '<default>1.5</default>' +
+                '<element>1.5</element>' +
+                '<element>2.5</element>' +
+                '<element>3.5</element>' +
+                '</double-enumeration>'
+            );
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('double-enumeration').get(0)
+            )).toEqual({
+                type: 'number-enumeration',
+                slicerType: 'double-enumeration',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A choice',
+                value: 1.5,
+                values: [1.5, 2.5, 3.5]
+            });
+        });
+        it('string-enumeration', function () {
+            var xml = $.parseXML(
+                '<string-enumeration>' +
+                '<longflag>foo</longflag>' +
+                '<label>arg1</label>' +
+                '<description>A description</description>' +
+                '</string-vector>'
+            );
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('string-enumeration').get(0)
+            )).toEqual({
+                type: 'string-enumeration',
+                slicerType: 'string-enumeration',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A description',
+                values: []
+            });
+        });
     });
+
     describe('default value', function () {
         it('no value provided', function () {
             expect(histomicstk.schema._parseDefault('integer', $())).toEqual({});
@@ -372,7 +526,7 @@ describe('XML Schema parser', function () {
         expect(
             histomicstk.schema.parse(spec)
         ).toEqual(
-            {
+			{
               'title': 'Execution Model Tour',
               'description': 'Shows one of each type of parameter.',
               'version': '1.0',
@@ -393,7 +547,7 @@ describe('XML Schema parser', function () {
                           'id': 'integerVariable',
                           'title': 'Integer Parameter',
                           'description': 'An integer without constraints',
-                          'value': '30'
+                          'value': 30
                         }
                       ]
                     },
@@ -407,10 +561,10 @@ describe('XML Schema parser', function () {
                           'id': 'doubleVariable',
                           'title': 'Double Parameter',
                           'description': 'An double with constraints',
-                          'value': '30',
-                          'min': '0',
-                          'max': '1.e3',
-                          'step': '0'
+                          'value': 30,
+                          'min': 0,
+                          'max': 1000,
+                          'step': 0
                         }
                       ]
                     }
@@ -423,8 +577,30 @@ describe('XML Schema parser', function () {
                       'label': 'Vector Parameters',
                       'description': 'Variations on vector parameters',
                       'parameters': [
-                        {},
-                        {}
+                        {
+                          'type': 'number-vector',
+                          'slicerType': 'float-vector',
+                          'id': 'floatVector',
+                          'title': 'Float Vector Parameter',
+                          'description': 'A vector of floats',
+                          'value': [
+                            1.3,
+                            2,
+                            -14
+                          ]
+                        },
+                        {
+                          'type': 'string-vector',
+                          'slicerType': 'string-vector',
+                          'id': 'stringVector',
+                          'title': 'String Vector Parameter',
+                          'description': 'A vector of strings',
+                          'value': [
+                            '"foo"',
+                            'bar',
+                            '"foobar"'
+                          ]
+                        }
                       ]
                     }
                   ]
@@ -436,7 +612,19 @@ describe('XML Schema parser', function () {
                       'label': 'Enumeration Parameters',
                       'description': 'Variations on enumeration parameters',
                       'parameters': [
-                        {}
+                        {
+                          'type': 'string-enumeration',
+                          'slicerType': 'string-enumeration',
+                          'id': 'stringChoice',
+                          'title': 'String Enumeration Parameter',
+                          'description': 'An enumeration of strings',
+                          'values': [
+                            'foo',
+                            '"foobar"',
+                            'foofoo'
+                          ],
+                          'value': 'foo'
+                        }
                       ]
                     }
                   ]

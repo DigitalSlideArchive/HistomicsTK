@@ -61,19 +61,17 @@ histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
                 id: 'h-control-string-vector',
                 value: ['value1', 'value2', 'value3']
             }, {
-                type: 'enumeration',
+                type: 'string-enumeration',
                 title: 'Select a string',
                 id: 'h-control-string-enum',
                 values: ['red', 'blue', 'yellow', 'green', 'orange', 'purple'],
-                value: 'red',
-                numeric: false
+                value: 'red'
             }, {
-                type: 'enumeration',
+                type: 'number-enumeration',
                 title: 'Select a number',
                 id: 'h-control-numeric-enum',
                 values: [10, 5, 40, 100],
-                value: 5,
-                numeric: true
+                value: 5
             }
         ];
         this.$el.html(histomicstk.templates.controlsPanel(this.spec));
