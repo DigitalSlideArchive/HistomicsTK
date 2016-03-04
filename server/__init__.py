@@ -88,6 +88,75 @@ def getInputParamOutputElementsFromXML(clixml):
     return inputXMLElements, paramXMLElements, outputXMLElements
 
 
+def createInputBindingSpecFromXML(xmlelt, hargs, token):
+    curName = xmlelt.findtext('name')
+    curType = xmlelt.tag
+
+    curBindingSpec = dict()
+    if curType in ['image', 'file', 'directory']:
+        # inputs of type image, file, or directory
+        # should be located on girder
+        if curType in ['image', 'file']:
+            curGirderType = 'item'
+        else:
+            curGirderType = 'folder'
+        curBindingSpec = wutils.girderInputSpec(
+            hargs[curName],
+            resourceType=curGirderType,
+            dataType='string', dataFormat='string',
+            token=token)
+    else:
+        # inputs that are not of type image, file, or directory
+        # should be passed inline as string from json.dumps()
+        curBindingSpec['mode'] = 'inline'
+        curBindingSpec['type'] = slicerToGirderTypeMap[curType]
+        curBindingSpec['format'] = 'json'
+        curBindingSpec['data'] = hargs['params'][curName]
+
+    return curBindingSpec
+
+
+def createParamBindingSpecFromXML(xmlelt, hargs):
+    curName = xmlelt.findtext('name')
+    curType = xmlelt.tag
+
+    curBindingSpec = dict()
+    curBindingSpec['mode'] = 'inline'
+    curBindingSpec['type'] = slicerToGirderTypeMap[curType]
+    curBindingSpec['format'] = 'json'
+    curBindingSpec['data'] = hargs['params'][curName]
+
+    return curBindingSpec
+
+
+def createOutputBindingSpecFromXML(xmlelt, hargs, token):
+    curName = xmlelt.findtext('name')
+    curType = xmlelt.tag
+
+    curBindingSpec = dict()
+    if curType in ['image', 'file', 'directory']:
+        # inputs of type image, file, or directory
+        # should be located on girder
+        if curType in ['image', 'file']:
+            curGirderType = 'item'
+        else:
+            curGirderType = 'folder'
+        curBindingSpec = wutils.girderInputSpec(
+            hargs[curName],
+            resourceType=curGirderType,
+            dataType='string', dataFormat='string',
+            token=token)
+    else:
+        # inputs that are not of type image, file, or directory
+        # should be passed inline as string from json.dumps()
+        curBindingSpec['mode'] = 'inline'
+        curBindingSpec['type'] = slicerToGirderTypeMap[curType]
+        curBindingSpec['format'] = 'json'
+        curBindingSpec['data'] = hargs['params'][curName]
+
+    return curBindingSpec
+
+
 def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     """Generates a handler to run CLI using girder_worker
 
@@ -247,42 +316,13 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         kwargs['inputs'] = dict()
         for elt in inputXMLElements:
             curName = elt.findtext('name')
-            curType = elt.tag
-
-            curBindingSpec = dict()
-            if curType in ['image', 'file', 'directory']:
-                # inputs of type image, file, or directory
-                # should be located on girder
-                if curType in ['image', 'file']:
-                    curGirderType = 'item'
-                else:
-                    curGirderType = 'folder'
-                curBindingSpec = wutils.girderInputSpec(
-                    args[curName],
-                    resourceType=curGirderType,
-                    dataType='string', dataFormat='string',
-                    token=token)
-            else:
-                # inputs that are not of type image, file, or directory
-                # should be passed inline as string from json.dumps()
-                curBindingSpec['mode'] = 'inline'
-                curBindingSpec['type'] = slicerToGirderTypeMap[curType]
-                curBindingSpec['format'] = 'json'
-                curBindingSpec['data'] = args['params'][curName]
-
+            curBindingSpec = createInputBindingSpecFromXML(elt, args, token)
             kwargs['inputs'][curName] = curBindingSpec
 
         # create optional parameter bindings
         for elt in paramXMLElements:
             curName = elt.findtext('name')
-            curType = elt.tag
-
-            curBindingSpec = dict()
-            curBindingSpec['mode'] = 'inline'
-            curBindingSpec['type'] = slicerToGirderTypeMap[curType]
-            curBindingSpec['format'] = 'json'
-            curBindingSpec['data'] = args['params'][curName]
-
+            curBindingSpec = createParamBindingSpecFromXML(elt, args)
             kwargs['inputs'][curName] = curBindingSpec
 
         # create output boundings
