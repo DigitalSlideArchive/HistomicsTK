@@ -407,10 +407,6 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
                         {'resourceName': restResourceName})()
 
     # Add REST route for slicer CLIs located in subdirectories
-    subdirList = [child
-                  for child in os.listdir(cliRootDir)
-                  if os.path.isdir(os.path.join(cliRootDir, child))]
-
     cliList = []
 
     for parentdir, dirnames, filenames in os.walk(cliRootDir):
