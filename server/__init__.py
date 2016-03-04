@@ -157,6 +157,63 @@ def createOutputBindingSpecFromXML(xmlelt, hargs, token):
     return curBindingSpec
 
 
+def createInputTaskSpecFromXML(xmlelt):
+    curName = xmlelt.findtext('name')
+    curType = xmlelt.tag
+
+    curTaskSpec = dict()
+    curTaskSpec['id'] = curName
+    curTaskSpec['type'] = slicerToGirderTypeMap[curType]
+    curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+
+    if curType in ['image', 'file', 'directory']:
+        curTaskSpec['target'] = 'filepath'  # check
+
+    return curTaskSpec
+
+
+def createParamTaskSpecFromXML(xmlelt):
+    curName = xmlelt.findtext('name')
+    curType = xmlelt.tag
+
+    curTaskSpec = dict()
+    curTaskSpec['id'] = curName
+    curTaskSpec['type'] = slicerToGirderTypeMap[curType]
+    curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+
+    defaultValSpec = dict()
+    defaultValSpec['format'] = curTaskSpec['format']
+    strDefaultVal = xmlelt.findtext('default')
+    if strDefaultVal is not None:
+        defaultVal = getDefaultValFromString(strDefaultVal, curType)
+    elif curType == 'boolean':
+        defaultVal = False
+    else:
+        raise Exception(
+            'optional parameters of type %s must '
+            'provide a default value in the xml' % curType)
+    defaultValSpec['data'] = defaultVal
+    curTaskSpec['default'] = defaultValSpec
+
+    return curTaskSpec
+
+
+def createOutputTaskSpecFromXML(xmlelt):
+    curName = xmlelt.findtext('name')
+    curType = xmlelt.tag
+
+    # task spec for the current output
+    curTaskSpec = dict()
+    curTaskSpec['id'] = curName
+    curTaskSpec['type'] = slicerToGirderTypeMap[curType]
+    curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+
+    if curType in ['image', 'file', 'directory']:
+        curTaskSpec['target'] = 'filepath'  # check
+
+    return curTaskSpec
+
+
 def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     """Generates a handler to run CLI using girder_worker
 
@@ -207,13 +264,10 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         curType = elt.tag
         curDesc = elt.findtext('description')
 
-        curTaskSpec = dict()
-        curTaskSpec['id'] = curName
-        curTaskSpec['type'] = slicerToGirderTypeMap[curType]
-        curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+        curTaskSpec = createInputTaskSpecFromXML(elt)
+        taskSpec['inputs'].append(curTaskSpec)
 
         if curType in ['image', 'file', 'directory']:
-            curTaskSpec['target'] = 'filepath'  # check
             handlerDesc.param(curName + inputGirderSuffix,
                               'Girder ID of input %s - %s: %s'
                               % (curType, curName, curDesc),
@@ -221,7 +275,6 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         else:
             handlerDesc.param(curName, curDesc, dataType='string')
 
-        taskSpec['inputs'].append(curTaskSpec)
 
     # generate task spec for optional parameters
     for elt in paramXMLElements:
@@ -229,32 +282,16 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         curType = elt.tag
         curDesc = elt.findtext('description')
 
-        curTaskSpec = dict()
-        curTaskSpec['id'] = curName
-        curTaskSpec['type'] = slicerToGirderTypeMap[curType]
-        curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+        curTaskSpec = createParamTaskSpecFromXML(elt)
+        taskSpec['inputs'].append(curTaskSpec)
 
-        defaultValSpec = dict()
-        defaultValSpec['format'] = curTaskSpec['format']
-        strDefaultVal = elt.findtext('default')
-        if strDefaultVal is not None:
-            defaultVal = getDefaultValFromString(strDefaultVal, curType)
-        elif curType == 'boolean':
-            defaultVal = False
-        else:
-            raise Exception(
-                'optional parameters of type %s must '
-                'provide a default value in the xml' % curType)
-        defaultValSpec['data'] = defaultVal
-        curTaskSpec['default'] = defaultValSpec
-
+        defaultVal = curTaskSpec['default']['data']
         handlerDesc.param(curName,
                           curDesc,
                           dataType='string',
                           required=False,
                           default=json.dumps(defaultVal))
 
-        taskSpec['inputs'].append(curTaskSpec)
 
     # generate task spec for outputs
     for elt in outputXMLElements:
@@ -262,15 +299,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         curType = elt.tag
         curDesc = elt.findtext('description')
 
-        # task spec for the current output
-        curTaskSpec = dict()
-        curTaskSpec['id'] = curName
-        curTaskSpec['type'] = slicerToGirderTypeMap[curType]
-        curTaskSpec['format'] = slicerToGirderTypeMap[curType]
-
-        if curType in ['image', 'file', 'directory']:
-            curTaskSpec['target'] = 'filepath'  # check
-
+        curTaskSpec = createOutputTaskSpecFromXML(elt)
         taskSpec['outputs'].append(curTaskSpec)
 
         # param for parent folder
