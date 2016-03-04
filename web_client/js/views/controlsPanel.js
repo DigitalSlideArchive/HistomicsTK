@@ -1,5 +1,8 @@
-/* global histomicstk */
 histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
+    events: {
+        'click .h-select-file-button': 'selectFile'
+    },
+
     render: function () {
         this.spec.controls = [
             {
@@ -72,10 +75,30 @@ histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
                 id: 'h-control-numeric-enum',
                 values: [10, 5, 40, 100],
                 value: 5
+            }, {
+                type: 'file',
+                title: 'input file #1',
+                id: 'h-control-file-selector'
             }
         ];
         this.$el.html(histomicstk.templates.controlsPanel(this.spec));
         this.$('.h-control-item[data-type="range"] input').slider();
         this.$('.h-control-item[data-type="color"] .input-group').colorpicker({});
+    },
+
+    selectFile: function (evt) {
+        var input = $(evt.target).closest('.input-group').find('input');
+        var id = input.attr('id');
+        var name = input.attr('name');
+        var modal = new histomicstk.views.FileSelectorWidget({
+            el: $('#g-dialog-container'),
+            id: id,
+            name: name,
+            parentView: this
+        });
+        modal.on('g:saved', _.bind(function (item) {
+            this.$('input#' + id).val(item.get('name'));
+            modal.$el.modal('hide');
+        }, this)).render();
     }
 });

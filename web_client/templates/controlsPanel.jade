@@ -85,3 +85,15 @@ block content
             data-type='#{control.type}')
               each v in control.values
                 option(selected=v === control.value) #{v}
+        else if control.type === 'file'
+          .input-group
+            input.form-control(
+              id='#{control.id}'
+              name='#{control.title}'
+              type="text"
+              placeholder="Choose a file..."
+              readonly
+              data-type='#{control.type}')
+            span.input-group-btn
+              button.btn.btn-default.h-select-file-button(type='button')
+                i.icon-folder-open
