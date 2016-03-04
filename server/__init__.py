@@ -275,7 +275,6 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         else:
             handlerDesc.param(curName, curDesc, dataType='string')
 
-
     # generate task spec for optional parameters
     for elt in paramXMLElements:
         curName = elt.findtext('name')
@@ -291,7 +290,6 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                           dataType='string',
                           required=False,
                           default=json.dumps(defaultVal))
-
 
     # generate task spec for outputs
     for elt in outputXMLElements:
