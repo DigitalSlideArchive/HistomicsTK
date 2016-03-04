@@ -9,6 +9,22 @@ from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
 
 
+def getDefaultValFromString(strVal, typeVal):
+    if typeVal in ['integer', 'integer-enumeration']:
+        return int(strVal)
+    elif typeVal in ['float', 'float-enumeration',
+                     'double', 'double-enumeration']:
+        return float(strVal)
+    elif typeVal == 'integer-vector':
+        return [int(e.strip()) for e in strVal.split(',')]
+    elif typeVal in ['float-vector', 'double-vector']:
+        return [float(e.strip()) for e in strVal.split(',')]
+    elif typeVal == 'string-vector':
+        return [str(e.strip()) for e in strVal.split(',')]
+    else:
+        return typeVal
+
+
 def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     """Generates a handler to run CLI using girder_worker
 
@@ -66,21 +82,6 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     inputGirderSuffix = '_girderId'
     outputGirderSuffix = '_folder_girderId'
     outGirderNameSuffix = '_name'
-
-    def getDefaultValFromString(strVal, typeVal):
-        if typeVal in ['integer', 'integer-enumeration']:
-            return int(strVal)
-        elif typeVal in ['float', 'float-enumeration',
-                         'double', 'double-enumeration']:
-            return float(strVal)
-        elif typeVal == 'integer-vector':
-            return [int(e.strip()) for e in strVal.split(',')]
-        elif typeVal in ['float-vector', 'double-vector']:
-            return [float(e.strip()) for e in strVal.split(',')]
-        elif typeVal == 'string-vector':
-            return [str(e.strip()) for e in strVal.split(',')]
-        else:
-            return typeVal
 
     # identify xml elements of input, output, and optional params
     ioXMLElements = []
@@ -160,8 +161,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         defaultValSpec['format'] = curTaskSpec['format']
         strDefaultVal = elt.findtext('default')
         if strDefaultVal is not None:
-            defaultVal = getDefaultValFromString(strDefaultVal,
-                                                 curType)
+            defaultVal = getDefaultValFromString(strDefaultVal, curType)
         elif curType == 'boolean':
             defaultVal = False
         else:
@@ -433,7 +433,7 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
 
             # TODO: check if xml adheres to slicer execution model xml schema
 
-            # create a POST REST route that runs the CLI by invoking the handler
+            # create a POST REST route that runs the CLI
             try:
                 cliRunHandler = genHandlerToRunCLI(restResource,
                                                    xmlFile, scriptFile)
