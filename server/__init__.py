@@ -565,7 +565,6 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
 
 
 def load(info):
-    apiRoot = info['apiRoot']
     girderRoot = info['serverRoot']
     histomicsRoot = Webroot(_template)
     histomicsRoot.updateHtmlVars(girderRoot.vars)

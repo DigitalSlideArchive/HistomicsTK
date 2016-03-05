@@ -1,0 +1,8 @@
+extends ./widget.jade
+
+block input
+  .form-inline(id='#{id}')
+    - value = value || []
+    each i in [0, 1, 2]
+      +input(title, type, id + '-' + i, value[i])(
+        data-vector-component=i)

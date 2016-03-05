@@ -1,0 +1,10 @@
+extends ./widget.jade
+
+block input
+  .input-group
+    +input(title, inputType, id, value)(
+      placeholder='Choose a file...'
+      readonly=true)
+    span.input-group-btn
+      button.btn.btn-default.h-select-file-button(type='button')
+        i.icon-folder-open

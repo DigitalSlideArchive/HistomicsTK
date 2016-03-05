@@ -6,7 +6,6 @@ histomicstk.views.Body = girder.View.extend({
         this.panelGroupView = new histomicstk.views.PanelGroup({
             parentView: this
         });
-        this.render();
     },
     render: function () {
         this.$el.html(histomicstk.templates.body());

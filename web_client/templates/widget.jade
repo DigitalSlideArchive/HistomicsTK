@@ -1,0 +1,16 @@
+mixin input(title, type, id, value)
+  - var inputType = 'text'
+  if type === 'number' || type === 'number-vector'
+    - inputType = 'number'
+  input.form-control(
+    name=title
+    type=inputType
+    id=id
+    value=value
+  )&attributes(attributes)
+
+.form-group.h-control-item(data-type=type data-control-id=id)
+  block label
+    label.control-label(for=id) #{title}
+  block input
+    +input(title, inputType, id, value)

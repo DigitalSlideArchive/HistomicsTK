@@ -3,8 +3,8 @@ histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
         'click .h-select-file-button': 'selectFile'
     },
 
-    render: function () {
-        this.spec.controls = [
+    initialize: function () {
+        var controls = [
             {
                 type: 'range',
                 title: 'Select an integer',
@@ -43,8 +43,13 @@ histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
             }, {
                 type: 'boolean',
                 title: 'enable an option',
-                id: 'h-control-bool',
+                id: 'h-control-bool1',
                 value: true
+            }, {
+                type: 'boolean',
+                title: 'disable an option',
+                id: 'h-control-bool2',
+                value: false
             }, {
                 type: 'string',
                 title: 'Enter a string vector',
@@ -81,9 +86,26 @@ histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
                 id: 'h-control-file-selector'
             }
         ];
-        this.$el.html(histomicstk.templates.controlsPanel(this.spec));
-        this.$('.h-control-item[data-type="range"] input').slider();
-        this.$('.h-control-item[data-type="color"] .input-group').colorpicker({});
+        this.collection = new histomicstk.collections.Widget(controls);
+
+        this.listenTo(this.collection, 'add', this.addOne);
+        this.listenTo(this.collection, 'reset', this.render);
+        this.listenTo(this.collection, 'remove', this.removeWidget);
+    },
+
+    render: function () {
+        this.$el.html(histomicstk.templates.controlsPanel());
+        this.addAll();
+    },
+
+    addOne: function (model) {
+        var view = new histomicstk.views.ControlWidget({model: model});
+        this.$('form').append(view.render().el);
+    },
+
+    addAll: function () {
+        this.$('form').children().remove();
+        this.collection.each(this.addOne, this);
     },
 
     selectFile: function (evt) {
@@ -100,5 +122,9 @@ histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
             this.$('input#' + id).val(item.get('name'));
             modal.$el.modal('hide');
         }, this)).render();
+    },
+
+    removeWidget: function (model) {
+        model.destroy();
     }
 });
