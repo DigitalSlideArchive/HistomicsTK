@@ -41,7 +41,7 @@ module.exports = function (grunt) {
                 options: {
                     namespace: 'histomicstk.templates'
                 }
-            },
+            }
         },
         copy: {
             'bootstrap-slider': {
@@ -60,6 +60,11 @@ module.exports = function (grunt) {
                     src: ['bootstrap-colorpicker/*.png'],
                     dest: '<%= histomics.extextra %>'
                 }]
+            },
+            'backbone.localStorage': {
+                files: [{
+                    '<%= histomics.extjs %>/backbone.localStorage.js': '<%= histomics.npm %>/backbone.localstorage/backbone.localStorage.js'
+                }]
             }
         },
         stylus: {
@@ -76,6 +81,11 @@ module.exports = function (grunt) {
                 ]
             },
             'copy:bootstrap-colorpicker': {
+                dependencies: [
+                    'shell:plugin-HistomicsTK'
+                ]
+            },
+            'copy:backbone.localStorage': {
                 dependencies: [
                     'shell:plugin-HistomicsTK'
                 ]

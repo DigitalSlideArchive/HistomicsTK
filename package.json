@@ -11,6 +11,7 @@
     "url": "https://github.com/DigitalSlideArchive/HistomicsTK.git"
   },
   "dependencies": {
+    "backbone.localstorage": "^1.1.16",
     "bootstrap-colorpicker": "^2.3.0",
     "bootstrap-slider": "^6.1.1"
   },
