@@ -119,7 +119,7 @@ histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
             parentView: this
         });
         modal.on('g:saved', _.bind(function (item) {
-            this.$('input#' + id).val(item.get('name'));
+            this.collection.get(id).set('value', item.get('name'));
             modal.$el.modal('hide');
         }, this)).render();
     },
