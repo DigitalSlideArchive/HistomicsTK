@@ -1,9 +1,10 @@
 histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
-    events: {
+    events: _.extend(histomicstk.views.Panel.prototype.events, {
         'click .h-select-file-button': 'selectFile'
-    },
+    }),
 
-    initialize: function () {
+    initialize: function (settings) {
+        /*
         var controls = [
             {
                 type: 'range',
@@ -87,14 +88,21 @@ histomicstk.views.ControlsPanel = histomicstk.views.Panel.extend({
             }
         ];
         this.collection = new histomicstk.collections.Widget(controls);
-
+        */
+        
+        this.title = settings.title || '';
+        this.advanced = settings.advanced || false;
         this.listenTo(this.collection, 'add', this.addOne);
         this.listenTo(this.collection, 'reset', this.render);
         this.listenTo(this.collection, 'remove', this.removeWidget);
     },
 
     render: function () {
-        this.$el.html(histomicstk.templates.controlsPanel());
+        this.$el.html(histomicstk.templates.controlsPanel({
+            title: this.title,
+            collapsed: this.advanced,
+            id: this.$el.attr('id')
+        }));
         this.addAll();
     },
 

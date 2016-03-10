@@ -3,25 +3,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
         'click .h-remove-panel': 'removePanel'
     },
     initialize: function () {
-        this.panels = [
-            {
-                title: 'Item browser',
-                type: 'BrowserPanel',
-                id: _.uniqueId('panel-')
-            }, {
-                title: 'Controls',
-                type: 'ControlsPanel',
-                id: _.uniqueId('panel-')
-            }, {
-                title: 'Jobs',
-                type: 'JobsPanel',
-                id: _.uniqueId('panel-')
-            }, {
-                title: 'Generic panel',
-                type: 'Panel',
-                id: _.uniqueId('panel-')
-            }
-        ];
+        this.panels = [];
         this._panelViews = {};
     },
     render: function () {
@@ -31,12 +13,15 @@ histomicstk.views.PanelGroup = girder.View.extend({
         _.each(this._panelViews, function (view) {
             view.remove();
         });
-        this.panels.forEach(_.bind(function (panel) {
-            this._panelViews[panel.id] = new histomicstk.views[panel.type]({
+        _.each(this.panels, _.bind(function (panel) {
+            this._panelViews[panel.id] = new histomicstk.views.ControlsPanel({
                 parentView: this,
-                spec: panel,
+                collection: new histomicstk.collections.Widget(panel.parameters),
+                title: panel.label,
+                advanced: panel.advanced,
                 el: this.$el.find('#' + panel.id)
             });
+
             this._panelViews[panel.id].render();
         }, this));
     },
@@ -52,5 +37,25 @@ histomicstk.views.PanelGroup = girder.View.extend({
                 this.render();
             }, this)
         });
+    },
+
+    /**
+     * Generate panels from a slicer XML schema.
+     * @param {string|XML} s The schema content
+     */
+    schema: function (s) {
+        var gui = histomicstk.schema.parse(s);
+
+        // Create a panel for each "group" in the schema, and copy
+        // the advanced property from the parent panel.
+        this.panels = _.chain(gui.panels).map(function (panel) {
+            return _.map(panel.groups, function (group) {
+                group.advanced = !!panel.advanced;
+                group.id = _.uniqueId('panel-');
+                return group;
+            });
+        }).flatten(true).value();
+
+        this.render();
     }
 });

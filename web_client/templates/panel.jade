@@ -3,7 +3,14 @@
     block title
       | #{title}
   span.h-panel-controls
-    i.icon-up-open
+    if collapsed
+      i.icon-down-open
+    else
+      i.icon-up-open
     i.icon-cancel.h-remove-panel(data-target='##{id}')
-.h-panel-content.collapse.in
+
+- var attrs = {}
+if !collapsed
+  - attrs.class = 'in'
+.h-panel-content.collapse&attributes(attrs)
   block content

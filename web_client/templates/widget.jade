@@ -13,4 +13,7 @@ mixin input(title, type, id, value)
   block label
     label.control-label(for=id) #{title}
   block input
-    +input(title, type, id, value)
+    +input(title, type, id, value)(
+      min=min,
+      max=max,
+      step=step)
