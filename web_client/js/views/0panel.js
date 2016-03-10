@@ -2,7 +2,7 @@ histomicstk.views.Panel = girder.View.extend({
     events: {
         'show.bs.collapse': 'expand',
         'hide.bs.collapse': 'collapse',
-        'click .h-panel-title': '_handleTitleClick'
+        'click .h-panel-title-container': '_handleTitleClick'
     },
     initialize: function (settings) {
         this.spec = settings.spec;

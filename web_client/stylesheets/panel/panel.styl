@@ -12,12 +12,17 @@
 .h-panel-content:empty
   margin 0
 
-.h-panel-title
+.h-panel-title-container
   font-weight bold
   text-align left
   background-color #f0f0f0
   cursor pointer
   padding 5px 5px
+
+  .h-panel-title
+    display inline-block
+    max-width 85%
+    overflow hidden
 
   .h-panel-controls
     float right
