@@ -21,6 +21,8 @@ histomicstk.App = girder.App.extend({
                 }
 
                 this.render();
+
+                Backbone.history.start({pushState: false});
             }, this));
 
         girder.events.on('g:loginUi', this.loginDialog, this);
