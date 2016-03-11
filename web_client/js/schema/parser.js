@@ -127,7 +127,9 @@ histomicstk.schema = {
             'integer-enumeration': 'number-enumeration',
             'float-enumeration': 'number-enumeration',
             'double-enumeration': 'number-enumeration',
-            'string-enumeration': 'string-enumeration'
+            'string-enumeration': 'string-enumeration',
+            image: 'file',
+            file: 'file'
         };
         return typeMap[param.tagName];
     },
