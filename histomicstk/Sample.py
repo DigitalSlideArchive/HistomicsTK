@@ -6,7 +6,7 @@ from ConvertSchedule import ConvertSchedule
 from SimpleMask import SimpleMask
 
 
-def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
+def Sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -26,6 +26,9 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
         Tile size used in sampling high-resolution image.
     MappingMag: double, optional
         low resolution magnification. Default value = 1.25.
+    Coverage: double, optional
+        minimum percent of tile covered by tissue to be included in sampling.
+        Ranges between [0,1). Default value = 0.1.
 
     Returns
     -------
@@ -85,7 +88,7 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
                 j * lrSchedule.Tout:(j + 1) * lrSchedule.Tout].astype(np.uint8)
             TissueCount = sum(lrTileMask.flatten().astype(
                 np.float)) / (lrSchedule.Tout**2)
-            if TissueCount > 0.5:
+            if TissueCount > Coverage:
                 # region from desired magnfication
                 Tile = Slide.read_region((int(Schedule.X[i, j]),
                                           int(Schedule.Y[i, j])),
@@ -118,6 +121,9 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25):
                 Pixels.append(Vectorized[Indices, :].transpose())
 
     # concatenate pixel values in list
-    Pixels = np.concatenate(Pixels, 1)
+    try:
+        Pixels = np.concatenate(Pixels, 1)
+    except ValueError:
+        print "Sampling could not identify any foreground regions."
 
     return Pixels
