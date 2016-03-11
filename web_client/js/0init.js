@@ -7,6 +7,11 @@ _.extend(histomicstk, {
     models: {},
     collections: {},
     views: {},
-    router: new Backbone.Router(),
+    router: new Backbone.Router({
+        routes: {
+            ':gui': 'gui',
+            '': 'main'
+        }
+    }),
     events: _.clone(Backbone.Events)
 });
