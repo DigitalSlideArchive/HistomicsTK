@@ -68,7 +68,7 @@ histomicstk.views.ControlWidget = Backbone.View.extend({
             console.warn('Invalid widget type "' + type + '"'); // eslint-disable-line no-console
             def = {};
         }
-        return histomicstk.templates[def.template] || _.noop;
+        return histomicstk.templates[def.template] || _.template('');
     },
 
     /**
