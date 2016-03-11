@@ -72,13 +72,6 @@ histomicstk.views.ControlWidget = Backbone.View.extend({
     },
 
     /**
-     * Set the current widget value.
-     */
-    value: function (value) {
-        this.model.set('value', value);
-    },
-
-    /**
      * Get the current value from an input element.
      */
     _input: function (evt) {

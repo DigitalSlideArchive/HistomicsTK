@@ -37,5 +37,17 @@ histomicstk.models.Widget = Backbone.Model.extend({
 
 histomicstk.collections.Widget = Backbone.Collection.extend({
     model: histomicstk.models.Widget,
-    localStorage: new Backbone.LocalStorage('HistomicsTK-Widget-Collection')
+    localStorage: new Backbone.LocalStorage('HistomicsTK-Widget-Collection'),
+
+    /**
+     * Get an object containing all of the current parameter values as
+     *   modelId -> value
+     */
+    values: function () {
+        var params = {};
+        this.each(function (m) {
+            params[m.id] = m.get('value');
+        });
+        return params;
+    }
 });
