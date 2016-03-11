@@ -6,7 +6,8 @@
     "histomicstk": true,
     "$": true,
     "_": true,
-    "Backbone": true
+    "Backbone": true,
+    "tinycolor": true
   },
   "env": {
     "browser": true

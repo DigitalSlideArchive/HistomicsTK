@@ -65,6 +65,11 @@ module.exports = function (grunt) {
                 files: [{
                     '<%= histomics.extjs %>/backbone.localStorage.js': '<%= histomics.npm %>/backbone.localstorage/backbone.localStorage.js'
                 }]
+            },
+            tinycolor:  {
+                files: [{
+                    '<%= histomics.extjs %>/tinycolor.js': '<%= histomics.npm %>/tinycolor2/tinycolor.js'
+                }]
             }
         },
         stylus: {
@@ -86,6 +91,11 @@ module.exports = function (grunt) {
                 ]
             },
             'copy:backbone.localStorage': {
+                dependencies: [
+                    'shell:plugin-HistomicsTK'
+                ]
+            },
+            'copy:tinycolor': {
                 dependencies: [
                     'shell:plugin-HistomicsTK'
                 ]
