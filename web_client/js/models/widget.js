@@ -132,6 +132,11 @@ histomicstk.models.Widget = Backbone.Model.extend({
     _validateVector: function (vector) {
         var val;
         vector = this.normalize(vector);
+
+        if (vector.length !== 3) {
+            return 'Expected three elements';
+        }
+
         val = _.chain(vector)
             .map(_.bind(this._validateValue, this))
             .reject(_.isUndefined)

@@ -40,6 +40,10 @@ histomicstk.views.PanelGroup = girder.View.extend({
      * Submit the current values to the server.
      */
     submit: function () {
+        if (!this.validate()) {
+            return;
+        }
+
         // todo
         console.log('Submit ' + this._schemaName); // eslint-disable-line no-console
         console.log(JSON.stringify(this.parameters(), null, 2)); // eslint-disable-line no-console
@@ -57,6 +61,38 @@ histomicstk.views.PanelGroup = girder.View.extend({
                 return _.extend(a, b);
             }, {})
             .value();
+    },
+
+    /**
+     * Return an array of all widget models optionally filtered by the given panel id
+     * and model filtering function.
+     */
+    models: function (panelId, modelFilter) {
+        modelFilter = modelFilter || function () { return true; };
+        return _.chain(this._panelViews)
+            .filter(function (v, i) {
+                return panelId === undefined || panelId === i
+            })
+            .pluck('collection')
+            .pluck('models')
+            .flatten()
+            .filter(modelFilter)
+            .value();
+    },
+
+    /**
+     * Return an array of all invalid models.  Optionally filter by the given panel id.
+     */
+    invalidModels: function (panelId) {
+        return this.models(panelId, function (m) { return !m.isValid(); });
+    },
+
+    /**
+     * Return true if all parameters are set and valid.  Also triggers 'invalid'
+     * events on each of the invalid models as a byproduct.
+     */
+    validate: function () {
+        return !this.invalidModels();
     },
 
     /**
