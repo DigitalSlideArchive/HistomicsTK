@@ -37,6 +37,10 @@ add_web_client_test(
     HistomicsTK_schema "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/parser.js"
     ENABLEDPLUGINS "HistomicsTK")
 
+add_web_client_test(
+    HistomicsTK_widget "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/widget.js"
+    ENABLEDPLUGINS "HistomicsTK")
+
 add_eslint_test(
   js_static_analysis_HistomicsTK "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/web_client"
   ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintrc"

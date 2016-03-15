@@ -18,6 +18,12 @@ histomicstk.models.Widget = Backbone.Model.extend({
         */
     },
 
+    /**
+     * Sets initial model attributes with normalization.
+     */
+    initialize: function (model) {
+        this.set(_.defaults(model || {}, this.defaults));
+    },
 
     /**
      * Override Model.set for widget specific bahavior.
@@ -32,6 +38,24 @@ histomicstk.models.Widget = Backbone.Model.extend({
             options = arguments[2];
             hash = {};
             hash[key] = value;
+        }
+
+        // normalize values
+        if (_.has(hash, 'value')) {
+            try {
+                hash.value = this.normalize(hash.value);
+            } catch (e) {
+                console.warn('Could not normalize value "' + hash.value + '"'); // eslint-disable-line no-console
+            }
+        }
+
+        // normalize enumerated values
+        if (_.has(hash, 'values')) {
+            try {
+                hash.values = _.map(hash.values, _.bind(this.normalize, this));
+            } catch (e) {
+                console.warn('Could not normalize value in "' + hash.values + '"'); // eslint-disable-line no-console
+            }
         }
 
         return Backbone.Model.prototype.set.call(this, hash, options);
@@ -60,18 +84,24 @@ histomicstk.models.Widget = Backbone.Model.extend({
     _normalizeValue: function (value) {
         if (this.isNumeric()) {
             value = parseFloat(value);
-        }
-        if (this.isBoolean()) {
+        } else if (this.isBoolean()) {
             value = !!value;
+        } else if (this.isColor()) {
+            if (_.isArray(value)) {
+                value = {r: value[0], g: value[1], b: value[2]};
+            }
+            value = tinycolor(value).toHexString();
+        } else {
+            value = value.toString();
         }
         return value;
     },
 
     /**
-     * Validate the model attributes.
+     * Validate the model attributes.  Returns undefined upon successful validation.
      */
     validate: function (model) {
-        if (!_.has(this.types, model.type)) {
+        if (!_.contains(this.types, model.type)) {
             return 'Invalid type, "' + model.type + '"';
         }
 
@@ -86,12 +116,14 @@ histomicstk.models.Widget = Backbone.Model.extend({
      * This method is called once for each component for vector types.
      */
     _validateValue: function (value) {
+        var out;
         if (this.isNumeric()) {
-            return this._validateNumeric(value);
-        } else if (this.isEnumeration() && !_.contains(this.get('values'), value.toString())) {
-            return 'Invalid valid choice'
+            out = this._validateNumeric(value);
         }
-        return null;
+        if (this.isEnumeration() && !_.contains(this.get('values'), this.normalize(value))) {
+            out = 'Invalid valid choice';
+        }
+        return out;
     },
 
     /**
@@ -100,14 +132,14 @@ histomicstk.models.Widget = Backbone.Model.extend({
     _validateVector: function (vector) {
         var val;
         vector = this.normalize(vector);
-        val = _.chain(3)
-            .times(_.bind(this._validateValue, this))
-            .reject(_.isNull)
+        val = _.chain(vector)
+            .map(_.bind(this._validateValue, this))
+            .reject(_.isUndefined)
             .value();
 
         if (val.length === 0) {
             // all components validated
-            val = null;
+            val = undefined;
         } else {
             // join errors in individual components
             val = val.join('\n');
@@ -118,21 +150,16 @@ histomicstk.models.Widget = Backbone.Model.extend({
     /**
      * Validate a numeric value.
      * @param {*} value The value to validate
-     * @returns {null|string} An error message or null
+     * @returns {undefined|string} An error message or null
      */
     _validateNumeric: function (value) {
-        if (!this.isNumeric()) {
-            return null;
-        }
         var min = parseFloat(this.get('min'));
         var max = parseFloat(this.get('max'));
         var step = parseFloat(this.get('step'));
         var mod, eps = 1e-6;
 
-        value = this.normalize(value);
-
         // make sure it is a valid number
-        if (!Number.isFinite(value)) {
+        if (!isFinite(value)) {
             return 'Invalid number "' + value + '"';
         }
 
@@ -148,7 +175,6 @@ histomicstk.models.Widget = Backbone.Model.extend({
         if (step > 0 && Math.abs(Math.round(mod) - mod) > eps) {
             return 'Value does not satisfy step "' + step + '"';
         }
-        return null;
     },
 
     /**
@@ -200,7 +226,30 @@ histomicstk.models.Widget = Backbone.Model.extend({
      */
     isFile: function () {
         return this.get('type') === 'file';
-    }
+    },
+
+    /**
+     * Get a normalized representation of the widget's value.
+     */
+    value: function () {
+        return this.get('value');
+    },
+
+    /**
+     * A list of valid widget types.
+     */
+    types: [
+        'color',
+        'range',
+        'number',
+        'boolean',
+        'string',
+        'number-vector',
+        'string-vector',
+        'number-enumeration',
+        'string-enumeration',
+        'file'
+    ]
 });
 
 histomicstk.collections.Widget = Backbone.Collection.extend({
