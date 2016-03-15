@@ -333,3 +333,50 @@ describe('widget collection', function () {
         });
     });
 });
+
+describe('control widget view', function () {
+    var $el, parentView = {
+        registerChildView: function () {}
+    };
+
+    function checkWidgetCommon(widget) {
+        var model = widget.model;
+        expect(widget.$('label[for="' + model.id + '"]').text())
+            .toBe(model.get('title'));
+        if (widget.model.isVector()) {
+            expect(widget.$('#' + model.id + ' input').length).toBe(3);
+            expect(widget.$('input#' + model.id + '-0').length).toBe(1);
+            expect(widget.$('input#' + model.id + '-1').length).toBe(1);
+            expect(widget.$('input#' + model.id + '-2').length).toBe(1);
+        } else {
+            expect(widget.$('input#' + model.id).length).toBe(1);
+        }
+    }
+
+    beforeEach(function () {
+        $el = $('<div/>').appendTo('body');
+    });
+    afterEach(function () {
+        $el.remove();
+    });
+
+    it('range', function () {
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'range',
+                title: 'Title',
+                id: 'range-widget',
+                value: 2,
+                min: 0,
+                max: 10,
+                step: 2
+            })
+        });
+
+        w.render();
+
+        checkWidgetCommon(w);
+    });
+});
