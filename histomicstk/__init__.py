@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .ChanVese import ChanVese
+from .cLoG import cLoG
 from .ColorConvolution import ColorConvolution
 from .ColorDeconvolution import ColorDeconvolution
 from .ComplementStainMatrix import ComplementStainMatrix
@@ -11,6 +12,7 @@ from .EmbedBounds import EmbedBounds
 from .EstimateVariance import EstimateVariance
 from .GaussianGradient import GaussianGradient
 from .GaussianVoting import GaussianVoting
+from .gLoG import gLoG
 from .LabelPerimeter import LabelPerimeter
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
@@ -27,6 +29,7 @@ from .TilingSchedule import TilingSchedule
 __version__ = '0.1.0'
 
 __all__ = ('ChanVese',
+           'cLoG',
            'ColorConvolution',
            'ColorDeconvolution',
            'ComplementStainMatrix',
@@ -37,6 +40,7 @@ __all__ = ('ChanVese',
            'EstimateVariance',
            'GaussianGradient',
            'GaussianVoting',
+           'gLoG',
            'LabelPerimeter',
            'OpticalDensityFwd',
            'OpticalDensityInv',
