@@ -1,4 +1,5 @@
 $(function () {
+
     histomicstk.events.trigger('g:appload.before');
     histomicstk.mainApp = new histomicstk.App({
         el: 'body',
@@ -8,3 +9,5 @@ $(function () {
 });
 
 girder.router.enabled(false);
+histomicstk.router.route(':gui', 'gui');
+histomicstk.router.route('', 'main');
