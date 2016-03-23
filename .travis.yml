@@ -27,6 +27,10 @@ before_install:
     - cp $PWD/plugin_tests/data/girder_worker.cfg $girder_worker_path/girder_worker/worker.local.cfg
     - pip install -U -r $girder_worker_path/requirements.txt -r $girder_worker_path/girder_worker/plugins/girder_io/requirements.txt
 
+    - # TODO: install large_image server side deps, for the moment, we only need it for geojs
+    - large_image_path=$girder_path/plugins/large_image
+    - git clone https://github.com/DigitalSlideArchive/large_image.git $large_image_path && git -C $large_image_path checkout 3a087579a77ee66fede87cf2b8f1f2faa7e91b4d
+
     - export MONGO_VERSION=2.6.11
     - export PY_COVG="ON"
     - CACHE=$HOME/.cache source $girder_path/scripts/install_mongo.sh

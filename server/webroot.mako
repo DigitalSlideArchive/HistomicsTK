@@ -17,6 +17,7 @@
     <div id="g-global-info-apiroot" class="hide">${apiRoot}</div>
     <div id="g-global-info-staticroot" class="hide">${staticRoot}</div>
     <script src="${staticRoot}/built/girder.ext.min.js"></script>
+    <script src="${staticRoot}/built/plugins/large_image/geo.min.js"></script>
     <script src="${staticRoot}/built/girder.app.min.js"></script>
     % for plugin in pluginJs:
     <script src="${staticRoot}/built/plugins/${plugin}/plugin.min.js"></script>
