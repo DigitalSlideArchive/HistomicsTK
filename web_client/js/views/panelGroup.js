@@ -145,9 +145,27 @@ histomicstk.views.PanelGroup = girder.View.extend({
     },
 
     /**
+     * Generate a "demo" application that shows off the different kinds of
+     * widgets available.
+     */
+    demo: function () {
+        $.ajax(girder.staticRoot + '/built/plugins/HistomicsTK/extra/widget_demo.json')
+            .then(_.bind(function (spec) {
+                this._gui = spec;
+                this._schemaName = 'demo';
+                this.reload();
+            }, this));
+        return this;
+    },
+
+    /**
      * Generate panels from a slicer XML schema stored on the server.
      */
     schema: function (s) {
+
+        if (s === 'demo') {
+            return this.demo();
+        }
 
         girder.restRequest({
             path: '/HistomicsTK/' + s + '/xmlspec'
