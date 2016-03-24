@@ -1,41 +1,4 @@
-
-// add external dependencies that should be covered by blanket
-_.each([
-    '/plugins/HistomicsTK/web_client/js/ext/backbone.localStorage.js',
-    '/plugins/HistomicsTK/web_client/js/ext/bootstrap-colorpicker.js',
-    '/plugins/HistomicsTK/web_client/js/ext/bootstrap-slider.js',
-    '/plugins/HistomicsTK/web_client/js/ext/tinycolor.js'
-], function (src) {
-    $('<script/>', {src: src}).appendTo('head');
-});
-
-    window.histomicstk = {};
-    girderTest.addCoveredScripts([
-        '/plugins/HistomicsTK/web_client/js/0init.js',
-        '/plugins/HistomicsTK/web_client/js/app.js',
-        '/plugins/HistomicsTK/web_client/js/models/widget.js',
-        '/plugins/HistomicsTK/web_client/js/schema/parser.js',
-        '/plugins/HistomicsTK/web_client/js/views/0panel.js',
-        '/plugins/HistomicsTK/web_client/js/views/body.js',
-        '/plugins/HistomicsTK/web_client/js/views/browserPanel.js',
-        '/plugins/HistomicsTK/web_client/js/views/controlsPanel.js',
-        '/plugins/HistomicsTK/web_client/js/views/controlWidget.js',
-        '/plugins/HistomicsTK/web_client/js/views/fileSelectorWidget.js',
-        '/plugins/HistomicsTK/web_client/js/views/guiSelectorWidget.js',
-        '/plugins/HistomicsTK/web_client/js/views/header.js',
-        '/plugins/HistomicsTK/web_client/js/views/jobsPanel.js',
-        '/plugins/HistomicsTK/web_client/js/views/panelGroup.js',
-        '/plugins/HistomicsTK/web_client/js/views/visualization.js',
-        '/clients/web/static/built/plugins/HistomicsTK/templates.js'
-    ]);
-
-beforeEach(function () {
-    waitsFor(function () {
-        // the templates are loaded last, so wait until blanket finishes instrumenting them before
-        // starting tests
-        return !!(histomicstk && histomicstk.templates && histomicstk.templates.visualization);
-    });
-});
+$('<script/>', {src: '/plugins/HistomicsTK/plugin_tests/client/setup.js'}).appendTo('head');
 
 describe('widget model', function () {
     // test different widget types
@@ -348,6 +311,8 @@ describe('control widget view', function () {
             expect(widget.$('input#' + model.id + '-0').length).toBe(1);
             expect(widget.$('input#' + model.id + '-1').length).toBe(1);
             expect(widget.$('input#' + model.id + '-2').length).toBe(1);
+        } else if (widget.model.isEnumeration()) {
+            expect(widget.$('select#' + model.id).length).toBe(1);
         } else {
             expect(widget.$('input#' + model.id).length).toBe(1);
         }
@@ -378,5 +343,258 @@ describe('control widget view', function () {
         w.render();
 
         checkWidgetCommon(w);
+        expect(w.$('input').val()).toBe('2');
+        w.$('input').val('4').trigger('change');
+        expect(w.model.value()).toBe(4);
+    });
+
+    it('number', function () {
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'number',
+                title: 'Title',
+                id: 'number-widget',
+                value: 2,
+                min: 0,
+                max: 10,
+                step: 2
+            })
+        });
+
+        w.render();
+
+        checkWidgetCommon(w);
+        expect(w.$('input').val()).toBe('2');
+        w.$('input').val('4').trigger('change');
+        expect(w.model.value()).toBe(4);
+
+        w.$('input').val('not a number').trigger('change');
+        expect(w.$('.form-group').hasClass('has-error')).toBe(true);
+
+        w.$('input').val('4').trigger('change');
+        expect(w.$('.form-group').hasClass('has-error')).toBe(false);
+    });
+
+    it('boolean', function () {
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'boolean',
+                title: 'Title',
+                id: 'boolean-widget'
+            })
+        });
+
+        w.render();
+
+        checkWidgetCommon(w);
+        expect(w.$('input').prop('checked')).toBe(false);
+
+        w.$('input').click();
+        expect(w.model.value()).toBe(true);
+    });
+
+    it('string', function () {
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'string',
+                title: 'Title',
+                id: 'string-widget',
+                value: 'default'
+            })
+        });
+
+        w.render();
+
+        checkWidgetCommon(w);
+        expect(w.$('input').val()).toBe('default');
+
+        w.$('input').val('new value').trigger('change');
+        expect(w.model.value()).toBe('new value');
+    });
+
+    it('color', function () {
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'color',
+                title: 'Title',
+                id: 'color-widget',
+                value: 'red'
+            })
+        });
+
+        w.render();
+
+        checkWidgetCommon(w);
+        expect(w.model.value()).toBe('#ff0000');
+
+        w.$('.input-group-addon').click();
+        expect($('.colorpicker-visible').length).toBe(1);
+
+        w.$('input').val('#ffffff').trigger('change');
+        expect(w.model.value()).toBe('#ffffff');
+    });
+
+    it('string-vector', function () {
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'string-vector',
+                title: 'Title',
+                id: 'string-vector-widget',
+                value: 'one,two,three'
+            })
+        });
+
+        w.render();
+        checkWidgetCommon(w);
+        expect(w.$('input[data-vector-component="0"]').val()).toBe('one');
+        expect(w.$('input[data-vector-component="1"]').val()).toBe('two');
+        expect(w.$('input[data-vector-component="2"]').val()).toBe('three');
+
+        w.$('input[data-vector-component="0"]').val('1').trigger('change');
+        expect(w.model.value()).toEqual(['1', 'two', 'three']);
+        w.$('input[data-vector-component="1"]').val('2').trigger('change');
+        expect(w.model.value()).toEqual(['1', '2', 'three']);
+        w.$('input[data-vector-component="2"]').val('3').trigger('change');
+        expect(w.model.value()).toEqual(['1', '2', '3']);
+    });
+
+    it('number-vector', function () {
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'number-vector',
+                title: 'Title',
+                id: 'number-vector-widget',
+                value: '1,2,3'
+            })
+        });
+
+        w.render();
+        checkWidgetCommon(w);
+        expect(w.$('input[data-vector-component="0"]').val()).toBe('1');
+        expect(w.$('input[data-vector-component="1"]').val()).toBe('2');
+        expect(w.$('input[data-vector-component="2"]').val()).toBe('3');
+
+        w.$('input[data-vector-component="0"]').val('10').trigger('change');
+        expect(w.model.value()).toEqual([10, 2, 3]);
+        w.$('input[data-vector-component="1"]').val('20').trigger('change');
+        expect(w.model.value()).toEqual([10, 20, 3]);
+        w.$('input[data-vector-component="2"]').val('30').trigger('change');
+        expect(w.model.value()).toEqual([10, 20, 30]);
+
+        w.$('input[data-vector-component="2"]').val('not a number').trigger('change');
+        expect(w.$('.form-group').hasClass('has-error')).toBe(true);
+
+        w.$('input[data-vector-component="2"]').val('1').trigger('change');
+        expect(w.$('.form-group').hasClass('has-error')).toBe(false);
+    });
+
+    it('string-enumeration', function () {
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'string-enumeration',
+                title: 'Title',
+                id: 'string-enumeration-widget',
+                value: 'value 2',
+                values: [
+                    'value 1',
+                    'value 2',
+                    'value 3'
+                ]
+            })
+        });
+
+        w.render();
+        checkWidgetCommon(w);
+        expect(w.$('select').val()).toBe('value 2');
+
+        w.$('select').val('value 3').trigger('change');
+        expect(w.model.value()).toBe('value 3');
+    });
+
+    it('number-enumeration', function () {
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'number-enumeration',
+                title: 'Title',
+                id: 'number-enumeration-widget',
+                value: 200,
+                values: [
+                    100,
+                    200,
+                    300
+                ]
+            })
+        });
+
+        w.render();
+        checkWidgetCommon(w);
+        expect(w.$('select').val()).toBe('200');
+
+        w.$('select').val('300').trigger('change');
+        expect(w.model.value()).toBe(300);
+    });
+
+    it('file', function () {
+        var arg, item = new Backbone.Model({id: 'model id'});
+        var hwidget = girder.views.HierarchyWidget;
+        girder.views.HierarchyWidget = Backbone.View.extend({
+            initialize: function (_arg) {
+                arg = _arg;
+            }
+        });
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'file',
+                title: 'Title',
+                id: 'file-widget'
+            })
+        });
+
+        w.render();
+        checkWidgetCommon(w);
+
+        w.$('.h-select-file-button').click();
+        expect(arg.parentModel).toBe(girder.currentUser);
+        arg.onItemClick(item);
+        expect(w.model.value()).toBe('model id');
+
+        girder.views.HierarchyWidget = hwidget;
+    });
+
+    it('invalid', function () {
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'invalid',
+                title: 'Title',
+                id: 'invalid-widget'
+            })
+        });
+        var _warn = console.warn;
+        var message;
+        console.warn = function (m) {message = m};
+
+        w.render();
+        expect(message).toBe('Invalid widget type "invalid"');
+        console.warn = _warn;
     });
 });

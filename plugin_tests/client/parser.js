@@ -193,7 +193,7 @@ describe('XML Schema parser', function () {
                 '<longflag>foo</longflag>' +
                 '<label>arg1</label>' +
                 '<description>A description</description>' +
-                '</string-vector>'
+                '</string-enumeration>'
             );
             expect(histomicstk.schema._parseParam(
                 $(xml).find('string-enumeration').get(0)
