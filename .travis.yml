@@ -41,8 +41,11 @@ before_install:
     - CACHE=$HOME/.cache CMAKE_VERSION=3.1.0 CMAKE_SHORT_VERSION=3.1 source $girder_path/scripts/install_cmake.sh
     - cmake --version
 
+    - mkdir -p $HOME/.cache/node_modules || true
+    - ln -sf $HOME/.cache/node_modules .
     - npm install -g npm
     - npm --version
+    - npm prune
 
     - wget -O $build_path/install_miniconda.sh https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
     - bash $build_path/install_miniconda.sh -b -p $build_path/miniconda
