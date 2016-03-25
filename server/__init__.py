@@ -8,8 +8,7 @@ from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
 
-
-slicerToGirderTypeMap = {
+_SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'boolean': 'boolean',
     'integer': 'integer',
     'float': 'number',
@@ -28,20 +27,20 @@ slicerToGirderTypeMap = {
     'image': 'string'}
 
 
-def getDefaultValFromString(strVal, typeVal):
-    if typeVal in ['integer', 'integer-enumeration']:
-        return int(strVal)
-    elif typeVal in ['float', 'float-enumeration',
-                     'double', 'double-enumeration']:
-        return float(strVal)
-    elif typeVal == 'integer-vector':
-        return [int(e.strip()) for e in strVal.split(',')]
-    elif typeVal in ['float-vector', 'double-vector']:
-        return [float(e.strip()) for e in strVal.split(',')]
-    elif typeVal == 'string-vector':
-        return [str(e.strip()) for e in strVal.split(',')]
+def get_value_from_string(str_val, str_type):
+    if str_type in ['integer', 'integer-enumeration']:
+        return int(str_val)
+    elif str_type in ['float', 'float-enumeration',
+                      'double', 'double-enumeration']:
+        return float(str_val)
+    elif str_type == 'integer-vector':
+        return [int(e.strip()) for e in str_val.split(',')]
+    elif str_type in ['float-vector', 'double-vector']:
+        return [float(e.strip()) for e in str_val.split(',')]
+    elif str_type == 'string-vector':
+        return [str(e.strip()) for e in str_val.split(',')]
     else:
-        return strVal
+        return str_val
 
 
 def getInputParamOutputElementsFromXML(clixml):
@@ -55,7 +54,7 @@ def getInputParamOutputElementsFromXML(clixml):
             if pelt.tag in ['description', 'label']:
                 continue
 
-            if pelt.tag not in slicerToGirderTypeMap.keys():
+            if pelt.tag not in _SLICER_TO_GIRDER_WORKER_TYPE_MAP.keys():
                 raise Exception(
                     'Parameter type %s is currently not supported' %
                     pelt.tag)
@@ -73,7 +72,7 @@ def getInputParamOutputElementsFromXML(clixml):
                 paramXMLElements.append(pelt)
 
     ioXMLElements = sorted(ioXMLElements,
-                           key=lambda elt: elt.findtext('index'))
+                           key=lambda elt: int(elt.findtext('index')))
 
     for elt in ioXMLElements:
         if elt.findtext('channel').lower() == 'input':
@@ -109,7 +108,7 @@ def createInputBindingSpecFromXML(xmlelt, hargs, token):
         # inputs that are not of type image, file, or directory
         # should be passed inline as string from json.dumps()
         curBindingSpec['mode'] = 'inline'
-        curBindingSpec['type'] = slicerToGirderTypeMap[curType]
+        curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
         curBindingSpec['format'] = 'json'
         curBindingSpec['data'] = hargs['params'][curName]
 
@@ -122,7 +121,7 @@ def createParamBindingSpecFromXML(xmlelt, hargs):
 
     curBindingSpec = dict()
     curBindingSpec['mode'] = 'inline'
-    curBindingSpec['type'] = slicerToGirderTypeMap[curType]
+    curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
     curBindingSpec['format'] = 'json'
     curBindingSpec['data'] = hargs['params'][curName]
 
@@ -150,7 +149,7 @@ def createOutputBindingSpecFromXML(xmlelt, hargs, token):
         # inputs that are not of type image, file, or directory
         # should be passed inline as string from json.dumps()
         curBindingSpec['mode'] = 'inline'
-        curBindingSpec['type'] = slicerToGirderTypeMap[curType]
+        curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
         curBindingSpec['format'] = 'json'
         curBindingSpec['data'] = hargs['params'][curName]
 
@@ -163,8 +162,8 @@ def createInputTaskSpecFromXML(xmlelt):
 
     curTaskSpec = dict()
     curTaskSpec['id'] = curName
-    curTaskSpec['type'] = slicerToGirderTypeMap[curType]
-    curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
 
     if curType in ['image', 'file', 'directory']:
         curTaskSpec['target'] = 'filepath'  # check
@@ -178,14 +177,14 @@ def createParamTaskSpecFromXML(xmlelt):
 
     curTaskSpec = dict()
     curTaskSpec['id'] = curName
-    curTaskSpec['type'] = slicerToGirderTypeMap[curType]
-    curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
 
     defaultValSpec = dict()
     defaultValSpec['format'] = curTaskSpec['format']
     strDefaultVal = xmlelt.findtext('default')
     if strDefaultVal is not None:
-        defaultVal = getDefaultValFromString(strDefaultVal, curType)
+        defaultVal = get_value_from_string(strDefaultVal, curType)
     elif curType == 'boolean':
         defaultVal = False
     else:
@@ -205,8 +204,8 @@ def createOutputTaskSpecFromXML(xmlelt):
     # task spec for the current output
     curTaskSpec = dict()
     curTaskSpec['id'] = curName
-    curTaskSpec['type'] = slicerToGirderTypeMap[curType]
-    curTaskSpec['format'] = slicerToGirderTypeMap[curType]
+    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
 
     if curType in ['image', 'file', 'directory']:
         curTaskSpec['target'] = 'filepath'  # check
@@ -275,22 +274,6 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         else:
             handlerDesc.param(curName, curDesc, dataType='string')
 
-    # generate task spec for optional parameters
-    for elt in paramXMLElements:
-        curName = elt.findtext('name')
-        curType = elt.tag
-        curDesc = elt.findtext('description')
-
-        curTaskSpec = createParamTaskSpecFromXML(elt)
-        taskSpec['inputs'].append(curTaskSpec)
-
-        defaultVal = curTaskSpec['default']['data']
-        handlerDesc.param(curName,
-                          curDesc,
-                          dataType='string',
-                          required=False,
-                          default=json.dumps(defaultVal))
-
     # generate task spec for outputs
     for elt in outputXMLElements:
         curName = elt.findtext('name')
@@ -312,6 +295,22 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                           'Name of output %s - %s: %s'
                           % (curType, curName, curDesc),
                           dataType='string')
+
+    # generate task spec for optional parameters
+    for elt in paramXMLElements:
+        curName = elt.findtext('name')
+        curType = elt.tag
+        curDesc = elt.findtext('description')
+
+        curTaskSpec = createParamTaskSpecFromXML(elt)
+        taskSpec['inputs'].append(curTaskSpec)
+
+        defaultVal = curTaskSpec['default']['data']
+        handlerDesc.param(curName,
+                          curDesc,
+                          dataType='string',
+                          required=False,
+                          default=json.dumps(defaultVal))
 
     # define CLI handler function
     @boundHandler(restResource)
@@ -434,8 +433,9 @@ def genHandlerToGetCLIXmlSpec(restResource, xmlFile):
     xmlPath, xmlNameWExt = os.path.split(xmlFile)
     xmlName = os.path.splitext(xmlNameWExt)[0]
 
-    # parse xml of cli
-    clixml = etree.parse(xmlFile)
+    # read xml into a string
+    with open(xmlFile) as f:
+        str_xml = f.read()
 
     # define the handler that returns the CLI's xml spec
     @boundHandler(restResource)
@@ -444,7 +444,7 @@ def genHandlerToGetCLIXmlSpec(restResource, xmlFile):
         Description('Get XML spec of %s CLI' % xmlName)
     )
     def getXMLSpecHandler(self, *args, **kwargs):
-        return etree.tostring(clixml)
+        return str_xml
 
     return getXMLSpecHandler
 
@@ -455,10 +455,10 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
     name.
 
     For each CLI, it creates:
-    * a GET Route (<apiURL>/`restResourceName`/<cliName>/xmlspec) that returns
-    the xml spec of the CLI
-    * a POST Route (<apiURL>/`restResourceName`/<cliName>/run) that runs
-    the CLI
+    * a GET Route (<apiURL>/`restResourceName`/<cliRelativePath>/xmlspec)
+    that returns the xml spec of the CLI
+    * a POST Route (<apiURL>/`restResourceName`/<cliRelativePath>/run)
+    that runs the CLI
 
     It also creates a GET route (<apiURL>/`restResourceName`) that returns a
     list of relative routes to all CLIs attached to the generated REST resource
@@ -504,7 +504,7 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
             if not os.path.isfile(scriptFile):
                 continue
 
-            print curCLIRelPath
+            # print curCLIRelPath
 
             # TODO: check if xml adheres to slicer execution model xml schema
 
