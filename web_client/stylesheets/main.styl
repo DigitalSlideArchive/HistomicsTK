@@ -4,15 +4,10 @@
 
 $headerHeight = 52px
 
-html
-    height: 100%
-
-body
-    height: 100%
-
-#g-app-body-container
-    height "calc(100% - %s)" % $headerHeight
+.h-app-body-container
     position relative
+    height "calc(100% - %s)" % $headerHeight
     top $headerHeight
+    overflow hidden
 
 @import '*/*.styl'

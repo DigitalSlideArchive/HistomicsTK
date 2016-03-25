@@ -1,5 +1,6 @@
 $(function () {
 
+    $('html,body').css('height', '100%');
     histomicstk.events.trigger('g:appload.before');
     histomicstk.mainApp = new histomicstk.App({
         el: 'body',
