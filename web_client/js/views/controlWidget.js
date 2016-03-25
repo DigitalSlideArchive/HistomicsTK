@@ -1,6 +1,6 @@
 histomicstk.views.ControlWidget = girder.View.extend({
     events: {
-        'change': '_input',
+        'change input,select': '_input',
         'changeColor': '_input',
         'click .h-select-file-button': '_selectFile'
     },
@@ -84,12 +84,13 @@ histomicstk.views.ControlWidget = girder.View.extend({
     },
 
     /**
-     * Get the current value from an input element.
+     * Get the current value from an input (or select) element.
      */
     _input: function (evt) {
-        var $el = $(evt.target);
-        var val = $el.val();
-        var old;
+        var $el, val, old;
+
+        $el = $(evt.target);
+        val = $el.val();
 
         if ($el.attr('type') === 'checkbox') {
             val = $el.get(0).checked;
@@ -104,6 +105,10 @@ histomicstk.views.ControlWidget = girder.View.extend({
         this.model.set('value', val, {norender: true});
     },
 
+    /**
+     * Get the value from a file selection modal and set the text in the widget's
+     * input element.
+     */
     _selectFile: function (evt) {
         var input = $(evt.target).closest('.input-group').find('input');
         var id = input.attr('id');

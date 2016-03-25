@@ -5,4 +5,7 @@ block input
     - value = value || []
     each i in [0, 1, 2]
       +input(title, type, id + '-' + i, value[i])(
-        data-vector-component=i)
+        data-vector-component=i,
+        min=min,
+        max=max,
+        step=step)

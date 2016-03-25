@@ -92,7 +92,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
      * events on each of the invalid models as a byproduct.
      */
     validate: function () {
-        return !this.invalidModels();
+        return !this.invalidModels().length;
     },
 
     /**

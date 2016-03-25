@@ -31,6 +31,7 @@
                     "title": "Enter an integer",
                     "id": "h-control-integer",
                     "min": 0,
+                    "step": 1,
                     "value": 800
                 }, {
                     "type": "number",
