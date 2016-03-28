@@ -300,7 +300,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                 continue
             curName = param.name
             curBindingSpec = wutils.girderOutputSpec(
-                args[param.name],
+                args[curName],
                 token,
                 name=args['params'][curName + outGirderNameSuffix],
                 dataType='string', dataFormat='string')
@@ -329,10 +329,9 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     for param in index_params:
         if param.channel != 'input':
             continue
-
-        if curType in ['image', 'file']:
+        if param.typ in ['image', 'file']:
             curModel = 'item'
-        elif curType == 'directory':
+        elif param.typ == 'directory':
             curModel = 'folder'
         else:
             continue
