@@ -1,12 +1,13 @@
 import os
 import json
-from lxml import etree
+from ctk_cli import CLIModule
 
 from girder.api.rest import Resource, loadmodel, boundHandler
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
+
 
 _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'boolean': 'boolean',
@@ -27,70 +28,51 @@ _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'image': 'string'}
 
 
-def get_value_from_string(str_val, str_type):
-    if str_type in ['integer', 'integer-enumeration']:
-        return int(str_val)
-    elif str_type in ['float', 'float-enumeration',
-                      'double', 'double-enumeration']:
-        return float(str_val)
-    elif str_type == 'integer-vector':
-        return [int(e.strip()) for e in str_val.split(',')]
-    elif str_type in ['float-vector', 'double-vector']:
-        return [float(e.strip()) for e in str_val.split(',')]
-    elif str_type == 'string-vector':
-        return [str(e.strip()) for e in str_val.split(',')]
-    else:
-        return str_val
+def getCLIParameters(clim):
 
+    # get parameters
+    index_params, opt_params, simple_out_params = clim.classifyParameters()
 
-def getInputParamOutputElementsFromXML(clixml):
-    ioXMLElements = []
-    paramXMLElements = []
-    inputXMLElements = []
-    outputXMLElements = []
+    # perform sanity checks
+    if len(simple_out_params) > 0:
+        raise Exception(
+            'outputs of type other than image, file, or '
+            'directory are not currently supported.')
 
-    for pgelt in clixml.getiterator('parameters'):
-        for pelt in pgelt:
-            if pelt.tag in ['description', 'label']:
-                continue
+    for param in index_params + opt_params:
+        if param.typ not in _SLICER_TO_GIRDER_WORKER_TYPE_MAP.keys():
+            raise Exception(
+                'Parameter type %s is currently not supported' % param.type
+            )
 
-            if pelt.tag not in _SLICER_TO_GIRDER_WORKER_TYPE_MAP.keys():
-                raise Exception(
-                    'Parameter type %s is currently not supported' %
-                    pelt.tag)
+    for param in opt_params:
+        if param.typ in ['image', 'file', 'directory']:
+            raise Exception('optional parameters of type'
+                            'image, file, or directory are '
+                            'currently not supported')
 
-            channel = pelt.findtext('channel')
-            if channel is not None:
-                if channel.lower() not in ['input', 'output']:
-                    raise Exception('channel must be input or output.')
-                ioXMLElements.append(pelt)
-            else:
-                if pelt.tag in ['image', 'file', 'directory']:
-                    raise Exception('optional parameters of type'
-                                    'image, file, or directory are '
-                                    'currently not supported')
-                paramXMLElements.append(pelt)
+    # sort indexed parameters in increasing order of index
+    index_params.sort(key=lambda p: p.index)
 
-    ioXMLElements = sorted(ioXMLElements,
-                           key=lambda elt: int(elt.findtext('index')))
-
-    for elt in ioXMLElements:
-        if elt.findtext('channel').lower() == 'input':
-            inputXMLElements.append(elt)
+    # sort opt parameters in increasing order of name for easy lookup
+    def get_flag(p):
+        if p.flag is not None:
+            return p.flag.strip('-')
+        elif p.longflag is not None:
+            return p.longflag.strip('-')
         else:
-            if elt.tag not in ['image', 'file', 'directory']:
-                raise Exception(
-                    'outputs of type other than image, file, or '
-                    'directory are not currently supported.')
-            outputXMLElements.append(elt)
+            return None
 
-    return inputXMLElements, paramXMLElements, outputXMLElements
+    opt_params.sort(key=lambda p: get_flag(p))
+
+    return index_params, opt_params
 
 
-def createInputBindingSpecFromXML(xmlelt, hargs, token):
-    curName = xmlelt.findtext('name')
-    curType = xmlelt.tag
+def createInputBindingSpec(param, hargs, token):
+    curName = param.name
+    curType = param.typ
 
+    print 'oooooo', param.name, param.typ
     curBindingSpec = dict()
     if curType in ['image', 'file', 'directory']:
         # inputs of type image, file, or directory
@@ -115,9 +97,9 @@ def createInputBindingSpecFromXML(xmlelt, hargs, token):
     return curBindingSpec
 
 
-def createParamBindingSpecFromXML(xmlelt, hargs):
-    curName = xmlelt.findtext('name')
-    curType = xmlelt.tag
+def createParamBindingSpec(param, hargs):
+    curName = param.name
+    curType = param.typ
 
     curBindingSpec = dict()
     curBindingSpec['mode'] = 'inline'
@@ -128,37 +110,9 @@ def createParamBindingSpecFromXML(xmlelt, hargs):
     return curBindingSpec
 
 
-def createOutputBindingSpecFromXML(xmlelt, hargs, token):
-    curName = xmlelt.findtext('name')
-    curType = xmlelt.tag
-
-    curBindingSpec = dict()
-    if curType in ['image', 'file', 'directory']:
-        # inputs of type image, file, or directory
-        # should be located on girder
-        if curType in ['image', 'file']:
-            curGirderType = 'item'
-        else:
-            curGirderType = 'folder'
-        curBindingSpec = wutils.girderInputSpec(
-            hargs[curName],
-            resourceType=curGirderType,
-            dataType='string', dataFormat='string',
-            token=token)
-    else:
-        # inputs that are not of type image, file, or directory
-        # should be passed inline as string from json.dumps()
-        curBindingSpec['mode'] = 'inline'
-        curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
-        curBindingSpec['format'] = 'json'
-        curBindingSpec['data'] = hargs['params'][curName]
-
-    return curBindingSpec
-
-
-def createInputTaskSpecFromXML(xmlelt):
-    curName = xmlelt.findtext('name')
-    curType = xmlelt.tag
+def createIndexedParamTaskSpec(param):
+    curName = param.name
+    curType = param.typ
 
     curTaskSpec = dict()
     curTaskSpec['id'] = curName
@@ -171,9 +125,9 @@ def createInputTaskSpecFromXML(xmlelt):
     return curTaskSpec
 
 
-def createParamTaskSpecFromXML(xmlelt):
-    curName = xmlelt.findtext('name')
-    curType = xmlelt.tag
+def createOptionalParamTaskSpec(param):
+    curName = param.name
+    curType = param.typ
 
     curTaskSpec = dict()
     curTaskSpec['id'] = curName
@@ -182,33 +136,16 @@ def createParamTaskSpecFromXML(xmlelt):
 
     defaultValSpec = dict()
     defaultValSpec['format'] = curTaskSpec['format']
-    strDefaultVal = xmlelt.findtext('default')
-    if strDefaultVal is not None:
-        defaultVal = get_value_from_string(strDefaultVal, curType)
-    elif curType == 'boolean':
-        defaultVal = False
+
+    if param.default is not None:
+        defaultValSpec['data'] = param.default
+    elif param.type == 'boolean':
+        defaultValSpec['data'] = False
     else:
         raise Exception(
             'optional parameters of type %s must '
             'provide a default value in the xml' % curType)
-    defaultValSpec['data'] = defaultVal
     curTaskSpec['default'] = defaultValSpec
-
-    return curTaskSpec
-
-
-def createOutputTaskSpecFromXML(xmlelt):
-    curName = xmlelt.findtext('name')
-    curType = xmlelt.tag
-
-    # task spec for the current output
-    curTaskSpec = dict()
-    curTaskSpec['id'] = curName
-    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
-    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
-
-    if curType in ['image', 'file', 'directory']:
-        curTaskSpec['target'] = 'filepath'  # check
 
     return curTaskSpec
 
@@ -235,15 +172,17 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     xmlPath, xmlNameWExt = os.path.split(xmlFile)
     xmlName = os.path.splitext(xmlNameWExt)[0]
 
-    # parse xml of cli
-    clixml = etree.parse(xmlFile)
+    print xmlName
+
+    # parse cli xml spec
+    clim = CLIModule(xmlFile)
 
     # read the script file containing the code into a string
     with open(scriptFile) as f:
         codeToRun = f.read()
 
     # do stuff needed to create REST endpoint for cLI
-    handlerDesc = Description(clixml.findtext('title'))
+    handlerDesc = Description(clim.title)
     taskSpec = {'name': xmlName,
                 'mode': 'python',
                 'inputs': [],
@@ -253,34 +192,41 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     outputGirderSuffix = '_folder_girderId'
     outGirderNameSuffix = '_name'
 
-    # identify xml elements of input, output, and optional params
-    inputXMLElements, paramXMLElements, outputXMLElements =\
-        getInputParamOutputElementsFromXML(clixml)
+    # get CLI parameters
+    index_params, opt_params = getCLIParameters(clim)
 
-    # generate task spec for inputs
-    for elt in inputXMLElements:
-        curName = elt.findtext('name')
-        curType = elt.tag
-        curDesc = elt.findtext('description')
+    # generate task spec for indexed input parameters
+    for param in index_params:
+        if param.channel != 'input':
+            continue
+        curName = param.name
+        curType = param.typ
+        curDesc = param.description
 
-        curTaskSpec = createInputTaskSpecFromXML(elt)
+        curTaskSpec = createIndexedParamTaskSpec(param)
         taskSpec['inputs'].append(curTaskSpec)
 
         if curType in ['image', 'file', 'directory']:
+            print 'huurraay', param.name, param.typ
             handlerDesc.param(curName + inputGirderSuffix,
                               'Girder ID of input %s - %s: %s'
                               % (curType, curName, curDesc),
-                              dataType='string')
+                              dataType='string',
+                              required=True)
         else:
-            handlerDesc.param(curName, curDesc, dataType='string')
+            handlerDesc.param(curName, curDesc,
+                              dataType='string',
+                              required=True)
 
-    # generate task spec for outputs
-    for elt in outputXMLElements:
-        curName = elt.findtext('name')
-        curType = elt.tag
-        curDesc = elt.findtext('description')
+    # generate task spec for indexed output parameters
+    for param in index_params:
+        if param.channel != 'output':
+            continue
+        curName = param.name
+        curType = param.typ
+        curDesc = param.description
 
-        curTaskSpec = createOutputTaskSpecFromXML(elt)
+        curTaskSpec = createIndexedParamTaskSpec(param)
         taskSpec['outputs'].append(curTaskSpec)
 
         # param for parent folder
@@ -288,29 +234,29 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                           'Girder ID of parent folder '
                           'for output %s - %s: %s'
                           % (curType, curName, curDesc),
-                          dataType='string')
+                          dataType='string',
+                          required=True)
 
         # param for name by which to store the current output
         handlerDesc.param(curName + outGirderNameSuffix,
                           'Name of output %s - %s: %s'
                           % (curType, curName, curDesc),
-                          dataType='string')
+                          dataType='string',
+                          required=True)
 
     # generate task spec for optional parameters
-    for elt in paramXMLElements:
-        curName = elt.findtext('name')
-        curType = elt.tag
-        curDesc = elt.findtext('description')
+    for param in opt_params:
+        curName = param.name
+        curDesc = param.description
 
-        curTaskSpec = createParamTaskSpecFromXML(elt)
+        curTaskSpec = createOptionalParamTaskSpec(param)
         taskSpec['inputs'].append(curTaskSpec)
 
         defaultVal = curTaskSpec['default']['data']
-        handlerDesc.param(curName,
-                          curDesc,
+        handlerDesc.param(curName, curDesc,
                           dataType='string',
-                          required=False,
-                          default=json.dumps(defaultVal))
+                          default=json.dumps(defaultVal),
+                          required=False)
 
     # define CLI handler function
     @boundHandler(restResource)
@@ -338,26 +284,28 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         jobToken = jobModel.createJobToken(job)
         kwargs['jobInfo'] = wutils.jobInfoSpec(job, jobToken)
 
-        # create input bindings
+        # create indexed input parameter bindings
         kwargs['inputs'] = dict()
-        for elt in inputXMLElements:
-            curName = elt.findtext('name')
-            curBindingSpec = createInputBindingSpecFromXML(elt, args, token)
-            kwargs['inputs'][curName] = curBindingSpec
+        for param in index_params:
+            if param.channel != 'input':
+                continue
+            print param.name, param.typ
+            curBindingSpec = createInputBindingSpec(param, args, token)
+            kwargs['inputs'][param.name] = curBindingSpec
 
         # create optional parameter bindings
-        for elt in paramXMLElements:
-            curName = elt.findtext('name')
-            curBindingSpec = createParamBindingSpecFromXML(elt, args)
-            kwargs['inputs'][curName] = curBindingSpec
+        for param in opt_params:
+            curBindingSpec = createParamBindingSpec(param, args)
+            kwargs['inputs'][param.name] = curBindingSpec
 
-        # create output boundings
+        # create indexed output boundings
         kwargs['outputs'] = dict()
-        for elt in outputXMLElements:
-            curName = elt.findtext('name')
-
+        for param in index_params:
+            if param.channel != 'output':
+                continue
+            curName = param.name
             curBindingSpec = wutils.girderOutputSpec(
-                args[curName],
+                args[param.name],
                 token,
                 name=args['params'][curName + outGirderNameSuffix],
                 dataType='string', dataFormat='string')
@@ -372,7 +320,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         taskSpec['script'] = '\n'.join(("import os", taskSpec['script']))
         kwargs['task'] = taskSpec
 
-        # schedule job
+       # schedule job
         job['kwargs'] = kwargs
         job = jobModel.save(job)
         jobModel.scheduleJob(job)
@@ -383,9 +331,9 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     handlerFunc = cliHandler
 
     # loadmodel stuff for inputs in girder
-    for elt in inputXMLElements:
-        curName = elt.findtext('name')
-        curType = elt.tag
+    for param in index_params:
+        if param.channel != 'input':
+            continue
 
         if curType in ['image', 'file']:
             curModel = 'item'
@@ -393,25 +341,25 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
             curModel = 'folder'
         else:
             continue
-        curMap = {curName + inputGirderSuffix: curName}
+        curMap = {param.name + inputGirderSuffix: param.name}
 
         handlerFunc = loadmodel(map=curMap,
                                 model=curModel,
                                 level=AccessType.READ)(handlerFunc)
 
-    # loadmodel stuff for outputs to girder
-    for elt in outputXMLElements:
-        curName = elt.findtext('name')
 
+    # loadmodel stuff for outputs to girder
+    for param in index_params:
+        if param.channel != 'output':
+            continue
         curModel = 'folder'
-        curMap = {curName + outputGirderSuffix: curName}
+        curMap = {param.name + outputGirderSuffix: param.name}
 
         handlerFunc = loadmodel(map=curMap,
                                 model=curModel,
                                 level=AccessType.WRITE)(handlerFunc)
 
     return handlerFunc
-
 
 def genHandlerToGetCLIXmlSpec(restResource, xmlFile):
     """Generates a handler that returns the XML spec of the CLI
