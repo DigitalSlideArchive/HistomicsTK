@@ -57,6 +57,7 @@
       <name>stainColor_3</name>
       <label>Color of stain-3</label>
       <description>RGB Color of stain-3</description>
+      <longflag>stainColor_3</longflag>
       <default>0,0,0</default>
     </double-vector>
   </parameters>

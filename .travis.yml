@@ -44,6 +44,7 @@ before_install:
     - bash $build_path/install_miniconda.sh -b -p $build_path/miniconda
     - source $build_path/miniconda/bin/activate $build_path/miniconda
     - conda update --yes --all
+    - conda config --add channels https://conda.binstar.org/cdeepakroy
 
 install:
     # https://github.com/pypa/pip/issues/2751

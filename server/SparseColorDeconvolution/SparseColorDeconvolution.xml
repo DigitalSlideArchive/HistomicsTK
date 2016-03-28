@@ -57,6 +57,7 @@
       <name>beta</name>
       <label>A parameter to control sparsity of stain concentrations</label>
       <description>RGB Color of stain-3</description>
+      <longflag>beta</longflag>
       <default>0.5</default>
     </double>
   </parameters>
