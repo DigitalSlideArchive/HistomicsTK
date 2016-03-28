@@ -72,7 +72,6 @@ def createInputBindingSpec(param, hargs, token):
     curName = param.name
     curType = param.typ
 
-    print 'oooooo', param.name, param.typ
     curBindingSpec = dict()
     if curType in ['image', 'file', 'directory']:
         # inputs of type image, file, or directory
@@ -207,16 +206,13 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         taskSpec['inputs'].append(curTaskSpec)
 
         if curType in ['image', 'file', 'directory']:
-            print 'huurraay', param.name, param.typ
             handlerDesc.param(curName + inputGirderSuffix,
                               'Girder ID of input %s - %s: %s'
                               % (curType, curName, curDesc),
-                              dataType='string',
-                              required=True)
+                              dataType='string')
         else:
             handlerDesc.param(curName, curDesc,
-                              dataType='string',
-                              required=True)
+                              dataType='string')
 
     # generate task spec for indexed output parameters
     for param in index_params:
@@ -289,7 +285,6 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         for param in index_params:
             if param.channel != 'input':
                 continue
-            print param.name, param.typ
             curBindingSpec = createInputBindingSpec(param, args, token)
             kwargs['inputs'][param.name] = curBindingSpec
 
@@ -320,7 +315,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         taskSpec['script'] = '\n'.join(("import os", taskSpec['script']))
         kwargs['task'] = taskSpec
 
-       # schedule job
+        # schedule job
         job['kwargs'] = kwargs
         job = jobModel.save(job)
         jobModel.scheduleJob(job)
@@ -347,7 +342,6 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                                 model=curModel,
                                 level=AccessType.READ)(handlerFunc)
 
-
     # loadmodel stuff for outputs to girder
     for param in index_params:
         if param.channel != 'output':
@@ -360,6 +354,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                                 level=AccessType.WRITE)(handlerFunc)
 
     return handlerFunc
+
 
 def genHandlerToGetCLIXmlSpec(restResource, xmlFile):
     """Generates a handler that returns the XML spec of the CLI
