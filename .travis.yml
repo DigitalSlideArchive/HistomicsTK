@@ -47,6 +47,7 @@ before_install:
 
 install:
     # https://github.com/pypa/pip/issues/2751
+    - conda info
     - conda install --yes --file $main_path/requirements.txt setuptools==19.4
     - cd $girder_path
     - pip install -U -r requirements.txt -r requirements-dev.txt -r $main_path/requirements.txt setuptools==19.4
