@@ -194,10 +194,11 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     # get CLI parameters
     index_params, opt_params = getCLIParameters(clim)
 
+    index_input_params = filter(lambda p: p.channel == 'input', index_params)
+    index_output_params = filter(lambda p: p.channel == 'output', index_params)
+
     # generate task spec for indexed input parameters
-    for param in index_params:
-        if param.channel != 'input':
-            continue
+    for param in index_input_params:
         curName = param.name
         curType = param.typ
         curDesc = param.description
@@ -215,9 +216,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                               dataType='string')
 
     # generate task spec for indexed output parameters
-    for param in index_params:
-        if param.channel != 'output':
-            continue
+    for param in index_output_params:
         curName = param.name
         curType = param.typ
         curDesc = param.description
@@ -282,9 +281,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
 
         # create indexed input parameter bindings
         kwargs['inputs'] = dict()
-        for param in index_params:
-            if param.channel != 'input':
-                continue
+        for param in index_input_params:
             curBindingSpec = createInputBindingSpec(param, args, token)
             kwargs['inputs'][param.name] = curBindingSpec
 
@@ -295,9 +292,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
 
         # create indexed output boundings
         kwargs['outputs'] = dict()
-        for param in index_params:
-            if param.channel != 'output':
-                continue
+        for param in index_output_params:
             curName = param.name
             curBindingSpec = wutils.girderOutputSpec(
                 args[curName],
@@ -326,9 +321,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     handlerFunc = cliHandler
 
     # loadmodel stuff for inputs in girder
-    for param in index_params:
-        if param.channel != 'input':
-            continue
+    for param in index_input_params:
         if param.typ in ['image', 'file']:
             curModel = 'item'
         elif param.typ == 'directory':
@@ -342,9 +335,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                                 level=AccessType.READ)(handlerFunc)
 
     # loadmodel stuff for outputs to girder
-    for param in index_params:
-        if param.channel != 'output':
-            continue
+    for param in index_output_params:
         curModel = 'folder'
         curMap = {param.name + outputGirderSuffix: param.name}
 
