@@ -7,8 +7,7 @@ from scipy.optimize import fmin_slsqp
 from scipy import signal
 
 
-# TODO: This function fails the style checker's maximum complexity requirement
-def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,  # noqa
+def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
                MinPeak=10, MaxPeak=25, Percent=0.10, MinProb=0.05):
     """Performs segmentation of the foreground (tissue)
 
@@ -76,7 +75,10 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,  # noqa
     # take highest peak among remaining peaks as background
     Peaks = signal.find_peaks_cwt(yHist.flatten(), np.arange(MinPeak, MaxPeak))
     BGPeak = Peaks[0]
-    TissuePeak = Peaks[yHist[Peaks[1:]].argmax() + 1]
+    if len(Peaks) > 1:
+        TissuePeak = Peaks[yHist[Peaks[1:]].argmax() + 1]
+    else:  # no peak found - take initial guess at 2/3 distance from origin
+        TissuePeak = np.asscalar(xHist[np.round(0.66*xHist.size)])
 
     # analyze background peak to estimate variance parameter via FWHM
     BGScale = EstimateVariance(xHist, yHist, BGPeak)
@@ -85,7 +87,7 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,  # noqa
 
     # analyze tissue peak to estimate variance parameter via FWHM
     TissueScale = EstimateVariance(xHist, yHist, TissuePeak)
-    if TissuePeak == -1:
+    if TissueScale == -1:
         TissueScale = DefaultTissueScale
 
     # solve for mixing parameter

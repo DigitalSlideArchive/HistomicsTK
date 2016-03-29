@@ -3,3 +3,5 @@
 # Add all python packages that dont depend on C libraries here
 #
 ###############################################################
+lxml>=3.4.4
+ctk-cli>=1.2

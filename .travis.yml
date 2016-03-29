@@ -18,12 +18,14 @@ before_install:
 
     - girder_path=$build_path/girder
     - rm -fr $girder_path
-    - git clone https://github.com/girder/girder.git $girder_path && git -C $girder_path checkout 114b5dda576bc0611617a92f88942f3a55dabe7d
+    - git clone https://github.com/girder/girder.git $girder_path && git -C $girder_path checkout b4fc81cb2d6b4eba26c1a3b9e6b62d97513dbcf6
     - ln -sf $main_path $girder_path/plugins/
     - ls -l $girder_path/plugins
 
-    - romanesco_path=$girder_path/plugins/romanesco
-    - git clone https://github.com/Kitware/romanesco.git $romanesco_path && git -C $romanesco_path checkout 14a38e1e918d79446e59d4eb0d9e46571e2b8458
+    - girder_worker_path=$girder_path/plugins/girder_worker
+    - git clone https://github.com/girder/girder_worker.git $girder_worker_path && git -C $girder_worker_path checkout 4429c6e98b2b11d47edb43390571551ab2d36749
+    - cp $PWD/plugin_tests/data/girder_worker.cfg $girder_worker_path/girder_worker/worker.local.cfg
+    - pip install -U -r $girder_worker_path/requirements.txt -r $girder_worker_path/girder_worker/plugins/girder_io/requirements.txt
 
     - export MONGO_VERSION=2.6.11
     - export PY_COVG="ON"
@@ -42,6 +44,7 @@ before_install:
     - bash $build_path/install_miniconda.sh -b -p $build_path/miniconda
     - source $build_path/miniconda/bin/activate $build_path/miniconda
     - conda update --yes --all
+    - conda config --add channels https://conda.binstar.org/cdeepakroy
 
 install:
     # https://github.com/pypa/pip/issues/2751
