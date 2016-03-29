@@ -8,6 +8,7 @@ from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
 
+import pprint
 
 _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'boolean': 'boolean',
@@ -180,8 +181,27 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     with open(scriptFile) as f:
         codeToRun = f.read()
 
+    # create CLI description string
+    str_description = ['Description: <br/><br/>' + clim.description]
+
+    if clim.version is not None and len(clim.version) > 0:
+        str_description.append('Version: ' + clim.version)
+
+    if clim.license is not None and len(clim.license) > 0:
+        str_description.append('License: ' + clim.license)
+
+    if clim.contributor is not None and len(clim.contributor) > 0:
+        str_description.append('Author(s): ' + clim.contributor)
+
+    if clim.acknowledgements is not None and \
+       len(clim.acknowledgements) > 0:
+        str_description.append(
+            'Acknowledgements: ' + clim.acknowledgements)
+
+    str_description = '<br/><br/>'.join(str_description)
+
     # do stuff needed to create REST endpoint for cLI
-    handlerDesc = Description(clim.title)
+    handlerDesc = Description(clim.title).notes(str_description)
     taskSpec = {'name': xmlName,
                 'mode': 'python',
                 'inputs': [],
@@ -253,6 +273,8 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                           default=json.dumps(defaultVal),
                           required=False)
 
+    # pprint.pprint(handlerDesc.asDict())
+
     # define CLI handler function
     @boundHandler(restResource)
     @access.user
@@ -320,7 +342,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
 
     handlerFunc = cliHandler
 
-    # loadmodel stuff for inputs in girder
+    # loadmodel stuff for indexed inputs in girder
     for param in index_input_params:
         if param.typ in ['image', 'file']:
             curModel = 'item'
@@ -334,7 +356,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                                 model=curModel,
                                 level=AccessType.READ)(handlerFunc)
 
-    # loadmodel stuff for outputs to girder
+    # loadmodel stuff for indexed outputs to girder
     for param in index_output_params:
         curModel = 'folder'
         curMap = {param.name + outputGirderSuffix: param.name}
