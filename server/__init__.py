@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 from ctk_cli import CLIModule
 
 from girder.api.rest import Resource, loadmodel, boundHandler
@@ -73,19 +74,17 @@ def getCLIParameters(clim):
 
 
 def createInputBindingSpec(param, hargs, token):
-    curName = param.name
-    curType = param.typ
 
     curBindingSpec = dict()
-    if curType in ['image', 'file', 'directory']:
-        # inputs of type image, file, or directory
-        # should be located on girder
-        if curType in ['image', 'file']:
+    if param.typ in ['image', 'file', 'directory']:
+        # inputs of type image, file, or directory are assumed to be on girder
+        if param.typ in ['image', 'file']:
             curGirderType = 'item'
         else:
             curGirderType = 'folder'
+
         curBindingSpec = wutils.girderInputSpec(
-            hargs[curName],
+            hargs[param.name],
             resourceType=curGirderType,
             dataType='string', dataFormat='string',
             token=token)
@@ -93,22 +92,32 @@ def createInputBindingSpec(param, hargs, token):
         # inputs that are not of type image, file, or directory
         # should be passed inline as string from json.dumps()
         curBindingSpec['mode'] = 'inline'
-        curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+        curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
         curBindingSpec['format'] = 'json'
-        curBindingSpec['data'] = hargs['params'][curName]
+        curBindingSpec['data'] = hargs['params'][param.name]
+
+    return curBindingSpec
+
+
+def createOutputBindingSpec(param, hargs, token):
+
+    curBindingSpec = wutils.girderOutputSpec(
+        hargs[param.name],
+        token,
+        name=hargs['params'][param.name + _girderOutputNameSuffix],
+        dataType='string', dataFormat='string'
+    )
 
     return curBindingSpec
 
 
 def createParamBindingSpec(param, hargs):
-    curName = param.name
-    curType = param.typ
 
     curBindingSpec = dict()
     curBindingSpec['mode'] = 'inline'
-    curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+    curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
     curBindingSpec['format'] = 'json'
-    curBindingSpec['data'] = hargs['params'][curName]
+    curBindingSpec['data'] = hargs['params'][param.name]
 
     return curBindingSpec
 
@@ -183,8 +192,8 @@ def createOptionalParamTaskSpec(param):
 
     curTaskSpec = dict()
     curTaskSpec['id'] = param.name
-    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
-    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
+    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
 
     if param.typ in ['image', 'file', 'directory']:
         curTaskSpec['target'] = 'filepath'  # check
@@ -286,21 +295,21 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
 
     # generate task spec for indexed input parameters
     for param in index_input_params:
-        addIndexedInputParam(param)
+        addIndexedInputParam(param, taskSpec, handlerDesc)
 
     # generate task spec for indexed output parameters
     for param in index_output_params:
-        addIndexedOutputParam(param)
+        addIndexedOutputParam(param, taskSpec, handlerDesc)
 
     # generate task spec for optional parameters
     for param in opt_params:
-        addOptionalParam(param)
+        addOptionalParam(param, taskSpec, handlerDesc)
 
     # define CLI handler function
     @boundHandler(restResource)
     @access.user
     @describeRoute(handlerDesc)
-    def cliHandler(self, **args):
+    def cliHandler(self, **hargs):
 
         user = self.getCurrentUser()
         token = self.getCurrentToken()['_id']
@@ -318,6 +327,8 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
             'cleanup': True}
         taskSpec['script'] = codeToRun
 
+        print hargs
+
         # create job info
         jobToken = jobModel.createJobToken(job)
         kwargs['jobInfo'] = wutils.jobInfoSpec(job, jobToken)
@@ -325,27 +336,25 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         # create indexed input parameter bindings
         kwargs['inputs'] = dict()
         for param in index_input_params:
-            curBindingSpec = createInputBindingSpec(param, args, token)
+            curBindingSpec = createInputBindingSpec(param, hargs, token)
             kwargs['inputs'][param.name] = curBindingSpec
 
         # create optional parameter bindings
         for param in opt_params:
-            curBindingSpec = createParamBindingSpec(param, args)
+            curBindingSpec = createParamBindingSpec(param, hargs)
             kwargs['inputs'][param.name] = curBindingSpec
 
         # create indexed output boundings
         kwargs['outputs'] = dict()
         for param in index_output_params:
-            curName = param.name
-            curBindingSpec = wutils.girderOutputSpec(
-                args[curName],
-                token,
-                name=args['params'][curName + _girderOutputNameSuffix],
-                dataType='string', dataFormat='string')
-            kwargs['outputs'][curName] = curBindingSpec
+            curBindingSpec = createOutputBindingSpec(param, hargs, token)
+            kwargs['outputs'][param.name] = curBindingSpec
 
+        # point output file variables to actual paths on the machine
+        for param in index_output_params:
             codeToSetOutputPath = "%s = os.path.join(_tempdir, '%s')" % (
-                curName, args['params'][curName + _girderOutputNameSuffix])
+                param.name,
+                hargs['params'][param.name + _girderOutputNameSuffix])
             taskSpec['script'] = '\n'.join((codeToSetOutputPath,
                                            taskSpec['script']))
 
@@ -506,6 +515,7 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
             except Exception as e:
                 print "Failed to create REST endpoints for %s: %s" % (
                     curCLIRelPath, e)
+                print 'hellooooooooooooooooooo'
                 continue
 
             cliGetXMLSpecHandlerName = 'get_xml_' + xmlName
