@@ -39,7 +39,6 @@ def ShuffleLabel(Label):
 
     # fill in new values
     for i in range(len(Unique)):
-        print Unique[i]
         Coords = Props[i].coords
         Shuffled[Coords[:, 0], Coords[:, 1]] = Unique[i]
 
