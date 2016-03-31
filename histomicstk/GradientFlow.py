@@ -176,6 +176,9 @@ def GradientFlow(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
                     Segmentation[Trajectory[points-1, 1],
                                  Trajectory[points-1, 0]]
 
+    # convert Sinks to numpy array
+    Sinks = np.asarray(Sinks)
+
     return Segmentation, Sinks
 
 
