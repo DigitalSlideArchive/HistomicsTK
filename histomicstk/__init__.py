@@ -5,6 +5,7 @@ from .cLoG import cLoG
 from .ColorConvolution import ColorConvolution
 from .ColorDeconvolution import ColorDeconvolution
 from .ComplementStainMatrix import ComplementStainMatrix
+from .CondenseLabel import CondenseLabel
 from .ConvertSchedule import ConvertSchedule
 from .Del2 import Del2
 from .DregEdge import DregEdge
@@ -21,6 +22,7 @@ from .ReinhardSample import ReinhardSample
 from .RudermanLABFwd import RudermanLABFwd
 from .RudermanLABInv import RudermanLABInv
 from .Sample import Sample
+from .ShuffleLabel import ShuffleLabel
 from .SimpleMask import SimpleMask
 from .SparseColorDeconvolution import SparseColorDeconvolution
 from .SubmitTorque import SubmitTorque
@@ -33,6 +35,7 @@ __all__ = ('ChanVese',
            'ColorConvolution',
            'ColorDeconvolution',
            'ComplementStainMatrix',
+           'CondenseLabel',
            'ConvertSchedule',
            'Del2',
            'DregEdge',
@@ -49,6 +52,7 @@ __all__ = ('ChanVese',
            'RudermanLABFwd',
            'RudermanLABInv',
            'Sample',
+           'ShuffleLabel',
            'SimpleMask',
            'SparseColorDeconvolution',
            'SubmitTorque',
