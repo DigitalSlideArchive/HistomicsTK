@@ -2,7 +2,7 @@ import numpy as np
 import scipy.ndimage.filters as spf
 
 
-def GradientDiffusion(dX, dY, Mu=5, Lambda=5, Mask, Iterations=10,
+def GradientDiffusion(dX, dY, Mask, Mu=5, Lambda=5, Iterations=10,
                       dT=0.05):
     """
     Diffusion of gradient field using Navier-Stokes equation. Used for
