@@ -2,6 +2,8 @@ import os
 import json
 from ctk_cli import CLIModule
 
+import pprint
+
 from girder.api.rest import Resource, loadmodel, boundHandler
 from girder.api import access
 from girder.api.describe import Description, describeRoute
@@ -26,7 +28,7 @@ _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'directory': 'string',
     'image': 'string'}
 
-_girderInputFileSuffix = '_girderId'
+_girderInputFileSuffix = '_girderItemId'
 _girderOutputFolderSuffix = '_girderFolderId'
 _girderOutputNameSuffix = '_name'
 
@@ -48,11 +50,13 @@ def getCLIParameters(clim):
                 'Parameter type %s is currently not supported' % param.type
             )
 
+    """
     for param in opt_params:
         if param.typ in ['image', 'file', 'directory']:
-            raise Exception('optional parameters of type'
+            raise Exception('optional parameters of type '
                             'image, file, or directory are '
                             'currently not supported')
+    """
 
     # sort indexed parameters in increasing order of index
     index_params.sort(key=lambda p: p.index)
@@ -200,27 +204,30 @@ def createOptionalParamTaskSpec(param):
     if param.typ in ['image', 'file', 'directory']:
         curTaskSpec['target'] = 'filepath'  # check
 
-    defaultValSpec = dict()
-    defaultValSpec['format'] = curTaskSpec['format']
+    if param.channel != 'output':
 
-    if param.default is not None:
-        defaultValSpec['data'] = param.default
-    elif param.typ == 'boolean':
-        defaultValSpec['data'] = False
-    elif param.typ in ['image', 'file', 'directory']:
-        defaultValSpec['data'] = ''
-    else:
-        raise Exception(
-            'optional parameters of type %s must '
-            'provide a default value in the xml' % param.typ)
-    curTaskSpec['default'] = defaultValSpec
+        defaultValSpec = dict()
+        defaultValSpec['format'] = curTaskSpec['format']
+
+        if param.default is not None:
+            defaultValSpec['data'] = param.default
+        elif param.typ == 'boolean':
+            defaultValSpec['data'] = False
+        elif param.typ in ['image', 'file', 'directory']:
+            defaultValSpec['data'] = None
+        else:
+            raise Exception(
+                'optional parameters of type %s must '
+                'provide a default value in the xml' % param.typ)
+        curTaskSpec['default'] = defaultValSpec
 
     return curTaskSpec
 
 
-def addOptionalParams(opt_params, taskSpec, handlerDesc):
 
-    for param in opt_params:
+def addOptionalInputParams(opt_input_params, taskSpec, handlerDesc):
+
+    for param in opt_input_params:
 
         # add to task spec
         curTaskSpec = createOptionalParamTaskSpec(param)
@@ -232,6 +239,32 @@ def addOptionalParams(opt_params, taskSpec, handlerDesc):
                           dataType='string',
                           default=json.dumps(defaultVal),
                           required=False)
+
+
+def addOptionalOutputParams(opt_output_params, taskSpec, handlerDesc):
+
+    for param in opt_output_params:
+
+        if param.typ not in ['image', 'file', 'directory']:
+            continue
+
+        # add to task spec
+        curTaskSpec = createOptionalParamTaskSpec(param)
+        taskSpec['outputs'].append(curTaskSpec)
+
+        # add param for parent folder to route description
+        handlerDesc.param(param.name + _girderOutputFolderSuffix,
+                          'Girder ID of parent folder '
+                          'for output %s - %s: %s'
+                          % (param.typ, param.typ, param.description),
+                          dataType='string',
+                          required=False)
+
+        # add param for name of current output to route description
+        handlerDesc.param(param.name + _girderOutputNameSuffix,
+                          'Name of output %s - %s: %s'
+                          % (param.typ, param.name, param.description),
+                          dataType='string', required=False)
 
 
 def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
@@ -294,17 +327,25 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     # get CLI parameters
     index_params, opt_params = getCLIParameters(clim)
 
+    # add indexed input parameters
     index_input_params = filter(lambda p: p.channel == 'input', index_params)
-    index_output_params = filter(lambda p: p.channel == 'output', index_params)
 
-    # generate task spec for indexed input parameters
     addIndexedInputParams(index_input_params, taskSpec, handlerDesc)
 
-    # generate task spec for indexed output parameters
+    # add indexed output parameters
+    index_output_params = filter(lambda p: p.channel == 'output', index_params)
+
     addIndexedOutputParams(index_output_params, taskSpec, handlerDesc)
 
-    # generate task spec for optional parameters
-    addOptionalParams(opt_params, taskSpec, handlerDesc)
+    # add optional input parameters
+    opt_input_params = filter(lambda p: p.channel != 'output', opt_params)
+
+    addOptionalInputParams(opt_input_params, taskSpec, handlerDesc)
+
+    # add optional output parameters
+    opt_output_params = filter(lambda p: p.channel == 'output', opt_params)
+
+    addOptionalOutputParams(opt_output_params, taskSpec, handlerDesc)
 
     # define CLI handler function
     @boundHandler(restResource)
@@ -328,7 +369,7 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
             'cleanup': True}
         taskSpec['script'] = codeToRun
 
-        print hargs
+        pprint.pprint(hargs)
 
         # create job info
         jobToken = jobModel.createJobToken(job)
