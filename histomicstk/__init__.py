@@ -14,6 +14,8 @@ from .EstimateVariance import EstimateVariance
 from .GaussianGradient import GaussianGradient
 from .GaussianVoting import GaussianVoting
 from .gLoG import gLoG
+from .GradientDiffusion import GradientDiffusion
+from .GradientFlow import GradientFlow
 from .LabelPerimeter import LabelPerimeter
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
@@ -44,6 +46,8 @@ __all__ = ('ChanVese',
            'GaussianGradient',
            'GaussianVoting',
            'gLoG',
+           'GradientDiffusion',
+           'GradientFlow',
            'LabelPerimeter',
            'OpticalDensityFwd',
            'OpticalDensityInv',
