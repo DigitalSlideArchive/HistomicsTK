@@ -1,6 +1,5 @@
 import os
 import json
-import traceback
 from ctk_cli import CLIModule
 
 from girder.api.rest import Resource, loadmodel, boundHandler
@@ -8,8 +7,6 @@ from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
-
-import pprint
 
 _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'boolean': 'boolean',
@@ -515,7 +512,6 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
             except Exception as e:
                 print "Failed to create REST endpoints for %s: %s" % (
                     curCLIRelPath, e)
-                print 'hellooooooooooooooooooo'
                 continue
 
             cliGetXMLSpecHandlerName = 'get_xml_' + xmlName
