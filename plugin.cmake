@@ -32,3 +32,23 @@ add_python_style_test(
 )
 
 add_python_test(example PLUGIN HistomicsTK)
+
+add_web_client_test(
+    HistomicsTK_schema "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/parser.js"
+    ENABLEDPLUGINS "HistomicsTK")
+
+add_web_client_test(
+    HistomicsTK_widget "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/widget.js"
+    ENABLEDPLUGINS "HistomicsTK")
+
+add_eslint_test(
+  js_static_analysis_HistomicsTK "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/web_client"
+  ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintrc"
+  ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintignore"
+)
+
+add_eslint_test(
+  js_static_analysis_HistomicsTK_tests "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client"
+  ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/.eslintrc"
+  ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintignore"
+)

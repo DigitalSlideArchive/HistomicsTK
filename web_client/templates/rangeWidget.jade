@@ -1,0 +1,8 @@
+extends ./widget.jade
+
+block input
+  +input(title, type, id, value)(
+    data-slider-min=min || 0
+    data-slider-max=max || 1
+    data-slider-step=step || 1
+    data-slider-value=value || min || 0)

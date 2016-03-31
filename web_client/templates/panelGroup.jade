@@ -1,0 +1,12 @@
+if info
+  .h-panel
+    .h-panel-title-container
+      | #{info.title}
+    .h-panel-content
+      .h-info-panel-description.well
+        | #{info.description}
+      .h-info-panel-buttons
+        button.btn.btn-default.h-info-panel-reload Reload
+        button.btn.btn-primary.h-info-panel-submit Submit
+each panel in panels
+  .h-panel(class='#{panel.type}', id='#{panel.id}')

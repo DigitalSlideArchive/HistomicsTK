@@ -1,0 +1,16 @@
+.h-panel-title-container
+  span.h-panel-title
+    block title
+      | #{title}
+  span.h-panel-controls
+    if collapsed
+      i.icon-down-open
+    else
+      i.icon-up-open
+    i.icon-cancel.h-remove-panel(data-target='##{id}')
+
+- var attrs = {}
+if !collapsed
+  - attrs.class = 'in'
+.h-panel-content.collapse&attributes(attrs)
+  block content
