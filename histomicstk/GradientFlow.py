@@ -46,7 +46,7 @@ def GradientFlow(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
 
     See Also
     --------
-    GradientDiffusion, MergeSeeds, ShuffleLabel
+    GradientDiffusion, MergeSeeds, MergeSinks, ShuffleLabel
 
     References
     ----------
