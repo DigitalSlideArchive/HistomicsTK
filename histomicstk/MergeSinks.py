@@ -7,7 +7,7 @@ def MergeSinks(Label, Sinks, Radius=5):
     """
     Merges attraction basins obtained from gradient flow tracking using
     sink locations.
-    
+
     Parameters
     ----------
     Segmentation : array_like
