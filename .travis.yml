@@ -47,6 +47,7 @@ before_install:
     - conda config --add channels https://conda.binstar.org/cdeepakroy
 
 install:
+    - conda install --yes libgfortran==1.0 numpy==1.10.2 scipy==0.16.0 scikit-image==0.12.3
     # https://github.com/pypa/pip/issues/2751
     - conda install --yes --file $main_path/requirements.txt setuptools==19.4
     - cd $girder_path
