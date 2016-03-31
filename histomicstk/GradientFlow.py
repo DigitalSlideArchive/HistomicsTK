@@ -63,7 +63,7 @@ def GradientFlow(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
 
     # diffusion iterations
     if Diffusions > 0:
-        dx, dy = gdf.GradientDiffusion(dx, dy, Mu, Lambda, Mask, Diffusions,
+        dx, dy = gdf.GradientDiffusion(dx, dy, Mask, Mu, Lambda, Diffusions,
                                        dT)
 
     # normalize to unit magnitude
