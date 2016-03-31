@@ -30,6 +30,7 @@ _girderInputFileSuffix = '_girderId'
 _girderOutputFolderSuffix = '_girderFolderId'
 _girderOutputNameSuffix = '_name'
 
+
 def getCLIParameters(clim):
 
     # get parameters
@@ -140,41 +141,45 @@ def createIndexedParamTaskSpec(param):
     return curTaskSpec
 
 
-def addIndexedInputParam(param, taskSpec, handlerDesc):
+def addIndexedInputParams(index_input_params, taskSpec, handlerDesc):
 
-    # add to task spec
-    curTaskSpec = createIndexedParamTaskSpec(param)
-    taskSpec['inputs'].append(curTaskSpec)
+    for param in index_input_params:
 
-    # add to route description
-    if param.typ in ['image', 'file', 'directory']:
-        handlerDesc.param(param.name + _girderInputFileSuffix,
-                          'Girder ID of input %s - %s: %s'
+        # add to task spec
+        curTaskSpec = createIndexedParamTaskSpec(param)
+        taskSpec['inputs'].append(curTaskSpec)
+
+        # add to route description
+        if param.typ in ['image', 'file', 'directory']:
+            handlerDesc.param(param.name + _girderInputFileSuffix,
+                              'Girder ID of input %s - %s: %s'
+                              % (param.typ, param.name, param.description),
+                              dataType='string', required=True)
+        else:
+            handlerDesc.param(param.name, param.description,
+                              dataType='string', required=True)
+
+
+def addIndexedOutputParams(index_output_params, taskSpec, handlerDesc):
+
+    for param in index_output_params:
+
+        # add to task spec
+        curTaskSpec = createIndexedParamTaskSpec(param)
+        taskSpec['outputs'].append(curTaskSpec)
+
+        # add param for parent folder to route description
+        handlerDesc.param(param.name + _girderOutputFolderSuffix,
+                          'Girder ID of parent folder '
+                          'for output %s - %s: %s'
+                          % (param.typ, param.typ, param.description),
+                          dataType='string', required=True)
+
+        # add param for name of current output to route description
+        handlerDesc.param(param.name + _girderOutputNameSuffix,
+                          'Name of output %s - %s: %s'
                           % (param.typ, param.name, param.description),
                           dataType='string', required=True)
-    else:
-        handlerDesc.param(param.name, param.description,
-                          dataType='string', required=True)
-
-
-def addIndexedOutputParam(param, taskSpec, handlerDesc):
-
-    # add to task spec
-    curTaskSpec = createIndexedParamTaskSpec(param)
-    taskSpec['outputs'].append(curTaskSpec)
-
-    # add param for parent folder to route description
-    handlerDesc.param(param.name + _girderOutputFolderSuffix,
-                      'Girder ID of parent folder '
-                      'for output %s - %s: %s'
-                      % (param.typ, param.typ, param.description),
-                      dataType='string', required=True)
-
-    # add param for name of current output to route description
-    handlerDesc.param(param.name + _girderOutputNameSuffix,
-                      'Name of output %s - %s: %s'
-                      % (param.typ, param.name, param.description),
-                      dataType='string', required=True)
 
 
 def createOptionalParamTaskSpec(param):
@@ -213,18 +218,20 @@ def createOptionalParamTaskSpec(param):
     return curTaskSpec
 
 
-def addOptionalParam(param, taskSpec, handlerDesc):
+def addOptionalParams(opt_params, taskSpec, handlerDesc):
 
-    # add to task spec
-    curTaskSpec = createOptionalParamTaskSpec(param)
-    taskSpec['inputs'].append(curTaskSpec)
+    for param in opt_params:
 
-    # add to route description
-    defaultVal = curTaskSpec['default']['data']
-    handlerDesc.param(param.name, param.description,
-                      dataType='string',
-                      default=json.dumps(defaultVal),
-                      required=False)
+        # add to task spec
+        curTaskSpec = createOptionalParamTaskSpec(param)
+        taskSpec['inputs'].append(curTaskSpec)
+
+        # add to route description
+        defaultVal = curTaskSpec['default']['data']
+        handlerDesc.param(param.name, param.description,
+                          dataType='string',
+                          default=json.dumps(defaultVal),
+                          required=False)
 
 
 def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
@@ -291,16 +298,13 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     index_output_params = filter(lambda p: p.channel == 'output', index_params)
 
     # generate task spec for indexed input parameters
-    for param in index_input_params:
-        addIndexedInputParam(param, taskSpec, handlerDesc)
+    addIndexedInputParams(index_input_params, taskSpec, handlerDesc)
 
     # generate task spec for indexed output parameters
-    for param in index_output_params:
-        addIndexedOutputParam(param, taskSpec, handlerDesc)
+    addIndexedOutputParams(index_output_params, taskSpec, handlerDesc)
 
     # generate task spec for optional parameters
-    for param in opt_params:
-        addOptionalParam(param, taskSpec, handlerDesc)
+    addOptionalParams(opt_params, taskSpec, handlerDesc)
 
     # define CLI handler function
     @boundHandler(restResource)
