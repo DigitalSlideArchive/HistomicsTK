@@ -224,7 +224,6 @@ def createOptionalParamTaskSpec(param):
     return curTaskSpec
 
 
-
 def addOptionalInputParams(opt_input_params, taskSpec, handlerDesc):
 
     for param in opt_input_params:
