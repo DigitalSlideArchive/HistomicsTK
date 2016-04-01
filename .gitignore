@@ -11,3 +11,5 @@ build
 *.egg-info
 .cache
 .idea
+node_modules/
+.*.swp

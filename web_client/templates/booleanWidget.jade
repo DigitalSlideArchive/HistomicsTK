@@ -1,0 +1,13 @@
+extends ./widget.jade
+
+block label
+
+block input
+  .checkbox
+    label.control-label(for=id)
+      input(
+        name=title
+        type='checkbox'
+        id=id
+        checked=!!value)
+      | #{title}

@@ -9,6 +9,12 @@ from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
+from girder.utility.webroot import Webroot
+
+_template = os.path.join(
+    os.path.dirname(__file__),
+    'webroot.mako'
+)
 
 _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'boolean': 'boolean',
@@ -323,6 +329,10 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                 'inputs': [],
                 'outputs': []}
 
+    inputGirderSuffix = '_girderId'
+    outputGirderSuffix = '_folder_girderId'
+    outGirderNameSuffix = '_name'
+
     # get CLI parameters
     index_params, opt_params = getCLIParameters(clim)
 
@@ -586,5 +596,13 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
 
 
 def load(info):
+    girderRoot = info['serverRoot']
+    histomicsRoot = Webroot(_template)
+    histomicsRoot.updateHtmlVars(girderRoot.vars)
+    histomicsRoot.updateHtmlVars({'title': 'HistomicsTK'})
+
+    info['serverRoot'].histomicstk = histomicsRoot
+    info['serverRoot'].girder = girderRoot
+
     cliRootDir = os.path.dirname(__file__)
     genRESTEndPointsForSlicerCLIsInSubDirs(info, 'HistomicsTK', cliRootDir)

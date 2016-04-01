@@ -5,6 +5,7 @@ from .cLoG import cLoG
 from .ColorConvolution import ColorConvolution
 from .ColorDeconvolution import ColorDeconvolution
 from .ComplementStainMatrix import ComplementStainMatrix
+from .CondenseLabel import CondenseLabel
 from .ConvertSchedule import ConvertSchedule
 from .Del2 import Del2
 from .DregEdge import DregEdge
@@ -13,7 +14,10 @@ from .EstimateVariance import EstimateVariance
 from .GaussianGradient import GaussianGradient
 from .GaussianVoting import GaussianVoting
 from .gLoG import gLoG
+from .GradientDiffusion import GradientDiffusion
+from .GradientFlow import GradientFlow
 from .LabelPerimeter import LabelPerimeter
+from .MergeSinks import MergeSinks
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
 from .ReinhardNorm import ReinhardNorm
@@ -21,6 +25,7 @@ from .ReinhardSample import ReinhardSample
 from .RudermanLABFwd import RudermanLABFwd
 from .RudermanLABInv import RudermanLABInv
 from .Sample import Sample
+from .ShuffleLabel import ShuffleLabel
 from .SimpleMask import SimpleMask
 from .SparseColorDeconvolution import SparseColorDeconvolution
 from .SubmitTorque import SubmitTorque
@@ -33,6 +38,7 @@ __all__ = ('ChanVese',
            'ColorConvolution',
            'ColorDeconvolution',
            'ComplementStainMatrix',
+           'CondenseLabel',
            'ConvertSchedule',
            'Del2',
            'DregEdge',
@@ -41,7 +47,10 @@ __all__ = ('ChanVese',
            'GaussianGradient',
            'GaussianVoting',
            'gLoG',
+           'GradientDiffusion',
+           'GradientFlow',
            'LabelPerimeter',
+           'MergeSinks',
            'OpticalDensityFwd',
            'OpticalDensityInv',
            'ReinhardNorm',
@@ -49,6 +58,7 @@ __all__ = ('ChanVese',
            'RudermanLABFwd',
            'RudermanLABInv',
            'Sample',
+           'ShuffleLabel',
            'SimpleMask',
            'SparseColorDeconvolution',
            'SubmitTorque',
