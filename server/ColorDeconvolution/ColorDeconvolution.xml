@@ -65,7 +65,6 @@
       <label>Reference image File</label>
       <description>Reference image for color normalization</description>
       <longflag>referenceImageFile</longflag>
-      <default></default>
     </image>
   </parameters>
 </executable>
