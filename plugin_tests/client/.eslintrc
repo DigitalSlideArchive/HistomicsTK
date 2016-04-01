@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "no-console": 0
+  },
+  "globals": {
+    "girderTest": true
+  },
+  "env": {
+    "jasmine": true
+  }
+}

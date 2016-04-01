@@ -1,0 +1,13 @@
+@import 'nib'
+@import 'ext/bootstrap-slider.css'
+@import 'ext/bootstrap-colorpicker.css'
+
+$headerHeight = 52px
+
+.h-app-body-container
+    position relative
+    height "calc(100% - %s)" % $headerHeight
+    top $headerHeight
+    overflow hidden
+
+@import '*/*.styl'
