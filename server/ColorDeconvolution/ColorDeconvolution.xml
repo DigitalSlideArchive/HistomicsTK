@@ -60,5 +60,12 @@
       <longflag>stainColor_3</longflag>
       <default>0,0,0</default>
     </double-vector>
+    <image>
+      <name>referenceImageFile</name>
+      <label>Reference image File</label>
+      <description>Reference image for color normalization</description>
+      <longflag>referenceImageFile</longflag>
+      <default></default>
+    </image>
   </parameters>
 </executable>
