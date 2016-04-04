@@ -324,7 +324,8 @@ def addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
         bspec[param.name] = createInputParamBindingSpec(param, hargs, token)
 
 
-def addOptionalOutputParamBindings(opt_output_params, bspec, hargs, user, token):
+def addOptionalOutputParamBindings(opt_output_params,
+                                   bspec, hargs, user, token):
 
     for param in opt_output_params:
 
@@ -332,7 +333,7 @@ def addOptionalOutputParamBindings(opt_output_params, bspec, hargs, user, token)
             continue
 
         if (param.name + _girderOutputFolderSuffix not in hargs['params'] or
-              param.name + _girderOutputNameSuffix not in hargs['params']):
+            param.name + _girderOutputNameSuffix not in hargs['params']):
             continue
 
         curModel = ModelImporter.model('folder')
@@ -357,8 +358,8 @@ def addReturnParameterFileBinding(bspec, hargs, user, token):
     curId = hargs['params'][curName + _girderOutputFolderSuffix]
 
     hargs[curName] = curModel.load(id=curId,
-                                      level=AccessType.WRITE,
-                                      user=user)
+                                   level=AccessType.WRITE,
+                                   user=user)
 
     curBindingSpec = wutils.girderOutputSpec(
         hargs[curName],
@@ -474,10 +475,6 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
                 'mode': 'python',
                 'inputs': [],
                 'outputs': []}
-
-    inputGirderSuffix = '_girderId'
-    outputGirderSuffix = '_folder_girderId'
-    outGirderNameSuffix = '_name'
 
     # get CLI parameters
     index_params, opt_params, simple_out_params = getCLIParameters(clim)
