@@ -5,6 +5,38 @@ histomicstk.views.Visualization = girder.View.extend({
 
         // the rendered map layers
         this._layers = [];
+
+        // control model for file widget
+        this._controlModel = new histomicstk.models.Widget({
+            type: 'file'
+        });
+
+        // control widget view
+        this._controlView = new histomicstk.views.ControlWidget({
+            parentView: this,
+            model: this._controlModel
+        });
+
+        this.listenTo(this._controlModel, 'change', function (model) {
+            var id = model.get('value');
+            girder.restRequest({
+                path: 'item/' + id
+            })
+            .then(_.bind(function (item) {
+                item = new girder.models.ItemModel(item);
+                return this.addItem(item);
+            }, this))
+            .fail(_.bind(function () {
+                var info = {
+                    text: 'Could not render item as an image',
+                    type: 'danger',
+                    timeout: 5000,
+                    icon: 'attention'
+                };
+                girder.events.trigger('g:alert', info);
+                this._controlView.invalid();
+            }, this));
+        });
     },
 
     /**
@@ -16,8 +48,10 @@ histomicstk.views.Visualization = girder.View.extend({
         if (this._map) {
             this._map.exit();
         }
-        var w = bounds.right - bounds.left || 0;
-        var h = bounds.bottom - bounds.top || 0;
+        bounds.left = bounds.left || 0;
+        bounds.top = bounds.top || 0;
+        var w = bounds.right - bounds.left;
+        var h = bounds.bottom - bounds.top;
         var interactor = geo.mapInteractor({
             zoomAnimation: false
         });
@@ -29,15 +63,14 @@ histomicstk.views.Visualization = girder.View.extend({
             ingcs: '+proj=longlat +axis=esu',
             gcs: '+proj=longlat +axis=enu',
             maxBounds: bounds,
-            clampBoundsX: true,
-            clampBoundsY: true,
+            clampBoundsX: false,
+            clampBoundsY: false,
             center: {x: w / 2, y: h / 2},
             zoom: 0,
             discreteZoom: false,
             interactor: interactor
         });
-        this.$el.empty();
-        this.$el.append(this._map.node());
+        this.$('.h-visualization-body').empty().append(this._map.node());
     },
 
     /**
@@ -150,12 +183,12 @@ histomicstk.views.Visualization = girder.View.extend({
      *  The coordinate bounds of the image (left, right, top, bottom).
      */
     addImageLayer: function (url, bounds) {
-        this._expandBounds(bounds);
+        this._createMap(bounds);
         var layer = this._map.createLayer('feature', {renderer: 'vgl'});
         var quad = layer.createFeature('quad');
         quad.data([
             {
-                ll: {x: bounds.left || 0, y: bounds.bottom},
+                ll: {x: bounds.left || 0, y: -bounds.bottom},
                 ur: {x: bounds.right, y: bounds.top || 0},
                 image: url
             }
@@ -202,7 +235,7 @@ histomicstk.views.Visualization = girder.View.extend({
             opts.sizeY = Math.pow(2, opts.maxLevel) * opts.tileHeight;
         }
 
-        this._expandBounds({
+        this._createMap({
             right: opts.sizeX - 1,
             bottom: opts.sizeY - 1
         });
@@ -214,11 +247,14 @@ histomicstk.views.Visualization = girder.View.extend({
 
     render: function () {
 
+        this.$el.html(histomicstk.templates.visualization());
+        this._controlView.setElement(this.$('.h-open-image-widget')).render();
+
+        /*
         new girder.models.ItemModel({'_id': '56f55c0f62a8f80b77e45c68'})
             .on('change', _.bind(function (item) {
                 this.addItem(item);
             }, this)).fetch();
-        /*
         new girder.models.ItemModel({'_id': '56fd6d8c62a8f8692876ad89'})
             .on('change', _.bind(function (item) {
                 this.addItem(item);
@@ -231,6 +267,7 @@ histomicstk.views.Visualization = girder.View.extend({
     destroy: function () {
         this._map.exit();
         this.$el.empty();
+        this._controlModel.destroy();
         girder.View.prototype.destroy.apply(this, arguments);
     }
 });
