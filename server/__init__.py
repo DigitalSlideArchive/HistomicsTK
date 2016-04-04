@@ -2,11 +2,14 @@ import os
 import json
 from ctk_cli import CLIModule
 
+import pprint
+
 from girder.api.rest import Resource, loadmodel, boundHandler
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
+from girder.utility.model_importer import ModelImporter
 from girder.utility.webroot import Webroot
 
 _template = os.path.join(
@@ -32,6 +35,18 @@ _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'directory': 'string',
     'image': 'string'}
 
+_SLICER_TYPE_TO_GIRDER_MODEL_MAP = {
+    'image': 'item',
+    'file': 'item',
+    'directory': 'folder'
+}
+
+_girderInputFileSuffix = '_girderItemId'
+_girderOutputFolderSuffix = '_girderFolderId'
+_girderOutputNameSuffix = '_name'
+
+_return_parameter_file_name = 'returnparameterfile'
+
 
 def getCLIParameters(clim):
 
@@ -39,22 +54,11 @@ def getCLIParameters(clim):
     index_params, opt_params, simple_out_params = clim.classifyParameters()
 
     # perform sanity checks
-    if len(simple_out_params) > 0:
-        raise Exception(
-            'outputs of type other than image, file, or '
-            'directory are not currently supported.')
-
     for param in index_params + opt_params:
         if param.typ not in _SLICER_TO_GIRDER_WORKER_TYPE_MAP.keys():
             raise Exception(
-                'Parameter type %s is currently not supported' % param.type
+                'Parameter type %s is currently not supported' % param.typ
             )
-
-    for param in opt_params:
-        if param.typ in ['image', 'file', 'directory']:
-            raise Exception('optional parameters of type'
-                            'image, file, or directory are '
-                            'currently not supported')
 
     # sort indexed parameters in increasing order of index
     index_params.sort(key=lambda p: p.index)
@@ -70,88 +74,351 @@ def getCLIParameters(clim):
 
     opt_params.sort(key=lambda p: get_flag(p))
 
-    return index_params, opt_params
+    return index_params, opt_params, simple_out_params
 
 
-def createInputBindingSpec(param, hargs, token):
-    curName = param.name
-    curType = param.typ
+def createIndexedParamTaskSpec(param):
+    """Creates task spec for indexed parameters
+
+    Parameters
+    ----------
+    param : ctk_cli.CLIParameter
+        parameter for which the task spec should be created
+
+    """
+
+    curTaskSpec = dict()
+    curTaskSpec['id'] = param.name
+    curTaskSpec['name'] = param.label
+    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
+    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
+
+    if param.isExternalType():
+        curTaskSpec['target'] = 'filepath'  # check
+
+    return curTaskSpec
+
+
+def addIndexedInputParams(index_input_params, taskSpec, handlerDesc):
+
+    for param in index_input_params:
+
+        # add to task spec
+        curTaskSpec = createIndexedParamTaskSpec(param)
+        taskSpec['inputs'].append(curTaskSpec)
+
+        # add to route description
+        if param.isExternalType():
+            handlerDesc.param(param.name + _girderInputFileSuffix,
+                              'Girder ID of input %s - %s: %s'
+                              % (param.typ, param.name, param.description),
+                              dataType='string', required=True)
+        else:
+            handlerDesc.param(param.name, param.description,
+                              dataType='string', required=True)
+
+
+def addIndexedOutputParams(index_output_params, taskSpec, handlerDesc):
+
+    for param in index_output_params:
+
+        # add to task spec
+        curTaskSpec = createIndexedParamTaskSpec(param)
+        taskSpec['outputs'].append(curTaskSpec)
+
+        # add param for parent folder to route description
+        handlerDesc.param(param.name + _girderOutputFolderSuffix,
+                          'Girder ID of parent folder '
+                          'for output %s - %s: %s'
+                          % (param.typ, param.typ, param.description),
+                          dataType='string', required=True)
+
+        # add param for name of current output to route description
+        handlerDesc.param(param.name + _girderOutputNameSuffix,
+                          'Name of output %s - %s: %s'
+                          % (param.typ, param.name, param.description),
+                          dataType='string', required=True)
+
+
+def createOptionalParamTaskSpec(param):
+    """Creates task spec for optional parameters
+
+    Parameters
+    ----------
+    param : ctk_cli.CLIParameter
+        parameter for which the task spec should be created
+
+    """
+
+    curTaskSpec = dict()
+    curTaskSpec['id'] = param.name
+    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
+    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
+
+    if param.isExternalType():
+        curTaskSpec['target'] = 'filepath'  # check
+
+    if param.channel != 'output':
+
+        defaultValSpec = dict()
+        defaultValSpec['format'] = curTaskSpec['format']
+
+        if param.default is not None:
+            defaultValSpec['data'] = param.default
+        elif param.typ == 'boolean':
+            defaultValSpec['data'] = False
+        elif param.isExternalType():
+            defaultValSpec['data'] = ""
+        else:
+            raise Exception(
+                'optional parameters of type %s must '
+                'provide a default value in the xml' % param.typ)
+        curTaskSpec['default'] = defaultValSpec
+
+    return curTaskSpec
+
+
+def addOptionalInputParams(opt_input_params, taskSpec, handlerDesc):
+
+    for param in opt_input_params:
+
+        # add to task spec
+        curTaskSpec = createOptionalParamTaskSpec(param)
+        taskSpec['inputs'].append(curTaskSpec)
+
+        # add to route description
+        defaultVal = curTaskSpec['default']['data']
+
+        if param.isExternalType():
+            handlerDesc.param(param.name + _girderInputFileSuffix,
+                              'Girder ID of input %s - %s: %s'
+                              % (param.typ, param.name, param.description),
+                              dataType='string',
+                              required=False)
+        else:
+            handlerDesc.param(param.name, param.description,
+                              dataType='string',
+                              default=json.dumps(defaultVal),
+                              required=False)
+
+
+def addOptionalOutputParams(opt_output_params, taskSpec, handlerDesc):
+
+    for param in opt_output_params:
+
+        if not param.isExternalType():
+            continue
+
+        # add to task spec
+        curTaskSpec = createOptionalParamTaskSpec(param)
+        taskSpec['outputs'].append(curTaskSpec)
+
+        # add param for parent folder to route description
+        handlerDesc.param(param.name + _girderOutputFolderSuffix,
+                          'Girder ID of parent folder '
+                          'for output %s - %s: %s'
+                          % (param.typ, param.name, param.description),
+                          dataType='string',
+                          required=False)
+
+        # add param for name of current output to route description
+        handlerDesc.param(param.name + _girderOutputNameSuffix,
+                          'Name of output %s - %s: %s'
+                          % (param.typ, param.name, param.description),
+                          dataType='string', required=False)
+
+
+def addReturnParameterFileParam(taskSpec, handlerDesc):
+
+    curName = _return_parameter_file_name
+    curType = 'file'
+    curDesc = """
+        Filename in which to write simple return parameters
+        (integer, float, integer-vector, etc.) as opposed to bulk
+        return parameters (image, file, directory, geometry,
+        transform, measurement, table).
+    """
+
+    # add to task spec
+    curTaskSpec = dict()
+    curTaskSpec['id'] = curName
+    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+    curTaskSpec['target'] = 'filepath'  # check
+    taskSpec['outputs'].append(curTaskSpec)
+
+    # add param for parent folder to route description
+    handlerDesc.param(curName + _girderOutputFolderSuffix,
+                      'Girder ID of parent folder '
+                      'for output %s - %s: %s'
+                      % (curType, curName, curDesc),
+                      dataType='string',
+                      required=False)
+
+    # add param for name of current output to route description
+    handlerDesc.param(curName + _girderOutputNameSuffix,
+                      'Name of output %s - %s: %s'
+                      % (curType, curName, curDesc),
+                      dataType='string', required=False)
+
+
+def createInputParamBindingSpec(param, hargs, token):
 
     curBindingSpec = dict()
-    if curType in ['image', 'file', 'directory']:
-        # inputs of type image, file, or directory
-        # should be located on girder
-        if curType in ['image', 'file']:
-            curGirderType = 'item'
-        else:
-            curGirderType = 'folder'
+    if _is_on_girder(param):
         curBindingSpec = wutils.girderInputSpec(
-            hargs[curName],
-            resourceType=curGirderType,
+            hargs[param.name],
+            resourceType=_SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ],
             dataType='string', dataFormat='string',
             token=token)
     else:
         # inputs that are not of type image, file, or directory
         # should be passed inline as string from json.dumps()
         curBindingSpec['mode'] = 'inline'
-        curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+        curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
         curBindingSpec['format'] = 'json'
-        curBindingSpec['data'] = hargs['params'][curName]
+        curBindingSpec['data'] = hargs['params'][param.name]
 
     return curBindingSpec
 
 
-def createParamBindingSpec(param, hargs):
-    curName = param.name
-    curType = param.typ
+def createOutputParamBindingSpec(param, hargs, token):
 
-    curBindingSpec = dict()
-    curBindingSpec['mode'] = 'inline'
-    curBindingSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
-    curBindingSpec['format'] = 'json'
-    curBindingSpec['data'] = hargs['params'][curName]
+    curBindingSpec = wutils.girderOutputSpec(
+        hargs[param.name],
+        token,
+        name=hargs['params'][param.name + _girderOutputNameSuffix],
+        dataType='string', dataFormat='string'
+    )
 
     return curBindingSpec
 
 
-def createIndexedParamTaskSpec(param):
-    curName = param.name
-    curType = param.typ
+def addIndexedInputParamBindings(index_input_params, bspec, hargs, token):
 
-    curTaskSpec = dict()
-    curTaskSpec['id'] = curName
-    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
-    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
-
-    if curType in ['image', 'file', 'directory']:
-        curTaskSpec['target'] = 'filepath'  # check
-
-    return curTaskSpec
+    for param in index_input_params:
+        bspec[param.name] = createInputParamBindingSpec(param, hargs, token)
 
 
-def createOptionalParamTaskSpec(param):
-    curName = param.name
-    curType = param.typ
+def addIndexedOutputParamBindings(index_output_params, bspec, hargs, token):
 
-    curTaskSpec = dict()
-    curTaskSpec['id'] = curName
-    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
-    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+    for param in index_output_params:
+        bspec[param.name] = createOutputParamBindingSpec(param, hargs, token)
 
-    defaultValSpec = dict()
-    defaultValSpec['format'] = curTaskSpec['format']
 
-    if param.default is not None:
-        defaultValSpec['data'] = param.default
-    elif param.type == 'boolean':
-        defaultValSpec['data'] = False
+def addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
+
+    for param in opt_input_params:
+
+        if _is_on_girder(param):
+            if param.name + _girderInputFileSuffix not in hargs['params']:
+                continue
+
+            curModelName = _SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
+            curModel = ModelImporter.model(curModelName)
+            curId = hargs['params'][param.name + _girderInputFileSuffix]
+
+            hargs[param.name] = curModel.load(id=curId,
+                                              level=AccessType.READ,
+                                              user=user)
+
+        bspec[param.name] = createInputParamBindingSpec(param, hargs, token)
+
+
+def addOptionalOutputParamBindings(opt_output_params,
+                                   bspec, hargs, user, token):
+
+    for param in opt_output_params:
+
+        if not _is_on_girder(param):
+            continue
+
+        if (param.name + _girderOutputFolderSuffix not in hargs['params'] or
+                param.name + _girderOutputNameSuffix not in hargs['params']):
+            continue
+
+        curModel = ModelImporter.model('folder')
+        curId = hargs['params'][param.name + _girderOutputFolderSuffix]
+
+        hargs[param.name] = curModel.load(id=curId,
+                                          level=AccessType.WRITE,
+                                          user=user)
+
+        bspec[param.name] = createOutputParamBindingSpec(param, hargs, token)
+
+
+def addReturnParameterFileBinding(bspec, hargs, user, token):
+
+    curName = _return_parameter_file_name
+
+    if (curName + _girderOutputFolderSuffix not in hargs['params'] or
+            curName + _girderOutputNameSuffix not in hargs['params']):
+        return
+
+    curModel = ModelImporter.model('folder')
+    curId = hargs['params'][curName + _girderOutputFolderSuffix]
+
+    hargs[curName] = curModel.load(id=curId,
+                                   level=AccessType.WRITE,
+                                   user=user)
+
+    curBindingSpec = wutils.girderOutputSpec(
+        hargs[curName],
+        token,
+        name=hargs['params'][curName + _girderOutputNameSuffix],
+        dataType='string', dataFormat='string'
+    )
+
+    bspec[curName] = curBindingSpec
+
+
+def addCodeToSetIndexOutputFileParams(index_output_params, taskSpec, hargs):
+    for param in index_output_params:
+        codeToSetOutputPath = "%s = os.path.join(_tempdir, '%s')" % (
+            param.name,
+            hargs['params'][param.name + _girderOutputNameSuffix])
+        taskSpec['script'] = '\n'.join((codeToSetOutputPath,
+                                       taskSpec['script']))
+
+
+def addCodeToSetOptOutputFileParams(opt_output_params,
+                                    kwargs, taskSpec, hargs):
+
+    for param in opt_output_params:
+
+        if not _is_on_girder(param):
+            continue
+
+        if param.name in kwargs['outputs']:
+            codeToSetOutputPath = "%s = os.path.join(_tempdir, '%s')" % (
+                param.name,
+                hargs['params'][param.name + _girderOutputNameSuffix]
+            )
+        else:
+            codeToSetOutputPath = "%s = None" % param.name
+
+        taskSpec['script'] = '\n'.join((codeToSetOutputPath,
+                                       taskSpec['script']))
+
+
+def addCodeToSetReturnParameterFile(kwargs, taskSpec, hargs):
+
+    curName = _return_parameter_file_name
+
+    if curName in kwargs['outputs']:
+        codeToSetOutputPath = "%s = os.path.join(_tempdir, '%s')" % (
+            curName,
+            hargs['params'][curName + _girderOutputNameSuffix]
+        )
     else:
-        raise Exception(
-            'optional parameters of type %s must '
-            'provide a default value in the xml' % curType)
-    curTaskSpec['default'] = defaultValSpec
+        codeToSetOutputPath = "%s = None" % curName
 
-    return curTaskSpec
+    taskSpec['script'] = '\n'.join((codeToSetOutputPath,
+                                   taskSpec['script']))
+
+
+def _is_on_girder(param):
+    return param.typ in _SLICER_TYPE_TO_GIRDER_MODEL_MAP
 
 
 def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
@@ -185,84 +452,64 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     with open(scriptFile) as f:
         codeToRun = f.read()
 
+    # create CLI description string
+    str_description = ['Description: <br/><br/>' + clim.description]
+
+    if clim.version is not None and len(clim.version) > 0:
+        str_description.append('Version: ' + clim.version)
+
+    if clim.license is not None and len(clim.license) > 0:
+        str_description.append('License: ' + clim.license)
+
+    if clim.contributor is not None and len(clim.contributor) > 0:
+        str_description.append('Author(s): ' + clim.contributor)
+
+    if clim.acknowledgements is not None and \
+       len(clim.acknowledgements) > 0:
+        str_description.append(
+            'Acknowledgements: ' + clim.acknowledgements)
+
+    str_description = '<br/><br/>'.join(str_description)
+
     # do stuff needed to create REST endpoint for cLI
-    handlerDesc = Description(clim.title)
+    handlerDesc = Description(clim.title).notes(str_description)
     taskSpec = {'name': xmlName,
                 'mode': 'python',
                 'inputs': [],
                 'outputs': []}
 
-    inputGirderSuffix = '_girderId'
-    outputGirderSuffix = '_folder_girderId'
-    outGirderNameSuffix = '_name'
-
     # get CLI parameters
-    index_params, opt_params = getCLIParameters(clim)
+    index_params, opt_params, simple_out_params = getCLIParameters(clim)
 
+    # add indexed input parameters
     index_input_params = filter(lambda p: p.channel == 'input', index_params)
+
+    addIndexedInputParams(index_input_params, taskSpec, handlerDesc)
+
+    # add indexed output parameters
     index_output_params = filter(lambda p: p.channel == 'output', index_params)
 
-    # generate task spec for indexed input parameters
-    for param in index_input_params:
-        curName = param.name
-        curType = param.typ
-        curDesc = param.description
+    addIndexedOutputParams(index_output_params, taskSpec, handlerDesc)
 
-        curTaskSpec = createIndexedParamTaskSpec(param)
-        taskSpec['inputs'].append(curTaskSpec)
+    # add optional input parameters
+    opt_input_params = filter(lambda p: p.channel != 'output', opt_params)
 
-        if curType in ['image', 'file', 'directory']:
-            handlerDesc.param(curName + inputGirderSuffix,
-                              'Girder ID of input %s - %s: %s'
-                              % (curType, curName, curDesc),
-                              dataType='string')
-        else:
-            handlerDesc.param(curName, curDesc,
-                              dataType='string')
+    addOptionalInputParams(opt_input_params, taskSpec, handlerDesc)
 
-    # generate task spec for indexed output parameters
-    for param in index_output_params:
-        curName = param.name
-        curType = param.typ
-        curDesc = param.description
+    # add optional output parameters
+    opt_output_params = filter(lambda p: p.channel == 'output', opt_params)
 
-        curTaskSpec = createIndexedParamTaskSpec(param)
-        taskSpec['outputs'].append(curTaskSpec)
+    addOptionalOutputParams(opt_output_params, taskSpec, handlerDesc)
 
-        # param for parent folder
-        handlerDesc.param(curName + outputGirderSuffix,
-                          'Girder ID of parent folder '
-                          'for output %s - %s: %s'
-                          % (curType, curName, curDesc),
-                          dataType='string',
-                          required=True)
-
-        # param for name by which to store the current output
-        handlerDesc.param(curName + outGirderNameSuffix,
-                          'Name of output %s - %s: %s'
-                          % (curType, curName, curDesc),
-                          dataType='string',
-                          required=True)
-
-    # generate task spec for optional parameters
-    for param in opt_params:
-        curName = param.name
-        curDesc = param.description
-
-        curTaskSpec = createOptionalParamTaskSpec(param)
-        taskSpec['inputs'].append(curTaskSpec)
-
-        defaultVal = curTaskSpec['default']['data']
-        handlerDesc.param(curName, curDesc,
-                          dataType='string',
-                          default=json.dumps(defaultVal),
-                          required=False)
+    # add returnparameterfile if there are simple output params
+    if len(simple_out_params) > 0:
+        addReturnParameterFileParam(taskSpec, handlerDesc)
 
     # define CLI handler function
     @boundHandler(restResource)
     @access.user
     @describeRoute(handlerDesc)
-    def cliHandler(self, **args):
+    def cliHandler(self, **hargs):
 
         user = self.getCurrentUser()
         token = self.getCurrentToken()['_id']
@@ -277,39 +524,44 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
         kwargs = {
             'validate': False,
             'auto_convert': True,
-            'cleanup': True}
+            'cleanup': True,
+            'inputs': dict(),
+            'outputs': dict()
+        }
         taskSpec['script'] = codeToRun
+
+        pprint.pprint(hargs)
 
         # create job info
         jobToken = jobModel.createJobToken(job)
         kwargs['jobInfo'] = wutils.jobInfoSpec(job, jobToken)
 
         # create indexed input parameter bindings
-        kwargs['inputs'] = dict()
-        for param in index_input_params:
-            curBindingSpec = createInputBindingSpec(param, args, token)
-            kwargs['inputs'][param.name] = curBindingSpec
-
-        # create optional parameter bindings
-        for param in opt_params:
-            curBindingSpec = createParamBindingSpec(param, args)
-            kwargs['inputs'][param.name] = curBindingSpec
+        addIndexedInputParamBindings(index_input_params,
+                                     kwargs['inputs'], hargs, token)
 
         # create indexed output boundings
-        kwargs['outputs'] = dict()
-        for param in index_output_params:
-            curName = param.name
-            curBindingSpec = wutils.girderOutputSpec(
-                args[curName],
-                token,
-                name=args['params'][curName + outGirderNameSuffix],
-                dataType='string', dataFormat='string')
-            kwargs['outputs'][curName] = curBindingSpec
+        addIndexedOutputParamBindings(index_output_params,
+                                      kwargs['outputs'], hargs, token)
 
-            codeToSetOutputPath = "%s = os.path.join(_tempdir, '%s')" % (
-                curName, args['params'][curName + outGirderNameSuffix])
-            taskSpec['script'] = '\n'.join((codeToSetOutputPath,
-                                           taskSpec['script']))
+        # create optional input parameter bindings
+        addOptionalInputParamBindings(opt_input_params,
+                                      kwargs['inputs'], hargs, user, token)
+
+        # create optional output parameter bindings
+        addOptionalOutputParamBindings(opt_output_params,
+                                       kwargs['outputs'], hargs, user, token)
+
+        # create returnparameterfile binding
+        addReturnParameterFileBinding(kwargs['outputs'], hargs, user, token)
+
+        # point output file variables to actual paths
+        addCodeToSetIndexOutputFileParams(index_output_params, taskSpec, hargs)
+
+        addCodeToSetOptOutputFileParams(opt_output_params,
+                                        kwargs, taskSpec, hargs)
+
+        addCodeToSetReturnParameterFile(kwargs, taskSpec, hargs)
 
         # create task spec
         taskSpec['script'] = '\n'.join(("import os", taskSpec['script']))
@@ -325,24 +577,25 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
 
     handlerFunc = cliHandler
 
-    # loadmodel stuff for inputs in girder
-    for param in index_input_params:
-        if param.typ in ['image', 'file']:
-            curModel = 'item'
-        elif param.typ == 'directory':
-            curModel = 'folder'
-        else:
-            continue
-        curMap = {param.name + inputGirderSuffix: param.name}
+    # loadmodel stuff for indexed input params on girder
+    index_input_params_on_girder = filter(_is_on_girder, index_input_params)
+
+    for param in index_input_params_on_girder:
+
+        curModel = _SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
+        curMap = {param.name + _girderInputFileSuffix: param.name}
 
         handlerFunc = loadmodel(map=curMap,
                                 model=curModel,
                                 level=AccessType.READ)(handlerFunc)
 
-    # loadmodel stuff for outputs to girder
-    for param in index_output_params:
+    # loadmodel stuff for indexed output params on girder
+    index_output_params_on_girder = filter(_is_on_girder, index_output_params)
+
+    for param in index_output_params_on_girder:
+
         curModel = 'folder'
-        curMap = {param.name + outputGirderSuffix: param.name}
+        curMap = {param.name + _girderOutputFolderSuffix: param.name}
 
         handlerFunc = loadmodel(map=curMap,
                                 model=curModel,
