@@ -333,7 +333,7 @@ def addOptionalOutputParamBindings(opt_output_params,
             continue
 
         if (param.name + _girderOutputFolderSuffix not in hargs['params'] or
-            param.name + _girderOutputNameSuffix not in hargs['params']):
+                param.name + _girderOutputNameSuffix not in hargs['params']):
             continue
 
         curModel = ModelImporter.model('folder')
@@ -351,7 +351,7 @@ def addReturnParameterFileBinding(bspec, hargs, user, token):
     curName = _return_parameter_file_name
 
     if (curName + _girderOutputFolderSuffix not in hargs['params'] or
-          curName + _girderOutputNameSuffix not in hargs['params']):
+            curName + _girderOutputNameSuffix not in hargs['params']):
         return
 
     curModel = ModelImporter.model('folder')
@@ -380,7 +380,8 @@ def addCodeToSetIndexOutputFileParams(index_output_params, taskSpec, hargs):
                                        taskSpec['script']))
 
 
-def addCodeToSetOptOutputFileParams(opt_output_params, kwargs, taskSpec, hargs):
+def addCodeToSetOptOutputFileParams(opt_output_params,
+                                    kwargs, taskSpec, hargs):
 
     for param in opt_output_params:
 
