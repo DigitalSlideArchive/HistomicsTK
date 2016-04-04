@@ -37,6 +37,9 @@ histomicstk.views.Visualization = girder.View.extend({
                 this._controlView.invalid();
             }, this));
         });
+
+        // fallback to canvas renderer rather than dom
+        geo.gl.vglRenderer.fallback = function () {return 'canvas';};
     },
 
     /**
@@ -74,30 +77,6 @@ histomicstk.views.Visualization = girder.View.extend({
     },
 
     /**
-     * This will expand the attached map's maximum bounds to cover
-     * the given bounds. {left, right, top, bottom} in pixel coordinates.
-     */
-    _expandBounds: function (bounds) {
-        var mapBounds, newBounds = {
-            left: bounds.left || 0,
-            right: bounds.right,
-            top: bounds.top || 0,
-            bottom: bounds.bottom
-        };
-        if (this._map) {
-            mapBounds = this._map.maxBounds();
-            newBounds = {
-                left: Math.min(bounds.left || 0, mapBounds.left),
-                top: Math.min(bounds.top || 0, mapBounds.top),
-                right: Math.max(bounds.right, mapBounds.right),
-                bottom: Math.max(bounds.bottom, mapBounds.bottom)
-            };
-        }
-        this._createMap(newBounds);
-        return newBounds;
-    },
-
-    /**
      * Add a map layer from a girder item object.  The girder item should contain a
      * single image file (the first encountered will be used) or be registered
      * as a tiled image via the large_image plugin.
@@ -107,12 +86,13 @@ histomicstk.views.Visualization = girder.View.extend({
      * layer.
      *
      * @TODO: How do we pass in bounds?
+     * @TODO: Allow multiple layers (don't reset map on add).
      */
     addItem: function (item) {
         var promise;
 
         // first check if it is a tiled image
-        if (item.has('largeImage')) {
+        if (item.id === 'test' || item.has('largeImage')) {
             promise = girder.restRequest({
                 path: 'item/' + item.id + '/tiles'
             })
@@ -249,17 +229,6 @@ histomicstk.views.Visualization = girder.View.extend({
 
         this.$el.html(histomicstk.templates.visualization());
         this._controlView.setElement(this.$('.h-open-image-widget')).render();
-
-        /*
-        new girder.models.ItemModel({'_id': '56f55c0f62a8f80b77e45c68'})
-            .on('change', _.bind(function (item) {
-                this.addItem(item);
-            }, this)).fetch();
-        new girder.models.ItemModel({'_id': '56fd6d8c62a8f8692876ad89'})
-            .on('change', _.bind(function (item) {
-                this.addItem(item);
-            }, this)).fetch();
-        */
 
         return this;
     },
