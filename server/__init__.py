@@ -92,7 +92,7 @@ def createIndexedParamTaskSpec(param):
     curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
     curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
 
-    if param.typ in ['image', 'file', 'directory']:
+    if param.isExternalType():
         curTaskSpec['target'] = 'filepath'  # check
 
     return curTaskSpec
@@ -107,7 +107,7 @@ def addIndexedInputParams(index_input_params, taskSpec, handlerDesc):
         taskSpec['inputs'].append(curTaskSpec)
 
         # add to route description
-        if param.typ in ['image', 'file', 'directory']:
+        if param.isExternalType():
             handlerDesc.param(param.name + _girderInputFileSuffix,
                               'Girder ID of input %s - %s: %s'
                               % (param.typ, param.name, param.description),
@@ -154,7 +154,7 @@ def createOptionalParamTaskSpec(param):
     curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
     curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
 
-    if param.typ in ['image', 'file', 'directory']:
+    if param.isExternalType():
         curTaskSpec['target'] = 'filepath'  # check
 
     if param.channel != 'output':
@@ -166,7 +166,7 @@ def createOptionalParamTaskSpec(param):
             defaultValSpec['data'] = param.default
         elif param.typ == 'boolean':
             defaultValSpec['data'] = False
-        elif param.typ in ['image', 'file', 'directory']:
+        elif param.isExternalType():
             defaultValSpec['data'] = ""
         else:
             raise Exception(
@@ -188,7 +188,7 @@ def addOptionalInputParams(opt_input_params, taskSpec, handlerDesc):
         # add to route description
         defaultVal = curTaskSpec['default']['data']
 
-        if param.typ in ['image', 'file', 'directory']:
+        if param.isExternalType():
             handlerDesc.param(param.name + _girderInputFileSuffix,
                               'Girder ID of input %s - %s: %s'
                               % (param.typ, param.name, param.description),
@@ -205,7 +205,7 @@ def addOptionalOutputParams(opt_output_params, taskSpec, handlerDesc):
 
     for param in opt_output_params:
 
-        if not param.typ in ['image', 'file', 'directory']:
+        if not param.isExternalType():
             continue
 
         # add to task spec
