@@ -57,7 +57,7 @@ def getCLIParameters(clim):
     for param in index_params + opt_params:
         if param.typ not in _SLICER_TO_GIRDER_WORKER_TYPE_MAP.keys():
             raise Exception(
-                'Parameter type %s is currently not supported' % param.type
+                'Parameter type %s is currently not supported' % param.typ
             )
 
     # sort indexed parameters in increasing order of index
@@ -89,6 +89,7 @@ def createIndexedParamTaskSpec(param):
 
     curTaskSpec = dict()
     curTaskSpec['id'] = param.name
+    curTaskSpec['name'] = param.label
     curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
     curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[param.typ]
 
