@@ -1,6 +1,6 @@
 # This is the Dockerfile for the docker image used by all CLIs as a base image
 
-FROM: ubuntu:14.04
+FROM ubuntu:14.04
 MAINTAINER Deepak Chittajallu <deepak.chittajallu@kitware.com>
 
 # Install system prerequisites
