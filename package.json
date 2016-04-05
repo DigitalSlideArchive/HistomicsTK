@@ -16,6 +16,8 @@
     "bootstrap-slider": "^6.1.1",
     "tinycolor2": "^1.3.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "sinon": "^1.17.3"
+  },
   "scripts": {}
 }

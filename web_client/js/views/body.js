@@ -11,7 +11,7 @@ histomicstk.views.Body = girder.View.extend({
     render: function () {
         this.$el.html(histomicstk.templates.body());
         this.visView.setElement(this.$('#h-vis-container')).render();
-        this.panelGroupView.setElement(this.$('#h-panel-group-container')).render();
+        this.panelGroupView.setElement(this.$('#h-panel-controls-container')).render();
     },
     selectGui: function () {
         new histomicstk.views.GuiSelectorWidget({

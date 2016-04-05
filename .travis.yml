@@ -11,7 +11,25 @@ sudo: false
 compiler:
     - gcc
 
+addons:
+    apt:
+        packages:
+            # Pillow dependencies (see
+            # https://pillow.readthedocs.org/en/latest/installation.html)
+            - libtiff4-dev
+            - libjpeg8-dev
+            - zlib1g-dev
+            - libfreetype6-dev
+            - liblcms2-dev
+            - libwebp-dev
+            # vips
+            - libvips-tools
+            # openslide
+            - libopenjpeg-dev
+
 before_install:
+    - CACHE="$HOME/.cache" OPENSLIDE_VERSION="3.4.1" source .install-openslide.sh
+
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path
@@ -27,9 +45,8 @@ before_install:
     - cp $PWD/plugin_tests/data/girder_worker.cfg $girder_worker_path/girder_worker/worker.local.cfg
     - pip install -U -r $girder_worker_path/requirements.txt -r $girder_worker_path/girder_worker/plugins/girder_io/requirements.txt
 
-    - # TODO: install large_image server side deps, for the moment, we only need it for geojs
     - large_image_path=$girder_path/plugins/large_image
-    - git clone https://github.com/DigitalSlideArchive/large_image.git $large_image_path && git -C $large_image_path checkout 3a087579a77ee66fede87cf2b8f1f2faa7e91b4d
+    - git clone https://github.com/DigitalSlideArchive/large_image.git $large_image_path && git -C $large_image_path checkout d9331e7a5c6d3209a4805351e10051f6b6858641
 
     - export MONGO_VERSION=2.6.11
     - export PY_COVG="ON"
@@ -58,7 +75,7 @@ install:
     # https://github.com/pypa/pip/issues/2751
     - conda install --yes --file $main_path/requirements.txt setuptools==19.4
     - cd $girder_path
-    - pip install -U -r requirements.txt -r requirements-dev.txt -r $main_path/requirements.txt setuptools==19.4
+    - pip install -U -r requirements.txt -r requirements-dev.txt -r $main_path/requirements.txt -r $large_image_path/requirements.txt setuptools==19.4
     - npm install
 
 script:
