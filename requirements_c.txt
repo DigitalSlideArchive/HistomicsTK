@@ -13,3 +13,5 @@ numpy==1.10.2
 scikit-image==0.12.3
 scipy==0.16.0
 # If Conda is used, "libgfortran==1.0" must also be specified
+
+scikit-learn==0.17.1
