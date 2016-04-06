@@ -1,10 +1,10 @@
-#########################################################
+##############################################################################
 #
 # Add all python packages that depend on C libraries
 # and are not available on conda but present on pypi
 # here.
 #
-# If possible first try building them for conda and
+# Before adding first try building them for conda and
 # uploading them to a binstar channel using
 # the following commands:
 # conda skeleton pypi <package-name>
@@ -16,6 +16,9 @@
 # binstar upload linux-64/<package-file>
 # binstar upload osx-64/<package-file>
 #
-#########################################################
+# If successful add the package to requirements_conda.txt instead
+# and add the binstar channel using the command:
+# conda config --add channels https://conda.binstar.org/<username>
+#
+##############################################################################
 
-nimfa==1.2.3
