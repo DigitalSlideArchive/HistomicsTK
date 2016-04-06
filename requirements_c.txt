@@ -1,17 +1,21 @@
 #########################################################
 #
-# Add all python packages that depend on C libraries here
+# Add all python packages that depend on C libraries
+# and are not available on conda but present on pypi
+# here.
+#
+# If possible first try building them for conda and
+# uploading them to a binstar channel using
+# the following commands:
+# conda skeleton pypi <package-name>
+# conda build pypi <package-name>
+# conda convert <package-file> -p all
+# binstar upload win-64/<package-file>
+# binstar upload win-32/<package-file>
+# binstar upload linux-32/<package-file>
+# binstar upload linux-64/<package-file>
+# binstar upload osx-64/<package-file>
 #
 #########################################################
+
 nimfa==1.2.3
-
-# large_image requires numpy==1.10.2
-numpy==1.10.2
-
-# scikit-image / scipy / numpy have compatability bugs with some versions
-# Do not change these versions without extensive testing
-scikit-image==0.12.3
-scipy==0.16.0
-# If Conda is used, "libgfortran==1.0" must also be specified
-
-scikit-learn==0.17.1

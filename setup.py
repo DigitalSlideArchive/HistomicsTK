@@ -29,16 +29,22 @@ except RequirementParseError:
     raise
 requirements = [str(req) for req in ireqs]
 
+# if not on ReadTheDocs then add requirements depending on C libraries
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if not on_rtd:
-    try:
-        with open('requirements_c.txt') as f:
-            ireqs_c = parse_requirements(f.read())
-    except RequirementParseError:
-        raise
-    requirements_c = [str(req) for req in ireqs_c]
-    requirements = requirements + requirements_c
+
+    requirements_c_files = ['requirements_c_conda.txt',
+                            'requirements_c.txt']
+
+    for reqfile in requirements_c_files:
+        try:
+            with open(reqfile) as f:
+                ireqs_c = parse_requirements(f.read())
+        except RequirementParseError:
+            raise
+        cur_requirements = [str(req) for req in ireqs_c]
+        requirements += cur_requirements
 
 test_requirements = [
     # TODO: Should we list Girder here?
