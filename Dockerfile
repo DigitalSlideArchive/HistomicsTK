@@ -19,14 +19,13 @@ RUN conda update --yes --all
 
 # git clone HistomicsTK (toolkit with some core common functionality)
 RUN git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
-RUN git -C HistomicsTK checkout 2b004cca07f98b34cad054ec0de3f1e43cb219cf
+RUN git -C HistomicsTK checkout AutoCreateRESTEndPointForSlicerCLI
 
 # Install dependencies of HistomicsTK
 RUN conda config --add channels https://conda.binstar.org/cdeepakroy
-RUN conda install --yes \
-    libgfortran==1.0 numpy==1.10.2 scipy==0.16.0 \
-    scikit-image==0.12.3 scikit-learn==0.17.1
-RUN conda install --yes --file HistomicsTK/requirements.txt
+RUN conda install --yes libgfortran==1.0 \
+    --file HistomicsTK/requirements.txt \
+    --file HistomicsTK/requirements_c_conda.txt
 RUN pip install -r HistomicsTK/requirements_c.txt
 
 # Install HistomicsTK
