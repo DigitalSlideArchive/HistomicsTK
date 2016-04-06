@@ -4,21 +4,23 @@ histomicstk.views.FileSelectorWidget = girder.View.extend({
             id: settings.id,
             name: settings.name
         };
-        this._hierarchyView = new girder.views.HierarchyWidget({
+    },
+
+    render: function () {
+        var hierarchyView = new girder.views.HierarchyWidget({
             parentView: this,
-            parentModel: girder.currentUser,
+            parentModel: histomicstk.rootPath,
             checkboxes: false,
             routing: false,
             showActions: false,
             onItemClick: _.bind(this._selectItem, this)
         });
-    },
 
-    render: function () {
         this.$el.html(
             histomicstk.templates.fileSelectorWidget(this._target)
         ).girderModal(this);
-        this._hierarchyView.setElement(this.$('.modal-body')).render();
+
+        hierarchyView.setElement(this.$('.modal-body')).render();
     },
 
     _selectItem: function (item) {

@@ -599,7 +599,7 @@ describe('control widget view', function () {
         checkWidgetCommon(w);
 
         w.$('.h-select-file-button').click();
-        expect(arg.parentModel).toBe(girder.currentUser);
+        expect(arg.parentModel).toBe(histomicstk.rootPath);
         arg.onItemClick(item);
         expect(w.model.value()).toBe('model id');
 
