@@ -19,7 +19,7 @@ RUN conda update --yes --all
 
 # git clone HistomicsTK (toolkit with some core common functionality)
 RUN git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
-RUN git -C HistomicsTK checkout 88b7000f4e94670f6b76acc784fac68a245fa1ce
+RUN git -C HistomicsTK checkout AutoCreateRESTEndPointForSlicerCLI
 RUN cd HistomicsTK && ls -alrth
 
 # Install dependencies of HistomicsTK
