@@ -11,7 +11,7 @@ histomicstk.models.Widget = Backbone.Model.extend({
 
         // optional attributes only used for certain widget types
         /*
-        girderModel: {},   // An associate girder model object
+        root: {},          // A root object for hierarchy widgets
         min: undefined,    // A minimum value
         max: undefined,    // A maximum value
         step: 1            // Discrete value intervals

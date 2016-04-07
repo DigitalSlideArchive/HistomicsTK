@@ -117,7 +117,8 @@ histomicstk.views.ControlWidget = girder.View.extend({
             el: $('#g-dialog-container'),
             id: id,
             name: name,
-            parentView: this
+            parentView: this,
+            model: this.model
         });
         modal.on('g:saved', _.bind(function (item) {
             this.model.set('value', item.id);

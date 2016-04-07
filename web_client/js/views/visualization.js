@@ -8,7 +8,8 @@ histomicstk.views.Visualization = girder.View.extend({
 
         // control model for file widget
         this._controlModel = new histomicstk.models.Widget({
-            type: 'file'
+            type: 'file',
+            root: histomicstk.rootPath
         });
 
         // control widget view
@@ -17,7 +18,7 @@ histomicstk.views.Visualization = girder.View.extend({
             model: this._controlModel
         });
 
-        this.listenTo(this._controlModel, 'change', function (model) {
+        this.listenTo(this._controlModel, 'change:value', function (model) {
             var id = model.get('value');
             girder.restRequest({
                 path: 'item/' + id
