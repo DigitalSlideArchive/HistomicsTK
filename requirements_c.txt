@@ -4,21 +4,6 @@
 # and are not available on conda but present on pypi
 # here.
 #
-# Before adding first try building them for conda and
-# uploading them to a binstar channel using
-# the following commands:
-# conda skeleton pypi <package-name>
-# conda build pypi <package-name>
-# conda convert <package-file> -p all
-# binstar upload win-64/<package-file>
-# binstar upload win-32/<package-file>
-# binstar upload linux-32/<package-file>
-# binstar upload linux-64/<package-file>
-# binstar upload osx-64/<package-file>
-#
-# If successful add the package to requirements_conda.txt instead
-# and add the binstar channel using the command:
-# conda config --add channels https://conda.binstar.org/<username>
-#
 ##############################################################################
 
+nimfa==1.2.3
