@@ -35,5 +35,3 @@ RUN git clone https://github.com/DigitalSlideArchive/HistomicsTK.git && \
     conda clean -i -l -t -y && \
     rm -rf /root/.cache/pip/*
 
-
-
