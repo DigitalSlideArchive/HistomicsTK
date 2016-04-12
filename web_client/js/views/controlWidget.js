@@ -23,6 +23,12 @@ histomicstk.views.ControlWidget = girder.View.extend({
         return this;
     },
 
+    remove: function () {
+        this.$('.h-control-item[data-type="color"] .input-group').colorpicker('destroy');
+        this.$('.h-control-item[data-type="range"] input').slider('destroy');
+        this.$el.empty();
+    },
+
     /**
      * Set classes on the input element to indicate to the user that the current value
      * is invalid.  This is automatically triggered by the model's "invalid" event.
@@ -109,14 +115,9 @@ histomicstk.views.ControlWidget = girder.View.extend({
      * Get the value from a file selection modal and set the text in the widget's
      * input element.
      */
-    _selectFile: function (evt) {
-        var input = $(evt.target).closest('.input-group').find('input');
-        var id = input.attr('id');
-        var name = input.attr('name');
-        var modal = new histomicstk.views.FileSelectorWidget({
+    _selectFile: function () {
+        var modal = new histomicstk.views.ItemSelectorWidget({
             el: $('#g-dialog-container'),
-            id: id,
-            name: name,
             parentView: this,
             model: this.model
         });

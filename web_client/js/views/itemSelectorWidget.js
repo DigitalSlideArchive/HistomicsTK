@@ -1,11 +1,4 @@
-histomicstk.views.FileSelectorWidget = girder.View.extend({
-    initialize: function (settings) {
-        this._target = {
-            id: settings.id,
-            name: settings.name
-        };
-    },
-
+histomicstk.views.ItemSelectorWidget = girder.View.extend({
     render: function () {
         var hierarchyView = new girder.views.HierarchyWidget({
             parentView: this,
@@ -17,7 +10,7 @@ histomicstk.views.FileSelectorWidget = girder.View.extend({
         });
 
         this.$el.html(
-            histomicstk.templates.fileSelectorWidget(this._target)
+            histomicstk.templates.itemSelectorWidget(this.model.attributes)
         ).girderModal(this);
 
         hierarchyView.setElement(this.$('.modal-body')).render();
