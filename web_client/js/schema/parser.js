@@ -100,7 +100,8 @@ histomicstk.schema = {
                 slicerType: param.tagName,
                 id: $param.find('name').text() || $param.find('longflag').text(),
                 title: $param.find('label').text(),
-                description: $param.find('description').text()
+                description: $param.find('description').text(),
+                channel: $param.find('channel').length ? $param.find('channel').text() : 'input'
             },
             values,
             this._parseDefault(type, $param.find('default')),
@@ -129,7 +130,8 @@ histomicstk.schema = {
             'double-enumeration': 'number-enumeration',
             'string-enumeration': 'string-enumeration',
             image: 'file',
-            file: 'file'
+            file: 'file',
+            directory: 'directory'
         };
         return typeMap[param.tagName];
     },

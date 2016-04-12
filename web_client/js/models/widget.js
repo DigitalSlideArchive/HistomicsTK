@@ -227,6 +227,16 @@ histomicstk.models.Widget = Backbone.Model.extend({
     },
 
     /**
+     * True if the value represents a model stored in girder.
+     */
+    isGirderModel: function () {
+        return _.contains(
+            ['directory', 'file', 'new-file'],
+            this.get('type')
+        );
+    },
+
+    /**
      * True if the value represents a file stored in girder.
      */
     isFile: function () {
@@ -253,7 +263,9 @@ histomicstk.models.Widget = Backbone.Model.extend({
         'string-vector',
         'number-enumeration',
         'string-enumeration',
-        'file'
+        'file',
+        'directory',
+        'new-file'
     ]
 });
 
