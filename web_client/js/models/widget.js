@@ -11,7 +11,8 @@ histomicstk.models.Widget = Backbone.Model.extend({
 
         // optional attributes only used for certain widget types
         /*
-        root: {},          // A root object for hierarchy widgets
+        parent: {},        // A parent girder model
+        path: [],          // The path of a girder model in a folder hierarchy
         min: undefined,    // A minimum value
         max: undefined,    // A maximum value
         step: 1            // Discrete value intervals
@@ -91,7 +92,7 @@ histomicstk.models.Widget = Backbone.Model.extend({
                 value = {r: value[0], g: value[1], b: value[2]};
             }
             value = tinycolor(value).toHexString();
-        } else {
+        } else if (!this.isGirderModel()) {
             value = value.toString();
         }
         return value;
@@ -107,6 +108,8 @@ histomicstk.models.Widget = Backbone.Model.extend({
 
         if (this.isVector()) {
             return this._validateVector(model.value);
+        } else if (this.isGirderModel()) {
+            return this._validateGirderModel(model);
         }
         return this._validateValue(model.value);
     },
@@ -121,7 +124,7 @@ histomicstk.models.Widget = Backbone.Model.extend({
             out = this._validateNumeric(value);
         }
         if (this.isEnumeration() && !_.contains(this.get('values'), this.normalize(value))) {
-            out = 'Invalid valid choice';
+            out = 'Invalid value choice';
         }
         return out;
     },
@@ -183,6 +186,28 @@ histomicstk.models.Widget = Backbone.Model.extend({
     },
 
     /**
+     * Validate a widget that selects a girder model.
+     * @note This method is synchronous, so it cannot validate
+     * the model on the server.
+     */
+    _validateGirderModel: function (model) {
+        var parent;
+        if (!model.value) {
+            return 'Empty value';
+        }
+
+        switch (this.get('type')) {
+            case 'new-file':
+                parent = model.parent;
+                if (!parent || parent.resourceName !== 'folder') {
+                    return 'Invalid parent model';
+                }
+                break;
+            // other model types...
+        }
+    },
+
+    /**
      * True if the value should be coerced as a number.
      */
     isNumeric: function () {
@@ -227,7 +252,8 @@ histomicstk.models.Widget = Backbone.Model.extend({
     },
 
     /**
-     * True if the value represents a model stored in girder.
+     * True if the value represents a model stored in a girder
+     * collection/folder/item hierarchy.
      */
     isGirderModel: function () {
         return _.contains(
@@ -280,7 +306,7 @@ histomicstk.collections.Widget = Backbone.Collection.extend({
     values: function () {
         var params = {};
         this.each(function (m) {
-            params[m.id] = m.get('value');
+            params[m.id] = m.value();
         });
         return params;
     }

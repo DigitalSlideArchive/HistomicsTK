@@ -17,7 +17,7 @@ histomicstk.views.ControlWidget = girder.View.extend({
         if (options && options.norender) {
             return this;
         }
-        this.$el.html(this.template()(this.model.toJSON()));
+        this.$el.html(this.template()(this.model.attributes));
         this.$('.h-control-item[data-type="range"] input').slider();
         this.$('.h-control-item[data-type="color"] .input-group').colorpicker({});
         return this;
@@ -72,6 +72,12 @@ histomicstk.views.ControlWidget = girder.View.extend({
         },
         file: {
             template: 'fileWidget'
+        },
+        directory: {
+            template: 'fileWidget'
+        },
+        'new-file': {
+            template: 'fileWidget'
         }
     },
 
@@ -102,7 +108,7 @@ histomicstk.views.ControlWidget = girder.View.extend({
             val = $el.get(0).checked;
         }
         if (this.model.isVector()) {
-            old = this.model.value().slice();
+            old = this.model.get('value').slice();
             old[$el.data('vectorComponent')] = val;
             val = old;
         }
@@ -121,8 +127,7 @@ histomicstk.views.ControlWidget = girder.View.extend({
             parentView: this,
             model: this.model
         });
-        modal.on('g:saved', _.bind(function (item) {
-            this.model.set('value', item.id);
+        modal.on('g:saved', _.bind(function () {
             modal.$el.modal('hide');
         }, this)).render();
     }

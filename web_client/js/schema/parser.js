@@ -81,6 +81,17 @@ histomicstk.schema = {
         var $param = $(param);
         var type = this._widgetType(param);
         var values = {};
+        var channel = $param.find('channel');
+
+        if (channel.length) {
+            channel = channel.text();
+        } else {
+            channel = 'input';
+        }
+
+        if (type === 'file' && channel === 'output') {
+            type = 'new-file';
+        }
 
         if (!type) {
             console.warn('Unhandled parameter type "' + param.tagName + '"'); // eslint-disable-line no-console
@@ -101,7 +112,7 @@ histomicstk.schema = {
                 id: $param.find('name').text() || $param.find('longflag').text(),
                 title: $param.find('label').text(),
                 description: $param.find('description').text(),
-                channel: $param.find('channel').length ? $param.find('channel').text() : 'input'
+                channel: channel
             },
             values,
             this._parseDefault(type, $param.find('default')),

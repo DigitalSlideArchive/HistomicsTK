@@ -285,7 +285,7 @@ describe('XML Schema parser', function () {
             expect(histomicstk.schema._parseParam(
                 $(xml).find('file').get(0)
             )).toEqual({
-                type: 'file',
+                type: 'new-file',
                 slicerType: 'file',
                 id: 'foo',
                 title: 'arg1',

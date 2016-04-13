@@ -580,9 +580,18 @@ describe('control widget view', function () {
     it('file', function () {
         var arg, item = new Backbone.Model({id: 'model id'});
         var hwidget = girder.views.HierarchyWidget;
+
+
+        item.name = function () {
+            return 'b';
+        };
+
         girder.views.HierarchyWidget = Backbone.View.extend({
             initialize: function (_arg) {
                 arg = _arg;
+                this.breadcrumbs = [{
+                    get: function () { return 'a'; }
+                }];
             }
         });
         var w = new histomicstk.views.ControlWidget({
@@ -601,7 +610,9 @@ describe('control widget view', function () {
         w.$('.h-select-file-button').click();
         expect(arg.parentModel).toBe(histomicstk.rootPath);
         arg.onItemClick(item);
-        expect(w.model.value()).toBe('model id');
+        expect(w.model.value().name()).toBe('b');
+
+        expect(w.model.get('path')).toEqual(['a']);
 
         girder.views.HierarchyWidget = hwidget;
     });
