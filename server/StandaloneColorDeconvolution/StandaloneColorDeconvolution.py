@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from ctk_cli import CLIArgumentParser
 import logging
 logging.basicConfig()
