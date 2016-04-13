@@ -10,6 +10,7 @@
         | Select a #{t}#{name}
     .modal-body(
       data-target-id='#{id}')
+      .alert.alert-danger.h-modal-error.hidden
       .h-hierarchy-widget
       if type === 'new-file'
         .form-group

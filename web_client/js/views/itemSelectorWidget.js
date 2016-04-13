@@ -42,17 +42,28 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
     _selectButton: function () {
         var inputEl = this.$('#h-new-file-name');
         var inputElGroup =  inputEl.parent();
-        var fileName = inputEl.val() || '';
+        var fileName = inputEl.val();
         var type = this.model.get('type');
         var parent = this._hierarchyView.parentModel;
+        var errorEl = this.$('.h-modal-error').addClass('hidden');
 
         inputElGroup.removeClass('has-error');
 
         switch (type) {
             case 'new-file':
 
-                if (fileName === '') {
+                // a file name must be provided
+                if (!fileName) {
                     inputElGroup.addClass('has-error');
+                    errorEl.removeClass('hidden')
+                        .text('You must provide a name for the new file.');
+                    return;
+                }
+
+                // the parent must be a folder
+                if (parent.resourceName !== 'folder') {
+                    errorEl.removeClass('hidden')
+                        .text('Files cannot be added under collections.');
                     return;
                 }
 
