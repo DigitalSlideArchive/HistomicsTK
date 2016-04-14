@@ -40,13 +40,32 @@ histomicstk.views.PanelGroup = girder.View.extend({
      * Submit the current values to the server.
      */
     submit: function () {
+        var params;
+
         if (!this.validate()) {
             return;
         }
 
-        // todo
-        console.log('Submit ' + this._schemaName); // eslint-disable-line no-console
-        console.log(JSON.stringify(this.parameters(), null, 2)); // eslint-disable-line no-console
+        params = this.parameters();
+        _.each(params, function (value, key) {
+            if (_.isArray(value)) {
+                params[key] = JSON.stringify(value)
+            }
+        });
+
+        // For the widget demo, just print the parameters to the console
+        if (this._schemaName === 'demo') {
+            console.log('Submit'); // eslint-disable-line no-console
+            console.log(JSON.stringify(params, null, 2)); // eslint-disable-line no-console
+            return;
+        }
+
+        // post the job to the server
+        girder.restRequest({
+            path: 'HistomicsTK/' + this._schemaName + '/run',
+            type: 'POST',
+            data: params
+        });
     },
 
     /**
