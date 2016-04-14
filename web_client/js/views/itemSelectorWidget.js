@@ -24,9 +24,14 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
      * Get the currently displayed path in the hierarchy view.
      */
     _path: function () {
-        return this._hierarchyView.breadcrumbs.map(function (d) {
+        var path = this._hierarchyView.breadcrumbs.map(function (d) {
             return d.get('name');
         });
+
+        if (this.model.get('type') === 'directory') {
+            path = _.initial(path)
+        }
+        return path;
     },
 
     _selectItem: function (item) {
