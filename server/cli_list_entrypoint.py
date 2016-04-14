@@ -78,9 +78,20 @@ def CLIListEntrypoint(cli_list_spec_file=None):
     args.cli = os.path.normpath(args.cli)
 
     if cli_list_spec[args.cli]['type'] == 'python':
+
         script_file = os.path.join(args.cli,
                                    os.path.basename(args.cli) + '.py')
+
+        # python <cli-rel-path>/<cli-name>.py [<args>]
         subprocess.call(['python', script_file] + sys.argv[2:])
+
+    elif cli_list_spec[args.cli]['type'] == 'cxx':
+
+        script_file = os.path.join('.', args.cli, os.path.basename(args.cli))
+
+        # ./<cli-rel-path>/<cli-name> [<args>]
+        subprocess.call(script_file + sys.argv[2:])
+
     else:
         raise Exception(
             'CLIs of type %s are not supported',
