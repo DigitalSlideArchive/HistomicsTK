@@ -1,13 +1,10 @@
 #!/usr/bin/env python
-
 import os
 import sys
 import json
-import lxml
 import argparse
-import textwrap
 import subprocess
-
+import textwrap as _textwrap
 
 class _MultilineHelpFormatter(argparse.HelpFormatter):
     def _fill_text(self, text, width, indent):
