@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-from ctk_cli import CLIArgumentParser
-import logging
-logging.basicConfig()
-
 import numpy as np
 import skimage.io
 import histomicstk as htk
+from ctk_cli import CLIArgumentParser
 
+import logging
+logging.basicConfig()
 
 def main(args):
 

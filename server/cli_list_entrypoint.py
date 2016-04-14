@@ -6,6 +6,7 @@ import argparse
 import subprocess
 import textwrap as _textwrap
 
+
 class _MultilineHelpFormatter(argparse.HelpFormatter):
     def _fill_text(self, text, width, indent):
         text = self._whitespace_matcher.sub(' ', text).strip()
@@ -100,3 +101,4 @@ def CLIListEntrypoint(cli_list_spec_file=None):
 
 if __name__ == "__main__":
     CLIListEntrypoint()
+
