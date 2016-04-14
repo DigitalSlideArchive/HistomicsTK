@@ -793,7 +793,7 @@ def _addOptionalOutputParamsToContainerArgs(opt_output_params,
             containerArgs.append(curFlag, curValue)
 
 
-def _addCodeToSetReturnParameterFile(containerArgs, kwargs, hargs):
+def _addReturnParameterFileToContainerArgs(containerArgs, kwargs, hargs):
 
     curName = _return_parameter_file_name
 
@@ -985,7 +985,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
         _addOptionalOutputParamsToContainerArgs(opt_input_params,
                                                 containerArgs, kwargs, hargs)
 
-        _addCodeToSetReturnParameterFile(containerArgs, kwargs, hargs)
+        _addReturnParameterFileToContainerArgs(containerArgs, kwargs, hargs)
 
         _addIndexedParamsToContainerArgs(index_params,
                                          containerArgs, hargs)
@@ -1030,6 +1030,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
 
     return handlerFunc
 
+
 def genHandlerToGetDockerCLIXmlSpec(dockerImage, cliRelPath, restResource):
     """Generates a handler that returns the XML spec of the docker CLI
 
@@ -1057,7 +1058,7 @@ def genHandlerToGetDockerCLIXmlSpec(dockerImage, cliRelPath, restResource):
     @boundHandler(restResource)
     @access.user
     @describeRoute(
-        Description('Get XML spec of %s CLI' % xmlName)
+        Description('Get XML spec of %s CLI' % cliRelPath)
     )
     def getXMLSpecHandler(self, *args, **kwargs):
         return str_xml
