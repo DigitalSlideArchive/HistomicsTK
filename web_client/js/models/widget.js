@@ -306,7 +306,19 @@ histomicstk.collections.Widget = Backbone.Collection.extend({
     values: function () {
         var params = {};
         this.each(function (m) {
-            params[m.id] = m.value();
+            // apply special handling for certain parameter types
+            // https://github.com/DigitalSlideArchive/HistomicsTK/blob/9e5112ab3444ad8c699d70452a5fe4a74ebbc778/server/__init__.py#L44-L46
+            switch (m.get('type')) {
+                case 'file':
+                    params[m.id + '_girderItemId'] = m.value().id;
+                    break;
+                case 'new-file':
+                    params[m.id + '_girderFolderId'] = m.value().get('folderId');
+                    params[m.id + '_name'] = m.value().get('name');
+                    break;
+                default:
+                    params[m.id] = m.value();
+            }
         });
         return params;
     }

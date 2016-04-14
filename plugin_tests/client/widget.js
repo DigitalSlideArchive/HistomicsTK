@@ -306,7 +306,8 @@ describe('widget collection', function () {
             {type: 'number-vector', id: 'number-vector', value: '1,2,3'},
             {type: 'string-enumeration', id: 'string-enumeration', values: ['a'], value: 'a'},
             {type: 'number-enumeration', id: 'number-enumeration', values: [1], value: '1'},
-            {type: 'file', id: 'file', value: 'a'}
+            {type: 'file', id: 'file', value: new Backbone.Model({id: 'a'})},
+            {type: 'new-file', id: 'new-file', value: new Backbone.Model({name: 'a', folderId: 'b'})}
         ]);
 
         expect(c.values()).toEqual({
@@ -319,7 +320,9 @@ describe('widget collection', function () {
             'number-vector': [1, 2, 3],
             'string-enumeration': 'a',
             'number-enumeration': 1,
-            file: 'a'
+            'file_girderItemId': 'a',
+            'new-file_girderFolderId': 'b',
+            'new-file_name': 'a'
         });
     });
 });
