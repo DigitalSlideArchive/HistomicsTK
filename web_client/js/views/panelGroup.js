@@ -31,6 +31,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
         _.each(this._panelViews, function (view) {
             view.remove();
         });
+        this._panelViews = {};
         this._jobsPanelView.setElement(this.$('.h-jobs-panel')).render();
         _.each(this.panels, _.bind(function (panel) {
             this._panelViews[panel.id] = new histomicstk.views.ControlsPanel({
