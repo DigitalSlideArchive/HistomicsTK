@@ -50,9 +50,16 @@ histomicstk.views.PanelGroup = girder.View.extend({
      * Submit the current values to the server.
      */
     submit: function () {
-        var params;
+        var params, invalid = false;
 
-        if (!this.validate()) {
+        invalid = this.invalidModels();
+
+        if (invalid.length) {
+            girder.events.trigger('g:alert', {
+                icon: 'attention',
+                text: 'Please enter a valid value for: ' + invalid.map(function (m) {return m.get('title');}).join(', '),
+                type: 'danger'
+            });
             return;
         }
 
