@@ -743,11 +743,14 @@ def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
     setattr(info['apiRoot'], restResourceName, restResource)
 
 
-def getParamCommandLineValue(param, value):
+def _getParamCommandLineValue(param, value):
     if param.isVector():
-        return ','.join(map(str, value))
+        cmdVal = '"%s"' % ', '.join(map(str, json.loads(value)))
+        print param.name, value, cmdVal
     else:
-        return str(value)
+        cmdVal = str(value)
+
+    return cmdVal
 
 
 def _addOptionalInputParamsToContainerArgs(opt_input_params,
@@ -756,21 +759,22 @@ def _addOptionalInputParamsToContainerArgs(opt_input_params,
     for param in opt_input_params:
 
         if param.longflag:
-            curFlag = '--' + param.longflag
+            curFlag = param.longflag
         elif param.flag:
-            curFlag = '-' + param.flag
+            curFlag = param.flag
         else:
             continue
 
         if _is_on_girder(param) and param.name in hargs:
             curValue = hargs[param.name]
         elif param.name in hargs['params']:
-            curValue = getParamCommandLineValue(param,
-                                                hargs['params'][param.name])
+            curValue = _getParamCommandLineValue(param,
+                                                 hargs['params'][param.name])
         else:
             continue
 
-        containerArgs.append(curFlag, curValue)
+        containerArgs.append(curFlag)
+        containerArgs.append(curValue)
 
 
 def _addOptionalOutputParamsToContainerArgs(opt_output_params,
@@ -779,9 +783,9 @@ def _addOptionalOutputParamsToContainerArgs(opt_output_params,
     for param in opt_output_params:
 
         if param.longflag:
-            curFlag = '--' + param.longflag
+            curFlag = param.longflag
         elif param.flag:
-            curFlag = '-' + param.flag
+            curFlag = param.flag
         else:
             continue
 
@@ -791,7 +795,8 @@ def _addOptionalOutputParamsToContainerArgs(opt_output_params,
                 '/data', hargs['params'][param.name + _girderOutputNameSuffix]
             )
 
-            containerArgs.append(curFlag, curValue)
+            containerArgs.append(curFlag)
+            containerArgs.append(curValue)
 
 
 def _addReturnParameterFileToContainerArgs(containerArgs, kwargs, hargs):
@@ -806,7 +811,8 @@ def _addReturnParameterFileToContainerArgs(containerArgs, kwargs, hargs):
             '/data', hargs['params'][curName + _girderOutputNameSuffix]
         )
 
-        containerArgs.append(curFlag, curValue)
+        containerArgs.append(curFlag)
+        containerArgs.append(curValue)
 
 
 def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
@@ -815,10 +821,15 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
 
         if param.channel == 'input':
 
-            if param.name in hargs:
-                curValue = hargs[param.name]
+            if _is_on_girder(param):
+                curValue = os.path.join(
+                    '/data', hargs[param.name]['name']
+                )
             else:
-                curValue = hargs['params'][param.name]
+                curValue = _getParamCommandLineValue(
+                    param,
+                    hargs['params'][param.name]
+                )
 
         elif param.channel == 'output':
 
@@ -838,7 +849,7 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
         else:
             continue
 
-    containerArgs.append(curValue)
+        containerArgs.append(curValue)
 
 
 def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
@@ -1115,9 +1126,15 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
     else:
         dockerImages = [dockerImages]
 
+    print restResource
+
     # create REST resource if given a name
     if isinstance(restResource, str):
-        restResource = type(restResource, (Resource, ), {})()
+        restResource = type(restResource,
+                            (Resource, ),
+                            {'resourceName': restResource})()
+
+    restResourceName = type(restResource).__name__
 
     # Add REST routes for slicer CLIs in each docker image
     cliList = []
@@ -1127,6 +1144,10 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
         # get CLI list
         cliListSpec = subprocess.check_output(['docker', 'run',
                                                dimg, '--list_cli'])
+
+        pprint.pprint(cliListSpec)
+
+        cliListSpec = json.loads(cliListSpec)
 
         # Add REST end-point for each CLI
         for cliRelPath in cliListSpec.keys():
@@ -1182,8 +1203,10 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
     setattr(restResource, getCLIListHandlerName, getCLIListHandler)
     restResource.route('GET', (), getattr(restResource, getCLIListHandlerName))
 
+    print type(restResource).__name__
+
     # expose the generated REST resource via apiRoot
-    setattr(info['apiRoot'], restResource.__name__, restResource)
+    setattr(info['apiRoot'], restResourceName, restResource)
 
     # return restResource
     return restResource
