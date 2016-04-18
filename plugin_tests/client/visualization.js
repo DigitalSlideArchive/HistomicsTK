@@ -27,7 +27,7 @@ girderTest.addCoveredScripts([
     '/plugins/HistomicsTK/web_client/js/views/browserPanel.js',
     '/plugins/HistomicsTK/web_client/js/views/controlsPanel.js',
     '/plugins/HistomicsTK/web_client/js/views/controlWidget.js',
-    '/plugins/HistomicsTK/web_client/js/views/fileSelectorWidget.js',
+    '/plugins/HistomicsTK/web_client/js/views/itemSelectorWidget.js',
     '/plugins/HistomicsTK/web_client/js/views/guiSelectorWidget.js',
     '/plugins/HistomicsTK/web_client/js/views/header.js',
     '/plugins/HistomicsTK/web_client/js/views/jobsPanel.js',

@@ -9,6 +9,14 @@ histomicstk.views.PanelGroup = girder.View.extend({
         this._panelViews = {};
         this._schemaName = null;
 
+        this._jobsPanelView = new histomicstk.views.JobsPanel({
+            parentView: this,
+            spec: {
+                title: 'Jobs',
+                collapsed: true
+            }
+        });
+
         // render a specific schema
         this.listenTo(histomicstk.router, 'route:gui', this.schema);
 
@@ -23,6 +31,8 @@ histomicstk.views.PanelGroup = girder.View.extend({
         _.each(this._panelViews, function (view) {
             view.remove();
         });
+        this._panelViews = {};
+        this._jobsPanelView.setElement(this.$('.h-jobs-panel')).render();
         _.each(this.panels, _.bind(function (panel) {
             this._panelViews[panel.id] = new histomicstk.views.ControlsPanel({
                 parentView: this,
@@ -40,13 +50,39 @@ histomicstk.views.PanelGroup = girder.View.extend({
      * Submit the current values to the server.
      */
     submit: function () {
-        if (!this.validate()) {
+        var params, invalid = false;
+
+        invalid = this.invalidModels();
+
+        if (invalid.length) {
+            girder.events.trigger('g:alert', {
+                icon: 'attention',
+                text: 'Please enter a valid value for: ' + invalid.map(function (m) {return m.get('title');}).join(', '),
+                type: 'danger'
+            });
             return;
         }
 
-        // todo
-        console.log('Submit ' + this._schemaName); // eslint-disable-line no-console
-        console.log(JSON.stringify(this.parameters(), null, 2)); // eslint-disable-line no-console
+        params = this.parameters();
+        _.each(params, function (value, key) {
+            if (_.isArray(value)) {
+                params[key] = JSON.stringify(value)
+            }
+        });
+
+        // For the widget demo, just print the parameters to the console
+        if (this._schemaName === 'demo') {
+            console.log('Submit'); // eslint-disable-line no-console
+            console.log(JSON.stringify(params, null, 2)); // eslint-disable-line no-console
+            return;
+        }
+
+        // post the job to the server
+        girder.restRequest({
+            path: 'HistomicsTK/' + this._schemaName + '/run',
+            type: 'POST',
+            data: params
+        });
     },
 
     /**

@@ -86,6 +86,7 @@ describe('XML Schema parser', function () {
                 slicerType: 'integer',
                 id: 'foo',
                 title: 'arg1',
+                channel: 'input',
                 description: 'An integer'
             });
         });
@@ -104,6 +105,7 @@ describe('XML Schema parser', function () {
                 slicerType: 'string',
                 id: 'foo',
                 title: 'arg1',
+                channel: 'input',
                 description: 'A description'
             });
         });
@@ -121,6 +123,7 @@ describe('XML Schema parser', function () {
                 type: 'boolean',
                 slicerType: 'boolean',
                 id: 'foo',
+                channel: 'input',
                 title: 'arg1',
                 description: 'A description'
             });
@@ -141,6 +144,7 @@ describe('XML Schema parser', function () {
                 slicerType: 'double-vector',
                 id: 'foo',
                 title: 'arg1',
+                channel: 'input',
                 description: 'A vector',
                 value: [1.5, 2.0, 2.5]
             });
@@ -160,6 +164,7 @@ describe('XML Schema parser', function () {
                 slicerType: 'string-vector',
                 id: 'foo',
                 title: 'arg1',
+                channel: 'input',
                 description: 'A description'
             });
         });
@@ -183,6 +188,7 @@ describe('XML Schema parser', function () {
                 id: 'foo',
                 title: 'arg1',
                 description: 'A choice',
+                channel: 'input',
                 value: 1.5,
                 values: [1.5, 2.5, 3.5]
             });
@@ -203,7 +209,88 @@ describe('XML Schema parser', function () {
                 id: 'foo',
                 title: 'arg1',
                 description: 'A description',
+                channel: 'input',
                 values: []
+            });
+        });
+        it('file', function () {
+            var xml = $.parseXML(
+                '<file>' +
+                '<longflag>foo</longflag>' +
+                '<channel>input</channel>' +
+                '<label>arg1</label>' +
+                '<description>A description</description>' +
+                '</file>'
+            );
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('file').get(0)
+            )).toEqual({
+                type: 'file',
+                slicerType: 'file',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A description',
+                channel: 'input'
+            });
+        });
+        it('directory', function () {
+            var xml = $.parseXML(
+                '<directory>' +
+                '<longflag>foo</longflag>' +
+                '<channel>input</channel>' +
+                '<label>arg1</label>' +
+                '<description>A description</description>' +
+                '</directory>'
+            );
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('directory').get(0)
+            )).toEqual({
+                type: 'directory',
+                slicerType: 'directory',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A description',
+                channel: 'input'
+            });
+        });
+        it('image', function () {
+            var xml = $.parseXML(
+                '<image>' +
+                '<longflag>foo</longflag>' +
+                '<channel>input</channel>' +
+                '<label>arg1</label>' +
+                '<description>A description</description>' +
+                '</image>'
+            );
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('image').get(0)
+            )).toEqual({
+                type: 'file',
+                slicerType: 'image',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A description',
+                channel: 'input'
+            });
+        });
+        it('output file', function () {
+            var xml = $.parseXML(
+                '<file>' +
+                '<longflag>foo</longflag>' +
+                '<channel>output</channel>' +
+                '<label>arg1</label>' +
+                '<description>A description</description>' +
+                '</file>'
+            );
+            expect(histomicstk.schema._parseParam(
+                $(xml).find('file').get(0)
+            )).toEqual({
+                type: 'new-file',
+                slicerType: 'file',
+                id: 'foo',
+                title: 'arg1',
+                description: 'A description',
+                channel: 'output'
             });
         });
     });
@@ -547,6 +634,7 @@ describe('XML Schema parser', function () {
                           'id': 'integerVariable',
                           'title': 'Integer Parameter',
                           'description': 'An integer without constraints',
+                          'channel': 'input',
                           'value': 30
                         }
                       ]
@@ -561,6 +649,7 @@ describe('XML Schema parser', function () {
                           'id': 'doubleVariable',
                           'title': 'Double Parameter',
                           'description': 'An double with constraints',
+                          'channel': 'input',
                           'value': 30,
                           'min': 0,
                           'max': 1000,
@@ -583,6 +672,7 @@ describe('XML Schema parser', function () {
                           'id': 'floatVector',
                           'title': 'Float Vector Parameter',
                           'description': 'A vector of floats',
+                          'channel': 'input',
                           'value': [
                             1.3,
                             2,
@@ -595,6 +685,7 @@ describe('XML Schema parser', function () {
                           'id': 'stringVector',
                           'title': 'String Vector Parameter',
                           'description': 'A vector of strings',
+                          'channel': 'input',
                           'value': [
                             '"foo"',
                             'bar',
@@ -618,6 +709,7 @@ describe('XML Schema parser', function () {
                           'id': 'stringChoice',
                           'title': 'String Enumeration Parameter',
                           'description': 'An enumeration of strings',
+                          'channel': 'input',
                           'values': [
                             'foo',
                             '"foobar"',
