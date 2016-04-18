@@ -911,6 +911,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
     taskSpec = {'name': cliName,
                 'mode': 'docker',
                 'docker_image': dockerImage,
+                'pull_image': True,
                 'inputs': [],
                 'outputs': []}
 
