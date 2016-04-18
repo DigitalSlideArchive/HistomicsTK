@@ -25,6 +25,6 @@ def load(info):
     # cliRootDir = os.path.dirname(__file__)
     # genRESTEndPointsForSlicerCLIsInSubDirs(info, 'HistomicsTK', cliRootDir)
 
-    genRESTEndPointsForSlicerCLIsInDocker(info,
-                                          'HistomicsTK',
-                                          'dsarchive/histomicstk')
+    _ = genRESTEndPointsForSlicerCLIsInDocker(
+        info, 'HistomicsTK', 'dsarchive/histomicstk'
+    )
