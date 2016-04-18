@@ -1,6 +1,7 @@
 import os
 import json
 import subprocess
+import pprint
 from ctk_cli import CLIModule
 
 from girder.api.rest import Resource, loadmodel, boundHandler
@@ -994,6 +995,8 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
         taskSpec['container_args'] = containerArgs
         kwargs['task'] = taskSpec
 
+        pprint.pprint(kwargs)
+
         # schedule job
         job['kwargs'] = kwargs
         job = jobModel.save(job)
@@ -1099,7 +1102,7 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
                         'an object of girder.api.rest.Resource')
 
     # validate dockerImages arguments
-    if not isinstance(dockerImages, [str, list]):
+    if not isinstance(dockerImages, (str, list)):
         raise Exception('dockerImages must either be a single docker image '
                         'string or a list of docker image strings')
 
@@ -1113,7 +1116,7 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
         dockerImages = [dockerImages]
 
     # create REST resource if given a name
-    if isinstance(restResource, 'str'):
+    if isinstance(restResource, str):
         restResource = type(restResource, (Resource, ), {})()
 
     # Add REST routes for slicer CLIs in each docker image

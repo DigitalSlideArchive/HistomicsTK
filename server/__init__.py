@@ -2,7 +2,10 @@ import os
 
 from girder.utility.webroot import Webroot
 
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInSubDirs
+from .rest_slicer_cli import(
+    genRESTEndPointsForSlicerCLIsInSubDirs,
+    genRESTEndPointsForSlicerCLIsInDocker
+)
 
 _template = os.path.join(
     os.path.dirname(__file__),
@@ -19,5 +22,9 @@ def load(info):
     info['serverRoot'].histomicstk = histomicsRoot
     info['serverRoot'].girder = girderRoot
 
-    cliRootDir = os.path.dirname(__file__)
-    genRESTEndPointsForSlicerCLIsInSubDirs(info, 'HistomicsTK', cliRootDir)
+    # cliRootDir = os.path.dirname(__file__)
+    # genRESTEndPointsForSlicerCLIsInSubDirs(info, 'HistomicsTK', cliRootDir)
+
+    genRESTEndPointsForSlicerCLIsInDocker(info,
+                                          'HistomicsTK',
+                                          'dsarchive/histomicstk')
