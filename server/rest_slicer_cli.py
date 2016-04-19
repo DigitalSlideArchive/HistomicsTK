@@ -40,6 +40,13 @@ _girderOutputFolderSuffix = '_girderFolderId'
 _girderOutputNameSuffix = '_name'
 
 _return_parameter_file_name = 'returnparameterfile'
+_return_parameter_file_desc = """
+    Filename in which to write simple return parameters
+    (integer, float, integer-vector, etc.) as opposed to bulk
+    return parameters (image, file, directory, geometry,
+    transform, measurement, table).
+"""
+
 
 
 def _getCLIParameters(clim):
@@ -93,13 +100,9 @@ def _createIndexedParamTaskSpec(param):
     return curTaskSpec
 
 
-def _addIndexedInputParams(index_input_params, taskSpec, handlerDesc):
+def _addIndexedInputParamsToHandler(index_input_params, handlerDesc):
 
     for param in index_input_params:
-
-        # add to task spec
-        curTaskSpec = _createIndexedParamTaskSpec(param)
-        taskSpec['inputs'].append(curTaskSpec)
 
         # add to route description
         if param.isExternalType():
@@ -112,13 +115,18 @@ def _addIndexedInputParams(index_input_params, taskSpec, handlerDesc):
                               dataType='string', required=True)
 
 
-def _addIndexedOutputParams(index_output_params, taskSpec, handlerDesc):
+def _addIndexedInputParamsToTaskSpec(index_input_params, taskSpec):
 
-    for param in index_output_params:
+    for param in index_input_params:
 
         # add to task spec
         curTaskSpec = _createIndexedParamTaskSpec(param)
-        taskSpec['outputs'].append(curTaskSpec)
+        taskSpec['inputs'].append(curTaskSpec)
+
+
+def _addIndexedOutputParamsToHandler(index_output_params, handlerDesc):
+
+    for param in index_output_params:
 
         # add param for parent folder to route description
         handlerDesc.param(param.name + _girderOutputFolderSuffix,
@@ -132,6 +140,29 @@ def _addIndexedOutputParams(index_output_params, taskSpec, handlerDesc):
                           'Name of output %s - %s: %s'
                           % (param.typ, param.name, param.description),
                           dataType='string', required=True)
+
+
+def _addIndexedOutputParamsToTaskSpec(index_output_params, taskSpec, hargs):
+
+    for param in index_output_params:
+
+        # add to task spec
+        curTaskSpec = _createIndexedParamTaskSpec(param)
+        taskSpec['outputs'].append(curTaskSpec)
+
+
+def _getParamDefaultVal(param):
+
+    if param.default is not None:
+        return param.default
+    elif param.typ == 'boolean':
+        return False
+    elif param.isExternalType():
+        return ""
+    else:
+        raise Exception(
+            'optional parameters of type %s must '
+            'provide a default value in the xml' % param.typ)
 
 
 def _createOptionalParamTaskSpec(param):
@@ -156,32 +187,18 @@ def _createOptionalParamTaskSpec(param):
 
         defaultValSpec = dict()
         defaultValSpec['format'] = curTaskSpec['format']
-
-        if param.default is not None:
-            defaultValSpec['data'] = param.default
-        elif param.typ == 'boolean':
-            defaultValSpec['data'] = False
-        elif param.isExternalType():
-            defaultValSpec['data'] = ""
-        else:
-            raise Exception(
-                'optional parameters of type %s must '
-                'provide a default value in the xml' % param.typ)
+        defaultValSpec['data'] = _getParamDefaultVal(param)
         curTaskSpec['default'] = defaultValSpec
 
     return curTaskSpec
 
 
-def _addOptionalInputParams(opt_input_params, taskSpec, handlerDesc):
+def _addOptionalInputParamsToHandler(opt_input_params, handlerDesc):
 
     for param in opt_input_params:
 
-        # add to task spec
-        curTaskSpec = _createOptionalParamTaskSpec(param)
-        taskSpec['inputs'].append(curTaskSpec)
-
         # add to route description
-        defaultVal = curTaskSpec['default']['data']
+        defaultVal = _getParamDefaultVal(param)
 
         if param.isExternalType():
             handlerDesc.param(param.name + _girderInputFileSuffix,
@@ -196,16 +213,21 @@ def _addOptionalInputParams(opt_input_params, taskSpec, handlerDesc):
                               required=False)
 
 
-def _addOptionalOutputParams(opt_output_params, taskSpec, handlerDesc):
+def _addOptionalInputParamsToTaskSpec(opt_input_params, taskSpec):
+
+    for param in opt_input_params:
+
+        # add to task spec
+        curTaskSpec = _createOptionalParamTaskSpec(param)
+        taskSpec['inputs'].append(curTaskSpec)
+
+
+def _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc):
 
     for param in opt_output_params:
 
         if not param.isExternalType():
             continue
-
-        # add to task spec
-        curTaskSpec = _createOptionalParamTaskSpec(param)
-        taskSpec['outputs'].append(curTaskSpec)
 
         # add param for parent folder to route description
         handlerDesc.param(param.name + _girderOutputFolderSuffix,
@@ -222,24 +244,23 @@ def _addOptionalOutputParams(opt_output_params, taskSpec, handlerDesc):
                           dataType='string', required=False)
 
 
-def _addReturnParameterFileParam(taskSpec, handlerDesc):
+def _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec):
+
+    for param in opt_output_params:
+
+        if not param.isExternalType():
+            continue
+
+        # add to task spec
+        curTaskSpec = _createOptionalParamTaskSpec(param)
+        taskSpec['outputs'].append(curTaskSpec)
+
+
+def _addReturnParameterFileParamToHandler(handlerDesc):
 
     curName = _return_parameter_file_name
     curType = 'file'
-    curDesc = """
-        Filename in which to write simple return parameters
-        (integer, float, integer-vector, etc.) as opposed to bulk
-        return parameters (image, file, directory, geometry,
-        transform, measurement, table).
-    """
-
-    # add to task spec
-    curTaskSpec = dict()
-    curTaskSpec['id'] = curName
-    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
-    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
-    curTaskSpec['target'] = 'filepath'  # check
-    taskSpec['outputs'].append(curTaskSpec)
+    curDesc = _return_parameter_file_desc
 
     # add param for parent folder to route description
     handlerDesc.param(curName + _girderOutputFolderSuffix,
@@ -254,6 +275,21 @@ def _addReturnParameterFileParam(taskSpec, handlerDesc):
                       'Name of output %s - %s: %s'
                       % (curType, curName, curDesc),
                       dataType='string', required=False)
+
+
+def _addReturnParameterFileParamToTaskSpec(taskSpec):
+
+    curName = _return_parameter_file_name
+    curType = 'file'
+    curDesc = _return_parameter_file_desc
+
+    # add to task spec
+    curTaskSpec = dict()
+    curTaskSpec['id'] = curName
+    curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+    curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
+    curTaskSpec['target'] = 'filepath'  # check
+    taskSpec['outputs'].append(curTaskSpec)
 
 
 def _createInputParamBindingSpec(param, hargs, token):
@@ -294,10 +330,17 @@ def _addIndexedInputParamBindings(index_input_params, bspec, hargs, token):
         bspec[param.name] = _createInputParamBindingSpec(param, hargs, token)
 
 
-def _addIndexedOutputParamBindings(index_output_params, bspec, hargs, token):
+def _addIndexedOutputParamBindings(index_output_params, bspec, taskSpec,
+                                   hargs, token):
 
-    for param in index_output_params:
+    for pind in range(len(index_output_params)):
+
+        param = index_output_params[pind]
+
         bspec[param.name] = _createOutputParamBindingSpec(param, hargs, token)
+
+        taskSpec[pind]['path'] =\
+            hargs['params'][param.name + _girderOutputNameSuffix]
 
 
 def _addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
@@ -320,7 +363,7 @@ def _addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
 
 
 def _addOptionalOutputParamBindings(opt_output_params,
-                                    bspec, hargs, user, token):
+                                    bspec, taskSpec, hargs, user, token):
 
     for param in opt_output_params:
 
@@ -340,6 +383,8 @@ def _addOptionalOutputParamBindings(opt_output_params,
                                           user=user)
 
         bspec[param.name] = _createOutputParamBindingSpec(param, hargs, token)
+        taskSpec[param.name] =\
+            hargs['params'][param.name + _girderOutputNameSuffix]
 
 
 def _addReturnParameterFileBinding(bspec, hargs, user, token):
@@ -479,26 +524,26 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
     # add indexed input parameters
     index_input_params = filter(lambda p: p.channel == 'input', index_params)
 
-    _addIndexedInputParams(index_input_params, taskSpec, handlerDesc)
+    _addIndexedInputParamsToTaskSpec(index_input_params, taskSpec, handlerDesc)
 
     # add indexed output parameters
     index_output_params = filter(lambda p: p.channel == 'output', index_params)
 
-    _addIndexedOutputParams(index_output_params, taskSpec, handlerDesc)
+    _addIndexedOutputParamsToTaskSpec(index_output_params, taskSpec, handlerDesc)
 
     # add optional input parameters
     opt_input_params = filter(lambda p: p.channel != 'output', opt_params)
 
-    _addOptionalInputParams(opt_input_params, taskSpec, handlerDesc)
+    _addOptionalInputParamsToTaskSpec(opt_input_params, taskSpec, handlerDesc)
 
     # add optional output parameters
     opt_output_params = filter(lambda p: p.channel == 'output', opt_params)
 
-    _addOptionalOutputParams(opt_output_params, taskSpec, handlerDesc)
+    _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec, handlerDesc)
 
     # add returnparameterfile if there are simple output params
     if len(simple_out_params) > 0:
-        _addReturnParameterFileParam(taskSpec, handlerDesc)
+        _addReturnParameterFileParamToTaskSpec(taskSpec, handlerDesc)
 
     # define CLI handler function
     @boundHandler(restResource)
@@ -535,7 +580,8 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
 
         # create indexed output boundings
         _addIndexedOutputParamBindings(index_output_params,
-                                       kwargs['outputs'], hargs, token)
+                                       kwargs['outputs'], taskSpec,
+                                       hargs, token)
 
         # create optional input parameter bindings
         _addOptionalInputParamBindings(opt_input_params,
@@ -543,7 +589,8 @@ def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
 
         # create optional output parameter bindings
         _addOptionalOutputParamBindings(opt_output_params,
-                                        kwargs['outputs'], hargs, user, token)
+                                        kwargs['outputs'], taskSpec,
+                                        hargs, user, token)
 
         # create returnparameterfile binding
         _addReturnParameterFileBinding(kwargs['outputs'], hargs, user, token)
@@ -921,26 +968,26 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
     # add indexed input parameters
     index_input_params = filter(lambda p: p.channel == 'input', index_params)
 
-    _addIndexedInputParams(index_input_params, taskSpec, handlerDesc)
+    _addIndexedInputParamsToTaskSpec(index_input_params, taskSpec, handlerDesc)
 
     # add indexed output parameters
     index_output_params = filter(lambda p: p.channel == 'output', index_params)
 
-    _addIndexedOutputParams(index_output_params, taskSpec, handlerDesc)
+    _addIndexedOutputParamsToTaskSpec(index_output_params, taskSpec, handlerDesc)
 
     # add optional input parameters
     opt_input_params = filter(lambda p: p.channel != 'output', opt_params)
 
-    _addOptionalInputParams(opt_input_params, taskSpec, handlerDesc)
+    _addOptionalInputParamsToTaskSpec(opt_input_params, taskSpec, handlerDesc)
 
     # add optional output parameters
     opt_output_params = filter(lambda p: p.channel == 'output', opt_params)
 
-    _addOptionalOutputParams(opt_output_params, taskSpec, handlerDesc)
+    _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec, handlerDesc)
 
     # add returnparameterfile if there are simple output params
     if len(simple_out_params) > 0:
-        _addReturnParameterFileParam(taskSpec, handlerDesc)
+        _addReturnParameterFileParamToTaskSpec(taskSpec, handlerDesc)
 
     # define CLI handler function
     @boundHandler(restResource)
