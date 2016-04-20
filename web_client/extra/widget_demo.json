@@ -85,6 +85,15 @@
                     "type": "file",
                     "title": "input file #1",
                     "id": "h-control-file-selector"
+                }, {
+                    "type": "directory",
+                    "title": "input directory #1",
+                    "id": "h-control-directory-selector"
+                }, {
+                    "type": "new-file",
+                    "channel": "output",
+                    "title": "output file #1",
+                    "id": "h-control-new-file-selector"
                 }
             ]
         }]

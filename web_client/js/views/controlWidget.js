@@ -17,10 +17,16 @@ histomicstk.views.ControlWidget = girder.View.extend({
         if (options && options.norender) {
             return this;
         }
-        this.$el.html(this.template()(this.model.toJSON()));
+        this.$el.html(this.template()(this.model.attributes));
         this.$('.h-control-item[data-type="range"] input').slider();
         this.$('.h-control-item[data-type="color"] .input-group').colorpicker({});
         return this;
+    },
+
+    remove: function () {
+        this.$('.h-control-item[data-type="color"] .input-group').colorpicker('destroy');
+        this.$('.h-control-item[data-type="range"] input').slider('destroy');
+        this.$el.empty();
     },
 
     /**
@@ -66,6 +72,12 @@ histomicstk.views.ControlWidget = girder.View.extend({
         },
         file: {
             template: 'fileWidget'
+        },
+        directory: {
+            template: 'fileWidget'
+        },
+        'new-file': {
+            template: 'fileWidget'
         }
     },
 
@@ -96,7 +108,7 @@ histomicstk.views.ControlWidget = girder.View.extend({
             val = $el.get(0).checked;
         }
         if (this.model.isVector()) {
-            old = this.model.value().slice();
+            old = this.model.get('value').slice();
             old[$el.data('vectorComponent')] = val;
             val = old;
         }
@@ -109,18 +121,13 @@ histomicstk.views.ControlWidget = girder.View.extend({
      * Get the value from a file selection modal and set the text in the widget's
      * input element.
      */
-    _selectFile: function (evt) {
-        var input = $(evt.target).closest('.input-group').find('input');
-        var id = input.attr('id');
-        var name = input.attr('name');
-        var modal = new histomicstk.views.FileSelectorWidget({
+    _selectFile: function () {
+        var modal = new histomicstk.views.ItemSelectorWidget({
             el: $('#g-dialog-container'),
-            id: id,
-            name: name,
-            parentView: this
+            parentView: this,
+            model: this.model
         });
-        modal.on('g:saved', _.bind(function (item) {
-            this.model.set('value', item.id);
+        modal.on('g:saved', _.bind(function () {
             modal.$el.modal('hide');
         }, this)).render();
     }

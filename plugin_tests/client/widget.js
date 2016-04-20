@@ -18,7 +18,7 @@ girderTest.addCoveredScripts([
     '/plugins/HistomicsTK/web_client/js/views/browserPanel.js',
     '/plugins/HistomicsTK/web_client/js/views/controlsPanel.js',
     '/plugins/HistomicsTK/web_client/js/views/controlWidget.js',
-    '/plugins/HistomicsTK/web_client/js/views/fileSelectorWidget.js',
+    '/plugins/HistomicsTK/web_client/js/views/itemSelectorWidget.js',
     '/plugins/HistomicsTK/web_client/js/views/guiSelectorWidget.js',
     '/plugins/HistomicsTK/web_client/js/views/header.js',
     '/plugins/HistomicsTK/web_client/js/views/jobsPanel.js',
@@ -306,7 +306,8 @@ describe('widget collection', function () {
             {type: 'number-vector', id: 'number-vector', value: '1,2,3'},
             {type: 'string-enumeration', id: 'string-enumeration', values: ['a'], value: 'a'},
             {type: 'number-enumeration', id: 'number-enumeration', values: [1], value: '1'},
-            {type: 'file', id: 'file', value: 'a'}
+            {type: 'file', id: 'file', value: new Backbone.Model({id: 'a'})},
+            {type: 'new-file', id: 'new-file', value: new Backbone.Model({name: 'a', folderId: 'b'})}
         ]);
 
         expect(c.values()).toEqual({
@@ -319,7 +320,9 @@ describe('widget collection', function () {
             'number-vector': [1, 2, 3],
             'string-enumeration': 'a',
             'number-enumeration': 1,
-            file: 'a'
+            'file_girderItemId': 'a',
+            'new-file_girderFolderId': 'b',
+            'new-file_name': 'a'
         });
     });
 });
@@ -580,9 +583,18 @@ describe('control widget view', function () {
     it('file', function () {
         var arg, item = new Backbone.Model({id: 'model id'});
         var hwidget = girder.views.HierarchyWidget;
+
+
+        item.name = function () {
+            return 'b';
+        };
+
         girder.views.HierarchyWidget = Backbone.View.extend({
             initialize: function (_arg) {
                 arg = _arg;
+                this.breadcrumbs = [{
+                    get: function () { return 'a'; }
+                }];
             }
         });
         var w = new histomicstk.views.ControlWidget({
@@ -599,13 +611,73 @@ describe('control widget view', function () {
         checkWidgetCommon(w);
 
         w.$('.h-select-file-button').click();
-        expect(arg.parentModel).toBe(girder.currentUser);
+        expect(arg.parentModel).toBe(histomicstk.rootPath);
         arg.onItemClick(item);
-        expect(w.model.value()).toBe('model id');
+        expect(w.model.value().name()).toBe('b');
+
+        expect(w.model.get('path')).toEqual(['a']);
 
         girder.views.HierarchyWidget = hwidget;
     });
 
+    it('new-file', function () {
+        var arg, item = new Backbone.Model({id: 'model id'});
+        var hwidget = girder.views.HierarchyWidget;
+        var $modal = $('<div id="g-dialog-container"/>').appendTo('body');
+
+        item.name = function () {
+            return 'b';
+        };
+
+        girder.views.HierarchyWidget = Backbone.View.extend({
+            initialize: function (_arg) {
+                arg = this;
+                this.breadcrumbs = [{
+                    get: function () { return 'a'; }
+                }];
+                _.extend(this, _arg);
+            }
+        });
+        var w = new histomicstk.views.ControlWidget({
+            parentView: parentView,
+            el: $el.get(0),
+            model: new histomicstk.models.Widget({
+                type: 'new-file',
+                title: 'Title',
+                id: 'file-widget'
+            })
+        });
+
+        w.render();
+        checkWidgetCommon(w);
+
+        w.$('.h-select-file-button').click();
+        expect(arg.parentModel).toBe(histomicstk.rootPath);
+
+        // selecting without a file name entered should error
+        $modal.find('.h-select-button').click();
+        expect($modal.find('.form-group').hasClass('has-error')).toBe(true);
+        expect($modal.find('.h-modal-error').hasClass('hidden')).toBe(false);
+
+        // selecting with a file name in a collection should error
+        $modal.find('#h-new-file-name').val('my file');
+        $modal.find('.h-select-button').click();
+        expect($modal.find('.form-group').hasClass('has-error')).toBe(false);
+        expect($modal.find('.h-modal-error').hasClass('hidden')).toBe(false);
+
+        // selecting a file in a folder should succeed
+        arg.parentModel.resourceName = 'folder';
+        $modal.find('.h-select-button').click();
+        expect($modal.find('.form-group').hasClass('has-error')).toBe(false);
+        expect($modal.find('.h-modal-error').hasClass('hidden')).toBe(true);
+        expect(w.model.get('path')).toEqual(['a']);
+        expect(w.model.get('value').get('name')).toBe('my file');
+
+        // reset the environment
+        girder.views.HierarchyWidget = hwidget;
+        $modal.modal('hide');
+        $modal.remove();
+    });
     it('invalid', function () {
         var w = new histomicstk.views.ControlWidget({
             parentView: parentView,

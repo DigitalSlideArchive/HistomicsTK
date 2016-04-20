@@ -17,8 +17,8 @@ histomicstk.views.Visualization = girder.View.extend({
             model: this._controlModel
         });
 
-        this.listenTo(this._controlModel, 'change', function (model) {
-            var id = model.get('value');
+        this.listenTo(this._controlModel, 'change:value', function (model) {
+            var id = model.get('value').id;
             girder.restRequest({
                 path: 'item/' + id
             })

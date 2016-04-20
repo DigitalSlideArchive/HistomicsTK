@@ -2,6 +2,10 @@ extends ./widget.jade
 
 block input
   .input-group
+    if path
+      - value = '/' + path.join('/') + '/' + value.name();
+    else if value.name
+      - value = value.name();
     +input(title, type, id, value)(
       placeholder='Choose a file...'
       readonly=true)

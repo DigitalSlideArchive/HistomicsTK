@@ -81,6 +81,17 @@ histomicstk.schema = {
         var $param = $(param);
         var type = this._widgetType(param);
         var values = {};
+        var channel = $param.find('channel');
+
+        if (channel.length) {
+            channel = channel.text();
+        } else {
+            channel = 'input';
+        }
+
+        if (type === 'file' && channel === 'output') {
+            type = 'new-file';
+        }
 
         if (!type) {
             console.warn('Unhandled parameter type "' + param.tagName + '"'); // eslint-disable-line no-console
@@ -100,7 +111,8 @@ histomicstk.schema = {
                 slicerType: param.tagName,
                 id: $param.find('name').text() || $param.find('longflag').text(),
                 title: $param.find('label').text(),
-                description: $param.find('description').text()
+                description: $param.find('description').text(),
+                channel: channel
             },
             values,
             this._parseDefault(type, $param.find('default')),
@@ -129,7 +141,8 @@ histomicstk.schema = {
             'double-enumeration': 'number-enumeration',
             'string-enumeration': 'string-enumeration',
             image: 'file',
-            file: 'file'
+            file: 'file',
+            directory: 'directory'
         };
         return typeMap[param.tagName];
     },

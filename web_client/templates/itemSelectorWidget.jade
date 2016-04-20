@@ -1,0 +1,29 @@
+.modal-dialog
+  .modal-content
+    .modal-header
+      button.close(data-dismiss="modal", aria-hidden="true", type="button") &times;
+      - var t = type === 'new-file' ? 'directory' : type;
+      - var name = title ? ' for "' + title + '"' : '';
+      if value && value.name
+        - value = value.name()
+      h4.modal-title
+        | Select a #{t}#{name}
+    .modal-body(
+      data-target-id='#{id}')
+      .alert.alert-danger.h-modal-error.hidden
+      .h-hierarchy-widget
+      if type === 'new-file'
+        .form-group
+          label.control-label(for='h-new-file-name') Item name
+          input.form-control(
+            type='text'
+            id='h-new-file-name'
+            value=value
+            placeholder='Enter an item name...')
+
+    if type === 'directory' || type === 'new-file'
+      .modal-footer
+        a.btn.btn-small.btn-default(data-dismiss="modal") Cancel
+        button.h-select-button.btn.btn-small.btn-primary(type="submit")
+          i.icon-edit
+          | Save
