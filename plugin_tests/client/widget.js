@@ -336,12 +336,7 @@ describe('control widget view', function () {
         var model = widget.model;
         expect(widget.$('label[for="' + model.id + '"]').text())
             .toBe(model.get('title'));
-        if (widget.model.isVector()) {
-            expect(widget.$('#' + model.id + ' input').length).toBe(3);
-            expect(widget.$('input#' + model.id + '-0').length).toBe(1);
-            expect(widget.$('input#' + model.id + '-1').length).toBe(1);
-            expect(widget.$('input#' + model.id + '-2').length).toBe(1);
-        } else if (widget.model.isEnumeration()) {
+        if (widget.model.isEnumeration()) {
             expect(widget.$('select#' + model.id).length).toBe(1);
         } else {
             expect(widget.$('input#' + model.id).length).toBe(1);
@@ -486,15 +481,9 @@ describe('control widget view', function () {
 
         w.render();
         checkWidgetCommon(w);
-        expect(w.$('input[data-vector-component="0"]').val()).toBe('one');
-        expect(w.$('input[data-vector-component="1"]').val()).toBe('two');
-        expect(w.$('input[data-vector-component="2"]').val()).toBe('three');
+        expect(w.$('input').val()).toBe('one,two,three');
 
-        w.$('input[data-vector-component="0"]').val('1').trigger('change');
-        expect(w.model.value()).toEqual(['1', 'two', 'three']);
-        w.$('input[data-vector-component="1"]').val('2').trigger('change');
-        expect(w.model.value()).toEqual(['1', '2', 'three']);
-        w.$('input[data-vector-component="2"]').val('3').trigger('change');
+        w.$('input').val('1,2,3').trigger('change');
         expect(w.model.value()).toEqual(['1', '2', '3']);
     });
 
@@ -512,22 +501,10 @@ describe('control widget view', function () {
 
         w.render();
         checkWidgetCommon(w);
-        expect(w.$('input[data-vector-component="0"]').val()).toBe('1');
-        expect(w.$('input[data-vector-component="1"]').val()).toBe('2');
-        expect(w.$('input[data-vector-component="2"]').val()).toBe('3');
+        expect(w.$('input').val()).toBe('1,2,3');
 
-        w.$('input[data-vector-component="0"]').val('10').trigger('change');
-        expect(w.model.value()).toEqual([10, 2, 3]);
-        w.$('input[data-vector-component="1"]').val('20').trigger('change');
-        expect(w.model.value()).toEqual([10, 20, 3]);
-        w.$('input[data-vector-component="2"]').val('30').trigger('change');
+        w.$('input').val('10,20,30').trigger('change');
         expect(w.model.value()).toEqual([10, 20, 30]);
-
-        w.$('input[data-vector-component="2"]').val('not a number').trigger('change');
-        expect(w.$('.form-group').hasClass('has-error')).toBe(true);
-
-        w.$('input[data-vector-component="2"]').val('1').trigger('change');
-        expect(w.$('.form-group').hasClass('has-error')).toBe(false);
     });
 
     it('string-enumeration', function () {

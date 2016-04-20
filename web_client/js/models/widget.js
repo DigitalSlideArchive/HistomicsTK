@@ -76,7 +76,9 @@ histomicstk.models.Widget = Backbone.Model.extend({
      * Coerce a vector of values into normalized native types.
      */
     _normalizeVector: function (value) {
-            if (_.isString(value)) {
+            if (value === '') {
+                value = [];
+            } else if (_.isString(value)) {
                 value = value.split(',');
             }
             return _.map(value, _.bind(this._normalizeValue, this));
@@ -135,10 +137,6 @@ histomicstk.models.Widget = Backbone.Model.extend({
     _validateVector: function (vector) {
         var val;
         vector = this.normalize(vector);
-
-        if (vector.length !== 3) {
-            return 'Expected three elements';
-        }
 
         val = _.chain(vector)
             .map(_.bind(this._validateValue, this))
