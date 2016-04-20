@@ -1,42 +1,44 @@
+#!/usr/bin/env python
 import numpy as np
 import skimage.io
 import histomicstk as htk
+from ctk_cli import CLIArgumentParser
 
-# Define Romanesco globals for the style checker
-inputImageFile = inputImageFile  # noqa
-stainColor_1 = stainColor_1      # noqa
-stainColor_2 = stainColor_2      # noqa
-stainColor_3 = stainColor_3      # noqa
+import logging
+logging.basicConfig()
 
-outputStainImageFile_1 = outputStainImageFile_1  # noqa
-outputStainImageFile_2 = outputStainImageFile_2  # noqa
-outputStainImageFile_3 = outputStainImageFile_3  # noqa
+def main(args):
 
-# Read Input Image
-print('>> Reading input image')
+    # Read Input Image
+    print('>> Reading input image')
 
-print(inputImageFile)
+    print(args.inputImageFile)
 
-inputImage = skimage.io.imread(inputImageFile)
+    inputImage = skimage.io.imread(args.inputImageFile)
 
-# Create stain matrix
-print('>> Creating stain matrix')
+    # Create stain matrix
+    print('>> Creating stain matrix')
 
-W = np.array([stainColor_1, stainColor_2, stainColor_3]).T
-print W
+    W = np.array([args.stainColor_1, args.stainColor_2, args.stainColor_3]).T
+    print W
 
-# Perform color deconvolution
-print('>> Performing color deconvolution')
-res = htk.ColorDeconvolution(inputImage, W)
+    # Perform color deconvolution
+    print('>> Performing color deconvolution')
+    res = htk.ColorDeconvolution(inputImage, W)
 
-# write stain images to output
-print('>> Outputting individual stain images')
+    # write stain images to output
+    print('>> Outputting individual stain images')
 
-print outputStainImageFile_1
-skimage.io.imsave(outputStainImageFile_1, res.Stains[:, :, 0])
+    print args.outputStainImageFile_1
+    skimage.io.imsave(args.outputStainImageFile_1, res.Stains[:, :, 0])
 
-print outputStainImageFile_2
-skimage.io.imsave(outputStainImageFile_2, res.Stains[:, :, 1])
+    print args.outputStainImageFile_2
+    skimage.io.imsave(args.outputStainImageFile_2, res.Stains[:, :, 1])
 
-print outputStainImageFile_3
-skimage.io.imsave(outputStainImageFile_3, res.Stains[:, :, 2])
+    print args.outputStainImageFile_3
+    skimage.io.imsave(args.outputStainImageFile_3, res.Stains[:, :, 2])
+
+
+if __name__ == "__main__":
+    main(CLIArgumentParser().parse_args())
+
