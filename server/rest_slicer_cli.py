@@ -148,6 +148,10 @@ def _addIndexedOutputParamsToTaskSpec(index_output_params, taskSpec, hargs):
 
         # add to task spec
         curTaskSpec = _createIndexedParamTaskSpec(param)
+
+        curTaskSpec['path'] =\
+            hargs['params'][param.name + _girderOutputNameSuffix]
+
         taskSpec['outputs'].append(curTaskSpec)
 
 
@@ -244,15 +248,24 @@ def _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc):
                           dataType='string', required=False)
 
 
-def _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec):
+def _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec, hargs):
 
     for param in opt_output_params:
 
         if not param.isExternalType():
             continue
 
+        # set path if it was requested in the REST request
+        if (param.name + _girderOutputFolderSuffix not in hargs['params'] or
+                param.name + _girderOutputNameSuffix not in hargs['params']):
+            continue
+
         # add to task spec
         curTaskSpec = _createOptionalParamTaskSpec(param)
+
+        curTaskSpec['path'] =\
+            hargs['params'][param.name + _girderOutputNameSuffix]
+
         taskSpec['outputs'].append(curTaskSpec)
 
 
@@ -277,11 +290,15 @@ def _addReturnParameterFileParamToHandler(handlerDesc):
                       dataType='string', required=False)
 
 
-def _addReturnParameterFileParamToTaskSpec(taskSpec):
+def _addReturnParameterFileParamToTaskSpec(taskSpec, hargs):
 
     curName = _return_parameter_file_name
     curType = 'file'
-    curDesc = _return_parameter_file_desc
+
+    # check if return parameter file was requested in the REST request
+    if (curName + _girderOutputFolderSuffix not in hargs['params'] or
+            curName + _girderOutputNameSuffix not in hargs['params']):
+        return
 
     # add to task spec
     curTaskSpec = dict()
@@ -289,6 +306,9 @@ def _addReturnParameterFileParamToTaskSpec(taskSpec):
     curTaskSpec['type'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
     curTaskSpec['format'] = _SLICER_TO_GIRDER_WORKER_TYPE_MAP[curType]
     curTaskSpec['target'] = 'filepath'  # check
+    curTaskSpec['path'] =\
+        hargs['params'][curName + _girderOutputNameSuffix]
+
     taskSpec['outputs'].append(curTaskSpec)
 
 
@@ -330,17 +350,10 @@ def _addIndexedInputParamBindings(index_input_params, bspec, hargs, token):
         bspec[param.name] = _createInputParamBindingSpec(param, hargs, token)
 
 
-def _addIndexedOutputParamBindings(index_output_params, bspec, taskSpec,
-                                   hargs, token):
+def _addIndexedOutputParamBindings(index_output_params, bspec, hargs, token):
 
-    for pind in range(len(index_output_params)):
-
-        param = index_output_params[pind]
-
+    for param in index_output_params:
         bspec[param.name] = _createOutputParamBindingSpec(param, hargs, token)
-
-        taskSpec[pind]['path'] =\
-            hargs['params'][param.name + _girderOutputNameSuffix]
 
 
 def _addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
@@ -363,7 +376,7 @@ def _addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
 
 
 def _addOptionalOutputParamBindings(opt_output_params,
-                                    bspec, taskSpec, hargs, user, token):
+                                    bspec, hargs, user, token):
 
     for param in opt_output_params:
 
@@ -383,14 +396,13 @@ def _addOptionalOutputParamBindings(opt_output_params,
                                           user=user)
 
         bspec[param.name] = _createOutputParamBindingSpec(param, hargs, token)
-        taskSpec[param.name] =\
-            hargs['params'][param.name + _girderOutputNameSuffix]
 
 
 def _addReturnParameterFileBinding(bspec, hargs, user, token):
 
     curName = _return_parameter_file_name
 
+    # check if return parameter file was requested in the REST request
     if (curName + _girderOutputFolderSuffix not in hargs['params'] or
             curName + _girderOutputNameSuffix not in hargs['params']):
         return
@@ -412,382 +424,8 @@ def _addReturnParameterFileBinding(bspec, hargs, user, token):
     bspec[curName] = curBindingSpec
 
 
-def _addCodeToSetIndexOutputFileParams(index_output_params, taskSpec, hargs):
-    for param in index_output_params:
-        codeToSetOutputPath = "%s = os.path.join(_tempdir, '%s')" % (
-            param.name,
-            hargs['params'][param.name + _girderOutputNameSuffix])
-        taskSpec['script'] = '\n'.join((codeToSetOutputPath,
-                                       taskSpec['script']))
-
-
-def _addCodeToSetOptOutputFileParams(opt_output_params,
-                                     kwargs, taskSpec, hargs):
-
-    for param in opt_output_params:
-
-        if not _is_on_girder(param):
-            continue
-
-        if param.name in kwargs['outputs']:
-            codeToSetOutputPath = "%s = os.path.join(_tempdir, '%s')" % (
-                param.name,
-                hargs['params'][param.name + _girderOutputNameSuffix]
-            )
-        else:
-            codeToSetOutputPath = "%s = None" % param.name
-
-        taskSpec['script'] = '\n'.join((codeToSetOutputPath,
-                                       taskSpec['script']))
-
-
-def _addCodeToSetReturnParameterFile(kwargs, taskSpec, hargs):
-
-    curName = _return_parameter_file_name
-
-    if curName in kwargs['outputs']:
-        codeToSetOutputPath = "%s = os.path.join(_tempdir, '%s')" % (
-            curName,
-            hargs['params'][curName + _girderOutputNameSuffix]
-        )
-    else:
-        codeToSetOutputPath = "%s = None" % curName
-
-    taskSpec['script'] = '\n'.join((codeToSetOutputPath,
-                                   taskSpec['script']))
-
-
 def _is_on_girder(param):
     return param.typ in _SLICER_TYPE_TO_GIRDER_MODEL_MAP
-
-
-def genHandlerToRunCLI(restResource, xmlFile, scriptFile):
-    """Generates a handler to run CLI using girder_worker
-
-    Parameters
-    ----------
-    restResource : girder.api.rest.Resource
-        The object of a class derived from girder.api.rest.Resource to which
-        this handler will be attached
-    xmlFile : str
-        Full path to xml file of the CLI
-    scriptFile : str
-        Full path to .py file containing the code of the clu
-
-    Returns
-    -------
-    function
-        Returns a function that runs the CLI using girder_worker
-    """
-
-    xmlPath, xmlNameWExt = os.path.split(xmlFile)
-    xmlName = os.path.splitext(xmlNameWExt)[0]
-
-    print xmlName
-
-    # parse cli xml spec
-    clim = CLIModule(xmlFile)
-
-    # read the script file containing the code into a string
-    with open(scriptFile) as f:
-        codeToRun = f.read()
-
-    # create CLI description string
-    str_description = ['Description: <br/><br/>' + clim.description]
-
-    if clim.version is not None and len(clim.version) > 0:
-        str_description.append('Version: ' + clim.version)
-
-    if clim.license is not None and len(clim.license) > 0:
-        str_description.append('License: ' + clim.license)
-
-    if clim.contributor is not None and len(clim.contributor) > 0:
-        str_description.append('Author(s): ' + clim.contributor)
-
-    if clim.acknowledgements is not None and \
-       len(clim.acknowledgements) > 0:
-        str_description.append(
-            'Acknowledgements: ' + clim.acknowledgements)
-
-    str_description = '<br/><br/>'.join(str_description)
-
-    # do stuff needed to create REST endpoint for cLI
-    handlerDesc = Description(clim.title).notes(str_description)
-    taskSpec = {'name': xmlName,
-                'mode': 'python',
-                'inputs': [],
-                'outputs': []}
-
-    # get CLI parameters
-    index_params, opt_params, simple_out_params = _getCLIParameters(clim)
-
-    # add indexed input parameters
-    index_input_params = filter(lambda p: p.channel == 'input', index_params)
-
-    _addIndexedInputParamsToTaskSpec(index_input_params, taskSpec, handlerDesc)
-
-    # add indexed output parameters
-    index_output_params = filter(lambda p: p.channel == 'output', index_params)
-
-    _addIndexedOutputParamsToTaskSpec(index_output_params, taskSpec, handlerDesc)
-
-    # add optional input parameters
-    opt_input_params = filter(lambda p: p.channel != 'output', opt_params)
-
-    _addOptionalInputParamsToTaskSpec(opt_input_params, taskSpec, handlerDesc)
-
-    # add optional output parameters
-    opt_output_params = filter(lambda p: p.channel == 'output', opt_params)
-
-    _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec, handlerDesc)
-
-    # add returnparameterfile if there are simple output params
-    if len(simple_out_params) > 0:
-        _addReturnParameterFileParamToTaskSpec(taskSpec, handlerDesc)
-
-    # define CLI handler function
-    @boundHandler(restResource)
-    @access.user
-    @describeRoute(handlerDesc)
-    def cliHandler(self, **hargs):
-
-        user = self.getCurrentUser()
-        token = self.getCurrentToken()['_id']
-
-        # create job
-        jobModel = self.model('job', 'jobs')
-        jobTitle = '.'.join((restResource.resourceName, xmlName))
-        job = jobModel.createJob(title=jobTitle,
-                                 type=jobTitle,
-                                 handler='worker_handler',
-                                 user=user)
-        kwargs = {
-            'validate': False,
-            'auto_convert': True,
-            'cleanup': True,
-            'inputs': dict(),
-            'outputs': dict()
-        }
-        taskSpec['script'] = codeToRun
-
-        # create job info
-        jobToken = jobModel.createJobToken(job)
-        kwargs['jobInfo'] = wutils.jobInfoSpec(job, jobToken)
-
-        # create indexed input parameter bindings
-        _addIndexedInputParamBindings(index_input_params,
-                                      kwargs['inputs'], hargs, token)
-
-        # create indexed output boundings
-        _addIndexedOutputParamBindings(index_output_params,
-                                       kwargs['outputs'], taskSpec,
-                                       hargs, token)
-
-        # create optional input parameter bindings
-        _addOptionalInputParamBindings(opt_input_params,
-                                       kwargs['inputs'], hargs, user, token)
-
-        # create optional output parameter bindings
-        _addOptionalOutputParamBindings(opt_output_params,
-                                        kwargs['outputs'], taskSpec,
-                                        hargs, user, token)
-
-        # create returnparameterfile binding
-        _addReturnParameterFileBinding(kwargs['outputs'], hargs, user, token)
-
-        # point output file variables to actual paths
-        _addCodeToSetIndexOutputFileParams(index_output_params, taskSpec, hargs)
-
-        _addCodeToSetOptOutputFileParams(opt_output_params,
-                                         kwargs, taskSpec, hargs)
-
-        _addCodeToSetReturnParameterFile(kwargs, taskSpec, hargs)
-
-        # create task spec
-        taskSpec['script'] = '\n'.join(("import os", taskSpec['script']))
-        kwargs['task'] = taskSpec
-
-        # schedule job
-        job['kwargs'] = kwargs
-        job = jobModel.save(job)
-        jobModel.scheduleJob(job)
-
-        # return result
-        return jobModel.filter(job, user)
-
-    handlerFunc = cliHandler
-
-    # loadmodel stuff for indexed input params on girder
-    index_input_params_on_girder = filter(_is_on_girder, index_input_params)
-
-    for param in index_input_params_on_girder:
-
-        curModel = _SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ]
-        curMap = {param.name + _girderInputFileSuffix: param.name}
-
-        handlerFunc = loadmodel(map=curMap,
-                                model=curModel,
-                                level=AccessType.READ)(handlerFunc)
-
-    # loadmodel stuff for indexed output params on girder
-    index_output_params_on_girder = filter(_is_on_girder, index_output_params)
-
-    for param in index_output_params_on_girder:
-
-        curModel = 'folder'
-        curMap = {param.name + _girderOutputFolderSuffix: param.name}
-
-        handlerFunc = loadmodel(map=curMap,
-                                model=curModel,
-                                level=AccessType.WRITE)(handlerFunc)
-
-    return handlerFunc
-
-
-def genHandlerToGetCLIXmlSpec(restResource, xmlFile):
-    """Generates a handler that returns the XML spec of the CLI
-
-    Parameters
-    ----------
-    restResource : girder.api.rest.Resource
-        The object of a class derived from girder.api.rest.Resource to which
-        this handler will be attached
-    xmlFile : str
-        Full path to xml file of the CLI
-
-    Returns
-    -------
-    function
-        Returns a function that returns the xml spec of the CLI
-    """
-
-    xmlPath, xmlNameWExt = os.path.split(xmlFile)
-    xmlName = os.path.splitext(xmlNameWExt)[0]
-
-    # read xml into a string
-    with open(xmlFile) as f:
-        str_xml = f.read()
-
-    # define the handler that returns the CLI's xml spec
-    @boundHandler(restResource)
-    @access.user
-    @describeRoute(
-        Description('Get XML spec of %s CLI' % xmlName)
-    )
-    def getXMLSpecHandler(self, *args, **kwargs):
-        return str_xml
-
-    return getXMLSpecHandler
-
-
-def genRESTEndPointsForSlicerCLIsInSubDirs(info, restResourceName, cliRootDir):
-    """Generates REST end points for slicer CLIs placed in subdirectories of a
-    given root directory and attaches them to a REST resource with the given
-    name.
-
-    For each CLI, it creates:
-    * a GET Route (<apiURL>/`restResourceName`/<cliRelativePath>/xmlspec)
-    that returns the xml spec of the CLI
-    * a POST Route (<apiURL>/`restResourceName`/<cliRelativePath>/run)
-    that runs the CLI
-
-    It also creates a GET route (<apiURL>/`restResourceName`) that returns a
-    list of relative routes to all CLIs attached to the generated REST resource
-
-    Parameters
-    ----------
-    info
-    restResourceName : str
-        Name of the REST resource to which the end-points should be attached
-    cliRootDir : str
-        Full path of root directory containing the CLIs
-
-    Returns
-    -------
-
-    """
-
-    # create REST resource
-    restResource = type(restResourceName,
-                        (Resource, ),
-                        {'resourceName': restResourceName})()
-
-    # Add REST route for slicer CLIs located in subdirectories
-    cliList = []
-
-    for parentdir, dirnames, filenames in os.walk(cliRootDir):
-        for subdir in dirnames:
-            curCLIRelPath = os.path.relpath(os.path.join(parentdir, subdir),
-                                            cliRootDir)
-
-            # check if subdir contains a .xml file with the same name
-            xmlFile = os.path.join(parentdir, subdir, subdir + '.xml')
-
-            if not os.path.isfile(xmlFile):
-                continue
-
-            xmlPath, xmlNameWExt = os.path.split(xmlFile)
-            xmlName = os.path.splitext(xmlNameWExt)[0]
-
-            # check if subdir contains a .py file with the same name
-            scriptFile = os.path.join(xmlPath, xmlName + '.py')
-
-            if not os.path.isfile(scriptFile):
-                continue
-
-            # print curCLIRelPath
-
-            # TODO: check if xml adheres to slicer execution model xml schema
-
-            # create a POST REST route that runs the CLI
-            try:
-                cliRunHandler = genHandlerToRunCLI(restResource,
-                                                   xmlFile, scriptFile)
-            except Exception as e:
-                print "Failed to create REST endpoints for %s: %s" % (
-                    curCLIRelPath, e)
-                continue
-
-            cliRunHandlerName = 'run_' + xmlName
-            setattr(restResource, cliRunHandlerName, cliRunHandler)
-            restResource.route('POST',
-                               (curCLIRelPath, 'run'),
-                               getattr(restResource, cliRunHandlerName))
-
-            # create GET REST route that returns the xml of the CLI
-            try:
-                cliGetXMLSpecHandler = genHandlerToGetCLIXmlSpec(restResource,
-                                                                 xmlFile)
-            except Exception as e:
-                print "Failed to create REST endpoints for %s: %s" % (
-                    curCLIRelPath, e)
-                continue
-
-            cliGetXMLSpecHandlerName = 'get_xml_' + xmlName
-            setattr(restResource,
-                    cliGetXMLSpecHandlerName,
-                    cliGetXMLSpecHandler)
-            restResource.route('GET',
-                               (curCLIRelPath, 'xmlspec',),
-                               getattr(restResource, cliGetXMLSpecHandlerName))
-
-            cliList.append(curCLIRelPath)
-
-    # create GET route that returns a list of relative routes to all CLIs
-    @boundHandler(restResource)
-    @access.user
-    @describeRoute(
-        Description('Get list of relative routes to all CLIs')
-    )
-    def getCLIListHandler(self, *args, **kwargs):
-        return cliList
-
-    getCLIListHandlerName = 'get_cli_list'
-    setattr(restResource, getCLIListHandlerName, getCLIListHandler)
-    restResource.route('GET', (), getattr(restResource, getCLIListHandlerName))
-
-    # expose the generated REST resource via apiRoot
-    setattr(info['apiRoot'], restResourceName, restResource)
 
 
 def _getParamCommandLineValue(param, value):
@@ -955,12 +593,6 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
 
     # do stuff needed to create REST endpoint for cLI
     handlerDesc = Description(clim.title).notes(str_description)
-    taskSpec = {'name': cliName,
-                'mode': 'docker',
-                'docker_image': dockerImage,
-                'pull_image': True,
-                'inputs': [],
-                'outputs': []}
 
     # get CLI parameters
     index_params, opt_params, simple_out_params = _getCLIParameters(clim)
@@ -968,26 +600,26 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
     # add indexed input parameters
     index_input_params = filter(lambda p: p.channel == 'input', index_params)
 
-    _addIndexedInputParamsToTaskSpec(index_input_params, taskSpec, handlerDesc)
+    _addIndexedInputParamsToHandler(index_input_params, handlerDesc)
 
     # add indexed output parameters
     index_output_params = filter(lambda p: p.channel == 'output', index_params)
 
-    _addIndexedOutputParamsToTaskSpec(index_output_params, taskSpec, handlerDesc)
+    _addIndexedOutputParamsToHandler(index_output_params, handlerDesc)
 
     # add optional input parameters
     opt_input_params = filter(lambda p: p.channel != 'output', opt_params)
 
-    _addOptionalInputParamsToTaskSpec(opt_input_params, taskSpec, handlerDesc)
+    _addOptionalInputParamsToHandler(opt_input_params, handlerDesc)
 
     # add optional output parameters
     opt_output_params = filter(lambda p: p.channel == 'output', opt_params)
 
-    _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec, handlerDesc)
+    _addOptionalOutputParamsToHandler(opt_output_params, handlerDesc)
 
     # add returnparameterfile if there are simple output params
     if len(simple_out_params) > 0:
-        _addReturnParameterFileParamToTaskSpec(taskSpec, handlerDesc)
+        _addReturnParameterFileParamToHandler(handlerDesc)
 
     # define CLI handler function
     @boundHandler(restResource)
@@ -1017,24 +649,43 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
         jobToken = jobModel.createJobToken(job)
         kwargs['jobInfo'] = wutils.jobInfoSpec(job, jobToken)
 
-        # create indexed input parameter bindings
+        # initialize task spec
+        taskSpec = {'name': cliName,
+                    'mode': 'docker',
+                    'docker_image': dockerImage,
+                    'pull_image': True,
+                    'inputs': [],
+                    'outputs': []}
+
+        _addIndexedInputParamsToTaskSpec(index_input_params, taskSpec)
+
+        _addIndexedOutputParamsToTaskSpec(index_output_params, taskSpec, hargs)
+
+        _addOptionalInputParamsToTaskSpec(opt_input_params, taskSpec)
+
+        _addOptionalOutputParamsToTaskSpec(opt_output_params, taskSpec, hargs)
+
+        if len(simple_out_params) > 0:
+            _addReturnParameterFileParamToTaskSpec(taskSpec, hargs)
+
+        kwargs['task'] = taskSpec
+
+        # add input/output parameter bindings
         _addIndexedInputParamBindings(index_input_params,
                                       kwargs['inputs'], hargs, token)
 
-        # create indexed output boundings
         _addIndexedOutputParamBindings(index_output_params,
                                        kwargs['outputs'], hargs, token)
 
-        # create optional input parameter bindings
         _addOptionalInputParamBindings(opt_input_params,
                                        kwargs['inputs'], hargs, user, token)
 
-        # create optional output parameter bindings
         _addOptionalOutputParamBindings(opt_output_params,
                                         kwargs['outputs'], hargs, user, token)
 
-        # create returnparameterfile binding
-        _addReturnParameterFileBinding(kwargs['outputs'], hargs, user, token)
+        if len(simple_out_params) > 0:
+            _addReturnParameterFileBinding(kwargs['outputs'],
+                                           hargs, user, token)
 
         # construct container arguments
         containerArgs = [cliRelPath]
@@ -1050,9 +701,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
         _addIndexedParamsToContainerArgs(index_params,
                                          containerArgs, hargs)
 
-        # create task spec
         taskSpec['container_args'] = containerArgs
-        kwargs['task'] = taskSpec
 
         pprint.pprint(kwargs)
 
