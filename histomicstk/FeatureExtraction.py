@@ -4,7 +4,7 @@ import math
 import pandas as pd
 
 
-def FeatureExtraction(Label, I, K = 128, Fs = 6, Delta = 8):
+def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     """
     Calculate features from a label image.
 
@@ -17,11 +17,13 @@ def FeatureExtraction(Label, I, K = 128, Fs = 6, Delta = 8):
     I : array_like
         A intensity image.
 
-    K : Number of points for boundary resampling to calculate fourier descriptors. Default value = 128.
+    K : Number of points for boundary resampling to calculate fourier
+        descriptors. Default value = 128.
 
     Fs : Number of frequency bins for calculating FSDs. Default value = 6.
 
-    Delta : scalar, used to dilate nuclei and define cytoplasm region. Default value = 8.
+    Delta : scalar, used to dilate nuclei and define cytoplasm region.
+            Default value = 8.
 
 
     Returns
@@ -52,7 +54,8 @@ def FeatureExtraction(Label, I, K = 128, Fs = 6, Delta = 8):
     HematoxlyinEntropy	HematoxlyinEnergy	HematoxlyinSkewness
     HematoxlyinKurtosis	HematoxlyinMeanGradMag	HematoxlyinStdGradMag
     HematoxlyinEntropyGradMag	HematoxlyinEnergyGradMag
-    HematoxlyinSkewnessGradMag	HematoxlyinKurtosisGradMag	HematoxlyinSumCanny	HematoxlyinMeanCanny
+    HematoxlyinSkewnessGradMag	HematoxlyinKurtosisGradMag
+    HematoxlyinSumCanny	HematoxlyinMeanCanny
 
     Cytoplas Features
     --------------------
@@ -93,7 +96,6 @@ def FeatureExtraction(Label, I, K = 128, Fs = 6, Delta = 8):
     # initialize panda dataframe
     df = pd.DataFrame()
 
-
     # extract feature information
     # https://github.com/scikit-image/scikit-image/blob/master/skimage/measure/_regionprops.py#L348
 
@@ -105,7 +107,10 @@ def FeatureExtraction(Label, I, K = 128, Fs = 6, Delta = 8):
         Area = np.append(Area, region.area)
         Perimeter = np.append(Perimeter, region.perimeter)
         Eccentricity = np.append(Eccentricity, region.eccentricity)
-        Circularity = np.append(Circularity, 4 * math.pi * region.area / math.pow(region.perimeter, 2))
+        Circularity = np.append(
+            Circularity,
+            4 * math.pi * region.area / math.pow(region.perimeter, 2)
+        )
         MajorAxisLength = np.append(MajorAxisLength, region.major_axis_length)
         MinorAxisLength = np.append(MinorAxisLength, region.minor_axis_length)
         Extent = np.append(Extent, region.extent)
@@ -124,6 +129,6 @@ def FeatureExtraction(Label, I, K = 128, Fs = 6, Delta = 8):
     df['Extent'] = Extent
     df['Solidity'] = Solidity
 
-    #df.insert(0, 'Slide', SlideName)
+    # df.insert(0, 'Slide', SlideName)
 
     return df
