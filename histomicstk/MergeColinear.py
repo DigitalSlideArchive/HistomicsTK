@@ -1,7 +1,7 @@
 import numpy as np
 
+
 def MergeColinear(X, Y):
-    
     """Processes boundary coordinates in polyline with vertices X, Y to remove
     redundant colinear points. Polyline is not assumed to be open or closed.
 
@@ -38,7 +38,7 @@ def MergeColinear(X, Y):
     dslope = np.diff(slope)
     dslope[np.isnan(dslope)] = 0
     transitions = np.argwhere(dslope != 0)
-    
+
     # construct merged sequences
     XOut = np.append(X[0], X[transitions+1])
     YOut = np.append(Y[0], Y[transitions+1])
