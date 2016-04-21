@@ -3,7 +3,6 @@ import scipy.ndimage.measurements as spm
 
 
 def MaxClustering(Response, Mask, r=10):
-
     """Local max clustering pixel aggregation for nuclear segmentation.
 
     Takes as input a constrained log or other filtered nuclear image, a binary 
