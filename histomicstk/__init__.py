@@ -17,6 +17,7 @@ from .gLoG import gLoG
 from .GradientDiffusion import GradientDiffusion
 from .GradientFlow import GradientFlow
 from .LabelPerimeter import LabelPerimeter
+from .MergeColinear import MergeColinear
 from .MergeSinks import MergeSinks
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
@@ -50,6 +51,7 @@ __all__ = ('ChanVese',
            'GradientDiffusion',
            'GradientFlow',
            'LabelPerimeter',
+           'MergeColinear',
            'MergeSinks',
            'OpticalDensityFwd',
            'OpticalDensityInv',
