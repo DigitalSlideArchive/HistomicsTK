@@ -30,6 +30,7 @@ from .SimpleMask import SimpleMask
 from .SparseColorDeconvolution import SparseColorDeconvolution
 from .SubmitTorque import SubmitTorque
 from .TilingSchedule import TilingSchedule
+from .FeatureExtraction import FeatureExtraction
 
 __version__ = '0.1.0'
 
@@ -62,4 +63,5 @@ __all__ = ('ChanVese',
            'SimpleMask',
            'SparseColorDeconvolution',
            'SubmitTorque',
-           'TilingSchedule')
+           'TilingSchedule',
+           'FeatureExtraction')
