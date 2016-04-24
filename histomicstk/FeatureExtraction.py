@@ -93,11 +93,18 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     size_x = Label.shape[0]
 
     # initialize centroids features
-    CentroidX = CentroidY = []
+    CentroidX = []
+    CentroidY = []
 
     # initialize morphometry features
-    Area = Perimeter = Eccentricity = Circularity = MajorAxisLength \
-    = MinorAxisLength = Extent = Solidity = []
+    Area = []
+    Perimeter = []
+    Eccentricity = []
+    Circularity = []
+    MajorAxisLength = []
+    MinorAxisLength = []
+    Extent = []
+    Solidity = []
 
     # initialize FSD feature group
     FSDGroup = []
