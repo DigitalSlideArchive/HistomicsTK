@@ -184,7 +184,7 @@ def log2space(a, b, n):
     """
 
     A = np.power(
-        2, [a + x*(b-a)/(n-1) for x in range (0, n-1) ]
+        2, [a + x*(b-a)/(n-1) for x in range(0, n-1)]
     )
 
     B = np.power(
