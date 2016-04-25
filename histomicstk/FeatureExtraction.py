@@ -104,3 +104,15 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     df['Solidity'] = Solidity
 
     return df
+
+def GetBounds(bbox, delta, N):
+    """
+    Returns bounds of object in global label image.
+    """
+    bounds = np.zeros(4, dtype=np.int8)
+    bounds[0] = max(0, math.floor(bbox[0] - delta))
+    bounds[1] = min(N-1, math.ceil(bbox[0] + bbox[2] + delta))
+    bounds[2] = max(0, math.floor(bbox[1] - delta))
+    bounds[3] = min(N-1, math.ceil(bbox[1] + bbox[3] + delta))
+
+    return bounds
