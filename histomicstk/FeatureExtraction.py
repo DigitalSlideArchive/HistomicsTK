@@ -172,7 +172,7 @@ def InterpolateArcLength(X, Y, L):
         np.array([Y[i+1] for i in Locations]) - tY, Lie
     )
 
-    iXY = collections.namedtuple('iXY',['iX', 'iY'])
+    iXY = collections.namedtuple('iXY', ['iX', 'iY'])
     Output = iXY(iX, iY)
 
     return Output
