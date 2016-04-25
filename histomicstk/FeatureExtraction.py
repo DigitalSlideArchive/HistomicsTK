@@ -1,4 +1,5 @@
 from skimage.measure import regionprops
+from skimage.segmentation import find_boundaries
 import numpy as np
 import math
 import pandas as pd
@@ -21,7 +22,14 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
             Default value = 8.
     Returns
     -------
-    df : Pandas data frame.
+    df : 2-dimensional labeled data structure, float64
+        Pandas data frame.
+    See Also
+    --------
+    fft.fft : Compute the one-dimensional discrete Fourier Transform
+
+    find_boundaries : Return bool array where boundaries between labeled
+        regions are True.
     ##########     Features Start     ##########
     Slidename and centroids
     -----------------------
@@ -56,6 +64,12 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     ##########     Features End     ##########
     """
 
+    # get total regions
+    Num = Label.max()
+
+    # get Label size x
+    size_x = Label.shape[0]
+
     # initialize centroids
     CentroidX = []
     CentroidY = []
@@ -70,8 +84,16 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     Extent = []
     Solidity = []
 
+    # initialize FSD feature group
+    FSDGroup = []
+
     # initialize panda dataframe
     df = pd.DataFrame()
+
+    # fourier descriptors, spaced evenly over the interval 1:K/2
+    Interval = np.round(
+        log2space(0, math.log(K, 2)-1, Fs+1)
+    ).astype(np.uint8)
 
     # extract feature information
     for region in regionprops(Label, I):
@@ -90,6 +112,24 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
         MinorAxisLength = np.append(MinorAxisLength, region.minor_axis_length)
         Extent = np.append(Extent, region.extent)
         Solidity = np.append(Solidity, region.solidity)
+        # get bounds of dilated nucleus
+        # region.bbox : min_row, min_col, max_row, max_col
+        # bounds : min_row, max_row, min_col, max_col
+        bounds = GetBounds(region.bbox, Delta, size_x)
+        # grab nucleus mask
+        Nucleus = (
+            Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] == region.label
+        ).astype(np.int)
+        # get Bounds
+        Bounds = np.argwhere(
+            find_boundaries(Nucleus, mode="inner").astype(np.uint8) == 1
+        )
+        # calculate FSDs
+        FSD = FSDs(
+            Bounds[:,0], Bounds[:,1],
+            K, Interval
+        )
+        FSDGroup =  np.append(FSDGroup, FSD)
 
     # add columns to dataframe
     df['X'] = CentroidX
@@ -103,6 +143,15 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     df['MinorAxisLength'] = MinorAxisLength
     df['Extent'] = Extent
     df['Solidity'] = Solidity
+
+    FSDGroup = FSDGroup.reshape(Num, Fs)
+
+    df['FSD1'] = FSDGroup[:, 0]
+    df['FSD2'] = FSDGroup[:, 1]
+    df['FSD3'] = FSDGroup[:, 2]
+    df['FSD4'] = FSDGroup[:, 3]
+    df['FSD5'] = FSDGroup[:, 4]
+    df['FSD6'] = FSDGroup[:, 5]
 
     return df
 
