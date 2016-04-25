@@ -55,14 +55,11 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     ##########     Features End     ##########
     """
 
-    # slidename
-    # SlideName = "TCGA-0-0000"
-
-    # centroids
+    # initialize centroids
     CentroidX = []
     CentroidY = []
 
-    # morphometry features
+    # initialize morphometry features
     Area = []
     Perimeter = []
     Eccentricity = []
@@ -76,8 +73,6 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     df = pd.DataFrame()
 
     # extract feature information
-    # https://github.com/scikit-image/scikit-image/blob/master/skimage/measure/_regionprops.py#L348
-
     for region in regionprops(Label, I):
         # add centroids
         CentroidX = np.append(CentroidX, region.centroid[0])
@@ -108,18 +103,4 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     df['Extent'] = Extent
     df['Solidity'] = Solidity
 
-    # df.insert(0, 'Slide', SlideName)
-
     return df
-
-def GetBounds(bbox, delta, N):
-    """
-    Returns bounds of object in global label image.
-    """
-    bounds = np.zeros(4, dtype = np.int8)
-    bounds[0] = max(0, math.floor(bbox[0] - delta))
-    bounds[1] = min(N-1, math.ceil(bbox[0] + bbox[2] + delta))
-    bounds[2] = max(0, math.floor(bbox[1] - delta))
-    bounds[3] = min(N-1, math.ceil(bbox[1] + bbox[3] + delta))
-
-    return bounds
