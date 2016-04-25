@@ -119,59 +119,59 @@ def GetBounds(bbox, delta, N):
     return bounds
 
 
-def FSDs(X, Y, K, Intervals):
+def InterpolateArcLength(X, Y, L):
     """
-    Calculated FSDs from boundary points X,Y. Boundaries are resampled to have
-    K equally spaced points (arclength) around the shape. The curvature is
-    calculated using the cumulative angular function, measuring the
-    displacement of the tangent angle from the starting point of the boundary.
-    The K-length fft of the cumulative angular function is calculated, and
-    then the elements of 'F' are summed as the spectral energy over
-    'Intervals'.
+    Resamples boundary points [X, Y] at L total equal arc-length locations.
 
-    Returns F - length(Intervals) vector containing spectral energy of
-    cumulative angular function, summed over defined 'Intervals'.
+    Returns
+    -------
+    iX - L-length vector of horizontal interpolated coordinates with equal
+         arc-length spacing.
+    iY - L-length vector of vertical interpolated coordinates with equal
+         arc-length spacing.
     """
 
-    # check input 'Intervals'
-    if Intervals[0] != 1.:
-        Intervals = np.hstack((1., Intervals))
-    if Intervals[-1] != (K / 2):
-        Intervals = np.hstack((Intervals, float(K)))
+    # length of X
+    K = len(X)
 
-    # get length of intervals
-    L = len(Intervals)
+    # generate spaced points
+    Interval = np.linspace(0, 1, L)
 
-    # generate arc-length intervals for curvature calculation
-    I = np.linspace(0, 1, K)
-
-    # interpolate boundaries
-    iXY = InterpolateArcLength(X, Y, K)
-
-    # calculate curvature
-    Curvature = np.arctan2(
-        (iXY.iY[1:] - iXY.iY[:-1]),
-        (iXY.iX[1:] - iXY.iX[:-1])
+    # get segment lengths
+    Lengths = np.sqrt(
+        np.power(np.diff(X), 2) + np.power(np.diff(Y), 2)
     )
 
-    # make curvature cumulative
-    Curvature = Curvature - Curvature[0]
+    # normalize to unit length
+    Lengths = Lengths / Lengths.sum()
 
-    # calculate FFT
-    fX = np.fft.fft(Curvature).T
+    # calculate cumulative length along boundary
+    Cumulative = np.hstack((0., np.cumsum(Lengths)))
 
-    # spectral energy
-    fX = fX * fX.conj()
-    fX = fX / fX.sum()
+    # place points in 'Interval' along boundary
+    Locations = np.digitize(Interval, Cumulative)
 
-    print(L)
-    # calculate 'F' values
-    F = []
+    # clip to ends
+    Locations[Locations < 1] = 1
+    Locations[Locations >= K] = K - 1
+    Locations = Locations - 1
 
-    for i in range(L-1):
-        f = np.round(
-            fX[Intervals[i]-1:Intervals[i+1]].sum(), L
-        )
-        F = np.append(F, f).real.astype(float)
+    # linear interpolation
+    Lie = np.divide(
+        (Interval - [Cumulative[i] for i in Locations]),
+        [Lengths[i] for i in Locations]
+    )
 
-    return F
+    tX = np.array([X[i] for i in Locations])
+    tY = np.array([Y[i] for i in Locations])
+    iX = tX + np.multiply(
+                (np.array([X[i+1] for i in Locations]) - tX) , Lie
+                )
+    iY = tY + np.multiply(
+                (np.array([Y[i+1] for i in Locations]) - tY) , Lie
+                )
+
+    iXY = collections.namedtuple('iXY',['iX', 'iY'])
+    Output = iXY(iX, iY)
+
+    return Output
