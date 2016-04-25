@@ -2,6 +2,7 @@ from skimage.measure import regionprops
 import numpy as np
 import math
 import pandas as pd
+import collections
 
 
 def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
@@ -165,11 +166,11 @@ def InterpolateArcLength(X, Y, L):
     tX = np.array([X[i] for i in Locations])
     tY = np.array([Y[i] for i in Locations])
     iX = tX + np.multiply(
-                (np.array([X[i+1] for i in Locations]) - tX) , Lie
-                )
+        np.array([X[i+1] for i in Locations]) - tX, Lie
+    )
     iY = tY + np.multiply(
-                (np.array([Y[i+1] for i in Locations]) - tY) , Lie
-                )
+        np.array([Y[i+1] for i in Locations]) - tY, Lie
+    )
 
     iXY = collections.namedtuple('iXY',['iX', 'iY'])
     Output = iXY(iX, iY)
