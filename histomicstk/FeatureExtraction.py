@@ -176,3 +176,21 @@ def InterpolateArcLength(X, Y, L):
     Output = iXY(iX, iY)
 
     return Output
+
+
+def log2space(a, b, n):
+    """
+    Returns n logarithmically-spaced points from 2^a to 2^b.
+    """
+
+    A = np.power(
+        2, [a + x*(b-a)/(n-1) for x in range (0, n-1) ]
+    )
+
+    B = np.power(
+        2, b
+    )
+
+    A = np.hstack((A, B))
+
+    return A
