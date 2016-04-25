@@ -126,10 +126,10 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
         )
         # calculate FSDs
         FSD = FSDs(
-            Bounds[:,0], Bounds[:,1],
+            Bounds[:, 0], Bounds[:, 1],
             K, Interval
         )
-        FSDGroup =  np.append(FSDGroup, FSD)
+        FSDGroup = np.append(FSDGroup, FSD)
 
     # add columns to dataframe
     df['X'] = CentroidX
