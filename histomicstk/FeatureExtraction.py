@@ -92,7 +92,10 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
 
     # fourier descriptors, spaced evenly over the interval 1:K/2
     Interval = np.round(
-        log2space(0, math.log(K, 2)-1, Fs+1)
+        np.power(2, np.linspace(
+                0, math.log(K, 2)-1, Fs+1, endpoint=True
+            )
+        )
     ).astype(np.uint8)
 
     # extract feature information
@@ -227,24 +230,6 @@ def InterpolateArcLength(X, Y, L):
     return Output
 
 
-def log2space(a, b, n):
-    """
-    Returns n logarithmically-spaced points from 2^a to 2^b.
-    """
-
-    A = np.power(
-        2, [a + x*(b-a)/(n-1) for x in range(0, n-1)]
-    )
-
-    B = np.power(
-        2, b
-    )
-
-    A = np.hstack((A, B))
-
-    return A
-
-
 def FSDs(X, Y, K, Intervals):
     """
     Calculated FSDs from boundary points X,Y. Boundaries are resampled to have
@@ -287,7 +272,6 @@ def FSDs(X, Y, K, Intervals):
     fX = fX * fX.conj()
     fX = fX / fX.sum()
 
-    print(L)
     # calculate 'F' values
     F = []
 
