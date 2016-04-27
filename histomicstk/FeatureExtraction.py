@@ -92,9 +92,8 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
 
     # fourier descriptors, spaced evenly over the interval 1:K/2
     Interval = np.round(
-        np.power(2, np.linspace(
-                0, math.log(K, 2)-1, Fs+1, endpoint=True
-            )
+        np.power(
+            2, np.linspace(0, math.log(K, 2)-1, Fs+1, endpoint=True)
         )
     ).astype(np.uint8)
 
