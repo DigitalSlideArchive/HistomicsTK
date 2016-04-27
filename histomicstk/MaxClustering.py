@@ -5,17 +5,17 @@ import scipy.ndimage.measurements as spm
 def MaxClustering(Response, Mask, r=10):
     """Local max clustering pixel aggregation for nuclear segmentation.
 
-    Takes as input a constrained log or other filtered nuclear image, a binary 
-    nuclear mask, and a clustering radius. For each pixel in the nuclear mask, 
-    the local max is identified. A hierarchy of local maxima is defined, and 
+    Takes as input a constrained log or other filtered nuclear image, a binary
+    nuclear mask, and a clustering radius. For each pixel in the nuclear mask,
+    the local max is identified. A hierarchy of local maxima is defined, and
     the root nodes used to define the label image.
 
     Parameters
     ----------
     Response : array_like
         A filtered-smoothed image where the maxima correspond to nuclear
-        center. Typically obtained by constrained-LoG filtering on a 
-        hematoxylin intensity image obtained from ColorDeconvolution. 
+        center. Typically obtained by constrained-LoG filtering on a
+        hematoxylin intensity image obtained from ColorDeconvolution.
     Mask : array_like
         A binary image where nuclei pixels have value 1/True, and non-nuclear
         pixels have value 0/False.
@@ -39,8 +39,8 @@ def MaxClustering(Response, Mask, r=10):
 
     References
     ----------
-    .. [1] XW. Wu et al “The local maximum clustering method and its 
-    application in microarray gene expression data analysis,” EURASIP J. Appl. 
+    .. [1] XW. Wu et al “The local maximum clustering method and its
+    application in microarray gene expression data analysis,” EURASIP J. Appl.
     Signal Process,vol.2004,no.1,pp.53–63, 2004.
     .. [2] Y. Al-Kofahi et al "Improved Automatic Detection and Segmentation
     of Cell Nuclei in Histopathology Images" in IEEE Transactions on Biomedical
