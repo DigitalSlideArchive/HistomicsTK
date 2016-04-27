@@ -39,9 +39,9 @@ def MaxClustering(Response, Mask, r=10):
 
     References
     ----------
-    .. [1] XW. Wu et al “The local maximum clustering method and its
-    application in microarray gene expression data analysis,” EURASIP J. Appl.
-    Signal Process,vol.2004,no.1,pp.53–63, 2004.
+    .. [1] XW. Wu et al "The local maximum clustering method and its
+    application in microarray gene expression data analysis," EURASIP J. Appl.
+    Signal Processing, volume 2004, no.1, pp.53-63, 2004.
     .. [2] Y. Al-Kofahi et al "Improved Automatic Detection and Segmentation
     of Cell Nuclei in Histopathology Images" in IEEE Transactions on Biomedical
     Engineering,vol.57,no.4,pp.847-52, 2010.
