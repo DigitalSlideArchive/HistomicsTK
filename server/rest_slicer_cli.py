@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import subprocess
 import pprint
@@ -10,6 +11,7 @@ from girder.api.describe import Description, describeRoute
 from girder.constants import AccessType
 from girder.plugins.worker import utils as wutils
 from girder.utility.model_importer import ModelImporter
+from girder.plugins.worker import constants
 
 _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'boolean': 'boolean',
@@ -34,6 +36,8 @@ _SLICER_TYPE_TO_GIRDER_MODEL_MAP = {
     'file': 'item',
     'directory': 'folder'
 }
+
+_worker_docker_data_dir = constants.DOCKER_DATA_VOLUME
 
 _girderInputFileSuffix = '_girderItemId'
 _girderOutputFolderSuffix = '_girderFolderId'
@@ -430,8 +434,7 @@ def _is_on_girder(param):
 
 def _getParamCommandLineValue(param, value):
     if param.isVector():
-        cmdVal = '"%s"' % ', '.join(map(str, json.loads(value)))
-        print param.name, value, cmdVal
+        cmdVal = '%s' % ', '.join(map(str, json.loads(value)))
     else:
         cmdVal = str(value)
 
@@ -477,7 +480,8 @@ def _addOptionalOutputParamsToContainerArgs(opt_output_params,
         if _is_on_girder(param) and param.name in kwargs['outputs']:
 
             curValue = os.path.join(
-                '/data', hargs['params'][param.name + _girderOutputNameSuffix]
+                _worker_docker_data_dir,
+                hargs['params'][param.name + _girderOutputNameSuffix]
             )
 
             containerArgs.append(curFlag)
@@ -493,7 +497,8 @@ def _addReturnParameterFileToContainerArgs(containerArgs, kwargs, hargs):
         curFlag = '--returnparameterfile'
 
         curValue = os.path.join(
-            '/data', hargs['params'][curName + _girderOutputNameSuffix]
+            _worker_docker_data_dir,
+            hargs['params'][curName + _girderOutputNameSuffix]
         )
 
         containerArgs.append(curFlag)
@@ -508,7 +513,7 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
 
             if _is_on_girder(param):
                 curValue = os.path.join(
-                    '/data', hargs[param.name]['name']
+                    _worker_docker_data_dir, hargs[param.name]['name']
                 )
             else:
                 curValue = _getParamCommandLineValue(
@@ -528,7 +533,8 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
                 )
 
             curValue = os.path.join(
-                '/data', hargs['params'][param.name + _girderOutputNameSuffix]
+                _worker_docker_data_dir,
+                hargs['params'][param.name + _girderOutputNameSuffix]
             )
 
         else:
@@ -823,8 +829,6 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
     else:
         dockerImages = [dockerImages]
 
-    print restResource
-
     # create REST resource if given a name
     if isinstance(restResource, str):
         restResource = type(restResource,
@@ -875,6 +879,9 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
             except Exception as e:
                 print "Failed to create REST endpoints for %s: %s" % (
                     cliRelPath, e)
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)
                 continue
 
             cliGetXMLSpecHandlerName = 'get_xml_' + cliSuffix
@@ -901,6 +908,7 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
     restResource.route('GET', (), getattr(restResource, getCLIListHandlerName))
 
     print type(restResource).__name__
+    print cliList
 
     # expose the generated REST resource via apiRoot
     setattr(info['apiRoot'], restResourceName, restResource)

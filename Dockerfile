@@ -12,11 +12,13 @@ RUN apt-get update && \
 
 # Install miniconda
 ENV build_path=$PWD/build
-RUN mkdir -p $build_path
-RUN wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
+RUN mkdir -p $build_path && \
+    wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
     -O $build_path/install_miniconda.sh && \
     bash $build_path/install_miniconda.sh -b -p $build_path/miniconda && \
-    rm $build_path/install_miniconda.sh
+    rm $build_path/install_miniconda.sh && \
+    chmod -R +r $build_path && \
+    chmod +x $build_path/miniconda/bin/python
 ENV PATH=$build_path/miniconda/bin:${PATH}
 
 # copy HistomicsTK files
@@ -38,4 +40,4 @@ RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
 
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server
-ENTRYPOINT ["python", "cli_list_entrypoint.py"]
+ENTRYPOINT ["/build/miniconda/bin/python", "cli_list_entrypoint.py"]

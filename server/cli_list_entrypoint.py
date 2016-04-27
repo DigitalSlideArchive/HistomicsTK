@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import sys
 import json
@@ -84,7 +83,7 @@ def CLIListEntrypoint(cli_list_spec_file=None):
                                    os.path.basename(args.cli) + '.py')
 
         # python <cli-rel-path>/<cli-name>.py [<args>]
-        subprocess.call(['python', script_file] + sys.argv[2:])
+        subprocess.call([sys.executable, script_file] + sys.argv[2:])
 
     elif cli_list_spec[args.cli]['type'] == 'cxx':
 

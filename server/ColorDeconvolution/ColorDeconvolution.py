@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import numpy as np
 import skimage.io
 import histomicstk as htk
@@ -37,7 +36,6 @@ def main(args):
 
     print args.outputStainImageFile_3
     skimage.io.imsave(args.outputStainImageFile_3, res.Stains[:, :, 2])
-
 
 if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())
