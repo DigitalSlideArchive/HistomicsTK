@@ -52,7 +52,6 @@ _return_parameter_file_desc = """
 """
 
 
-
 def _getCLIParameters(clim):
 
     # get parameters

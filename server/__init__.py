@@ -19,6 +19,6 @@ def load(info):
     info['serverRoot'].histomicstk = histomicsRoot
     info['serverRoot'].girder = girderRoot
 
-    _ = genRESTEndPointsForSlicerCLIsInDocker(
+    genRESTEndPointsForSlicerCLIsInDocker(
         info, 'HistomicsTK', 'dsarchive/histomicstk'
     )

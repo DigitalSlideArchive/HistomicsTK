@@ -6,6 +6,7 @@ from ctk_cli import CLIArgumentParser
 import logging
 logging.basicConfig()
 
+
 def main(args):
 
     # Read Input Image
@@ -39,4 +40,3 @@ def main(args):
 
 if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())
-

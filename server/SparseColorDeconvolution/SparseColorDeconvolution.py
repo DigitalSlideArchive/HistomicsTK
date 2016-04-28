@@ -3,6 +3,7 @@ import skimage.io
 import histomicstk as htk
 from ctk_cli import CLIArgumentParser
 
+
 def main(args):
 
     # Read Input Image
