@@ -1,0 +1,9 @@
+{
+  "ColorDeconvolution": {
+    "type"    : "python"
+  },
+
+  "SparseColorDeconvolution": {
+    "type"    : "python"
+  }
+}
