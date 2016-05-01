@@ -1,20 +1,24 @@
+import collections
+import math
+import numpy as np
+import pandas as pd
+from scipy.stats import entropy, skew, kurtosis
 from skimage.measure import regionprops
 from skimage.segmentation import find_boundaries
-import numpy as np
-import math
-import pandas as pd
-import collections
+from skimage.feature import canny
+from skimage.morphology import disk, dilation
+from ColorDeconvolution import ColorDeconvolution
 
 
 def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     """
-    Calculate features from a label image.
+    Calculates features from a label image.
     Parameters
     ----------
     Label : array_like
-        A label image.
+        A T x T label image.
     I : array_like
-        A intensity image.
+        A T x T x 3 color image.
     K : Number of points for boundary resampling to calculate fourier
         descriptors. Default value = 128.
     Fs : Number of frequency bins for calculating FSDs. Default value = 6.
@@ -26,14 +30,13 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
         Pandas data frame.
     See Also
     --------
-    fft.fft : Compute the one-dimensional discrete Fourier Transform
-
-    find_boundaries : Return bool array where boundaries between labeled
+    fft.fft : Computes the one-dimensional discrete Fourier Transform
+    find_boundaries : Returns bool array where boundaries between labeled
         regions are True.
-    ##########     Features Start     ##########
-    Slidename and centroids
-    -----------------------
-    Slide	X	Y
+    ##########     Features     ##########
+    Centroids
+    ---------
+    X	Y
     Morphometry features
     --------------------
     Area	Perimeter	Eccentricity	Circularity
@@ -51,7 +54,7 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     HematoxlyinSkewnessGradMag	HematoxlyinKurtosisGradMag
     HematoxlyinSumCanny	HematoxlyinMeanCanny
     Cytoplas Features
-    --------------------
+    -----------------
     CytoplasmMeanIntensity	CytoplasmMeanMedianDifferenceIntensity
     CytoplasmMaxIntensity	CytoplasmMinIntensity	CytoplasmStdIntensity
     CytoplasmEntropy	CytoplasmEnergy	CytoplasmSkewness	CytoplasmKurtosis
@@ -61,7 +64,7 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     Boundary
     --------
     Boundaries: x1,y1;x2,y2;...
-    ##########     Features End     ##########
+    ########################################
     """
 
     # get total regions
@@ -87,6 +90,14 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     # initialize FSD feature group
     FSDGroup = []
 
+    # initialize Nuclei, Cytoplasms
+    Bounds = [[] for i in range(Num)]
+    Nuclei = [[] for i in range(Num)]
+    Cytoplasms = [[] for i in range(Num)]
+
+    # create round structuring element
+    Disk = disk(Delta)
+
     # initialize panda dataframe
     df = pd.DataFrame()
 
@@ -96,6 +107,12 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
             2, np.linspace(0, math.log(K, 2)-1, Fs+1, endpoint=True)
         )
     ).astype(np.uint8)
+
+    # set 3 x 3 matrix for stains
+    W = np.array([[0.650, 0.072, 0],
+                 [0.704, 0.990, 0],
+                 [0.286, 0.105, 0]]
+    )
 
     # extract feature information
     for region in regionprops(Label, I):
@@ -123,15 +140,27 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
             Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] == region.label
         ).astype(np.int)
         # get Bounds
-        Bounds = np.argwhere(
+        Bounds[region.label-1] = np.argwhere(
             find_boundaries(Nucleus, mode="inner").astype(np.uint8) == 1
         )
         # calculate FSDs
         FSD = FSDs(
-            Bounds[:, 0], Bounds[:, 1],
+            Bounds[region.label-1][:, 0], Bounds[region.label-1][:, 1],
             K, Interval
         )
         FSDGroup = np.append(FSDGroup, FSD)
+        # generate object coords for nuclei and cytoplasmic regions
+        Nuclei[region.label-1] = region.coords
+        # get mask for all nuclei in neighborhood
+        Mask = (
+            Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] > 0
+        ).astype(np.int)
+        # remove nucleus region from cytoplasm+nucleus mask
+        cytoplasm = (
+            np.logical_xor(Mask, dilation(Nucleus, Disk))
+        ).astype(np.int)
+        # get list of cytoplasm pixels
+        Cytoplasms[region.label-1] = GetPixCoords(cytoplasm, bounds)
 
     # add columns to dataframe
     df['X'] = CentroidX
@@ -155,8 +184,21 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     df['FSD5'] = FSDGroup[:, 4]
     df['FSD6'] = FSDGroup[:, 5]
 
+    df['Bounds'] = Bounds
+
     return df
 
+def GetPixCoords(Binary, bounds):
+    """
+    Get global coords of object extracted from tile
+    """
+    coords = np.where(Binary == 1)
+    coords = np.asarray(coords)
+    coords[0] = np.add(coords[0], bounds[0])
+    coords[1] = np.add(coords[1], bounds[2])
+    coords = coords.T
+
+    return coords
 
 def GetBounds(bbox, delta, N):
     """
