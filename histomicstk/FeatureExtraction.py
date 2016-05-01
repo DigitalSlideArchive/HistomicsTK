@@ -5,6 +5,7 @@ import pandas as pd
 from skimage.measure import regionprops
 from skimage.segmentation import find_boundaries
 from skimage.morphology import disk, dilation
+from scipy.stats import entropy, skew, kurtosis
 from ColorDeconvolution import ColorDeconvolution
 
 
@@ -165,8 +166,10 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     Eosin = Deconvolved.Stains[:, :, 1]
     # calculate hematoxlyin features, capture feature names
     HematoxylinIntensityGroup = IntensityFeatureGroup(Hematoxylin, Nuclei)
+    HematoxylinTextureGroup = TextureFeatureGroup(Hematoxylin, Nuclei)
     # calculate eosin features
     EosinIntensityGroup = IntensityFeatureGroup(Eosin, Cytoplasms)
+    EosinTextureGroup = TextureFeatureGroup(Eosin, Cytoplasms);
 
     # add columns to dataframe
     df['X'] = CentroidX
@@ -196,6 +199,10 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     df['HematoxlyinMaxIntensity'] = HematoxylinIntensityGroup.MaxIntensity
     df['HematoxlyinMinIntensity'] = HematoxylinIntensityGroup.MinIntensity
     df['HematoxlyinStdIntensity'] = HematoxylinIntensityGroup.StdIntensity
+    df['HematoxlyinEntropy'] = HematoxylinTextureGroup.Entropy
+    df['HematoxlyinEnergy'] = HematoxylinTextureGroup.Energy
+    df['HematoxlyinSkewness'] = HematoxylinTextureGroup.Skewness
+    df['HematoxlyinKurtosis'] = HematoxylinTextureGroup.Kurtosis
 
     df['CytoplasmMeanIntensity'] = EosinIntensityGroup.MeanIntensity
     df['CytoplasmMeanMedianDifferenceIntensity'] \
@@ -203,10 +210,49 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     df['CytoplasmMaxIntensity'] = EosinIntensityGroup.MaxIntensity
     df['CytoplasmMinIntensity'] = EosinIntensityGroup.MinIntensity
     df['CytoplasmStdIntensity'] = EosinIntensityGroup.StdIntensity
+    df['CytoplasmEntropy'] = EosinTextureGroup.Entropy
+    df['CytoplasmEnergy'] = EosinTextureGroup.Energy
+    df['CytoplasmSkewness'] = EosinTextureGroup.Skewness
+    df['CytoplasmKurtosis'] = EosinTextureGroup.Kurtosis
 
     df['Bounds'] = Bounds
 
     return df
+
+
+def TextureFeatureGroup(I, Coords):
+    """
+    Get TextureFeatures for nuclei and cytoplasms
+    """
+    f = np.zeros((len(Coords), 4))
+    for i in range(len(Coords)):
+        pixOfInterest = I[Coords[i][:, 0], Coords[i][:, 1]]
+        hist, bins = np.histogram(pixOfInterest, bins=np.arange(256))
+        prob = hist/np.sum(hist, dtype=np.float32)
+        f[i, 0] = entropy(pixOfInterest)
+        f[i, 1] = np.sum(np.power(prob, 2))
+        f[i, 2] = skew(pixOfInterest)
+        f[i, 3] = kurtosis(pixOfInterest)
+
+    Entropy = f[:, 0]
+    Energy = f[:, 1]
+    Skewness = f[:, 2]
+    Kurtosis = f[:, 3]
+
+    iFG = collections.namedtuple(
+        'iFG',
+        [
+            'Entropy',
+            'Energy',
+            'Skewness',
+            'Kurtosis'
+        ]
+    )
+    Output = iFG(
+        Entropy, Energy, Skewness, Kurtosis
+    )
+
+    return Output
 
 
 def IntensityFeatureGroup(I, Coords):
