@@ -192,6 +192,7 @@ def GetPixCoords(Binary, bounds):
 
     return coords
 
+
 def GetBounds(bbox, delta, N):
     """
     Returns bounds of object in global label image.
