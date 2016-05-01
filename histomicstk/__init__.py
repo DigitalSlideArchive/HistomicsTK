@@ -21,6 +21,7 @@ from .GraphColorSequential import GraphColorSequential
 from .LabelPerimeter import LabelPerimeter
 from .LabelRegionAdjacency import LabelRegionAdjacency
 from .MaxClustering import MaxClustering
+from .MergeColinear import MergeColinear
 from .MergeSinks import MergeSinks
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
@@ -59,6 +60,7 @@ __all__ = ('ChanVese',
            'LabelPerimeter',
            'LabelRegionAdjacency',
            'MaxClustering',
+           'MergeColinear',
            'MergeSinks',
            'OpticalDensityFwd',
            'OpticalDensityInv',
