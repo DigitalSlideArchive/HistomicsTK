@@ -2,6 +2,7 @@ import collections
 import math
 import numpy as np
 import pandas as pd
+from skimage.feature import canny
 from skimage.measure import regionprops
 from skimage.segmentation import find_boundaries
 from skimage.morphology import disk, dilation
@@ -167,9 +168,11 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     # calculate hematoxlyin features, capture feature names
     HematoxylinIntensityGroup = IntensityFeatureGroup(Hematoxylin, Nuclei)
     HematoxylinTextureGroup = TextureFeatureGroup(Hematoxylin, Nuclei)
+    HematoxylinGradientGroup = GradientFeatureGroup(Hematoxylin, Nuclei)
     # calculate eosin features
     EosinIntensityGroup = IntensityFeatureGroup(Eosin, Cytoplasms)
     EosinTextureGroup = TextureFeatureGroup(Eosin, Cytoplasms)
+    EosinGradientGroup = GradientFeatureGroup(Eosin, Cytoplasms)
 
     # add columns to dataframe
     df['X'] = CentroidX
@@ -203,6 +206,16 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     df['HematoxlyinEnergy'] = HematoxylinTextureGroup.Energy
     df['HematoxlyinSkewness'] = HematoxylinTextureGroup.Skewness
     df['HematoxlyinKurtosis'] = HematoxylinTextureGroup.Kurtosis
+    df['HematoxlyinMeanGradMag'] = HematoxylinGradientGroup.MeanGradMag
+    df['HematoxlyinStdGradMag'] = HematoxylinGradientGroup.StdGradMag
+    df['HematoxlyinEntropyGradMag'] = HematoxylinGradientGroup.EntropyGradMag
+    df['HematoxlyinEnergyGradMag'] = HematoxylinGradientGroup.EnergyGradMag
+    df['HematoxlyinSkewnessGradMag'] \
+        = HematoxylinGradientGroup.SkewnessGradMag
+    df['HematoxlyinKurtosisGradMag'] \
+        = HematoxylinGradientGroup.KurtosisGradMag
+    df['HematoxlyinSumCanny'] = HematoxylinGradientGroup.SumCanny
+    df['HematoxlyinMeanCanny'] = HematoxylinGradientGroup.MeanCanny
 
     df['CytoplasmMeanIntensity'] = EosinIntensityGroup.MeanIntensity
     df['CytoplasmMeanMedianDifferenceIntensity'] \
@@ -214,10 +227,72 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     df['CytoplasmEnergy'] = EosinTextureGroup.Energy
     df['CytoplasmSkewness'] = EosinTextureGroup.Skewness
     df['CytoplasmKurtosis'] = EosinTextureGroup.Kurtosis
+    df['CytoplasmMeanGradMag'] = EosinGradientGroup.MeanGradMag
+    df['CytoplasmStdGradMag'] = EosinGradientGroup.StdGradMag
+    df['CytoplasmEntropyGradMag'] = EosinGradientGroup.EntropyGradMag
+    df['CytoplasmEnergyGradMag'] = EosinGradientGroup.EnergyGradMag
+    df['CytoplasmSkewnessGradMag'] = EosinGradientGroup.SkewnessGradMag
+    df['CytoplasmKurtosisGradMag'] = EosinGradientGroup.KurtosisGradMag
+    df['CytoplasmSumCanny'] = EosinGradientGroup.SumCanny
+    df['CytoplasmMeanCanny'] = EosinGradientGroup.MeanCanny
 
     df['Bounds'] = Bounds
 
     return df
+
+
+def GradientFeatureGroup(I, Coords):
+    """
+    Get GradientFeatures for nuclei and cytoplasms
+    """
+    Gx, Gy = np.gradient(I)
+    diffG = np.sqrt(Gx*Gx + Gy*Gy)
+    BW_canny = canny(I)
+
+    f = np.zeros((len(Coords), 8))
+    for i in range(len(Coords)):
+        pixOfInterest = diffG[Coords[i][:, 0], Coords[i][:, 1]]
+
+        f[i, 0] = np.mean(pixOfInterest)
+        f[i, 1] = np.std(pixOfInterest)
+        hist, bins = np.histogram(pixOfInterest, bins=np.arange(256))
+        prob = hist/np.sum(hist, dtype=np.float32)
+        f[i, 2] = entropy(pixOfInterest)
+        f[i, 3] = np.sum(np.power(prob, 2))
+        f[i, 4] = skew(pixOfInterest)
+        f[i, 5] = kurtosis(pixOfInterest)
+        bw_canny = BW_canny[Coords[i][:, 0], Coords[i][:, 1]]
+        f[i, 6] = np.sum(bw_canny)
+        f[i, 7] = f[i, 6] / len(pixOfInterest)
+
+    MeanGradMag = f[:, 0]
+    StdGradMag = f[:, 1]
+    EntropyGradMag = f[:, 2]
+    EnergyGradMag = f[:, 3]
+    SkewnessGradMag = f[:, 4]
+    KurtosisGradMag = f[:, 5]
+    SumCanny = f[:, 6]
+    MeanCanny = f[:, 7]
+
+    iFG = collections.namedtuple(
+        'iFG',
+        [
+            'MeanGradMag',
+            'StdGradMag',
+            'EntropyGradMag',
+            'EnergyGradMag',
+            'SkewnessGradMag',
+            'KurtosisGradMag',
+            'SumCanny',
+            'MeanCanny'
+        ]
+    )
+    Output = iFG(
+        MeanGradMag, StdGradMag, EntropyGradMag, EnergyGradMag
+        ,SkewnessGradMag, KurtosisGradMag, SumCanny, MeanCanny
+    )
+
+    return Output
 
 
 def TextureFeatureGroup(I, Coords):
