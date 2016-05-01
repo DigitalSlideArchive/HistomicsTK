@@ -241,6 +241,11 @@ def FSDs(X, Y, K, Intervals):
 
     Returns F - length(Intervals) vector containing spectral energy of
     cumulative angular function, summed over defined 'Intervals'.
+
+    Reference
+    ----------
+    D. Zhang et al. "A comparative study on shape retrieval using Fourier
+    descriptors with different shape signatures," In Proc. ICIMADE01, 2001.
     """
 
     # check input 'Intervals'
