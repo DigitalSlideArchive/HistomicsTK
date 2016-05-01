@@ -288,8 +288,8 @@ def GradientFeatureGroup(I, Coords):
         ]
     )
     Output = iFG(
-        MeanGradMag, StdGradMag, EntropyGradMag, EnergyGradMag
-        , SkewnessGradMag, KurtosisGradMag, SumCanny, MeanCanny
+        MeanGradMag, StdGradMag, EntropyGradMag, EnergyGradMag,
+        SkewnessGradMag, KurtosisGradMag, SumCanny, MeanCanny
     )
 
     return Output
@@ -360,8 +360,8 @@ def IntensityFeatureGroup(I, Coords):
         ]
     )
     Output = iFG(
-        MeanIntensity, MeanMedianDifferenceIntensity
-        , MaxIntensity, MinIntensity, StdIntensity
+        MeanIntensity, MeanMedianDifferenceIntensity,
+        MaxIntensity, MinIntensity, StdIntensity
     )
 
     return Output
