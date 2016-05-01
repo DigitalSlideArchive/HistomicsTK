@@ -11,12 +11,14 @@ from .Del2 import Del2
 from .DregEdge import DregEdge
 from .EmbedBounds import EmbedBounds
 from .EstimateVariance import EstimateVariance
+from .FilterLabel import FilterLabel
 from .GaussianGradient import GaussianGradient
 from .GaussianVoting import GaussianVoting
 from .gLoG import gLoG
 from .GradientDiffusion import GradientDiffusion
 from .GradientFlow import GradientFlow
 from .LabelPerimeter import LabelPerimeter
+from .MaxClustering import MaxClustering
 from .MergeSinks import MergeSinks
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
@@ -44,12 +46,14 @@ __all__ = ('ChanVese',
            'DregEdge',
            'EmbedBounds',
            'EstimateVariance',
+           'FilterLabel',
            'GaussianGradient',
            'GaussianVoting',
            'gLoG',
            'GradientDiffusion',
            'GradientFlow',
            'LabelPerimeter',
+           'MaxClustering',
            'MergeSinks',
            'OpticalDensityFwd',
            'OpticalDensityInv',
