@@ -17,11 +17,14 @@ from .GaussianVoting import GaussianVoting
 from .gLoG import gLoG
 from .GradientDiffusion import GradientDiffusion
 from .GradientFlow import GradientFlow
+from .GraphColorSequential import GraphColorSequential
 from .LabelPerimeter import LabelPerimeter
+from .LabelRegionAdjacency import LabelRegionAdjacency
 from .MaxClustering import MaxClustering
 from .MergeSinks import MergeSinks
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
+from .RegionAdjacencyLayer import RegionAdjacencyLayer
 from .ReinhardNorm import ReinhardNorm
 from .ReinhardSample import ReinhardSample
 from .RudermanLABFwd import RudermanLABFwd
@@ -49,14 +52,17 @@ __all__ = ('ChanVese',
            'FilterLabel',
            'GaussianGradient',
            'GaussianVoting',
+           'GraphColorSequential',
            'gLoG',
            'GradientDiffusion',
            'GradientFlow',
            'LabelPerimeter',
+           'LabelRegionAdjacency',
            'MaxClustering',
            'MergeSinks',
            'OpticalDensityFwd',
            'OpticalDensityInv',
+           'RegionAdjacencyLayer',
            'ReinhardNorm',
            'ReinhardSample',
            'RudermanLABFwd',
