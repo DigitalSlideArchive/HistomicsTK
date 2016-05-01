@@ -5,6 +5,7 @@ import pandas as pd
 from skimage.measure import regionprops
 from skimage.segmentation import find_boundaries
 from skimage.morphology import disk, dilation
+from ColorDeconvolution import ColorDeconvolution
 
 
 def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
@@ -105,6 +106,11 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
         )
     ).astype(np.uint8)
 
+    # set 3 x 3 matrix for stains
+    W = np.array([[0.650, 0.072, 0],
+                 [0.704, 0.990, 0],
+                 [0.286, 0.105, 0]]
+     )
     # extract feature information
     for region in regionprops(Label, I):
         # add centroids
@@ -129,7 +135,7 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
         # grab nucleus mask
         Nucleus = (
             Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] == region.label
-        ).astype(np.int)
+        ).astype(np.uint8)
         # get Bounds
         Bounds[region.label-1] = np.argwhere(
             find_boundaries(Nucleus, mode="inner").astype(np.uint8) == 1
@@ -145,13 +151,22 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
         # get mask for all nuclei in neighborhood
         Mask = (
             Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] > 0
-        ).astype(np.int)
+        ).astype(np.uint8)
         # remove nucleus region from cytoplasm+nucleus mask
         cytoplasm = (
             np.logical_xor(Mask, dilation(Nucleus, Disk))
-        ).astype(np.int)
+        ).astype(np.uint8)
         # get list of cytoplasm pixels
         Cytoplasms[region.label-1] = GetPixCoords(cytoplasm, bounds)
+
+    # deconvolve color image to calculate nuclear, cytoplasmic features
+    Deconvolved = ColorDeconvolution(I, W)
+    Hematoxylin = Deconvolved.Stains[:,:,0]
+    Eosin = Deconvolved.Stains[:,:,1]
+    # calculate hematoxlyin features, capture feature names
+    HematoxylinIntensityGroup = IntensityFeatureGroup(Hematoxylin, Nuclei)
+    # calculate eosin features
+    EosinIntensityGroup = IntensityFeatureGroup(Eosin, Cytoplasms)
 
     # add columns to dataframe
     df['X'] = CentroidX
@@ -175,9 +190,60 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     df['FSD5'] = FSDGroup[:, 4]
     df['FSD6'] = FSDGroup[:, 5]
 
+    df['HematoxlyinMeanIntensity'] = HematoxylinIntensityGroup.MeanIntensity
+    df['HematoxlyinMeanMedianDifferenceIntensity'] \
+        = HematoxylinIntensityGroup.MeanMedianDifferenceIntensity
+    df['HematoxlyinMaxIntensity'] = HematoxylinIntensityGroup.MaxIntensity
+    df['HematoxlyinMinIntensity'] = HematoxylinIntensityGroup.MinIntensity
+    df['HematoxlyinStdIntensity'] = HematoxylinIntensityGroup.StdIntensity
+
+    df['CytoplasmMeanIntensity'] = EosinIntensityGroup.MeanIntensity
+    df['CytoplasmMeanMedianDifferenceIntensity'] \
+        = EosinIntensityGroup.MeanMedianDifferenceIntensity
+    df['CytoplasmMaxIntensity'] = EosinIntensityGroup.MaxIntensity
+    df['CytoplasmMinIntensity'] = EosinIntensityGroup.MinIntensity
+    df['CytoplasmStdIntensity'] = EosinIntensityGroup.StdIntensity
+
     df['Bounds'] = Bounds
 
     return df
+
+
+def IntensityFeatureGroup(I, Coords):
+    """
+    Get IntensityFeatures for nuclei and cytoplasms
+    """
+    f = np.zeros((len(Coords), 5))
+    for i in range(len(Coords)):
+        pixOfInterest = I[Coords[i][:, 0], Coords[i][:, 1]]
+        f[i, 0] = np.mean(pixOfInterest, dtype=np.float32)
+        f[i, 1] = f[i, 1] - np.median(pixOfInterest)
+        f[i, 2] = max(pixOfInterest)
+        f[i, 3] = min(pixOfInterest)
+        f[i, 4] = np.std(pixOfInterest)
+
+    MeanIntensity = f[:, 0]
+    MeanMedianDifferenceIntensity = f[:, 1]
+    MaxIntensity = f[:, 2]
+    MinIntensity = f[:, 3]
+    StdIntensity = f[:, 4]
+
+    iFG = collections.namedtuple(
+        'iFG',
+        [
+            'MeanIntensity',
+            'MeanMedianDifferenceIntensity',
+            'MaxIntensity',
+            'MinIntensity',
+            'StdIntensity'
+        ]
+    )
+    Output = iFG(
+        MeanIntensity, MeanMedianDifferenceIntensity,
+        MaxIntensity, MinIntensity, StdIntensity
+    )
+
+    return Output
 
 
 def GetPixCoords(Binary, bounds):
@@ -197,7 +263,7 @@ def GetBounds(bbox, delta, N):
     """
     Returns bounds of object in global label image.
     """
-    bounds = np.zeros(4, dtype=np.int8)
+    bounds = np.zeros(4, dtype=np.uint8)
     bounds[0] = max(0, math.floor(bbox[0] - delta))
     bounds[1] = min(N-1, math.ceil(bbox[0] + bbox[2] + delta))
     bounds[2] = max(0, math.floor(bbox[1] - delta))
