@@ -8,7 +8,7 @@ from skimage.morphology import disk, dilation
 from ColorDeconvolution import ColorDeconvolution
 
 
-def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
+def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     """
     Calculates features from a label image.
     Parameters
@@ -17,6 +17,11 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
         A T x T label image.
     I : array_like
         A T x T x 3 color image.
+    W : array_like
+        A 3x3 matrix containing the stain colors in its columns.
+        In the case of two stains, the third column is zero and will be
+        complemented using cross-product. The matrix should contain a
+        minumum two nonzero columns.
     K : Number of points for boundary resampling to calculate fourier
         descriptors. Default value = 128.
     Fs : Number of frequency bins for calculating FSDs. Default value = 6.
@@ -106,11 +111,6 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
         )
     ).astype(np.uint8)
 
-    # set 3 x 3 matrix for stains
-    W = np.array([[0.650, 0.072, 0],
-                 [0.704, 0.990, 0],
-                 [0.286, 0.105, 0]]
-    )
     # extract feature information
     for region in regionprops(Label, I):
         # add centroids
