@@ -110,7 +110,7 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     W = np.array([[0.650, 0.072, 0],
                  [0.704, 0.990, 0],
                  [0.286, 0.105, 0]]
-     )
+    )
     # extract feature information
     for region in regionprops(Label, I):
         # add centroids
@@ -161,8 +161,8 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
 
     # deconvolve color image to calculate nuclear, cytoplasmic features
     Deconvolved = ColorDeconvolution(I, W)
-    Hematoxylin = Deconvolved.Stains[:,:,0]
-    Eosin = Deconvolved.Stains[:,:,1]
+    Hematoxylin = Deconvolved.Stains[:, :, 0]
+    Eosin = Deconvolved.Stains[:, :, 1]
     # calculate hematoxlyin features, capture feature names
     HematoxylinIntensityGroup = IntensityFeatureGroup(Hematoxylin, Nuclei)
     # calculate eosin features
