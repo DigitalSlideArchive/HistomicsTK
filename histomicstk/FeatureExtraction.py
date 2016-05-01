@@ -2,12 +2,9 @@ import collections
 import math
 import numpy as np
 import pandas as pd
-from scipy.stats import entropy, skew, kurtosis
 from skimage.measure import regionprops
 from skimage.segmentation import find_boundaries
-from skimage.feature import canny
 from skimage.morphology import disk, dilation
-from ColorDeconvolution import ColorDeconvolution
 
 
 def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
@@ -108,12 +105,6 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
         )
     ).astype(np.uint8)
 
-    # set 3 x 3 matrix for stains
-    W = np.array([[0.650, 0.072, 0],
-                 [0.704, 0.990, 0],
-                 [0.286, 0.105, 0]]
-    )
-
     # extract feature information
     for region in regionprops(Label, I):
         # add centroids
@@ -187,6 +178,7 @@ def FeatureExtraction(Label, I, K=128, Fs=6, Delta=8):
     df['Bounds'] = Bounds
 
     return df
+
 
 def GetPixCoords(Binary, bounds):
     """
