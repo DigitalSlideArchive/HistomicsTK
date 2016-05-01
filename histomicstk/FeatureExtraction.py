@@ -169,7 +169,7 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     HematoxylinTextureGroup = TextureFeatureGroup(Hematoxylin, Nuclei)
     # calculate eosin features
     EosinIntensityGroup = IntensityFeatureGroup(Eosin, Cytoplasms)
-    EosinTextureGroup = TextureFeatureGroup(Eosin, Cytoplasms);
+    EosinTextureGroup = TextureFeatureGroup(Eosin, Cytoplasms)
 
     # add columns to dataframe
     df['X'] = CentroidX
