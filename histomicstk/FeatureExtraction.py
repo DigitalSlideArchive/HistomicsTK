@@ -2,23 +2,24 @@ import collections
 import math
 import numpy as np
 import pandas as pd
+from scipy.stats import entropy, skew, kurtosis
 from skimage.feature import canny
 from skimage.measure import regionprops
 from skimage.segmentation import find_boundaries
 from skimage.morphology import disk, dilation
-from scipy.stats import entropy, skew, kurtosis
-from ColorDeconvolution import ColorDeconvolution
 
 
-def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
+def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
     """
     Calculates features from a label image.
     Parameters
     ----------
     Label : array_like
         A T x T label image.
-    I : array_like
-        A T x T x 3 color image.
+    In : array_like
+        A T x T intensity image for Nuclei.
+    Ic : array_like
+        A T x T intensity image for Cytoplasms.
     W : array_like
         A 3x3 matrix containing the stain colors in its columns.
         In the case of two stains, the third column is zero and will be
@@ -66,14 +67,11 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     CytoplasmMeanGradMag	CytoplasmStdGradMag	CytoplasmEntropyGradMag
     CytoplasmEnergyGradMag	CytoplasmSkewnessGradMag	CytoplasmKurtosisGradMag
     CytoplasmSumCanny	CytoplasmMeanCanny
-    Boundary
-    --------
-    Boundaries: x1,y1;x2,y2;...
     ########################################
     """
 
     # get total regions
-    Num = Label.max()
+    NumofLabels = Label.max()
 
     # get Label size x
     size_x = Label.shape[0]
@@ -93,12 +91,11 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     Solidity = []
 
     # initialize FSD feature group
-    FSDGroup = []
+    FSDGroup = np.zeros((NumofLabels, Fs))
 
     # initialize Nuclei, Cytoplasms
-    Bounds = [[] for i in range(Num)]
-    Nuclei = [[] for i in range(Num)]
-    Cytoplasms = [[] for i in range(Num)]
+    Nuclei = [[] for i in range(NumofLabels)]
+    Cytoplasms = [[] for i in range(NumofLabels)]
 
     # create round structuring element
     Disk = disk(Delta)
@@ -114,7 +111,7 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     ).astype(np.uint8)
 
     # extract feature information
-    for region in regionprops(Label, I):
+    for region in regionprops(Label):
         # add centroids
         CentroidX = np.append(CentroidX, region.centroid[0])
         CentroidY = np.append(CentroidY, region.centroid[1])
@@ -131,23 +128,20 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
         Extent = np.append(Extent, region.extent)
         Solidity = np.append(Solidity, region.solidity)
         # get bounds of dilated nucleus
-        # region.bbox : min_row, min_col, max_row, max_col
-        # bounds : min_row, max_row, min_col, max_col
         bounds = GetBounds(region.bbox, Delta, size_x)
         # grab nucleus mask
         Nucleus = (
             Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] == region.label
         ).astype(np.uint8)
-        # get Bounds
-        Bounds[region.label-1] = np.argwhere(
+        # find nucleus boundaries
+        Bounds = np.argwhere(
             find_boundaries(Nucleus, mode="inner").astype(np.uint8) == 1
         )
-        # calculate FSDs
-        FSD = FSDs(
-            Bounds[region.label-1][:, 0], Bounds[region.label-1][:, 1],
+        # calculate and add FSDs
+        FSDGroup[region.label-1, :] = FSDs(
+            Bounds[:, 0], Bounds[:, 1],
             K, Interval
         )
-        FSDGroup = np.append(FSDGroup, FSD)
         # generate object coords for nuclei and cytoplasmic regions
         Nuclei[region.label-1] = region.coords
         # get mask for all nuclei in neighborhood
@@ -161,18 +155,14 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
         # get list of cytoplasm pixels
         Cytoplasms[region.label-1] = GetPixCoords(cytoplasm, bounds)
 
-    # deconvolve color image to calculate nuclear, cytoplasmic features
-    Deconvolved = ColorDeconvolution(I, W)
-    Hematoxylin = Deconvolved.Stains[:, :, 0]
-    Eosin = Deconvolved.Stains[:, :, 1]
     # calculate hematoxlyin features, capture feature names
-    HematoxylinIntensityGroup = IntensityFeatureGroup(Hematoxylin, Nuclei)
-    HematoxylinTextureGroup = TextureFeatureGroup(Hematoxylin, Nuclei)
-    HematoxylinGradientGroup = GradientFeatureGroup(Hematoxylin, Nuclei)
+    HematoxylinIntensityGroup = IntensityFeatureGroup(In, Nuclei)
+    HematoxylinTextureGroup = TextureFeatureGroup(In, Nuclei)
+    HematoxylinGradientGroup = GradientFeatureGroup(In, Nuclei)
     # calculate eosin features
-    EosinIntensityGroup = IntensityFeatureGroup(Eosin, Cytoplasms)
-    EosinTextureGroup = TextureFeatureGroup(Eosin, Cytoplasms)
-    EosinGradientGroup = GradientFeatureGroup(Eosin, Cytoplasms)
+    EosinIntensityGroup = IntensityFeatureGroup(Ic, Cytoplasms)
+    EosinTextureGroup = TextureFeatureGroup(Ic, Cytoplasms)
+    EosinGradientGroup = GradientFeatureGroup(Ic, Cytoplasms)
 
     # add columns to dataframe
     df['X'] = CentroidX
@@ -187,56 +177,26 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
     df['Extent'] = Extent
     df['Solidity'] = Solidity
 
-    FSDGroup = FSDGroup.reshape(Num, Fs)
+    for i in range(0, Fs):
+        df['FSD' + str(i+1)] = FSDGroup[:, i]
 
-    df['FSD1'] = FSDGroup[:, 0]
-    df['FSD2'] = FSDGroup[:, 1]
-    df['FSD3'] = FSDGroup[:, 2]
-    df['FSD4'] = FSDGroup[:, 3]
-    df['FSD5'] = FSDGroup[:, 4]
-    df['FSD6'] = FSDGroup[:, 5]
+    for f in HematoxylinIntensityGroup._fields:
+        df['Hematoxylin' + f] = getattr(HematoxylinIntensityGroup, f)
 
-    df['HematoxlyinMeanIntensity'] = HematoxylinIntensityGroup.MeanIntensity
-    df['HematoxlyinMeanMedianDifferenceIntensity'] \
-        = HematoxylinIntensityGroup.MeanMedianDifferenceIntensity
-    df['HematoxlyinMaxIntensity'] = HematoxylinIntensityGroup.MaxIntensity
-    df['HematoxlyinMinIntensity'] = HematoxylinIntensityGroup.MinIntensity
-    df['HematoxlyinStdIntensity'] = HematoxylinIntensityGroup.StdIntensity
-    df['HematoxlyinEntropy'] = HematoxylinTextureGroup.Entropy
-    df['HematoxlyinEnergy'] = HematoxylinTextureGroup.Energy
-    df['HematoxlyinSkewness'] = HematoxylinTextureGroup.Skewness
-    df['HematoxlyinKurtosis'] = HematoxylinTextureGroup.Kurtosis
-    df['HematoxlyinMeanGradMag'] = HematoxylinGradientGroup.MeanGradMag
-    df['HematoxlyinStdGradMag'] = HematoxylinGradientGroup.StdGradMag
-    df['HematoxlyinEntropyGradMag'] = HematoxylinGradientGroup.EntropyGradMag
-    df['HematoxlyinEnergyGradMag'] = HematoxylinGradientGroup.EnergyGradMag
-    df['HematoxlyinSkewnessGradMag'] \
-        = HematoxylinGradientGroup.SkewnessGradMag
-    df['HematoxlyinKurtosisGradMag'] \
-        = HematoxylinGradientGroup.KurtosisGradMag
-    df['HematoxlyinSumCanny'] = HematoxylinGradientGroup.SumCanny
-    df['HematoxlyinMeanCanny'] = HematoxylinGradientGroup.MeanCanny
+    for f in HematoxylinTextureGroup._fields:
+        df['Hematoxylin' + f] = getattr(HematoxylinTextureGroup, f)
 
-    df['CytoplasmMeanIntensity'] = EosinIntensityGroup.MeanIntensity
-    df['CytoplasmMeanMedianDifferenceIntensity'] \
-        = EosinIntensityGroup.MeanMedianDifferenceIntensity
-    df['CytoplasmMaxIntensity'] = EosinIntensityGroup.MaxIntensity
-    df['CytoplasmMinIntensity'] = EosinIntensityGroup.MinIntensity
-    df['CytoplasmStdIntensity'] = EosinIntensityGroup.StdIntensity
-    df['CytoplasmEntropy'] = EosinTextureGroup.Entropy
-    df['CytoplasmEnergy'] = EosinTextureGroup.Energy
-    df['CytoplasmSkewness'] = EosinTextureGroup.Skewness
-    df['CytoplasmKurtosis'] = EosinTextureGroup.Kurtosis
-    df['CytoplasmMeanGradMag'] = EosinGradientGroup.MeanGradMag
-    df['CytoplasmStdGradMag'] = EosinGradientGroup.StdGradMag
-    df['CytoplasmEntropyGradMag'] = EosinGradientGroup.EntropyGradMag
-    df['CytoplasmEnergyGradMag'] = EosinGradientGroup.EnergyGradMag
-    df['CytoplasmSkewnessGradMag'] = EosinGradientGroup.SkewnessGradMag
-    df['CytoplasmKurtosisGradMag'] = EosinGradientGroup.KurtosisGradMag
-    df['CytoplasmSumCanny'] = EosinGradientGroup.SumCanny
-    df['CytoplasmMeanCanny'] = EosinGradientGroup.MeanCanny
+    for f in HematoxylinGradientGroup._fields:
+        df['Hematoxylin' + f] = getattr(HematoxylinGradientGroup, f)
 
-    df['Bounds'] = Bounds
+    for f in EosinIntensityGroup._fields:
+        df['Cytoplasm' + f] = getattr(EosinIntensityGroup, f)
+
+    for f in EosinTextureGroup._fields:
+        df['Cytoplasm' + f] = getattr(EosinTextureGroup, f)
+
+    for f in EosinGradientGroup._fields:
+        df['Cytoplasm' + f] = getattr(EosinGradientGroup, f)
 
     return df
 
@@ -244,6 +204,37 @@ def FeatureExtraction(Label, I, W, K=128, Fs=6, Delta=8):
 def GradientFeatureGroup(I, Coords):
     """
     Get GradientFeatures for nuclei and cytoplasms
+    Parameters
+    ----------
+    I : array_like
+        A T x T intensity image.
+    Coords : array_like
+        A N x 2 coordinate list of a region.
+    Returns
+    -------
+    MeanGradMag : float
+        Mean of gradient data.
+    StdGradMag : float
+        Standard deviation of gradient data.
+    EntropyGradMag : float
+        Entroy of gradient data.
+    EnergyGradMag : float
+        Energy of gradient data.
+    SkewnessGradMag : float
+        Skewness of gradient data. Value is 0 when all values are equal.
+    KurtosisGradMag : float
+        Kurtosis of gradient data. Value is -3 when all values are equal.
+    SumCanny : float
+        Sum of canny filtered gradient data.
+    MeanCanny : float
+        Mean of canny filtered gradient data.
+    Notes
+    -----
+    Return values are returned as a namedtuple.
+    References
+    ----------
+    .. [1] Daniel Zwillinger and Stephen Kokoska. "CRC standard probability
+    and statistics tables and formulae," Crc Press, 1999.
     """
     Gx, Gy = np.gradient(I)
     diffG = np.sqrt(Gx*Gx + Gy*Gy)
@@ -251,19 +242,19 @@ def GradientFeatureGroup(I, Coords):
 
     f = np.zeros((len(Coords), 8))
     for i in range(len(Coords)):
-        pixOfInterest = diffG[Coords[i][:, 0], Coords[i][:, 1]]
-
-        f[i, 0] = np.mean(pixOfInterest)
-        f[i, 1] = np.std(pixOfInterest)
-        hist, bins = np.histogram(pixOfInterest, bins=np.arange(256))
-        prob = hist/np.sum(hist, dtype=np.float32)
-        f[i, 2] = entropy(pixOfInterest)
-        f[i, 3] = np.sum(np.power(prob, 2))
-        f[i, 4] = skew(pixOfInterest)
-        f[i, 5] = kurtosis(pixOfInterest)
-        bw_canny = BW_canny[Coords[i][:, 0], Coords[i][:, 1]]
-        f[i, 6] = np.sum(bw_canny)
-        f[i, 7] = f[i, 6] / len(pixOfInterest)
+        if len(Coords[i]) != 0:
+            pixOfInterest = diffG[Coords[i][:, 0], Coords[i][:, 1]]
+            f[i, 0] = np.mean(pixOfInterest)
+            f[i, 1] = np.std(pixOfInterest)
+            f[i, 2] = entropy(pixOfInterest)
+            hist, bins = np.histogram(pixOfInterest, bins=np.arange(256))
+            prob = hist/np.sum(hist, dtype=np.float32)
+            f[i, 3] = np.sum(np.power(prob, 2))
+            f[i, 4] = skew(pixOfInterest)
+            f[i, 5] = kurtosis(pixOfInterest)
+            bw_canny = BW_canny[Coords[i][:, 0], Coords[i][:, 1]]
+            f[i, 6] = np.sum(bw_canny)
+            f[i, 7] = f[i, 6] / len(pixOfInterest)
 
     MeanGradMag = f[:, 0]
     StdGradMag = f[:, 1]
@@ -288,8 +279,8 @@ def GradientFeatureGroup(I, Coords):
         ]
     )
     Output = iFG(
-        MeanGradMag, StdGradMag, EntropyGradMag, EnergyGradMag,
-        SkewnessGradMag, KurtosisGradMag, SumCanny, MeanCanny
+        MeanGradMag, StdGradMag, EntropyGradMag, EnergyGradMag
+        ,SkewnessGradMag, KurtosisGradMag, SumCanny, MeanCanny
     )
 
     return Output
@@ -298,16 +289,40 @@ def GradientFeatureGroup(I, Coords):
 def TextureFeatureGroup(I, Coords):
     """
     Get TextureFeatures for nuclei and cytoplasms
+    Parameters
+    ----------
+    I : array_like
+        A T x T intensity image.
+    Coords : array_like
+        A N x 2 coordinate list of a region.
+    Returns
+    -------
+    Entropy : float
+        Entroy of intensity data.
+    Energy : float
+        Energy of intensity data.
+    Skewness : float
+        Skewness of intensity data. Value is 0 when all values are equal.
+    Kurtosis : float
+        Kurtosis of intensity data. Value is -3 when all values are equal.
+    Notes
+    -----
+    Return values are returned as a namedtuple.
+    References
+    ----------
+    .. [1] Daniel Zwillinger and Stephen Kokoska. "CRC standard probability
+    and statistics tables and formulae," Crc Press, 1999.
     """
     f = np.zeros((len(Coords), 4))
     for i in range(len(Coords)):
-        pixOfInterest = I[Coords[i][:, 0], Coords[i][:, 1]]
-        hist, bins = np.histogram(pixOfInterest, bins=np.arange(256))
-        prob = hist/np.sum(hist, dtype=np.float32)
-        f[i, 0] = entropy(pixOfInterest)
-        f[i, 1] = np.sum(np.power(prob, 2))
-        f[i, 2] = skew(pixOfInterest)
-        f[i, 3] = kurtosis(pixOfInterest)
+        if len(Coords[i]) != 0:
+            pixOfInterest = I[Coords[i][:, 0], Coords[i][:, 1]]
+            hist, bins = np.histogram(pixOfInterest, bins=np.arange(256))
+            prob = hist/np.sum(hist, dtype=np.float32)
+            f[i, 0] = entropy(pixOfInterest)
+            f[i, 1] = np.sum(np.power(prob, 2))
+            f[i, 2] = skew(pixOfInterest)
+            f[i, 3] = kurtosis(pixOfInterest)
 
     Entropy = f[:, 0]
     Energy = f[:, 1]
@@ -333,15 +348,37 @@ def TextureFeatureGroup(I, Coords):
 def IntensityFeatureGroup(I, Coords):
     """
     Get IntensityFeatures for nuclei and cytoplasms
+    Parameters
+    ----------
+    I : array_like
+        A T x T intensity image.
+    Coords : array_like
+        A N x 2 coordinate list of a region.
+    Returns
+    -------
+    MeanIntensity : float
+        Mean of intensity data.
+    MeanMedianDifferenceIntensity : float
+        Difference between mean and median.
+    MaxIntensity : float
+        Max intensity data.
+    MinIntensity : float
+        Min intensity data.
+    StdIntensity : float
+        Standard deviation of intensity data.
+    Notes
+    -----
+    Return values are returned as a namedtuple.
     """
     f = np.zeros((len(Coords), 5))
     for i in range(len(Coords)):
-        pixOfInterest = I[Coords[i][:, 0], Coords[i][:, 1]]
-        f[i, 0] = np.mean(pixOfInterest, dtype=np.float32)
-        f[i, 1] = f[i, 1] - np.median(pixOfInterest)
-        f[i, 2] = max(pixOfInterest)
-        f[i, 3] = min(pixOfInterest)
-        f[i, 4] = np.std(pixOfInterest)
+        if len(Coords[i]) != 0:
+            pixOfInterest = I[Coords[i][:, 0], Coords[i][:, 1]]
+            f[i, 0] = np.mean(pixOfInterest)
+            f[i, 1] = f[i, 1] - np.median(pixOfInterest)
+            f[i, 2] = max(pixOfInterest)
+            f[i, 3] = min(pixOfInterest)
+            f[i, 4] = np.std(pixOfInterest)
 
     MeanIntensity = f[:, 0]
     MeanMedianDifferenceIntensity = f[:, 1]
@@ -369,7 +406,17 @@ def IntensityFeatureGroup(I, Coords):
 
 def GetPixCoords(Binary, bounds):
     """
-    Get global coords of object extracted from tile
+    Get global coords of object extracted from tile.
+    Parameters
+    ----------
+    Binary : array_like
+        A binary image.
+    bounds : array_like
+        A region bounds. [min_row, max_row, min_col, max_col].
+    Returns
+    -------
+    coords : int
+        A N x 2 ndarray. A coordinate list of a region.
     """
     coords = np.where(Binary == 1)
     coords = np.asarray(coords)
@@ -383,6 +430,19 @@ def GetPixCoords(Binary, bounds):
 def GetBounds(bbox, delta, N):
     """
     Returns bounds of object in global label image.
+    Parameters
+    ----------
+    bbox : tuple
+        Bounding box (min_row, min_col, max_row, max_col).
+    delta : int
+        Used to dilate nuclei and define cytoplasm region.
+        Default value = 8.
+    N : int
+        X or Y Size of label image.
+    Returns
+    -------
+    bounds : array_like
+        A region bounds. [min_row, max_row, min_col, max_col].
     """
     bounds = np.zeros(4, dtype=np.uint8)
     bounds[0] = max(0, math.floor(bbox[0] - delta))
@@ -396,55 +456,64 @@ def GetBounds(bbox, delta, N):
 def InterpolateArcLength(X, Y, L):
     """
     Resamples boundary points [X, Y] at L total equal arc-length locations.
-
+    Parameters
+    ----------
+    X : array_like
+        x points of boundaries
+    Y : array_like
+        y points of boundaries
+    L : int
+        Number of points for boundary resampling to calculate fourier
+        descriptors. Default value = 128.
     Returns
     -------
-    iX - L-length vector of horizontal interpolated coordinates with equal
-         arc-length spacing.
-    iY - L-length vector of vertical interpolated coordinates with equal
-         arc-length spacing.
+    iX : array_like
+        L-length vector of horizontal interpolated coordinates with equal
+        arc-length spacing.
+    iY : array_like
+        L-length vector of vertical interpolated coordinates with equal
+        arc-length spacing.
+    Notes
+    -----
+    Return values are returned as a namedtuple.
     """
 
     # length of X
     K = len(X)
-
+    # initialize iX, iY
+    iX = np.zeros((0,))
+    iY = np.zeros((0,))
     # generate spaced points
     Interval = np.linspace(0, 1, L)
-
     # get segment lengths
     Lengths = np.sqrt(
         np.power(np.diff(X), 2) + np.power(np.diff(Y), 2)
     )
-
-    # normalize to unit length
-    Lengths = Lengths / Lengths.sum()
-
-    # calculate cumulative length along boundary
-    Cumulative = np.hstack((0., np.cumsum(Lengths)))
-
-    # place points in 'Interval' along boundary
-    Locations = np.digitize(Interval, Cumulative)
-
-    # clip to ends
-    Locations[Locations < 1] = 1
-    Locations[Locations >= K] = K - 1
-    Locations = Locations - 1
-
-    # linear interpolation
-    Lie = np.divide(
-        (Interval - [Cumulative[i] for i in Locations]),
-        [Lengths[i] for i in Locations]
-    )
-
-    tX = np.array([X[i] for i in Locations])
-    tY = np.array([Y[i] for i in Locations])
-    iX = tX + np.multiply(
-        np.array([X[i+1] for i in Locations]) - tX, Lie
-    )
-    iY = tY + np.multiply(
-        np.array([Y[i+1] for i in Locations]) - tY, Lie
-    )
-
+    # check Lengths
+    if Lengths.size:
+        # normalize to unit length
+        Lengths = Lengths / Lengths.sum()
+        # calculate cumulative length along boundary
+        Cumulative = np.hstack((0., np.cumsum(Lengths)))
+        # place points in 'Interval' along boundary
+        Locations = np.digitize(Interval, Cumulative)
+        # clip to ends
+        Locations[Locations < 1] = 1
+        Locations[Locations >= K] = K - 1
+        Locations = Locations - 1
+        # linear interpolation
+        Lie = np.divide(
+            (Interval - [Cumulative[i] for i in Locations]),
+            [Lengths[i] for i in Locations]
+        )
+        tX = np.array([X[i] for i in Locations])
+        tY = np.array([Y[i] for i in Locations])
+        iX = tX + np.multiply(
+            np.array([X[i+1] for i in Locations]) - tX, Lie
+        )
+        iY = tY + np.multiply(
+            np.array([Y[i+1] for i in Locations]) - tY, Lie
+        )
     iXY = collections.namedtuple('iXY', ['iX', 'iY'])
     Output = iXY(iX, iY)
 
@@ -460,10 +529,22 @@ def FSDs(X, Y, K, Intervals):
     The K-length fft of the cumulative angular function is calculated, and
     then the elements of 'F' are summed as the spectral energy over
     'Intervals'.
-
-    Returns F - length(Intervals) vector containing spectral energy of
-    cumulative angular function, summed over defined 'Intervals'.
-
+    Parameters
+    ----------
+    X : array_like
+        x points of boundaries
+    Y : array_like
+        y points of boundaries
+    K : int
+        Number of points for boundary resampling to calculate fourier
+        descriptors. Default value = 128.
+    Intervals : array_like
+        Intervals spaced evenly over 1:K/2.
+    Returns
+    -------
+    F : array_like
+        length(Intervals) vector containing spectral energy of
+        cumulative angular function, summed over defined 'Intervals'.
     References
     ----------
     .. [1] D. Zhang et al. "A comparative study on shape retrieval using
@@ -476,36 +557,30 @@ def FSDs(X, Y, K, Intervals):
         Intervals = np.hstack((1., Intervals))
     if Intervals[-1] != (K / 2):
         Intervals = np.hstack((Intervals, float(K)))
-
     # get length of intervals
     L = len(Intervals)
-
+    # initialize F
+    F = np.zeros((L-1, ))
     # interpolate boundaries
     iXY = InterpolateArcLength(X, Y, K)
-
-    # calculate curvature
-    Curvature = np.arctan2(
-        (iXY.iY[1:] - iXY.iY[:-1]),
-        (iXY.iX[1:] - iXY.iX[:-1])
-    )
-
-    # make curvature cumulative
-    Curvature = Curvature - Curvature[0]
-
-    # calculate FFT
-    fX = np.fft.fft(Curvature).T
-
-    # spectral energy
-    fX = fX * fX.conj()
-    fX = fX / fX.sum()
-
-    # calculate 'F' values
-    F = []
-
-    for i in range(L-1):
-        f = np.round(
-            fX[Intervals[i]-1:Intervals[i+1]].sum(), L
+    # check if iXY.iX is not empty
+    if iXY.iX.size:
+        # calculate curvature
+        Curvature = np.arctan2(
+            (iXY.iY[1:] - iXY.iY[:-1]),
+            (iXY.iX[1:] - iXY.iX[:-1])
         )
-        F = np.append(F, f).real.astype(float)
+        # make curvature cumulative
+        Curvature = Curvature - Curvature[0]
+        # calculate FFT
+        fX = np.fft.fft(Curvature).T
+        # spectral energy
+        fX = fX * fX.conj()
+        fX = fX / fX.sum()
+        # calculate 'F' values
+        for i in range(L-1):
+            F[i] = np.round(
+                fX[Intervals[i]-1:Intervals[i+1]].sum(), L
+            ).real.astype(float)
 
     return F
