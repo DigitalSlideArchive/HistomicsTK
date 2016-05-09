@@ -12,15 +12,21 @@ from .DregEdge import DregEdge
 from .EmbedBounds import EmbedBounds
 from .EstimateVariance import EstimateVariance
 from .FeatureExtraction import FeatureExtraction
+from .FilterLabel import FilterLabel
 from .GaussianGradient import GaussianGradient
 from .GaussianVoting import GaussianVoting
 from .gLoG import gLoG
 from .GradientDiffusion import GradientDiffusion
 from .GradientFlow import GradientFlow
+from .GraphColorSequential import GraphColorSequential
 from .LabelPerimeter import LabelPerimeter
+from .LabelRegionAdjacency import LabelRegionAdjacency
+from .MaxClustering import MaxClustering
+from .MergeColinear import MergeColinear
 from .MergeSinks import MergeSinks
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
+from .RegionAdjacencyLayer import RegionAdjacencyLayer
 from .ReinhardNorm import ReinhardNorm
 from .ReinhardSample import ReinhardSample
 from .RudermanLABFwd import RudermanLABFwd
@@ -46,15 +52,21 @@ __all__ = ('ChanVese',
            'EmbedBounds',
            'EstimateVariance',
            'FeatureExtraction',
+           'FilterLabel',
            'GaussianGradient',
            'GaussianVoting',
+           'GraphColorSequential',
            'gLoG',
            'GradientDiffusion',
            'GradientFlow',
            'LabelPerimeter',
+           'LabelRegionAdjacency',
+           'MaxClustering',
+           'MergeColinear',
            'MergeSinks',
            'OpticalDensityFwd',
            'OpticalDensityInv',
+           'RegionAdjacencyLayer',
            'ReinhardNorm',
            'ReinhardSample',
            'RudermanLABFwd',
