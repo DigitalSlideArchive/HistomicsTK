@@ -212,21 +212,21 @@ def GradientFeatureGroup(I, Coords):
         A N x 2 coordinate list of a region.
     Returns
     -------
-    MeanGradMag : float
+    MeanGradMag : array_like
         Mean of gradient data.
-    StdGradMag : float
+    StdGradMag : array_like
         Standard deviation of gradient data.
-    EntropyGradMag : float
+    EntropyGradMag : array_like
         Entroy of gradient data.
-    EnergyGradMag : float
+    EnergyGradMag : array_like
         Energy of gradient data.
-    SkewnessGradMag : float
+    SkewnessGradMag : array_like
         Skewness of gradient data. Value is 0 when all values are equal.
-    KurtosisGradMag : float
+    KurtosisGradMag : array_like
         Kurtosis of gradient data. Value is -3 when all values are equal.
-    SumCanny : float
+    SumCanny : array_like
         Sum of canny filtered gradient data.
-    MeanCanny : float
+    MeanCanny : array_like
         Mean of canny filtered gradient data.
     Notes
     -----
@@ -297,13 +297,13 @@ def TextureFeatureGroup(I, Coords):
         A N x 2 coordinate list of a region.
     Returns
     -------
-    Entropy : float
+    Entropy : array_like
         Entroy of intensity data.
-    Energy : float
+    Energy : array_like
         Energy of intensity data.
-    Skewness : float
+    Skewness : array_like
         Skewness of intensity data. Value is 0 when all values are equal.
-    Kurtosis : float
+    Kurtosis : array_like
         Kurtosis of intensity data. Value is -3 when all values are equal.
     Notes
     -----
@@ -356,15 +356,15 @@ def IntensityFeatureGroup(I, Coords):
         A N x 2 coordinate list of a region.
     Returns
     -------
-    MeanIntensity : float
+    MeanIntensity : array_like
         Mean of intensity data.
-    MeanMedianDifferenceIntensity : float
+    MeanMedianDifferenceIntensity : array_like
         Difference between mean and median.
-    MaxIntensity : float
+    MaxIntensity : array_like
         Max intensity data.
-    MinIntensity : float
+    MinIntensity : array_like
         Min intensity data.
-    StdIntensity : float
+    StdIntensity : array_like
         Standard deviation of intensity data.
     Notes
     -----
@@ -415,8 +415,8 @@ def GetPixCoords(Binary, bounds):
         A region bounds. [min_row, max_row, min_col, max_col].
     Returns
     -------
-    coords : int
-        A N x 2 ndarray. A coordinate list of a region.
+    coords : array_like
+        A N x 2 list of coordinate for a region.
     """
     coords = np.where(Binary == 1)
     coords = np.asarray(coords)
