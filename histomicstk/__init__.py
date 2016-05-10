@@ -11,6 +11,7 @@ from .Del2 import Del2
 from .DregEdge import DregEdge
 from .EmbedBounds import EmbedBounds
 from .EstimateVariance import EstimateVariance
+from .FeatureExtraction import FeatureExtraction
 from .FilterLabel import FilterLabel
 from .GaussianGradient import GaussianGradient
 from .GaussianVoting import GaussianVoting
@@ -50,6 +51,7 @@ __all__ = ('ChanVese',
            'DregEdge',
            'EmbedBounds',
            'EstimateVariance',
+           'FeatureExtraction',
            'FilterLabel',
            'GaussianGradient',
            'GaussianVoting',
