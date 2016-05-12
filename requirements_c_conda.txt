@@ -16,3 +16,4 @@ scipy==0.16.0
 # If Conda is used, "libgfortran==1.0" must also be specified
 
 scikit-learn==0.17.1
+pandas==0.18.1
