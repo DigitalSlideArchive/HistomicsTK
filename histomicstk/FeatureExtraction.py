@@ -122,7 +122,6 @@ def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
         if region.perimeter == 0:
             Circularity = np.append(Circularity, 0)
         else:
-            print region.perimeter
             Circularity = np.append(
                 Circularity,
                 4 * math.pi * region.area / math.pow(region.perimeter, 2)
