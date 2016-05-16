@@ -1,7 +1,9 @@
 mixin input(title, type, id, value)
   - var inputType = 'text'
-  if type === 'number' || type === 'number-vector'
+  if type === 'number'
     - inputType = 'number'
+  if type.match(/-vector$/)
+    - value = value.join(',');
   input.form-control(
     name=title
     type=inputType

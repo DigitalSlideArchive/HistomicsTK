@@ -11,7 +11,8 @@ histomicstk.models.Widget = Backbone.Model.extend({
 
         // optional attributes only used for certain widget types
         /*
-        girderModel: {},   // An associate girder model object
+        parent: {},        // A parent girder model
+        path: [],          // The path of a girder model in a folder hierarchy
         min: undefined,    // A minimum value
         max: undefined,    // A maximum value
         step: 1            // Discrete value intervals
@@ -75,7 +76,9 @@ histomicstk.models.Widget = Backbone.Model.extend({
      * Coerce a vector of values into normalized native types.
      */
     _normalizeVector: function (value) {
-            if (_.isString(value)) {
+            if (value === '') {
+                value = [];
+            } else if (_.isString(value)) {
                 value = value.split(',');
             }
             return _.map(value, _.bind(this._normalizeValue, this));
@@ -91,7 +94,7 @@ histomicstk.models.Widget = Backbone.Model.extend({
                 value = {r: value[0], g: value[1], b: value[2]};
             }
             value = tinycolor(value).toHexString();
-        } else {
+        } else if (!this.isGirderModel()) {
             value = value.toString();
         }
         return value;
@@ -107,6 +110,8 @@ histomicstk.models.Widget = Backbone.Model.extend({
 
         if (this.isVector()) {
             return this._validateVector(model.value);
+        } else if (this.isGirderModel()) {
+            return this._validateGirderModel(model);
         }
         return this._validateValue(model.value);
     },
@@ -121,7 +126,7 @@ histomicstk.models.Widget = Backbone.Model.extend({
             out = this._validateNumeric(value);
         }
         if (this.isEnumeration() && !_.contains(this.get('values'), this.normalize(value))) {
-            out = 'Invalid valid choice';
+            out = 'Invalid value choice';
         }
         return out;
     },
@@ -132,10 +137,6 @@ histomicstk.models.Widget = Backbone.Model.extend({
     _validateVector: function (vector) {
         var val;
         vector = this.normalize(vector);
-
-        if (vector.length !== 3) {
-            return 'Expected three elements';
-        }
 
         val = _.chain(vector)
             .map(_.bind(this._validateValue, this))
@@ -179,6 +180,28 @@ histomicstk.models.Widget = Backbone.Model.extend({
         mod = (value - min) / step;
         if (step > 0 && Math.abs(Math.round(mod) - mod) > eps) {
             return 'Value does not satisfy step "' + step + '"';
+        }
+    },
+
+    /**
+     * Validate a widget that selects a girder model.
+     * @note This method is synchronous, so it cannot validate
+     * the model on the server.
+     */
+    _validateGirderModel: function (model) {
+        var parent;
+        if (!model.value) {
+            return 'Empty value';
+        }
+
+        switch (this.get('type')) {
+            case 'new-file':
+                parent = model.parent;
+                if (!parent || parent.resourceName !== 'folder') {
+                    return 'Invalid parent model';
+                }
+                break;
+            // other model types...
         }
     },
 
@@ -227,6 +250,17 @@ histomicstk.models.Widget = Backbone.Model.extend({
     },
 
     /**
+     * True if the value represents a model stored in a girder
+     * collection/folder/item hierarchy.
+     */
+    isGirderModel: function () {
+        return _.contains(
+            ['directory', 'file', 'new-file'],
+            this.get('type')
+        );
+    },
+
+    /**
      * True if the value represents a file stored in girder.
      */
     isFile: function () {
@@ -253,7 +287,9 @@ histomicstk.models.Widget = Backbone.Model.extend({
         'string-vector',
         'number-enumeration',
         'string-enumeration',
-        'file'
+        'file',
+        'directory',
+        'new-file'
     ]
 });
 
@@ -268,7 +304,19 @@ histomicstk.collections.Widget = Backbone.Collection.extend({
     values: function () {
         var params = {};
         this.each(function (m) {
-            params[m.id] = m.get('value');
+            // apply special handling for certain parameter types
+            // https://github.com/DigitalSlideArchive/HistomicsTK/blob/9e5112ab3444ad8c699d70452a5fe4a74ebbc778/server/__init__.py#L44-L46
+            switch (m.get('type')) {
+                case 'file':
+                    params[m.id + '_girderItemId'] = m.value().id;
+                    break;
+                case 'new-file':
+                    params[m.id + '_girderFolderId'] = m.value().get('folderId');
+                    params[m.id + '_name'] = m.value().get('name');
+                    break;
+                default:
+                    params[m.id] = m.value();
+            }
         });
         return params;
     }
