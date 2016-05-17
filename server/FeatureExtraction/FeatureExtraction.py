@@ -10,6 +10,7 @@ from ctk_cli import CLIArgumentParser
 import logging
 logging.basicConfig()
 
+
 def main(args):
 
     # Read Input Image
@@ -52,6 +53,7 @@ def main(args):
     hdf = pandas.HDFStore(args.outputFile)
     hdf.put('d1', df, format='table', data_columns=True)
     print '--- Object x Features = ', hdf['d1'].shape
+
 
 if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())
