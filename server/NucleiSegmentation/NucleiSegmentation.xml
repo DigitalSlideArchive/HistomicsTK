@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Segments Nuclei</title>
+  <description>Segments nuclei in a whole-slide image</description>
+  <version>0.1.0</version>
+  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Deepak Roy Chittajallu (Kitware)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>inputImageFile</name>
+      <label>Input Image</label>
+      <description>Input image to be deconvolved</description>
+      <channel>input</channel>
+      <index>0</index>
+    </image>
+    <image>
+      <name>outputNucleiMaskFile</name>
+      <label>Output Nuclei Segmentation Mask</label>
+      <description>Output nuclei segmentation label mask</description>
+      <channel>output</channel>
+      <index>1</index>
+    </image>
+  </parameters>
+  <parameters>
+    <label>Color Deconvolution</label>
+    <description>Color Deconvolution parameters</description>
+    <string-enumeration>
+      <name>stain_1</name>
+      <label>stain-1</label>
+      <description>Name of stain-1</description>
+      <channel>input</channel>
+      <longflag>stain_1</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <default>hematoxylin</default>
+    </string-enumeration>
+    <string-enumeration>
+      <name>stain_2</name>
+      <label>stain-2</label>
+      <description>Name of stain-2</description>
+      <channel>input</channel>
+      <longflag>stain_2</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <default>eosin</default>
+    </string-enumeration>
+    <string-enumeration>
+      <name>stain_3</name>
+      <label>stain-3</label>
+      <description>Name of stain-3</description>
+      <channel>input</channel>
+      <longflag>stain_3</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>null</element>
+      <default>null</default>
+    </string-enumeration>
+  </parameters>
+  <parameters>
+    <label>Nuclei segmentation</label>
+    <description>Nuclei segmentation parameters</description>
+    <double>
+      <name>foreground_threshold</name>
+      <label>Foreground Intensity Threshold</label>
+      <description>Intensity value to use as threshold to segment foreground in nuclear stain image</description>
+      <longflag>foreground_threshold</longflag>
+      <default>160</default>
+    </double>
+    <double>
+      <name>min_radius</name>
+      <label>Minimum Radius</label>
+      <description>Minimum nuclear radius (used to set min sigma of the multiscale LoG filter)</description>
+      <longflag>min_radius</longflag>
+      <default>4</default>
+    </double>
+    <double>
+      <name>max_radius</name>
+      <label>Maximum Radius</label>
+      <description>Maximum nuclear radius (used to set max sigma of the multiscale LoG filter)</description>
+      <longflag>max_radius</longflag>
+      <default>7</default>
+    </double>
+    <double>
+      <name>local_max_search_radius</name>
+      <label>Local Max Search Radius</label>
+      <description>Local max search radius used for detection seed points in nuclei</description>
+      <longflag>local_max_search_radius</longflag>
+      <default>10</default>
+    </double>
+    <double>
+      <name>min_nucleus_area</name>
+      <label>Minimum Nucleus Area</label>
+      <description>Minimum area that each nucleus should have</description>
+      <longflag>min_nucleus_area</longflag>
+      <default>80</default>
+    </double>
+  </parameters>
+</executable>
