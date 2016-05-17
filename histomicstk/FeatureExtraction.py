@@ -119,10 +119,13 @@ def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
         Area = np.append(Area, region.area)
         Perimeter = np.append(Perimeter, region.perimeter)
         Eccentricity = np.append(Eccentricity, region.eccentricity)
-        Circularity = np.append(
-            Circularity,
-            4 * math.pi * region.area / math.pow(region.perimeter, 2)
-        )
+        if region.perimeter == 0:
+            Circularity = np.append(Circularity, 0)
+        else:
+            Circularity = np.append(
+                Circularity,
+                4 * math.pi * region.area / math.pow(region.perimeter, 2)
+            )
         MajorAxisLength = np.append(MajorAxisLength, region.major_axis_length)
         MinorAxisLength = np.append(MinorAxisLength, region.minor_axis_length)
         Extent = np.append(Extent, region.extent)
@@ -375,7 +378,7 @@ def IntensityFeatureGroup(I, Coords):
         if len(Coords[i]) != 0:
             pixOfInterest = I[Coords[i][:, 0], Coords[i][:, 1]]
             f[i, 0] = np.mean(pixOfInterest)
-            f[i, 1] = f[i, 1] - np.median(pixOfInterest)
+            f[i, 1] = f[i, 0] - np.median(pixOfInterest)
             f[i, 2] = max(pixOfInterest)
             f[i, 3] = min(pixOfInterest)
             f[i, 4] = np.std(pixOfInterest)
