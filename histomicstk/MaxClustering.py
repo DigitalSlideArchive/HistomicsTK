@@ -61,6 +61,7 @@ def MaxClustering(Response, Mask, r=10):
     # pad input array to simplify filtering
     I = Response.min() * np.ones((Response.shape[0]+2*r,
                                   Response.shape[1]+2*r))
+    Response = Response.copy()
     Response[~Mask] = Response.min()
     I[r:r+Response.shape[0], r:r+Response.shape[1]] = Response
 
