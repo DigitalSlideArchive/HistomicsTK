@@ -32,7 +32,7 @@ def main(args):
     print('>> Performing color deconvolution')
     UNS = htk.ColorDeconvolution(Standard, W)
 
-    #constrained log filtering=== - generate R_{N}(x,y)
+    # Constrained log filtering=== - generate R_{N}(x,y)
     Nuclei = UNS.Stains[::2, ::2, 0].astype(dtype=np.float)
     Mask = scipy.ndimage.morphology.binary_fill_holes(Nuclei < 160)
 
