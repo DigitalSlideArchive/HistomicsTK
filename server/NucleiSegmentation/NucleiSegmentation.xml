@@ -25,6 +25,13 @@
       <channel>output</channel>
       <index>1</index>
     </image>
+    <file>
+      <name>outputNucleiAnnotationFile</name>
+      <label>Output Nuclei Annotation File</label>
+      <description>Output nuclei annotation file</description>
+      <channel>output</channel>
+      <index>2</index>
+    </file>
   </parameters>
   <parameters>
     <label>Color Deconvolution</label>

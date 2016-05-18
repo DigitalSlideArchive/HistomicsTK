@@ -1,6 +1,7 @@
 from ctk_cli import CLIArgumentParser
 import histomicstk as htk
 import numpy as np
+import json
 import scipy as sp
 import skimage.io
 import skimage.measure
@@ -87,12 +88,49 @@ def main(args):
     #
     objProps = skimage.measure.regionprops(imNucleiSegMask)
 
+    # create basic schema
+    annotation = {
+        "name":          "Nuclei",
+        "description":   "Nuclei bounding boxes from a segmentation algorithm",
+        "attributes": {
+            "algorithm": {
+                "color_normalization": "ReinhardNorm",
+                "color_deconvolution": "ColorDeconvolution",
+                "nuclei_segmentation": ["cLOG",
+                                        "MaxClustering",
+                                        "FilterLabel"]
+            }
+        },
+        "elements": []
+    }
+
+    # add each nucleus as an element into the annotation schema
+    for i in range(len(objProps)):
+        cur_bbox = {
+            "type":        "rectangle",
+            "id":          i,
+            "center":      objProps[i].centroid,
+            "width":       objProps[i].major_axis_length,
+            "height":      objProps[i].minor_axis_length,
+            "rotation":    objProps[i].orientation,
+        }
+
+        annotation["elements"].append(cur_bbox)
+
     #
     # Save output segmentation mask
     #
     print('>> Outputting nuclei segmentation mask')
 
     skimage.io.imsave(args.outputNucleiMaskFile, imNucleiSegMask)
+
+    #
+    # Save output annotation
+    #
+    print('>> Outputting nuclei annotation')
+
+    with open(args.outputNucleiAnnotationFile, 'w') as annotationFile:
+        json.dump(annotation, annotationFile)
 
 if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())
