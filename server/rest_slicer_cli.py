@@ -708,7 +708,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
 
         taskSpec['container_args'] = containerArgs
 
-        pprint.pprint(kwargs)
+        # pprint.pprint(kwargs)
 
         # schedule job
         job['kwargs'] = kwargs
@@ -845,7 +845,7 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
         cliListSpec = subprocess.check_output(['docker', 'run',
                                                dimg, '--list_cli'])
 
-        pprint.pprint(cliListSpec)
+        # pprint.pprint(cliListSpec)
 
         cliListSpec = json.loads(cliListSpec)
 
@@ -905,9 +905,6 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
     getCLIListHandlerName = 'get_cli_list'
     setattr(restResource, getCLIListHandlerName, getCLIListHandler)
     restResource.route('GET', (), getattr(restResource, getCLIListHandlerName))
-
-    print type(restResource).__name__
-    print cliList
 
     # expose the generated REST resource via apiRoot
     setattr(info['apiRoot'], restResourceName, restResource)
