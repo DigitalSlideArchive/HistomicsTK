@@ -3,6 +3,7 @@ import histomicstk as htk
 import numpy as np
 import scipy as sp
 import skimage.io
+import skimage.measure
 
 import logging
 logging.basicConfig()
@@ -80,6 +81,11 @@ def main(args):
     # filter out small objects
     imNucleiSegMask = htk.FilterLabel(imNucleiSegMask,
                                       Lower=args.min_nucleus_area)
+
+    #
+    # Generate annotations
+    #
+    objProps = skimage.measure.regionprops(imNucleiSegMask)
 
     #
     # Save output segmentation mask
