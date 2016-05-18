@@ -106,13 +106,14 @@ def main(args):
 
     # add each nucleus as an element into the annotation schema
     for i in range(len(objProps)):
+
         cur_bbox = {
             "type":        "rectangle",
             "id":          i,
             "center":      objProps[i].centroid,
             "width":       objProps[i].major_axis_length,
             "height":      objProps[i].minor_axis_length,
-            "rotation":    objProps[i].orientation,
+            "rotation":    objProps[i].orientation
         }
 
         annotation["elements"].append(cur_bbox)
