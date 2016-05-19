@@ -28,7 +28,7 @@ def PoissonMixture(I, Mu=None, InitialTau=None, Tol=0.1):
     Foreground : array_like
         An intensity image with values in the range [0, 1] representing
         foreground probabiities for each pixel.
-    Foreground : array_like
+    Background : array_like
         An intensity image with values in the range [0, 1] representing
         background probabiities for each pixel.
 
