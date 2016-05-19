@@ -2,7 +2,7 @@ import numpy as np
 import pygco as gc
 
 
-def BinaryMixtureCut(Foreground, Background, I=None, Sigma=25):
+def BinaryMixtureCut(Foreground, Background, I=None, Sigma=None):
     """Performs a binary graph-cut optimization for region masking, given
     foreground and background probabilities for image and
 
@@ -21,7 +21,8 @@ def BinaryMixtureCut(Foreground, Background, I=None, Sigma=25):
     Sigma : double
         Parameter controling exponential decay rate of continuity term. Units
         are intensity values. Recommended ~10% of dynamic range of image.
-        Defaults for image 'I' with range [0, 255]. Default value = 25.
+        Defaults to 25 if 'I' is type uint8 (range [0, 255]), and 0.1 if type
+        is float (expected range [0, 1]). Default value = None.
 
     Notes
     -----
@@ -57,11 +58,18 @@ def BinaryMixtureCut(Foreground, Background, I=None, Sigma=25):
     # formulate pairwise label costs
     Pairwise = 1 - np.eye(2)
 
-    # formulate vertical and horizontal costs if 'I' is provided
+    # calculate edge weights between pixels if argument 'I' is provided
     if I is not None:
-        H = np.exp(np.abs(I[:, 0:-1].astype(np.float) -
+        if Sigma is None:
+            if issubclass(I.dtype.type, np.float):
+                Sigma = 0.1
+            elif I.dtype.type == np.uint8:
+                Sigma = 25
+
+        # formulate vertical and horizontal costs
+        H = np.exp(-np.abs(I[:, 0:-1].astype(np.float) -
                    I[:, 1:].astype(np.float)) / (2 * Sigma**2))
-        V = np.exp(np.abs(I[0:-1, :].astype(np.float) -
+        V = np.exp(-np.abs(I[0:-1, :].astype(np.float) -
                    I[1:, :].astype(np.float)) / (2 * Sigma**2))
 
         # cut the graph with edge information from image
