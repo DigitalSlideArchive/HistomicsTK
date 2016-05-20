@@ -67,10 +67,10 @@ def BinaryMixtureCut(Foreground, Background, I=None, Sigma=None):
                 Sigma = 25
 
         # formulate vertical and horizontal costs
-        H = np.exp(-np.abs(I[:, 0:-1].astype(np.float) -
-                   I[:, 1:].astype(np.float)) / (2 * Sigma**2))
-        V = np.exp(-np.abs(I[0:-1, :].astype(np.float) -
-                   I[1:, :].astype(np.float)) / (2 * Sigma**2))
+        H = np.exp(-(I[:, 0:-1].astype(np.float) -
+                   I[:, 1:].astype(np.float))**2 / (2 * Sigma**2))
+        V = np.exp(-(I[0:-1, :].astype(np.float) -
+                   I[1:, :].astype(np.float))**2 / (2 * Sigma**2))
 
         # cut the graph with edge information from image
         Mask = gc.cut_grid_graph(D, Pairwise, V, H, n_iter=-1,
