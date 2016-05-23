@@ -23,15 +23,12 @@ def main(args):
     #
     print('>> Reading input image')
 
-    imInput = skimage.io.imread(args.inputImageFile)
+    imInput = skimage.io.imread(args.inputImageFile)[:, :, :3]
 
     #
     # Perform color normalization
     #
     print('>> Performing color normalization')
-
-    m = imInput.shape[0]
-    n = imInput.shape[1]
 
     # transform input image to LAB color space
     imInputLAB = htk.RudermanLABFwd(imInput)
@@ -60,7 +57,7 @@ def main(args):
 
     imDeconvolved = htk.ColorDeconvolution(imNmzd, W)
 
-    imNucleiStain = np.float(imDeconvolved.Stains[::2, ::2, 0])
+    imNucleiStain = imDeconvolved.Stains[::2, ::2, 0].astype(np.float)
 
     #
     # Perform nuclei segmentation
@@ -76,17 +73,19 @@ def main(args):
                      SigmaMin=args.min_radius * np.sqrt(2),
                      SigmaMax=args.max_radius * np.sqrt(2))
 
-    imNucleiSegMask = htk.MaxClustering(imLog, imFgndMask,
-                                        args.local_max_search_radius)
+    imNucleiSegMask, Seeds, Max = htk.MaxClustering(
+        imLog, imFgndMask, args.local_max_search_radius)
 
     # filter out small objects
-    imNucleiSegMask = htk.FilterLabel(imNucleiSegMask,
-                                      Lower=args.min_nucleus_area)
+    imNucleiSegMask = htk.FilterLabel(
+        imNucleiSegMask, Lower=args.min_nucleus_area).astype(np.int)
 
     #
     # Generate annotations
     #
     objProps = skimage.measure.regionprops(imNucleiSegMask)
+
+    print 'Number of nuclei = ', len(objProps)
 
     # create basic schema
     annotation = {
@@ -109,7 +108,6 @@ def main(args):
 
         cur_bbox = {
             "type":        "rectangle",
-            "id":          i,
             "center":      objProps[i].centroid,
             "width":       objProps[i].major_axis_length,
             "height":      objProps[i].minor_axis_length,
@@ -131,7 +129,7 @@ def main(args):
     print('>> Outputting nuclei annotation')
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotationFile:
-        json.dump(annotation, annotationFile)
+        json.dump(annotation, annotationFile, indent=2, sort_keys=False)
 
 if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())
