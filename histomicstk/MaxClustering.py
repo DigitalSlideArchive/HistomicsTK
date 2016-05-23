@@ -19,7 +19,7 @@ def MaxClustering(Response, Mask, r=10):
     Mask : array_like
         A binary image where nuclei pixels have value 1/True, and non-nuclear
         pixels have value 0/False.
-    f : float
+    r : float
         A scalar defining the clustering radius. Default value = 10.
 
     Returns
@@ -72,8 +72,8 @@ def MaxClustering(Response, Mask, r=10):
 
     # define pixels for local neighborhoods
     py, px = np.nonzero(Mask)
-    py = py + r
-    px = px + r
+    py = py + np.int(r)
+    px = px + np.int(r)
 
     # perform max filtering
     for i in np.arange(0, px.size, 1):
