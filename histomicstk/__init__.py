@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from .BinaryMixtureCut import BinaryMixtureCut
 from .ChanVese import ChanVese
 from .cLoG import cLoG
 from .ColorConvolution import ColorConvolution
@@ -26,6 +27,7 @@ from .MergeColinear import MergeColinear
 from .MergeSinks import MergeSinks
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
+from .PoissonMixture import PoissonMixture
 from .RegionAdjacencyLayer import RegionAdjacencyLayer
 from .ReinhardNorm import ReinhardNorm
 from .ReinhardSample import ReinhardSample
@@ -40,7 +42,8 @@ from .TilingSchedule import TilingSchedule
 
 __version__ = '0.1.0'
 
-__all__ = ('ChanVese',
+__all__ = ('BinaryMixtureCut',
+           'ChanVese',
            'cLoG',
            'ColorConvolution',
            'ColorDeconvolution',
@@ -66,6 +69,7 @@ __all__ = ('ChanVese',
            'MergeSinks',
            'OpticalDensityFwd',
            'OpticalDensityInv',
+           'PoissonMixture',
            'RegionAdjacencyLayer',
            'ReinhardNorm',
            'ReinhardSample',
