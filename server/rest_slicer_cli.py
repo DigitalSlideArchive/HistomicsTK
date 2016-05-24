@@ -435,7 +435,7 @@ def _getParamCommandLineValue(param, value):
     if param.isVector():
         cmdVal = '%s' % ', '.join(map(str, json.loads(value)))
     else:
-        cmdVal = str(value)
+        cmdVal = str(json.loads(value))
 
     return cmdVal
 
