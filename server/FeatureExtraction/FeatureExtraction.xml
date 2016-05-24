@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Performs Feature Extraction</title>
+  <description>Extracts initial features from an image</description>
+  <version>0.1.0</version>
+  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Sanghoon Lee (Emory University)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters.</description>
+    <image>
+      <name>inputImageFile</name>
+      <label>Input Image</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description>Input image</description>
+    </image>
+    <double-vector>
+      <name>stainColor_1</name>
+      <label>Color of stain-1</label>
+      <channel>input</channel>
+      <index>1</index>
+      <description>RGB Color of stain-1</description>
+    </double-vector>
+    <double-vector>
+      <name>stainColor_2</name>
+      <label>Color of stain-2</label>
+      <channel>input</channel>
+      <index>2</index>
+      <description>RGB Color of stain-2</description>
+    </double-vector>
+    <file>
+      <name>outputFile</name>
+      <label>Output HDF5 file</label>
+      <channel>output</channel>
+      <index>3</index>
+      <description>Output HDF5 file</description>
+    </file>
+    <double-vector>
+      <name>stainColor_3</name>
+      <label>Color of stain-3</label>
+      <description>RGB Color of stain-3</description>
+      <longflag>stainColor_3</longflag>
+      <default>0,0,0</default>
+    </double-vector>
+    <integer>
+      <name>K</name>
+      <label>K</label>
+      <description>Number of points for boundary resampling</description>
+      <longflag>k</longflag>
+      <default>128</default>
+    </integer>
+    <integer>
+      <name>Fs</name>
+      <label>Fs</label>
+      <description>Number of frequency bins for calculating FSDs</description>
+      <longflag>fs</longflag>
+      <default>6</default>
+    </integer>
+    <integer>
+      <name>Delta</name>
+      <label>Delta</label>
+      <description>Used to dilate nuclei and define cytoplasm region</description>
+      <longflag>delta</longflag>
+      <default>8</default>
+    </integer>
+  </parameters>
+</executable>
