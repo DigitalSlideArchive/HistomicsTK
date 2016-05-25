@@ -460,9 +460,9 @@ def _addOptionalInputParamsToContainerArgs(opt_input_params,
                     param, hargs['params'][param.name])
             except:
                 print 'Error: Parameter value is not in json.dumps format'
-                print '  parameter name = ', param.name
-                print '  parameter type = ', param.type
-                print '  Value passed = ', hargs['params'][param.name]
+                print '  Parameter name =', param.name
+                print '  Parameter type =', param.typ
+                print '  Value passed =', hargs['params'][param.name]
                 raise
         else:
             continue
