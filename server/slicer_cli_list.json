@@ -3,6 +3,10 @@
     "type"    : "python"
   },
 
+  "FeatureExtraction": {
+    "type"    : "python"
+  },
+
   "NucleiSegmentation": {
     "type"    : "python"
   },
