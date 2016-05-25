@@ -21,10 +21,6 @@ def main(args):
     Standard = skimage.io.imread(args.inputImageFile)[:, :, :3]
     print '--- Original Image Size = ', Standard.shape
 
-    # Reduce image size for testing
-    Standard = Standard[50:200, 50:200]
-    print '--- T by T Image Size = ', Standard.shape
-
     # Create stain matrix
     print('>> Creating stain matrix')
     W = np.array([args.stainColor_1, args.stainColor_2, args.stainColor_3]).T
