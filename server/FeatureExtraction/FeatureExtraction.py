@@ -16,6 +16,7 @@ stainColorMap = {
     'null':        [0.0, 0.0, 0.0]
 }
 
+
 def main(args):
 
     #
