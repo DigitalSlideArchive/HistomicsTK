@@ -455,8 +455,15 @@ def _addOptionalInputParamsToContainerArgs(opt_input_params,
         if _is_on_girder(param) and param.name in hargs:
             curValue = hargs[param.name]
         elif param.name in hargs['params']:
-            curValue = _getParamCommandLineValue(param,
-                                                 hargs['params'][param.name])
+            try:
+                curValue = _getParamCommandLineValue(
+                    param, hargs['params'][param.name])
+            except:
+                print 'Error: Parameter value is not in json.dumps format'
+                print '  parameter name = ', param.name
+                print '  parameter type = ', param.type
+                print '  Value passed = ', hargs['params'][param.name]
+                raise
         else:
             continue
 
@@ -658,7 +665,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
         taskSpec = {'name': cliName,
                     'mode': 'docker',
                     'docker_image': dockerImage,
-                    'pull_image': True,
+                    'pull_image': False,
                     'inputs': [],
                     'outputs': []}
 
