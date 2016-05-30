@@ -21,6 +21,10 @@ histomicstk.views.Visualization = girder.View.extend({
             model: this._controlModel
         });
 
+        this._annotationList = new histomicstk.views.AnnotationSelectorWidget({
+            parentView: this
+        });
+
         // prebind the onResize method so we can remove it on destroy
         this._onResize = _.bind(this._onResize, this);
 
@@ -52,13 +56,7 @@ histomicstk.views.Visualization = girder.View.extend({
 
         // fallback to canvas renderer rather than dom
         geo.gl.vglRenderer.fallback = function () {return 'canvas';};
-
-        $.ajax('http://localhost:8011/api/v1/annotation/5735b5ff62a8f85652915e31')
-                .then(_.bind(function (spec) {
-                    this.addAnnotationLayer(spec.annotation);
-                }, this));
     },
-
 
     /**
      * Create a map object with the given global bounds.
@@ -92,10 +90,22 @@ histomicstk.views.Visualization = girder.View.extend({
             interactor: interactor
         });
 
-        window.myMap = this._map;
         this._syncViewport();
         this._map.geoOn(geo.event.pan, _.bind(this._syncViewport, this));
         this.$('.h-visualization-body').empty().append(this._map.node());
+    },
+
+    renderAnnotationList: function (item) {
+        if (this._annotationList.collection) {
+            this.stopListening(this._annotationList);
+        }
+        this._annotationList
+            .setItem(item)
+            .setElement(this.$('.h-annotation-panel'))
+            .render()
+            .$el.removeClass('hidden');
+
+        this.listenTo(this._annotationList.collection, 'change:displayed', this._toggleAnnotation);
     },
 
     /**
@@ -112,6 +122,9 @@ histomicstk.views.Visualization = girder.View.extend({
      */
     addItem: function (item) {
         var promise;
+
+        this.resetAnnotations();
+        this.renderAnnotationList(item);
 
         // first check if it is a tiled image
         if (item.id === 'test' || item.has('largeImage')) {
@@ -257,9 +270,23 @@ histomicstk.views.Visualization = girder.View.extend({
         var settings = $.extend({
             el: el,
             viewport: this.viewport
-        }, annotation);
+        }, annotation.annotation);
 
         this._annotations[annotation._id] = new girder.annotation.Annotation(settings).render();
+        return this;
+    },
+
+    removeAnnotationLayer: function (id) {
+        if (_.has(this._annotations, id)) {
+            this._annotations[id].remove();
+            delete this._annotations[id];
+        }
+        return this;
+    },
+
+    resetAnnotations: function () {
+        _.each(_.keys(this._annotations), _.bind(this.removeAnnotationLayer, this));
+        return this;
     },
 
     render: function () {
@@ -309,5 +336,15 @@ histomicstk.views.Visualization = girder.View.extend({
             top: -bds.top,
             left: bds.left
         });
+    },
+
+    _toggleAnnotation: function (model) {
+        if (model.get('displayed') && !_.has(this._annotations, model.id)) {
+            girder.restRequest({
+                path: 'annotation/' + model.id
+            }).then(_.bind(this.addAnnotationLayer, this));
+        } else if (!model.get('displayed') && _.has(this._annotations, model.id)) {
+            this.removeAnnotationLayer(model.id);
+        }
     }
 });
