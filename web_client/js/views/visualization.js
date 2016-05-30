@@ -1,5 +1,9 @@
+/* global d3 */
 histomicstk.views.Visualization = girder.View.extend({
     initialize: function () {
+        // rendered annotation layers
+        this._annotations = {};
+
         // the map object
         this._map = null;
 
@@ -16,6 +20,14 @@ histomicstk.views.Visualization = girder.View.extend({
             parentView: this,
             model: this._controlModel
         });
+
+        // prebind the onResize method so we can remove it on destroy
+        this._onResize = _.bind(this._onResize, this);
+
+        // shared viewport object for annotation layers
+        this.viewport = new girder.annotation.Viewport();
+        this._onResize();
+        $(window).resize(this._onResize);
 
         this.listenTo(this._controlModel, 'change:value', function (model) {
             var id = model.get('value').id;
@@ -40,7 +52,13 @@ histomicstk.views.Visualization = girder.View.extend({
 
         // fallback to canvas renderer rather than dom
         geo.gl.vglRenderer.fallback = function () {return 'canvas';};
+
+        $.ajax('http://localhost:8011/api/v1/annotation/5735b5ff62a8f85652915e31')
+                .then(_.bind(function (spec) {
+                    this.addAnnotationLayer(spec.annotation);
+                }, this));
     },
+
 
     /**
      * Create a map object with the given global bounds.
@@ -73,6 +91,10 @@ histomicstk.views.Visualization = girder.View.extend({
             discreteZoom: false,
             interactor: interactor
         });
+
+        window.myMap = this._map;
+        this._syncViewport();
+        this._map.geoOn(geo.event.pan, _.bind(this._syncViewport, this));
         this.$('.h-visualization-body').empty().append(this._map.node());
     },
 
@@ -225,6 +247,21 @@ histomicstk.views.Visualization = girder.View.extend({
         return layer;
     },
 
+    addAnnotationLayer: function (annotation) {
+        var el = d3.select(this.el)
+                .select('.h-annotation-layers')
+                .append('svg')
+                .node();
+
+        this._onResize();
+        var settings = $.extend({
+            el: el,
+            viewport: this.viewport
+        }, annotation);
+
+        this._annotations[annotation._id] = new girder.annotation.Annotation(settings).render();
+    },
+
     render: function () {
 
         this.$el.html(histomicstk.templates.visualization());
@@ -234,9 +271,43 @@ histomicstk.views.Visualization = girder.View.extend({
     },
 
     destroy: function () {
+        $(window).off('resize', this._onResize);
         this._map.exit();
         this.$el.empty();
         this._controlModel.destroy();
         girder.View.prototype.destroy.apply(this, arguments);
+    },
+
+    /**
+     * Resize the viewport according to the size of the container.
+     */
+    _onResize: function () {
+        var width = this.$el.width() || 100;
+        var height = this.$el.height() || 100;
+        var layers = this.$('.h-annotation-layers > svg');
+
+        this.viewport.set({
+            width: width,
+            height: height
+        });
+        layers.attr('width', width);
+        layers.attr('height', height);
+        this._syncViewport();
+    },
+
+    _syncViewport: function () {
+        var bds;
+        if (!this._map) {
+            return;
+        }
+        bds = this._map.bounds(undefined, null);
+
+        this.viewport.set({
+            scale: (bds.right - bds.left) / this.viewport.get('width')
+        });
+        this.viewport.set({
+            top: -bds.top,
+            left: bds.left
+        });
     }
 });
