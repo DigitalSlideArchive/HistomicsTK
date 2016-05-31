@@ -62,7 +62,7 @@ def FeatureExtractionHaralick(I, Dst=1, Ng=256):
         meanx = np.dot(n_Minus, px)
         variance = np.dot(px, n_Minus**2) - meanx**2
         p_ijr = np.ravel(p_ij)
-        i, j = np.mgrid[0:Ng,0:Ng]
+        i, j = np.mgrid[0:Ng, 0:Ng]
         ij = i*j
         f[2, r] = (np.dot(np.ravel(ij), p_ijr) - meanx**2) / variance
         # f3: computes sum of squares : variance
