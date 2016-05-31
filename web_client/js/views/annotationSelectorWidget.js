@@ -9,10 +9,15 @@ histomicstk.views.AnnotationSelectorWidget = girder.View.extend({
 
         this.parentItem = item;
         this.collection = this.parentItem.annotations;
-        this.collection.append = true;
 
-        this.listenTo(this.collection, 'g:changed', this.render);
-        this.collection.fetch();
+        if (this.collection) {
+            this.collection.append = true;
+
+            this.listenTo(this.collection, 'g:changed', this.render);
+            this.collection.fetch();
+        } else {
+            this.collection = new Backbone.Collection();
+        }
         return this;
     },
     render: function () {

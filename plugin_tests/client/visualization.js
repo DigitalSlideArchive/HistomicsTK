@@ -18,6 +18,7 @@ _.each([
 
 window.histomicstk = {};
 girderTest.addCoveredScripts([
+    '/clients/web/static/built/plugins/large_image/plugin.min.js',
     '/plugins/HistomicsTK/web_client/js/0init.js',
     '/plugins/HistomicsTK/web_client/js/app.js',
     '/plugins/HistomicsTK/web_client/js/models/widget.js',
@@ -33,6 +34,7 @@ girderTest.addCoveredScripts([
     '/plugins/HistomicsTK/web_client/js/views/jobsPanel.js',
     '/plugins/HistomicsTK/web_client/js/views/panelGroup.js',
     '/plugins/HistomicsTK/web_client/js/views/visualization.js',
+    '/plugins/HistomicsTK/web_client/js/views/annotationSelectorWidget.js',
     '/clients/web/static/built/plugins/HistomicsTK/templates.js'
 ]);
 
@@ -130,6 +132,7 @@ describe('visualization', function () {
         });
 
         it('render test image', function () {
+
             rest.onCall(0).returns($.when([{
                 mimeType: 'image/jpeg',
                 '_id': 'some image'
@@ -140,7 +143,9 @@ describe('visualization', function () {
                 el: $el
             }).render();
 
-            view.addItem(new girder.models.ItemModel())
+            var model = new Backbone.Model();
+
+            view.addItem(model)
                 .then(function (quad) {
                     var data = quad.data()[0];
                     expect(data.ll).toEqual({x: 0, y: 256});
@@ -161,7 +166,9 @@ describe('visualization', function () {
 
         it('render image from control widget', function () {
             rest.onCall(0).returns($.when({}));
-            rest.onCall(1).returns($.when([{
+            rest.onCall(1).returns($.when([]));
+            rest.onCall(2).returns($.when([]));
+            rest.onCall(3).returns($.when([{
                 mimeType: 'image/jpeg',
                 '_id': 'some image'
             }]));
@@ -186,7 +193,9 @@ describe('visualization', function () {
         it('invalid image from control widget', function () {
             var spy = sinon.spy();
             rest.onCall(0).returns($.when({}));
-            rest.onCall(1).returns($.when([{
+            rest.onCall(1).returns($.when([]));
+            rest.onCall(2).returns($.when([]));
+            rest.onCall(3).returns($.when([{
                 mimeType: 'image/jpeg',
                 '_id': 'some image'
             }]));
@@ -215,6 +224,8 @@ describe('visualization', function () {
 
         it('item with no files', function () {
             rest.onCall(0).returns($.when([]));
+            rest.onCall(1).returns($.when([]));
+            rest.onCall(2).returns($.when([]));
             
             var view = new histomicstk.views.Visualization({
                 parentView: parentView,
@@ -235,7 +246,9 @@ describe('visualization', function () {
         });
 
         it('invalid image file', function () {
-            rest.onCall(0).returns($.when([{
+            rest.onCall(0).returns($.when([]));
+            rest.onCall(1).returns($.when([]));
+            rest.onCall(2).returns($.when([{
                 mimeType: 'image/jpeg',
                 '_id': 'some image'
             }]));
