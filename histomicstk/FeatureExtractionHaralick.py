@@ -3,7 +3,7 @@ import numpy as np
 
 
 def FeatureExtractionHaralick(I, Dst=1, Ng=256):
-    '''
+    """
     Calculates 26 Haralick features from an image
     Parameters
     ----------
@@ -22,7 +22,7 @@ def FeatureExtractionHaralick(I, Dst=1, Ng=256):
     1973.
     .. [2] Luis Pedro Coelho. "Mahotas: Open source software for scriptable
     computer vision," Journal of Open Research Software, vol 1, 2013.
-    '''
+    """
     # sets the number of angles: 0 45 90 135. this must not be modified.
     NumberofAngles = 4
 
@@ -41,12 +41,12 @@ def FeatureExtractionHaralick(I, Dst=1, Ng=256):
         p_ij = P_ij[:, :, 0, r]/R
         # gets marginal-probability matrix sets summing the rows of p_ij
         px = np.sum(p_ij, axis=1)
-        py = np.sum(p_ij, axis=0)
-        # initialize marginal-probability matrix sets summing p_ij that i+j = k or i-j = k
+        # initialize marginal-probability matrix sets summing p_ij
+        # that i+j = k or i-j = k
         pxPlusy = np.zeros(2*Ng-1)
         pxMinusy = np.zeros(Ng)
         # arbitarily small positive constant
-        e = 0.00001
+        # e = 0.00001
         for i in range(0, Ng):
             for j in range(0, Ng):
                 # gets marginal-probability matrix
@@ -62,7 +62,7 @@ def FeatureExtractionHaralick(I, Dst=1, Ng=256):
         meanx = np.dot(n_Minus, px)
         variance = np.dot(px, n_Minus**2) - meanx**2
         p_ijr = np.ravel(p_ij)
-        i,j = np.mgrid[0:Ng,0:Ng]
+        i, j = np.mgrid[0:Ng,0:Ng]
         ij = i*j
         f[2, r] = (np.dot(np.ravel(ij), p_ijr) - meanx**2) / variance
         # f3: computes sum of squares : variance
