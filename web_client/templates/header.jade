@@ -1,22 +1,44 @@
 .g-header-wrapper
-  .g-app-title HistomicsTK
+nav.navbar.navbar-inverse.navbar-fixed-top
+  .container-fluid
 
-  .g-current-user-wrapper
-    .g-user-text
-      if (user)
-        a(data-toggle="dropdown", data-target="#g-user-action-menu")
-          | #{user.get('firstName')} #{user.get('lastName')}
-          i.icon-down-open
-        #g-user-action-menu.dropdown
-          ul.dropdown-menu(role="menu")
-            li(role="presentation")
-              a.g-logout
-                i.icon-logout
-                | Log out
-      else
-        a.g-register Register
-        |  or
-        a.g-login  Log In
-          i.icon-login
+    .navbar-header
+      button.navbar-toggle.collapsed(type='button' data-toggle='collapse' data-target='#g-navigation-header' aria-expanded='false')
+        span.sr-only Toggle navigation
+        span.icon-bar
+        span.icon-bar
+        span.icon-bar
 
-  .g-clear-both
+      .navbar-brand HistomicsTK
+
+    .collapse.navbar-collapse#g-navigation-header
+      ul.nav.navbar-nav
+
+        if (analyses)
+          li.g-analysis-selection.dropdown
+            a.dropdown-toggle(data-toggle='dropdown' href='#' role='button' aria-haspopup='true' aria-expanded='false')
+              | Analyses
+              i.icon-down-open
+            ul#g-analysis-menu.dropdown-menu(role='menu')
+              each name in analyses
+                li
+                  a(href='##{name}' data-name='#{name}') #{name}
+
+
+      ul.g-current-user-wrapper.nav.navbar-nav.navbar-right
+        li.g-user-text
+          if (user)
+            a(data-toggle="dropdown", data-target="#g-user-action-menu")
+              | #{user.get('firstName')} #{user.get('lastName')}
+              i.icon-down-open
+            #g-user-action-menu.dropdown
+              ul.dropdown-menu(role="menu")
+                li(role="presentation")
+                  a.g-logout
+                    i.icon-logout
+                    | Log out
+          else
+            a.g-register Register
+            |  or
+            a.g-login  Log In
+              i.icon-login
