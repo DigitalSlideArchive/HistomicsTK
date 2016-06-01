@@ -73,7 +73,7 @@ def FeatureExtractionHaralick(I, Dst=1, Ng=256):
         f[4, r] = np.dot(np.ravel(ij_IDM), p_ijr)
         # f5: computes sum average
         n_Plus = np.arange(2*Ng-1)
-        f[5, r] =  np.dot(n_Plus, pxPlusy)
+        f[5, r] = np.dot(n_Plus, pxPlusy)
         # f6: computes sum variance
         # [1] uses sum entropy, but we use sum average
         f[6, r] = np.dot(n_Plus**2, pxPlusy) - np.square(f[5, r])
@@ -93,10 +93,10 @@ def FeatureExtractionHaralick(I, Dst=1, Ng=256):
         pxy_ij = np.outer(px, py)
         pxy_ijr = np.ravel(pxy_ij)
         HXY1 = -np.dot(p_ijr, np.log2(pxy_ijr+e))
-        HXY2 =  -np.dot(pxy_ijr, np.log2(pxy_ijr+e))
-        f[11, r] =  (HXY-HXY1)/max(HX, HY)
+        HXY2 = -np.dot(pxy_ijr, np.log2(pxy_ijr+e))
+        f[11, r] = (HXY-HXY1)/max(HX, HY)
         # f12: computes information measures of correlation
-        f[12, r] =  np.sqrt(1 - np.exp(-2.0*(HXY2-HXY)))
+        f[12, r] = np.sqrt(1 - np.exp(-2.0*(HXY2-HXY)))
     # computes means and ranges of the 13 features with 4 angles
     # and store it to H
     H = np.zeros(26)
