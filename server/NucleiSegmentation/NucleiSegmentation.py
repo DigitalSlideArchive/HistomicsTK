@@ -131,5 +131,6 @@ def main(args):
     with open(args.outputNucleiAnnotationFile, 'w') as annotationFile:
         json.dump(annotation, annotationFile, indent=2, sort_keys=False)
 
+
 if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())

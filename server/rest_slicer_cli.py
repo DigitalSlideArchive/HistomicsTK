@@ -2,7 +2,6 @@ import os
 import sys
 import json
 import subprocess
-import pprint
 from ctk_cli import CLIModule
 
 from girder.api.rest import Resource, loadmodel, boundHandler
@@ -458,7 +457,7 @@ def _addOptionalInputParamsToContainerArgs(opt_input_params,
             try:
                 curValue = _getParamCommandLineValue(
                     param, hargs['params'][param.name])
-            except:
+            except Exception as e:
                 print 'Error: Parameter value is not in json.dumps format'
                 print '  Parameter name =', param.name
                 print '  Parameter type =', param.typ
@@ -665,7 +664,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
         taskSpec = {'name': cliName,
                     'mode': 'docker',
                     'docker_image': dockerImage,
-                    'pull_image': False,
+                    'pull_image': True,
                     'inputs': [],
                     'outputs': []}
 

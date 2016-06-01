@@ -25,7 +25,7 @@
       <channel>output</channel>
       <index>1</index>
     </image>
-    <file fileExtensions=".anot">
+    <file fileExtensions=".anot" reference="inputImageFile">
       <name>outputNucleiAnnotationFile</name>
       <label>Output Nuclei Annotation File</label>
       <description>Output nuclei annotation file</description>
