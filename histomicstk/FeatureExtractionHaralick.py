@@ -55,7 +55,7 @@ def FeatureExtractionHaralick(I, Dst=1, Ng=256):
                 pxMinusy[abs(i-j)] = pxMinusy[abs(i-j)] + p_ij[i, j]
         # f0: computes angular second moment
         f[0, r] = np.sum(np.square(p_ij))
-        # f1: computes constast
+        # f1: computes contrast
         n_Minus = np.arange(Ng)
         f[1, r] = np.dot(np.square(n_Minus), pxMinusy)
         # f2: computes correlation
