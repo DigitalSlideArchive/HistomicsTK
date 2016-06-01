@@ -46,7 +46,7 @@ def FeatureExtractionHaralick(I, Dst=1, Ng=256):
         # that i+j = k or i-j = k
         pxPlusy = np.zeros(2*Ng-1)
         pxMinusy = np.zeros(Ng)
-        # arbitarily small positive constant
+        # arbitarily small positive constant to avoid log 0
         e = 0.00001
         for i in range(0, Ng):
             for j in range(0, Ng):
@@ -76,7 +76,7 @@ def FeatureExtractionHaralick(I, Dst=1, Ng=256):
         f[5, r] = np.dot(n_Plus, pxPlusy)
         # f6: computes sum variance
         # [1] uses sum entropy, but we use sum average
-        f[6, r] = np.dot(n_Plus**2, pxPlusy) - np.square(f[5, r])
+        f[6, r] = np.dot(np.square(n_Plus), pxPlusy) - np.square(f[5, r])
         # f7: computes sum entropy
         f[7, r] = -np.dot(pxPlusy, np.log2(pxPlusy+e))
         # f8: computes entropy
