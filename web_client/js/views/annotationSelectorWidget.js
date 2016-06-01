@@ -1,7 +1,7 @@
-histomicstk.views.AnnotationSelectorWidget = girder.View.extend({
-    events: {
+histomicstk.views.AnnotationSelectorWidget = histomicstk.views.Panel.extend({
+    events: _.extend(histomicstk.views.Panel.prototype.events, {
         'click .h-annotation > span': 'toggleAnnotation'
-    },
+    }),
     setItem: function (item) {
         if (this.collection) {
             this.stopListening(this.collection);
