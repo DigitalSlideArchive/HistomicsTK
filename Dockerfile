@@ -35,9 +35,8 @@ WORKDIR $htk_path
 # Install HistomicsTK and its dependencies
 RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     conda install --yes pip libgfortran==1.0 openslide-python \
-    --file requirements.txt --file requirements_c_conda.txt
-
-RUN pip install -r requirements_c.txt && \
+    --file requirements.txt --file requirements_c_conda.txt && \
+    pip install -r requirements_c.txt && \
     # Install HistomicsTK
     python setup.py install && \
     # clean up
