@@ -35,7 +35,7 @@ before_install:
 
     - GIRDER_VERSION=c29e4db8fadf5b97f5fcd488e15353b09a9fd70f
     - GIRDER_WORKER_VERSION=a572e2cd74ae30777f31999d5a136747190ddcb8
-    - LARGE_IMAGE_VERSION=7e10e87c15b3631e91cccd6c16a8c80ce4031355
+    - LARGE_IMAGE_VERSION=b5ee1b7e87bc59792d2c8d251f0dc5f95958d28a
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path

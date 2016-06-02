@@ -14,6 +14,7 @@ histomicstk.views.AnnotationSelectorWidget = histomicstk.views.Panel.extend({
             this.collection.append = true;
 
             this.listenTo(this.collection, 'g:changed', this.render);
+            this.listenTo(this.collection, 'add', this.render);
             this.collection.fetch();
         } else {
             this.collection = new Backbone.Collection();
