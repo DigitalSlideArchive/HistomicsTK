@@ -42,8 +42,8 @@ from .TilingSchedule import TilingSchedule
 
 __version__ = '0.1.0'
 
-__all__ = (  # 'BinaryMixtureCut',  # disable until pygco is deployed
-           'ChanVese',
+# Add 'BinaryMixtureCut' after pygco is deployed
+__all__ = ('ChanVese',
            'cLoG',
            'ColorConvolution',
            'ColorDeconvolution',
