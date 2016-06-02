@@ -26,7 +26,8 @@ histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
     },
     _selectAnalysis: function (evt) {
         var name = $(evt.currentTarget).data('name');
-        histomicstk.router.navigate(name, {trigger: true});
+        histomicstk.router.setQuery('analysis', name, {trigger: true});
+        evt.preventDefault();
     },
     _register: function (evt) {
         histomicstk.router.setQuery('dialog', 'register', {trigger: true});

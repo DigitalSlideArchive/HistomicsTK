@@ -17,11 +17,12 @@ histomicstk.views.PanelGroup = girder.View.extend({
             }
         });
 
-        // render a specific schema
-        this.listenTo(histomicstk.router, 'route:gui', this.schema);
-
-        // remove the current schema reseting to the default view
-        this.listenTo(histomicstk.router, 'route:main', this.reset);
+        this.listenTo(histomicstk.events, 'query:analysis', this.schema);
+        this.listenTo(histomicstk.events, 'query', _.bind(function (query) {
+            if (!query || !query.analysis) {
+                this.reset();
+            }
+        }, this));
     },
     render: function () {
         this.$el.html(histomicstk.templates.panelGroup({

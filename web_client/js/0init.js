@@ -22,6 +22,18 @@ _.extend(histomicstk, {
                 unparsedQueryString = '?' + unparsedQueryString;
             }
             this.navigate(routeParts.base + unparsedQueryString, options);
+        },
+        execute: function (callback, args) {
+            var query = girder.parseQueryString(args.pop());
+            args.push(query);
+            if (callback) {
+                callback.apply(this, args);
+            }
+
+            _.each(query, function (value, key) {
+                histomicstk.events.trigger('query:' + key, value, query);
+            });
+            histomicstk.events.trigger('query', query);
         }
     }))(),
     events: _.clone(Backbone.Events),
