@@ -334,7 +334,7 @@ def _createInputParamBindingSpec(param, hargs, token):
     return curBindingSpec
 
 
-def _createOutputParamBindingSpec(param, hargs, token):
+def _createOutputParamBindingSpec(param, hargs, user, token):
 
     curBindingSpec = wutils.girderOutputSpec(
         hargs[param.name],
@@ -342,6 +342,20 @@ def _createOutputParamBindingSpec(param, hargs, token):
         name=hargs['params'][param.name + _girderOutputNameSuffix],
         dataType='string', dataFormat='string'
     )
+
+    if param.isExternalType() and param.reference is not None:
+
+        if param.reference not in hargs:
+            raise Exception(
+                'Error: The specified reference attribute value'
+                '%s for parameter %s is not a valid input' %(
+                    param.reference, param.name )
+            )
+
+        curBindingSpec['reference'] = json.dumps({
+                'itemId': str(hargs[param.reference]['_id']),
+                'userId': str(user['_id'])
+        })
 
     return curBindingSpec
 
@@ -352,10 +366,12 @@ def _addIndexedInputParamBindings(index_input_params, bspec, hargs, token):
         bspec[param.name] = _createInputParamBindingSpec(param, hargs, token)
 
 
-def _addIndexedOutputParamBindings(index_output_params, bspec, hargs, token):
+def _addIndexedOutputParamBindings(index_output_params,
+                                   bspec, hargs, user, token):
 
     for param in index_output_params:
-        bspec[param.name] = _createOutputParamBindingSpec(param, hargs, token)
+        bspec[param.name] = _createOutputParamBindingSpec(
+            param, hargs, user, token)
 
 
 def _addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
@@ -397,7 +413,8 @@ def _addOptionalOutputParamBindings(opt_output_params,
                                           level=AccessType.WRITE,
                                           user=user)
 
-        bspec[param.name] = _createOutputParamBindingSpec(param, hargs, token)
+        bspec[param.name] = _createOutputParamBindingSpec(param, hargs,
+                                                          user, token)
 
 
 def _addReturnParameterFileBinding(bspec, hargs, user, token):
@@ -686,7 +703,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
                                       kwargs['inputs'], hargs, token)
 
         _addIndexedOutputParamBindings(index_output_params,
-                                       kwargs['outputs'], hargs, token)
+                                       kwargs['outputs'], hargs, user, token)
 
         _addOptionalInputParamBindings(opt_input_params,
                                        kwargs['inputs'], hargs, user, token)
@@ -713,8 +730,6 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
                                          containerArgs, hargs)
 
         taskSpec['container_args'] = containerArgs
-
-        # pprint.pprint(kwargs)
 
         # schedule job
         job['kwargs'] = kwargs
