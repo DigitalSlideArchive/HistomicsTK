@@ -3,7 +3,8 @@ histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
         'click #g-analysis-menu a': '_selectAnalysis',
         'click .g-register': '_register',
         'click .g-login': '_login',
-        'click .g-logout': '_logout'
+        'click .g-logout': '_logout',
+        'click .g-open-image': '_openImage'
     },
     initialize: function () {
         this.analyses = [];
@@ -39,6 +40,10 @@ histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
     },
     _logout: function (evt) {
         girder.logout();
+        evt.preventDefault();
+    },
+    _openImage: function (evt) {
+        histomicstk.router.setQuery('dialog', 'image', {trigger: true});
         evt.preventDefault();
     }
 });

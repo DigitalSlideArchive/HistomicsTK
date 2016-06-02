@@ -3,6 +3,12 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
         'click .h-select-button': '_selectButton'
     },
 
+    initialize: function () {
+        if (!this.model) {
+            this.model = new girder.models.ItemModel();
+        }
+    },
+
     render: function () {
         this._hierarchyView = new girder.views.HierarchyWidget({
             parentView: this,
@@ -18,6 +24,7 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
         ).girderModal(this);
 
         this._hierarchyView.setElement(this.$('.h-hierarchy-widget')).render();
+        return this;
     },
 
     /**

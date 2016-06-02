@@ -18,11 +18,6 @@ histomicstk.views.PanelGroup = girder.View.extend({
         });
 
         this.listenTo(histomicstk.events, 'query:analysis', this.schema);
-        this.listenTo(histomicstk.events, 'query', _.bind(function (query) {
-            if (!query || !query.analysis) {
-                this.reset();
-            }
-        }, this));
     },
     render: function () {
         this.$el.html(histomicstk.templates.panelGroup({
@@ -202,6 +197,8 @@ histomicstk.views.PanelGroup = girder.View.extend({
 
         if (s === 'demo') {
             return this.demo();
+        } else if (s === null) {
+            return this.reset();
         }
 
         girder.restRequest({

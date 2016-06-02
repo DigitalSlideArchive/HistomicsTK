@@ -1,8 +1,6 @@
 histomicstk.App = girder.App.extend({
 
     initialize: function () {
-        this._dialogs = {};
-
         girder.fetchCurrentUser()
             .done(_.bind(function (user) {
                 girder.eventStream = new girder.EventStream({
@@ -55,15 +53,13 @@ histomicstk.App = girder.App.extend({
         return this;
     },
     openDialog: function (name) {
-        if (!this._dialogs[name]) {
-            this._dialogs[name] = new histomicstk.dialogs[name]({
-                el: this.$('#g-dialog-container'),
-                parentView: this
-            });
-        }
-        this._dialogs[name].render()
-            .$el.off('hidden.bs.modal')
+        var dialog = histomicstk.dialogs[name];
+
+        dialog.setElement(this.$('#g-dialog-container'))
+            .render();
+        dialog.$el.off('hidden.bs.modal')
             .on('hidden.bs.modal', _.bind(this._handleCloseDialog, this));
+
     },
     _handleCloseDialog: function () {
         histomicstk.router.setQuery('dialog', null, {replace: true});

@@ -30,16 +30,22 @@ _.extend(histomicstk, {
                 callback.apply(this, args);
             }
 
+            _.each(this._lastQueryString || {}, function (value, key) {
+                if (!_.has(query, key)) {
+                    histomicstk.events.trigger('query:' + key, null, query);
+                }
+            });
             _.each(query, function (value, key) {
                 histomicstk.events.trigger('query:' + key, value, query);
             });
             histomicstk.events.trigger('query', query);
+            this._lastQueryString = query;
         }
     }))(),
     events: _.clone(Backbone.Events),
     dialogs: {
-        login: girder.views.LoginView,
-        register: girder.views.RegisterView
+        login: new girder.views.LoginView({parentView: null}),
+        register: new girder.views.RegisterView({parentView: null})
     }
 });
 

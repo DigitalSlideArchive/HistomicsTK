@@ -11,15 +11,7 @@ histomicstk.views.Visualization = girder.View.extend({
         this._layers = [];
 
         // control model for file widget
-        this._controlModel = new histomicstk.models.Widget({
-            type: 'file'
-        });
-
-        // control widget view
-        this._controlView = new histomicstk.views.ControlWidget({
-            parentView: this,
-            model: this._controlModel
-        });
+        this._controlModel = histomicstk.dialogs.image.model;
 
         this._annotationList = new histomicstk.views.AnnotationSelectorWidget({
             parentView: this
@@ -44,7 +36,6 @@ histomicstk.views.Visualization = girder.View.extend({
             })
             .then(_.bind(function (item) {
                 this._controlModel.get('value').set(item);
-                this._controlView.render();
                 histomicstk.router.setQuery('image', id);
                 return this.addItem(this._controlModel.get('value'));
             }, this))
@@ -56,15 +47,15 @@ histomicstk.views.Visualization = girder.View.extend({
                     icon: 'attention'
                 };
                 girder.events.trigger('g:alert', info);
-                this._controlView.invalid();
                 histomicstk.router.setQuery('image', null, {replace: true});
             }, this));
         });
 
-        this.listenTo(histomicstk.events, 'query', _.bind(function (query) {
-            if (query && query.image) {
-                this._controlModel.set('value', new girder.models.ItemModel({_id: query.image}));
-            } else {
+        this.listenTo(histomicstk.events, 'query:image', _.bind(function (image) {
+            var currentImage = this._controlModel.get('value') || {};
+            if (image && currentImage.id !== image) {
+                this._controlModel.set('value', new girder.models.ItemModel({_id: image}));
+            } else if (!image) {
                 this.removeItem();
                 this._controlModel.set('value', null);
             }
@@ -230,6 +221,8 @@ histomicstk.views.Visualization = girder.View.extend({
     },
 
     removeItem: function () {
+        this.resetAnnotations();
+        this._annotationList.render().$el.addClass('hidden');
         if (this._map) {
             this._map.exit();
             this._map = null;
@@ -316,8 +309,6 @@ histomicstk.views.Visualization = girder.View.extend({
     render: function () {
 
         this.$el.html(histomicstk.templates.visualization());
-        this._controlView.setElement(this.$('.h-open-image-widget')).render();
-
         return this;
     },
 
@@ -371,4 +362,11 @@ histomicstk.views.Visualization = girder.View.extend({
             this.removeAnnotationLayer(model.id);
         }
     }
+});
+
+histomicstk.dialogs.image = new histomicstk.views.ItemSelectorWidget({
+    parentView: null,
+    model: new histomicstk.models.Widget({
+        type: 'file'
+    })
 });
