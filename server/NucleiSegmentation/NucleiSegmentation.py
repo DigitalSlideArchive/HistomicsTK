@@ -16,6 +16,7 @@ stainColorMap = {
     'null':        [0.0, 0.0, 0.0]
 }
 
+
 def main(args):
 
     #
@@ -107,7 +108,6 @@ def main(args):
     for i in range(len(objProps)):
 
         c = [objProps[i].centroid[1], objProps[i].centroid[0], 0]
-        bbox = objProps[i].bbox
         width = objProps[i].bbox[3] - objProps[i].bbox[1] + 1
         height = objProps[i].bbox[2] - objProps[i].bbox[0] + 1
 

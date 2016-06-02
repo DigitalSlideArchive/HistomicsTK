@@ -348,14 +348,16 @@ def _createOutputParamBindingSpec(param, hargs, user, token):
         if param.reference not in hargs:
             raise Exception(
                 'Error: The specified reference attribute value'
-                '%s for parameter %s is not a valid input' %(
-                    param.reference, param.name )
+                '%s for parameter %s is not a valid input' % (
+                    param.reference, param.name)
             )
 
-        curBindingSpec['reference'] = json.dumps({
+        curBindingSpec['reference'] = json.dumps(
+            {
                 'itemId': str(hargs[param.reference]['_id']),
                 'userId': str(user['_id'])
-        })
+            }
+        )
 
     return curBindingSpec
 
@@ -479,6 +481,7 @@ def _addOptionalInputParamsToContainerArgs(opt_input_params,
                 print '  Parameter name =', param.name
                 print '  Parameter type =', param.typ
                 print '  Value passed =', hargs['params'][param.name]
+                print e
                 raise
         else:
             continue
