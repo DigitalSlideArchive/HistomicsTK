@@ -57,7 +57,7 @@ def main(args):
 
     imDeconvolved = htk.ColorDeconvolution(imNmzd, W)
 
-    imNucleiStain = imDeconvolved.Stains[::2, ::2, 0].astype(np.float)
+    imNucleiStain = imDeconvolved.Stains[:, :, 0].astype(np.float)
 
     #
     # Perform nuclei segmentation
@@ -106,12 +106,16 @@ def main(args):
     # add each nucleus as an element into the annotation schema
     for i in range(len(objProps)):
 
+        c = [objProps[i].centroid[1], objProps[i].centroid[0], 0]
+        bbox = objProps[i].bbox
+        width = objProps[i].bbox[3] - objProps[i].bbox[1] + 1
+        height = objProps[i].bbox[2] - objProps[i].bbox[0] + 1
+
         cur_bbox = {
             "type":        "rectangle",
-            "center":      objProps[i].centroid + (0,),
-            "width":       objProps[i].major_axis_length,
-            "height":      objProps[i].minor_axis_length,
-            "rotation":    objProps[i].orientation
+            "center":      c,
+            "width":       width,
+            "height":      height,
         }
 
         annotation["elements"].append(cur_bbox)
