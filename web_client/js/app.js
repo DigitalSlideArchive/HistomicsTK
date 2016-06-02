@@ -1,6 +1,8 @@
 histomicstk.App = girder.App.extend({
 
     initialize: function () {
+        this._dialogs = {};
+
         girder.fetchCurrentUser()
             .done(_.bind(function (user) {
                 girder.eventStream = new girder.EventStream({
@@ -25,6 +27,20 @@ histomicstk.App = girder.App.extend({
                 Backbone.history.start({pushState: false});
             }, this));
 
+
+        histomicstk.router.on('route', _.bind(function (route, params) {
+            var dialog = params.slice(-1)[0].dialog;
+
+            // handle dialog query strings
+            if (dialog && _.has(histomicstk.dialogs, dialog)) {
+                this.openDialog(dialog);
+            } else {
+                $('.modal').girderModal('close');
+            }
+            $('.tooltip').remove();
+
+        }, this));
+
         girder.events.on('g:loginUi', this.loginDialog, this);
         girder.events.on('g:registerUi', this.registerDialog, this);
         girder.events.on('g:resetPasswordUi', this.resetPasswordDialog, this);
@@ -37,5 +53,29 @@ histomicstk.App = girder.App.extend({
         this.headerView.setElement(this.$('#g-app-header-container')).render();
         this.bodyView.setElement(this.$('#g-app-body-container')).render();
         return this;
+    },
+    openDialog: function (name) {
+        if (!this._dialogs[name]) {
+            this._dialogs[name] = new histomicstk.dialogs[name]({
+                el: this.$('#g-dialog-container'),
+                parentView: this
+            });
+        }
+        this._dialogs[name].render()
+            .$el.off('hidden.bs.modal')
+            .on('hidden.bs.modal', _.bind(this._handleCloseDialog, this));
+    },
+    _handleCloseDialog: function () {
+        var curRoute = Backbone.history.fragment,
+            routeParts = girder.dialogs.splitRoute(curRoute),
+            queryString = girder.parseQueryString(routeParts.name);
+        delete queryString.dialog;
+        var unparsedQueryString = $.param(queryString);
+        if (unparsedQueryString.length > 0) {
+            unparsedQueryString = '?' + unparsedQueryString;
+        }
+        histomicstk.router.navigate(routeParts.base + unparsedQueryString, {
+            replace: true
+        });
     }
 });

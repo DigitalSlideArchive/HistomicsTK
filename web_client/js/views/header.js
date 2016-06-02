@@ -4,7 +4,7 @@ histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
     },
     initialize: function () {
         this.analyses = [];
-        girder.restRequest({path: 'HistomicsTK'})
+        girder.restRequest({path: 'HistomicsTK', error: null})
             .then(_.bind(function (data) {
                 this.analyses = data;
                 this.render();

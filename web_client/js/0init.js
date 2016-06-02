@@ -7,8 +7,12 @@ _.extend(histomicstk, {
     models: {},
     collections: {},
     views: {},
-    router: new Backbone.Router(),
-    events: _.clone(Backbone.Events)
+    router: new girder.Router(),
+    events: _.clone(Backbone.Events),
+    dialogs: {
+        login: girder.views.LoginView,
+        register: girder.views.RegisterView
+    }
 });
 
 (function () {
