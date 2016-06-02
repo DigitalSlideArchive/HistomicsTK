@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .BinaryMixtureCut import BinaryMixtureCut
+# from .BinaryMixtureCut import BinaryMixtureCut
 from .ChanVese import ChanVese
 from .cLoG import cLoG
 from .ColorConvolution import ColorConvolution
@@ -42,7 +42,7 @@ from .TilingSchedule import TilingSchedule
 
 __version__ = '0.1.0'
 
-__all__ = ('BinaryMixtureCut',
+__all__ = (  # 'BinaryMixtureCut',  # disable until pygco is deployed
            'ChanVese',
            'cLoG',
            'ColorConvolution',
