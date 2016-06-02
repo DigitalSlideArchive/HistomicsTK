@@ -108,7 +108,7 @@ def main(args):
 
         cur_bbox = {
             "type":        "rectangle",
-            "center":      objProps[i].centroid,
+            "center":      objProps[i].centroid + (0,),
             "width":       objProps[i].major_axis_length,
             "height":      objProps[i].minor_axis_length,
             "rotation":    objProps[i].orientation
