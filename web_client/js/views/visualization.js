@@ -34,13 +34,19 @@ histomicstk.views.Visualization = girder.View.extend({
         $(window).resize(this._onResize);
 
         this.listenTo(this._controlModel, 'change:value', function (model) {
+            if (!model.get('value')) {
+                return;
+            }
+
             var id = model.get('value').id;
             girder.restRequest({
                 path: 'item/' + id
             })
             .then(_.bind(function (item) {
-                item = new girder.models.ItemModel(item);
-                return this.addItem(item);
+                this._controlModel.get('value').set(item);
+                this._controlView.render();
+                histomicstk.router.setQuery('image', id);
+                return this.addItem(this._controlModel.get('value'));
             }, this))
             .fail(_.bind(function () {
                 var info = {
@@ -51,8 +57,18 @@ histomicstk.views.Visualization = girder.View.extend({
                 };
                 girder.events.trigger('g:alert', info);
                 this._controlView.invalid();
+                histomicstk.router.setQuery('image', null, {replace: true});
             }, this));
         });
+
+        this.listenTo(histomicstk.events, 'query', _.bind(function (query) {
+            if (query && query.image) {
+                this._controlModel.set('value', new girder.models.ItemModel({_id: query.image}));
+            } else {
+                this.removeItem();
+                this._controlModel.set('value', null);
+            }
+        }, this));
 
         // fallback to canvas renderer rather than dom
         geo.gl.vglRenderer.fallback = function () {return 'canvas';};
@@ -211,6 +227,14 @@ histomicstk.views.Visualization = girder.View.extend({
         this._layers.push(layer);
         this._map.draw();
         return quad;
+    },
+
+    removeItem: function () {
+        if (this._map) {
+            this._map.exit();
+            this._map = null;
+            this.$('.h-visualization-body').empty();
+        }
     },
 
     /**
