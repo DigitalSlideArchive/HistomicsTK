@@ -66,16 +66,6 @@ histomicstk.App = girder.App.extend({
             .on('hidden.bs.modal', _.bind(this._handleCloseDialog, this));
     },
     _handleCloseDialog: function () {
-        var curRoute = Backbone.history.fragment,
-            routeParts = girder.dialogs.splitRoute(curRoute),
-            queryString = girder.parseQueryString(routeParts.name);
-        delete queryString.dialog;
-        var unparsedQueryString = $.param(queryString);
-        if (unparsedQueryString.length > 0) {
-            unparsedQueryString = '?' + unparsedQueryString;
-        }
-        histomicstk.router.navigate(routeParts.base + unparsedQueryString, {
-            replace: true
-        });
+        histomicstk.router.setQuery('dialog', null, {replace: true});
     }
 });

@@ -7,7 +7,23 @@ _.extend(histomicstk, {
     models: {},
     collections: {},
     views: {},
-    router: new girder.Router(),
+    router: new (girder.Router.extend({
+        setQuery: function (name, value, options) {
+            var curRoute = Backbone.history.fragment,
+                routeParts = girder.dialogs.splitRoute(curRoute),
+                queryString = girder.parseQueryString(routeParts.name);
+            if (value === undefined || value === null) {
+                delete queryString[name];
+            } else {
+                queryString[name] = value;
+            }
+            var unparsedQueryString = $.param(queryString);
+            if (unparsedQueryString.length > 0) {
+                unparsedQueryString = '?' + unparsedQueryString;
+            }
+            this.navigate(routeParts.base + unparsedQueryString, options);
+        }
+    }))(),
     events: _.clone(Backbone.Events),
     dialogs: {
         login: girder.views.LoginView,

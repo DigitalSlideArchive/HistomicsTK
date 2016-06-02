@@ -1,6 +1,9 @@
 histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
     events: {
-        'click #g-analysis-menu a': '_selectAnalysis'
+        'click #g-analysis-menu a': '_selectAnalysis',
+        'click .g-register': '_register',
+        'click .g-login': '_login',
+        'click .g-logout': '_logout'
     },
     initialize: function () {
         this.analyses = [];
@@ -9,6 +12,10 @@ histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
                 this.analyses = data;
                 this.render();
             }, this));
+
+        this.listenTo(girder.events, 'g:login', this.render);
+        this.listenTo(girder.events, 'g:login-changed', this.render);
+        this.listenTo(girder.events, 'g:logout', this.render);
     },
     render: function () {
         this.$el.html(histomicstk.templates.header({
@@ -20,5 +27,17 @@ histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
     _selectAnalysis: function (evt) {
         var name = $(evt.currentTarget).data('name');
         histomicstk.router.navigate(name, {trigger: true});
+    },
+    _register: function (evt) {
+        histomicstk.router.setQuery('dialog', 'register', {trigger: true});
+        evt.preventDefault();
+    },
+    _login: function (evt) {
+        histomicstk.router.setQuery('dialog', 'login', {trigger: true});
+        evt.preventDefault();
+    },
+    _logout: function (evt) {
+        girder.logout();
+        evt.preventDefault();
     }
 });
