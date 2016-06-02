@@ -6,7 +6,10 @@ cache:
     directories:
         - $HOME/.cache
 
-sudo: false
+sudo: required
+
+services:
+  - docker
 
 compiler:
     - gcc
