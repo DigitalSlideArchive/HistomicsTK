@@ -17,6 +17,9 @@ histomicstk.views.Visualization = girder.View.extend({
             parentView: this
         });
 
+        // extra scaling factor to handle images that are not powers of 2 in size
+        this._unitsPerPixel = 1;
+
         // prebind the onResize method so we can remove it on destroy
         this._onResize = _.bind(this._onResize, this);
 
@@ -96,6 +99,7 @@ histomicstk.views.Visualization = girder.View.extend({
             discreteZoom: false,
             interactor: interactor
         });
+        window.map = this._map;
 
         this._syncViewport();
         this._map.geoOn(geo.event.pan, _.bind(this._syncViewport, this));
@@ -272,6 +276,7 @@ histomicstk.views.Visualization = girder.View.extend({
             bottom: opts.sizeY - 1
         });
         layer = this._map.createLayer('osm', opts);
+        this._unitsPerPixel = this._map.unitsPerPixel(opts.maxLevel - 1);
         this._layers.push(layer);
         this._map.draw();
         return layer;
@@ -345,11 +350,11 @@ histomicstk.views.Visualization = girder.View.extend({
         bds = this._map.bounds(undefined, null);
 
         this.viewport.set({
-            scale: (bds.right - bds.left) / this.viewport.get('width')
+            scale: (bds.right - bds.left) / (this.viewport.get('width') * this._unitsPerPixel)
         });
         this.viewport.set({
-            top: -bds.top,
-            left: bds.left
+            top: -bds.top / this._unitsPerPixel,
+            left: bds.left / this._unitsPerPixel
         });
     },
 
