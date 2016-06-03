@@ -1,5 +1,6 @@
 from ctk_cli import CLIArgumentParser
 import histomicstk as htk
+import matplotlib.pyplot as plt
 import numpy as np
 import json
 import scipy as sp
@@ -116,6 +117,7 @@ def main(args):
             "center":      c,
             "width":       width,
             "height":      height,
+            "rotation":    0
         }
 
         annotation["elements"].append(cur_bbox)
