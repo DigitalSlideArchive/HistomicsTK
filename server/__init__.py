@@ -21,5 +21,5 @@ def load(info):
 
     genRESTEndPointsForSlicerCLIsInDocker(
         info, 'HistomicsTK',
-        'dsarchive/histomicstk:v0.1.2'
+        'dsarchive/histomicstk:v0.1.1'
     )
