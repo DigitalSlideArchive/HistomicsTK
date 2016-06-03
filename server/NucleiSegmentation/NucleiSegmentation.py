@@ -1,6 +1,5 @@
 from ctk_cli import CLIArgumentParser
 import histomicstk as htk
-import matplotlib.pyplot as plt
 import numpy as np
 import json
 import scipy as sp
