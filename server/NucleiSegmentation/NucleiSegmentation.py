@@ -116,6 +116,7 @@ def main(args):
             "center":      c,
             "width":       width,
             "height":      height,
+            "rotation":    0
         }
 
         annotation["elements"].append(cur_bbox)
