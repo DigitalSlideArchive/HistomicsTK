@@ -2,6 +2,7 @@ from ctk_cli import CLIArgumentParser
 import histomicstk as htk
 import numpy as np
 import json
+import os
 import scipy as sp
 import skimage.io
 import skimage.measure
@@ -17,6 +18,10 @@ stainColorMap = {
 }
 
 
+def read_image(file):
+    return skimage.io.imread(file)[:, :, :3]
+
+
 def main(args):
 
     #
@@ -24,8 +29,22 @@ def main(args):
     #
     print('>> Reading input image')
 
-    imInput = skimage.io.imread(args.inputImageFile)[:, :, :3]
+    imInput = None
+    imageFile = args.inputImageFile
+    if os.path.isdir(imageFile):
+        dir = imageFile
+        for file in os.listdir(dir):
+            imageFile = os.path.join(dir, file)
+            try:
+                imInput = read_image(imageFile)
+                break
+            except Exception:
+                print('>> Could not open %s' % imageFile)
+    else:
+        imInput = read_image(imageFile)
 
+    if imInput is None:
+        raise Exception('No image could be opened in %s' % dir)
     #
     # Perform color normalization
     #
