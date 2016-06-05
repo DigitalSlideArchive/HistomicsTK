@@ -6,6 +6,7 @@ from .cLoG import cLoG
 from .ColorConvolution import ColorConvolution
 from .ColorDeconvolution import ColorDeconvolution
 from .ComplementStainMatrix import ComplementStainMatrix
+from .ComputeHaralickFeatures import ComputeHaralickFeatures
 from .CondenseLabel import CondenseLabel
 from .ConvertSchedule import ConvertSchedule
 from .Del2 import Del2
