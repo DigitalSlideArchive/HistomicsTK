@@ -122,9 +122,9 @@ def ComputeHaralickFeatures(I, Dst=1, A=15, Ng=256):
         H[:13] = np.mean(f, axis=1)
         H[13:26] = np.ptp(f, axis=1)
 
-        ListofFeatures = ['ASM', 'Contrast', 'Correlation', 'SumofSquar', \
-            'IDM', 'SumAverage', 'SumVariance', 'SumEntropy', \
-            'Entropy', 'Variance', 'DifferenceEntropy', 'IMC1', 'IMC2']
+        ListofFeatures = ['ASM', 'Contrast', 'Correlation', 'SumofSquar',
+         'IDM', 'SumAverage', 'SumVariance', 'SumEntropy', 'Entropy',
+         'Variance', 'DifferenceEntropy', 'IMC1', 'IMC2']
 
         for i in range(0, 13):
             df[ListofFeatures[i] + 'Mean'] = [H[i]]
