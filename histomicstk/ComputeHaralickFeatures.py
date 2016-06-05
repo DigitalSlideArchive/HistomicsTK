@@ -1,5 +1,6 @@
-import skimage.feature
 import numpy as np
+import pandas as pd
+import skimage.feature
 
 
 def ComputeHaralickFeatures(I, Dst=1, A=15, Ng=256):
@@ -22,8 +23,8 @@ def ComputeHaralickFeatures(I, Dst=1, A=15, Ng=256):
         Number of gray level co-occurance matrix. Default value = 256.
     Returns
     -------
-    H : array_like
-        A matrix containing mean and ranges for 26 features
+    df : 2-dimensional labeled data structure, float64
+        Pandas data frame.
     References
     ----------
     .. [1] Haralick, et al. "Textural features for image classification,"
@@ -32,25 +33,27 @@ def ComputeHaralickFeatures(I, Dst=1, A=15, Ng=256):
     .. [2] Luis Pedro Coelho. "Mahotas: Open source software for scriptable
     computer vision," Journal of Open Research Software, vol 1, 2013.
     """
-    # initialize return value H
-    H = np.zeros(26)
+    # initialize panda dataframe
+    df = pd.DataFrame()
     # check if angles are in 0 45 90 135
     if A > 0 and A < 16:
         # sets 4 angles
-        Angles = [0, np.pi/4, np.pi/2, 3*np.pi/4]
+        Angles = [3*np.pi/4, np.pi/2, np.pi/4, 0]
         # computes index of angles
-        IndexofAngles = np.where(list(bin(A))[2:])[0]
+        IndexofAngles = list(bin(A))[2:]
         newAngles = []
-        for i in IndexofAngles:
-            newAngles = np.append(newAngles, Angles[i])
+        for i in range(0, len(Angles)):
+            if IndexofAngles[i] == '1':
+                newAngles = np.append(newAngles, Angles[i])
         # gets GLCM or gray-tone spatial dependence matrix
         P_ij = skimage.feature.greycomatrix(
             I, [Dst], newAngles, symmetric=True, levels=Ng
         )
         # initialize a feature set for 13 features
-        f = np.zeros((13, IndexofAngles.size))
-
-        for r in range(0, IndexofAngles.size):
+        f = np.zeros((13, len(newAngles)))
+        # initialize H for 26 features
+        H = np.zeros(26)
+        for r in range(0, len(newAngles)):
             # gets sum of array for each angle
             R = np.sum(P_ij[:, :, 0, r], dtype=np.float)
             # gets normalized gray-tone spatial dependence matrix
@@ -119,4 +122,12 @@ def ComputeHaralickFeatures(I, Dst=1, A=15, Ng=256):
         H[:13] = np.mean(f, axis=1)
         H[13:26] = np.ptp(f, axis=1)
 
-    return H
+        ListofFeatures = ['ASM', 'Contrast', 'Correlation', 'SumofSquar',
+            'IDM', 'SumAverage', 'SumVariance', 'SumEntropy',
+            'Entropy', 'Variance', 'DifferenceEntropy', 'IMC1', 'IMC2']
+
+        for i in range(0, 13):
+            df[ListofFeatures[i] + 'Mean'] = [H[i]]
+            df[ListofFeatures[i] + 'Range'] = H[i+13]
+
+    return df
