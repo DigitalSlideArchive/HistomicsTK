@@ -1,8 +1,10 @@
 import os
 
+from girder import events
 from girder.utility.webroot import Webroot
 
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDocker
+from .handlers import process_annotations
 
 _template = os.path.join(
     os.path.dirname(__file__),
@@ -21,5 +23,7 @@ def load(info):
 
     genRESTEndPointsForSlicerCLIsInDocker(
         info, 'HistomicsTK',
-        'dsarchive/histomicstk:v0.1.2'
+        'jbeezley/histomicstk'
     )
+
+    events.bind('data.process', 'HistomicsTK', process_annotations)
