@@ -43,6 +43,9 @@ RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     conda clean -i -l -t -y && \
     rm -rf /root/.cache/pip/*
 
+# pregenerate font cache
+RUN python -c "from matplotlib import pylab"
+
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server
 ENTRYPOINT ["/build/miniconda/bin/python", "cli_list_entrypoint.py"]
