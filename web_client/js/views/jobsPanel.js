@@ -23,6 +23,13 @@ histomicstk.views.JobsPanel = histomicstk.views.Panel.extend({
                     triggerJobClick: true,
                     parentView: this
                 });
+                this.listenTo(this._jobsListWidget, 'g:jobClicked', function (job) {
+                    // when clicking on a job open to girder's job view in a new window
+                    window.open(
+                        '/#job/' + job.id,
+                        '_blank'
+                    );
+                });
             }
             this._jobsListWidget.setElement(this.$('.h-panel-content')).render();
         }
