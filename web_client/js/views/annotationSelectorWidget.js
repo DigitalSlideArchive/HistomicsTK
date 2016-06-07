@@ -2,6 +2,13 @@ histomicstk.views.AnnotationSelectorWidget = histomicstk.views.Panel.extend({
     events: _.extend(histomicstk.views.Panel.prototype.events, {
         'click .h-annotation > span': 'toggleAnnotation'
     }),
+    initialize: function () {
+        this.listenTo(girder.eventStream, 'g:event.job_status', function (evt) {
+            if (evt.data.status > 2) {
+                this.collection.fetch();
+            }
+        });
+    },
     setItem: function (item) {
         if (this.collection) {
             this.stopListening(this.collection);
