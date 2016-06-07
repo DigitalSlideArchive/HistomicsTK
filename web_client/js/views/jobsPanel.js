@@ -6,6 +6,9 @@ histomicstk.views.JobsPanel = histomicstk.views.Panel.extend({
     }),
     initialize: function (settings) {
         this.spec = settings.spec;
+        this.listenTo(histomicstk.events, 'h:submit', function () {
+            this._jobsListWidget.collection.fetch(undefined, true);
+        });
     },
     render: function () {
         var CE = girder.views.jobs_JobListWidget.prototype.columnEnum;

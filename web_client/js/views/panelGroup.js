@@ -62,7 +62,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
         params = this.parameters();
         _.each(params, function (value, key) {
             if (_.isArray(value)) {
-                params[key] = JSON.stringify(value)
+                params[key] = JSON.stringify(value);
             }
         });
 
@@ -78,6 +78,8 @@ histomicstk.views.PanelGroup = girder.View.extend({
             path: 'HistomicsTK/' + this._schemaName + '/run',
             type: 'POST',
             data: params
+        }).then(function (data) {
+            histomicstk.events.trigger('h:submit', data);
         });
     },
 
@@ -103,7 +105,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
         modelFilter = modelFilter || function () { return true; };
         return _.chain(this._panelViews)
             .filter(function (v, i) {
-                return panelId === undefined || panelId === i
+                return panelId === undefined || panelId === i;
             })
             .pluck('collection')
             .pluck('models')
