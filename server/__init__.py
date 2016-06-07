@@ -23,7 +23,7 @@ def load(info):
 
     genRESTEndPointsForSlicerCLIsInDocker(
         info, 'HistomicsTK',
-        'jbeezley/histomicstk'
+        'dsarchive/histomicstk:v0.1.3'
     )
 
     events.bind('data.process', 'HistomicsTK', process_annotations)

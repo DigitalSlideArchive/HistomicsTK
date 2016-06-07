@@ -135,7 +135,10 @@ def main(args):
             "center":      c,
             "width":       width,
             "height":      height,
-            "rotation":    0
+            "rotation":    0,
+            "fillColor":   "rgba(255, 255, 255, 0)",
+            "lineWidth":   2,
+            "lineColor":   "rgb(34, 139, 34)"
         }
 
         annotation["elements"].append(cur_bbox)
