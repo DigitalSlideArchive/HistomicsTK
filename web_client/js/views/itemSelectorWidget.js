@@ -36,7 +36,7 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
         });
 
         if (this.model.get('type') === 'directory') {
-            path = _.initial(path)
+            path = _.initial(path);
         }
         return path;
     },
@@ -48,6 +48,7 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
                 value: item
             });
             this.trigger('g:saved');
+            this.$el.modal('hide');
         }
     },
 
@@ -97,5 +98,6 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
                 break;
         }
         this.trigger('g:saved');
+        this.$el.modal('hide');
     }
 });
