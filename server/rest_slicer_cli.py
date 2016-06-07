@@ -2,7 +2,6 @@ import os
 import sys
 import json
 import subprocess
-import pprint
 from ctk_cli import CLIModule
 
 from girder.api.rest import Resource, loadmodel, boundHandler
@@ -335,7 +334,7 @@ def _createInputParamBindingSpec(param, hargs, token):
     return curBindingSpec
 
 
-def _createOutputParamBindingSpec(param, hargs, token):
+def _createOutputParamBindingSpec(param, hargs, user, token):
 
     curBindingSpec = wutils.girderOutputSpec(
         hargs[param.name],
@@ -343,6 +342,22 @@ def _createOutputParamBindingSpec(param, hargs, token):
         name=hargs['params'][param.name + _girderOutputNameSuffix],
         dataType='string', dataFormat='string'
     )
+
+    if param.isExternalType() and param.reference is not None:
+
+        if param.reference not in hargs:
+            raise Exception(
+                'Error: The specified reference attribute value'
+                '%s for parameter %s is not a valid input' % (
+                    param.reference, param.name)
+            )
+
+        curBindingSpec['reference'] = json.dumps(
+            {
+                'itemId': str(hargs[param.reference]['_id']),
+                'userId': str(user['_id'])
+            }
+        )
 
     return curBindingSpec
 
@@ -353,10 +368,12 @@ def _addIndexedInputParamBindings(index_input_params, bspec, hargs, token):
         bspec[param.name] = _createInputParamBindingSpec(param, hargs, token)
 
 
-def _addIndexedOutputParamBindings(index_output_params, bspec, hargs, token):
+def _addIndexedOutputParamBindings(index_output_params,
+                                   bspec, hargs, user, token):
 
     for param in index_output_params:
-        bspec[param.name] = _createOutputParamBindingSpec(param, hargs, token)
+        bspec[param.name] = _createOutputParamBindingSpec(
+            param, hargs, user, token)
 
 
 def _addOptionalInputParamBindings(opt_input_params, bspec, hargs, user, token):
@@ -398,7 +415,8 @@ def _addOptionalOutputParamBindings(opt_output_params,
                                           level=AccessType.WRITE,
                                           user=user)
 
-        bspec[param.name] = _createOutputParamBindingSpec(param, hargs, token)
+        bspec[param.name] = _createOutputParamBindingSpec(param, hargs,
+                                                          user, token)
 
 
 def _addReturnParameterFileBinding(bspec, hargs, user, token):
@@ -435,7 +453,7 @@ def _getParamCommandLineValue(param, value):
     if param.isVector():
         cmdVal = '%s' % ', '.join(map(str, json.loads(value)))
     else:
-        cmdVal = str(value)
+        cmdVal = str(json.loads(value))
 
     return cmdVal
 
@@ -455,8 +473,16 @@ def _addOptionalInputParamsToContainerArgs(opt_input_params,
         if _is_on_girder(param) and param.name in hargs:
             curValue = hargs[param.name]
         elif param.name in hargs['params']:
-            curValue = _getParamCommandLineValue(param,
-                                                 hargs['params'][param.name])
+            try:
+                curValue = _getParamCommandLineValue(
+                    param, hargs['params'][param.name])
+            except Exception as e:
+                print 'Error: Parameter value is not in json.dumps format'
+                print '  Parameter name =', param.name
+                print '  Parameter type =', param.typ
+                print '  Value passed =', hargs['params'][param.name]
+                print e
+                raise
         else:
             continue
 
@@ -680,7 +706,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
                                       kwargs['inputs'], hargs, token)
 
         _addIndexedOutputParamBindings(index_output_params,
-                                       kwargs['outputs'], hargs, token)
+                                       kwargs['outputs'], hargs, user, token)
 
         _addOptionalInputParamBindings(opt_input_params,
                                        kwargs['inputs'], hargs, user, token)
@@ -707,8 +733,6 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
                                          containerArgs, hargs)
 
         taskSpec['container_args'] = containerArgs
-
-        pprint.pprint(kwargs)
 
         # schedule job
         job['kwargs'] = kwargs
@@ -845,7 +869,7 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
         cliListSpec = subprocess.check_output(['docker', 'run',
                                                dimg, '--list_cli'])
 
-        pprint.pprint(cliListSpec)
+        # pprint.pprint(cliListSpec)
 
         cliListSpec = json.loads(cliListSpec)
 
@@ -905,9 +929,6 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
     getCLIListHandlerName = 'get_cli_list'
     setattr(restResource, getCLIListHandlerName, getCLIListHandler)
     restResource.route('GET', (), getattr(restResource, getCLIListHandlerName))
-
-    print type(restResource).__name__
-    print cliList
 
     # expose the generated REST resource via apiRoot
     setattr(info['apiRoot'], restResourceName, restResource)

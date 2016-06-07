@@ -7,6 +7,10 @@
     "type"    : "python"
   },
 
+  "NucleiSegmentation": {
+    "type"    : "python"
+  },
+
   "SparseColorDeconvolution": {
     "type"    : "python"
   }
