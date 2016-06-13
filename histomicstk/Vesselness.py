@@ -43,7 +43,7 @@ def Vesselness(I, Sigma):
     E, V1, V2 = Eigenvalues(H)
 
     # compute blobness measures
-    Deviation = E[:, :, 0]/(E[:, :, 1]+np.spacing(1))
+    Deviation = E[:, :, 0]/(E[:, :, 1] + np.spacing(1))
     Frobenius = np.sqrt(E[:, :, 0]**2 + E[:, :, 1]**2)
 
     # calculate angles for 'Theta'
