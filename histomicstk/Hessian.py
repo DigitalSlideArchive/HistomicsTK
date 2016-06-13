@@ -39,7 +39,7 @@ def Hessian(I, Sigma):
 
     # format output
     H = np.concatenate(
-        (dxx[:, :, None], dxy[:, :, None], dxy[:, :, None], dyy[:, :, None]), 
+        (dxx[:, :, None], dxy[:, :, None], dxy[:, :, None], dyy[:, :, None]),
         axis=2
     )
 
