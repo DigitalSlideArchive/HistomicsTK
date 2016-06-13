@@ -26,9 +26,9 @@ def Hessian(I, Sigma):
     x, y = np.mgrid[-h:k, -h:k]
 
     # generate kernels
-    gxx = 1./(2*np.pi*Sigma**4)*((x/Sigma)**2-1)* \
+    gxx = 1./(2*np.pi*Sigma**4)*((x/Sigma)**2-1) * \
         np.exp(-(x**2+y**2)/(2*Sigma**2))
-    gxy = 1./(2*np.pi*Sigma**6)*np.multiply(x, y)* \
+    gxy = 1./(2*np.pi*Sigma**6)*np.multiply(x, y) * \
         np.exp(-(x**2+y**2)/(2*Sigma**2))
     gyy = np.transpose(gxx)
 
@@ -38,7 +38,9 @@ def Hessian(I, Sigma):
     dyy = convolve(I, gyy, mode='constant')
 
     # format output
-    H = np.concatenate((dxx[:, :, None], dxy[:, :, None], \
-        dxy[:, :, None], dyy[:, :, None]), axis=2)
+    H = np.concatenate(
+        (dxx[:, :, None], dxy[:, :, None], dxy[:, :, None], dyy[:, :, None]), 
+        axis=2
+    )
 
     return H
