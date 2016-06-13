@@ -46,8 +46,8 @@ def Eigenvalues(H):
         V1[:, :, 0] = np.true_divide(V1[:, :, 0], norms)
         V1[:, :, 1] = np.true_divide(V1[:, :, 1], norms)
         # check -inf inf NaN
-        V1[:, :, 0][ ~ np.isfinite(V1[:, :, 0])] = 0
-        V1[:, :, 1][ ~ np.isfinite(V1[:, :, 1])] = 0
+        V1[:, :, 0][~np.isfinite(V1[:, :, 0])] = 0
+        V1[:, :, 1][~np.isfinite(V1[:, :, 1])] = 0
     V2[:, :, 0] = -V1[:, :, 1]
     V2[:, :, 1] = V1[:, :, 0]
 
