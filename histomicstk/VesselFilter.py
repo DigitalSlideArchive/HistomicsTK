@@ -38,7 +38,7 @@ def VesselFilter(I, Sigmas, Beta=0.5, C=5):
     # convert image to double if necessary
     if np.issubdtype(I.dtype, np.uint8):
         I = I.astype('double')
-    else :
+    else:
         I = I/I.max()
 
     # initialize filter response, angles
@@ -51,7 +51,7 @@ def VesselFilter(I, Sigmas, Beta=0.5, C=5):
         Deviation, Frobenius, E, Thetas[:, :, i] = Vesselness(I, Sigmas[i])
         # combine deviation and curvature into single score
         R = np.exp(-0.5*(Deviation/Beta)**2) * \
-            (np.ones((M,N))-np.exp(-0.5*(Frobenius/C)**2))
+            (np.ones((M, N))-np.exp(-0.5*(Frobenius/C)**2))
         # clear response where lambda_2 > 0
         R[np.where(E[:, :, 1] < 0)] = 0
         Response[:, :, i] = R
