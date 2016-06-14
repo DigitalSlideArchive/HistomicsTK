@@ -41,6 +41,7 @@ from .SimpleMask import SimpleMask
 from .SparseColorDeconvolution import SparseColorDeconvolution
 from .SubmitTorque import SubmitTorque
 from .TilingSchedule import TilingSchedule
+from .VesselFilter import VesselFilter
 from .Vesselness import Vesselness
 
 __version__ = '0.1.0'
@@ -86,4 +87,5 @@ __all__ = ('ChanVese',
            'SparseColorDeconvolution',
            'SubmitTorque',
            'TilingSchedule',
+           'VesselFilter',
            'Vesselness')
