@@ -10,6 +10,7 @@ from .CondenseLabel import CondenseLabel
 from .ConvertSchedule import ConvertSchedule
 from .Del2 import Del2
 from .DregEdge import DregEdge
+from .Eigenvalues import Eigenvalues
 from .EmbedBounds import EmbedBounds
 from .EstimateVariance import EstimateVariance
 from .FeatureExtraction import FeatureExtraction
@@ -20,6 +21,7 @@ from .gLoG import gLoG
 from .GradientDiffusion import GradientDiffusion
 from .GradientFlow import GradientFlow
 from .GraphColorSequential import GraphColorSequential
+from .Hessian import Hessian
 from .LabelPerimeter import LabelPerimeter
 from .LabelRegionAdjacency import LabelRegionAdjacency
 from .MaxClustering import MaxClustering
@@ -39,6 +41,7 @@ from .SimpleMask import SimpleMask
 from .SparseColorDeconvolution import SparseColorDeconvolution
 from .SubmitTorque import SubmitTorque
 from .TilingSchedule import TilingSchedule
+from .Vesselness import Vesselness
 
 __version__ = '0.1.0'
 
@@ -52,6 +55,7 @@ __all__ = ('ChanVese',
            'ConvertSchedule',
            'Del2',
            'DregEdge',
+           'Eigenvalues',
            'EmbedBounds',
            'EstimateVariance',
            'FeatureExtraction',
@@ -62,6 +66,7 @@ __all__ = ('ChanVese',
            'gLoG',
            'GradientDiffusion',
            'GradientFlow',
+           'Hessian',
            'LabelPerimeter',
            'LabelRegionAdjacency',
            'MaxClustering',
@@ -80,4 +85,5 @@ __all__ = ('ChanVese',
            'SimpleMask',
            'SparseColorDeconvolution',
            'SubmitTorque',
-           'TilingSchedule')
+           'TilingSchedule',
+           'Vesselness')
