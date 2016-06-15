@@ -3,9 +3,9 @@ import numpy as np
 from Vesselness import Vesselness
 
 
-def VesselFilter(I, Sigmas, Beta=0.5, C=5):
+def MembraneFilter(I, Sigmas, Beta=0.5, C=5):
     """
-    Implements a vessel-detecting filter using eigenvalue analysis of
+    Implements a membrane-detecting filter using eigenvalue analysis of
     scale-space blur image Hessians.
 
     Parameters
