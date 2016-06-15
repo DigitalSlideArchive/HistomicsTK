@@ -25,6 +25,7 @@ from .Hessian import Hessian
 from .LabelPerimeter import LabelPerimeter
 from .LabelRegionAdjacency import LabelRegionAdjacency
 from .MaxClustering import MaxClustering
+from .MembraneFilter import MembraneFilter
 from .MergeColinear import MergeColinear
 from .MergeSinks import MergeSinks
 from .OpticalDensityFwd import OpticalDensityFwd
@@ -41,7 +42,6 @@ from .SimpleMask import SimpleMask
 from .SparseColorDeconvolution import SparseColorDeconvolution
 from .SubmitTorque import SubmitTorque
 from .TilingSchedule import TilingSchedule
-from .VesselFilter import VesselFilter
 from .Vesselness import Vesselness
 
 __version__ = '0.1.0'
@@ -71,6 +71,7 @@ __all__ = ('ChanVese',
            'LabelPerimeter',
            'LabelRegionAdjacency',
            'MaxClustering',
+           'MembraneFilter',
            'MergeColinear',
            'MergeSinks',
            'OpticalDensityFwd',
@@ -87,5 +88,4 @@ __all__ = ('ChanVese',
            'SparseColorDeconvolution',
            'SubmitTorque',
            'TilingSchedule',
-           'VesselFilter',
            'Vesselness')
