@@ -1,6 +1,6 @@
 import numpy as np
 
-from Vesselness import Vesselness
+from Membraneness import Membraneness
 
 
 def MembraneFilter(I, Sigmas, Beta=0.5, C=5):
@@ -26,9 +26,9 @@ def MembraneFilter(I, Sigmas, Beta=0.5, C=5):
     Returns
     -------
     Response : array_like
-        M x N intensity image of vessel filter response.
+        M x N intensity image of membrane filter response.
     Thetas : array_like
-        M x N image of vessel parallel angles in radians.
+        M x N image of membrane parallel angles in radians.
     """
 
     # get size of input image 'I'
@@ -48,7 +48,7 @@ def MembraneFilter(I, Sigmas, Beta=0.5, C=5):
     # calculate blob score at multiple scales
     for i in range(0, len(Sigmas)):
         # blob score
-        Deviation, Frobenius, E, Thetas[:, :, i] = Vesselness(I, Sigmas[i])
+        Deviation, Frobenius, E, Thetas[:, :, i] = Membraneness(I, Sigmas[i])
         # combine deviation and curvature into single score
         R = np.exp(-0.5*(Deviation/Beta)**2) * \
             (np.ones((M, N))-np.exp(-0.5*(Frobenius/C)**2))
