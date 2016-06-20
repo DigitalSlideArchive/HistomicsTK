@@ -48,15 +48,14 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.extlinks',
               'sphinx.ext.doctest']
 
-autodoc_mock_imports = ['numpy',
-                        'scipy', 'scipy.stats', 'scipy.optimize',
-                        'scipy.ndimage.morphology', 'scipy.ndimage.filters',
-                        'scipy.signal',
-                        'nimfa',
-                        'matplotlib', 'matplotlib.pyplot',
+autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
+                        'nimfa', 'numpy',
+                        'openslide', 'pandas',
+                        'scipy',
+                        'scipy.ndimage.morphology','scipy.ndimage.filters',
+                        'scipy.optimize', 'scipy.signal', 'scipy.stats',
                         'skimage',
-                        'sklearn.neighbors.kde', 'sklearn.cluster',
-                        'openslide']
+                        'sklearn.cluster', 'sklearn.neighbors.kde']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
