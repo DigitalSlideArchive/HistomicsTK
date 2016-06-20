@@ -39,8 +39,8 @@ def PoissonMixture(I, Mu=None, InitialTau=None, Tol=0.1):
     References
     ----------
     .. [1] Y. Al-Kofahi et al "Improved Automatic Detection and Segmentation
-    of Cell Nuclei in Histopathology Images" in IEEE Transactions on Biomedical
-    Engineering,vol.57,no.4,pp.847-52, 2010.
+           of Cell Nuclei in Histopathology Images" in IEEE Transactions on
+           Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.
     """
 
     # check if intensity values in 'I' are integer type

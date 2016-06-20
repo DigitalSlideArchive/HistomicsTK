@@ -49,7 +49,7 @@ def GradientDiffusion(dX, dY, Mask, Mu=5, Lambda=5, Iterations=10,
     References
     ----------
     .. [1] G. Li et al "3D cell nuclei segmentation based on gradient flow
-    tracking" in BMC Cell Biology,vol.40,no.8, 2007.
+           tracking" in BMC Cell Biology,vol.40,no.8, 2007.
     """
 
     # initialize solution
