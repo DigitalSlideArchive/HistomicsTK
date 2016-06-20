@@ -49,10 +49,11 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.doctest']
 
 autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
-                        'nimfa', 'numpy',
+                        'nimfa',
                         'openslide', 'pandas',
                         'scipy',
                         'scipy.ndimage.morphology','scipy.ndimage.filters',
+                        'scipy.ndimage.measurements',
                         'scipy.optimize', 'scipy.signal', 'scipy.stats',
                         'skimage', 'skimage.feature', 'skimage.measure',
                         'skimage.segmentation', 'skimage.morphology',
