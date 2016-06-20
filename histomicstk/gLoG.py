@@ -2,8 +2,9 @@ import numpy as np
 import scipy.ndimage as ndi
 from skimage import morphology
 
+DEFAULT_RANGE = np.linspace(1.5, 3, np.round((3-1.5)/0.2)+1)
 
-def gLoG(I, Alpha=1, Range=np.linspace(1.5, 3, np.round((3-1.5)/0.2)+1),
+def gLoG(I, Alpha=1, Range=DEFAULT_RANGE,
          Theta=np.pi/4, Tau=0.6, Eps=0.6):
     """Performs generalized Laplacian of Gaussian blob detection.
 
