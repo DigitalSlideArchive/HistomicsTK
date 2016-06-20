@@ -54,7 +54,7 @@ autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
                         'scipy',
                         'scipy.ndimage.morphology','scipy.ndimage.filters',
                         'scipy.optimize', 'scipy.signal', 'scipy.stats',
-                        'skimage', 'skimage.feature',
+                        'skimage', 'skimage.feature', 'skimage.measure',
                         'sklearn.cluster', 'sklearn.neighbors.kde']
 
 # Add any paths that contain templates here, relative to this directory.
