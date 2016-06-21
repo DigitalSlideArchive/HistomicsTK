@@ -30,8 +30,8 @@ addons:
             # openslide
             - libopenjpeg-dev
             # pandoc for displaying jupyter notebook examples on ReadTheDocs
-            pandoc
-            pandoc-citeproc
+            - pandoc
+            - pandoc-citeproc
 
 before_install:
     - CACHE="$HOME/.cache" OPENSLIDE_VERSION="3.4.1" source .install-openslide.sh
