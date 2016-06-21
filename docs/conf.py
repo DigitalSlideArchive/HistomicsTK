@@ -46,7 +46,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
               'sphinx.ext.extlinks',
-              'sphinx.ext.doctest']
+              'sphinx.ext.doctest',
+              'nbsphinx']
 
 autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
                         'nimfa',
