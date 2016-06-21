@@ -38,8 +38,8 @@ def cLoG(I, Mask, SigmaMin=30*1.414, SigmaMax=50*1.414):
     References
     ----------
     .. [1] Y. Al-Kofahi et al "Improved Automatic Detection and Segmentation
-       of Cell Nuclei in Histopathology Images" in IEEE Transactions on Biomedical
-       Engineering,vol.57,no.4,pp.847-52, 2010.
+       of Cell Nuclei in Histopathology Images" in IEEE Transactions on
+       Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.
     """
 
     # convert intensity image type to float if needed
