@@ -9,6 +9,7 @@ HistomicsTK is a Python and REST API for the analysis of Histopathology images. 
    installation
    usage
    api-docs
+   examples
    contributing
    authors
    history
