@@ -39,14 +39,17 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.coverage',
+              'sphinx.ext.doctest',
+              'sphinx.ext.extlinks',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.mathjax',
               'sphinx.ext.napoleon',
               'sphinx.ext.todo',
-              'sphinx.ext.coverage',
-              'sphinx.ext.mathjax',
-              'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
-              'sphinx.ext.extlinks',
-              'sphinx.ext.doctest']
+              'IPython.sphinxext.ipython_console_highlighting',
+              'nbsphinx']
 
 autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
                         'nimfa',
@@ -96,7 +99,7 @@ release = version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -212,13 +215,13 @@ htmlhelp_basename = 'histomicstkdoc'
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    #'papersize': 'letterpaper',
+    'papersize': 'letterpaper',
 
     # The font size ('10pt', '11pt' or '12pt').
     #'pointsize': '10pt',
 
     # Additional stuff for the LaTeX preamble.
-    #'preamble': '',
+    'preamble': r'\usepackage{amsmath,amssymb}',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -290,3 +293,10 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {"http://docs.python.org/": None,
+                       "http://docs.scipy.org/doc/numpy/": None,
+                       "http://docs.scipy.org/doc/scipy/reference": None}
+intersphinx_cache_limit = 10     # days to keep the cached inventories
+

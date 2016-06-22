@@ -16,6 +16,7 @@ Integrating your algorithms into HistomicsTK and the Digital Slide Archive is ma
    installation
    usage
    api-docs
+   examples
    contributing
    authors
    history
