@@ -1,7 +1,13 @@
 name: histomicstk
 dependencies:
+- python=2.7.11
 - sphinx_rtd_theme
 - ipython
+- numpy
+- scikit-image
+- scipy
+- scikit-learn
+- pandas
 - pip:
   - sphinx
   - nbsphinx
