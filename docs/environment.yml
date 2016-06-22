@@ -1,0 +1,7 @@
+name: histomicstk
+dependencies:
+- sphinx_rtd_theme
+- ipython
+- pip:
+  - sphinx
+  - nbsphinx
