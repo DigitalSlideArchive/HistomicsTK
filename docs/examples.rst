@@ -4,6 +4,7 @@ Examples
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   examples/color-deconvolution.ipynb
    examples/nuclei-segmentation.ipynb
