@@ -6,7 +6,10 @@ cache:
     directories:
         - $HOME/.cache
 
-sudo: false
+sudo: required
+
+services:
+  - docker
 
 compiler:
     - gcc
@@ -26,27 +29,33 @@ addons:
             - libvips-tools
             # openslide
             - libopenjpeg-dev
+            # pandoc for displaying jupyter notebook examples on ReadTheDocs
+            - pandoc
+            - pandoc-citeproc
 
 before_install:
     - CACHE="$HOME/.cache" OPENSLIDE_VERSION="3.4.1" source .install-openslide.sh
 
+    - GIRDER_VERSION=c29e4db8fadf5b97f5fcd488e15353b09a9fd70f
+    - GIRDER_WORKER_VERSION=a572e2cd74ae30777f31999d5a136747190ddcb8
+    - LARGE_IMAGE_VERSION=8c9b9b7e7af0e6dc18a79d991e97ca7fed690a25
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path
 
     - girder_path=$build_path/girder
     - rm -fr $girder_path
-    - git clone https://github.com/girder/girder.git $girder_path && git -C $girder_path checkout 3428495f56830bb10f4ed5ee41cc917f22337457
+    - git clone https://github.com/girder/girder.git $girder_path && git -C $girder_path checkout $GIRDER_VERSION
     - ln -sf $main_path $girder_path/plugins/
     - ls -l $girder_path/plugins
 
     - girder_worker_path=$girder_path/plugins/girder_worker
-    - git clone https://github.com/girder/girder_worker.git $girder_worker_path && git -C $girder_worker_path checkout 4429c6e98b2b11d47edb43390571551ab2d36749
+    - git clone https://github.com/girder/girder_worker.git $girder_worker_path && git -C $girder_worker_path checkout $GIRDER_WORKER_VERSION
     - cp $PWD/plugin_tests/data/girder_worker.cfg $girder_worker_path/girder_worker/worker.local.cfg
     - pip install -U -r $girder_worker_path/requirements.txt -r $girder_worker_path/girder_worker/plugins/girder_io/requirements.txt
 
     - large_image_path=$girder_path/plugins/large_image
-    - git clone https://github.com/DigitalSlideArchive/large_image.git $large_image_path && git -C $large_image_path checkout d9331e7a5c6d3209a4805351e10051f6b6858641
+    - git clone https://github.com/DigitalSlideArchive/large_image.git $large_image_path && git -C $large_image_path checkout $LARGE_IMAGE_VERSION
 
     - export MONGO_VERSION=2.6.11
     - export PY_COVG="ON"
@@ -71,10 +80,9 @@ before_install:
     - conda config --add channels https://conda.binstar.org/cdeepakroy
 
 install:
-    - conda install --yes libgfortran==1.0 --file $main_path/requirements_c_conda.txt
     # https://github.com/pypa/pip/issues/2751
-    - conda install --yes --file $main_path/requirements.txt setuptools==19.4
-    - pip install -r $main_path/requirements_c.txt
+    - conda install --yes libgfortran==1.0 setuptools==19.4 --file $main_path/requirements_c_conda.txt
+    - pip install -r $main_path/requirements.txt -r $main_path/requirements_c.txt
     - cd $girder_path
     - pip install -U -r requirements.txt -r requirements-dev.txt -r $main_path/requirements.txt -r $large_image_path/requirements.txt setuptools==19.4
     - npm install

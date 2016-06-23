@@ -19,7 +19,7 @@ def MaxClustering(Response, Mask, r=10):
     Mask : array_like
         A binary image where nuclei pixels have value 1/True, and non-nuclear
         pixels have value 0/False.
-    f : float
+    r : float
         A scalar defining the clustering radius. Default value = 10.
 
     Returns
@@ -40,11 +40,12 @@ def MaxClustering(Response, Mask, r=10):
     References
     ----------
     .. [1] XW. Wu et al "The local maximum clustering method and its
-    application in microarray gene expression data analysis," EURASIP J. Appl.
-    Signal Processing, volume 2004, no.1, pp.53-63, 2004.
+           application in microarray gene expression data analysis,"
+           EURASIP J. Appl. Signal Processing, volume 2004, no.1, pp.53-63,
+           2004.
     .. [2] Y. Al-Kofahi et al "Improved Automatic Detection and Segmentation
-    of Cell Nuclei in Histopathology Images" in IEEE Transactions on Biomedical
-    Engineering,vol.57,no.4,pp.847-52, 2010.
+           of Cell Nuclei in Histopathology Images" in IEEE Transactions on
+           Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.
     """
 
     # define kernel for max filter
@@ -61,6 +62,7 @@ def MaxClustering(Response, Mask, r=10):
     # pad input array to simplify filtering
     I = Response.min() * np.ones((Response.shape[0]+2*r,
                                   Response.shape[1]+2*r))
+    Response = Response.copy()
     Response[~Mask] = Response.min()
     I[r:r+Response.shape[0], r:r+Response.shape[1]] = Response
 
@@ -71,8 +73,8 @@ def MaxClustering(Response, Mask, r=10):
 
     # define pixels for local neighborhoods
     py, px = np.nonzero(Mask)
-    py = py + r
-    px = px + r
+    py = py + np.int(r)
+    px = px + np.int(r)
 
     # perform max filtering
     for i in np.arange(0, px.size, 1):
