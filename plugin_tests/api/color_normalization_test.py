@@ -78,5 +78,5 @@ class ColorNormalizationTest(base.TestCase):
             stdNmzd[i] = (imNmzdLAB[:, :, i] - meanNmzd[i]).std()
 
         # check if mean and stddev of normalized and reference images are equal
-        self.assertTrue( np.allclose(meanNmzd, meanRef) )
-        self.assertTrue( np.allclose(stdNmzd, stdRef) )
+        self.assertTrue(np.allclose(meanNmzd, meanRef))
+        self.assertTrue(np.allclose(stdNmzd, stdRef))
