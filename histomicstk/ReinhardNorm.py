@@ -65,9 +65,8 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
         SourceMu = I_LAB.sum(axis=0).sum(axis=0) / (m * n)
 
     # center to zero-mean
-    I_LAB[:, :, 0] = I_LAB[:, :, 0] - SourceMu[0]
-    I_LAB[:, :, 1] = I_LAB[:, :, 1] - SourceMu[1]
-    I_LAB[:, :, 2] = I_LAB[:, :, 2] - SourceMu[2]
+    for i in range(3):
+        I_LAB[:, :, i] = I_LAB[:, :, i] - SourceMu[i]
 
     # calculate SourceSigma if not provided
     if SourceSigma is None:
@@ -75,14 +74,12 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
                        (m * n - 1)) ** 0.5
 
     # scale to unit variance
-    I_LAB[:, :, 0] = I_LAB[:, :, 0] / SourceSigma[0]
-    I_LAB[:, :, 1] = I_LAB[:, :, 1] / SourceSigma[1]
-    I_LAB[:, :, 2] = I_LAB[:, :, 2] / SourceSigma[2]
+    for i in range(3):
+        I_LAB[:, :, i] = I_LAB[:, :, i] / SourceSigma[i]
 
     # rescale and recenter to match target statistics
-    I_LAB[:, :, 0] = I_LAB[:, :, 0] * TargetSigma[0] + TargetMu[0]
-    I_LAB[:, :, 1] = I_LAB[:, :, 1] * TargetSigma[1] + TargetMu[1]
-    I_LAB[:, :, 2] = I_LAB[:, :, 2] * TargetSigma[2] + TargetMu[2]
+    for i in range(3):
+        I_LAB[:, :, i] = I_LAB[:, :, i] * TargetSigma[i] + TargetMu[i]
 
     # convert back to RGB colorspace
     I_Normalized = rli.RudermanLABInv(I_LAB)
