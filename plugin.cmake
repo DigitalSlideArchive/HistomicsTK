@@ -14,21 +14,28 @@
 #  limitations under the License.
 ###############################################################################
 
+# style tests
 add_python_style_test(
-  python_static_analysis_HistomicsTK_api
+  python_static_analysis_HistomicsTK_plugins
   "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/server"
 )
+
 add_python_style_test(
   python_static_analysis_HistomicsTK_tests
   "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests"
 )
+
 add_python_style_test(
-  python_static_analysis_HistomicsTK_algorithms
+  python_static_analysis_HistomicsTK_api
   "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/histomicstk"
 )
 
+# API tests
 add_python_test(example PLUGIN HistomicsTK)
 
+add_python_test(color_normalization_test PLUGIN HistomicsTK)
+
+# front-end tests
 add_web_client_test(
     HistomicsTK_schema "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/parser.js"
     ENABLEDPLUGINS "HistomicsTK")
