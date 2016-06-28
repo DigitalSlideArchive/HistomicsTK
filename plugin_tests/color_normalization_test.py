@@ -21,29 +21,27 @@ from tests import base
 
 import histomicstk as htk
 import numpy as np
+import os
 import skimage.io
-
-
-# boiler plate to start and stop the server
-def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
 
 
 class HistomicsTKColorNormalizationTest(base.TestCase):
 
     def testReinhardNorm(self):
 
-        # will be changed once EXTERNAL_DATA works for data.kitware.com
-        inputImageFile = ('https://data.kitware.com/api/v1/file/'
-                          '57718cc28d777f1ecd8a883c/download')
+        if True:
+            inputImageFile = ('https://data.kitware.com/api/v1/file/'
+                              '57718cc28d777f1ecd8a883c/download')
 
-        refImageFile = ('https://data.kitware.com/api/v1/file/'
-                        '576ad39b8d777f1ecd6702f2/download')
+            refImageFile = ('https://data.kitware.com/api/v1/file/'
+                            '576ad39b8d777f1ecd6702f2/download')
+        else:
+            # This will be used once EXTERNAL_DATA works for data.kitware.com
+            TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
+                                         'plugins/HistomicsTK')
+
+            inputImageFile = os.path.join(TEST_DATA_DIR, 'L1.png')
+            refImageFile = os.path.join(TEST_DATA_DIR, 'Easy1.png')
 
         # read input image
         imInput = skimage.io.imread(inputImageFile)[:, :, :3]
@@ -77,5 +75,5 @@ class HistomicsTKColorNormalizationTest(base.TestCase):
             stdNmzd[i] = (imNmzdLAB[:, :, i] - meanNmzd[i]).std()
 
         # check if mean and stddev of normalized and reference images are equal
-        self.assertTrue(np.allclose(meanNmzd, meanRef))
-        self.assertTrue(np.allclose(stdNmzd, stdRef))
+        self.assertTrue(np.allclose(meanNmzd, meanRef, atol=1e-2))
+        self.assertTrue(np.allclose(stdNmzd, stdRef, atol=1e-2))
