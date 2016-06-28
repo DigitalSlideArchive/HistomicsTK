@@ -34,7 +34,7 @@ def tearDownModule():
     base.stopServer()
 
 
-class ColorNormalizationTest(base.TestCase):
+class HistomicsTKColorNormalizationTest(base.TestCase):
 
     def testReinhardNorm(self):
 

@@ -33,7 +33,7 @@ add_python_style_test(
 # API tests
 add_python_test(example PLUGIN HistomicsTK)
 
-add_python_test(color_normalization_test PLUGIN HistomicsTK)
+add_python_test(color_normalization PLUGIN HistomicsTK)
 
 # front-end tests
 add_web_client_test(
