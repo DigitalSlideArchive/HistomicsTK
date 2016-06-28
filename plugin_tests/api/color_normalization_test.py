@@ -21,7 +21,6 @@ from tests import base
 
 import histomicstk as htk
 import numpy as np
-import os
 import skimage.io
 
 
@@ -64,7 +63,7 @@ class ColorNormalizationTest(base.TestCase):
             stdRef[i] = (imReferenceLAB[:, :, i] - meanRef[i]).std()
 
         # perform color normalization
-        imNmzd = htk.ReinhardNorm(imInput, meanRef, stdRef);
+        imNmzd = htk.ReinhardNorm(imInput, meanRef, stdRef)
 
         # transform reference image to LAB color space
         imNmzdLAB = htk.RudermanLABFwd(imNmzd)
