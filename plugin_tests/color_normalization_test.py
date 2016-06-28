@@ -40,7 +40,7 @@ class HistomicsTKColorNormalizationTest(base.TestCase):
 
         # will be changed once EXTERNAL_DATA works for data.kitware.com
         inputImageFile = ('https://data.kitware.com/api/v1/file/'
-                          '576ad3a68d777f1ecd6702f8/download')
+                          '57718cc28d777f1ecd8a883c/download')
 
         refImageFile = ('https://data.kitware.com/api/v1/file/'
                         '576ad39b8d777f1ecd6702f2/download')
