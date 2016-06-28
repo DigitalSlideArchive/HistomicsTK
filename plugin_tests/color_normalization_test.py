@@ -21,27 +21,41 @@ from tests import base
 
 import histomicstk as htk
 import numpy as np
-import os
 import skimage.io
+
+
+# boiler plate to start and stop the server
+def setUpModule():
+    base.enabledPlugins.append('HistomicsTK')
+    base.startServer()
+
+
+def tearDownModule():
+    base.stopServer()
 
 
 class HistomicsTKColorNormalizationTest(base.TestCase):
 
     def testReinhardNorm(self):
 
-        if True:
-            inputImageFile = ('https://data.kitware.com/api/v1/file/'
-                              '57718cc28d777f1ecd8a883c/download')
+        inputImageFile = ('https://data.kitware.com/api/v1/file/'
+                          '57718cc28d777f1ecd8a883c/download')
 
-            refImageFile = ('https://data.kitware.com/api/v1/file/'
-                            '576ad39b8d777f1ecd6702f2/download')
-        else:
-            # This will be used once EXTERNAL_DATA works for data.kitware.com
-            TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
-                                         'plugins/HistomicsTK')
+        refImageFile = ('https://data.kitware.com/api/v1/file/'
+                        '576ad39b8d777f1ecd6702f2/download')
 
-            inputImageFile = os.path.join(TEST_DATA_DIR, 'L1.png')
-            refImageFile = os.path.join(TEST_DATA_DIR, 'Easy1.png')
+        """
+        # This will be used once EXTERNAL_DATA works for data.kitware.com
+
+        import os
+
+        TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
+                                     'plugins/HistomicsTK')
+
+        inputImageFile = os.path.join(TEST_DATA_DIR, 'L1.png')
+
+        refImageFile = os.path.join(TEST_DATA_DIR, 'Easy1.png')
+        """
 
         # read input image
         imInput = skimage.io.imread(inputImageFile)[:, :, :3]
