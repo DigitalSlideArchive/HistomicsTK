@@ -35,6 +35,14 @@ add_python_test(example PLUGIN HistomicsTK)
 
 add_python_test(color_normalization PLUGIN HistomicsTK)
 
+#
+# This form will be used once EXTERNAL_DATA works for data.kitware.com
+#
+# add_python_test(color_normalization PLUGIN HistomicsTK EXTERNAL_DATA
+#   "plugins/histomicstk/L1.png"
+#   "plugins/histomicstk/Easy1.png"
+#)
+
 # front-end tests
 add_web_client_test(
     HistomicsTK_schema "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/parser.js"
