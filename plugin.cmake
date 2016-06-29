@@ -39,8 +39,8 @@ add_python_test(color_normalization PLUGIN HistomicsTK)
 # This form will be used once EXTERNAL_DATA works for data.kitware.com
 #
 # add_python_test(color_normalization PLUGIN HistomicsTK EXTERNAL_DATA
-#   "plugins/histomicstk/L1.png"
-#   "plugins/histomicstk/Easy1.png"
+#   "plugins/histomicstk/L1.png"    # put L1.png.sha512 in plugin_tests/data
+#   "plugins/histomicstk/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
 #)
 
 # front-end tests
