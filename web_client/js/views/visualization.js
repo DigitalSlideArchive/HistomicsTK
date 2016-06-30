@@ -23,6 +23,10 @@ histomicstk.views.Visualization = girder.View.extend({
         // prebind the onResize method so we can remove it on destroy
         this._onResize = _.bind(this._onResize, this);
 
+        // create a debounced rerender method to delay rendering
+        // until after user navigation is completed
+        this._debouncedRender = _.debounce(_.bind(this._syncViewport, this), 300);
+
         // shared viewport object for annotation layers
         this.viewport = new girder.annotation.Viewport();
         this._onResize();
@@ -102,7 +106,7 @@ histomicstk.views.Visualization = girder.View.extend({
         window.map = this._map;
 
         this._syncViewport();
-        this._map.geoOn(geo.event.pan, _.bind(this._syncViewport, this));
+        this._map.geoOn(geo.event.pan, _.bind(this._onMouseNavigate, this));
         this.$('.h-visualization-body').empty().append(this._map.node());
     },
 
@@ -342,12 +346,50 @@ histomicstk.views.Visualization = girder.View.extend({
         this._syncViewport();
     },
 
+    /**
+     * Respond to fast firing mouse navigation events by applying transforms
+     * to the svg element so we can debounce the slow rerenders.
+     */
+    _onMouseNavigate: function () {
+        var ul, dz;
+        if (!this._lastCorner) {
+            // do a full rerender if we haven't synced the viewport yet
+            this._syncViewport();
+            return
+        }
+
+        ul = this._map.gcsToDisplay({
+            x: this._lastCorner.x,
+            y: this._lastCorner.y
+        });
+
+        dz = Math.pow(2, this._map.zoom() - this._lastZoom);
+
+        this.$('.h-annotation-layers')
+            .css(
+                'transform',
+                'translate(' + ul.x + 'px,' + ul.y + 'px)scale(' + dz + ')'
+            );
+
+        // schedule a debounced rerender
+        this._debouncedRender();
+    },
+
     _syncViewport: function () {
         var bds;
         if (!this._map) {
             return;
         }
+
+        this.$('.h-annotation-layers')
+            .css('transform', '');
+
         bds = this._map.bounds(undefined, null);
+        this._lastCorner = this._map.displayToGcs({
+            x: 0,
+            y: 0
+        });
+        this._lastZoom = this._map.zoom();
 
         this.viewport.set({
             scale: (bds.right - bds.left) / (this.viewport.get('width') * this._unitsPerPixel)
