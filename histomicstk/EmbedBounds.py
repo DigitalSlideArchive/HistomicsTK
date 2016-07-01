@@ -34,7 +34,7 @@ def EmbedBounds(I, Bounds, Color=[255, 0, 0]):
     --------
         LabelPerimeter
     """
-    
+
     # check for consistent shapes between 'I' and 'Bounds'
     if I.shape != Bounds.shape:
         raise ValueError("Inputs 'I' and 'Bounds' must have same shape")
