@@ -49,7 +49,7 @@ def MaxClustering(Response, Mask, r=10):
     """
 
     # check type of input mask
-    if ~(Mask.dtype == np.dtype('bool')):
+    if Mask.dtype != np.dtype('bool'):
         raise TypeError("Input 'Mask' must be a bool")
 
     # define kernel for max filter
