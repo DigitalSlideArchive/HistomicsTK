@@ -12,6 +12,7 @@ from skimage.morphology import disk, dilation
 def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
     """
     Calculates features from a label image.
+
     Parameters
     ----------
     Label : array_like
@@ -34,40 +35,43 @@ def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
     -------
     df : 2-dimensional labeled data structure, float64
         Pandas data frame.
-    See Also
-    --------
-    fft.fft : Computes the one-dimensional discrete Fourier Transform
-    find_boundaries : Returns bool array where boundaries between labeled
-        regions are True.
-    ##########     Features     ##########
-    Centroids
-    ---------
-    X	Y
-    Morphometry features
-    --------------------
-    Area	Perimeter	Eccentricity	Circularity
-    MajorAxisLength MinorAxisLength	Extent Solidity
-    FSDs
-    ----
-    FSD1	FSD2	FSD3	FSD4	FSD5	FSD6
-    Hematoxlyin Features
-    --------------------
-    HematoxlyinMeanIntensity	HematoxlyinMeanMedianDifferenceIntensity
-    HematoxlyinMaxIntensity	HematoxlyinMinIntensity	HematoxlyinStdIntensity
-    HematoxlyinEntropy	HematoxlyinEnergy	HematoxlyinSkewness
-    HematoxlyinKurtosis	HematoxlyinMeanGradMag	HematoxlyinStdGradMag
-    HematoxlyinEntropyGradMag	HematoxlyinEnergyGradMag
-    HematoxlyinSkewnessGradMag	HematoxlyinKurtosisGradMag
-    HematoxlyinSumCanny	HematoxlyinMeanCanny
-    Cytoplas Features
-    -----------------
-    CytoplasmMeanIntensity	CytoplasmMeanMedianDifferenceIntensity
-    CytoplasmMaxIntensity	CytoplasmMinIntensity	CytoplasmStdIntensity
-    CytoplasmEntropy	CytoplasmEnergy	CytoplasmSkewness	CytoplasmKurtosis
-    CytoplasmMeanGradMag	CytoplasmStdGradMag	CytoplasmEntropyGradMag
-    CytoplasmEnergyGradMag	CytoplasmSkewnessGradMag	CytoplasmKurtosisGradMag
-    CytoplasmSumCanny	CytoplasmMeanCanny
-    ########################################
+    Notes
+    -----
+    The following features are computed:
+
+    - `Centroids`:
+        - X,Y
+
+    - `Morphometry features`:
+        - Area,
+        - Perimeter,
+        - MajorAxisLength,
+        - MinorAxisLength,
+        - Eccentricity,
+        - Circularity,
+        - Extent,
+        - Solidity
+
+    - `Fourier shape descriptors`:
+        - FSD1-FSD6
+
+    - Intensity features for hematoxylin and cytoplasm channels:
+        - MinIntensity, MaxIntensity,
+        - MeanIntensity, StdIntensity,
+        - MeanMedianDifferenceIntensity,
+        - Entropy, Energy, Skewness and Kurtosis
+
+    - Gradient/edge features for hematoxylin and cytoplasm channels:
+        - MeanGradMag, StdGradMag, SkewnessGradMag, KurtosisGradMag,
+        - EntropyGradMag, EnergyGradMag,
+        - SumCanny, MeanCanny
+    References
+    ----------
+    .. [1] D. Zhang et al. "A comparative study on shape retrieval using
+       Fourier descriptors with different shape signatures," In Proc.
+       ICIMADE01, 2001.
+    .. [2] Daniel Zwillinger and Stephen Kokoska. "CRC standard probability
+       and statistics tables and formulae," Crc Press, 1999.
     """
 
     # get total regions
@@ -314,7 +318,7 @@ def TextureFeatureGroup(I, Coords):
     References
     ----------
     .. [1] Daniel Zwillinger and Stephen Kokoska. "CRC standard probability
-    and statistics tables and formulae," Crc Press, 1999.
+       and statistics tables and formulae," Crc Press, 1999.
     """
     f = np.zeros((len(Coords), 4))
     for i in range(len(Coords)):
@@ -551,8 +555,8 @@ def FSDs(X, Y, K, Intervals):
     References
     ----------
     .. [1] D. Zhang et al. "A comparative study on shape retrieval using
-    Fourier descriptors with different shape signatures," In Proc.
-    ICIMADE01, 2001.
+       Fourier descriptors with different shape signatures," In Proc.
+       ICIMADE01, 2001.
     """
 
     # check input 'Intervals'

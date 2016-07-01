@@ -3,6 +3,14 @@
     "type"    : "python"
   },
 
+  "FeatureExtraction": {
+    "type"    : "python"
+  },
+
+  "NucleiSegmentation": {
+    "type"    : "python"
+  },
+
   "SparseColorDeconvolution": {
     "type"    : "python"
   }

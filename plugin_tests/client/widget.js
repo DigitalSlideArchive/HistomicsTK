@@ -311,15 +311,15 @@ describe('widget collection', function () {
         ]);
 
         expect(c.values()).toEqual({
-            range: 0,
-            number: 1,
-            boolean: true,
-            string: '0',
-            color: '#ff0000',
-            'string-vector': ['a', 'b', 'c'],
-            'number-vector': [1, 2, 3],
-            'string-enumeration': 'a',
-            'number-enumeration': 1,
+            range: '0',
+            number: '1',
+            boolean: 'true',
+            string: '"0"',
+            color: '"#ff0000"',
+            'string-vector': '["a","b","c"]',
+            'number-vector': '[1,2,3]',
+            'string-enumeration': '"a"',
+            'number-enumeration': '1',
             'file_girderItemId': 'a',
             'new-file_girderFolderId': 'b',
             'new-file_name': 'a'

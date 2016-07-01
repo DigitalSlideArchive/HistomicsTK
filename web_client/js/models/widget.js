@@ -315,7 +315,7 @@ histomicstk.collections.Widget = Backbone.Collection.extend({
                     params[m.id + '_name'] = m.value().get('name');
                     break;
                 default:
-                    params[m.id] = m.value();
+                    params[m.id] = JSON.stringify(m.value());
             }
         });
         return params;

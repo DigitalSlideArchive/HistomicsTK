@@ -48,7 +48,7 @@ def SparseColorDeconvolution(I, Winit, Beta):
     --------
     ColorDeconvolution
 
-        References
+    References
     ----------
     .. [1] J. Xu, L. Xiang, G. Wang, S. Ganesan, M. Feldman, N.N. Shih,
            H. Gilmore, A. Madabhushi, "Sparse Non-negative Matrix
