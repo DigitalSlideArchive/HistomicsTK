@@ -17,8 +17,8 @@ def MaxClustering(Response, Mask, r=10):
         center. Typically obtained by constrained-LoG filtering on a
         hematoxylin intensity image obtained from ColorDeconvolution.
     Mask : array_like
-        A boolean type image where nuclei pixels have value 'True', and
-        non-nuclear pixels have value 'False'.
+        A binary mask of type boolean where nuclei pixels have value
+        'True', and non-nuclear pixels have value 'False'.
     r : float
         A scalar defining the clustering radius. Default value = 10.
 
