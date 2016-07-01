@@ -33,15 +33,13 @@ add_python_style_test(
 # API tests
 add_python_test(example PLUGIN HistomicsTK)
 
-add_python_test(color_normalization PLUGIN HistomicsTK)
-
-#
-# This form will be used once EXTERNAL_DATA works for data.kitware.com
-#
-# add_python_test(color_normalization PLUGIN HistomicsTK EXTERNAL_DATA
-#   "plugins/histomicstk/L1.png"    # put L1.png.sha512 in plugin_tests/data
-#   "plugins/histomicstk/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
-#)
+add_python_test(color_normalization
+    SUBMODULE ReinhardNormalizationTest
+    DBNAME core_color_normalization_reinhard
+    PLUGIN HistomicsTK EXTERNAL_DATA
+    "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
+    "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
+)
 
 # front-end tests
 add_web_client_test(

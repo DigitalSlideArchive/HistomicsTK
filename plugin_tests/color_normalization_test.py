@@ -21,6 +21,7 @@ from tests import base
 
 import histomicstk as htk
 import numpy as np
+import os
 import skimage.io
 
 
@@ -34,28 +35,17 @@ def tearDownModule():
     base.stopServer()
 
 
-class HistomicsTKColorNormalizationTest(base.TestCase):
+TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
+                             'plugins/HistomicsTK')
 
-    def testReinhardNorm(self):
 
-        inputImageFile = ('https://data.kitware.com/api/v1/file/'
-                          '57718cc28d777f1ecd8a883c/download')
+class ReinhardNormalizationTest(base.TestCase):
 
-        refImageFile = ('https://data.kitware.com/api/v1/file/'
-                        '576ad39b8d777f1ecd6702f2/download')
-
-        """
-        # This will be used once EXTERNAL_DATA works for data.kitware.com
-
-        import os
-
-        TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
-                                     'plugins/HistomicsTK')
+    def testColorNormalization(self):
 
         inputImageFile = os.path.join(TEST_DATA_DIR, 'L1.png')
 
         refImageFile = os.path.join(TEST_DATA_DIR, 'Easy1.png')
-        """
 
         # read input image
         imInput = skimage.io.imread(inputImageFile)[:, :, :3]
