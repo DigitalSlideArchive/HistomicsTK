@@ -17,8 +17,8 @@ def MaxClustering(Response, Mask, r=10):
         center. Typically obtained by constrained-LoG filtering on a
         hematoxylin intensity image obtained from ColorDeconvolution.
     Mask : array_like
-        A binary image where nuclei pixels have value 1/True, and non-nuclear
-        pixels have value 0/False.
+        A boolean type image where nuclei pixels have value 'True', and
+        non-nuclear pixels have value 'False'.
     r : float
         A scalar defining the clustering radius. Default value = 10.
 
@@ -48,6 +48,10 @@ def MaxClustering(Response, Mask, r=10):
            Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.
     """
 
+    # check type of input mask
+    if ~(Mask.dtype == np.dtype('bool')):
+        raise TypeError("Input 'Mask' must be a bool")
+
     # define kernel for max filter
     Kernel = np.zeros((2*r+1, 2*r+1), dtype=bool)
     X, Y = np.meshgrid(np.linspace(0, 2*r, 2*r+1), np.linspace(0, 2*r, 2*r+1))
@@ -62,9 +66,9 @@ def MaxClustering(Response, Mask, r=10):
     # pad input array to simplify filtering
     I = Response.min() * np.ones((Response.shape[0]+2*r,
                                   Response.shape[1]+2*r))
-    Response = Response.copy()
-    Response[~Mask] = Response.min()
-    I[r:r+Response.shape[0], r:r+Response.shape[1]] = Response
+    MaskedResponse = Response.copy()
+    MaskedResponse[~Mask] = Response.min()
+    I[r:r+Response.shape[0], r:r+Response.shape[1]] = MaskedResponse
 
     # initialize coordinate arrays and max value arrays
     Max = np.zeros(I.shape)
