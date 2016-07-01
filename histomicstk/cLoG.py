@@ -63,8 +63,7 @@ def cLoG(I, Mask, SigmaMin=30*1.414, SigmaMax=50*1.414):
 
         # generate normalized filter response
         Response = Sigma ** 2 * \
-            sp.ndimage.filters.gaussian_laplace(I, Sigma, mode='constant',
-                                                cval=0.0)
+            sp.ndimage.filters.gaussian_laplace(I, Sigma, mode='mirror')
 
         # constrain response
         Map = Sigma < Constraint
