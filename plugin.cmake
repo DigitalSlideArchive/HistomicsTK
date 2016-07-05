@@ -26,10 +26,6 @@ add_python_style_test(
   python_static_analysis_HistomicsTK_algorithms
   "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/histomicstk"
 )
-add_python_style_test(
-  python_static_analysis_HistomicsTK_examples
-  "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/examples"
-)
 
 add_python_test(example PLUGIN HistomicsTK)
 

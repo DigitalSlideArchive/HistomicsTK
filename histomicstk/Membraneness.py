@@ -32,8 +32,9 @@ def Membraneness(I, Sigma):
     References
     ----------
     .. [1] Frangi, Alejandro F., et al. "Multiscale vessel enhancement
-    filtering." Medical Image Computing and Computer-Assisted Interventation.
-    MICCAI98. Springer Berlin Heidelberg, 1998. 130-137.
+           filtering." Medical Image Computing and Computer-Assisted
+           Interventation. MICCAI98. Springer Berlin Heidelberg,1998.
+           130-137.
     """
 
     # calculate hessian matrix
