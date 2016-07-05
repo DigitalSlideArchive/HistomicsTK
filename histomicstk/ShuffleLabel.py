@@ -32,7 +32,7 @@ def ShuffleLabel(Label):
     np.random.shuffle(Unique)
 
     # initialize output
-    Shuffled = np.zeros(Label.shape)
+    Shuffled = np.zeros(Label.shape, dtype=np.uint32)
 
     # get pixel list for each object
     Props = ms.regionprops(Label.astype(np.int))
