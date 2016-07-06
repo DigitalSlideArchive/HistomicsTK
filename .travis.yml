@@ -91,4 +91,5 @@ script:
     - mkdir -p $build_path/girder_testing_build
     - cd $build_path/girder_testing_build
     - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" $girder_path
+    - make
     - JASMINE_TIMEOUT=15000 ctest -VV -R HistomicsTK
