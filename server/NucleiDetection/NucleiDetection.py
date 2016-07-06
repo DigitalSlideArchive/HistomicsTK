@@ -29,22 +29,9 @@ def main(args):
     #
     print('>> Reading input image')
 
-    imInput = None
-    imageFile = args.inputImageFile
-    if os.path.isdir(imageFile):
-        dir = imageFile
-        for file in os.listdir(dir):
-            imageFile = os.path.join(dir, file)
-            try:
-                imInput = read_image(imageFile)
-                break
-            except Exception:
-                print('>> Could not open %s' % imageFile)
-    else:
-        imInput = read_image(imageFile)
+    print args.inputImageFile
+    imInput = skimage.io.imread(args.inputImageFile)[:, :, :3]
 
-    if imInput is None:
-        raise Exception('No image could be opened in %s' % dir)
     #
     # Perform color normalization
     #
