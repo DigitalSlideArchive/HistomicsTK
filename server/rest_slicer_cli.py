@@ -31,14 +31,14 @@ _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'image': 'string'}
 
 _SLICER_TYPE_TO_GIRDER_MODEL_MAP = {
-    'image': 'item',
-    'file': 'item',
+    'image': 'file',
+    'file': 'file',
     'directory': 'folder'
 }
 
 _worker_docker_data_dir = constants.DOCKER_DATA_VOLUME
 
-_girderInputFileSuffix = '_girderItemId'
+_girderInputFileSuffix = '_girderFileId'
 _girderOutputFolderSuffix = '_girderFolderId'
 _girderOutputNameSuffix = '_name'
 
@@ -322,7 +322,7 @@ def _createInputParamBindingSpec(param, hargs, token):
             hargs[param.name],
             resourceType=_SLICER_TYPE_TO_GIRDER_MODEL_MAP[param.typ],
             dataType='string', dataFormat='string',
-            token=token)
+            token=token, fetchParent=True)
     else:
         # inputs that are not of type image, file, or directory
         # should be passed inline as string from json.dumps()
@@ -684,7 +684,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
         taskSpec = {'name': cliName,
                     'mode': 'docker',
                     'docker_image': dockerImage,
-                    'pull_image': True,
+                    'pull_image': False,
                     'inputs': [],
                     'outputs': []}
 
