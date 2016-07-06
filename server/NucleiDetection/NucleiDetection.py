@@ -2,7 +2,6 @@ from ctk_cli import CLIArgumentParser
 import histomicstk as htk
 import numpy as np
 import json
-import os
 import scipy as sp
 import skimage.io
 import skimage.measure
