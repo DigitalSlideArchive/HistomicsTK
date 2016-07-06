@@ -29,7 +29,6 @@ girderTest.addCoveredScripts([
     '/plugins/HistomicsTK/web_client/js/views/controlsPanel.js',
     '/plugins/HistomicsTK/web_client/js/views/controlWidget.js',
     '/plugins/HistomicsTK/web_client/js/views/itemSelectorWidget.js',
-    '/plugins/HistomicsTK/web_client/js/views/guiSelectorWidget.js',
     '/plugins/HistomicsTK/web_client/js/views/header.js',
     '/plugins/HistomicsTK/web_client/js/views/jobsPanel.js',
     '/plugins/HistomicsTK/web_client/js/views/panelGroup.js',
@@ -44,9 +43,7 @@ describe('visualization', function () {
         unregisterChildView: function () {}
     }, new Backbone.View());
 
-    girder.eventStream = {
-        off: function () {}
-    };
+    girder.eventStream = Object.create(Backbone.Events);
 
     beforeEach(function () {
         $el = $('<div/>').css({
@@ -64,7 +61,7 @@ describe('visualization', function () {
         }).render();
 
         expect($el.find('.h-visualization-body').length).toBe(1);
-        expect($el.find('.h-panel-title-container').text()).toBe('Open Image');
+        expect($el.find('.h-panel-group').length).toBe(1);
     });
     it('render test tiles', function () {
         var view = new histomicstk.views.Visualization({
@@ -131,7 +128,7 @@ describe('visualization', function () {
             window.Image = _img;
         });
 
-        it('render test image', function () {
+         it('render test image', function () {
 
             rest.onCall(0).returns($.when([{
                 mimeType: 'image/jpeg',
@@ -164,11 +161,9 @@ describe('visualization', function () {
             expect(img.getCall(1).returnValue.src).toMatch(/\/file\/some image\/download$/);
         });
 
-        it('render image from control widget', function () {
-            rest.onCall(0).returns($.when({}));
-            rest.onCall(1).returns($.when([]));
-            rest.onCall(2).returns($.when([]));
-            rest.onCall(3).returns($.when([{
+         it('render image from control widget', function () {
+            rest.returns($.when({}));
+            rest.onCall(1).returns($.when([{
                 mimeType: 'image/jpeg',
                 '_id': 'some image'
             }]));
@@ -179,7 +174,11 @@ describe('visualization', function () {
             }).render();
 
             view._controlModel.set({
-                value: 'some image'
+                value: new Backbone.Model({
+                    id: 'abcdef',
+                    _modelType: 'item',
+                    name: 'image.png'
+                })
             });
 
             expect(img.firstCall.returnValue.src).toMatch(/\/file\/some image\/download$/);
@@ -192,30 +191,35 @@ describe('visualization', function () {
 
         it('invalid image from control widget', function () {
             var spy = sinon.spy();
-            rest.onCall(0).returns($.when({}));
-            rest.onCall(1).returns($.when([]));
-            rest.onCall(2).returns($.when([]));
-            rest.onCall(3).returns($.when([{
+            rest.returns($.when({}));
+            rest.onCall(1).returns($.when([{
                 mimeType: 'image/jpeg',
                 '_id': 'some image'
             }]));
 
+            sinon.stub(histomicstk.views.Visualization.prototype, 'addItem')
+                .returns(new $.Deferred().reject().promise());
+
             var view = new histomicstk.views.Visualization({
                 parentView: parentView,
                 el: $el
-            }).render();
+            })
 
-            sinon.stub(view, 'addItem').returns(new $.Deferred().reject().promise());
             girder.events.on('g:alert', spy);
-            view._controlModel.set({
-                value: 'some image'
+            view.render()._controlModel.set({
+                value: new Backbone.Model({
+                    id: 'abcdef',
+                    _modelType: 'item',
+                    name: 'image.png'
+                })
             });
 
+            histomicstk.views.Visualization.prototype.addItem.restore();
             // TODO: Something about the test environment is resetting the error class
             // It does work correctly in the real environment.
             // expect(view.$('[data-type="file"]').hasClass('has-error')).toBe(true);
             expect(img.callCount).toBe(0);
-            expect(spy.callCount).toBe(1);
+            expect(spy.callCount).toBeGreaterThan(0);
             sinon.assert.calledWith(spy, sinon.match({
                 text: 'Could not render item as an image',
                 type: 'danger'
@@ -247,8 +251,8 @@ describe('visualization', function () {
 
         it('invalid image file', function () {
             rest.onCall(0).returns($.when([]));
-            rest.onCall(1).returns($.when([]));
-            rest.onCall(2).returns($.when([{
+            rest.onCall(1).returns($.when([{
+                name: 'image.jpg',
                 mimeType: 'image/jpeg',
                 '_id': 'some image'
             }]));
@@ -258,7 +262,7 @@ describe('visualization', function () {
                 el: $el
             }).render();
 
-            view.addItem(new girder.models.ItemModel())
+            view.addItem(new girder.models.ItemModel({_id: 'abcdef', name: 'image.jpg'}))
                 .then(function () {
                     expect('Rendering an invalid image should fail').toBe(null);
                 })
