@@ -18,10 +18,6 @@ stainColorMap = {
 }
 
 
-def read_image(file):
-    return skimage.io.imread(file)[:, :, :3]
-
-
 def main(args):
 
     #
@@ -29,7 +25,6 @@ def main(args):
     #
     print('>> Reading input image')
 
-    print args.inputImageFile
     imInput = skimage.io.imread(args.inputImageFile)[:, :, :3]
 
     #
