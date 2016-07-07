@@ -163,7 +163,7 @@ def Moore(Mask, XStart, YStart, MaxLength):
     return X, Y
 
 
-def ISBF(Mask, XStart, YStart, MaxLength):
+def ISBF(Mask, XStart, YStart, MaxLength):  # noqa: C901
     """Performs exterior boundary tracing of a single object in a binary mask
     using the Improved Simple Boundary Follower (ISBF) algorithm from the
     reference below.
