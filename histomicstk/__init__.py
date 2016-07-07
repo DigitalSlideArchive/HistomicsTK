@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 # from .BinaryMixtureCut import BinaryMixtureCut
+from .AreaOpenLabel import AreaOpenLabel
 from .ChanVese import ChanVese
 from .cLoG import cLoG
 from .ColorConvolution import ColorConvolution
 from .ColorDeconvolution import ColorDeconvolution
+from .CompactLabel import CompactLabel
 from .ComplementStainMatrix import ComplementStainMatrix
 from .CondenseLabel import CondenseLabel
 from .ConvertSchedule import ConvertSchedule
@@ -27,6 +29,7 @@ from .LabelRegionAdjacency import LabelRegionAdjacency
 from .MaxClustering import MaxClustering
 from .MergeColinear import MergeColinear
 from .MergeSinks import MergeSinks
+from .MinimumModel import MinimumModel
 from .OpticalDensityFwd import OpticalDensityFwd
 from .OpticalDensityInv import OpticalDensityInv
 from .PoissonMixture import PoissonMixture
@@ -39,17 +42,22 @@ from .Sample import Sample
 from .ShuffleLabel import ShuffleLabel
 from .SimpleMask import SimpleMask
 from .SparseColorDeconvolution import SparseColorDeconvolution
+from .SplitLabel import SplitLabel
 from .SubmitTorque import SubmitTorque
 from .TilingSchedule import TilingSchedule
+from .TraceBounds import TraceBounds
 from .Vesselness import Vesselness
+from .WidthOpenLabel import WidthOpenLabel
 
 __version__ = '0.1.0'
 
 # Add 'BinaryMixtureCut' after pygco is deployed
-__all__ = ('ChanVese',
+__all__ = ('AreaOpenLabel',
+		   'ChanVese',
            'cLoG',
            'ColorConvolution',
            'ColorDeconvolution',
+           'CompactLabel',
            'ComplementStainMatrix',
            'CondenseLabel',
            'ConvertSchedule',
@@ -72,6 +80,7 @@ __all__ = ('ChanVese',
            'MaxClustering',
            'MergeColinear',
            'MergeSinks',
+           'MinimumModel',
            'OpticalDensityFwd',
            'OpticalDensityInv',
            'PoissonMixture',
@@ -84,6 +93,9 @@ __all__ = ('ChanVese',
            'ShuffleLabel',
            'SimpleMask',
            'SparseColorDeconvolution',
+           'SplitLabel'
            'SubmitTorque',
            'TilingSchedule',
-           'Vesselness')
+           'TraceBounds'
+           'Vesselness'
+           'WidthOpenLabel')
