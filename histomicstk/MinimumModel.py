@@ -436,7 +436,7 @@ def LabelContour(Shape, cXs, cYs, Scores):
     return Label
 
 
-def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):
+def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
     """Performs splitting of objects in a label image using geometric scoring
     of concavities. Attempts to perform splits at narrow regions that are
     perpendicular to the object's convex hull boundaries.
