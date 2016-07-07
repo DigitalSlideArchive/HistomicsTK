@@ -36,9 +36,9 @@ addons:
 before_install:
     - CACHE="$HOME/.cache" OPENSLIDE_VERSION="3.4.1" source .install-openslide.sh
 
-    - GIRDER_VERSION=c29e4db8fadf5b97f5fcd488e15353b09a9fd70f
-    - GIRDER_WORKER_VERSION=a572e2cd74ae30777f31999d5a136747190ddcb8
-    - LARGE_IMAGE_VERSION=8c9b9b7e7af0e6dc18a79d991e97ca7fed690a25
+    - GIRDER_VERSION=cc464d6d9a8b063bf546b5d7c00bf325459b6e3b
+    - GIRDER_WORKER_VERSION=965bd4564f39d395c663a31d70d0c45181606261
+    - LARGE_IMAGE_VERSION=60c32b11abb4d5f0d1696221a7e81ab21c611980
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path
@@ -90,5 +90,6 @@ install:
 script:
     - mkdir -p $build_path/girder_testing_build
     - cd $build_path/girder_testing_build
-    - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} $girder_path
+    - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" $girder_path
+    - make
     - JASMINE_TIMEOUT=15000 ctest -VV -R HistomicsTK
