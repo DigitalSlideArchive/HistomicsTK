@@ -53,7 +53,7 @@ __version__ = '0.1.0'
 
 # Add 'BinaryMixtureCut' after pygco is deployed
 __all__ = ('AreaOpenLabel',
-		   'ChanVese',
+           'ChanVese',
            'cLoG',
            'ColorConvolution',
            'ColorDeconvolution',
@@ -93,9 +93,9 @@ __all__ = ('AreaOpenLabel',
            'ShuffleLabel',
            'SimpleMask',
            'SparseColorDeconvolution',
-           'SplitLabel'
+           'SplitLabel',
            'SubmitTorque',
            'TilingSchedule',
-           'TraceBounds'
-           'Vesselness'
+           'TraceBounds',
+           'Vesselness',
            'WidthOpenLabel')

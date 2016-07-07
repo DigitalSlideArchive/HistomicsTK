@@ -195,7 +195,7 @@ def SeedContours(I, Delta=0.3):
         MinGrad = np.zeros(Maxima.shape, dtype=int)
         for j in np.arange(Maxima.size):
             MinGrad[j] = np.argmin(Gradient[Maxima[j]+1:Minima[j]]) + \
-                        Maxima[j]+1
+                Maxima[j]+1
 
         # capture min, max values and add to list with seed coordinates
         if(Maxima.size > 0):
@@ -434,17 +434,6 @@ def LabelContour(Shape, cXs, cYs, Scores):
         T[Mask] = i
 
     return Label
-
-
-# def InPoly(cX, cY, Shape):
-#    # use PIL functions for now
-#
-#    # format lists as polygons
-#    Poly = zip(cX, cY)
-#    img = Image.new('L', (Shape[1], Shape[0]), 0)
-#    ImageDraw.Draw(img).polygon(Poly, outline=1, fill=1)
-#    Mask = np.array(img, dtype=np.bool)
-#    return Mask
 
 
 def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):
