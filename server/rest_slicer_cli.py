@@ -471,8 +471,11 @@ def _addOptionalInputParamsToContainerArgs(opt_input_params,
             continue
 
         if _is_on_girder(param) and param.name in hargs:
-            curValue = hargs[param.name]
+
+            curValue = "$input{%s}" % param.name
+
         elif param.name in hargs['params']:
+
             try:
                 curValue = _getParamCommandLineValue(
                     param, hargs['params'][param.name])
@@ -537,9 +540,7 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
         if param.channel == 'input':
 
             if _is_on_girder(param):
-                curValue = os.path.join(
-                    _worker_docker_data_dir, hargs[param.name]['name']
-                )
+                curValue = "$input{%s}" % param.name
             else:
                 curValue = _getParamCommandLineValue(
                     param,
