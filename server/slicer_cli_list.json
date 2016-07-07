@@ -7,7 +7,7 @@
     "type"    : "python"
   },
 
-  "NucleiSegmentation": {
+  "NucleiDetection": {
     "type"    : "python"
   },
 

@@ -36,8 +36,8 @@ addons:
 before_install:
     - CACHE="$HOME/.cache" OPENSLIDE_VERSION="3.4.1" source .install-openslide.sh
 
-    - GIRDER_VERSION=cc464d6d9a8b063bf546b5d7c00bf325459b6e3b
-    - GIRDER_WORKER_VERSION=965bd4564f39d395c663a31d70d0c45181606261
+    - GIRDER_VERSION=d910e905c4196e3046a129d0edb84e5c7e301596
+    - GIRDER_WORKER_VERSION=f834d4d3701df7f6f3f64fcd7d3f22d15b3b1db2
     - LARGE_IMAGE_VERSION=60c32b11abb4d5f0d1696221a7e81ab21c611980
     - main_path=$PWD
     - build_path=$PWD/build
