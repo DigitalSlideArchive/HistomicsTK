@@ -29,7 +29,7 @@ def CondenseLabel(Label):
     Unique = np.delete(Unique, (Unique == 0).nonzero())
 
     # initialize output
-    Condensed = np.zeros(Label.shape)
+    Condensed = np.zeros(Label.shape, dtype=np.uint32)
 
     # get pixel list for each object
     Props = ms.regionprops(Label.astype(np.int))

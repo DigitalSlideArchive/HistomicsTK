@@ -17,23 +17,21 @@ histomicstk.views.PanelGroup = girder.View.extend({
             }
         });
 
-        // render a specific schema
-        this.listenTo(histomicstk.router, 'route:gui', this.schema);
-
-        // remove the current schema reseting to the default view
-        this.listenTo(histomicstk.router, 'route:main', this.reset);
+        this.listenTo(histomicstk.events, 'query:analysis', this.schema);
     },
     render: function () {
         this.$el.html(histomicstk.templates.panelGroup({
             info: this._gui,
             panels: this.panels
         }));
+        this.$el.addClass('hidden');
         _.each(this._panelViews, function (view) {
             view.remove();
         });
         this._panelViews = {};
         this._jobsPanelView.setElement(this.$('.h-jobs-panel')).render();
         _.each(this.panels, _.bind(function (panel) {
+            this.$el.removeClass('hidden');
             this._panelViews[panel.id] = new histomicstk.views.ControlsPanel({
                 parentView: this,
                 collection: new histomicstk.collections.Widget(panel.parameters),
@@ -66,7 +64,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
         params = this.parameters();
         _.each(params, function (value, key) {
             if (_.isArray(value)) {
-                params[key] = JSON.stringify(value)
+                params[key] = JSON.stringify(value);
             }
         });
 
@@ -82,6 +80,8 @@ histomicstk.views.PanelGroup = girder.View.extend({
             path: 'HistomicsTK/' + this._schemaName + '/run',
             type: 'POST',
             data: params
+        }).then(function (data) {
+            histomicstk.events.trigger('h:submit', data);
         });
     },
 
@@ -107,7 +107,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
         modelFilter = modelFilter || function () { return true; };
         return _.chain(this._panelViews)
             .filter(function (v, i) {
-                return panelId === undefined || panelId === i
+                return panelId === undefined || panelId === i;
             })
             .pluck('collection')
             .pluck('models')
@@ -201,6 +201,8 @@ histomicstk.views.PanelGroup = girder.View.extend({
 
         if (s === 'demo') {
             return this.demo();
+        } else if (s === null) {
+            return this.reset();
         }
 
         girder.restRequest({
