@@ -1,29 +1,33 @@
-.h-panel
-  background-color #ffffff
-  opacity .95
-  margin-top 5px
-  border-radius 3px
-  height auto
-  border 1px solid #d6d6d6
+.h-panel-group
+  pointer-events none
 
-.h-panel-content
-  margin 5px
-  overflow hidden
+  .h-panel
+    pointer-events initial
+    background-color #ffffff
+    opacity .95
+    margin-top 5px
+    border-radius 3px
+    height auto
+    border 1px solid #d6d6d6
 
-.h-panel-content:empty
-  margin 0
-
-.h-panel-title-container
-  font-weight bold
-  text-align left
-  background-color #f0f0f0
-  cursor pointer
-  padding 5px 5px
-
-  .h-panel-title
-    display inline-block
-    max-width 85%
+  .h-panel-content
+    margin 5px
     overflow hidden
 
-  .h-panel-controls
-    float right
+  .h-panel-content:empty
+    margin 0
+
+  .h-panel-title-container
+    font-weight bold
+    text-align left
+    background-color #f0f0f0
+    cursor pointer
+    padding 5px 5px
+
+    .h-panel-title
+      display inline-block
+      max-width 85%
+      overflow hidden
+
+    .h-panel-controls
+      float right

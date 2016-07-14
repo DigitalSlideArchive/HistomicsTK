@@ -3,6 +3,12 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
         'click .h-select-button': '_selectButton'
     },
 
+    initialize: function () {
+        if (!this.model) {
+            this.model = new girder.models.ItemModel();
+        }
+    },
+
     render: function () {
         this._hierarchyView = new girder.views.HierarchyWidget({
             parentView: this,
@@ -18,6 +24,7 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
         ).girderModal(this);
 
         this._hierarchyView.setElement(this.$('.h-hierarchy-widget')).render();
+        return this;
     },
 
     /**
@@ -29,7 +36,7 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
         });
 
         if (this.model.get('type') === 'directory') {
-            path = _.initial(path)
+            path = _.initial(path);
         }
         return path;
     },
@@ -41,6 +48,7 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
                 value: item
             });
             this.trigger('g:saved');
+            this.$el.modal('hide');
         }
     },
 
@@ -90,5 +98,6 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
                 break;
         }
         this.trigger('g:saved');
+        this.$el.modal('hide');
     }
 });
