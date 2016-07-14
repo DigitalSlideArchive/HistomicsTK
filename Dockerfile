@@ -1,13 +1,10 @@
-# This is the Dockerfile used by HistomicsTK people adding modules
-#to Histomics TK shoudl extend from this image
-#This image include itk(default modules and IOOpenSlide) and conda.
-#To add modules to itk it is necesary to modify the base image, 
-#rebuild it and extend from that modified image
- 
-#dsarchive/histomicstk:v0.1.4
+# This Dockerfile is used to generate the docker image dsarchive/histomicstk
+# This docker image includes miniconda, python wrapped ITK, and the HistomicsTK
+# python package along with their dependencies.
+#
+# All plugins of HistomicsTK should derive from this docker image
 
 FROM dsarchive/base_docker_image
-
 MAINTAINER Deepak Chittajallu <deepak.chittajallu@kitware.com>
 
 # git clone install ctk-cli
@@ -31,8 +28,6 @@ RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     # clean up
     conda clean -i -l -t -y && \
     rm -rf /root/.cache/pip/*
-
-
 
 # pregenerate font cache
 RUN python -c "from matplotlib import pylab"
