@@ -1,7 +1,7 @@
 import numpy as np
-import RudermanLABFwd as rlf
-import RudermanLABInv as rli
 
+from histomicstk.preprocessing.color_conversion import RudermanLABFwd
+from histomicstk.preprocessing.color_conversion import RudermanLABInv
 
 def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
     """Performs Reinhard color normalization to transform the color
@@ -41,7 +41,8 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
 
     See Also
     --------
-    RudermanLABFwd, RudermanLABInv
+    histomicstk.preprocessing.color_conversion.RudermanLABFwd,
+    histomicstk.preprocessing.color_conversion.RudermanLABInv
 
     References
     ----------
@@ -58,7 +59,7 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
     n = I.shape[1]
 
     # convert input image to LAB color space
-    I_LAB = rlf.RudermanLABFwd(I)
+    I_LAB = RudermanLABFwd(I)
 
     # calculate SourceMu if not provided
     if SourceMu is None:
@@ -82,7 +83,7 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
         I_LAB[:, :, i] = I_LAB[:, :, i] * TargetSigma[i] + TargetMu[i]
 
     # convert back to RGB colorspace
-    I_Normalized = rli.RudermanLABInv(I_LAB)
+    I_Normalized = RudermanLABInv(I_LAB)
     I_Normalized[I_Normalized > 255] = 255
     I_Normalized[I_Normalized < 0] = 0
     I_Normalized = I_Normalized.astype(np.uint8)

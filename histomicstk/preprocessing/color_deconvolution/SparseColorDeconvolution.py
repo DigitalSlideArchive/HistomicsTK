@@ -1,8 +1,8 @@
+import collections
 import nimfa
 import numpy as np
-import collections
 
-from OpticalDensityFwd import OpticalDensityFwd
+from histomicstk.preprocessing import color_conversion
 
 
 def SparseColorDeconvolution(I, Winit, Beta):
@@ -71,7 +71,7 @@ def SparseColorDeconvolution(I, Winit, Beta):
     # transform input RGB to optical density values
     I = I.astype(dtype=np.float32)
     I[I == 0] = 1e-16
-    ODfwd = OpticalDensityFwd(I)
+    ODfwd = color_conversion.OpticalDensityFwd(I)
 
     if Winit is None:
 

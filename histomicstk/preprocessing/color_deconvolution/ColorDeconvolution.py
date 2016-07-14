@@ -1,8 +1,8 @@
 import collections
 import numpy
-import ComplementStainMatrix as csm
-import OpticalDensityFwd as odf
-import OpticalDensityInv as odi
+
+from histomicstk.preprocessing import color_conversion
+from histomicstk.preprocessing import color_deconvolution
 
 
 def ColorDeconvolution(I, W):
@@ -42,13 +42,14 @@ def ColorDeconvolution(I, W):
 
     See Also
     --------
-    ComplementStainMatrix, OpticalDensityFwd
-    OpticalDensityInv, ColorConvolution
+    ComplementStainMatrix, ColorConvolution
+    histomicstk.preprocessing.color_conversion,OpticalDensityFwd
+    histomicstk.preprocessing.color_conversion,OpticalDensityInv
     """
 
     # complement stain matrix if needed
     if numpy.linalg.norm(W[:, 2]) <= 1e-16:
-        Wc = csm.ComplementStainMatrix(W)
+        Wc = color_deconvolution.ComplementStainMatrix(W)
     else:
         Wc = W.copy()
 
@@ -72,9 +73,9 @@ def ColorDeconvolution(I, W):
     # tfm back to RGB
     I = I.astype(dtype=numpy.float32)
     I[I == 0] = 1e-16
-    ODfwd = odf.OpticalDensityFwd(I)
+    ODfwd = color_conversion.OpticalDensityFwd(I)
     ODdeconv = numpy.dot(ODfwd, numpy.transpose(Q))
-    ODinv = odi.OpticalDensityInv(ODdeconv)
+    ODinv = color_conversion.OpticalDensityInv(ODdeconv)
 
     # reshape output
     StainsFloat = numpy.reshape(ODinv, (m, n, 3))

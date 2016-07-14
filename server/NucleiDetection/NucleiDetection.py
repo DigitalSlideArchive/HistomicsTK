@@ -1,5 +1,5 @@
 from ctk_cli import CLIArgumentParser
-import histomicstk as htk
+
 import numpy as np
 import json
 import scipy as sp
@@ -8,6 +8,11 @@ import skimage.measure
 
 import logging
 logging.basicConfig()
+
+import histomicstk as htk
+from histomicstk.preprocessing import color_conversion
+from histomicstk.preprocessing import color_normalization
+from histomicstk.preprocessing import color_deconvolution
 
 stainColorMap = {
     'hematoxylin': [0.65, 0.70, 0.29],
@@ -32,7 +37,7 @@ def main(args):
     print('>> Performing color normalization')
 
     # transform input image to LAB color space
-    imInputLAB = htk.RudermanLABFwd(imInput)
+    imInputLAB = color_conversion.RudermanLABFwd(imInput)
 
     # compute mean and stddev of input in LAB color space
     Mu = np.zeros(3)
@@ -43,7 +48,7 @@ def main(args):
         Sigma[i] = (imInputLAB[:, :, i] - Mu[i]).std()
 
     # perform reinhard normalization
-    imNmzd = htk.ReinhardNorm(imInput, Mu, Sigma)
+    imNmzd = color_normalization.ReinhardNorm(imInput, Mu, Sigma)
 
     #
     # Perform color deconvolution
@@ -56,7 +61,7 @@ def main(args):
 
     W = np.array([stainColor_1, stainColor_2, stainColor_3]).T
 
-    imDeconvolved = htk.ColorDeconvolution(imNmzd, W)
+    imDeconvolved = color_deconvolution.ColorDeconvolution(imNmzd, W)
 
     imNucleiStain = imDeconvolved.Stains[:, :, 0].astype(np.float)
 

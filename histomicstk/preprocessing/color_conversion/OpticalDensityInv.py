@@ -19,7 +19,9 @@ def OpticalDensityInv(I):
 
     See Also
     --------
-    OpticalDensityFwd, ColorDeconvolution, ColorConvolution
+    OpticalDensityFwd,
+    histomicstk.preprocessing.color_deconvolution.ColorDeconvolution,
+    histomicstk.preprocessing.color_deconvolution.ColorConvolution
     """
 
     IOut = np.exp(-(I - 255) * np.log(255) / 255)

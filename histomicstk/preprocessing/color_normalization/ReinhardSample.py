@@ -1,7 +1,9 @@
-import numpy as np
-from Sample import Sample
-from RudermanLABFwd import RudermanLABFwd
 import collections
+
+import numpy as np
+
+from histomicstk.Sample import Sample
+from histomicstk.preprocessing.color_conversion import RudermanLABFwd
 
 
 def ReinhardSample(File, Magnification, Percent, Tile):
@@ -44,7 +46,8 @@ def ReinhardSample(File, Magnification, Percent, Tile):
 
     See Also
     --------
-    RudermanLABFwd, RudermanLABInv
+    histomicstk.preprocessing.color_conversion.RudermanLABFwd,
+    histomicstk.preprocessing.color_conversion.RudermanLABInv
     """
 
     # generate a sampling of RGB pixels from whole-slide image

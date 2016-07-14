@@ -1,7 +1,5 @@
 import numpy as np
-
-from OpticalDensityFwd import OpticalDensityFwd
-from OpticalDensityInv import OpticalDensityInv
+from histomicstk.preprocessing import color_conversion
 
 
 def ColorConvolution(I, W):
@@ -28,8 +26,9 @@ def ColorConvolution(I, W):
 
     See Also
     --------
-    ComplementStainMatrix, OpticalDensityFwd
-    OpticalDensityInv, ColorDeconvolution
+    ComplementStainMatrix, ColorDeconvolution
+    histomicstk.preprocessing.color_conversion.OpticalDensityFwd
+    histomicstk.preprocessing.color_conversion.OpticalDensityInv
     """
 
     # transform 3D input stain image to 2D stain matrix format
@@ -40,9 +39,9 @@ def ColorConvolution(I, W):
     # transform input stains to optical density values, convolve and
     # tfm back to stain
     I = I.astype(dtype=np.float32)
-    ODfwd = OpticalDensityFwd(I)
+    ODfwd = color_conversion.OpticalDensityFwd(I)
     ODdeconv = np.dot(ODfwd, np.transpose(W))
-    ODinv = OpticalDensityInv(ODdeconv)
+    ODinv = color_conversion.OpticalDensityInv(ODdeconv)
 
     # reshape output, transform type
     IOut = np.reshape(ODinv, (m, n, 3))
