@@ -37,7 +37,8 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
 
     See Also
     --------
-    ReinhardNorm, SparseColorDeconvolution, AdaptiveColorNorm
+    histomicstk.preprocessing.color_normalization.ReinhardNorm,
+    histomicstk.preprocessing.color_deconvolution.SparseColorDeconvolution
     """
 
     # open image

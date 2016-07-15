@@ -46,7 +46,7 @@ def SparseColorDeconvolution(I, Winit, Beta):
 
     See Also
     --------
-    ColorDeconvolution
+    histomicstk.preprocessing.color_deconvolution.ColorDeconvolution
 
     References
     ----------

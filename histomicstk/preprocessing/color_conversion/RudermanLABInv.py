@@ -16,7 +16,8 @@ def RudermanLABInv(I):
 
     See Also
     --------
-    RudermanLABFwd, ReinhardNorm
+    histomicstk.preprocessing.color_conversion.RudermanLABFwd,
+    histomicstk.preprocessing.color_normalization.ReinhardNorm
 
     References
     ----------

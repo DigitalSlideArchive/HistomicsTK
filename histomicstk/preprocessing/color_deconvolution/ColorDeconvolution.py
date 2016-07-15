@@ -1,8 +1,8 @@
-import collections
-import numpy
-
 from histomicstk.preprocessing import color_conversion
 from histomicstk.preprocessing import color_deconvolution
+
+import collections
+import numpy
 
 
 def ColorDeconvolution(I, W):
@@ -42,7 +42,8 @@ def ColorDeconvolution(I, W):
 
     See Also
     --------
-    ComplementStainMatrix, ColorConvolution
+    histomicstk.preprocessing.color_deconvolution.ComplementStainMatrix,
+    histomicstk.preprocessing.color_deconvolution.ColorConvolution
     histomicstk.preprocessing.color_conversion,OpticalDensityFwd
     histomicstk.preprocessing.color_conversion,OpticalDensityInv
     """

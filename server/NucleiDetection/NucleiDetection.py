@@ -1,4 +1,7 @@
-from ctk_cli import CLIArgumentParser
+import histomicstk as htk
+from histomicstk.preprocessing import color_conversion
+from histomicstk.preprocessing import color_normalization
+from histomicstk.preprocessing import color_deconvolution
 
 import numpy as np
 import json
@@ -6,13 +9,11 @@ import scipy as sp
 import skimage.io
 import skimage.measure
 
+from ctk_cli import CLIArgumentParser
+
 import logging
 logging.basicConfig()
 
-import histomicstk as htk
-from histomicstk.preprocessing import color_conversion
-from histomicstk.preprocessing import color_normalization
-from histomicstk.preprocessing import color_deconvolution
 
 stainColorMap = {
     'hematoxylin': [0.65, 0.70, 0.29],

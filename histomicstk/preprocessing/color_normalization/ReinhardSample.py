@@ -2,7 +2,7 @@ import collections
 
 import numpy as np
 
-from histomicstk.Sample import Sample
+from histomicstk import Sample
 from histomicstk.preprocessing.color_conversion import RudermanLABFwd
 
 

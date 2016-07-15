@@ -1,7 +1,8 @@
-import numpy as np
-
 from histomicstk.preprocessing.color_conversion import RudermanLABFwd
 from histomicstk.preprocessing.color_conversion import RudermanLABInv
+
+import numpy as np
+
 
 def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
     """Performs Reinhard color normalization to transform the color

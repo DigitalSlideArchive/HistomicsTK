@@ -20,7 +20,7 @@ def ComplementStainMatrix(W):
 
     See Also
     --------
-    ColorDeconvolution
+    histomicstk.preprocessing.color_deconvolution.ColorDeconvolution
     """
 
     # copy input to output for initialization

@@ -18,7 +18,7 @@ def OpticalDensityFwd(I):
 
     See Also
     --------
-    OpticalDensityInv,
+    histomicstk.preprocessing.color_conversion.OpticalDensityInv,
     histomicstk.preprocessing.color_deconvolution.ColorDeconvolution,
     histomicstk.preprocessing.color_deconvolution.ColorConvolution
     """

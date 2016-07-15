@@ -26,7 +26,8 @@ def ColorConvolution(I, W):
 
     See Also
     --------
-    ComplementStainMatrix, ColorDeconvolution
+    histomicstk.preprocessing.color_deconvolution.ComplementStainMatrix,
+    histomicstk.preprocessing.color_deconvolution.ColorDeconvolution
     histomicstk.preprocessing.color_conversion.OpticalDensityFwd
     histomicstk.preprocessing.color_conversion.OpticalDensityInv
     """
