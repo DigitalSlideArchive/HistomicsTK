@@ -1,5 +1,5 @@
-from histomicstk.preprocessing import color_conversion
 from histomicstk.preprocessing import color_deconvolution
+from histomicstk.preprocessing import color_conversion
 
 import collections
 import numpy

@@ -3,9 +3,9 @@ from .OpticalDensityInv import OpticalDensityInv
 from .RudermanLABFwd import RudermanLABFwd
 from .RudermanLABInv import RudermanLABInv
 
-__all__ = [
+__all__ = (
     'OpticalDensityFwd',
     'OpticalDensityInv',
     'RudermanLABFwd',
     'RudermanLABInv'
-]
+)

@@ -26,6 +26,7 @@ import skimage.io
 from histomicstk.preprocessing import color_conversion
 from histomicstk.preprocessing import color_normalization
 
+
 # boiler plate to start and stop the server
 def setUpModule():
     base.enabledPlugins.append('HistomicsTK')

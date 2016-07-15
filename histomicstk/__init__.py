@@ -42,7 +42,7 @@ from .gLoG import gLoG
 __version__ = '0.1.0'
 
 # Add 'BinaryMixtureCut' after pygco is deployed
-__all__ = [
+__all__ = (
     'AreaOpenLabel',
     'ChanVese',
     'cLoG',
@@ -53,7 +53,7 @@ __all__ = [
     'ConvertSchedule',
     'Del2',
     'DregEdge',
-    'Eigenvalues',
+    'Eigenvalues'
     'EmbedBounds',
     'EstimateVariance',
     'FeatureExtraction',
@@ -83,4 +83,4 @@ __all__ = [
     'TraceBounds',
     'Vesselness',
     'WidthOpenLabel'
-]
+)
