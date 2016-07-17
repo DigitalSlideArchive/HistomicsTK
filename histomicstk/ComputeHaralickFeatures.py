@@ -4,8 +4,8 @@ import skimage.feature
 from skimage.measure import regionprops
 
 
-def ComputeHaralickFeatures(I, Label, Offsets, NumLevels=256, MaxGray=255,
-                            MinGray=0):  # noqa: C901
+def ComputeHaralickFeatures(I, Label, NumLevels=256, MaxGray=255,
+                            MinGray=0):
     """
     Calculates 26 Haralick features from an intensity image with the labels.
 
@@ -54,6 +54,7 @@ def ComputeHaralickFeatures(I, Label, Offsets, NumLevels=256, MaxGray=255,
     if len(I.shape) != 2:  # color image
         raise ValueError("Inputs 'I' should be a grayscale image")
 
+    Offsets = [[0, 1]]
     # check for Offset
     arrayOffset = np.asarray(Offsets)
     offsetShape = arrayOffset.shape
@@ -84,6 +85,29 @@ def ComputeHaralickFeatures(I, Label, Offsets, NumLevels=256, MaxGray=255,
     numOffsets = offsetShape[0]
     listAngles = []
     listDistances = []
+
+    for i in range(0, len(arrayOffset)):
+        # angle is 0
+        if (arrayOffset[i][0] == 0) & (arrayOffset[i][1] > 0):
+            listAngles = np.append(listAngles, 0)
+            listDistances = np.append(listDistances, arrayOffset[i][1])
+        # angle is np.pi/2
+        elif (arrayOffset[i][0] < 0) & (arrayOffset[i][1] == 0):
+            listAngles = np.append(listAngles, np.pi/2)
+            listDistances = np.append(listDistances, abs(arrayOffset[i][0]))
+        elif abs(arrayOffset[i][0]) == abs(arrayOffset[i][1]):
+            # angle is np.pi/4
+            if (arrayOffset[i][0] < 0) & (arrayOffset[i][1] > 0):
+                listAngles = np.append(listAngles, np.pi/4)
+                listDistances = np.append(listDistances, arrayOffset[i][1])
+            # angle is 3*np.pi/4
+            elif (arrayOffset[i][0] < 0) & (arrayOffset[i][1] < 0):
+                listAngles = np.append(listAngles, 3*np.pi/4)
+                listDistances = np.append(listDistances, abs(arrayOffset[i][0]))
+            else:
+                raise ValueError("Current Offset format is not availabe.")
+        else:
+            raise ValueError("Current Offset format is not availabe.")
 
     # initialize sub panda dataframe
     subDataframe = np.zeros((numofLabels, len(featureList)*2))
