@@ -5,7 +5,7 @@ from skimage.measure import regionprops
 
 
 def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
-                            MaxGray=255, MinGray=0):
+                            MaxGray=255, MinGray=0):  # noqa: C901
     """
     Calculates 26 Haralick features from an intensity image with the labels.
 
