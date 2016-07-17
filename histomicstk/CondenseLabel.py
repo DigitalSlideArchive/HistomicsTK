@@ -32,11 +32,11 @@ def CondenseLabel(Label):
     Condensed = np.zeros(Label.shape, dtype=np.uint32)
 
     # get pixel list for each object
-    Props = ms.regionprops(Label.astype(np.int))
+    Props = ms.regionprops(Label)
 
     # fill in new values
     for i in range(len(Unique)):
         Coords = Props[i].coords
-        Condensed[Coords[:, 0], Coords[:, 1]] = i
+        Condensed[Coords[:, 0], Coords[:, 1]] = i+1
 
     return Condensed
