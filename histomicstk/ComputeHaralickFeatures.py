@@ -4,7 +4,7 @@ import skimage.feature
 from skimage.measure import regionprops
 
 
-def ComputeHaralickFeatures(I, Label, Offset, NumLevels=256,
+def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
                             MaxGray=255, MinGray=0):
     """
     Calculates 26 Haralick features from an intensity image with the labels.
@@ -17,6 +17,7 @@ def ComputeHaralickFeatures(I, Label, Offset, NumLevels=256,
         M x N label image.
     Offset : array_like
         Specifies common angles for a 2D image, given the pixel distacne D.
+        Defalut value = [[0,1]]
         AngleXY     OFFSET
         -------     ------
         0           [0 D]
@@ -65,20 +66,8 @@ def ComputeHaralickFeatures(I, Label, Offset, NumLevels=256,
 
     # check for Offset
     offsetShape = np.asarray(Offset).shape
-    if (offsetShape[1] != 2):
+    if (len(offsetShape) != 2):
         raise ValueError("Shape of Offset should be an numOffsets by 2")
-
-    # check for NumLevels
-    if isinstance(NumLevels, int) is False:
-        raise ValueError("NumLevels should be an integer")
-
-    # check for MaxGray
-    if isinstance(MaxGray, int) is False:
-        raise ValueError("MaxGray should be an integer")
-
-    # check for MinGray
-    if isinstance(MinGray, int) is False:
-        raise ValueError("MinGray should be an integer")
 
     # restict the range of intensity from MinGray to MaxGray
     I = np.clip(I, MinGray, MaxGray)
@@ -103,34 +92,31 @@ def ComputeHaralickFeatures(I, Label, Offset, NumLevels=256,
     # decodes angels and distances
     numOffsets = offsetShape[0]
     arrayOffset = np.asarray(Offset)
-    arrayAngles = np.zeros((numOffsets))
-    arrayDistances = np.zeros((numOffsets))
+    listAngles = []
+    listDistances = []
 
     for i in range(0, len(arrayOffset)):
         # angle is 0
         if (arrayOffset[i][0] == 0) & (arrayOffset[i][1] > 0):
-            arrayAngles[i] = 0
-            arrayDistances[i] = arrayOffset[i][1]
+            listAngles = np.append(listAngles, 0)
+            listDistances = np.append(listDistances, arrayOffset[i][1])
         # angle is np.pi/2
         elif (arrayOffset[i][0] < 0) & (arrayOffset[i][1] == 0):
-            arrayAngles[i] = np.pi/2
-            arrayDistances[i] = abs(arrayOffset[i][0])
-        # angle is np.pi/4
-        elif (abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) & \
-             (arrayOffset[i][0] < 0) & (arrayOffset[i][1] > 0):
-            arrayAngles[i] = np.pi/4
-            arrayDistances[i] = arrayOffset[i][1]
-        # angle is 3*np.pi/4
-        elif (abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) & \
-             (arrayOffset[i][0] < 0) & (arrayOffset[i][1] < 0):
-            arrayAngles[i] = 3*np.pi/4
-            arrayDistances[i] = abs(arrayOffset[i][0])
+            listAngles = np.append(listAngles, np.pi/2)
+            listDistances = np.append(listDistances, abs(arrayOffset[i][0]))
+        elif abs(arrayOffset[i][0]) == abs(arrayOffset[i][1]):
+            # angle is np.pi/4
+            if (arrayOffset[i][0] < 0) & (arrayOffset[i][1] > 0):
+                listAngles = np.append(listAngles, np.pi/4)
+                listDistances = np.append(listDistances, arrayOffset[i][1])
+            # angle is 3*np.pi/4
+            elif (arrayOffset[i][0] < 0) & (arrayOffset[i][1] < 0):
+                listAngles = np.append(listAngles, 3*np.pi/4)
+                listDistances = np.append(listDistances, abs(arrayOffset[i][0]))
+            else:
+                raise ValueError("Current Offset format is not availabe.")
         else:
             raise ValueError("Current Offset format is not availabe.")
-
-    # converts arrays to lists
-    listAngles = arrayAngles.tolist()
-    listDistances = arrayDistances.tolist()
 
     # initialize sub panda dataframe
     subDataframe = np.zeros((numofLabels, len(featureList)*2))
