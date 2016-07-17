@@ -4,8 +4,8 @@ import skimage.feature
 from skimage.measure import regionprops
 
 
-def ComputeHaralickFeatures(I, Label, NumLevels=256, MaxGray=255,
-                            MinGray=0):
+def ComputeHaralickFeatures(I, Label, Offsets=[[0, 1]], NumLevels=256,
+                            MaxGray=255, MinGray=0):
     """
     Calculates 26 Haralick features from an intensity image with the labels.
 
@@ -17,6 +17,7 @@ def ComputeHaralickFeatures(I, Label, NumLevels=256, MaxGray=255,
         M x N label image.
     Offsets : array_like
         Specifies common angles for a 2D image, given the pixel distacne D.
+        Default value = [[0, 1]]
         AngleXY     OFFSET
         -------     ------
         0           [0 D]
@@ -54,7 +55,6 @@ def ComputeHaralickFeatures(I, Label, NumLevels=256, MaxGray=255,
     if len(I.shape) != 2:  # color image
         raise ValueError("Inputs 'I' should be a grayscale image")
 
-    Offsets = [[0, 1]]
     # check for Offset
     arrayOffset = np.asarray(Offsets)
     offsetShape = arrayOffset.shape
@@ -86,28 +86,21 @@ def ComputeHaralickFeatures(I, Label, NumLevels=256, MaxGray=255,
     listAngles = []
     listDistances = []
 
-    for i in range(0, len(arrayOffset)):
-        # angle is 0
-        if (arrayOffset[i][0] == 0) & (arrayOffset[i][1] > 0):
-            listAngles = np.append(listAngles, 0)
-            listDistances = np.append(listDistances, arrayOffset[i][1])
-        # angle is np.pi/2
-        elif (arrayOffset[i][0] < 0) & (arrayOffset[i][1] == 0):
-            listAngles = np.append(listAngles, np.pi/2)
-            listDistances = np.append(listDistances, abs(arrayOffset[i][0]))
-        elif abs(arrayOffset[i][0]) == abs(arrayOffset[i][1]):
-            # angle is np.pi/4
-            if (arrayOffset[i][0] < 0) & (arrayOffset[i][1] > 0):
-                listAngles = np.append(listAngles, np.pi/4)
-                listDistances = np.append(listDistances, arrayOffset[i][1])
-            # angle is 3*np.pi/4
-            elif (arrayOffset[i][0] < 0) & (arrayOffset[i][1] < 0):
-                listAngles = np.append(listAngles, 3*np.pi/4)
-                listDistances = np.append(listDistances, abs(arrayOffset[i][0]))
-            else:
-                raise ValueError("Current Offset format is not availabe.")
+    # compute angles from cartesian coordinates
+    arrayAngles = np.arctan2(arrayOffset[:, 0], arrayOffset[:, 1])
+    for i in range(0, len(arrayAngles)):
+        if arrayAngles[i] == 0:
+            listDistances = np.append(listDistances, abs(arrayOffset[i, 1]))
+        elif arrayAngles[i] == np.pi/2:
+            listDistances = np.append(listDistances, abs(arrayOffset[i, 0]))
+        elif arrayAngles[i] == np.pi/4:
+            listDistances = np.append(listDistances, abs(arrayOffset[i, 1]))
+        elif arrayAngles[i] == 3*np.pi/4:
+            listDistances = np.append(listDistances, abs(arrayOffset[i, 0]))
         else:
             raise ValueError("Current Offset format is not availabe.")
+
+    listAngles = arrayAngles.tolist()
 
     # initialize sub panda dataframe
     subDataframe = np.zeros((numofLabels, len(featureList)*2))
