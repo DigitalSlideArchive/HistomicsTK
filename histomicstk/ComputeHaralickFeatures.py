@@ -1,30 +1,43 @@
 import numpy as np
 import pandas as pd
 import skimage.feature
+from skimage.measure import regionprops
 
 
-def ComputeHaralickFeatures(I, Dst=1, A=15, Ng=256):
+def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
+    MaxGray=255, MinGray=0):
     """
-    Calculates 26 Haralick features from an image
+    Calculates 26 Haralick features from an intensity image with the labels.
+
     Parameters
     ----------
     I : array_like
-        An intensity image
-    Dst : inetger
-        Distance of neighboring pixels in an image. Default value = 1.
-    A : integer
-        Angle parameter 0 45 90 135. Range 1 to 15. Default value = 15.
-        e.g.) 1111 = 15(all), 1010 = 10(0 and 90)
-        1 - 0       5 - 0 90        9 - 0 135       13 - 0 90 135
-        2 - 45      6 - 45 90       10 - 45 135     14 - 45 90 136
-        3 - 0 45    7 - 0 45 90     11 - 0 45 135   15 - all
-        4 - 90      8 - 135         12 - 90 135
-    Ng : integer
-        Number of gray level co-occurance matrix. Default value = 256.
+        M x N intensity image.
+    Label : array_like
+        M x N label image.
+    Offset : array_like
+        Specifies common angles for a 2D image, given the pixel distacne D.
+        Defalut value = [[0, 1]], angle is 0 and distance is 1.
+        AngleXY     OFFSET
+        -------     ------
+        0           [0 D]
+        45          [-D D]
+        90          [-D 0]
+        135         [-D -D]
+    NumLevels : integer
+        Specifies the number of gray level. NumLevels determines the size of
+        the gray-level co-occurrence matrix.
+        Default value = 256.
+    MaxGray : integer
+        Specifies a maximum grayscale value in I. Defalut value = 255
+    MinGray : integer
+        Specifies a minimum grayscale value in I. Defalut value = 0
+
     Returns
     -------
     df : 2-dimensional labeled data structure, float64
         Pandas data frame.
+
     References
     ----------
     .. [1] Haralick, et al. "Textural features for image classification,"
@@ -33,66 +46,157 @@ def ComputeHaralickFeatures(I, Dst=1, A=15, Ng=256):
     .. [2] Luis Pedro Coelho. "Mahotas: Open source software for scriptable
     computer vision," Journal of Open Research Software, vol 1, 2013.
     """
+
+    # check for consistent shapes between 'I' and 'Label'
+    if I.shape != Label.shape:
+        raise ValueError("Inputs 'I' and 'Label' must have same shape")
+
+    # determine image type
+    if np.issubclass_(I.dtype.type, np.float_):
+        if I.max() < 1.0:
+            I = I * 255
+            I = I.astype(np.uint8)
+    elif np.issubclass_(I.dtype.type, np.bool_):
+        I = I.astype(np.uint8)
+        I = I * 255
+
+    # determine if image is grayscale or RGB
+    if len(I.shape) != 2:  # color image
+        raise ValueError("Inputs 'I' should be a grayscale image")
+
+    # check for Offset
+    offsetShape = np.asarray(Offset).shape
+    if (offsetShape[1] != 2):
+         raise ValueError("Shape of Offset should be an numOffsets by 2")
+
+    # check for NumLevels
+    if isinstance(NumLevels, int) == False:
+        raise ValueError("NumLevels should be an integer")
+
+    # check for MaxGray
+    if isinstance(MaxGray, int) == False:
+        raise ValueError("MaxGray should be an integer")
+
+    # check for MinGray
+    if isinstance(MinGray, int) == False:
+        raise ValueError("MinGray should be an integer")
+
+    # restict the range of intensity from MinGray to MaxGray
+    I = np.clip(I, MinGray, MaxGray)
+
+    # initialize feature names
+    featureList = [
+        'ASM', 'Contrast', 'Correlation', 'SumofSquar',
+        'IDM', 'SumAverage', 'SumVariance', 'SumEntropy', 'Entropy',
+        'Variance', 'DifferenceEntropy', 'IMC1', 'IMC2'
+    ]
+
     # initialize panda dataframe
-    df = pd.DataFrame()
-    # check if angles are in 0 45 90 135
-    if A > 0 and A < 16:
-        # sets 4 angles
-        Angles = [3*np.pi/4, np.pi/2, np.pi/4, 0]
-        # computes index of angles
-        IndexofAngles = list(bin(A))[2:]
-        newAngles = []
-        for i in range(0, len(Angles)):
-            if IndexofAngles[i] == '1':
-                newAngles = np.append(newAngles, Angles[i])
+    columnList = []
+    for i in range(0, len(featureList)):
+        columnList.append(featureList[i] + 'Mean')
+        columnList.append(featureList[i] + 'Range')
+    df = pd.DataFrame(columns=columnList)
+
+    # gets total number of regions
+    numofLabels = Label.max()
+
+    # decodes angels and distances
+    numOffsets = offsetShape[0]
+    arrayOffset = np.asarray(Offset)
+    arrayAngles = np.zeros((numOffsets))
+    arrayDistances = np.zeros((numOffsets))
+
+    for i in range(0, len(arrayOffset)):
+        # angle is 0
+        if (arrayOffset[i][0] == 0) and (arrayOffset[i][1] > 0):
+            arrayAngles[i] = 0
+            arrayDistances[i] = arrayOffset[i][1]
+        # angle is np.pi/2
+        elif (arrayOffset[i][0] < 0) and (arrayOffset[i][1] == 0):
+            arrayAngles[i] = np.pi/2
+            arrayDistances[i] = abs(arrayOffset[i][0])
+        # angle is np.pi/4
+        elif (abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) and \
+            (arrayOffset[i][0] < 0) and (arrayOffset[i][1] > 0):
+            arrayAngles[i] = np.pi/4
+            arrayDistances[i] = arrayOffset[i][1]
+        # angle is 3*np.pi/4
+        elif (abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) and \
+            (arrayOffset[i][0] < 0) and (arrayOffset[i][1] < 0):
+            arrayAngles[i] = 3*np.pi/4
+            arrayDistances[i] = abs(arrayOffset[i][0])
+        else:
+            raise ValueError("Current Offset format is not availabe.")
+
+    # converts arrays to lists
+    listAngles = arrayAngles.tolist()
+    listDistances = arrayDistances.tolist()
+
+    # initialize sub panda dataframe
+    subDataframe = np.zeros((numofLabels, len(featureList)*2))
+
+    # extract feature information
+    for region in regionprops(Label):
+        # get bounds of an intensity image
+        box = region.bbox
+        # grab nucleus mask
+        subImage = I[box[0]:box[2], box[1]:box[3]].astype(np.uint8)
+
         # gets GLCM or gray-tone spatial dependence matrix
-        P_ij = skimage.feature.greycomatrix(
-            I, [Dst], newAngles, symmetric=True, levels=Ng
+        arrayGLCM = skimage.feature.greycomatrix(
+            subImage, listDistances, listAngles,
+            symmetric=True, levels=NumLevels
         )
+        # gets size x and y of GLCM
+        sizeX = arrayGLCM.shape[0]
+        sizeY = arrayGLCM.shape[1]
+        offsetsGLCM = np.zeros((sizeX, sizeY, numOffsets))
         # initialize a feature set for 13 features
-        f = np.zeros((13, len(newAngles)))
+        f = np.zeros((13, numOffsets))
         # initialize H for 26 features
         H = np.zeros(26)
-        for r in range(0, len(newAngles)):
-            # gets sum of array for each angle
-            R = np.sum(P_ij[:, :, 0, r], dtype=np.float)
-            # gets normalized gray-tone spatial dependence matrix
-            p_ij = P_ij[:, :, 0, r]/R
-            # gets marginal-probability matrix summing the rows of p_ij
-            px = np.sum(p_ij, axis=1)
-            py = np.sum(p_ij, axis=0)
-            # initialize marginal-probability matrix sets summing p_ij
-            # that i+j = k or i-j = k
-            pxPlusy = np.zeros(2*Ng-1)
-            pxMinusy = np.zeros(Ng)
+        for r in range(0, numOffsets):
+            # get each offset GLCM
+            offsetsGLCM[:, :, r] = arrayGLCM[:, :, r, r]
+            # normalize GLCM
+            R = np.sum(offsetsGLCM[:, :, r], dtype=np.float)
+            nGLCM = offsetsGLCM[:, :, r]/R
+            # get marginal-probability matrix summing the rows
+            px = np.sum(nGLCM, axis=1)
+            py = np.sum(nGLCM, axis=0)
+            # initialize marginal-probability matrix sets
+            # summing normalizedGLCM such that i+j = k or i-j = k
+            pxPlusy = np.zeros(2*NumLevels-1)
+            pxMinusy = np.zeros(NumLevels)
             # arbitarily small positive constant to avoid log 0
             e = 0.00001
-            for i in range(0, Ng):
-                for j in range(0, Ng):
+            for i in range(0, NumLevels):
+                for j in range(0, NumLevels):
                     # gets marginal-probability matrix
-                    pxPlusy[i+j] = pxPlusy[i+j] + p_ij[i, j]
-                    pxMinusy[abs(i-j)] = pxMinusy[abs(i-j)] + p_ij[i, j]
+                    pxPlusy[i+j] = pxPlusy[i+j] + nGLCM[i, j]
+                    pxMinusy[abs(i-j)] = pxMinusy[abs(i-j)] + nGLCM[i, j]
             # f0: computes angular second moment
-            f[0, r] = np.sum(np.square(p_ij))
+            f[0, r] = np.sum(np.square(nGLCM))
             # f1: computes contrast
-            n_Minus = np.arange(Ng)
+            n_Minus = np.arange(NumLevels)
             f[1, r] = np.dot(np.square(n_Minus), pxMinusy)
             # f2: computes correlation
             # gets weighted mean and standard deviation of px and py
             meanx = np.dot(n_Minus, px)
             variance = np.dot(px, np.square(n_Minus)) - np.square(meanx)
-            p_ijr = np.ravel(p_ij)
-            i, j = np.mgrid[0:Ng, 0:Ng]
+            nGLCMr = np.ravel(nGLCM)
+            i, j = np.mgrid[0:NumLevels, 0:NumLevels]
             ij = i*j
-            f[2, r] = (np.dot(np.ravel(ij), p_ijr) - np.square(meanx)) / \
+            f[2, r] = (np.dot(np.ravel(ij), nGLCMr) - np.square(meanx)) / \
                 variance
             # f3: computes sum of squares : variance
             f[3, r] = variance
             # f4: computes inverse difference moment
             ij_IDM = 1. / (1+np.square(i-j))
-            f[4, r] = np.dot(np.ravel(ij_IDM), p_ijr)
+            f[4, r] = np.dot(np.ravel(ij_IDM), nGLCMr)
             # f5: computes sum average
-            n_Plus = np.arange(2*Ng-1)
+            n_Plus = np.arange(2*NumLevels-1)
             f[5, r] = np.dot(n_Plus, pxPlusy)
             # f6: computes sum variance
             # [1] uses sum entropy, but we use sum average
@@ -101,7 +205,7 @@ def ComputeHaralickFeatures(I, Dst=1, A=15, Ng=256):
             # f7: computes sum entropy
             f[7, r] = -np.dot(pxPlusy, np.log2(pxPlusy+e))
             # f8: computes entropy
-            f[8, r] = -np.dot(p_ijr, np.log2(p_ijr+e))
+            f[8, r] = -np.dot(nGLCMr, np.log2(nGLCMr+e))
             # f9: computes variance px-y
             f[9, r] = np.var(pxMinusy)
             # f10: computes difference entropy px-y
@@ -113,23 +217,19 @@ def ComputeHaralickFeatures(I, Dst=1, A=15, Ng=256):
             HXY = f[8, r]
             pxy_ij = np.outer(px, py)
             pxy_ijr = np.ravel(pxy_ij)
-            HXY1 = -np.dot(p_ijr, np.log2(pxy_ijr+e))
+            HXY1 = -np.dot(nGLCMr, np.log2(pxy_ijr+e))
             HXY2 = -np.dot(pxy_ijr, np.log2(pxy_ijr+e))
             f[11, r] = (HXY-HXY1)/max(HX, HY)
             # f12: computes information measures of correlation
             f[12, r] = np.sqrt(1 - np.exp(-2.0*(HXY2-HXY)))
-        # computes means and ranges of the 13 features with 4 angles
+        # computes means and ranges of the features
         H[:13] = np.mean(f, axis=1)
         H[13:26] = np.ptp(f, axis=1)
 
-        ListofFeatures = [
-            'ASM', 'Contrast', 'Correlation', 'SumofSquar',
-            'IDM', 'SumAverage', 'SumVariance', 'SumEntropy', 'Entropy',
-            'Variance', 'DifferenceEntropy', 'IMC1', 'IMC2'
-        ]
+        subDataframe[region.label-1, :] = H
 
-        for i in range(0, 13):
-            df[ListofFeatures[i] + 'Mean'] = [H[i]]
-            df[ListofFeatures[i] + 'Range'] = H[i+13]
+    for i in range(0, len(featureList)):
+        df[featureList[i] + 'Mean'] = subDataframe[:, i]
+        df[featureList[i] + 'Range'] = subDataframe[:, i+len(featureList)]
 
     return df
