@@ -4,7 +4,8 @@ import skimage.feature
 from skimage.measure import regionprops
 
 
-def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256, MaxGray=255, MinGray=0):
+def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256, \
+    MaxGray=255, MinGray=0):
     """
     Calculates 26 Haralick features from an intensity image with the labels.
 
@@ -116,13 +117,13 @@ def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256, MaxGray=25
             arrayAngles[i] = np.pi/2
             arrayDistances[i] = abs(arrayOffset[i][0])
         # angle is np.pi/4
-        elif ((abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) & \
-        (arrayOffset[i][0] < 0) & (arrayOffset[i][1] > 0)):
+        elif (abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) & \
+        (arrayOffset[i][0] < 0) & (arrayOffset[i][1] > 0):
             arrayAngles[i] = np.pi/4
             arrayDistances[i] = arrayOffset[i][1]
         # angle is 3*np.pi/4
-        elif ((abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) & \
-        (arrayOffset[i][0] < 0) & (arrayOffset[i][1] < 0)):
+        elif (abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) & \
+        (arrayOffset[i][0] < 0) & (arrayOffset[i][1] < 0):
             arrayAngles[i] = 3*np.pi/4
             arrayDistances[i] = abs(arrayOffset[i][0])
         else:
