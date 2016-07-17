@@ -4,7 +4,7 @@ import skimage.feature
 from skimage.measure import regionprops
 
 
-def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
+def ComputeHaralickFeatures(I, Label, Offset, NumLevels=256,
                             MaxGray=255, MinGray=0):
     """
     Calculates 26 Haralick features from an intensity image with the labels.
@@ -17,7 +17,6 @@ def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
         M x N label image.
     Offset : array_like
         Specifies common angles for a 2D image, given the pixel distacne D.
-        Defalut value = [[0, 1]], angle is 0 and distance is 1.
         AngleXY     OFFSET
         -------     ------
         0           [0 D]
