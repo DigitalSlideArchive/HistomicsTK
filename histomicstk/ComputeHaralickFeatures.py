@@ -4,8 +4,8 @@ import skimage.feature
 from skimage.measure import regionprops
 
 
-def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
-                            MaxGray=255, MinGray=0):  # noqa: C901
+def ComputeHaralickFeatures(I, Label, Offsets, NumLevels=256, MaxGray=255,
+                            MinGray=0):  # noqa: C901
     """
     Calculates 26 Haralick features from an intensity image with the labels.
 
@@ -15,9 +15,8 @@ def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
         M x N intensity image.
     Label : array_like
         M x N label image.
-    Offset : array_like
+    Offsets : array_like
         Specifies common angles for a 2D image, given the pixel distacne D.
-        Defalut value = [[0,1]]
         AngleXY     OFFSET
         -------     ------
         0           [0 D]
@@ -51,21 +50,13 @@ def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
     if I.shape != Label.shape:
         raise ValueError("Inputs 'I' and 'Label' must have same shape")
 
-    # determine image type
-    if np.issubclass_(I.dtype.type, np.float_):
-        if I.max() < 1.0:
-            I = I * 255
-            I = I.astype(np.uint8)
-    elif np.issubclass_(I.dtype.type, np.bool_):
-        I = I.astype(np.uint8)
-        I = I * 255
-
     # determine if image is grayscale or RGB
     if len(I.shape) != 2:  # color image
         raise ValueError("Inputs 'I' should be a grayscale image")
 
     # check for Offset
-    offsetShape = np.asarray(Offset).shape
+    arrayOffset = np.asarray(Offsets)
+    offsetShape = arrayOffset.shape
     if (len(offsetShape) != 2):
         raise ValueError("Shape of Offset should be an numOffsets by 2")
 
@@ -91,7 +82,6 @@ def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
 
     # decodes angels and distances
     numOffsets = offsetShape[0]
-    arrayOffset = np.asarray(Offset)
     listAngles = []
     listDistances = []
 
