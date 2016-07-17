@@ -83,19 +83,14 @@ def ComputeHaralickFeatures(I, Label, Offsets=[[0, 1]], NumLevels=256,
 
     # decodes angels and distances
     numOffsets = offsetShape[0]
-    listAngles = []
     listDistances = []
 
     # compute angles from cartesian coordinates
     arrayAngles = np.arctan2(arrayOffset[:, 0], arrayOffset[:, 1])
     for i in range(0, len(arrayAngles)):
-        if arrayAngles[i] == 0:
+        if (arrayAngles[i] == 0) | (arrayAngles[i] == np.pi/4):
             listDistances = np.append(listDistances, abs(arrayOffset[i, 1]))
-        elif arrayAngles[i] == np.pi/2:
-            listDistances = np.append(listDistances, abs(arrayOffset[i, 0]))
-        elif arrayAngles[i] == np.pi/4:
-            listDistances = np.append(listDistances, abs(arrayOffset[i, 1]))
-        elif arrayAngles[i] == 3*np.pi/4:
+        elif (arrayAngles[i] == np.pi/2) | (arrayAngles[i] == 3*np.pi/4):
             listDistances = np.append(listDistances, abs(arrayOffset[i, 0]))
         else:
             raise ValueError("Current Offset format is not availabe.")
