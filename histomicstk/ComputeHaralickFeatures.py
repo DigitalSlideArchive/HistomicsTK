@@ -4,8 +4,7 @@ import skimage.feature
 from skimage.measure import regionprops
 
 
-def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
-    MaxGray=255, MinGray=0):
+def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256, MaxGray=255, MinGray=0):
     """
     Calculates 26 Haralick features from an intensity image with the labels.
 
@@ -67,18 +66,18 @@ def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
     # check for Offset
     offsetShape = np.asarray(Offset).shape
     if (offsetShape[1] != 2):
-         raise ValueError("Shape of Offset should be an numOffsets by 2")
+        raise ValueError("Shape of Offset should be an numOffsets by 2")
 
     # check for NumLevels
-    if isinstance(NumLevels, int) == False:
+    if isinstance(NumLevels, int) is False:
         raise ValueError("NumLevels should be an integer")
 
     # check for MaxGray
-    if isinstance(MaxGray, int) == False:
+    if isinstance(MaxGray, int) is False:
         raise ValueError("MaxGray should be an integer")
 
     # check for MinGray
-    if isinstance(MinGray, int) == False:
+    if isinstance(MinGray, int) is False:
         raise ValueError("MinGray should be an integer")
 
     # restict the range of intensity from MinGray to MaxGray
@@ -109,21 +108,21 @@ def ComputeHaralickFeatures(I, Label, Offset=[[0, 1]], NumLevels=256,
 
     for i in range(0, len(arrayOffset)):
         # angle is 0
-        if (arrayOffset[i][0] == 0) and (arrayOffset[i][1] > 0):
+        if (arrayOffset[i][0] == 0) & (arrayOffset[i][1] > 0):
             arrayAngles[i] = 0
             arrayDistances[i] = arrayOffset[i][1]
         # angle is np.pi/2
-        elif (arrayOffset[i][0] < 0) and (arrayOffset[i][1] == 0):
+        elif (arrayOffset[i][0] < 0) & (arrayOffset[i][1] == 0):
             arrayAngles[i] = np.pi/2
             arrayDistances[i] = abs(arrayOffset[i][0])
         # angle is np.pi/4
-        elif (abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) and \
-            (arrayOffset[i][0] < 0) and (arrayOffset[i][1] > 0):
+        elif ((abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) & \
+        (arrayOffset[i][0] < 0) & (arrayOffset[i][1] > 0)):
             arrayAngles[i] = np.pi/4
             arrayDistances[i] = arrayOffset[i][1]
         # angle is 3*np.pi/4
-        elif (abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) and \
-            (arrayOffset[i][0] < 0) and (arrayOffset[i][1] < 0):
+        elif ((abs(arrayOffset[i][0]) == abs(arrayOffset[i][1])) & \
+        (arrayOffset[i][0] < 0) & (arrayOffset[i][1] < 0)):
             arrayAngles[i] = 3*np.pi/4
             arrayDistances[i] = abs(arrayOffset[i][0])
         else:
