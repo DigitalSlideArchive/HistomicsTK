@@ -23,11 +23,10 @@ from .gLoG import gLoG
 from .GradientDiffusion import GradientDiffusion
 from .GradientFlow import GradientFlow
 from .GraphColorSequential import GraphColorSequential
+from .Hessian import Hessian
 from .LabelPerimeter import LabelPerimeter
 from .LabelRegionAdjacency import LabelRegionAdjacency
 from .MaxClustering import MaxClustering
-from .MembraneFilter import MembraneFilter
-from .Membraneness import Membraneness
 from .MergeColinear import MergeColinear
 from .MergeSinks import MergeSinks
 from .MinimumModel import MinimumModel
@@ -74,11 +73,10 @@ __all__ = ('AreaOpenLabel',
            'gLoG',
            'GradientDiffusion',
            'GradientFlow',
+           'Hessian',
            'LabelPerimeter',
            'LabelRegionAdjacency',
            'MaxClustering',
-           'MembraneFilter',
-           'Membraneness',
            'MergeColinear',
            'MergeSinks',
            'MinimumModel',
