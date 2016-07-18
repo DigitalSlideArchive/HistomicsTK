@@ -1,25 +1,11 @@
-# This is the Dockerfile for the docker image used by all CLIs as a base image
+# This Dockerfile is used to generate the docker image dsarchive/histomicstk
+# This docker image includes miniconda, python wrapped ITK, and the HistomicsTK
+# python package along with their dependencies.
+#
+# All plugins of HistomicsTK should derive from this docker image
 
-FROM ubuntu:14.04
+FROM dsarchive/base_docker_image
 MAINTAINER Deepak Chittajallu <deepak.chittajallu@kitware.com>
-
-# Install system prerequisites
-RUN apt-get update && \
-    apt-get install -y git wget python-qt4\
-    openslide-tools python-openslide && \
-    apt-get autoremove && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Install miniconda
-ENV build_path=$PWD/build
-RUN mkdir -p $build_path && \
-    wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
-    -O $build_path/install_miniconda.sh && \
-    bash $build_path/install_miniconda.sh -b -p $build_path/miniconda && \
-    rm $build_path/install_miniconda.sh && \
-    chmod -R +r $build_path && \
-    chmod +x $build_path/miniconda/bin/python
-ENV PATH=$build_path/miniconda/bin:${PATH}
 
 # git clone install ctk-cli
 RUN git clone https://github.com/cdeepakroy/ctk-cli.git && cd ctk-cli \
@@ -42,6 +28,9 @@ RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     # clean up
     conda clean -i -l -t -y && \
     rm -rf /root/.cache/pip/*
+
+# pregenerate font cache
+RUN python -c "from matplotlib import pylab"
 
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server

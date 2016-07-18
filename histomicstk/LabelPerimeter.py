@@ -54,4 +54,4 @@ def LabelPerimeter(L, Connectivity=4):
         Mask = np.logical_or(Mask, Temp)
 
     # generate label-valued output
-    return Mask.astype(np.float) * L
+    return Mask.astype(np.uint32) * L

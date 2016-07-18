@@ -7,8 +7,46 @@ _.extend(histomicstk, {
     models: {},
     collections: {},
     views: {},
-    router: new Backbone.Router(),
-    events: _.clone(Backbone.Events)
+    router: new (girder.Router.extend({
+        setQuery: function (name, value, options) {
+            var curRoute = Backbone.history.fragment,
+                routeParts = girder.dialogs.splitRoute(curRoute),
+                queryString = girder.parseQueryString(routeParts.name);
+            if (value === undefined || value === null) {
+                delete queryString[name];
+            } else {
+                queryString[name] = value;
+            }
+            var unparsedQueryString = $.param(queryString);
+            if (unparsedQueryString.length > 0) {
+                unparsedQueryString = '?' + unparsedQueryString;
+            }
+            this.navigate(routeParts.base + unparsedQueryString, options);
+        },
+        execute: function (callback, args) {
+            var query = girder.parseQueryString(args.pop());
+            args.push(query);
+            if (callback) {
+                callback.apply(this, args);
+            }
+
+            _.each(this._lastQueryString || {}, function (value, key) {
+                if (!_.has(query, key)) {
+                    histomicstk.events.trigger('query:' + key, null, query);
+                }
+            });
+            _.each(query, function (value, key) {
+                histomicstk.events.trigger('query:' + key, value, query);
+            });
+            histomicstk.events.trigger('query', query);
+            this._lastQueryString = query;
+        }
+    }))(),
+    events: _.clone(Backbone.Events),
+    dialogs: {
+        login: new girder.views.LoginView({parentView: null}),
+        register: new girder.views.RegisterView({parentView: null})
+    }
 });
 
 (function () {
