@@ -1,5 +1,9 @@
+/* global d3 */
 histomicstk.views.Visualization = girder.View.extend({
     initialize: function () {
+        // rendered annotation layers
+        this._annotations = {};
+
         // the map object
         this._map = null;
 
@@ -7,24 +11,40 @@ histomicstk.views.Visualization = girder.View.extend({
         this._layers = [];
 
         // control model for file widget
-        this._controlModel = new histomicstk.models.Widget({
-            type: 'file'
+        this._controlModel = histomicstk.dialogs.image.model;
+
+        this._annotationList = new histomicstk.views.AnnotationSelectorWidget({
+            parentView: this
         });
 
-        // control widget view
-        this._controlView = new histomicstk.views.ControlWidget({
-            parentView: this,
-            model: this._controlModel
-        });
+        // extra scaling factor to handle images that are not powers of 2 in size
+        this._unitsPerPixel = 1;
+
+        // prebind the onResize method so we can remove it on destroy
+        this._onResize = _.bind(this._onResize, this);
+
+        // create a debounced rerender method to delay rendering
+        // until after user navigation is completed
+        this._debouncedRender = _.debounce(_.bind(this._syncViewport, this), 300);
+
+        // shared viewport object for annotation layers
+        this.viewport = new girder.annotation.Viewport();
+        this._onResize();
+        $(window).resize(this._onResize);
 
         this.listenTo(this._controlModel, 'change:value', function (model) {
+            if (!model.get('value')) {
+                return;
+            }
+
             var id = model.get('value').id;
             girder.restRequest({
                 path: 'item/' + id
             })
             .then(_.bind(function (item) {
-                item = new girder.models.ItemModel(item);
-                return this.addItem(item);
+                this._controlModel.get('value').set(item);
+                histomicstk.router.setQuery('image', id);
+                return this.addItem(this._controlModel.get('value'));
             }, this))
             .fail(_.bind(function () {
                 var info = {
@@ -34,9 +54,19 @@ histomicstk.views.Visualization = girder.View.extend({
                     icon: 'attention'
                 };
                 girder.events.trigger('g:alert', info);
-                this._controlView.invalid();
+                histomicstk.router.setQuery('image', null, {replace: true});
             }, this));
         });
+
+        this.listenTo(histomicstk.events, 'query:image', _.bind(function (image) {
+            var currentImage = this._controlModel.get('value') || {};
+            if (image && currentImage.id !== image) {
+                this._controlModel.set('value', new girder.models.ItemModel({_id: image}));
+            } else if (!image) {
+                this.removeItem();
+                this._controlModel.set('value', null);
+            }
+        }, this));
 
         // fallback to canvas renderer rather than dom
         geo.gl.vglRenderer.fallback = function () {return 'canvas';};
@@ -73,7 +103,24 @@ histomicstk.views.Visualization = girder.View.extend({
             discreteZoom: false,
             interactor: interactor
         });
+        window.map = this._map;
+
+        this._syncViewport();
+        this._map.geoOn(geo.event.pan, _.bind(this._onMouseNavigate, this));
         this.$('.h-visualization-body').empty().append(this._map.node());
+    },
+
+    renderAnnotationList: function (item) {
+        if (this._annotationList.collection) {
+            this.stopListening(this._annotationList);
+        }
+        this._annotationList
+            .setItem(item)
+            .setElement(this.$('.h-annotation-panel'))
+            .render()
+            .$el.removeClass('hidden');
+
+        this.listenTo(this._annotationList.collection, 'change:displayed', this._toggleAnnotation);
     },
 
     /**
@@ -90,6 +137,9 @@ histomicstk.views.Visualization = girder.View.extend({
      */
     addItem: function (item) {
         var promise;
+
+        this.resetAnnotations();
+        this.renderAnnotationList(item);
 
         // first check if it is a tiled image
         if (item.id === 'test' || item.has('largeImage')) {
@@ -178,6 +228,16 @@ histomicstk.views.Visualization = girder.View.extend({
         return quad;
     },
 
+    removeItem: function () {
+        this.resetAnnotations();
+        this._annotationList.render().$el.addClass('hidden');
+        if (this._map) {
+            this._map.exit();
+            this._map = null;
+            this.$('.h-visualization-body').empty();
+        }
+    },
+
     /**
      * Add a tiled image as a tileLayer on the view from an options object.
      * The options object takes options supported by geojs's tileLayer:
@@ -220,23 +280,140 @@ histomicstk.views.Visualization = girder.View.extend({
             bottom: opts.sizeY - 1
         });
         layer = this._map.createLayer('osm', opts);
+        this._unitsPerPixel = this._map.unitsPerPixel(opts.maxLevel - 1);
         this._layers.push(layer);
         this._map.draw();
         return layer;
     },
 
+    addAnnotationLayer: function (annotation) {
+        var el = d3.select(this.el)
+                .select('.h-annotation-layers')
+                .append('svg')
+                .node();
+
+        this._onResize();
+        var settings = $.extend({
+            el: el,
+            viewport: this.viewport
+        }, annotation.annotation);
+
+        this._annotations[annotation._id] = new girder.annotation.Annotation(settings).render();
+        return this;
+    },
+
+    removeAnnotationLayer: function (id) {
+        if (_.has(this._annotations, id)) {
+            this._annotations[id].remove();
+            delete this._annotations[id];
+        }
+        return this;
+    },
+
+    resetAnnotations: function () {
+        _.each(_.keys(this._annotations), _.bind(this.removeAnnotationLayer, this));
+        return this;
+    },
+
     render: function () {
 
         this.$el.html(histomicstk.templates.visualization());
-        this._controlView.setElement(this.$('.h-open-image-widget')).render();
-
         return this;
     },
 
     destroy: function () {
+        $(window).off('resize', this._onResize);
         this._map.exit();
         this.$el.empty();
         this._controlModel.destroy();
         girder.View.prototype.destroy.apply(this, arguments);
+    },
+
+    /**
+     * Resize the viewport according to the size of the container.
+     */
+    _onResize: function () {
+        var width = this.$el.width() || 100;
+        var height = this.$el.height() || 100;
+        var layers = this.$('.h-annotation-layers > svg');
+
+        this.viewport.set({
+            width: width,
+            height: height
+        });
+        layers.attr('width', width);
+        layers.attr('height', height);
+        this._syncViewport();
+    },
+
+    /**
+     * Respond to fast firing mouse navigation events by applying transforms
+     * to the svg element so we can debounce the slow rerenders.
+     */
+    _onMouseNavigate: function () {
+        var ul, dz;
+        if (!this._lastCorner) {
+            // do a full rerender if we haven't synced the viewport yet
+            this._syncViewport();
+            return
+        }
+
+        ul = this._map.gcsToDisplay({
+            x: this._lastCorner.x,
+            y: this._lastCorner.y
+        });
+
+        dz = Math.pow(2, this._map.zoom() - this._lastZoom);
+
+        this.$('.h-annotation-layers')
+            .css(
+                'transform',
+                'translate(' + ul.x + 'px,' + ul.y + 'px)scale(' + dz + ')'
+            );
+
+        // schedule a debounced rerender
+        this._debouncedRender();
+    },
+
+    _syncViewport: function () {
+        var bds;
+        if (!this._map) {
+            return;
+        }
+
+        this.$('.h-annotation-layers')
+            .css('transform', '');
+
+        bds = this._map.bounds(undefined, null);
+        this._lastCorner = this._map.displayToGcs({
+            x: 0,
+            y: 0
+        });
+        this._lastZoom = this._map.zoom();
+
+        this.viewport.set({
+            scale: (bds.right - bds.left) / (this.viewport.get('width') * this._unitsPerPixel)
+        });
+        this.viewport.set({
+            top: -bds.top / this._unitsPerPixel,
+            left: bds.left / this._unitsPerPixel
+        });
+    },
+
+    _toggleAnnotation: function (model) {
+        if (model.get('displayed') && !_.has(this._annotations, model.id)) {
+            girder.restRequest({
+                path: 'annotation/' + model.id
+            }).then(_.bind(this.addAnnotationLayer, this));
+        } else if (!model.get('displayed') && _.has(this._annotations, model.id)) {
+            this.removeAnnotationLayer(model.id);
+        }
     }
+});
+
+histomicstk.dialogs.image = new histomicstk.views.ItemSelectorWidget({
+    parentView: null,
+    model: new histomicstk.models.Widget({
+        type: 'file'
+    })
 });

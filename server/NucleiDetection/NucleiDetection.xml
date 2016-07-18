@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <executable>
   <category>HistomicsTK</category>
-  <title>Segments Nuclei</title>
-  <description>Segments nuclei in a whole-slide image</description>
+  <title>Detects Nuclei</title>
+  <description>Detects nuclei in a whole-slide image</description>
   <version>0.1.0</version>
   <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
   <license>Apache 2.0</license>
