@@ -1,10 +1,10 @@
 import numpy as np
 
 from Eigenvalues import Eigenvalues
-from Hessian import Hessian
+from skimage.feature import hessian_matrix
 
 
-def Membraneness(I, Sigma):
+def Membraneness(I, Sigma=1):
     """
     Calculates "membraneness" measure for grayscale image 'I' at scale 'Sigma'.
     Also returns eigenvalues and vectors used for membrane salience filters.
@@ -14,7 +14,7 @@ def Membraneness(I, Sigma):
     I : array_like
         M x N grayscale image.
     Sigma : double
-        standard deviation of gaussian kernel.
+        standard deviation of gaussian kernel. Defalut value = 1
 
     Returns
     -------
@@ -38,7 +38,10 @@ def Membraneness(I, Sigma):
     """
 
     # calculate hessian matrix
-    H = Sigma**2*Hessian(I, Sigma)
+    Hxx, Hxy, Hyy = Sigma**2*hessian_matrix(I, sigma=Sigma)
+
+    H = np.concatenate((Hxx[:, :, None], Hxy[:, :, None], \
+        Hxy[:, :, None], Hyy[:, :, None]), axis=2)
 
     # calculate eigenvalue image
     E, V1, V2 = Eigenvalues(H)
