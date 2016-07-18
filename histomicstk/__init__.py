@@ -46,8 +46,6 @@ __all__ = (
     'AreaOpenLabel',
     'ChanVese',
     'cLoG',
-    'color_deconvolution',
-    'color_normalization',
     'CompactLabel',
     'CondenseLabel',
     'ConvertSchedule',
