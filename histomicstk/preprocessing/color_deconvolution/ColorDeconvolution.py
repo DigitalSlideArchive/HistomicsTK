@@ -1,5 +1,5 @@
-from histomicstk.preprocessing import color_deconvolution
-from histomicstk.preprocessing import color_conversion
+from .. import color_conversion
+from . import ComplementStainMatrix
 
 import collections
 import numpy
@@ -50,7 +50,7 @@ def ColorDeconvolution(I, W):
 
     # complement stain matrix if needed
     if numpy.linalg.norm(W[:, 2]) <= 1e-16:
-        Wc = color_deconvolution.ComplementStainMatrix(W)
+        Wc = ComplementStainMatrix(W)
     else:
         Wc = W.copy()
 
