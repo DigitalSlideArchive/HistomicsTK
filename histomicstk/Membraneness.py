@@ -41,7 +41,7 @@ def Membraneness(I, Sigma=1):
     Hxx, Hxy, Hyy = Sigma**2*hessian_matrix(I, sigma=Sigma)
 
     H = np.concatenate((Hxx[:, :, None], Hxy[:, :, None],
-        Hxy[:, :, None], Hyy[:, :, None]), axis=2)
+                        Hxy[:, :, None], Hyy[:, :, None]), axis=2)
 
     # calculate eigenvalue image
     E, V1, V2 = Eigenvalues(H)
