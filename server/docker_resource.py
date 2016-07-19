@@ -19,19 +19,20 @@
 ###############################################################################
 
 import os
+import six
+import subprocess
+from girder.api.v1.resource import Resource
 
-from girder.api import access
-from girder.api.describe import Description, describeRoute
-from girder.api.rest import boundHandler, RestException
+from .constants import PluginSettings
+from girder.utility.model_importer import ModelImporter
 
 
-@describeRoute(
-    Description('Add Docker to the List of Docker Images girder can acess.')
-    .notes('Only administrators may use this route.')
-    .param('images', 'list of images to import',enum=['dsarchive/histomicstk'])
-    
-)
-@access.admin
-@boundHandler()
-def add(self, params):
-
+class DockerResource(Resource):
+    """Manages the exposed rest api. When the settings are updated te new list
+    of docker images is checked, pre-loaded images will be ignored. New images will
+    cause a job to generate the cli handler and generate the rest endpoint
+    asynchronously.Deleted images will result in the removal of the rest api
+    endpoint though docker will still cache the image unless removed manually
+    (docker rmi image_name)
+    """
+    loadedModules = []
