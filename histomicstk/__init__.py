@@ -27,6 +27,8 @@ from .Hessian import Hessian
 from .LabelPerimeter import LabelPerimeter
 from .LabelRegionAdjacency import LabelRegionAdjacency
 from .MaxClustering import MaxClustering
+from .MembraneFilter import MembraneFilter
+from .Membraneness import Membraneness
 from .MergeColinear import MergeColinear
 from .MergeSinks import MergeSinks
 from .MinimumModel import MinimumModel
@@ -46,7 +48,6 @@ from .SplitLabel import SplitLabel
 from .SubmitTorque import SubmitTorque
 from .TilingSchedule import TilingSchedule
 from .TraceBounds import TraceBounds
-from .Vesselness import Vesselness
 from .WidthOpenLabel import WidthOpenLabel
 
 __version__ = '0.1.0'
@@ -78,6 +79,8 @@ __all__ = ('AreaOpenLabel',
            'LabelPerimeter',
            'LabelRegionAdjacency',
            'MaxClustering',
+           'MembraneFilter',
+           'Membraneness',
            'MergeColinear',
            'MergeSinks',
            'MinimumModel',
@@ -97,5 +100,4 @@ __all__ = ('AreaOpenLabel',
            'SubmitTorque',
            'TilingSchedule',
            'TraceBounds',
-           'Vesselness',
            'WidthOpenLabel')

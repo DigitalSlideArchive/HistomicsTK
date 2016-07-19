@@ -1,20 +1,20 @@
 import numpy as np
 
 from Eigenvalues import Eigenvalues
-from Hessian import Hessian
+from skimage.feature import hessian_matrix
 
 
-def Vesselness(I, Sigma):
+def Membraneness(I, Sigma=1):
     """
-    Calculates "vesselness" measure for grayscale image 'I' at scale 'Sigma'.
-    Also returns eigenvalues and vectors used for vessel salience filters.
+    Calculates "membraneness" measure for grayscale image 'I' at scale 'Sigma'.
+    Also returns eigenvalues and vectors used for membrane salience filters.
 
     Parameters
     ----------
     I : array_like
         M x N grayscale image.
     Sigma : double
-        standard deviation of gaussian kernel.
+        standard deviation of gaussian kernel. Defalut value = 1
 
     Returns
     -------
@@ -27,7 +27,7 @@ def Vesselness(I, Sigma):
         M x N x 2 eigenvalue image - see Eigenvalues.py.
     Theta : array_like
         M x N eigenvector angle image for E(:,:,0) in radians
-            see Eigenvalues.py. Oriented parallel to vessel structures.
+            see Eigenvalues.py.
 
     References
     ----------
@@ -38,7 +38,10 @@ def Vesselness(I, Sigma):
     """
 
     # calculate hessian matrix
-    H = Sigma**2*Hessian(I, Sigma)
+    Hxx, Hxy, Hyy = Sigma**2*hessian_matrix(I, sigma=Sigma)
+
+    H = np.concatenate((Hxx[:, :, None], Hxy[:, :, None],
+                        Hxy[:, :, None], Hyy[:, :, None]), axis=2)
 
     # calculate eigenvalue image
     E, V1, V2 = Eigenvalues(H)
