@@ -28,10 +28,13 @@ def validateSettings(event):
     key, val = event.info['key'], event.info['value']
 
     if key == PluginSettings.DOCKER_IMAGES:
+        print(type(val))
         if isinstance(val, dict):
             properImageName(val)
         elif isinstance(val, list):
+
             for data in val:
+                print(data)
                 if isinstance(data, dict):
                     properImageName(data)
 
@@ -65,4 +68,4 @@ def localDockerImageExists(imageName):
 
 
 SettingDefault.defaults[PluginSettings.DOCKER_IMAGES] = \
-    [{'dsarchive/histomicstk:v0-1-3': None}]
+    {'dsarchive/histomicstk:v0-1-3': None}

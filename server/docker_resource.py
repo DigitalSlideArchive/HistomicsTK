@@ -23,8 +23,6 @@ import six
 import subprocess
 from girder.api.v1.resource import Resource
 
-from .constants import PluginSettings
-from girder.utility.model_importer import ModelImporter
 
 
 class DockerResource(Resource):

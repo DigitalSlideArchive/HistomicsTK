@@ -5,7 +5,7 @@ from girder.utility.webroot import Webroot
 
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDocker
 from .handlers import process_annotations
-from .constants import *
+from .constants import PluginSettings
 from girder.utility.model_importer import ModelImporter
 _template = os.path.join(
     os.path.dirname(__file__),
@@ -23,7 +23,7 @@ def load(info):
     info['serverRoot'].histomicstk = histomicsRoot
     info['serverRoot'].girder = girderRoot
 
-    img_list = [str(key) for dic in getDockerImages() for key in list(dic)]
+    img_list = [str(key) for key in getDockerImages()]
     print(img_list)
     print(getDockerImages())
     genRESTEndPointsForSlicerCLIsInDocker(
