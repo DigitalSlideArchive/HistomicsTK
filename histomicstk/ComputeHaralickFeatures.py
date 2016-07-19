@@ -5,7 +5,7 @@ from skimage.measure import regionprops
 
 
 def ComputeHaralickFeatures(I, Label, Offsets=[[0, 1]], NumLevels=256,
-                            MaxGray=255, MinGray=0):
+                            GrayLimits=[]):
     """
     Calculates 26 Haralick features from an intensity image with the labels.
 
@@ -26,12 +26,13 @@ def ComputeHaralickFeatures(I, Label, Offsets=[[0, 1]], NumLevels=256,
         135         [-D -D]
     NumLevels : integer
         Specifies the number of gray level. NumLevels determines the size of
-        the gray-level co-occurrence matrix.
-        Default value = 256.
-    MaxGray : integer
-        Specifies a maximum grayscale value in I. Defalut value = 255
-    MinGray : integer
-        Specifies a minimum grayscale value in I. Defalut value = 0
+        the gray-level co-occurrence matrix. Default value = 256.
+    GrayLimits : array_like
+        A vector of two elements, [low, high]. GrayLimits specifies how the
+        grayscale values are linearly scaled into gray levels. If grayscale
+        values are less than or equal to 'low', they are scaled to 1. If
+        grayscale values are greater than or equal to 'high', they are scaled
+        to 'high'. Default value = [np.min(I), np.max(I)]
 
     Returns
     -------
@@ -61,8 +62,10 @@ def ComputeHaralickFeatures(I, Label, Offsets=[[0, 1]], NumLevels=256,
     if (len(offsetShape) != 2):
         raise ValueError("Shape of Offset should be an numOffsets by 2")
 
-    # restict the range of intensity from MinGray to MaxGray
-    I = np.clip(I, MinGray, MaxGray)
+    # restict the range of intensity by GrayLmits
+    if GrayLimits == []:
+        GrayLimits = [np.min(I), np.max(I)]
+    I = np.clip(I, GrayLimits[0], GrayLimits[1])
 
     # initialize feature names
     featureList = [
