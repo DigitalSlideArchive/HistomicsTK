@@ -1,7 +1,5 @@
 import collections
-
 import numpy as np
-
 from histomicstk import Sample
 from histomicstk.preprocessing.color_conversion import RudermanLABFwd
 

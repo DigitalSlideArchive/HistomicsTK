@@ -1,7 +1,6 @@
 import collections
 import nimfa
 import numpy as np
-
 from histomicstk.preprocessing import color_conversion
 
 

@@ -1,11 +1,9 @@
 import numpy as np
 import skimage.io
 from ctk_cli import CLIArgumentParser
-
+from histomicstk.preprocessing import color_deconvolution
 import logging
 logging.basicConfig()
-
-from histomicstk.preprocessing import color_deconvolution
 
 
 def main(args):

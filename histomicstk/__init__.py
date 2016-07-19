@@ -3,6 +3,7 @@
 # from .BinaryMixtureCut import BinaryMixtureCut
 from .AreaOpenLabel import AreaOpenLabel
 from .ChanVese import ChanVese
+from .cLoG import cLoG
 from .CompactLabel import CompactLabel
 from .CondenseLabel import CondenseLabel
 from .ConvertSchedule import ConvertSchedule
@@ -15,6 +16,7 @@ from .FeatureExtraction import FeatureExtraction
 from .FilterLabel import FilterLabel
 from .GaussianGradient import GaussianGradient
 from .GaussianVoting import GaussianVoting
+from .gLoG import gLoG
 from .GradientDiffusion import GradientDiffusion
 from .GradientFlow import GradientFlow
 from .GraphColorSequential import GraphColorSequential
@@ -36,8 +38,8 @@ from .TilingSchedule import TilingSchedule
 from .TraceBounds import TraceBounds
 from .Vesselness import Vesselness
 from .WidthOpenLabel import WidthOpenLabel
-from .cLoG import cLoG
-from .gLoG import gLoG
+
+import preprocessing
 
 __version__ = '0.1.0'
 

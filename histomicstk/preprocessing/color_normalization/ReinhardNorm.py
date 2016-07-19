@@ -1,6 +1,5 @@
 from histomicstk.preprocessing.color_conversion import RudermanLABFwd
 from histomicstk.preprocessing.color_conversion import RudermanLABInv
-
 import numpy as np
 
 
