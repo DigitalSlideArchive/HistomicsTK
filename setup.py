@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
-    from distutils.core import setup
+    from distutils.core import setup, find_packages
 
 import os
 import json
@@ -57,7 +57,7 @@ setup(name='histomicstk',
       author='Kitware, Inc.',
       author_email='developers@digitalslidearchive.net',
       url='https://github.com/DigitalSlideArchive/HistomicsTK',
-      packages=['histomicstk'],
+      packages=find_packages(exclude=['doc']),
       package_dir={'histomicstk':
                    'histomicstk'},
       include_package_data=True,
