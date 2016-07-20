@@ -288,7 +288,7 @@ def TraceContours(I, X, Y, Min, Max, MaxLength=255):
 
         # trace boundary, check stopping condition, append to list of contours
         cX, cY = label.TraceBounds(Embed, Connectivity=4,
-                                 XStart=pX, YStart=pY, MaxLength=MaxLength)
+                                   XStart=pX, YStart=pY, MaxLength=MaxLength)
         if(cX[0] == cX[-1] and cY[0] == cY[-1] and len(cX) <= MaxLength):
 
             # add window offset to contour coordinates
