@@ -173,8 +173,13 @@ def SeedContours(I, Delta=0.3):
         Indices = Indices[Merged.argsort()]
         if(Indicator.size > 0):
             Hits = ((Indicator[0:-1]-Indicator[1:]) == 2).nonzero()[0]
-        Maxima = Maxima[Indices[Hits]]
-        Minima = Minima[Indices[Hits+1]]
+        else:
+            continue
+        if(Hits.size > 0):
+            Maxima = Maxima[Indices[Hits]]
+            Minima = Minima[Indices[Hits+1]]            
+        else:
+            continue
 
         # remove pairs that do not have at least one pixel between them
         Close = ((Minima - Maxima) < 2).nonzero()
@@ -268,6 +273,8 @@ def TraceContours(I, X, Y, Min, Max, MaxLength=255):
 
     # process each seed pixel sequentially
     for i in np.arange(X.size):
+        
+        print i, X.size
 
         # capture window surrounding (X[i], Y[i])
         W = I[max(0, Y[i]-np.ceil(MaxLength/2.0)):
