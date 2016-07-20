@@ -36,7 +36,7 @@ def EmbedBounds(I, Bounds, Color=[255, 0, 0]):
     """
 
     # check for consistent shapes between 'I' and 'Bounds'
-    if I.shape != Bounds.shape:
+    if I.shape[0:2] != Bounds.shape[0:2]:
         raise ValueError("Inputs 'I' and 'Bounds' must have same shape")
 
     # determine image type
