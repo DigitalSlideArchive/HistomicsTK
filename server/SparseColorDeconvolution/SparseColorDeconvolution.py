@@ -1,9 +1,9 @@
 import numpy as np
 import skimage.io
+
 from ctk_cli import CLIArgumentParser
 
-from histomicstk.preprocessing import color_deconvolution as deconv
-
+import histomicstk.preprocessing.color_deconvolution as htk_color_deconvolution
 
 def main(args):
 
@@ -22,9 +22,10 @@ def main(args):
 
     # Perform color deconvolution
     print('>> Performing color deconvolution')
-    res = deconv.SparseColorDeconvolution(inputImage, W_init, args.beta)
+    res = htk_color_deconvolution.SparseColorDeconvolution(
+        inputImage, W_init, args.beta)
     W_est = np.concatenate((res.W, np.zeros((3, 1))), 1)
-    res = deconv.ColorDeconvolution(inputImage, W_est)
+    res = htk_color_deconvolution.ColorDeconvolution(inputImage, W_est)
 
     # write stain images to output
     print('>> Outputting individual stain images')
