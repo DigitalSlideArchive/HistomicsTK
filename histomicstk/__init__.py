@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from .ConvertSchedule import ConvertSchedule
-from .Sample import Sample
-from .SubmitTorque import SubmitTorque
-from .TilingSchedule import TilingSchedule
-from .Vesselness import Vesselness
-
 import features
 import filters
 import preprocessing
 import segmentation
 import utils
+
+from .ConvertSchedule import ConvertSchedule
+from .Sample import Sample
+from .SubmitTorque import SubmitTorque
+from .TilingSchedule import TilingSchedule
 
 __version__ = '0.1.0'
 
@@ -24,5 +23,4 @@ __all__ = (
     'SubmitTorque',
     'TilingSchedule',
     'utils',
-    'Vesselness',
 )
