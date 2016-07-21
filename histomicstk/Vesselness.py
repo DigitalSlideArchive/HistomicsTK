@@ -1,7 +1,7 @@
 import numpy as np
 
-from Eigenvalues import Eigenvalues
-from Hessian import Hessian
+from histomicstk.utils import Eigenvalues
+from histomicstk.utils import Hessian
 
 
 def Vesselness(I, Sigma):
