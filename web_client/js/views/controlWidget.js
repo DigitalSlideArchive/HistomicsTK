@@ -73,6 +73,9 @@ histomicstk.views.ControlWidget = girder.View.extend({
         file: {
             template: 'fileWidget'
         },
+        image: {
+            template: 'fileWidget'
+        },
         directory: {
             template: 'fileWidget'
         },
@@ -122,7 +125,7 @@ histomicstk.views.ControlWidget = girder.View.extend({
             parentView: this,
             model: this.model
         });
-        modal.on('g:saved', _.bind(function () {
+        modal.once('g:saved', _.bind(function () {
             modal.$el.modal('hide');
         }, this)).render();
     }
