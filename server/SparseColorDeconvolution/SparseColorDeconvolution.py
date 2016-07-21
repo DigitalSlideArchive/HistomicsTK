@@ -5,6 +5,7 @@ from ctk_cli import CLIArgumentParser
 
 import histomicstk.preprocessing.color_deconvolution as htk_color_deconvolution
 
+
 def main(args):
 
     # Read Input Image
