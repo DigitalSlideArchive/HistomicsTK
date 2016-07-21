@@ -23,9 +23,6 @@ import numpy as np
 import os
 import skimage.io
 
-from histomicstk.preprocessing import color_conversion
-from histomicstk.preprocessing import color_normalization
-
 
 # boiler plate to start and stop the server
 def setUpModule():
@@ -44,6 +41,9 @@ TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
 class ReinhardNormalizationTest(base.TestCase):
 
     def testColorNormalization(self):
+
+        from histomicstk.preprocessing import color_conversion
+        from histomicstk.preprocessing import color_normalization
 
         inputImageFile = os.path.join(TEST_DATA_DIR, 'L1.png')
 
