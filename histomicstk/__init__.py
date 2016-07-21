@@ -24,5 +24,5 @@ __all__ = (
     'SubmitTorque',
     'TilingSchedule',
     'utils',
-    'Vesselness'
+    'Vesselness',
 )

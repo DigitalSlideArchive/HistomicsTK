@@ -3,5 +3,5 @@ from .gLoG import gLoG
 
 __all__ = (
     'cLoG',
-    'gLoG'
+    'gLoG',
 )

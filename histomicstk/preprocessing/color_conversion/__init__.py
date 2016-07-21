@@ -7,5 +7,5 @@ __all__ = (
     'OpticalDensityFwd',
     'OpticalDensityInv',
     'RudermanLABFwd',
-    'RudermanLABInv'
+    'RudermanLABInv',
 )

@@ -1,4 +1,4 @@
 __all__ = (
     'edge',
-    'shape'
+    'shape',
 )

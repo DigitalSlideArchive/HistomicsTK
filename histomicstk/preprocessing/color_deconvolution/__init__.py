@@ -7,5 +7,5 @@ __all__ = (
     'ColorConvolution',
     'ColorDeconvolution',
     'ComplementStainMatrix',
-    'SparseColorDeconvolution'
+    'SparseColorDeconvolution',
 )

@@ -3,5 +3,5 @@ from .ReinhardSample import ReinhardSample
 
 __all__ = (
     'ReinhardNorm',
-    'ReinhardSample'
+    'ReinhardSample',
 )

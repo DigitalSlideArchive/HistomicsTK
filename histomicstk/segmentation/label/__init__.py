@@ -15,5 +15,5 @@ __all__ = (
     'ShuffleLabel',
     'SplitLabel',
     'TraceBounds',
-    'WidthOpenLabel'
+    'WidthOpenLabel',
 )

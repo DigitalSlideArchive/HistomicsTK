@@ -11,5 +11,5 @@ __all__ = (
     'GradientDiffusion',
     'Hessian',
     'MergeColinear',
-    'PoissonMixture'
+    'PoissonMixture',
 )
