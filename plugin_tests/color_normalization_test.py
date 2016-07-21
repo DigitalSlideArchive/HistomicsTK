@@ -29,6 +29,7 @@ def setUpModule():
     base.enabledPlugins.append('HistomicsTK')
     base.startServer()
 
+
 def tearDownModule():
     base.stopServer()
 
