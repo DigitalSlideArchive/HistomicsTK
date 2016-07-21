@@ -81,7 +81,7 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
         BGScale = DefaultBGScale
 
     # analyze tissue peak to estimate variance parameter via FWHM
-    TissueScale = EstimateVariance(xHist, yHist, TissuePeak)
+    TissueScale = _EstimateVariance(xHist, yHist, TissuePeak)
     if TissueScale == -1:
         TissueScale = DefaultTissueScale
 
