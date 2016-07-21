@@ -9,6 +9,15 @@ histomicstk.views.ControlWidget = girder.View.extend({
         this.listenTo(this.model, 'change', this.render);
         this.listenTo(this.model, 'destroy', this.remove);
         this.listenTo(this.model, 'invalid', this.invalid);
+
+        // Handle image param types when no value is provided by using
+        // the currently open image.
+        if (this.model.get('type') === 'image' && !this.model.get('value')) {
+
+            this.model.set('value', histomicstk.dialogs.image.model.get('value'));
+            this.listenTo(histomicstk.dialogs.image.model, 'change', this._useLoadedImage);
+            this._useLoadedImage();
+        }
     },
 
     render: function (_, options) {
@@ -35,6 +44,40 @@ histomicstk.views.ControlWidget = girder.View.extend({
      */
     invalid: function () {
         this.$('.form-group').addClass('has-error');
+    },
+
+    /**
+     * For image types, this sets the current value to the loaded image.  To be
+     * called both on initialization and whenever the viewed image changes.
+     */
+    _useLoadedImage: function () {
+        var current = this.model.get('value');
+
+        if (current) {
+            this.stopListening(current);
+        }
+
+        // get the large image file id, and trigger a change when fetched
+        current = histomicstk.dialogs.image.model.get('value');
+
+        if (!current) {
+            return;
+        }
+
+        current.once('g:fetched', function () {
+            var largeImage = current.get('largeImage');
+            var fileId = largeImage && (largeImage.originalId || largeImage.fileId);
+            var file;
+
+            if (fileId) {
+                file = new girder.models.FileModel({_id: fileId});
+                this.model.set('value', file, {trigger: false});
+
+                file.once('g:fetched', function () {
+                    this.model.trigger('change', this.model);
+                }, this).fetch();
+            }
+        }, this).fetch();
     },
 
     /**
