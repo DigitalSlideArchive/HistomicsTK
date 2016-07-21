@@ -24,13 +24,13 @@ import os
 import skimage.io
 
 
-# # boiler plate to start and stop the server if needed
-# def setUpModule():
-#     base.enabledPlugins.append('HistomicsTK')
-#     base.startServer()
-#
-# def tearDownModule():
-#     base.stopServer()
+# boiler plate to start and stop the server if needed
+def setUpModule():
+    base.enabledPlugins.append('HistomicsTK')
+    base.startServer()
+
+def tearDownModule():
+    base.stopServer()
 
 
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
