@@ -19,5 +19,5 @@ __all__ = (
     'PoissonMixture',
     'Sample',
     'SubmitTorque',
-    'TilingScheule',
+    'TilingSchedule',
 )
