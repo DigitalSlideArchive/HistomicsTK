@@ -19,15 +19,17 @@
 ###############################################################################
 
 import os
-
+import six
+import json
 from six import iteritems
 import subprocess
-from girder.api.v1.resource import Resource
+from girder.api.v1.resource import Resource,RestException
 from .constants import PluginSettings
 from girder.models.model_base import ValidationException
 from girder.utility.model_importer import ModelImporter
-from girder.api.rest import boundHandler
+from girder.api.rest import boundHandler,getCurrentUser
 from girder.api import access
+from girder.api.describe import Description, describeRoute
 
 
 class DockerResource(Resource):
@@ -40,18 +42,69 @@ class DockerResource(Resource):
     """
     loadedModules = []
 
+    def __init__(self):
+        super(DockerResource, self).__init__()
+        self.resourceName = 'HistomicsTK'
+        self.route('PUT', ('add_docker_image',), self.appendImage)
+        #self.route('DELETE', ('docker_image',), self.deleteImage)
 
-def saveSettings(event):
+    @access.admin
+    @describeRoute(
+        Description('Add a to the list of images to be loaded by histomics tk')
+            .notes("""Must be a system administrator to call this. If the value
+                   passed is a valid JSON object, it will be parsed and stored
+                   as an object.""")
+            .param('name', 'The name or a list of names  of the '
+                           'docker images to be loaded ', required=False)
+            .errorResponse('You are not a system administrator.', 403)
+            .errorResponse('Failed to set system setting.', 500)
+        )
+    def appendImage(self, params):
+        """Validates the new images to be added (if they exist or not) and then
+        attempts to collect xml data to be cached. a job is then called to update
+        the histomicstk.docker_images settings with the new information
+        """
+        self.requireParams(('name',), params)
+        name = params['name']
+        name = json.loads(name)
+        print(name)
+        if isinstance(name, list):
+            for img in name:
+                print('passed a list')
+                if isinstance(img, six.string_types):
+
+                    _appendImage(img)
+                else:
+                    raise RestException('%s was not a valid string.' % img)
+
+        elif isinstance(name, six.string_types):
+            print('passed a string')
+            _appendImage(name)
+
+        else:
+
+            raise RestException('name was not a valid JSON list or string.')
+
+
+# TODO check if the img id matches if not reload the image
+def _appendImage(img):
+    currentSettings = getDockerImages()
+    imageAlreadyLoaded = False
+    if isinstance(currentSettings, dict):
+        for (dockerImageHash, cachedData) in iteritems(currentSettings):
+            if cachedData['docker_image_name'] == img:
+                imageAlreadyLoaded = True
+                raise RestException('image %s already is loaded.'%img)
 
     job = ModelImporter.model('job', 'jobs').createLocalJob(
         module='girder.plugins.HistomicsTK.image_worker',
         function='loadXML',
-        kwargs={
+        kwargs={'name':img
 
         },
         title='Updating Settings and Caching xml',
         type='HistomicsTK.images',
-        user=None,
+        user=getCurrentUser(),
         public=True,
         async=True
     )
@@ -67,14 +120,13 @@ def validateSettings(event):
         available registry (default registry being dockerhub)
 
         Data is stored in the following format:
-           [ {image_name_hash:
-                    {id:image:id
-                    name:image_name,
-                    xml:cli_spec
-                    },
-                    }]
-        Newly added images will be stored as follows:
-            [{},"new_image_name1","new_image_name2"]
+            {image_name_hash:
+                cli:{
+                    type:
+                    xml:
+
+                    }
+                docker_image_name:name
         """
 
     # val should be a dictionary of dictionaries
@@ -83,19 +135,15 @@ def validateSettings(event):
     if key == PluginSettings.DOCKER_IMAGES:
         print(type(val))
         cachedData = None
-        if isinstance(val, list):
-            for item in val:
-                if isinstance(item, dict):
-                    cachedData = item
-                    for (dictKey, dictValue) in iteritems(item):
-                        pass
-                        # checkOldImage(dictKey, dictValue)
-                else:
-                    pass
-                    # checkNewImage(item, cachedData)
+        if isinstance(val, dict):
 
+            for (dictKey, dictValue) in iteritems(val):
+                pass
+                # checkOldImage(dictKey, dictValue)
+        elif isinstance(val,list):
+            for img in val:
+                _appendImage(img)
         else:
-
             print("not proper")
             raise ValidationException('Docker images were not proper')
 
@@ -154,6 +202,21 @@ def getDockerImages():
     module_list = ModelImporter.model('setting').get(
         PluginSettings.DOCKER_IMAGES)
     if module_list is None:
-        module_list = ModelImporter.model('setting').getDefault(
-            PluginSettings.DOCKER_IMAGES)
+        module_list = {}
     return module_list
+
+
+
+
+
+class DockerCache() :
+
+    def __init__(self, cache):
+        self.data = cache
+
+    def getDockerImg(self):
+        nameList = []
+        for (imgHash, imgDict) in iteritems(self.data):
+            nameList.append(str(imgDict['docker_image_name']))
+
+        return nameList

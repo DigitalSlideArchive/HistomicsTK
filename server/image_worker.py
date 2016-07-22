@@ -15,46 +15,50 @@ def loadXML(job):
     print('in worker')
     #print(job)
     Job = ModelImporter.model('job', 'jobs')
-
+    name = job['kwargs']['name']
     Job.updateJob(
         job,
         log='Started to Load Docker images\n',
         status=JobStatus.RUNNING,
-        notify=False,
+        notify=True,
         progressMessage='caching docker image clis',
     )
 
     try:
-        data = getDockerImages()
-        if len(data) != 1:
-            cachedData = data[0]
+        cachedData = getDockerImages()
+        print('cachedData %s'% type(cachedData))
+        imageCachedData={}
+        #print item
+        clis = subprocess.check_output(['docker', 'run', name,
+                                        '--list_cli'])
+        clis = json.loads(clis)
+        #print clis
+        for (dictKey, dictValue) in iteritems(clis):
+            print dictKey, dictValue
+            newCLI = {}
 
-            for item in data:
+            newCLI['type'] = dictValue['type']
+            xmlData = subprocess.check_output(['docker', 'run',name, dictKey,
+                                               '--xml'])
+            newCLI['xml'] = xmlData
+            #print xmlData
+            Job.updateJob(
+                job,
+                log='Started to Load Docker images\n',
+                status=JobStatus.RUNNING,
+                notify=True,
+                progressMessage='caching clis %s' % dictKey,
+            )
+            imageCachedData[dictKey] = newCLI
+            print('update message')
+        imageKey = hashlib.sha256(name.encode()).hexdigest()
 
-                if not isinstance(item, dict):
-                    imageCachedData={}
-                    #print item
-                    clis = subprocess.check_output(['docker', 'run', item,
-                                                    '--list_cli'])
-                    clis = json.loads(clis)
-                    #print clis
-                    for (dictKey, dictValue) in iteritems(clis):
-                        print dictKey, dictValue
-                        newCLI = {}
+        imageCachedData['docker_image_name'] = name
+        #print imageCachedData
+        cachedData[imageKey] = imageCachedData
+        print cachedData
 
-                        newCLI['type'] = dictValue['type']
-                        xmlData = subprocess.check_output(['docker', 'run',item, dictKey,
-                                                           '--xml'])
-                        newCLI['xml'] = xmlData
-                        #print xmlData
-
-                        imageCachedData[dictKey] = newCLI
-                    imageKey = hashlib.sha256(item.encode()).hexdigest()
-                    imageCachedData['docker_image_name'] = item
-                    cachedData[imageKey] = imageCachedData
-            #print cachedData
-            ModelImporter.model('setting').set(PluginSettings.DOCKER_IMAGES,
-                                               [cachedData])
+        ModelImporter.model('setting').set(PluginSettings.DOCKER_IMAGES,cachedData)
     except:
         raise("Bad exception")
 
@@ -62,7 +66,7 @@ def loadXML(job):
         job,
         log='Finished caching docker xml\n',
         status=JobStatus.SUCCESS,
-        notify=False,
-        progressMessage='Completed caching docker images'
+        notify=True,
+        progressMessage='Completed docker images %s'% name
     )
     print("done job")
