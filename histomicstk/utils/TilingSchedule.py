@@ -52,7 +52,7 @@ def TilingSchedule(File, Magnification, Tile, tol=0.002):
 
     See Also
     --------
-    ConvertSchedule
+    histomicstk.utils.ConvertSchedule
     """
 
     # check if slide can be opened

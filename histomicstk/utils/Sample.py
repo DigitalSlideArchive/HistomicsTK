@@ -1,8 +1,9 @@
 import numpy as np
 import openslide
 import scipy
-from TilingSchedule import TilingSchedule
-from ConvertSchedule import ConvertSchedule
+
+from histomicstk.utils import TilingSchedule
+from histomicstk.utils import ConvertSchedule
 from histomicstk.segmentation import SimpleMask
 
 
