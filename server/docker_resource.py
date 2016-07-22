@@ -23,6 +23,7 @@ import six
 import json
 from six import iteritems
 import subprocess
+import hashlib
 from girder.api.v1.resource import Resource,RestException
 from .constants import PluginSettings
 from girder.models.model_base import ValidationException
@@ -40,13 +41,56 @@ class DockerResource(Resource):
     endpoint though docker will still cache the image unless removed manually
     (docker rmi image_name)
     """
-    loadedModules = []
+
 
     def __init__(self):
         super(DockerResource, self).__init__()
         self.resourceName = 'HistomicsTK'
         self.route('PUT', ('add_docker_image',), self.appendImage)
-        #self.route('DELETE', ('docker_image',), self.deleteImage)
+        self.route('DELETE', ('docker_image',), self.deleteImage)
+
+    @access.admin
+    @describeRoute(
+        Description('Remove a docker image from histomicstk')
+            .notes("""Must be a system administrator to call this. If the value
+                       passed is a valid JSON object.""")
+            .param('name', 'The name or a list of names  of the '
+                           'docker images to be removed', required=True)
+            .errorResponse('You are not a system administrator.', 403)
+            .errorResponse('Failed to set system setting.', 500)
+    )
+    # TODO delete cli instance if they exist
+    def deleteImage(self, params):
+        """Removes the docker images and there respective clis from
+        histomicstk
+        """
+        self.requireParams(('name',), params)
+        name = params['name']
+        name = json.loads(name)
+
+        if isinstance(name, list):
+            for img in name:
+
+                if not isinstance(img, six.string_types):
+                    raise RestException('%s was not a valid string.' % img)
+            else:
+                self._deleteImage(name)
+        elif isinstance(name, six.string_types):
+
+            self._deleteImage([name])
+
+        else:
+
+            raise RestException('name was not a valid JSON list or string.')
+
+    def _deleteImage(self, names):
+        currentSettings = DockerCache(getDockerImages())
+        for name in names:
+
+            if not currentSettings.deleteImage(name):
+                raise RestException('%s does not exist' % name)
+        ModelImporter.model('setting').set(PluginSettings.DOCKER_IMAGES,
+                                           currentSettings.raw())
 
     @access.admin
     @describeRoute(
@@ -55,10 +99,16 @@ class DockerResource(Resource):
                    passed is a valid JSON object, it will be parsed and stored
                    as an object.""")
             .param('name', 'The name or a list of names  of the '
-                           'docker images to be loaded ', required=False)
+                           'docker images to be loaded ', required=True)
             .errorResponse('You are not a system administrator.', 403)
             .errorResponse('Failed to set system setting.', 500)
         )
+    # TODO check the local cache and cloud for different images of same name
+    # TODO how to handle newer images(take the latest or require a confirmation)
+    # TODO use image id to confirm equivalence need v2 manifest schema on cloud
+    # TODO how to handle duplicate clis
+    # TODO have an event update (create cli instances)
+    # TODO check if the new images exist
     def appendImage(self, params):
         """Validates the new images to be added (if they exist or not) and then
         attempts to collect xml data to be cached. a job is then called to update
@@ -67,48 +117,41 @@ class DockerResource(Resource):
         self.requireParams(('name',), params)
         name = params['name']
         name = json.loads(name)
-        print(name)
+
         if isinstance(name, list):
             for img in name:
-                print('passed a list')
-                if isinstance(img, six.string_types):
 
-                    _appendImage(img)
-                else:
+                if not isinstance(img, six.string_types):
+
                     raise RestException('%s was not a valid string.' % img)
-
+            else:
+                self._appendImage(name)
         elif isinstance(name, six.string_types):
-            print('passed a string')
-            _appendImage(name)
+
+            self._appendImage([name])
 
         else:
 
             raise RestException('name was not a valid JSON list or string.')
 
+    def _appendImage(self, imgs):
+        currentSettings = DockerCache(getDockerImages())
+        for img in imgs:
+            if currentSettings.imageAlreadyLoaded(img):
+                raise RestException('image %s already is loaded.'% img)
 
-# TODO check if the img id matches if not reload the image
-def _appendImage(img):
-    currentSettings = getDockerImages()
-    imageAlreadyLoaded = False
-    if isinstance(currentSettings, dict):
-        for (dockerImageHash, cachedData) in iteritems(currentSettings):
-            if cachedData['docker_image_name'] == img:
-                imageAlreadyLoaded = True
-                raise RestException('image %s already is loaded.'%img)
-
-    job = ModelImporter.model('job', 'jobs').createLocalJob(
-        module='girder.plugins.HistomicsTK.image_worker',
-        function='loadXML',
-        kwargs={'name':img
-
-        },
-        title='Updating Settings and Caching xml',
-        type='HistomicsTK.images',
-        user=getCurrentUser(),
-        public=True,
-        async=True
-    )
-    ModelImporter.model('job', 'jobs').scheduleJob(job)
+        job = ModelImporter.model('job', 'jobs').createLocalJob(
+            module='girder.plugins.HistomicsTK.image_worker',
+            function='loadXML',
+            kwargs={'name': imgs
+                    },
+            title='Updating Settings and Caching xml',
+            type='HistomicsTK.images',
+            user=getCurrentUser(),
+            public=True,
+            async=True
+        )
+        ModelImporter.model('job', 'jobs').scheduleJob(job)
 
 
 # TODO remove bad image names
@@ -121,28 +164,28 @@ def validateSettings(event):
 
         Data is stored in the following format:
             {image_name_hash:
-                cli:{
+                {
+                cli_name:{
                     type:
                     xml:
 
                     }
                 docker_image_name:name
+                }
+            }
         """
 
     # val should be a dictionary of dictionaries
     key, val = event.info['key'], event.info['value']
 
     if key == PluginSettings.DOCKER_IMAGES:
-        print(type(val))
+
         cachedData = None
         if isinstance(val, dict):
 
             for (dictKey, dictValue) in iteritems(val):
                 pass
                 # checkOldImage(dictKey, dictValue)
-        elif isinstance(val,list):
-            for img in val:
-                _appendImage(img)
         else:
             print("not proper")
             raise ValidationException('Docker images were not proper')
@@ -206,17 +249,80 @@ def getDockerImages():
     return module_list
 
 
-
-
-
 class DockerCache() :
+    imageName='docker_image_name'
+    type='type'
+    xml='xml'
 
     def __init__(self, cache):
+        """
+        Data is stored in the following format:
+            {image_name_hash:
+                {
+                cli_name:{
+                    type:
+                    xml:
+
+                    }
+                docker_image_name:name
+                }
+            }
+        """
+
         self.data = cache
 
     def getDockerImg(self):
         nameList = []
         for (imgHash, imgDict) in iteritems(self.data):
-            nameList.append(str(imgDict['docker_image_name']))
+            nameList.append(str(imgDict[self.imageName]))
 
         return nameList
+
+    def imageAlreadyLoaded(self, name):
+        imageKey = self._getHashKey(name)
+        if imageKey in self.data:
+            return True
+        else:
+            return False
+
+    def addImage(self, name):
+        imageKey = self._getHashKey(name)
+        self.data[imageKey] = {}
+
+        self.data[imageKey][self.imageName] = name
+
+    def addCLI(self, img_name, cli_name, type, xml):
+        cli = {}
+        cliData = {}
+        cliData[self.type] = type
+        cliData[self.xml] = xml
+
+        imageKey = self._getHashKey(img_name)
+        self.data[imageKey][cli_name] = cliData
+
+    def raw(self):
+        return self.data
+
+    def deleteImage(self, name):
+        imageKey = self._getHashKey(name)
+        if imageKey in self.data:
+            del self.data[imageKey]
+            return True
+        else:
+            return False
+    def _getHashKey(self,imgName):
+        imageKey = hashlib.sha256(imgName.encode()).hexdigest()
+        return imageKey
+
+    def getCLIXML(self,imgName,cli):
+        imgKey = self._getHashKey(imgName)
+        if imgKey in self.data:
+            imageData=self.data[imgKey]
+        else:
+            return None
+
+        if cli in imageData:
+            return imageData[self.xml]
+        else:
+
+            return None

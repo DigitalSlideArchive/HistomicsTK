@@ -27,11 +27,14 @@ def load(info):
 
     info['serverRoot'].histomicstk = histomicsRoot
     info['serverRoot'].girder = girderRoot
-    info['apiRoot'].docker_images = DockerResource()
-    docker_cache = DockerCache(docker_resource.getDockerImages())
-    dockerImages = docker_cache.getDockerImg()
-    print dockerImages
-    genRESTEndPointsForSlicerCLIsInDocker(info, 'HistomicsTK',dockerImages)
+    resource = DockerResource()
+    info['apiRoot'].HistomicsTK = resource
+
+    dockerCache = DockerCache(docker_resource.getDockerImages())
+    dockerImages = dockerCache.getDockerImg()
+
+    genRESTEndPointsForSlicerCLIsInDocker(info, resource, dockerImages)
 
 events.bind('data.process', 'HistomicsTK', process_annotations)
-events.bind('model.setting.validate','histomicstk_modules', docker_resource.validateSettings)
+events.bind('model.setting.validate', 'histomicstk_modules',
+            docker_resource.validateSettings)
