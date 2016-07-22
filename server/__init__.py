@@ -6,6 +6,7 @@ from girder.utility.webroot import Webroot
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDocker
 from .handlers import process_annotations
 from .constants import PluginSettings
+from .docker_resource import validateSettings
 from girder.utility.model_importer import ModelImporter
 _template = os.path.join(
     os.path.dirname(__file__),
@@ -14,6 +15,9 @@ _template = os.path.join(
 
 
 def load(info):
+    images = ModelImporter.model('setting').getDefault(
+            constants.PluginSettings.DOCKER_IMAGES)
+    ModelImporter.model('setting').set(PluginSettings.DOCKER_IMAGES, images)
 
     girderRoot = info['serverRoot']
     histomicsRoot = Webroot(_template)
@@ -23,23 +27,9 @@ def load(info):
     info['serverRoot'].histomicstk = histomicsRoot
     info['serverRoot'].girder = girderRoot
 
-    img_list = [str(key) for key in getDockerImages()]
-    print(img_list)
-    print(getDockerImages())
-    genRESTEndPointsForSlicerCLIsInDocker(
-        info, 'HistomicsTK', img_list
-        )
 
-
-def getDockerImages():
-    module_list = ModelImporter.model('setting').get(
-        PluginSettings.DOCKER_IMAGES)
-    if module_list is None:
-        module_list = ModelImporter.model('setting').getDefault(
-            PluginSettings.DOCKER_IMAGES)
-    return module_list
-
+    #genRESTEndPointsForSlicerCLIsInDocker(info, 'HistomicsTK', img_list)
 
 events.bind('data.process', 'HistomicsTK', process_annotations)
-events.bind('model.setting.validate',
-            'histomicstk_modules', constants.validateSettings)
+events.bind('model.setting.validate','histomicstk_modules', docker_resource.validateSettings)
+events.bind('model.setting.save.after', 'histomicstk_modules_save',docker_resource.saveSettings)
