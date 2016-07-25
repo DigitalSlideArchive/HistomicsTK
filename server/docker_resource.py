@@ -314,15 +314,30 @@ class DockerCache() :
         imageKey = hashlib.sha256(imgName.encode()).hexdigest()
         return imageKey
 
-    def getCLIXML(self,imgName,cli):
+    def getCLIXML(self, imgName, cli):
         imgKey = self._getHashKey(imgName)
         if imgKey in self.data:
-            imageData=self.data[imgKey]
+            imageData = self.data[imgKey]
+
         else:
+            print('no image named %s' % imgName)
             return None
 
         if cli in imageData:
-            return imageData[self.xml]
-        else:
 
+            return imageData[cli][self.xml]
+        else:
+            print('no cli named %s' % imgName)
+            return None
+
+    def getCLIList(self,imgName):
+        cliDict = {}
+        imgKey = self._getHashKey(imgName)
+        if imgKey in self.data:
+            imgData = self.data[imgKey]
+            for (key, val) in iteritems(imgData):
+                if key != self.imageName:
+                    cliDict[key] = {self.type:val[self.type]}
+            return cliDict
+        else:
             return None

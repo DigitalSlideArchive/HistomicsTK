@@ -33,7 +33,7 @@ def load(info):
     dockerCache = DockerCache(docker_resource.getDockerImages())
     dockerImages = dockerCache.getDockerImg()
 
-    genRESTEndPointsForSlicerCLIsInDocker(info, resource, dockerImages)
+    genRESTEndPointsForSlicerCLIsInDocker(info, resource, dockerCache)
 
 events.bind('data.process', 'HistomicsTK', process_annotations)
 events.bind('model.setting.validate', 'histomicstk_modules',
