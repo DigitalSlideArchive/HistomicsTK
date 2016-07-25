@@ -1,13 +1,20 @@
-from ctk_cli import CLIArgumentParser
-import histomicstk as htk
+import histomicstk.preprocessing.color_conversion as htk_color_conversion
+import histomicstk.preprocessing.color_normalization as htk_color_normalization
+import histomicstk.preprocessing.color_deconvolution as htk_color_deconvolution
+import histomicstk.filters.shape as htk_shape_filters
+import histomicstk.segmentation as htk_seg
+
 import numpy as np
 import json
 import scipy as sp
 import skimage.io
 import skimage.measure
 
+from ctk_cli import CLIArgumentParser
+
 import logging
 logging.basicConfig()
+
 
 stainColorMap = {
     'hematoxylin': [0.65, 0.70, 0.29],
@@ -32,7 +39,7 @@ def main(args):
     print('>> Performing color normalization')
 
     # transform input image to LAB color space
-    imInputLAB = htk.RudermanLABFwd(imInput)
+    imInputLAB = htk_color_conversion.RudermanLABFwd(imInput)
 
     # compute mean and stddev of input in LAB color space
     Mu = np.zeros(3)
@@ -43,7 +50,7 @@ def main(args):
         Sigma[i] = (imInputLAB[:, :, i] - Mu[i]).std()
 
     # perform reinhard normalization
-    imNmzd = htk.ReinhardNorm(imInput, Mu, Sigma)
+    imNmzd = htk_color_normalization.ReinhardNorm(imInput, Mu, Sigma)
 
     #
     # Perform color deconvolution
@@ -56,7 +63,7 @@ def main(args):
 
     W = np.array([stainColor_1, stainColor_2, stainColor_3]).T
 
-    imDeconvolved = htk.ColorDeconvolution(imNmzd, W)
+    imDeconvolved = htk_color_deconvolution.ColorDeconvolution(imNmzd, W)
 
     imNucleiStain = imDeconvolved.Stains[:, :, 0].astype(np.float)
 
@@ -70,15 +77,15 @@ def main(args):
         imNucleiStain < args.foreground_threshold)
 
     # run adaptive multi-scale LoG filter
-    imLog = htk.cLoG(imNucleiStain, imFgndMask,
-                     SigmaMin=args.min_radius * np.sqrt(2),
-                     SigmaMax=args.max_radius * np.sqrt(2))
+    imLog = htk_shape_filters.cLoG(imNucleiStain, imFgndMask,
+                                   SigmaMin=args.min_radius * np.sqrt(2),
+                                   SigmaMax=args.max_radius * np.sqrt(2))
 
-    imNucleiSegMask, Seeds, Max = htk.MaxClustering(
+    imNucleiSegMask, Seeds, Max = htk_seg.nuclear.MaxClustering(
         imLog, imFgndMask, args.local_max_search_radius)
 
     # filter out small objects
-    imNucleiSegMask = htk.FilterLabel(
+    imNucleiSegMask = htk_seg.label.FilterLabel(
         imNucleiSegMask, Lower=args.min_nucleus_area).astype(np.int)
 
     #
