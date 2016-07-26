@@ -185,7 +185,7 @@ def SeedContours(I, Delta=0.3):
                 if Index.size:  # minima found beyond current maxima
 
                     # get position of next minimum in array 'Minima'
-                    MinPos = np.min(np.nonzero(Minima > Maxima[MaxPos])[0])
+                    MinPos = Index[0]
 
                     # increment transition point to beyond current maxima
                     while ((TranPos < Transitions.size) &
