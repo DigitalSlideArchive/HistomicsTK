@@ -158,23 +158,57 @@ def SeedContours(I, Delta=0.3):
         Gradient = np.hstack((np.nan, I[i, 2:] - I[i, 0:-2], np.nan))
 
         # identify local maxima and minimia of row 'i' of 'I'
-        Maxima = ((I[i, 1:-1] > I[i, 0:-2]) &
+        Maxima = ((I[i, 1:-1] >= I[i, 0:-2]) &
                   (I[i, 1:-1] > I[i, 2:])).nonzero()[0] + 1
         Minima = ((I[i, 1:-1] < I[i, 0:-2]) &
-                  (I[i, 1:-1] < I[i, 2:])).nonzero()[0] + 1
+                  (I[i, 1:-1] <= I[i, 2:])).nonzero()[0] + 1
 
-        # define max/min neighbor pairs that serve as left-edge contour seeds
-        Merged = np.hstack((Maxima, Minima))
-        Indicator = np.hstack((np.ones((Maxima.size)),
-                               -np.ones((Minima.size))))
-        Indices = np.hstack((np.arange(Maxima.size),
-                             np.arange(Minima.size)))
-        Indicator = Indicator[Merged.argsort()]
-        Indices = Indices[Merged.argsort()]
-        if(Indicator.size > 0):
-            Hits = ((Indicator[0:-1]-Indicator[1:]) == 2).nonzero()[0]
-        Maxima = Maxima[Indices[Hits]]
-        Minima = Minima[Indices[Hits+1]]
+        # identify transitions - start of intervals of monotonic non-increase
+        dI = np.sign(I[i, 1:] - I[i, 0:-1])
+        dI = np.hstack((dI, dI[-1]))
+        Transitions = np.nonzero(dI == 1)[0]
+        Transitions = np.hstack((Transitions, I.shape[1]-1))
+
+        # define min/max neighbor pairs
+        MinPair = []
+        MaxPair = []
+        if(Minima.size > 0) & (Maxima.size > 0):
+
+            # initialize initial positions of min/max & transition indices
+            MinPos = 0
+            MaxPos = 0
+            TranPos = 0
+
+            # iterate through maxima, identifying relevant minima for each
+            while MaxPos < Maxima.size:
+                Index = np.nonzero(Minima > Maxima[MaxPos])[0]
+                if Index.size:  # minima found beyond current maxima
+
+                    # get position of next minimum in array 'Minima'
+                    MinPos = Index[0]
+
+                    # increment transition point to beyond current maxima
+                    while ((TranPos < Transitions.size) &
+                           (Transitions[TranPos] < Maxima[MaxPos])):
+                        TranPos += 1
+
+                    # add minima to current maxima until transition is reached
+                    while Minima[MinPos] <= Transitions[TranPos]:
+                        MinPair.append(Minima[MinPos])
+                        MaxPair.append(Maxima[MaxPos])
+                        MinPos += 1
+                        if(MinPos == Minima.size):
+                            break
+
+                    # increment maxima
+                    MaxPos += 1
+
+                else:  # no minima beyond current maxima - quit
+                    break
+
+        # convert maxima/minima pairs to numpy arrays
+        Maxima = np.asarray(MaxPair)
+        Minima = np.asarray(MinPair)
 
         # remove pairs that do not have at least one pixel between them
         Close = ((Minima - Maxima) < 2).nonzero()
