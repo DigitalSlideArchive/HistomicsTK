@@ -19,13 +19,12 @@
 
 from tests import base
 
-import histomicstk as htk
 import numpy as np
 import os
 import skimage.io
 
 
-# boiler plate to start and stop the server
+# boiler plate to start and stop the server if needed
 def setUpModule():
     base.enabledPlugins.append('HistomicsTK')
     base.startServer()
@@ -43,6 +42,9 @@ class ReinhardNormalizationTest(base.TestCase):
 
     def testColorNormalization(self):
 
+        from histomicstk.preprocessing import color_conversion
+        from histomicstk.preprocessing import color_normalization
+
         inputImageFile = os.path.join(TEST_DATA_DIR, 'L1.png')
 
         refImageFile = os.path.join(TEST_DATA_DIR, 'Easy1.png')
@@ -54,7 +56,7 @@ class ReinhardNormalizationTest(base.TestCase):
         imReference = skimage.io.imread(refImageFile)[:, :, :3]
 
         # transform reference image to LAB color space
-        imReferenceLAB = htk.RudermanLABFwd(imReference)
+        imReferenceLAB = color_conversion.RudermanLABFwd(imReference)
 
         # compute mean and stddev of reference image in LAB color space
         meanRef = np.zeros(3)
@@ -65,10 +67,10 @@ class ReinhardNormalizationTest(base.TestCase):
             stdRef[i] = (imReferenceLAB[:, :, i] - meanRef[i]).std()
 
         # perform color normalization
-        imNmzd = htk.ReinhardNorm(imInput, meanRef, stdRef)
+        imNmzd = color_normalization.ReinhardNorm(imInput, meanRef, stdRef)
 
         # transform reference image to LAB color space
-        imNmzdLAB = htk.RudermanLABFwd(imNmzd)
+        imNmzdLAB = color_conversion.RudermanLABFwd(imNmzd)
 
         # compute mean and stddev of normalized input in LAB color space
         meanNmzd = np.zeros(3)
