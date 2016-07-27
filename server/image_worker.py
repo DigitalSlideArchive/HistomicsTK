@@ -148,6 +148,15 @@ def verifyDictionary(job):
                             img, cli))
         currentSettings = DockerCache(getDockerImageSettings())
         if oldSettings.equals(currentSettings):
+            newSettingSave = ModelImporter.model('setting').findOne(
+                {'key': PluginSettings.DOCKER_IMAGES})
+            if newSettingSave is None:
+                newSettingSave = {}
+            else:
+
+                newSettingSave['key'] = PluginSettings.DOCKER_IMAGES
+                newSettingSave['value'] = newSettings.raw()
+            ModelImporter.model('setting').save(newSettingSave, validate=False)
             Job.updateJob(
                 job,
                 log='Finished caching setting\n',

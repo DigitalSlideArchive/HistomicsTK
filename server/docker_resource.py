@@ -51,6 +51,23 @@ class DockerResource(Resource):
                    self.appendImage)
         self.route('DELETE', (DockerResource.resourceName, 'docker_image'),
                    self.deleteImage)
+        self.route('GET', (DockerResource.resourceName, 'docker_image'),
+                   self.getDockerImages)
+
+    @access.admin
+    @describeRoute(
+        Description('list docker images and their clis ').notes(
+            """Must be a system administrator to call this. If the value
+                       passed is a valid JSON object.""")
+            .errorResponse('You are not a system administrator.', 403)
+            .errorResponse('Failed to set system setting.', 500)
+    )
+    def getDockerImages(self, params):
+        data = {}
+        current = DockerCache(getDockerImageSettings())
+        for image in current.getDockerImageList():
+            data[image] = current.getCLIDict(image)
+        return data
 
     @access.admin
     @describeRoute(
@@ -98,7 +115,7 @@ class DockerResource(Resource):
         # need to remove each cli attribute
         # need to remove the clli list attribute
         # need to remove the rest route
-
+        print "after delete", currentSettings.raw()
         ModelImporter.model('setting').set(PluginSettings.DOCKER_IMAGES,
                                            currentSettings.raw())
 
@@ -315,6 +332,17 @@ def localDockerImageclixml(img, cli):
         return None
 
 
+def pullDockerImage(img):
+    try:
+        subprocess.check_output(['docker', 'pull', img])
+        data = subprocess.check_output(['docker', 'run', img, cli, '--xml'])
+        return data
+    except subprocess.CalledProcessError as err:
+        # the image does not exist on the default repository
+
+        return None
+
+
 def getDockerImageSettings():
     module_list = ModelImporter.model('setting').get(
         PluginSettings.DOCKER_IMAGES)
@@ -354,7 +382,7 @@ class DockerCache():
             self.data = {}
 
     def getDockerImageList(self):
-        nameList = []
+
         return [str(imgDict[DockerCache.imageName])
                 for (imgHash, imgDict) in iteritems(self.data)]
 
@@ -427,6 +455,8 @@ class DockerCache():
     def validate(self):
         """Enforce structure of the data, does not verify that xml and cli
         types field values are appropriate"""
+        if self.data is {}:
+            return True
         for (imgHash, imgData) in iteritems(self.data):
             if DockerCache.imageName not in imgData:
                 raise ValueError('There is no key: %s in the'

@@ -3,7 +3,7 @@ import os
 from girder import events
 from girder.utility.webroot import Webroot
 
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDocker
+from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
 from .handlers import process_annotations
 from .constants import PluginSettings
 from .docker_resource import DockerResource, DockerCache
@@ -29,7 +29,7 @@ def load(info):
 
     dockerCache = DockerCache(docker_resource.getDockerImageSettings())
 
-    genRESTEndPointsForSlicerCLIsInDocker(info, resource, dockerCache)
+    genRESTEndPointsForSlicerCLIsInDockerCache(info, resource, dockerCache)
 
     events.bind('data.process', 'HistomicsTK', process_annotations)
     events.bind('model.setting.validate', 'histomicstk_modules',
