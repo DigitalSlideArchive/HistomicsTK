@@ -835,7 +835,7 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerCache):
     -------
 
     """
-    dockerImages = dockerCache.getDockerImg()
+    dockerImages = dockerCache.getDockerImageList()
     # validate restResource argument
     if not isinstance(restResource, (str, Resource)):
         raise Exception('restResource must either be a string or '
@@ -869,7 +869,7 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerCache):
     for dimg in dockerImages:
 
         # get CLI list
-        cliListSpec = dockerCache.getCLIList(dimg)
+        cliListSpec = dockerCache.getCLIDict(dimg)
         #print cliListSpec
         # pprint.pprint(cliListSpec)
 
