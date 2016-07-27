@@ -5,9 +5,9 @@ from girder.utility.webroot import Webroot
 
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
 from .handlers import process_annotations
-from .constants import PluginSettings
-from .docker_resource import DockerResource, DockerCache
-from girder.utility.model_importer import ModelImporter
+
+from .docker_resource import DockerResource, DockerCache, getDockerImageSettings
+
 _template = os.path.join(
     os.path.dirname(__file__),
     'webroot.mako'
@@ -27,11 +27,10 @@ def load(info):
     resource = DockerResource('HistomicsTK')
     info['apiRoot'].HistomicsTK = resource
 
-    dockerCache = DockerCache(docker_resource.getDockerImageSettings())
+    dockerCache = DockerCache(getDockerImageSettings())
 
     genRESTEndPointsForSlicerCLIsInDockerCache(info, resource, dockerCache)
 
     events.bind('data.process', 'HistomicsTK', process_annotations)
     events.bind('model.setting.validate', 'histomicstk_modules',
                 DockerResource.validateSettings)
-    # events.bind('model.setting.save','histomicstk_modules',docker_resource.saveSettingsHook)

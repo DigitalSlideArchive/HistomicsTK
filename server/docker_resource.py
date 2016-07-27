@@ -17,7 +17,7 @@
 #  limitations under the License.
 ###############################################################################
 
-import os
+
 import six
 import json
 from six import iteritems
@@ -25,9 +25,9 @@ import subprocess
 import hashlib
 from girder.api.v1.resource import Resource, RestException
 from .constants import PluginSettings
-from girder.models.model_base import ValidationException
+
 from girder.utility.model_importer import ModelImporter
-from girder.api.rest import boundHandler, getCurrentUser
+from girder.api.rest import getCurrentUser
 from girder.api import access
 from girder.api.describe import Description, describeRoute
 
@@ -56,11 +56,13 @@ class DockerResource(Resource):
 
     @access.admin
     @describeRoute(
-        Description('list docker images and their clis ').notes(
-            """Must be a system administrator to call this. If the value
+        Description('list docker images and their clis ')
+        .notes("""Must be a system administrator to call this. If the value
                        passed is a valid JSON object.""")
-            .errorResponse('You are not a system administrator.', 403)
-            .errorResponse('Failed to set system setting.', 500)
+        .errorResponse(
+            'You are not a system administrator.', 403)
+        .errorResponse(
+            'Failed to set system setting.', 500)
     )
     def getDockerImages(self, params):
         data = {}
@@ -71,13 +73,14 @@ class DockerResource(Resource):
 
     @access.admin
     @describeRoute(
-        Description('Remove a docker image ').notes(
+        Description('Remove a docker image ')
+        .notes(
             """Must be a system administrator to call this. If the value
-                       passed is a valid JSON object.""").param(
-            'name', 'The name or a list of names  of the '
-                    'docker images to be removed', required=True)
-            .errorResponse('You are not a system administrator.', 403)
-            .errorResponse('Failed to set system setting.', 500)
+                       passed is a valid JSON object.""")
+        .param('name', 'The name or a list of names  of the '
+                       'docker images to be removed', required=True)
+        .errorResponse('You are not a system administrator.', 403)
+        .errorResponse('Failed to set system setting.', 500)
     )
     # TODO delete cli instance if they exist
     def deleteImage(self, params):
@@ -215,7 +218,7 @@ class DockerResource(Resource):
                     docker_image_name:name
                     }
                 }
-            """
+        """
 
         # val should be a dictionary of dictionaries
         key, val = event.info['key'], event.info['value']
@@ -284,9 +287,8 @@ def localDockerImageExists(imageName):
         # locally
         data = subprocess.check_output(['docker', 'inspect',
                                         '--format="{{json .Id}}"', imageName])
-
         return data
-    except subprocess.CalledProcessError as err:
+    except subprocess.CalledProcessError:
         # the image does not exist locally, try to pull from dockerhub
 
         return None
@@ -313,7 +315,7 @@ def localDockerImageCLIList(imageName):
         data = subprocess.check_output(
             ['docker', 'run', imageName, '--list_cli'])
         return data
-    except subprocess.CalledProcessError as err:
+    except subprocess.CalledProcessError:
         # the image does not exist locally, try to pull from dockerhub
 
         return None
@@ -326,7 +328,7 @@ def localDockerImageclixml(img, cli):
     try:
         data = subprocess.check_output(['docker', 'run', img, cli, '--xml'])
         return data
-    except subprocess.CalledProcessError as err:
+    except subprocess.CalledProcessError:
         # the image does not exist locally, try to pull from dockerhub
 
         return None
@@ -335,9 +337,9 @@ def localDockerImageclixml(img, cli):
 def pullDockerImage(img):
     try:
         subprocess.check_output(['docker', 'pull', img])
-        data = subprocess.check_output(['docker', 'run', img, cli, '--xml'])
+        data = localDockerImageExists(img)
         return data
-    except subprocess.CalledProcessError as err:
+    except subprocess.CalledProcessError:
         # the image does not exist on the default repository
 
         return None
@@ -453,8 +455,10 @@ class DockerCache():
             return None
 
     def validate(self):
-        """Enforce structure of the data, does not verify that xml and cli
-        types field values are appropriate"""
+        """
+        Enforce structure of the data, does not verify that xml and cli
+        types field values are appropriate
+        """
         if self.data is {}:
             return True
         for (imgHash, imgData) in iteritems(self.data):

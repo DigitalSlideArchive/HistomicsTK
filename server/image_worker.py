@@ -7,7 +7,6 @@ from .docker_resource import getDockerImageSettings, DockerCache, \
 from .constants import PluginSettings
 import subprocess
 import json
-import hashlib
 import sys
 import traceback
 
@@ -90,7 +89,7 @@ def loadXML(job):
             # rerun job since settings were modifies since job ran
             DockerResource.appendImageJob(names)
             return
-    except Exception as e:
+    except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         errorInfo = traceback.format_exception(exc_type, exc_value,
                                                exc_traceback)
@@ -177,7 +176,7 @@ def verifyDictionary(job):
             )
             DockerResource.validateDict(newSettings)
 
-    except ValueError as e:
+    except ValueError:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         errorInfo = traceback.format_exception(exc_type, exc_value,
                                                exc_traceback)
