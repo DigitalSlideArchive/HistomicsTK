@@ -22,26 +22,20 @@ def CondenseLabel(Label):
     ShuffleLabel
     """
 
-    # get list of unique object labels
-    Unique = np.unique(Label.flatten())
-
-    # remove background objects (Label == 0)
-    Unique = np.delete(Unique, (Unique == 0).nonzero())
-
     # initialize output
     Condensed = Label.copy()
 
     # get extent of each object
     Locations = ms.find_objects(Condensed)
-    
+
     # initialize counter
     Counter = 1
 
     # fill in new values
     for i in np.arange(1, len(Locations)+1):
         if Locations[i-1] is not None:
-            Patch = Label[Locations[i-1]]
+            Patch = Condensed[Locations[i-1]]
             Patch[Patch == i] = Counter
             Counter += 1
-    
+
     return Condensed
