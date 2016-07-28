@@ -123,13 +123,12 @@ def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
         Area = np.append(Area, region.area)
         Perimeter = np.append(Perimeter, region.perimeter)
         Eccentricity = np.append(Eccentricity, region.eccentricity)
-        if region.perimeter == 0:
-            Circularity = np.append(Circularity, 0)
-        else:
-            Circularity = np.append(
-                Circularity,
-                4 * math.pi * region.area / math.pow(region.perimeter, 2)
-            )
+        numerator = 4 * math.pi * region.area
+        denominator = math.pow(region.perimeter, 2)
+        Circularity = np.append(
+            Circularity,
+            numerator / denominator if denominator else 0
+        )
         MajorAxisLength = np.append(MajorAxisLength, region.major_axis_length)
         MinorAxisLength = np.append(MinorAxisLength, region.minor_axis_length)
         Extent = np.append(Extent, region.extent)
