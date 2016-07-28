@@ -69,9 +69,6 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
        and statistics tables and formulae," Crc Press, 1999.
     """
 
-    # get total regions
-    NumofLabels = Label.max()
-
     # get Label size x
     size_x = Label.shape[0]
     size_y = Label.shape[1]
@@ -89,6 +86,10 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     MinorAxisLength = []
     Extent = []
     Solidity = []
+
+    # get regions for Labels
+    regions = regionprops(Label)
+    NumofLabels = len(regions)
 
     # initialize FSD feature group
     FSDGroup = np.zeros((NumofLabels, Fs))
@@ -110,8 +111,11 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
         )
     ).astype(np.uint8)
 
+    # set region index
+    regionIdx = 0
+
     # extract feature information
-    for region in regionprops(Label):
+    for region in regions:
         # add centroids
         CentroidX = np.append(CentroidX, region.centroid[0])
         CentroidY = np.append(CentroidY, region.centroid[1])
@@ -140,12 +144,12 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
             find_boundaries(Nucleus, mode="inner").astype(np.uint8) == 1
         )
         # calculate and add FSDs
-        FSDGroup[region.label-1, :] = FSDs(
+        FSDGroup[regionIdx, :] = FSDs(
             Bounds[:, 0], Bounds[:, 1],
             K, Interval
         )
         # generate object coords for nuclei and cytoplasmic regions
-        Nuclei[region.label-1] = region.coords
+        Nuclei[regionIdx] = region.coords
         # get mask for all nuclei in neighborhood
         Mask = (
             Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] > 0
@@ -155,7 +159,8 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
             np.logical_xor(Mask, dilation(Nucleus, Disk))
         ).astype(np.uint8)
         # get list of cytoplasm pixels
-        Cytoplasms[region.label-1] = GetPixCoords(cytoplasm, bounds)
+        Cytoplasms[regionIdx] = GetPixCoords(cytoplasm, bounds)
+        regionIdx = regionIdx + 1
 
     # calculate hematoxlyin features, capture feature names
     HematoxylinIntensityGroup = IntensityFeatureGroup(In, Nuclei)
@@ -564,7 +569,7 @@ def FSDs(X, Y, K, Intervals):
     # get length of intervals
     L = len(Intervals)
     # initialize F
-    F = np.zeros((L-1, ))
+    F = np.zeros((L-1, )).astype(float)
     # interpolate boundaries
     iXY = InterpolateArcLength(X, Y, K)
     # check if iXY.iX is not empty
