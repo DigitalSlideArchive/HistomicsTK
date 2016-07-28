@@ -20,10 +20,40 @@
     - cmake
     - git
     - postfix
-    - libjpeg-dev
     - libfreetype6-dev
     - zlib1g-dev
     - libpng-dev
+    - libtiff5-dev
+    - libjpeg8-dev
+    - liblcms2-dev
+    - libwebp-dev
+    - tcl8.6-dev
+    - tk8.6-dev
+    - python-tk
+    - libvips-tools
+    - libglib2.0-dev
+    - libjpeg-dev
+    - libxml2-dev
+    - libpng12-dev
+    - autoconf
+    - automake
+    - libtool
+    - pkg-config
+    - libcairo2-dev
+    - libgdk-pixbuf2.0-dev
+    - libxml2-dev
+    - libsqlite3-dev
+    - apt-transport-https
+    - ca-certificates
+    - mongodb-org
+    - vim
+    - python-dev
+    - memcached
+    - libmemcached-dev
+    - libxslt1-dev
+    - apparmor
+    - pandoc
+    - pandoc-citeproc
 
 - name: Clone girder
   git:
@@ -124,6 +154,7 @@
 - name: Wait for Girder startup
   wait_for:
     port: "{{ girder_socket_port }}"
+    delay: 1
 
 - name: Set worker broker setting
   girder:
@@ -146,6 +177,26 @@
       parameters:
         key: worker.backend
         value: "amqp://guest@{{ mq_private_ip }}//"
+
+- name: Set homepage markdown setting
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: system/setting
+      parameters:
+        key: homepage.markdown
+        value: |
+          # Digital Slide Archive
+          ---
+          ## Bioinformatics Platform
+
+          Welcome to the **Digital Slide Archive**!
+
+          Developers who want to use the Girder REST API should check out the [interactive web API docs](/api/v1).
+
+          The [HistomicsTK](/histomicstk) application is enabled.
 
 - name: Ensure the existence of the filesystem assetstore
   girder:

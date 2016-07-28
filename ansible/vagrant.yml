@@ -17,8 +17,9 @@
     girder_exec_user: vagrant
     girder_exec_group: vagrant
     girder_plugins:
-      #- histomicstk (TODO enable)
-      - worker
+      #- histomicstk  TODO enable
+      - homepage
+      - worker  # TODO remove (transitive)
     girder_celery_user: worker-robot
     girder_celery_email: histomicstk.celery@kitware.com
     girder_celery_password: celery
