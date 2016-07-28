@@ -1,4 +1,5 @@
 from histomicstk.segmentation import label
+
 import numpy as np
 import scipy.ndimage.measurements as ms
 

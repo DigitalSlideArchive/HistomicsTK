@@ -1,7 +1,6 @@
 import numpy as np
 
-from histomicstk.utils import Eigenvalues
-from histomicstk.utils import Hessian
+import histomicstk.utils as htk_utils
 
 
 def Vesselness(I, Sigma):
@@ -38,10 +37,10 @@ def Vesselness(I, Sigma):
     """
 
     # calculate hessian matrix
-    H = Sigma**2*Hessian(I, Sigma)
+    H = Sigma**2 * htk_utils.Hessian(I, Sigma)
 
     # calculate eigenvalue image
-    E, V1, V2 = Eigenvalues(H)
+    E, V1, V2 = htk_utils.Eigenvalues( H )
 
     # compute blobness measures
     Deviation = E[:, :, 0]/(E[:, :, 1] + np.spacing(1))

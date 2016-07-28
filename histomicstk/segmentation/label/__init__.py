@@ -1,6 +1,6 @@
+from .CondenseLabel import CondenseLabel
 from .AreaOpenLabel import AreaOpenLabel
 from .CompactLabel import CompactLabel
-from .CondenseLabel import CondenseLabel
 from .LabelPerimeter import LabelPerimeter
 from .ShuffleLabel import ShuffleLabel
 from .SplitLabel import SplitLabel
