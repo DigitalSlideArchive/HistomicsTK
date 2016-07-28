@@ -74,6 +74,7 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
 
     # get Label size x
     size_x = Label.shape[0]
+    size_y = Label.shape[1]
 
     # initialize centroids
     CentroidX = []
@@ -129,7 +130,7 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
         Extent = np.append(Extent, region.extent)
         Solidity = np.append(Solidity, region.solidity)
         # get bounds of dilated nucleus
-        bounds = GetBounds(region.bbox, Delta, size_x)
+        bounds = GetBounds(region.bbox, Delta, size_x, size_y)
         # grab nucleus mask
         Nucleus = (
             Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] == region.label
@@ -428,7 +429,7 @@ def GetPixCoords(Binary, bounds):
     return coords
 
 
-def GetBounds(bbox, delta, N):
+def GetBounds(bbox, delta, M, N):
     """
     Returns bounds of object in global label image.
     Parameters
@@ -438,8 +439,10 @@ def GetBounds(bbox, delta, N):
     delta : int
         Used to dilate nuclei and define cytoplasm region.
         Default value = 8.
+    M : int
+        X size of label image.
     N : int
-        X or Y Size of label image.
+        Y size of label image.
     Returns
     -------
     bounds : array_like
@@ -447,7 +450,7 @@ def GetBounds(bbox, delta, N):
     """
     bounds = np.zeros(4, dtype=np.uint8)
     bounds[0] = max(0, math.floor(bbox[0] - delta))
-    bounds[1] = min(N-1, math.ceil(bbox[0] + bbox[2] + delta))
+    bounds[1] = min(M-1, math.ceil(bbox[0] + bbox[2] + delta))
     bounds[2] = max(0, math.floor(bbox[1] - delta))
     bounds[3] = min(N-1, math.ceil(bbox[1] + bbox[3] + delta))
 
