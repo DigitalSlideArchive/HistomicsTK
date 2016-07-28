@@ -1,18 +1,33 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+##############################################################################
+#  Copyright Kitware Inc.
+#
+#  Licensed under the Apache License, Version 2.0 ( the "License" );
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+##############################################################################
+
+
 from six import iteritems
+import json
+
 from girder.utility.model_importer import ModelImporter
 from girder.plugins.jobs.constants import JobStatus
 from .docker_resource import getDockerImageSettings, DockerCache, \
-    DockerResource, localDockerImageCLIList, localDockerImageclixml, \
-    localDockerImageExists
+    DockerResource, DockerImageError, DockerImageNotFoundError
+from .rest_slicer_cli import localDockerImageExists, localDockerImageclixml, \
+    localDockerImageCLIList
 from .constants import PluginSettings
-import subprocess
-import json
-import sys
-import traceback
-
-
-# TODO apply try catch blocks individually and catch specific exceptions
-# TODO pull non existent image names
 
 
 def loadXML(job):
@@ -32,19 +47,26 @@ def loadXML(job):
         cachedData = DockerCache({})
 
         for name in names:
-            id = localDockerImageExists(name)
+            id = localDockerImageExists(name, True)
             if id is None:
-                raise ValueError('The image %s does not exist locally' % name)
-            clis = subprocess.check_output(['docker', 'run', name,
-                                            '--list_cli'])
+
+                raise DockerImageNotFoundError(
+                    'The image %s does not exist locally' % name, name)
+            clis = localDockerImageCLIList(name)
+            if clis is None:
+                raise DockerImageError('Could not call --list_cli'
+                                       ' on image %s' % name, name)
             cachedData.addImage(name)
-            clis = json.loads(clis)
-
+            try:
+                clis = json.loads(clis)
+            except ValueError as err:
+                raise DockerImageError(err.message +
+                                       '\ncli list format is incorrect', name)
             for (dictKey, dictValue) in iteritems(clis):
-                xmlData = subprocess.check_output(
-                    ['docker', 'run', name, dictKey,
-                     '--xml'])
-
+                xmlData = localDockerImageclixml(name, dictKey)
+                if xmlData is None:
+                    raise DockerImageError('Could not get xml data for img %s '
+                                           'cli %s' % (name, dictKey), name)
                 cachedData.addCLI(name, dictKey, dictValue['type'], xmlData)
 
                 Job.updateJob(
@@ -55,25 +77,15 @@ def loadXML(job):
                     progressMessage='caching cli %s from '
                                     'image %s' % (dictKey, name),
                 )
-        currentSettings = DockerCache(getDockerImageSettings())
-        if currentSettings.equals(oldSettings):
 
-            newSetting = ModelImporter.model('setting').findOne(
-                {'key': PluginSettings.DOCKER_IMAGES})
-            if newSetting is None:
-                newSetting = {}
-            else:
-
-                newSetting['key'] = PluginSettings.DOCKER_IMAGES
-                newSetting['value'] = cachedData.raw()
-            ModelImporter.model('setting').save(newSetting, validate=False)
-
+        if saveSetting(oldSettings, cachedData):
             Job.updateJob(
                 job,
                 log='Finished caching docker xml\n',
                 status=JobStatus.SUCCESS,
                 notify=True,
-                progressMessage='Completed caching docker images %s' % name
+                progressMessage='Completed caching '
+                                'docker images %s' % name
             )
 
             return
@@ -89,13 +101,11 @@ def loadXML(job):
             # rerun job since settings were modifies since job ran
             DockerResource.appendImageJob(names)
             return
-    except:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        errorInfo = traceback.format_exception(exc_type, exc_value,
-                                               exc_traceback)
+    except DockerImageError as err:
+
         Job.updateJob(
             job,
-            log='Failed to cache docker image data %s \n' % errorInfo,
+            log='Failed to cache docker image data %s \n %s' % err.message,
             status=JobStatus.ERROR,
             notify=True,
             progressMessage='Failed to cache docker images %s' % name
@@ -115,47 +125,45 @@ def verifyDictionary(job):
         progressMessage='Started to verfy the settings\n',
     )
     try:
-        try:
-            newSettings.validate()
-        except ValueError as err:
-            raise ValueError(
-                'The structure of the new settings is not correct \n%s' % err)
+
+        newSettings.validate()
+
         for img in newSettings.getDockerImageList():
-            id = localDockerImageExists(img)
+            id = localDockerImageExists(img, True)
             if id is None:
-                raise ValueError('The image %s does not exist locally' % img)
+                raise DockerImageNotFoundError('The image %s does not'
+                                               ' exist' % img, img)
             cli_string = localDockerImageCLIList(img)
             if cli_string is None:
-                raise ValueError('clis donot exist for the image %s' % img)
-            cli_dict = json.loads(cli_string)
+                raise DockerImageError('clist donot exist for the '
+                                       'image %s' % img, img)
+            try:
+                cli_dict = json.loads(cli_string)
+            except ValueError as err:
+                raise DockerImageError(err.message +
+                                       '\ncli list format is incorrect', img)
+
             for (cli, type) in iteritems(newSettings.getCLIDict(img)):
                 if cli not in cli_dict:
-                    raise ValueError(
-                        'The cli %s does not exist in the image. ' % cli)
+                    raise DockerImageError(
+                        'The cli %s does not exist in the '
+                        'image %s. ' % (cli, img), img)
                 if type['type'] != cli_dict[cli]['type']:
-                    raise ValueError(
+                    raise DockerImageError(
                         'The cli %s does not have the appropriate '
-                        'type %s %s' % (cli_dict[cli]['type'], type['type']))
+                        'type %s %s' % (cli_dict[cli]['type'], type['type']),
+                        img)
                 xml = localDockerImageclixml(img, cli)
                 if xml is None:
-                    raise ValueError(
+                    raise DockerImageError(
                         'Could not get the xml spec of image %s cli %s.' % (
-                            img, cli))
+                            img, cli), img)
                 if xml != newSettings.getCLIXML(img, cli):
-                    raise ValueError(
+                    raise DockerImageError(
                         'The xml spec of image %s cli %s does not match.' % (
-                            img, cli))
-        currentSettings = DockerCache(getDockerImageSettings())
-        if oldSettings.equals(currentSettings):
-            newSettingSave = ModelImporter.model('setting').findOne(
-                {'key': PluginSettings.DOCKER_IMAGES})
-            if newSettingSave is None:
-                newSettingSave = {}
-            else:
+                            img, cli), img)
 
-                newSettingSave['key'] = PluginSettings.DOCKER_IMAGES
-                newSettingSave['value'] = newSettings.raw()
-            ModelImporter.model('setting').save(newSettingSave, validate=False)
+        if saveSetting(oldSettings, newSettings):
             Job.updateJob(
                 job,
                 log='Finished caching setting\n',
@@ -176,14 +184,31 @@ def verifyDictionary(job):
             )
             DockerResource.validateDict(newSettings)
 
-    except ValueError:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        errorInfo = traceback.format_exception(exc_type, exc_value,
-                                               exc_traceback)
+    except DockerImageError as err:
+
         Job.updateJob(
             job,
-            log='Failed to cache docker setting %s \n' % errorInfo,
+            log='Failed to cache docker setting %s \n' % err.message,
             status=JobStatus.ERROR,
             notify=True,
             progressMessage='Failed to use new docker setting'
         )
+
+
+def saveSetting(oldSettings, newSettings):
+    currentSettings = DockerCache(getDockerImageSettings())
+
+    if oldSettings.equals(currentSettings):
+        newSettingSave = ModelImporter.model('setting').findOne(
+            {'key': PluginSettings.DOCKER_IMAGES})
+
+        if newSettingSave is None:
+            newSettingSave = {}
+        else:
+            newSettingSave['key'] = PluginSettings.DOCKER_IMAGES
+            newSettingSave['value'] = newSettings.raw()
+
+        ModelImporter.model('setting').save(newSettingSave, validate=False)
+        return True
+    else:
+        return False

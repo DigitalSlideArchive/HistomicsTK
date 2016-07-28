@@ -21,11 +21,10 @@
 import six
 import json
 from six import iteritems
-import subprocess
 import hashlib
+
 from girder.api.v1.resource import Resource, RestException
 from .constants import PluginSettings
-
 from girder.utility.model_importer import ModelImporter
 from girder.api.rest import getCurrentUser
 from girder.api import access
@@ -82,7 +81,7 @@ class DockerResource(Resource):
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
     )
-    # TODO delete cli instance if they exist
+    # TODO delete REST endpoint
     def deleteImage(self, params):
 
         self.requireParams(('name',), params)
@@ -137,8 +136,7 @@ class DockerResource(Resource):
     # TODO how to handle newer images(take the latest or require a confirmation)
     # TODO use image id to confirm equivalence need v2 manifest schema on cloud
     # TODO how to handle duplicate clis
-    # TODO have an event update (create cli instances)
-    # TODO check if the new images exist
+    # TODO create the new REST endpoints
     def appendImage(self, params):
         """Validates the new images to be added (if they exist or not) and then
         attempts to collect xml data to be cached. a job is then called to
@@ -185,14 +183,13 @@ class DockerResource(Resource):
                 newSettings = DockerCache(val)
                 try:
                     newSettings.validate()
-                except ValueError as err:
+                except DockerImageDataError as err:
                     event.defaultPrevented()
                     raise RestException(
                         'format of new settings was not correct %s', err)
             else:
                 event.defaultPrevented()
 
-    # TODO remove bad image names
     @staticmethod
     def validateSettings(event):
         """
@@ -274,77 +271,6 @@ class DockerResource(Resource):
         ModelImporter.model('job', 'jobs').scheduleJob(job)
 
 
-def localDockerImageExists(imageName):
-    """checks the local docker cache for the image
-    :param imageName: the docker image name in the form of repo/name:tag
-    if the tag is not given docker defaults to using the :latest tag
-    :type imageName: string
-    :returns: if the image exists the id(sha256 hash) is returned otherwise
-    None is returned
-    """
-    try:
-        # docker inspect returns non zero if the image is not available
-        # locally
-        data = subprocess.check_output(['docker', 'inspect',
-                                        '--format="{{json .Id}}"', imageName])
-        return data
-    except subprocess.CalledProcessError:
-        # the image does not exist locally, try to pull from dockerhub
-
-        return None
-
-
-def localDockerImageCLIList(imageName):
-    """
-    Gets the cli list of the docker image
-    :param imageName: the docker image name in the form of repo/name:tag
-    :type imageName: string
-    :returns: if the image exist the cli dictionary is returned otherwise
-    None is returned
-    cli dictionary format is the following:
-    {
-    <cli_name>:{
-                type:<type>
-                }
-
-    }
-    """
-    try:
-        # docker inspect returns non zero if the image is not available
-        # locally
-        data = subprocess.check_output(
-            ['docker', 'run', imageName, '--list_cli'])
-        return data
-    except subprocess.CalledProcessError:
-        # the image does not exist locally, try to pull from dockerhub
-
-        return None
-
-
-def localDockerImageclixml(img, cli):
-    """
-    Gets the xml spec of the specific cli
-    """
-    try:
-        data = subprocess.check_output(['docker', 'run', img, cli, '--xml'])
-        return data
-    except subprocess.CalledProcessError:
-        # the image does not exist locally, try to pull from dockerhub
-
-        return None
-
-
-def pullDockerImage(img):
-    try:
-        subprocess.check_output(['docker', 'pull', img])
-        data = localDockerImageExists(img)
-        return data
-    except subprocess.CalledProcessError:
-        # the image does not exist on the default repository
-
-        return None
-
-
 def getDockerImageSettings():
     module_list = ModelImporter.model('setting').get(
         PluginSettings.DOCKER_IMAGES)
@@ -354,6 +280,7 @@ def getDockerImageSettings():
 
 
 class DockerCache():
+
     imageName = 'docker_image_name'
     type = 'type'
     xml = 'xml'
@@ -463,23 +390,44 @@ class DockerCache():
             return True
         for (imgHash, imgData) in iteritems(self.data):
             if DockerCache.imageName not in imgData:
-                raise ValueError('There is no key: %s in the'
-                                 ' dict' % DockerCache.imageName)
+                raise DockerImageDataError('There is no key: '
+                                           '%s in the dict'
+                                           % DockerCache.imageName)
             if imgHash != self._getHashKey(imgData[DockerCache.imageName]):
-                raise ValueError('The hash id is not the sha256 hash of '
-                                 'the name: %' % imgData[DockerCache.imageName])
+                raise DockerImageDataError('The hash id is not the sha256 '
+                                           'hash of the name: %' %
+                                           imgData[DockerCache.imageName])
             if DockerCache.cli_dict not in imgData:
-                raise ValueError('There is no dictionary of cli ')
+                raise DockerImageDataError('There is no dictionary of cli ')
             for (cliName, cliData) in iteritems(imgData[DockerCache.cli_dict]):
                 if DockerCache.type not in cliData:
-                    raise ValueError('The cli %s does not have a key for the '
-                                     'type of cli' % cliName)
+                    raise DockerImageDataError('The cli %s does not have a key'
+                                               ' for the type of cli' % cliName)
                 if DockerCache.xml not in cliData:
-                    raise ValueError('The cli %s does not have a key for the '
-                                     'xml of cli' % cliName)
+                    raise DockerImageDataError('The cli %s does not have a key '
+                                               'for the xml of cli' % cliName)
 
     def equals(self, cache):
         if not isinstance(cache, DockerCache):
-            raise ValueError(" Can only compare a Dockercache "
-                             "object to another Dockercache object")
+            raise DockerImageError(" Can only compare a Dockercache "
+                                   "object to another Dockercache object")
         return self.data == cache.data
+
+
+class DockerImageError(Exception):
+    def __init__(self, message, image_name):
+        self.message = message
+        self.imageName = image_name
+        Exception.__init__(self, message)
+
+
+class DockerImageNotFoundError (DockerImageError):
+        def __init__(self, message, image_name, locations=[]):
+            super(DockerImageNotFoundError, self).__init__(message, image_name)
+            # list of registries tried(local dockerhub etc )
+            self.locations = locations
+
+
+class DockerImageDataError(DockerImageError):
+    def __init__(self, message, image_name):
+        super(DockerImageDataError, self).__init__(message, image_name)

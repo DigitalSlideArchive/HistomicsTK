@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-
+import subprocess
 from ctk_cli import CLIModule
 
 from girder.api.rest import Resource, loadmodel, boundHandler
@@ -12,8 +12,6 @@ from girder.plugins.worker import utils as wutils
 from girder.utility.model_importer import ModelImporter
 from girder.plugins.worker import constants
 
-from .docker_resource import localDockerImageclixml, localDockerImageCLIList, \
-    localDockerImageExists, pullDockerImage
 _SLICER_TO_GIRDER_WORKER_TYPE_MAP = {
     'boolean': 'boolean',
     'integer': 'integer',
@@ -812,7 +810,7 @@ def genHandlerToGetDockerCLIXmlSpec(cliRelPath, cliXML,
     return getXMLSpecHandler
 
 
-def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
+def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):  # noqa 18
     """Generates REST end points for slicer CLIs placed in subdirectories of a
     given root directory and attaches them to a REST resource with the given
     name.
@@ -831,7 +829,7 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
     info
     restResource : str or girder.api.rest.Resource
         REST resource to which the end-points should be attached
-    dockerCache : DockerCache object representing data stored in settings
+    dockerImages : a list of docker image names
 
 
     Returns
@@ -1092,3 +1090,79 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(info, restResource, dockerCache):
 
     # return restResource
     return restResource
+
+
+def localDockerImageExists(imageName, pullIfNotExist=False):
+    """checks the local docker cache for the image
+    :param imageName: the docker image name in the form of repo/name:tag
+    if the tag is not given docker defaults to using the :latest tag
+    :type imageName: string
+    :returns: if the image exists the id(sha256 hash) is returned otherwise
+    None is returned
+    """
+    try:
+        # docker inspect returns non zero if the image is not available
+        # locally
+        data = subprocess.check_output(['docker', 'inspect',
+                                        '--format="{{json .Id}}"', imageName])
+
+        return data
+    except subprocess.CalledProcessError:
+        if pullIfNotExist:
+            # the image does not exist locally, try to pull from dockerhub
+            # none is returned if it fails
+            data = pullDockerImage(imageName)
+            return data
+        return None
+
+
+def localDockerImageCLIList(imageName):
+    """
+    Gets the cli list of the docker image
+    :param imageName: the docker image name in the form of repo/name:tag
+    :type imageName: string
+    :returns: if the image exist the cli dictionary is returned otherwise
+    None is returned
+    cli dictionary format is the following:
+    {
+    <cli_name>:{
+                type:<type>
+                }
+
+    }
+    """
+    try:
+        # docker inspect returns non zero if the image is not available
+        # locally
+        data = subprocess.check_output(
+            ['docker', 'run', imageName, '--list_cli'])
+        return data
+    except subprocess.CalledProcessError:
+        # the image does not exist locally, try to pull from dockerhub
+
+        return None
+
+
+def localDockerImageclixml(img, cli):
+    """
+    Gets the xml spec of the specific cli
+
+    """
+    try:
+        data = subprocess.check_output(['docker', 'run', img, cli, '--xml'])
+        return data
+    except subprocess.CalledProcessError:
+        # the image does not exist locally, try to pull from dockerhub
+
+        return None
+
+
+def pullDockerImage(img):
+    try:
+        subprocess.check_output(['docker', 'pull', img])
+        data = localDockerImageExists(img)
+        return data
+    except subprocess.CalledProcessError:
+        # the image does not exist on the default repository
+
+        return None
