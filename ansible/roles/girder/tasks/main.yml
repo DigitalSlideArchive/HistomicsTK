@@ -53,7 +53,7 @@
 - name: Install girder using pip
   pip:
     name: "{{ girder_root }}[worker]"
-    editable: yes
+    extra_args: "-e"
     state: present
   sudo: yes
 

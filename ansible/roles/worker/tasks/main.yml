@@ -51,7 +51,7 @@
   sudo: yes
   pip:
     name: /opt/girder_worker[docker,girder_io]
-    editable: yes
+    extra_args: "-e"
     state: present
 
 
