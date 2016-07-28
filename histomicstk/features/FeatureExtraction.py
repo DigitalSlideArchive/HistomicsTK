@@ -134,10 +134,11 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
         Extent = np.append(Extent, region.extent)
         Solidity = np.append(Solidity, region.solidity)
         # get bounds of dilated nucleus
-        bounds = GetBounds(region.bbox, Delta, size_x, size_y)
+        min_row, max_row, min_col, max_col = \
+            GetBounds(region.bbox, Delta, size_x, size_y)
         # grab nucleus mask
         Nucleus = (
-            Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] == region.label
+            Label[min_row:max_row, min_col:max_col] == region.label
         ).astype(np.uint8)
         # find nucleus boundaries
         Bounds = np.argwhere(
@@ -152,14 +153,15 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
         Nuclei[regionIdx] = region.coords
         # get mask for all nuclei in neighborhood
         Mask = (
-            Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] > 0
+            Label[min_row:max_row, min_col:max_col] > 0
         ).astype(np.uint8)
         # remove nucleus region from cytoplasm+nucleus mask
         cytoplasm = (
             np.logical_xor(Mask, dilation(Nucleus, Disk))
         ).astype(np.uint8)
         # get list of cytoplasm pixels
-        Cytoplasms[regionIdx] = GetPixCoords(cytoplasm, bounds)
+        Cytoplasms[regionIdx] = GetPixCoords(
+            cytoplasm, min_row, min_col)
         regionIdx = regionIdx + 1
 
     # calculate hematoxlyin features, capture feature names
@@ -411,15 +413,17 @@ def IntensityFeatureGroup(I, Coords):
     return Output
 
 
-def GetPixCoords(Binary, bounds):
+def GetPixCoords(Binary, min_row, min_col):
     """
     Get global coords of object extracted from tile.
     Parameters
     ----------
     Binary : array_like
         A binary image.
-    bounds : array_like
-        A region bounds. [min_row, max_row, min_col, max_col].
+    min_row : int
+        Minum row of the region bounds.
+    min_col : int
+        Minum column of the region bounds.
     Returns
     -------
     coords : array_like
@@ -427,8 +431,8 @@ def GetPixCoords(Binary, bounds):
     """
     coords = np.where(Binary == 1)
     coords = np.asarray(coords)
-    coords[0] = np.add(coords[0], bounds[0])
-    coords[1] = np.add(coords[1], bounds[2])
+    coords[0] = np.add(coords[0], min_row)
+    coords[1] = np.add(coords[1], min_col)
     coords = coords.T
 
     return coords
@@ -450,16 +454,24 @@ def GetBounds(bbox, delta, M, N):
         Y size of label image.
     Returns
     -------
-    bounds : array_like
-        A region bounds. [min_row, max_row, min_col, max_col].
+    min_row : int
+        Minum row of the region bounds.
+    max_row : int
+        Maximum row of the region bounds.
+    min_col : int
+        Minum column of the region bounds.
+    max_col : int
+        Maximum column of the region bounds.
     """
-    bounds = np.zeros(4, dtype=np.uint8)
-    bounds[0] = max(0, math.floor(bbox[0] - delta))
-    bounds[1] = min(M-1, math.ceil(bbox[0] + bbox[2] + delta))
-    bounds[2] = max(0, math.floor(bbox[1] - delta))
-    bounds[3] = min(N-1, math.ceil(bbox[1] + bbox[3] + delta))
 
-    return bounds
+    min_row, min_col, max_row, max_col = bbox
+
+    min_row_out = max(0, (min_row - delta))
+    max_row_out = min(M-1, (max_row + delta))
+    min_col_out = max(0, (min_col - delta))
+    max_col_out = min(N-1, (max_col + delta))
+
+    return min_row_out, max_row_out, min_col_out, max_col_out
 
 
 def InterpolateArcLength(X, Y, L):
