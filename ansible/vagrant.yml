@@ -24,9 +24,6 @@
     girder_celery_email: histomicstk.celery@kitware.com
     girder_celery_password: celery
     girder_root: "{{ root_dir }}/girder"
-    girder_assetstore_type: filesystem
-    girder_assetstore_name: Local filesystem assetstore
-    girder_assetstore_local_fs: true
     worker_exec_user: vagrant
     worker_exec_group: vagrant
     mongo_private_ip: localhost

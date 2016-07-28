@@ -87,8 +87,13 @@
     state: present
   sudo: yes
 
-#- name: Install large_image plugin
-#  command: girder-install plugin -s {{ root_dir }}/large_image
+- name: Install numpy (must be installed before large_image)
+  pip: name=numpy version=1.10.2
+  sudo: yes
+
+- name: Install large_image plugin
+  command: girder-install plugin -s {{ root_dir }}/large_image
+  sudo: yes
 
 #- name: Install HistomicsTK plugin
 #  command: girder-install plugin -s {{ root_dir }}/HistomicsTK
