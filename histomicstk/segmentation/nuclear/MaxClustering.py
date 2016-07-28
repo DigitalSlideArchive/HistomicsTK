@@ -102,8 +102,8 @@ def MaxClustering(Response, Mask, r=10):
     Tracked = np.zeros(Max.shape, dtype=bool)
     Label = spm.label((Response == Max) & Mask)[0]
     Tracked[Label > 0] = True
-    Seeds = np.reshape(np.nonzero(Label),
-                       [2, Label.max()], order='C').transpose()
+    Indices = np.nonzero(Label)
+    Seeds = np.reshape(Indices, [2, Indices[0].size], order='C').transpose()
 
     # track each pixel and update
     for i in np.arange(0, px.size, 1):
