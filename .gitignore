@@ -13,3 +13,4 @@ build
 .idea
 node_modules/
 .*.swp
+/.vagrant/

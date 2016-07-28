@@ -1,0 +1,14 @@
+---
+- name: Give ownership of root dir to appropriate user
+  file:
+    path: "{{ root_dir }}"
+    owner: "{{ girder_exec_user }}"
+    group: "{{ girder_exec_group }}"
+    mode: 0775
+    state: directory
+    recurse: no
+  sudo: yes
+
+- name: Install curl
+  apt: pkg=curl state=installed
+  sudo: yes

@@ -1,0 +1,47 @@
+---
+- name: Fetch GPG key for MongoDB
+  sudo: yes
+  command: apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+
+- name: Add MongoDB PPA
+  sudo: yes
+  shell: echo "deb http://repo.mongodb.org/apt/ubuntu `lsb_release -c -s`/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+  args:
+    creates: /etc/apt/sources.list.d/mongodb-org-3.2.list
+
+- name: Install latest MongoDB package
+  sudo: yes
+  apt: pkg=mongodb-org update-cache=yes
+
+- name: Make mongo listen on private IP interface
+  sudo: yes
+  lineinfile:
+    dest: /etc/mongod.conf
+    state: present
+    regexp: "bindIp:"
+    line: "  bindIp: {{ mongo_private_ip }}"
+
+- name: Configure DB path to use
+  sudo: yes
+  lineinfile:
+    dest: /etc/mongod.conf
+    state: present
+    regexp: "dbPath:"
+    line: "  dbPath: {{ mongo_dbpath }}"
+
+- name: Ensure DB directory exists
+  sudo: yes
+  file:
+    path: "{{ mongo_dbpath }}"
+    state: directory
+    owner: mongodb
+    group: mongodb
+
+- name: Run mongo daemon
+  sudo: yes
+  service: name=mongod state=restarted
+
+- name: Wait for Mongo startup
+  wait_for:
+    port: 27017
+    timeout: 15

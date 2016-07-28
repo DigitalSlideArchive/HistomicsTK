@@ -1,0 +1,6 @@
+---
+girder_version: master
+histomicstk_version: master
+large_image_version: master
+girder_worker_version: master
+mongo_dbpath: /mongodata

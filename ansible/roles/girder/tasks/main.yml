@@ -1,0 +1,160 @@
+- name: Install pycurl package in order to use the apt_repository module
+  apt: pkg=python-pycurl state=present
+  sudo: yes
+
+- name: Add nodejs PPA
+  shell: curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -
+  sudo: yes
+
+- name: Install package dependencies
+  apt: name={{ item }} state=present
+  sudo: yes
+  with_items:
+    - libssl-dev
+    - python-pip
+    - python2.7-dev
+    - build-essential
+    - python-software-properties
+    - libffi-dev
+    - nodejs
+    - cmake
+    - git
+    - postfix
+    - libjpeg-dev
+    - libfreetype6-dev
+    - zlib1g-dev
+    - libpng-dev
+
+- name: Clone girder
+  git:
+    repo: git://github.com/girder/girder.git
+    dest: "{{ girder_root }}"
+    accept_hostkey: yes
+    version: "{{ girder_version }}"
+
+- name: Clone HistomicsTK
+  git:
+    repo: git://github.com/DigitalSlideArchive/HistomicsTK.git
+    dest: "{{ root_dir }}/HistomicsTK"
+    accept_hostkey: yes
+    version: "{{ histomicstk_version }}"
+
+- name: Clone large_image plugin
+  git:
+    repo: git://github.com/DigitalSlideArchive/large_image.git
+    dest: "{{ root_dir }}/large_image"
+    accept_hostkey: yes
+    version: "{{ large_image_version }}"
+
+- name: Get the most recent version of pip
+  pip: name=pip extra_args="-U"
+  sudo: yes
+
+- name: Install girder using pip
+  pip:
+    name: "{{ girder_root }}[worker]"
+    editable: yes
+    state: present
+  sudo: yes
+
+#- name: Install large_image plugin
+#  command: girder-install plugin -s {{ root_dir }}/large_image
+
+#- name: Install HistomicsTK plugin
+#  command: girder-install plugin -s {{ root_dir }}/HistomicsTK
+
+#- name: Install HistomicsTK additional dependencies
+#  pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements.txt"
+#  sudo: yes
+
+- name: Install girder-client pip package
+  pip: name=girder-client version=1.1.1
+  sudo: yes
+
+- name: Build web client
+  command: girder-install web
+  sudo: yes
+
+- name: Set the girder configuration file
+  template: src=girder.local.cfg.j2 dest={{ girder_root }}/girder/conf/girder.local.cfg
+
+- name: Install girder as a service
+  template: src=girder.conf.j2 dest=/etc/init/girder.conf mode=644 owner=root
+  sudo: yes
+
+- name: Start girder as a service
+  service: name=girder state=restarted enabled=yes
+  sudo: yes
+
+- name: Ensure girder admin user exists
+  girder:
+    port: "{{ girder_socket_port }}"
+    user:
+      firstName: admin
+      lastName: admin
+      password: "{{ girder_admin_password }}"
+      login: "{{ girder_admin_user }}"
+      email: "{{ girder_admin_email }}"
+      admin: yes
+    state: present
+
+- name: Ensure worker user exists
+  girder:
+    port: "{{ girder_socket_port }}"
+    user:
+      firstName: Worker
+      lastName: Robot
+      password: "{{ girder_celery_password }}"
+      login: "{{ girder_celery_user }}"
+      email: "{{ girder_celery_email }}"
+    state: present
+
+- name: Ensure required plugins are enabled
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    plugins: "{{ girder_plugins }}"
+    state: present
+
+- name: Restart Girder as a service to make sure our plugins are running
+  service: name=girder state=restarted enabled=yes
+  sudo: yes
+
+- name: Wait for Girder startup
+  wait_for:
+    port: "{{ girder_socket_port }}"
+
+- name: Set worker broker setting
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: system/setting
+      parameters:
+        key: worker.broker
+        value: "amqp://guest@{{ mq_private_ip }}//"
+
+- name: Set worker backend setting
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: system/setting
+      parameters:
+        key: worker.backend
+        value: "amqp://guest@{{ mq_private_ip }}//"
+
+- name: Ensure the existence of the filesystem assetstore
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    assetstore:
+      name: default
+      type: filesystem
+      root: "{{ root_dir }}/assetstore"
+      current: true
+    state: present
