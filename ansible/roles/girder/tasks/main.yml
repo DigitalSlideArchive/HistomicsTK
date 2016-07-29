@@ -55,6 +55,13 @@
     - pandoc
     - pandoc-citeproc
 
+- name: Clone ctk-cli
+  git:
+    repo: git://github.com/commontk/ctk-cli.git
+    dest: "{{ root_dir }}/ctk-cli"
+    accept_hostkey: yes
+    version: "{{ ctk_cli_version }}"
+
 - name: Clone girder
   git:
     repo: git://github.com/girder/girder.git
@@ -76,8 +83,22 @@
     accept_hostkey: yes
     version: "{{ large_image_version }}"
 
+- name: Clone DSA plugin
+  git:
+    repo: git://github.com/DigitalSlideArchive/digital_slide_archive.git
+    dest: "{{ root_dir }}/digital_slide_archive"
+    accept_hostkey: yes
+    version: "{{ dsa_version }}"
+
 - name: Get the most recent version of pip
   pip: name=pip extra_args="-U"
+  sudo: yes
+
+- name: Install ctk-cli using pip
+  pip:
+    name: "{{ root_dir }}/ctk-cli"
+    extra_args: "-e"
+    state: present
   sudo: yes
 
 - name: Install girder using pip
@@ -87,27 +108,16 @@
     state: present
   sudo: yes
 
-- name: Install numpy (must be installed before large_image)
+- name: Install numpy (must be installed before large_image plugin)
   pip: name=numpy version=1.10.2
   sudo: yes
 
-- name: Install large_image plugin
-  command: girder-install plugin -s {{ root_dir }}/large_image
+- name: Install our external girder plugins
+  command: girder-install plugin -s {{ root_dir }}/large_image {{ root_dir }}/HistomicsTK {{ root_dir }}/digital_slide_archive
   sudo: yes
-
-#- name: Install HistomicsTK plugin
-#  command: girder-install plugin -s {{ root_dir }}/HistomicsTK
-
-#- name: Install HistomicsTK additional dependencies
-#  pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements.txt"
-#  sudo: yes
 
 - name: Install girder-client pip package
   pip: name=girder-client version=1.1.1
-  sudo: yes
-
-- name: Build web client
-  command: girder-install web
   sudo: yes
 
 - name: Set the girder configuration file
