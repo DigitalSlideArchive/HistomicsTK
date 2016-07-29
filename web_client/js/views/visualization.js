@@ -355,7 +355,7 @@ histomicstk.views.Visualization = girder.View.extend({
         if (!this._lastCorner) {
             // do a full rerender if we haven't synced the viewport yet
             this._syncViewport();
-            return
+            return;
         }
 
         ul = this._map.gcsToDisplay({
