@@ -47,7 +47,7 @@ class DockerResource(Resource):
         self.resourceName = name
         DockerResource.resourceName = name
         self.route('PUT', (DockerResource.resourceName, 'docker_image'),
-                   self.appendImage)
+                   self.setImages)
         self.route('DELETE', (DockerResource.resourceName, 'docker_image'),
                    self.deleteImage)
         self.route('GET', (DockerResource.resourceName, 'docker_image'),
@@ -67,7 +67,7 @@ class DockerResource(Resource):
         data = {}
         current = DockerCache(getDockerImageSettings())
         for image in current.getDockerImageList():
-            data[image] = current.getCLIDict(image)
+            data[image] = current.getCLIListSpec(image)
         return data
 
     @access.admin
@@ -117,9 +117,9 @@ class DockerResource(Resource):
         # need to remove each cli attribute
         # need to remove the clli list attribute
         # need to remove the rest route
-        print "after delete", currentSettings.raw()
+        print "after delete", currentSettings.getRawData()
         ModelImporter.model('setting').set(PluginSettings.DOCKER_IMAGES,
-                                           currentSettings.raw())
+                                           currentSettings.getRawData())
 
     @access.admin
     @describeRoute(
@@ -137,7 +137,7 @@ class DockerResource(Resource):
     # TODO use image id to confirm equivalence need v2 manifest schema on cloud
     # TODO how to handle duplicate clis
     # TODO create the new REST endpoints
-    def appendImage(self, params):
+    def setImages(self, params):
         """Validates the new images to be added (if they exist or not) and then
         attempts to collect xml data to be cached. a job is then called to
         update the PluginSettings.DOCKER_IMAGES settings with the new
@@ -162,7 +162,7 @@ class DockerResource(Resource):
                    'image_worker' % DockerResource.resourceName,
             function='loadXML',
             kwargs={'name': imgs,
-                    'oldSettings': currentSettings.raw()},
+                    'oldSettings': currentSettings.getRawData()},
             title='Updating Settings and Caching xml',
             type='%s.images' % DockerResource.resourceName,
             user=getCurrentUser(),
@@ -248,7 +248,7 @@ class DockerResource(Resource):
 
                 raise RestException('name was not a valid JSON list or string.')
 
-            event.info['value'] = currentSettings.raw()
+            event.info['value'] = currentSettings.getRawData()
             event.preventDefault().stopPropagation()
 
     @staticmethod
@@ -258,8 +258,8 @@ class DockerResource(Resource):
             module='girder.plugins.HistomicsTK.image_worker',
             function='verifyDictionary',
             kwargs={
-                'newSettings': newSettings.raw(),
-                'oldSettings': currentSettings.raw()
+                'newSettings': newSettings.getRawData(),
+                'oldSettings': currentSettings.getRawData()
             },
 
             title='Updating Settings ',
@@ -315,7 +315,7 @@ class DockerCache():
         return [str(imgDict[DockerCache.imageName])
                 for (imgHash, imgDict) in iteritems(self.data)]
 
-    def imageAlreadyLoaded(self, name):
+    def isImageAlreadyLoaded(self, name):
         imageKey = self._getHashKey(name)
         if imageKey in self.data:
             return True
@@ -323,6 +323,10 @@ class DockerCache():
             return False
 
     def addImage(self, name):
+
+        if not isinstance(name, six.string_types):
+            raise DockerImageError('Image name should be a string,'
+                                   ' could not add the image', 'bad name')
 
         imageKey = self._getHashKey(name)
         self.data[imageKey] = {}
@@ -339,7 +343,7 @@ class DockerCache():
         imageKey = self._getHashKey(img_name)
         self.data[imageKey][DockerCache.cli_dict][cli_name] = cliData
 
-    def raw(self):
+    def getRawData(self):
         return self.data
 
     def deleteImage(self, name):
@@ -370,7 +374,7 @@ class DockerCache():
             print('no cli named %s' % imgName)
             return None
 
-    def getCLIDict(self, imgName):
+    def getCLIListSpec(self, imgName):
         cliDict = {}
         imgKey = self._getHashKey(imgName)
         if imgKey in self.data:
@@ -410,7 +414,7 @@ class DockerCache():
     def equals(self, cache):
         if not isinstance(cache, DockerCache):
             raise DockerImageError(" Can only compare a Dockercache "
-                                   "object to another Dockercache object")
+                                   "object to another DockerCache object")
         return self.data == cache.data
 
 
@@ -418,7 +422,7 @@ class DockerImageError(Exception):
     def __init__(self, message, image_name):
         self.message = message
         self.imageName = image_name
-        Exception.__init__(self, message)
+        super(DockerImageError, self).__init__(self, message)
 
 
 class DockerImageNotFoundError (DockerImageError):
