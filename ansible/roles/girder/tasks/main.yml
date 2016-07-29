@@ -224,3 +224,13 @@
       root: "{{ root_dir }}/assetstore"
       current: true
     state: present
+
+- name: Ensure the existence of the TCGA collection
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    collection:
+      name: TCGA
+      public: true
+    state: present
