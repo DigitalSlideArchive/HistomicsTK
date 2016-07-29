@@ -89,7 +89,7 @@ histomicstk.schema = {
             channel = 'input';
         }
 
-        if (type === 'file' && channel === 'output') {
+        if ((type === 'file' || type === 'image') && channel === 'output') {
             type = 'new-file';
         }
 
@@ -140,7 +140,7 @@ histomicstk.schema = {
             'float-enumeration': 'number-enumeration',
             'double-enumeration': 'number-enumeration',
             'string-enumeration': 'string-enumeration',
-            image: 'file',
+            image: 'image',
             file: 'file',
             directory: 'directory'
         };

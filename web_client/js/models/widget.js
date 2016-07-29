@@ -76,12 +76,12 @@ histomicstk.models.Widget = Backbone.Model.extend({
      * Coerce a vector of values into normalized native types.
      */
     _normalizeVector: function (value) {
-            if (value === '') {
-                value = [];
-            } else if (_.isString(value)) {
-                value = value.split(',');
-            }
-            return _.map(value, _.bind(this._normalizeValue, this));
+        if (value === '') {
+            value = [];
+        } else if (_.isString(value)) {
+            value = value.split(',');
+        }
+        return _.map(value, _.bind(this._normalizeValue, this));
     },
 
     _normalizeValue: function (value) {
@@ -219,7 +219,7 @@ histomicstk.models.Widget = Backbone.Model.extend({
      * True if the value should be coerced as a boolean.
      */
     isBoolean: function () {
-        return this.get('type') === 'boolean'
+        return this.get('type') === 'boolean';
     },
 
     /**
@@ -255,7 +255,7 @@ histomicstk.models.Widget = Backbone.Model.extend({
      */
     isGirderModel: function () {
         return _.contains(
-            ['directory', 'file', 'new-file'],
+            ['directory', 'file', 'new-file', 'image'],
             this.get('type')
         );
     },
@@ -289,7 +289,8 @@ histomicstk.models.Widget = Backbone.Model.extend({
         'string-enumeration',
         'file',
         'directory',
-        'new-file'
+        'new-file',
+        'image'
     ]
 });
 
@@ -313,6 +314,9 @@ histomicstk.collections.Widget = Backbone.Collection.extend({
                 case 'new-file':
                     params[m.id + '_girderFolderId'] = m.value().get('folderId');
                     params[m.id + '_name'] = m.value().get('name');
+                    break;
+                case 'image':
+                    params[m.id + '_girderFileId'] = m.value().id;
                     break;
                 default:
                     params[m.id] = JSON.stringify(m.value());
