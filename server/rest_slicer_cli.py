@@ -569,7 +569,7 @@ def _addIndexedParamsToContainerArgs(index_params, containerArgs, hargs):
         containerArgs.append(curValue)
 
 
-def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
+def genHandlerToRunDockerCLI(dockerImage, cliRelPath, cliXML, restResource):
     """Generates a handler to run docker CLI using girder_worker
 
     Parameters
@@ -579,6 +579,8 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
     cliRelPath : str
         Relative path of the CLI which is needed to run the CLI by running
         the command docker run `dockerImage` `cliRelPath`
+    cliXML:str
+        Cached copy of xml spec for this cli
     restResource : girder.api.rest.Resource
         The object of a class derived from girder.api.rest.Resource to which
         this handler will be attached
@@ -592,8 +594,7 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
     cliName = os.path.normpath(cliRelPath).replace(os.sep, '.')
 
     # get xml spec
-    str_xml = subprocess.check_output(['docker', 'run', dockerImage,
-                                       cliRelPath, '--xml'])
+    str_xml = cliXML
 
     # parse cli xml spec
     xmlFile = 'temp.xml'
@@ -772,7 +773,8 @@ def genHandlerToRunDockerCLI(dockerImage, cliRelPath, restResource):
     return handlerFunc
 
 
-def genHandlerToGetDockerCLIXmlSpec(dockerImage, cliRelPath, restResource):
+def genHandlerToGetDockerCLIXmlSpec(cliRelPath, cliXML,
+                                    restResource):
     """Generates a handler that returns the XML spec of the docker CLI
 
     Parameters
@@ -782,6 +784,8 @@ def genHandlerToGetDockerCLIXmlSpec(dockerImage, cliRelPath, restResource):
     cliRelPath : str
         Relative path of the CLI which is needed to run the CLI by running
         the command docker run `dockerImage` `cliRelPath`
+    cliXML: str
+        value of clispec stored in settings
     restResource : girder.api.rest.Resource
         The object of a class derived from girder.api.rest.Resource to which
         this handler will be attached
@@ -792,8 +796,7 @@ def genHandlerToGetDockerCLIXmlSpec(dockerImage, cliRelPath, restResource):
         Returns a function that returns the xml spec of the CLI
     """
 
-    str_xml = subprocess.check_output(['docker', 'run', dockerImage,
-                                       cliRelPath, '--xml'])
+    str_xml = cliXML
 
     # define the handler that returns the CLI's xml spec
     @boundHandler(restResource)
@@ -826,14 +829,14 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
     info
     restResource : str or girder.api.rest.Resource
         REST resource to which the end-points should be attached
-    dockerImages : str or list of str
-        A single docker image or a list of docker images
+    dockerImages : a list of docker image names
+
 
     Returns
     -------
 
     """
-
+    dockerImages
     # validate restResource argument
     if not isinstance(restResource, (str, Resource)):
         raise Exception('restResource must either be a string or '
@@ -865,10 +868,12 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
     cliList = []
 
     for dimg in dockerImages:
+        # check if the docker image exists
+
+        getDockerImage(dimg, True)
 
         # get CLI list
-        cliListSpec = subprocess.check_output(['docker', 'run',
-                                               dimg, '--list_cli'])
+        cliListSpec = getDockerImageCLIList(dimg)
 
         # pprint.pprint(cliListSpec)
 
@@ -876,15 +881,19 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
 
         # Add REST end-point for each CLI
         for cliRelPath in cliListSpec.keys():
-
+            cliXML = getDockerImageCLIXMLSpec(dimg, cliRelPath)
             # create a POST REST route that runs the CLI
             try:
+
+                # print cliXML
                 cliRunHandler = genHandlerToRunDockerCLI(dimg,
                                                          cliRelPath,
+                                                         cliXML,
                                                          restResource)
             except Exception as e:
-                print "Failed to create REST endpoints for %s: %s" % (
-                    cliRelPath, e)
+                print ("Failed to create REST endpoints for %s: %s" % (
+                    cliRelPath, e))
+                print ("cli handler")
                 continue
 
             cliSuffix = os.path.normpath(cliRelPath).replace(os.sep, '_')
@@ -898,7 +907,7 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
             # create GET REST route that returns the xml of the CLI
             try:
                 cliGetXMLSpecHandler = genHandlerToGetDockerCLIXmlSpec(
-                    dimg, cliRelPath, restResource)
+                    cliRelPath, cliXML, restResource)
 
             except Exception as e:
                 print "Failed to create REST endpoints for %s: %s" % (
@@ -936,3 +945,199 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
 
     # return restResource
     return restResource
+
+
+def genRESTEndPointsForSlicerCLIsInDockerCache(info, restResource, dockerCache):
+    """Generates REST end points for slicer CLIs placed in subdirectories of a
+    given root directory and attaches them to a REST resource with the given
+    name.
+
+    For each CLI, it creates:
+    * a GET Route (<apiURL>/`restResourceName`/<cliRelativePath>/xmlspec)
+    that returns the xml spec of the CLI
+    * a POST Route (<apiURL>/`restResourceName`/<cliRelativePath>/run)
+    that runs the CLI
+
+    It also creates a GET route (<apiURL>/`restResourceName`) that returns a
+    list of relative routes to all CLIs attached to the generated REST resource
+
+    Parameters
+    ----------
+    info
+    restResource : str or girder.api.rest.Resource
+        REST resource to which the end-points should be attached
+    dockerCache : DockerCache object representing data stored in settings
+
+
+    Returns
+    -------
+
+    """
+    dockerImages = dockerCache.getDockerImageList()
+    # validate restResource argument
+    if not isinstance(restResource, (str, Resource)):
+        raise Exception('restResource must either be a string or '
+                        'an object of girder.api.rest.Resource')
+
+    # create REST resource if given a name
+    if isinstance(restResource, str):
+        restResource = type(restResource,
+                            (Resource, ),
+                            {'resourceName': restResource})()
+
+    restResourceName = type(restResource).__name__
+
+    # Add REST routes for slicer CLIs in each docker image
+    cliList = []
+
+    for dimg in dockerImages:
+
+        # get CLI list
+        cliListSpec = dockerCache.getCLIListSpec(dimg)
+
+        # pprint.pprint(cliListSpec)
+
+        # Add REST end-point for each CLI
+        for cliRelPath in cliListSpec.keys():
+
+            # create a POST REST route that runs the CLI
+            try:
+                cliXML = dockerCache.getCLIXML(dimg, cliRelPath)
+
+                cliRunHandler = genHandlerToRunDockerCLI(dimg,
+                                                         cliRelPath,
+                                                         cliXML,
+                                                         restResource)
+            except Exception as e:
+                print "Failed to create REST endpoints for %s: %s" % (
+                    cliRelPath, e)
+                print "cli handler"
+                continue
+
+            cliSuffix = os.path.normpath(cliRelPath).replace(os.sep, '_')
+
+            cliRunHandlerName = 'run_' + cliSuffix
+            setattr(restResource, cliRunHandlerName, cliRunHandler)
+            restResource.route('POST',
+                               (cliRelPath, 'run'),
+                               getattr(restResource, cliRunHandlerName))
+
+            # create GET REST route that returns the xml of the CLI
+            try:
+                cliGetXMLSpecHandler = genHandlerToGetDockerCLIXmlSpec(
+                    cliRelPath, dockerCache.getCLIXML(dimg, cliRelPath),
+                    restResource)
+
+            except Exception as e:
+                print "Failed to create REST endpoints for %s: %s" % (
+                    cliRelPath, e)
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)
+                continue
+
+            cliGetXMLSpecHandlerName = 'get_xml_' + cliSuffix
+            setattr(restResource,
+                    cliGetXMLSpecHandlerName,
+                    cliGetXMLSpecHandler)
+            restResource.route('GET',
+                               (cliRelPath, 'xmlspec',),
+                               getattr(restResource, cliGetXMLSpecHandlerName))
+
+            cliList.append(cliRelPath)
+
+    # create GET route that returns a list of relative routes to all CLIs
+    @boundHandler(restResource)
+    @access.user
+    @describeRoute(
+        Description('Get list of relative routes to all CLIs')
+    )
+    def getCLIListHandler(self, *args, **kwargs):
+        return cliList
+
+    getCLIListHandlerName = 'get_cli_list'
+    setattr(restResource, getCLIListHandlerName, getCLIListHandler)
+    restResource.route('GET', (), getattr(restResource, getCLIListHandlerName))
+
+    # expose the generated REST resource via apiRoot
+    setattr(info['apiRoot'], restResourceName, restResource)
+
+    # return restResource
+    return restResource
+
+
+def getDockerImage(imageName, pullIfNotExist=False):
+    """checks the local docker cache for the image
+    :param imageName: the docker image name in the form of repo/name:tag
+    if the tag is not given docker defaults to using the :latest tag
+    :type imageName: string
+    :returns: if the image exists the id(sha256 hash) is returned otherwise
+    None is returned
+    """
+    try:
+        # docker inspect returns non zero if the image is not available
+        # locally
+        data = subprocess.check_output(['docker', 'inspect',
+                                        '--format="{{json .Id}}"', imageName])
+
+        return data
+    except subprocess.CalledProcessError:
+        if pullIfNotExist:
+            # the image does not exist locally, try to pull from dockerhub
+            # none is returned if it fails
+            data = pullDockerImage(imageName)
+            return data
+        raise Exception("cant find the image %s" % imageName)
+
+
+def getDockerImageCLIList(imageName):
+    """
+    Gets the cli list of the docker image
+    :param imageName: the docker image name in the form of repo/name:tag
+    :type imageName: string
+    :returns: if the image exist the cli dictionary is returned otherwise
+    None is returned
+    cli dictionary format is the following:
+    {
+    <cli_name>:{
+                type:<type>
+                }
+
+    }
+    """
+    try:
+        # docker inspect returns non zero if the image is not available
+        # locally
+        data = subprocess.check_output(
+            ['docker', 'run', imageName, '--list_cli'])
+        return data
+    except subprocess.CalledProcessError:
+        # the image does not exist locally, try to pull from dockerhub
+        raise Exception("Could not get the cli list for the img %s most "
+                        "likely the docker image entrypoint does "
+                        "not accept the argument --list_cli" % imageName)
+
+
+def getDockerImageCLIXMLSpec(img, cli):
+    """
+    Gets the xml spec of the specific cli
+
+    """
+    try:
+        data = subprocess.check_output(['docker', 'run', img, cli, '--xml'])
+        return data
+    except subprocess.CalledProcessError:
+        # the image does not exist locally, try to pull from dockerhub
+        raise Exception('Could not get xml data for img %s '
+                        'cli %s' % (img, cli))
+
+
+def pullDockerImage(img):
+    try:
+        subprocess.check_output(['docker', 'pull', img])
+        data = getDockerImage(img)
+        return data
+    except subprocess.CalledProcessError:
+        # the image does not exist on the default repository
+
+        return None
