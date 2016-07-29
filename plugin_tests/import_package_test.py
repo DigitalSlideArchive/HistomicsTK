@@ -19,10 +19,6 @@
 
 from tests import base
 
-import numpy as np
-import os
-import skimage.io
-
 
 # boiler plate to start and stop the server if needed
 def setUpModule():
@@ -35,7 +31,7 @@ def tearDownModule():
 
 
 # Test import of histomicstk and all of its sub-packages independently
-class ImportTest(base.TestCase):
+class ImportPackageTest(base.TestCase):
 
     def test_histomicstk(self):
         import histomicstk as htk  # noqa
