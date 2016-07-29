@@ -1,3 +1,5 @@
+# make functions available at the package level using shadow imports
+# since we mostly have one function per file
 from .ConvertSchedule import ConvertSchedule
 from .Del2 import Del2
 from .Eigenvalues import Eigenvalues
@@ -5,12 +7,16 @@ from .GradientDiffusion import GradientDiffusion
 from .Hessian import Hessian
 from .MergeColinear import MergeColinear
 from .PoissonMixture import PoissonMixture
-from .Sample import Sample
+from .SimpleMask import SimpleMask
+from .Sample import Sample # must import after SimpleMask
 from .SubmitTorque import SubmitTorque
 from .TilingSchedule import TilingSchedule
 
+
+# list out things that are available for public use
 __all__ = (
-    'ConvertSchedule',
+
+    # functions and classes of this package
     'Del2',
     'Eigenvalues',
     'GradientDiffusion',
@@ -18,6 +24,4 @@ __all__ = (
     'MergeColinear',
     'PoissonMixture',
     'Sample',
-    'SubmitTorque',
-    'TilingSchedule',
 )
