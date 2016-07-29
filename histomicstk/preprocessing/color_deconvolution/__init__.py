@@ -4,7 +4,7 @@ from .ColorConvolution import ColorConvolution
 from .ComplementStainMatrix import ComplementStainMatrix
 from .SparseColorDeconvolution import SparseColorDeconvolution
 
- # must be imported after ComplementStainMatrix
+# must be imported after ComplementStainMatrix
 from .ColorDeconvolution import ColorDeconvolution
 
 # list out things that are available for public use

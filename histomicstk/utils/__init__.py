@@ -9,8 +9,6 @@ from .MergeColinear import MergeColinear
 from .PoissonMixture import PoissonMixture
 from .SimpleMask import SimpleMask
 from .Sample import Sample # must import after SimpleMask
-from .SubmitTorque import SubmitTorque
-from .TilingSchedule import TilingSchedule
 
 
 # list out things that are available for public use

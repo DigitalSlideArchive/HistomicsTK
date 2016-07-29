@@ -3,6 +3,7 @@ import scipy.ndimage.measurements as ms
 
 from .CondenseLabel import CondenseLabel
 
+
 def AreaOpenLabel(Label, Area):
     """Removes small objects from label image.
 

@@ -40,7 +40,7 @@ def Vesselness(I, Sigma):
     H = Sigma**2 * htk_utils.Hessian(I, Sigma)
 
     # calculate eigenvalue image
-    E, V1, V2 = htk_utils.Eigenvalues( H )
+    E, V1, V2 = htk_utils.Eigenvalues(H)
 
     # compute blobness measures
     Deviation = E[:, :, 0]/(E[:, :, 1] + np.spacing(1))

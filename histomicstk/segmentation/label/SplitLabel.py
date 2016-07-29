@@ -3,6 +3,7 @@ import scipy.ndimage.measurements as ms
 
 from .CondenseLabel import CondenseLabel
 
+
 def SplitLabel(Label, Connectivity=8):
     """Re-labels objects that have multiple non-contiguous portions to create
     a new label image where each object is contiguous.

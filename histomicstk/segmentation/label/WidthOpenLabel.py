@@ -39,7 +39,7 @@ def WidthOpenLabel(Label, Width):
 
     # condense label image
     if np.unique(Thinned).size-1 != Thinned.max():
-        Thinned = label.CondenseLabel(Thinned)
+        Thinned = CondenseLabel(Thinned)
 
     # get locations of objects in initial label image
     Locations = ms.find_objects(Thinned)
