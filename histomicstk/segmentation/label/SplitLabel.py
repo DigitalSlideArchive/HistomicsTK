@@ -1,4 +1,4 @@
-from histomicstk.segmentation import label
+from .CondenseLabel import CondenseLabel
 import numpy as np
 import scipy.ndimage.measurements as ms
 
@@ -44,7 +44,7 @@ def SplitLabel(Label, Connectivity=8):
 
     # condense label image
     if np.unique(Split).size-1 != Split.max():
-        Split = label.CondenseLabel(Split)
+        Split = CondenseLabel(Split)
 
     # get locations of objects in initial image
     Locations = ms.find_objects(Split)
@@ -63,7 +63,7 @@ def SplitLabel(Label, Connectivity=8):
 
         # relabel if necessary
         if(Count > 1):
-            Template[Template == 1] = i
+            Template[L == 1] = i
             for i in np.arange(2, Count+1):
                 Template[L == i] = Total + 1
                 Total += 1
