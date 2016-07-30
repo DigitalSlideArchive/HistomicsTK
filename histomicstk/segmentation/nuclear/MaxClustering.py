@@ -110,18 +110,19 @@ def MaxClustering(Response, Mask, r=10):
     Fix = np.nonzero(Label[Seeds[:, 0].astype(np.uint32),
                            Seeds[:, 1].astype(np.uint32)] !=
                      np.arange(1, Label.max()+1))[0]
-    Locations = spm.find_objects(Label)
-    for i in np.arange(Fix.size):
-        Patch = Label[Locations[Fix[i]]]
-        Pixels = np.nonzero(Patch)
-        dX = Pixels[1] - (Seeds[Fix[i], 1] - Locations[Fix][1].start)
-        dY = Pixels[0] - (Seeds[Fix[i], 0] - Locations[Fix][0].start)
-        Dist = (dX**2 + dY**2)**0.5
-        NewSeed = np.argmin(Dist)
-        Seeds[Fix[i], 1] = np.array(Locations[Fix][1].start +
-                                    Pixels[1][NewSeed]).astype(np.uint32)
-        Seeds[Fix[i], 0] = np.array(Locations[Fix][0].start +
-                                    Pixels[0][NewSeed]).astype(np.uint32)
+    if(Fix.size > 0):
+        Locations = spm.find_objects(Label)
+        for i in np.arange(Fix.size):
+            Patch = Label[Locations[Fix[i]]]
+            Pixels = np.nonzero(Patch)
+            dX = Pixels[1] - (Seeds[Fix[i], 1] - Locations[Fix][1].start)
+            dY = Pixels[0] - (Seeds[Fix[i], 0] - Locations[Fix][0].start)
+            Dist = (dX**2 + dY**2)**0.5
+            NewSeed = np.argmin(Dist)
+            Seeds[Fix[i], 1] = np.array(Locations[Fix][1].start +
+                                        Pixels[1][NewSeed]).astype(np.uint32)
+            Seeds[Fix[i], 0] = np.array(Locations[Fix][0].start +
+                                        Pixels[0][NewSeed]).astype(np.uint32)
 
     # initialize tracking and segmentation masks
     Tracked = np.zeros(Max.shape, dtype=bool)
