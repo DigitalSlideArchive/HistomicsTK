@@ -1,4 +1,4 @@
-from histomicstk.utils import Del2
+import histomicstk.utils as htk_utls
 import numpy as np
 import scipy.ndimage.filters as filters
 
@@ -112,7 +112,7 @@ def Initialize(Mask, c0=2):
 
 def SingleWell(Phi, Curve):
     # Single-well potential function
-    return 4 * Del2(Phi)-Curve
+    return 4 * htk_utls.Del2(Phi)-Curve
 
 
 def DoubleWell(Phi, dPhi, mPhi, Curve, i):
@@ -123,7 +123,7 @@ def DoubleWell(Phi, dPhi, mPhi, Curve, i):
         (2 * np.pi) + LargeMask * (mPhi - 1)
     dP = ((P != 0) * P + (P == 0)) / ((mPhi != 0) * mPhi + (mPhi == 0))
     Well = np.gradient(dP * dPhi[0] - dPhi[0])[0] + \
-        np.gradient(dP * dPhi[1] - dPhi[1])[1] + 4 * Del2(Phi)
+        np.gradient(dP * dPhi[1] - dPhi[1])[1] + 4 * htk_utls.Del2(Phi)
     return Well
 
 

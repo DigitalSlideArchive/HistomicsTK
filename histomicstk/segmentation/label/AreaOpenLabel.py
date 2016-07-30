@@ -1,6 +1,7 @@
-from histomicstk.segmentation import label
 import numpy as np
 import scipy.ndimage.measurements as ms
+
+from .CondenseLabel import CondenseLabel
 
 
 def AreaOpenLabel(Label, Area):
@@ -34,7 +35,7 @@ def AreaOpenLabel(Label, Area):
 
     # condense label image
     if np.unique(Opened).size-1 != Opened.max():
-        Opened = label.CondenseLabel(Opened)
+        Opened = CondenseLabel(Opened)
 
     # count pixels in each object
     Counts, Edges = np.histogram(Opened, bins=Opened.max()+1)
@@ -53,6 +54,6 @@ def AreaOpenLabel(Label, Area):
             Template[Template == i] = 0
 
     # condense to fill gaps
-    Opened = label.CondenseLabel(Opened)
+    Opened = CondenseLabel(Opened)
 
     return Opened

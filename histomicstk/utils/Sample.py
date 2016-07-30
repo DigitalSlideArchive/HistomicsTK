@@ -2,9 +2,9 @@ import numpy as np
 import openslide
 import scipy
 
-from histomicstk.utils import TilingSchedule
-from histomicstk.utils import ConvertSchedule
-from histomicstk.segmentation import SimpleMask
+from .TilingSchedule import TilingSchedule
+from .ConvertSchedule import ConvertSchedule
+from .SimpleMask import SimpleMask
 
 
 def Sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
