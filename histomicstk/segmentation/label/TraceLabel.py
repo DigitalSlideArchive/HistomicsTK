@@ -1,5 +1,4 @@
 import numpy as np
-from histomicstk.segmentation import label as lb
 import scipy.ndimage.measurements as ms
 from .TraceBounds import TraceBounds
 
@@ -71,7 +70,7 @@ def TraceLabel(Label, Connectivity=4):
             Embed[1:-1, 1:-1] = Patch
 
             # trace boundary
-            cX, cY = lb.TraceBounds(Embed, Connectivity)
+            cX, cY = TraceBounds(Embed, Connectivity)
 
             # add window offset to contour coordinates
             cX = cX + Locations[i][1].start - 1
