@@ -102,8 +102,8 @@ def MaxClustering(Response, Mask, r=10):
     Tracked = np.zeros(Max.shape, dtype=bool)
     Label = spm.label((Response == Max) & Mask)[0]
     Tracked[Label > 0] = True
-    Seeds = np.reshape(np.nonzero(Label),
-                       [2, Label.max()], order='C').transpose()
+    Indices = np.nonzero(Label)
+    Seeds = np.reshape(Indices, [2, Indices[0].size], order='C').transpose()
 
     # track each pixel and update
     for i in np.arange(0, px.size, 1):
@@ -136,5 +136,19 @@ def MaxClustering(Response, Mask, r=10):
         Label[Trajectory[0:Id, 1], Trajectory[0:Id, 0]] = \
             Label[Trajectory[Id, 1], Trajectory[Id, 0]]
 
+    # remove objects not containing any positive response values
+    PositiveSum = spm.labeled_comprehension(Response, Label,
+                                            np.arange(1, Label.max()+1),
+                                             _PositiveResponse, float, False)
+    Delete = np.nonzero(PositiveSum == 0)[0]
+    Locations = spm.find_objects(Label)
+    for i in np.arange(0, len(Delete)):
+        Patch = Label[Locations[Delete[i]]]
+        Patch[Patch == (Delete[i]+1)] = 0
+
     # return
     return Label, Seeds, Max
+
+def _PositiveResponse(Values):
+    # utility for calculating
+    return np.sum(Values[Values > 0])
