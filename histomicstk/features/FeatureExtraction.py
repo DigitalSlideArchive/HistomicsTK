@@ -16,11 +16,11 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     Parameters
     ----------
     Label : array_like
-        A T x T label image.
+        A M x N label image.
     In : array_like
-        A T x T intensity image for Nuclei.
+        A M x N intensity image for Nuclei.
     Ic : array_like
-        A T x T intensity image for Cytoplasms.
+        A M x N intensity image for Cytoplasms.
     K : Number of points for boundary resampling to calculate fourier
         descriptors. Default value = 128.
     Fs : Number of frequency bins for calculating FSDs. Default value = 6.
