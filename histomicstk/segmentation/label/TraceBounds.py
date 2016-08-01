@@ -59,8 +59,8 @@ def TraceBounds(Mask, Connectivity=4, XStart=None, YStart=None,
             YStart = Indices[0][0]
             XStart = Indices[1][0]
         else:
-            X = []
-            Y = []
+            X = np.array([], dtype=np.uint32)
+            Y = np.array([], dtype=np.uint32)
             return X, Y
 
     # choose algorithm based on connectivity
