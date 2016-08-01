@@ -33,6 +33,8 @@ add_python_style_test(
 # API tests
 add_python_test(example PLUGIN HistomicsTK)
 
+add_python_test(import_package PLUGIN HistomicsTK)
+
 add_python_test(color_normalization
     SUBMODULE ReinhardNormalizationTest
     DBNAME core_color_normalization_reinhard

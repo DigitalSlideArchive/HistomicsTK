@@ -1,8 +1,9 @@
 import collections
-from histomicstk.filters.edge import GaussianGradient
 import numpy as np
 import sklearn.cluster as cl
 import scipy.signal as signal
+
+import histomicstk as htk
 
 
 def GaussianVoting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
@@ -65,7 +66,7 @@ def GaussianVoting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
     r = (rmax + rmin) / 2
 
     # generate separable gaussian derivative kernels
-    Grad = GaussianGradient(I, sSigma)
+    Grad = htk.filters.edge.GaussianGradient(I, sSigma)
     dMag = (Grad.dX**2 + Grad.dY**2)**0.5
 
     # threshold gradient image to identify voting pixels
