@@ -80,10 +80,10 @@ def TraceLabel(Label, Connectivity=4):
             X.append(np.array(cX, dtype=np.uint32))
             Y.append(np.array(cY, dtype=np.uint32))
 
-    else:
+        else:
 
-        # append None to Outputs X, Y
-        X.append(None)
-        Y.append(None)
+            # append None to Outputs X, Y
+            X.append(None)
+            Y.append(None)
 
     return X, Y
