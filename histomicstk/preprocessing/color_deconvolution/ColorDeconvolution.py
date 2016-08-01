@@ -1,5 +1,5 @@
 from histomicstk.preprocessing import color_conversion
-from histomicstk.preprocessing.color_deconvolution import ComplementStainMatrix
+from .ComplementStainMatrix import ComplementStainMatrix
 import collections
 import numpy
 

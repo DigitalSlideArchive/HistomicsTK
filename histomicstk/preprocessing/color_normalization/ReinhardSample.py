@@ -1,7 +1,7 @@
 import collections
 import numpy as np
 from histomicstk.utils import Sample
-from histomicstk.preprocessing.color_conversion import RudermanLABFwd
+from histomicstk.preprocessing import color_conversion
 
 
 def ReinhardSample(File, Magnification, Percent, Tile):
@@ -55,7 +55,7 @@ def ReinhardSample(File, Magnification, Percent, Tile):
     RGB = np.reshape(RGB.transpose(), (1, RGB.shape[1], 3))
 
     # perform forward LAB transformation
-    LAB = RudermanLABFwd(RGB)
+    LAB = color_conversion.RudermanLABFwd(RGB)
 
     # compute statistics of LAB channels
     Mu = LAB.sum(axis=0).sum(axis=0) / (LAB.size / 3)
