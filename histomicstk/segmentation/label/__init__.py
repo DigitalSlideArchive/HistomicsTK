@@ -22,7 +22,7 @@ __all__ = (
     'AreaOpenLabel',
     'CompactLabel',
     'CondenseLabel',
-    'DeleteLabel'
+    'DeleteLabel',
     'LabelPerimeter',
     'ShuffleLabel',
     'SplitLabel',
