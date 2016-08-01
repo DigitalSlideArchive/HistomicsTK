@@ -160,6 +160,10 @@ def Moore(Mask, XStart, YStart, MaxLength):
                     Y = Y[0:-1]
                     break
 
+    # convert outputs from list to numpy array
+    X = np.array(X, dtype=np.uint32)
+    Y = np.array(Y, dtype=np.uint32)
+
     return X, Y
 
 
