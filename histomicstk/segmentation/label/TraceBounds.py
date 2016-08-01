@@ -71,6 +71,10 @@ def TraceBounds(Mask, Connectivity=4, XStart=None, YStart=None,
     else:
         raise ValueError("Input 'Connectivity' must be 4 or 8.")
 
+    # convert outputs from list to numpy array
+    X = np.array(X, dtype=np.uint32)
+    Y = np.array(Y, dtype=np.uint32)
+
     return X, Y
 
 
@@ -159,10 +163,6 @@ def Moore(Mask, XStart, YStart, MaxLength):
                     X = X[0:-1]
                     Y = Y[0:-1]
                     break
-
-    # convert outputs from list to numpy array
-    X = np.array(X, dtype=np.uint32)
-    Y = np.array(Y, dtype=np.uint32)
 
     return X, Y
 
