@@ -2,7 +2,7 @@ import abc
 import six
 
 
-class FeaturesBase(six.with_metaclass(abc.ABCMeta, object)):
+class BaseFeatures(six.with_metaclass(abc.ABCMeta, object)):
     """Abstract base class that defines the API that all feature extraction
     classes must implement
 
@@ -15,50 +15,55 @@ class FeaturesBase(six.with_metaclass(abc.ABCMeta, object)):
     im_input : array_like or None
         Input intensity image with same size as the labeled mask.
 
-    features : list of str or None
+    feature_names : list of str or None
         Names of the desired list of features to compute.
     """
 
     # Dictionary of features wherein
     #   key = feature name,
-    #   value = True/False indicating if it should be computed or not
-    __feature_dict = {}
+    #   value = True/False indicating if it should be computed by default
+    _feature_dict = {}
 
-    # List of feature names computed by default
-    __default_features = None
-
-    def __init__(self, im_label, im_input=None, features=None, *args, **kwargs):
+    def __init__(self, im_label, im_input=None,
+                 feature_names=None, *args, **kwargs):
 
         self._im_label = im_label
         self._im_input = im_input
 
-        # If __default_features is not defined all features will be computed
-        if self.__default_features:
-            self.__default_features = self.__feature_dict.keys()
-
         # If feature names are not specified a default will be computed
-        if features is None:
-            features = self.__default_features
+        self._default_features = [fname
+                                  for fname, flag in self._feature_dict.items()
+                                  if flag is True]
 
-        # check if the specified list of features are valid
-        for fname in features:
-            if fname not in self.__feature_dict:
-                raise ValueError('Invalid feature name %s')
+        if feature_names is None:
+            self._features = self.get_default_feature_names()
+        else:
+            # check if the specified list of features are valid
+            for fname in feature_names:
+                if fname not in self._feature_dict:
+                    raise ValueError('Invalid feature name %s')
 
-        self._features = features
+            self._features_names = feature_names
 
 
-    def get_all_feature_names(self):
+    @classmethod
+    def get_all_feature_names(cls):
         """Returns the list of all features that this class can compute"""
-        return
 
-    def get_default_feature_names(self):
+        return cls._feature_dict.keys()
+
+    @classmethod
+    def get_default_feature_names(cls):
         """Returns the list of features that this class computes"""
-        return
+
+        default_features = [fname
+                            for fname, flag in self._feature_dict.items()
+                            if flag is True]
+        return default_features
 
     def get_feature_names(self):
         """Returns the list of features that this class computes"""
-        return
+        return self._feature_names
 
     @abc.abstractmethod
     def get_features(self):
