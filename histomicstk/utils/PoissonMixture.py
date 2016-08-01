@@ -76,6 +76,7 @@ def PoissonMixture(I, Mu=None, InitialTau=None, Tol=0.1):
     # identify minimum cost threshold
     Tau = X[np.argmin(Cost)]
     Mu0 = Mu0[np.argmin(Cost)]
+    Mu1 = Mu1[np.argmin(Cost)]
 
     # build probability distribution of foreground intensity values
     Poisson = sp.stats.poisson(Mu0)

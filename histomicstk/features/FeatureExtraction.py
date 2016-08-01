@@ -9,23 +9,18 @@ from skimage.segmentation import find_boundaries
 from skimage.morphology import disk, dilation
 
 
-def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
+def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     """
     Calculates features from a label image.
 
     Parameters
     ----------
     Label : array_like
-        A T x T label image.
+        A M x N label image.
     In : array_like
-        A T x T intensity image for Nuclei.
+        A M x N intensity image for Nuclei.
     Ic : array_like
-        A T x T intensity image for Cytoplasms.
-    W : array_like
-        A 3x3 matrix containing the stain colors in its columns.
-        In the case of two stains, the third column is zero and will be
-        complemented using cross-product. The matrix should contain a
-        minumum two nonzero columns.
+        A M x N intensity image for Cytoplasms.
     K : Number of points for boundary resampling to calculate fourier
         descriptors. Default value = 128.
     Fs : Number of frequency bins for calculating FSDs. Default value = 6.
@@ -74,11 +69,9 @@ def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
        and statistics tables and formulae," Crc Press, 1999.
     """
 
-    # get total regions
-    NumofLabels = Label.max()
-
     # get Label size x
     size_x = Label.shape[0]
+    size_y = Label.shape[1]
 
     # initialize centroids
     CentroidX = []
@@ -93,6 +86,10 @@ def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
     MinorAxisLength = []
     Extent = []
     Solidity = []
+
+    # get regions for Labels
+    regions = regionprops(Label)
+    NumofLabels = len(regions)
 
     # initialize FSD feature group
     FSDGroup = np.zeros((NumofLabels, Fs))
@@ -114,8 +111,11 @@ def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
         )
     ).astype(np.uint8)
 
+    # set region index
+    regionIdx = 0
+
     # extract feature information
-    for region in regionprops(Label):
+    for region in regions:
         # add centroids
         CentroidX = np.append(CentroidX, region.centroid[0])
         CentroidY = np.append(CentroidY, region.centroid[1])
@@ -123,44 +123,46 @@ def FeatureExtraction(Label, In, Ic, W, K=128, Fs=6, Delta=8):
         Area = np.append(Area, region.area)
         Perimeter = np.append(Perimeter, region.perimeter)
         Eccentricity = np.append(Eccentricity, region.eccentricity)
-        if region.perimeter == 0:
-            Circularity = np.append(Circularity, 0)
-        else:
-            Circularity = np.append(
-                Circularity,
-                4 * math.pi * region.area / math.pow(region.perimeter, 2)
-            )
+        numerator = 4 * math.pi * region.area
+        denominator = math.pow(region.perimeter, 2)
+        Circularity = np.append(
+            Circularity,
+            numerator / denominator if denominator else 0
+        )
         MajorAxisLength = np.append(MajorAxisLength, region.major_axis_length)
         MinorAxisLength = np.append(MinorAxisLength, region.minor_axis_length)
         Extent = np.append(Extent, region.extent)
         Solidity = np.append(Solidity, region.solidity)
         # get bounds of dilated nucleus
-        bounds = GetBounds(region.bbox, Delta, size_x)
+        min_row, max_row, min_col, max_col = \
+            GetBounds(region.bbox, Delta, size_x, size_y)
         # grab nucleus mask
         Nucleus = (
-            Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] == region.label
+            Label[min_row:max_row, min_col:max_col] == region.label
         ).astype(np.uint8)
         # find nucleus boundaries
         Bounds = np.argwhere(
             find_boundaries(Nucleus, mode="inner").astype(np.uint8) == 1
         )
         # calculate and add FSDs
-        FSDGroup[region.label-1, :] = FSDs(
+        FSDGroup[regionIdx, :] = FSDs(
             Bounds[:, 0], Bounds[:, 1],
             K, Interval
         )
         # generate object coords for nuclei and cytoplasmic regions
-        Nuclei[region.label-1] = region.coords
+        Nuclei[regionIdx] = region.coords
         # get mask for all nuclei in neighborhood
         Mask = (
-            Label[bounds[0]:bounds[1], bounds[2]:bounds[3]] > 0
+            Label[min_row:max_row, min_col:max_col] > 0
         ).astype(np.uint8)
         # remove nucleus region from cytoplasm+nucleus mask
         cytoplasm = (
             np.logical_xor(Mask, dilation(Nucleus, Disk))
         ).astype(np.uint8)
         # get list of cytoplasm pixels
-        Cytoplasms[region.label-1] = GetPixCoords(cytoplasm, bounds)
+        Cytoplasms[regionIdx] = GetPixCoords(
+            cytoplasm, min_row, min_col)
+        regionIdx = regionIdx + 1
 
     # calculate hematoxlyin features, capture feature names
     HematoxylinIntensityGroup = IntensityFeatureGroup(In, Nuclei)
@@ -411,15 +413,17 @@ def IntensityFeatureGroup(I, Coords):
     return Output
 
 
-def GetPixCoords(Binary, bounds):
+def GetPixCoords(Binary, min_row, min_col):
     """
     Get global coords of object extracted from tile.
     Parameters
     ----------
     Binary : array_like
         A binary image.
-    bounds : array_like
-        A region bounds. [min_row, max_row, min_col, max_col].
+    min_row : int
+        Minum row of the region bounds.
+    min_col : int
+        Minum column of the region bounds.
     Returns
     -------
     coords : array_like
@@ -427,14 +431,14 @@ def GetPixCoords(Binary, bounds):
     """
     coords = np.where(Binary == 1)
     coords = np.asarray(coords)
-    coords[0] = np.add(coords[0], bounds[0])
-    coords[1] = np.add(coords[1], bounds[2])
+    coords[0] = np.add(coords[0], min_row)
+    coords[1] = np.add(coords[1], min_col)
     coords = coords.T
 
     return coords
 
 
-def GetBounds(bbox, delta, N):
+def GetBounds(bbox, delta, M, N):
     """
     Returns bounds of object in global label image.
     Parameters
@@ -444,20 +448,30 @@ def GetBounds(bbox, delta, N):
     delta : int
         Used to dilate nuclei and define cytoplasm region.
         Default value = 8.
+    M : int
+        X size of label image.
     N : int
-        X or Y Size of label image.
+        Y size of label image.
     Returns
     -------
-    bounds : array_like
-        A region bounds. [min_row, max_row, min_col, max_col].
+    min_row : int
+        Minum row of the region bounds.
+    max_row : int
+        Maximum row of the region bounds.
+    min_col : int
+        Minum column of the region bounds.
+    max_col : int
+        Maximum column of the region bounds.
     """
-    bounds = np.zeros(4, dtype=np.uint8)
-    bounds[0] = max(0, math.floor(bbox[0] - delta))
-    bounds[1] = min(N-1, math.ceil(bbox[0] + bbox[2] + delta))
-    bounds[2] = max(0, math.floor(bbox[1] - delta))
-    bounds[3] = min(N-1, math.ceil(bbox[1] + bbox[3] + delta))
 
-    return bounds
+    min_row, min_col, max_row, max_col = bbox
+
+    min_row_out = max(0, (min_row - delta))
+    max_row_out = min(M-1, (max_row + delta))
+    min_col_out = max(0, (min_col - delta))
+    max_col_out = min(N-1, (max_col + delta))
+
+    return min_row_out, max_row_out, min_col_out, max_col_out
 
 
 def InterpolateArcLength(X, Y, L):
@@ -567,7 +581,7 @@ def FSDs(X, Y, K, Intervals):
     # get length of intervals
     L = len(Intervals)
     # initialize F
-    F = np.zeros((L-1, ))
+    F = np.zeros((L-1, )).astype(float)
     # interpolate boundaries
     iXY = InterpolateArcLength(X, Y, K)
     # check if iXY.iX is not empty
