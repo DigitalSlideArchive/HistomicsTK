@@ -6,6 +6,7 @@
     - girder
     - mq
     - worker
+    - itk
   vars:
     vagrant: true
     root_dir: /opt/histomicstk

@@ -5,4 +5,5 @@ histomicstk_version: master
 large_image_version: master
 dsa_version: master
 girder_worker_version: master
+itk_version: master
 mongo_dbpath: /mongodata

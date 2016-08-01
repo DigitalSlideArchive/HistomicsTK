@@ -232,5 +232,5 @@
     port: "{{ girder_socket_port }}"
     collection:
       name: TCGA
-      public: true
+      public: yes
     state: present
