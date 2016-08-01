@@ -64,7 +64,7 @@ def SplitLabel(Label, Connectivity=8):
 
         # relabel if necessary
         if(Count > 1):
-            Template[Template == 1] = i
+            Template[L == 1] = i
             for i in np.arange(2, Count+1):
                 Template[L == i] = Total + 1
                 Total += 1
