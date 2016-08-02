@@ -21,8 +21,7 @@ def ComputeFSDs(im_label, K=128, Fs=6, Delta=8):
     Fs : int
         Number of frequency bins for calculating FSDs. Default value = 6.
     Delta : int
-        Used to dilate nuclei and define cytoplasm region.
-        Default value = 8.
+        Used to dilate nuclei and define cytoplasm region. Default value = 8.
 
     Returns
     -------
