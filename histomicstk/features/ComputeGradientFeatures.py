@@ -62,7 +62,7 @@ def ComputeGradientFeatures(I, Coords, Diff=[], C=[]):
     KurtosisGradMag = kurtosis(pixOfInterest)
     bw_canny = C[Coords[:, 0], Coords[:, 1]]
     SumCanny = np.sum(bw_canny)
-    MeanCanny = SumCanny / len(pixOfInterest)
+    MeanCanny = SumCanny/len(pixOfInterest)
 
-    return MeanGradMag, StdGradMag, EntropyGradMag, EnergyGradMag, \
-        SkewnessGradMag, KurtosisGradMag, SumCanny, MeanCanny
+    return MeanGradMag, StdGradMag, EntropyGradMag, EnergyGradMag,
+           SkewnessGradMag, KurtosisGradMag, SumCanny, MeanCanny
