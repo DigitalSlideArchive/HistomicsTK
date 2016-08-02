@@ -156,7 +156,7 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
                         'MajorAxisCoordsY', 'Eccentricity', 'Circularity',
                         'Extent', 'Solidity']
 
-    for i in range(0, 13):
+    for i in range(0, len(MorphometryNames)):
         df[MorphometryNames[i]] = MorphometryGroup[:, i]
 
     for i in range(0, Fs):
