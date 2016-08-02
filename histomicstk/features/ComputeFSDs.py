@@ -118,12 +118,12 @@ def InterpolateArcLength(X, Y, L):
 
 def FSDs(X, Y, K, Intervals):
     """
-    Calculated FSDs from boundary points X,Y. Boundaries are resampled to have
-    K equally spaced points (arclength) around the shape. The curvature is
-    calculated using the cumulative angular function, measuring the
+    Calculated FSDs from boundary points X,Y. Boundaries are resampled to
+    have K equally spaced points (arclength) around the shape. The curvature
+    is calculated using the cumulative angular function, measuring the
     displacement of the tangent angle from the starting point of the boundary.
     The K-length fft of the cumulative angular function is calculated, and
-    then the elements of 'F' are summed as the spectral energy over
+    then the elements of 'F' are summed as the spectral energy over 
     'Intervals'.
 
     Parameters
