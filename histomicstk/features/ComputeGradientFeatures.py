@@ -2,6 +2,7 @@ import numpy as np
 from scipy.stats import entropy, skew, kurtosis
 from skimage.feature import canny
 
+
 def ComputeGradientFeatures(I, Coords, Diff=[], C=[]):
     """
     Calculates gradient features from an intensity image.
