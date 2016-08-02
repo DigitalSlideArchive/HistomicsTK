@@ -82,9 +82,6 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     regions = regionprops(Label)
     num = len(regions)
 
-    # initialize FSD feature group
-    FSDGroup = np.zeros((num, Fs))
-
     # initialize gradient feature groups
     HematoxylinGradientGroup = np.zeros((num, 8))
     EosinGradientGroup = np.zeros((num, 8))
@@ -110,13 +107,11 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
 
         # get bounds of dilated nucleus
         min_row, max_row, min_col, max_col = \
-            GetBounds(regions[i].bbox, Delta, size_x, size_y)
+            _GetBounds(regions[i].bbox, Delta, size_x, size_y)
         # grab nucleus mask
         Nucleus = (
             Label[min_row:max_row, min_col:max_col] == regions[i].label
         ).astype(np.bool)
-        # compute Fourier shape descriptors
-        FSDGroup[i, :] = ComputeFSDs(Nucleus, K, Fs)
         # generate object coords for nuclei and cytoplasmic regions
         Nuclei = regions[i].coords
         # compute Texture, Gradient, Intensity features
@@ -148,8 +143,8 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     fmorph = ComputeMorphometryFeatures(Label)
     df = pd.concat([df, fmorph], axis=1)
 
-    for i in range(0, Fs):
-        df['FSD' + str(i+1)] = FSDGroup[:, i]
+    ffsds = ComputeFSDs(Label, K, Fs, Delta)
+    df = pd.concat([df, ffsds], axis=1)
 
     GradientNames = ['MeanGradMag', 'StdGradMag', 'EntropyGradMag',
                      'EnergyGradMag', 'SkewnessGradMag', 'KurtosisGradMag',
@@ -172,7 +167,7 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     return df
 
 
-def GetBounds(bbox, delta, M, N):
+def _GetBounds(bbox, delta, M, N):
     """
     Returns bounds of object in global label image.
 
