@@ -286,7 +286,7 @@ def ISBF(Mask, XStart, YStart, MaxLength):  # noqa: C901
             X.append(X[-1] + Coords[0, i])
             Y.append(Y[-1] + Coords[1, i])
 
-        # check of last two points on contour are first two points on contour
+        # check if last two contour points are same as first two points
         if(len(X) > 3):
             if(len(X) >= MaxLength) or \
                 (X[-1] == X[1] and X[-2] == X[0] and
