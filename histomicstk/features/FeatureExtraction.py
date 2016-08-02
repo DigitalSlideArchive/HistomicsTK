@@ -8,6 +8,7 @@ from skimage.feature import canny
 from skimage.measure import regionprops
 from skimage.morphology import disk, dilation
 
+
 def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     """
     Calculates features from a label image.
@@ -138,8 +139,8 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
         )
         # get list of cytoplasm pixels
         regionCoords = np.argwhere(cytoplasm == 1)
-        regionCoords[:,0] = regionCoords[:,0] + min_row
-        regionCoords[:,1] = regionCoords[:,1] + min_col
+        regionCoords[:, 0] = regionCoords[:, 0] + min_row
+        regionCoords[:, 1] = regionCoords[:, 1] + min_col
         # compute Texture, Gradient, Intensity features
         EosinGradientGroup[i, :] = \
             ComputeGradientFeatures(Ic, regionCoords, diffGc, BW_cannyc)
@@ -150,9 +151,10 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     df = pd.DataFrame()
 
     MorphometryNames = ['CentroidsX', 'CentroidsY', 'Area', 'Perimeter',
-        'MajorAxisLength', 'MinorAxisLength', 'MajorMinorAxisRatio',
-        'MajorAxisCoordsX', 'MajorAxisCoordsY', 'Eccentricity',
-        'Circularity', 'Extent', 'Solidity']
+                        'MajorAxisLength', 'MinorAxisLength',
+                        'MajorMinorAxisRatio', 'MajorAxisCoordsX',
+                        'MajorAxisCoordsY', 'Eccentricity', 'Circularity',
+                        'Extent', 'Solidity']
 
     for i in range(0, 13):
         df[MorphometryNames[i]] = MorphometryGroup[:, i]
@@ -160,20 +162,22 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     for i in range(0, Fs):
         df['FSD' + str(i+1)] = FSDGroup[:, i]
 
-    GradientNames = ['MeanGradMag', 'StdGradMag', 'EntropyGradMag', \
-        'EnergyGradMag', 'SkewnessGradMag', 'KurtosisGradMag', 'SumCanny', \
-        'MeanCanny']
+    GradientNames = ['MeanGradMag', 'StdGradMag', 'EntropyGradMag',
+                     'EnergyGradMag', 'SkewnessGradMag', 'KurtosisGradMag',
+                     'SumCanny', 'MeanCanny']
 
     for i in range(0, len(GradientNames)):
-        df['Hematoxylin' + GradientNames[i]] = HematoxylinGradientGroup[:, i]
+        df['Hematoxylin' + GradientNames[i]] = \
+            HematoxylinGradientGroup[:, i]
         df['Cytoplasm' + GradientNames[i]] = EosinGradientGroup[:, i]
 
-    IntensityNames = ['MeanIntensity', 'MeanMedianDifferenceIntensity', \
-        'MaxIntensity', 'MinIntensity', 'StdIntensity', 'Entropy', \
-        'Energy', 'Skewness', 'Kurtosis']
+    IntensityNames = ['MeanIntensity', 'MeanMedianDifferenceIntensity',
+                      'MaxIntensity', 'MinIntensity', 'StdIntensity',
+                      'Entropy', 'Energy', 'Skewness', 'Kurtosis']
 
     for i in range(0, len(IntensityNames)):
-        df['Hematoxylin' + IntensityNames[i]] = HematoxylinIntensityGroup[:, i]
+        df['Hematoxylin' + IntensityNames[i]] = \
+            HematoxylinIntensityGroup[:, i]
         df['Cytoplasm' + IntensityNames[i]] = EosinIntensityGroup[:, i]
 
     return df
