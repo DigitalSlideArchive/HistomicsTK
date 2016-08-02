@@ -2,6 +2,7 @@ import collections
 import numpy as np
 from skimage.segmentation import find_boundaries
 
+
 def ComputeFSDs(Label, K=128, Fs=6):
     """
     Calculates `Fourier shape descriptors` from a label mask.
