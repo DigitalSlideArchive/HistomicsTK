@@ -14,7 +14,7 @@ nav.navbar.navbar-inverse.navbar-fixed-top
     .collapse.navbar-collapse#g-navigation-header
       ul.nav.navbar-nav.navbar-right
 
-        if (analyses.length)
+        if (user)
           li.g-analysis-selection.dropdown
             a.dropdown-toggle(data-toggle='dropdown' role='button' aria-haspopup='true' aria-expanded='false')
               | Analyses
@@ -22,23 +22,20 @@ nav.navbar.navbar-inverse.navbar-fixed-top
             ul#g-analysis-menu.dropdown-menu(role='menu')
               each name in analyses
                 li
-                  a(href='##{name}' data-name='#{name}') #{name}
+                  a(href='#' data-name='#{name}') #{name}
 
-        li.g-image-selection
-          a.g-open-image Open image
+          li.g-image-selection
+            a.g-open-image Open image
 
-        if (user)
-          li.g-user-text
-            if (user)
-              a(data-toggle="dropdown", data-target="#g-user-action-menu")
-                | #{user.get('firstName')} #{user.get('lastName')}
-                i.icon-down-open
-              #g-user-action-menu.dropdown
-                ul.dropdown-menu(role="menu")
-                  li(role="presentation")
-                    a.g-logout
-                      i.icon-logout
-                      | Log out
+          li.g-user-text.dropdown
+            a.dropdown-toggle(data-toggle="dropdown", data-target="#g-user-action-menu")
+              | #{user.get('firstName')} #{user.get('lastName')}
+              i.icon-down-open
+            ul.dropdown-menu(role="menu")
+              li(role="presentation")
+                a.g-logout
+                  i.icon-logout
+                  | Log out
         else
           li
             a.g-register Register

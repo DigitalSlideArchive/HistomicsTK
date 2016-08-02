@@ -4,7 +4,6 @@ import scipy.ndimage.measurements as spm
 
 def MaxClustering(Response, Mask, r=10):
     """Local max clustering pixel aggregation for nuclear segmentation.
-
     Takes as input a constrained log or other filtered nuclear image, a binary
     nuclear mask, and a clustering radius. For each pixel in the nuclear mask,
     the local max is identified. A hierarchy of local maxima is defined, and
@@ -29,9 +28,9 @@ def MaxClustering(Response, Mask, r=10):
         share mutual sinks.
     Seeds : array_like
         An N x 2 array defining the (x,y) coordinates of nuclei seeds.
-    Max : array_like
-        An intensity image where each pixel corresponds to the local max of
-        'Response' in the 'r' radius neighborhood.
+    Maxima : array_like
+        An N x 1 array containing the maximum response value corresponding to
+        'Seeds'.
 
     See Also
     --------
@@ -98,12 +97,36 @@ def MaxClustering(Response, Mask, r=10):
     py = py - r
     px = px - r
 
+    # identify connected regions of local maxima and define their seeds
+    Label = spm.label((Response == Max) & Mask)[0]
+    Seeds = np.array(spm.center_of_mass(Response, Label,
+                                        np.arange(1, Label.max()+1)))
+    Seeds = np.round(Seeds).astype(np.uint32)
+
+    # capture maxima for each connected region
+    Maxima = spm.maximum(Response, Label, np.arange(1, Label.max()+1))
+
+    # handle seeds lying outside non-convex objects
+    Fix = np.nonzero(Label[Seeds[:, 0].astype(np.uint32),
+                           Seeds[:, 1].astype(np.uint32)] !=
+                     np.arange(1, Label.max()+1))[0]
+    if(Fix.size > 0):
+        Locations = spm.find_objects(Label)
+        for i in np.arange(Fix.size):
+            Patch = Label[Locations[Fix[i]]]
+            Pixels = np.nonzero(Patch)
+            dX = Pixels[1] - (Seeds[Fix[i], 1] - Locations[Fix][1].start)
+            dY = Pixels[0] - (Seeds[Fix[i], 0] - Locations[Fix][0].start)
+            Dist = (dX**2 + dY**2)**0.5
+            NewSeed = np.argmin(Dist)
+            Seeds[Fix[i], 1] = np.array(Locations[Fix][1].start +
+                                        Pixels[1][NewSeed]).astype(np.uint32)
+            Seeds[Fix[i], 0] = np.array(Locations[Fix][0].start +
+                                        Pixels[0][NewSeed]).astype(np.uint32)
+
     # initialize tracking and segmentation masks
     Tracked = np.zeros(Max.shape, dtype=bool)
-    Label = spm.label((Response == Max) & Mask)[0]
     Tracked[Label > 0] = True
-    Seeds = np.reshape(np.nonzero(Label),
-                       [2, Label.max()], order='C').transpose()
 
     # track each pixel and update
     for i in np.arange(0, px.size, 1):
@@ -137,4 +160,4 @@ def MaxClustering(Response, Mask, r=10):
             Label[Trajectory[Id, 1], Trajectory[Id, 0]]
 
     # return
-    return Label, Seeds, Max
+    return Label, Seeds, Maxima

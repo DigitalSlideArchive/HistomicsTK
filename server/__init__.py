@@ -3,8 +3,10 @@ import os
 from girder import events
 from girder.utility.webroot import Webroot
 
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDocker
+from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
 from .handlers import process_annotations
+
+from .docker_resource import DockerResource, DockerCache, getDockerImageSettings
 
 _template = os.path.join(
     os.path.dirname(__file__),
@@ -13,6 +15,7 @@ _template = os.path.join(
 
 
 def load(info):
+
     girderRoot = info['serverRoot']
     histomicsRoot = Webroot(_template)
     histomicsRoot.updateHtmlVars(girderRoot.vars)
@@ -20,10 +23,14 @@ def load(info):
 
     info['serverRoot'].histomicstk = histomicsRoot
     info['serverRoot'].girder = girderRoot
+    # passed in resource name must match the attribute added to info[apiroot]
+    resource = DockerResource('HistomicsTK')
+    info['apiRoot'].HistomicsTK = resource
 
-    genRESTEndPointsForSlicerCLIsInDocker(
-        info, 'HistomicsTK',
-        'dsarchive/histomicstk:v0.1.3'
-    )
+    dockerCache = DockerCache(getDockerImageSettings())
+
+    genRESTEndPointsForSlicerCLIsInDockerCache(info, resource, dockerCache)
 
     events.bind('data.process', 'HistomicsTK', process_annotations)
+    events.bind('model.setting.validate', 'histomicstk_modules',
+                DockerResource.validateSettings)

@@ -42,12 +42,34 @@ histomicstk.views.ItemSelectorWidget = girder.View.extend({
     },
 
     _selectItem: function (item) {
+        var image, file;
+
         if (this.model.get('type') === 'file') {
             this.model.set({
                 path: this._path(),
                 value: item
             });
             this.trigger('g:saved');
+            this.$el.modal('hide');
+
+        } else if (this.model.get('type') === 'image') {
+            image = item.get('largeImage');
+
+            if (!image) {
+                this.$('.h-modal-error').removeClass('hidden')
+                    .text('Please select a "large_image" item.');
+                return;
+            }
+
+            // For now, use the original file id rather than the large image id
+            file = new girder.models.FileModel({_id: image.originalId || image.fileId});
+            file.once('g:fetched', _.bind(function () {
+                this.model.set({
+                    path: this._path(),
+                    value: file
+                });
+                this.trigger('g:saved');
+            }, this)).fetch();
             this.$el.modal('hide');
         }
     },

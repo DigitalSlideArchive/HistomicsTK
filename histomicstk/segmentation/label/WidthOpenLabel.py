@@ -1,7 +1,8 @@
-from histomicstk.segmentation import label
 import numpy as np
 import scipy.ndimage.morphology as mp
 import scipy.ndimage.measurements as ms
+
+from .CondenseLabel import CondenseLabel
 
 
 def WidthOpenLabel(Label, Width):
@@ -38,7 +39,7 @@ def WidthOpenLabel(Label, Width):
 
     # condense label image
     if np.unique(Thinned).size-1 != Thinned.max():
-        Thinned = label.CondenseLabel(Thinned)
+        Thinned = CondenseLabel(Thinned)
 
     # get locations of objects in initial label image
     Locations = ms.find_objects(Thinned)
@@ -64,6 +65,6 @@ def WidthOpenLabel(Label, Width):
             W[W == i] = 0
 
     # condense to fill gaps
-    Thinned = label.CondenseLabel(Thinned)
+    Thinned = CondenseLabel(Thinned)
 
     return Thinned

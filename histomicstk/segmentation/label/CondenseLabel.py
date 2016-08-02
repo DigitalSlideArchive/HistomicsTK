@@ -1,5 +1,5 @@
 import numpy as np
-from skimage import measure as ms
+import scipy.ndimage.measurements as ms
 
 
 def CondenseLabel(Label):
@@ -22,21 +22,20 @@ def CondenseLabel(Label):
     ShuffleLabel
     """
 
-    # get list of unique object labels
-    Unique = np.unique(Label.flatten())
-
-    # remove background objects (Label == 0)
-    Unique = np.delete(Unique, (Unique == 0).nonzero())
-
     # initialize output
-    Condensed = np.zeros(Label.shape, dtype=np.uint32)
+    Condensed = Label.copy()
 
-    # get pixel list for each object
-    Props = ms.regionprops(Label)
+    # get extent of each object
+    Locations = ms.find_objects(Condensed)
+
+    # initialize counter
+    Counter = 1
 
     # fill in new values
-    for i in range(len(Unique)):
-        Coords = Props[i].coords
-        Condensed[Coords[:, 0], Coords[:, 1]] = i+1
+    for i in np.arange(1, len(Locations)+1):
+        if Locations[i-1] is not None:
+            Patch = Condensed[Locations[i-1]]
+            Patch[Patch == i] = Counter
+            Counter += 1
 
     return Condensed

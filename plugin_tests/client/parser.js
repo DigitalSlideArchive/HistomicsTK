@@ -265,7 +265,7 @@ describe('XML Schema parser', function () {
             expect(histomicstk.schema._parseParam(
                 $(xml).find('image').get(0)
             )).toEqual({
-                type: 'file',
+                type: 'image',
                 slicerType: 'image',
                 id: 'foo',
                 title: 'arg1',

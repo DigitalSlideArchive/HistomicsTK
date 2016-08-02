@@ -26,7 +26,7 @@ def process_annotations(event):
             return
 
         userId = reference['userId']
-        itemId = reference['itemId']
+        imageId = reference['itemId']
 
         # load model classes
         Item = ModelImporter.model('item')
@@ -36,7 +36,8 @@ def process_annotations(event):
 
         # load models from the database
         user = User.load(userId, force=True)
-        item = Item.load(itemId, level=AccessType.WRITE, user=user)
+        image = File.load(imageId, level=AccessType.READ, user=user)
+        item = Item.load(image['itemId'], level=AccessType.WRITE, user=user)
         file = File.load(
             info.get('file', {}).get('_id'),
             level=AccessType.READ, user=user
