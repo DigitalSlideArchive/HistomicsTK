@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import entropy, skew, kurtosis
 
+
 def ComputeIntensityFeatures(I, Coords):
     """
     Calculates intensity features from an intensity image.
