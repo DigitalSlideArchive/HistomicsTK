@@ -66,7 +66,7 @@ def ComputeMorphometryFeatures(im_label):
         in the object to that of its convex hull.
     """
 
-    # feature names listed in alphabetical order
+    # List of feature names in alphabetical order
     feature_list = [
         'Area',
         'Circularity',
@@ -84,7 +84,7 @@ def ComputeMorphometryFeatures(im_label):
 
     numFeatures = len(feature_list)
     numLabels = len(rprops)
-    fdata = pd.DataFrame(np.zeros(numLabels, numFeatures),
+    fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)),
                          columns=feature_list)
 
     for i in range(numLabels):
@@ -93,7 +93,7 @@ def ComputeMorphometryFeatures(im_label):
         fdata.at[i, 'Area'] = rprops[i].area
 
         # compute Circularity
-        numerator = 4 * np.pi * rprops[i].Area
+        numerator = 4 * np.pi * rprops[i].area
         denominator = rprops[i].perimeter**2
         if denominator:
             fdata.at[i, 'Circularity'] = numerator / denominator
