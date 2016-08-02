@@ -82,9 +82,6 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     regions = regionprops(Label)
     num = len(regions)
 
-    # initialize morphometry feature group
-    MorphometryGroup = np.zeros((num, 13))
-
     # initialize FSD feature group
     FSDGroup = np.zeros((num, Fs))
 
