@@ -64,5 +64,5 @@ def ComputeGradientFeatures(I, Coords, Diff=[], C=[]):
     SumCanny = np.sum(bw_canny)
     MeanCanny = SumCanny/len(pixOfInterest)
 
-    return MeanGradMag, StdGradMag, EntropyGradMag, EnergyGradMag,
-           SkewnessGradMag, KurtosisGradMag, SumCanny, MeanCanny
+    return MeanGradMag, StdGradMag, EntropyGradMag, EnergyGradMag, \
+        SkewnessGradMag, KurtosisGradMag, SumCanny, MeanCanny
