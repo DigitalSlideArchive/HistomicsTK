@@ -82,9 +82,6 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     regions = regionprops(Label)
     num = len(regions)
 
-    # initialize morphometry feature group
-    MorphometryGroup = np.zeros((num, 13))
-
     # initialize FSD feature group
     FSDGroup = np.zeros((num, Fs))
 
@@ -110,9 +107,7 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
 
     # do feature extraction
     for i in range(0, num):
-        # compute Morphometry features
-        MorphometryGroup[i, :] = \
-            ComputeMorphometryFeatures(regions[i])
+
         # get bounds of dilated nucleus
         min_row, max_row, min_col, max_col = \
             GetBounds(regions[i].bbox, Delta, size_x, size_y)
@@ -150,14 +145,8 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     # initialize panda dataframe
     df = pd.DataFrame()
 
-    MorphometryNames = ['CentroidsX', 'CentroidsY', 'Area', 'Perimeter',
-                        'MajorAxisLength', 'MinorAxisLength',
-                        'MajorMinorAxisRatio', 'MajorAxisCoordsX',
-                        'MajorAxisCoordsY', 'Eccentricity', 'Circularity',
-                        'Extent', 'Solidity']
-
-    for i in range(0, len(MorphometryNames)):
-        df[MorphometryNames[i]] = MorphometryGroup[:, i]
+    fmorph = ComputeMorphometryFeatures(Label)
+    df = pd.concat([df, fmorph], axis=1)
 
     for i in range(0, Fs):
         df['FSD' + str(i+1)] = FSDGroup[:, i]
