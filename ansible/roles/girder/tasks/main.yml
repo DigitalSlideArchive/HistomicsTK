@@ -131,6 +131,11 @@
   service: name=girder state=restarted enabled=yes
   sudo: yes
 
+- name: Wait for girder startup
+  wait_for:
+    port: "{{ girder_socket_port }}"
+    delay: 1
+
 - name: Ensure girder admin user exists
   girder:
     port: "{{ girder_socket_port }}"
@@ -162,11 +167,11 @@
     plugins: "{{ girder_plugins }}"
     state: present
 
-- name: Restart Girder as a service to make sure our plugins are running
+- name: Restart girder as a service to make sure our plugins are running
   service: name=girder state=restarted enabled=yes
   sudo: yes
 
-- name: Wait for Girder startup
+- name: Wait for girder startup
   wait_for:
     port: "{{ girder_socket_port }}"
     delay: 1

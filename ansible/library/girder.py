@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
+
 
 ###############################################################################
 #  Copyright Kitware Inc.
@@ -34,7 +34,7 @@ except ImportError:
     HAS_GIRDER_CLIENT = False
 
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 DOCUMENTATION = '''
 ---
@@ -1393,7 +1393,7 @@ class GirderClientModule(GirderClient):
         groups = access.get("groups", None)
 
         if groups is not None:
-            assert set(g['type'] for g in groups) <= \
+            assert set(g['type'] for g in groups if 'type' in g) <= \
                 set(self.access_types.keys()), "Invalid access type!"
 
             # Hash of name -> group information
@@ -1401,12 +1401,13 @@ class GirderClientModule(GirderClient):
             all_groups = {g['name']: g for g in self.get("group")}
 
             access_list['groups'] = [{'id': all_groups[g['name']]["_id"],
-                                      'level': self.access_types[g['type']]}
+                                      'level': self.access_types[g['type']]
+                                      if 'type' in g else g['level']}
                                      for g in groups]
 
         if users is not None:
 
-            assert set(u['type'] for u in users) <= \
+            assert set(u['type'] for u in users if 'type' in u) <= \
                 set(self.access_types.keys()), "Invalid access type!"
 
             # Hash of login -> user information
@@ -1415,7 +1416,8 @@ class GirderClientModule(GirderClient):
                              for u in users}
 
             access_list['users'] = [{'id': current_users[u['login']]["_id"],
-                                     "level": self.access_types[u['type']]}
+                                     "level": self.access_types[u['type']]
+                                     if 'type' in u else u['level']}
                                     for u in users]
 
         return r.put_access(_id, access_list, public=public)
@@ -1468,7 +1470,19 @@ class GirderClientModule(GirderClient):
             if r.name_exists(name):
                 ret = r.update_by_name(name, {k: v for k, v in valid_fields
                                               if v is not None})
+
+                # While we can set public when we create the collection, we
+                # cannot update the public/private status of a collection
+                # via the PUT /collection/%s endpoint. Currently this is
+                # possible through the API by hitting the
+                # PUT /collection/%s/access endpoint with public=true and
+                # the access dict equal to {}
+                if ret['public'] is False and public:
+                    _id = ret['_id']
+                    ret['access'] = self._access(r,  r.get_access(_id), _id, public=public)
+
             else:
+                valid_fields.append(("public", public))
                 ret = r.create({k: v for k, v in valid_fields
                                 if v is not None})
         if folders is not None:
