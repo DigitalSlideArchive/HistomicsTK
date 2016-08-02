@@ -3,7 +3,7 @@ import numpy as np
 from skimage.segmentation import find_boundaries
 
 def ComputeFSDs(Label, K=128, Fs=6):
-    '''
+    """
     Calculates `Fourier shape descriptors` from a label mask.
 
     Parameters
@@ -24,7 +24,7 @@ def ComputeFSDs(Label, K=128, Fs=6):
     .. [1] D. Zhang et al. "A comparative study on shape retrieval using
        Fourier descriptors with different shape signatures," In Proc.
        ICIMADE01, 2001.
-    '''
+    """
 
     # initialize FSD feature group
     FSDGroup = np.zeros(Fs)
