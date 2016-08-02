@@ -3,7 +3,7 @@
 from .ComputeFSDs import ComputeFSDs
 from .ComputeGradientFeatures import ComputeGradientFeatures
 from .ComputeIntensityFeatures import ComputeIntensityFeatures
-from .ComputeTextureFeatures import ComputeTextureFeatures
+from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
 from .FeatureExtraction import FeatureExtraction
 
 # list out things that are available for public use
@@ -13,6 +13,6 @@ __all__ = (
     'ComputeFSDs',
     'ComputeGradientFeatures',
     'ComputeIntensityFeatures',
-    'ComputeTextureFeatures',
+    'ComputeMorphometryFeatures',
     'FeatureExtraction',
 )
