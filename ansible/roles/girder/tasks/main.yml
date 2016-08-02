@@ -2,11 +2,17 @@
   apt: pkg=python-pycurl state=present
   sudo: yes
 
-- name: Add nodejs PPA
-  shell: curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -
+- name: Download nodejs install script
+  get_url:
+    url: https://deb.nodesource.com/setup_4.x
+    dest: "{{ root_dir }}/node_setup.sh"
+    mode: 0755
+
+- name: Run nodejs PPA install script
+  command: "{{ root_dir }}/node_setup.sh"
   sudo: yes
 
-- name: Install package dependencies
+- name: Install system package dependencies
   apt: name={{ item }} state=present
   sudo: yes
   with_items:
