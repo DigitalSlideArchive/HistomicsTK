@@ -104,7 +104,6 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
 
     # do feature extraction
     for i in range(0, num):
-
         # get bounds of dilated nucleus
         min_row, max_row, min_col, max_col = \
             _GetBounds(regions[i].bbox, Delta, size_x, size_y)
