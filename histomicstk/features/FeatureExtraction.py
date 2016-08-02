@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from skimage.feature import canny
 from skimage.measure import regionprops
-from skimage.morphology import disk, dilation
+from skimage.morphology import disk, binary_dilation
 
 
 def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
@@ -135,7 +135,7 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
         ).astype(np.uint8)
         # remove nucleus region from cytoplasm+nucleus mask
         cytoplasm = (
-            np.logical_xor(Mask, dilation(Nucleus, Disk))
+            np.logical_xor(Mask, binary_dilation(Nucleus, Disk))
         )
         # get list of cytoplasm pixels
         regionCoords = np.argwhere(cytoplasm == 1)
