@@ -19,18 +19,24 @@ def ComputeMorphometryFeatures(im_label):
 
     Returns
     -------
-    fdata: Pandas data frame containing the following morphometry features
-    for each object/label
-        'Area',
-        'Circularity',
-        'Eccentricity',
-        'EquivalentDiameter'
-        'Extent',
-        'MajorAxisLength',
-        'MinorAxisLength',
-        'MajorMinorAxisRatio',
-        'Perimeter',
-        'Solidity',
+    fdata: pandas.DataFrame
+        A pandas dataframe containing the morphometry features for each
+        object/label listed below.
+
+    Notes
+    -----
+
+    List of morphometry features computed by this function:
+    - 'Area',
+    - 'Circularity',
+    - 'Eccentricity',
+    - 'EquivalentDiameter'
+    - 'Extent',
+    - 'MajorAxisLength',
+    - 'MinorAxisLength',
+    - 'MajorMinorAxisRatio',
+    - 'Perimeter',
+    - 'Solidity',
     """
 
     # feature names listed in alphabetical order
