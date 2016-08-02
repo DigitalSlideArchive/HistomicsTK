@@ -54,11 +54,11 @@ def ComputeMorphometryFeatures(Region):
     ot = Region.orientation
     # find length of Maxjor X and Y
     if ot < 0:
-        lengthofMajorX = (MGroup[6]/2) * np.sin(ot)
-        lengthofMajorY = (MGroup[6]/2) * np.cos(ot) * (-1)
+        lengthofMajorX = (MGroup[6]/2)*np.sin(ot)
+        lengthofMajorY = (MGroup[6]/2)*np.cos(ot)*(-1)
     else:
-        lengthofMajorX = (MGroup[6]/2) * np.sin(ot) * (-1)
-        lengthofMajorY = (MGroup[6]/2) * np.cos(ot)
+        lengthofMajorX = (MGroup[6]/2)*np.sin(ot)*(-1)
+        lengthofMajorY = (MGroup[6]/2)*np.cos(ot)
     # add lengths to Centroids
     MajorAxisX = MGroup[0] + lengthofMajorX
     MajorAxisY = MGroup[1] + lengthofMajorY
