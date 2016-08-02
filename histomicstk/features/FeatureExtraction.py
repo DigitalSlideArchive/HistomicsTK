@@ -1,7 +1,7 @@
-from .ComputeFSDs import ComputeFSDs
-from .ComputeTextureFeatures import ComputeTextureFeatures
-from .ComputeGradientFeatures import ComputeGradientFeatures
-from .ComputeIntensityFeatures import ComputeIntensityFeatures
+from ComputeFSDs import ComputeFSDs
+from ComputeGradientFeatures import ComputeGradientFeatures
+from ComputeIntensityFeatures import ComputeIntensityFeatures
+from ComputeMorphometryFeatures import ComputeMorphometryFeatures
 import numpy as np
 import pandas as pd
 from skimage.feature import canny
@@ -25,22 +25,26 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     Fs : Number of frequency bins for calculating FSDs. Default value = 6.
     Delta : scalar, used to dilate nuclei and define cytoplasm region.
             Default value = 8.
+
     Returns
     -------
     df : 2-dimensional labeled data structure, float64
         Pandas data frame.
+
     Notes
     -----
     The following features are computed:
 
-    - `Centroids`:
-        - X,Y
-
     - `Morphometry features`:
+        - CentroidsX,
+        - CentroidsY,
         - Area,
         - Perimeter,
         - MajorAxisLength,
         - MinorAxisLength,
+        - MajorMinorAxisRatio,
+        - MajorAxisCoordsX,
+        - MajorAxisCoordsY,
         - Eccentricity,
         - Circularity,
         - Extent,
@@ -77,34 +81,19 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     regions = regionprops(Label)
     num = len(regions)
 
-    # initialize centroids
-    CentroidX = np.zeros(num)
-    CentroidY = np.zeros(num)
-
-    # initialize morphometry features
-    Area = np.zeros(num)
-    Perimeter = np.zeros(num)
-    Eccentricity = np.zeros(num)
-    Circularity = np.zeros(num)
-    MajorAxisLength = np.zeros(num)
-    MinorAxisLength = np.zeros(num)
-    Extent = np.zeros(num)
-    Solidity = np.zeros(num)
+    # initialize morphometry feature group
+    MorphometryGroup = np.zeros((num, 13))
 
     # initialize FSD feature group
     FSDGroup = np.zeros((num, Fs))
-
-    # initialize texture feature groups
-    HematoxylinTextureGroup = np.zeros((num, 4))
-    EosinTextureGroup = np.zeros((num, 4))
 
     # initialize gradient feature groups
     HematoxylinGradientGroup = np.zeros((num, 8))
     EosinGradientGroup = np.zeros((num, 8))
 
     # initialize intensity feature groups
-    HematoxylinIntensityGroup = np.zeros((num, 5))
-    EosinIntensityGroup = np.zeros((num, 5))
+    HematoxylinIntensityGroup = np.zeros((num, 9))
+    EosinIntensityGroup = np.zeros((num, 9))
 
     # create round structuring element
     Disk = disk(Delta)
@@ -118,31 +107,11 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     diffGc = np.sqrt(Gcx**2 + Gcy**2)
     BW_cannyc = canny(Ic)
 
-    # set region index
-    regionIdx = 0
-
     # do feature extraction
     for i in range(0, num):
-        # compute Centroids
-        CentroidX[i] = regions[i].centroid[0]
-        CentroidY[i] = regions[i].centroid[1]
-        # compute Area
-        Area[i] = regions[i].area
-        # compute Perimeter
-        Perimeter[i] = regions[i].perimeter
-        # compute Eccentricity
-        Eccentricity[i] = regions[i].eccentricity
-        # compute Circularity
-        numerator = 4 * np.pi * Area[i]
-        denominator = np.power(Perimeter[i], 2)
-        Circularity[i] = numerator / denominator if denominator else 0
-        # compute MajorAxisLength and MinorAxisLength
-        MajorAxisLength[i] = regions[i].major_axis_length
-        MinorAxisLength[i] = regions[i].minor_axis_length
-        # compute Extent
-        Extent[i] = regions[i].extent
-        # compute Solidity
-        Solidity[i] = regions[i].solidity
+        # compute Morphometry features
+        MorphometryGroup[i, :] = \
+            ComputeMorphometryFeatures(regions[i])
         # get bounds of dilated nucleus
         min_row, max_row, min_col, max_col = \
             GetBounds(regions[i].bbox, Delta, size_x, size_y)
@@ -151,15 +120,13 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
             Label[min_row:max_row, min_col:max_col] == regions[i].label
         ).astype(np.bool)
         # compute Fourier shape descriptors
-        FSDGroup[regionIdx, :] = ComputeFSDs(Nucleus, K, Fs)
+        FSDGroup[i, :] = ComputeFSDs(Nucleus, K, Fs)
         # generate object coords for nuclei and cytoplasmic regions
         Nuclei = regions[i].coords
         # compute Texture, Gradient, Intensity features
-        HematoxylinTextureGroup[regionIdx, :] = \
-            ComputeTextureFeatures(In, Nuclei)
-        HematoxylinGradientGroup[regionIdx, :] = \
+        HematoxylinGradientGroup[i, :] = \
             ComputeGradientFeatures(In, Nuclei, diffGn, BW_cannyn)
-        HematoxylinIntensityGroup[regionIdx, :] = \
+        HematoxylinIntensityGroup[i, :] = \
             ComputeIntensityFeatures(In, Nuclei)
         # get mask for all nuclei in neighborhood
         Mask = (
@@ -174,42 +141,27 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
         regionCoords[:,0] = regionCoords[:,0] + min_row
         regionCoords[:,1] = regionCoords[:,1] + min_col
         # compute Texture, Gradient, Intensity features
-        EosinTextureGroup[regionIdx, :] = \
-            ComputeTextureFeatures(Ic, regionCoords)
-        EosinGradientGroup[regionIdx, :] = \
+        EosinGradientGroup[i, :] = \
             ComputeGradientFeatures(Ic, regionCoords, diffGc, BW_cannyc)
-        EosinIntensityGroup[regionIdx, :] = \
+        EosinIntensityGroup[i, :] = \
             ComputeIntensityFeatures(Ic, regionCoords)
-        # increase region index
-        regionIdx = regionIdx + 1
 
     # initialize panda dataframe
     df = pd.DataFrame()
 
-    # add columns to dataframe
-    df['X'] = CentroidX
-    df['Y'] = CentroidY
+    MorphometryNames = ['CentroidsX', 'CentroidsY', 'Area', 'Perimeter',
+        'MajorAxisLength', 'MinorAxisLength', 'MajorMinorAxisRatio',
+        'MajorAxisCoordsX', 'MajorAxisCoordsY', 'Eccentricity',
+        'Circularity', 'Extent', 'Solidity']
 
-    df['Area'] = Area
-    df['Perimeter'] = Perimeter
-    df['Eccentricity'] = Eccentricity
-    df['Circularity'] = Circularity
-    df['MajorAxisLength'] = MajorAxisLength
-    df['MinorAxisLength'] = MinorAxisLength
-    df['Extent'] = Extent
-    df['Solidity'] = Solidity
+    for i in range(0, 13):
+        df[MorphometryNames[i]] = MorphometryGroup[:, i]
 
     for i in range(0, Fs):
         df['FSD' + str(i+1)] = FSDGroup[:, i]
 
-    TextureNames = ['Entropy', 'Energy', 'Skewness', 'Kurtosis']
-
-    for i in range(0, len(TextureNames)):
-        df['Hematoxylin' + TextureNames[i]] = HematoxylinTextureGroup[:, i]
-        df['Cytoplasm' + TextureNames[i]] = EosinTextureGroup[:, i]
-
-    GradientNames = ['MeanGradMag', 'StdGradMag', 'EntropyGradMag',
-        'EnergyGradMag', 'SkewnessGradMag', 'KurtosisGradMag', 'SumCanny',
+    GradientNames = ['MeanGradMag', 'StdGradMag', 'EntropyGradMag', \
+        'EnergyGradMag', 'SkewnessGradMag', 'KurtosisGradMag', 'SumCanny', \
         'MeanCanny']
 
     for i in range(0, len(GradientNames)):
@@ -217,7 +169,8 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
         df['Cytoplasm' + GradientNames[i]] = EosinGradientGroup[:, i]
 
     IntensityNames = ['MeanIntensity', 'MeanMedianDifferenceIntensity', \
-        'MaxIntensity', 'MinIntensity', 'StdIntensity']
+        'MaxIntensity', 'MinIntensity', 'StdIntensity', 'Entropy', \
+        'Energy', 'Skewness', 'Kurtosis']
 
     for i in range(0, len(IntensityNames)):
         df['Hematoxylin' + IntensityNames[i]] = HematoxylinIntensityGroup[:, i]
