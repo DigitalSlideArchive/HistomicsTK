@@ -1,6 +1,6 @@
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
-from .ComputeFSDs import ComputeFSDs
+from .ComputeFSDFeatures import ComputeFSDFeatures
 from .ComputeGradientFeatures import ComputeGradientFeatures
 from .ComputeIntensityFeatures import ComputeIntensityFeatures
 from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
