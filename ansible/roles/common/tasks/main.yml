@@ -12,3 +12,7 @@
 - name: Install curl
   apt: pkg=curl state=installed
   sudo: yes
+
+- name: Upgrade system packages
+  apt: upgrade=safe
+  sudo: yes

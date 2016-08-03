@@ -6,7 +6,7 @@
     - girder
     - mq
     - worker
-    - itk
+    #- itk
     - openslide
   vars:
     vagrant: true

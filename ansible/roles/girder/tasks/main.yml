@@ -13,7 +13,7 @@
   sudo: yes
 
 - name: Install system package dependencies
-  apt: name={{ item }} state=present
+  apt: name={{ item }} state=present update_cache=yes
   sudo: yes
   with_items:
     - libssl-dev
