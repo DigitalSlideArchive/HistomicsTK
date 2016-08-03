@@ -19,9 +19,9 @@ def ComputeIntensityFeatures(im_label, im_intensity,
     im_intensity : array_like
         Intensity image
 
-    num_hist_bins: int
+    num_hist_bins: int, optional
         Number of bins used to computed the intensity histogram of an object.
-        Histogram is used to energy and entropy features.
+        Histogram is used to energy and entropy features. Default is 10.
 
     rprops : output of skimage.measure.regionprops, optional
         rprops = skimage.measure.regionprops( im_label ). If rprops is not
