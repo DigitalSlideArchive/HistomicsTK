@@ -76,7 +76,7 @@ def ComputeFSDFeatures(im_label, K=128, Fs=6, Delta=8, rprops=None):
         Bounds = np.argwhere(
             find_boundaries(lmask, mode="inner").astype(np.uint8) == 1
         )
-        # if boundary is one point
+        # check length of boundary
         if len(Bounds) < 2:
             fdata.at[i, :] = 0
         else:
