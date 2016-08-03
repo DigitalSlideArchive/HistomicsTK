@@ -1,13 +1,15 @@
-from .ComputeFSDs import ComputeFSDs
-from .ComputeGradientFeatures import ComputeGradientFeatures
-from .ComputeIntensityFeatures import ComputeIntensityFeatures
-from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
 import numpy as np
 import pandas as pd
 from skimage.feature import canny
 from skimage.measure import regionprops
 from skimage.morphology import disk, binary_dilation
 
+from .ComputeFSDs import ComputeFSDs
+from .ComputeGradientFeatures import ComputeGradientFeatures
+from .ComputeIntensityFeatures import ComputeIntensityFeatures
+from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
+
+from histomicstk.segmentation import label as htk_label
 
 def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     """
@@ -158,7 +160,8 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     fint_nuclei.columns = ['Nucleus' + col for col in fint_nuclei.columns]
     df = pd.concat([df, fint_nuclei], axis=1)
 
-    fint_cytoplasm = ComputeIntensityFeatures(Label, Ic, rprops=regions)
+    cyto_mask = htk_label.ComputeNeighborhoodMask(Label, neigh_width=Delta)
+    fint_cytoplasm = ComputeIntensityFeatures(cyto_mask, Ic)
     fint_cytoplasm.columns = ['Cytoplasm.' + col
                               for col in fint_cytoplasm.columns]
     df = pd.concat([df, fint_cytoplasm], axis=1)
