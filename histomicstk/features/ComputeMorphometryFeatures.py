@@ -56,7 +56,7 @@ def ComputeMorphometryFeatures(im_label, rprops=None):
         The length of the minor axis of the ellipse that has the same
         normalized second central moments as the region.
 
-    MajorMinorAxisRatio : float
+    MinorMajorAxisRatio : float
 
     Perimeter : float
         Perimeter of object which approximates the contour as a line
@@ -76,7 +76,7 @@ def ComputeMorphometryFeatures(im_label, rprops=None):
         'Extent',
         'MajorAxisLength',
         'MinorAxisLength',
-        'MajorMinorAxisRatio',
+        'MinorMajorAxisRatio',
         'Perimeter',
         'Solidity',
     ]
@@ -118,8 +118,11 @@ def ComputeMorphometryFeatures(im_label, rprops=None):
         fdata.at[i, 'MinorAxisLength'] = rprops[i].minor_axis_length
 
         # compute MajorMinor axis ratios
-        fdata.at[i, 'MajorMinorAxisRatio'] = \
-            rprops[i].major_axis_length / rprops[i].minor_axis_length
+        if rprops[i].major_axis_length > 0:
+            fdata.at[i, 'MinorMajorAxisRatio'] = \
+                rprops[i].minor_axis_length / rprops[i].major_axis_length
+        else:
+            fdata.at[i, 'MinorMajorAxisRatio'] = 1
 
         # compute Perimeter
         fdata.at[i, 'Perimeter'] = rprops[i].perimeter
