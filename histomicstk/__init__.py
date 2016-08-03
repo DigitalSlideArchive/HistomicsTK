@@ -4,7 +4,7 @@ from __future__ import absolute_import
 # import sub-packages to support nested calls
 from . import utils  # must be imported before other packages
 
-from . import segmentation # must be imported before features
+from . import segmentation  # must be imported before features
 
 from . import features
 from . import filters

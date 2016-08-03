@@ -42,6 +42,6 @@ def ComputeNeighborhoodMask(im_label, neigh_width=8):
 
     im_neigh_label[neigh_rind, neigh_cind] = im_label[
         closest_obj_rind[neigh_rind, neigh_cind],
-        closest_obj_cind[neigh_rind, neigh_cind] ]
+        closest_obj_cind[neigh_rind, neigh_cind]]
 
     return im_neigh_label

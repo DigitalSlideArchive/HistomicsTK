@@ -11,6 +11,7 @@ from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
 
 from histomicstk.segmentation import label as htk_label
 
+
 def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     """
     Calculates features from a label image.
