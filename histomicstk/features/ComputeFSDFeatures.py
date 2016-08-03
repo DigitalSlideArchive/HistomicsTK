@@ -1,11 +1,10 @@
-import collections
 import numpy as np
 import pandas as pd
 from skimage.measure import regionprops
 from skimage.segmentation import find_boundaries
 
 
-def ComputeFSDs(im_label, K=128, Fs=6, Delta=8, rprops=None):
+def ComputeFSDFeatures(im_label, K=128, Fs=6, Delta=8, rprops=None):
     """
     Calculates `Fourier shape descriptors` for each objects.
 
@@ -77,13 +76,17 @@ def ComputeFSDs(im_label, K=128, Fs=6, Delta=8, rprops=None):
         Bounds = np.argwhere(
             find_boundaries(lmask, mode="inner").astype(np.uint8) == 1
         )
-        # compute fourier descriptors
-        fdata.at[i, :] = _FSDs(Bounds[:, 0], Bounds[:, 1], K, Interval)
+        # check length of boundaries
+        if len(Bounds) < 2:
+            fdata.at[i, :] = 0
+        else:
+            # compute fourier descriptors
+            fdata.at[i, :] = _FSDs(Bounds[:, 0], Bounds[:, 1], K, Interval)
 
     return fdata
 
 
-def _InterpolateArcLength(X, Y, L):
+def _InterpolateArcLength(X, Y, K):
     """
     Resamples boundary points [X, Y] at L total equal arc-length locations.
 
@@ -93,7 +96,7 @@ def _InterpolateArcLength(X, Y, L):
         x points of boundaries
     Y : array_like
         y points of boundaries
-    L : int
+    K : int
         Number of points for boundary resampling to calculate fourier
         descriptors. Default value = 128.
 
@@ -105,51 +108,27 @@ def _InterpolateArcLength(X, Y, L):
     iY : array_like
         L-length vector of vertical interpolated coordinates with equal
         arc-length spacing.
-    Notes
-    -----
-    Return values are returned as a namedtuple.
     """
 
-    # length of X
-    K = len(X)
-    # initialize iX, iY
-    iX = np.zeros((0,))
-    iY = np.zeros((0,))
-    # generate spaced points
-    Interval = np.linspace(0, 1, L)
+    # generate spaced points 0, 1/k, 1
+    interval = np.linspace(0, 1, K+1)
     # get segment lengths
-    Lengths = np.sqrt(
-        np.power(np.diff(X), 2) + np.power(np.diff(Y), 2)
-    )
-    # check Lengths
-    if Lengths.size:
-        # normalize to unit length
-        Lengths = Lengths / Lengths.sum()
-        # calculate cumulative length along boundary
-        Cumulative = np.hstack((0., np.cumsum(Lengths)))
-        # place points in 'Interval' along boundary
-        Locations = np.digitize(Interval, Cumulative)
-        # clip to ends
-        Locations[Locations < 1] = 1
-        Locations[Locations >= K] = K - 1
-        Locations = Locations - 1
-        # linear interpolation
-        Lie = np.divide(
-            (Interval - [Cumulative[i] for i in Locations]),
-            [Lengths[i] for i in Locations]
-        )
-        tX = np.array([X[i] for i in Locations])
-        tY = np.array([Y[i] for i in Locations])
-        iX = tX + np.multiply(
-            np.array([X[i+1] for i in Locations]) - tX, Lie
-        )
-        iY = tY + np.multiply(
-            np.array([Y[i+1] for i in Locations]) - tY, Lie
-        )
-    iXY = collections.namedtuple('iXY', ['iX', 'iY'])
-    Output = iXY(iX, iY)
+    slens = np.sqrt(np.diff(X)**2 + np.diff(Y)**2)
+    # normalize to unit length
+    slens = np.true_divide(slens, slens.sum())
+    # calculate cumulative length along boundary
+    cumulative = np.zeros(len(slens)+1)
+    cumulative[1:] = np.cumsum(slens)
+    # place points in 'Interval' along boundary
+    locations = np.digitize(interval, cumulative)
+    # clip to ends
+    locations[locations > len(slens)] = len(slens)
+    # linear interpolation
+    Lie = (interval - cumulative[locations-1])/slens[locations-1]
+    iX = X[locations-1] + (X[locations]-X[locations-1])*Lie
+    iY = Y[locations-1] + (Y[locations]-Y[locations-1])*Lie
 
-    return Output
+    return iX, iY
 
 
 def _FSDs(X, Y, K, Intervals):

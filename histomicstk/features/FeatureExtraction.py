@@ -4,7 +4,7 @@ from skimage.feature import canny
 from skimage.measure import regionprops
 from skimage.morphology import disk, binary_dilation
 
-from .ComputeFSDs import ComputeFSDs
+from .ComputeFSDFeatures import ComputeFSDFeatures
 from .ComputeGradientFeatures import ComputeGradientFeatures
 from .ComputeIntensityFeatures import ComputeIntensityFeatures
 from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
@@ -145,7 +145,7 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     fmorph = ComputeMorphometryFeatures(Label, rprops=regions)
     df = pd.concat([df, fmorph], axis=1)
 
-    ffsds = ComputeFSDs(Label, K, Fs, Delta, rprops=regions)
+    ffsds = ComputeFSDFeatures(Label, K, Fs, Delta, rprops=regions)
     df = pd.concat([df, ffsds], axis=1)
 
     GradientNames = ['MeanGradMag', 'StdGradMag', 'EntropyGradMag',
