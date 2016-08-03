@@ -86,9 +86,6 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     HematoxylinGradientGroup = np.zeros((num, 8))
     EosinGradientGroup = np.zeros((num, 8))
 
-    # initialize intensity feature groups
-    EosinIntensityGroup = np.zeros((num, 9))
-
     # create round structuring element
     Disk = disk(Delta)
 
@@ -158,7 +155,7 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
         df['Cytoplasm' + GradientNames[i]] = EosinGradientGroup[:, i]
 
     fint_nuclei = ComputeIntensityFeatures(Label, In, rprops=regions)
-    fint_nuclei.columns = ['Nucleus.' + col for col in fint_nuclei.columns]
+    fint_nuclei.columns = ['Nucleus' + col for col in fint_nuclei.columns]
     df = pd.concat([df, fint_nuclei], axis=1)
 
     fint_cytoplasm = ComputeIntensityFeatures(Label, Ic, rprops=regions)

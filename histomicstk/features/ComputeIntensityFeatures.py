@@ -106,7 +106,6 @@ def ComputeIntensityFeatures(im_label, im_intensity,
     fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)),
                          columns=feature_list)
 
-
     for i in range(numLabels):
 
         # get intensities of object pixels
