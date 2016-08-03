@@ -24,6 +24,7 @@
     - libffi-dev
     - nodejs
     - cmake
+    - cmake-curses-gui
     - git
     - postfix
     - libfreetype6-dev
