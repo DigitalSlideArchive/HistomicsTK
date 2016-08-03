@@ -6,7 +6,6 @@ from .ComputeIntensityFeatures import ComputeIntensityFeatures
 from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
 from .FeatureExtraction import FeatureExtraction
 
-
 # list out things that are available for public use
 __all__ = (
 
