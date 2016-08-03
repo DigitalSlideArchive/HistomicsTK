@@ -65,11 +65,11 @@ def ComputeIntensityFeatures(im_label, im_intensity,
     MadIntensity: float
         Median absolute deviation of the intensities of object pixels
 
-    Skewness : float
+    SkewnessIntensity : float
         Skewness of the intensities of object pixels. Value is 0 when all
         intensity values are equal.
 
-    Kurtosis : float
+    KurtosisIntensity : float
         Kurtosis of the intensities of object pixels. Value is -3 when all
         values are equal.
 
@@ -90,8 +90,8 @@ def ComputeIntensityFeatures(im_label, im_intensity,
         'StdIntensity',
         'IqrIntensity',
         'MadIntensity',
-        'Skewness',
-        'Kurtosis',
+        'SkewnessIntensity',
+        'KurtosisIntensity',
         'HistogramEnergy',
         'HistogramEntropy',
     ]
@@ -138,10 +138,11 @@ def ComputeIntensityFeatures(im_label, im_intensity,
         fdata.at[i, 'IqrIntensity'] = scipy.stats.iqr(pixelIntensities)
 
         # compute skewness
-        fdata.at[i, 'Skewness'] = scipy.stats.skew(pixelIntensities)
+        fdata.at[i, 'SkewnessIntensity'] = scipy.stats.skew(pixelIntensities)
 
         # compute kurtosis
-        fdata.at[i, 'Kurtosis'] = scipy.stats.kurtosis(pixelIntensities)
+        fdata.at[i, 'KurtosisIntensity'] = \
+            scipy.stats.kurtosis(pixelIntensities)
 
         # compute intensity histogram
         hist, bins = np.histogram(pixelIntensities, bins=num_hist_bins)
