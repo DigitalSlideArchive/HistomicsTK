@@ -11,7 +11,7 @@ from .FeatureExtraction import FeatureExtraction
 __all__ = (
 
     # functions and classes of this package
-    'ComputeFSDs',
+    'ComputeFSDFeatures',
     'ComputeGradientFeatures',
     'ComputeIntensityFeatures',
     'ComputeMorphometryFeatures',
