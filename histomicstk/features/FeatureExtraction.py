@@ -86,10 +86,6 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     HematoxylinGradientGroup = np.zeros((num, 8))
     EosinGradientGroup = np.zeros((num, 8))
 
-    # initialize intensity feature groups
-    HematoxylinIntensityGroup = np.zeros((num, 9))
-    EosinIntensityGroup = np.zeros((num, 9))
-
     # create round structuring element
     Disk = disk(Delta)
 
@@ -104,45 +100,49 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
 
     # do feature extraction
     for i in range(0, num):
+
         # get bounds of dilated nucleus
         min_row, max_row, min_col, max_col = \
             _GetBounds(regions[i].bbox, Delta, size_x, size_y)
+
         # grab nucleus mask
         Nucleus = (
             Label[min_row:max_row, min_col:max_col] == regions[i].label
         ).astype(np.bool)
+
         # generate object coords for nuclei and cytoplasmic regions
         Nuclei = regions[i].coords
+
         # compute Texture, Gradient, Intensity features
         HematoxylinGradientGroup[i, :] = \
             ComputeGradientFeatures(In, Nuclei, diffGn, BW_cannyn)
-        HematoxylinIntensityGroup[i, :] = \
-            ComputeIntensityFeatures(In, Nuclei)
+
         # get mask for all nuclei in neighborhood
         Mask = (
             Label[min_row:max_row, min_col:max_col] > 0
         ).astype(np.uint8)
+
         # remove nucleus region from cytoplasm+nucleus mask
         cytoplasm = (
             np.logical_xor(Mask, binary_dilation(Nucleus, Disk))
         )
+
         # get list of cytoplasm pixels
         regionCoords = np.argwhere(cytoplasm == 1)
         regionCoords[:, 0] = regionCoords[:, 0] + min_row
         regionCoords[:, 1] = regionCoords[:, 1] + min_col
+
         # compute Texture, Gradient, Intensity features
         EosinGradientGroup[i, :] = \
             ComputeGradientFeatures(Ic, regionCoords, diffGc, BW_cannyc)
-        EosinIntensityGroup[i, :] = \
-            ComputeIntensityFeatures(Ic, regionCoords)
 
     # initialize panda dataframe
     df = pd.DataFrame()
 
-    fmorph = ComputeMorphometryFeatures(Label)
+    fmorph = ComputeMorphometryFeatures(Label, rprops=regions)
     df = pd.concat([df, fmorph], axis=1)
 
-    ffsds = ComputeFSDs(Label, K, Fs, Delta)
+    ffsds = ComputeFSDs(Label, K, Fs, Delta, rprops=regions)
     df = pd.concat([df, ffsds], axis=1)
 
     GradientNames = ['MeanGradMag', 'StdGradMag', 'EntropyGradMag',
@@ -154,14 +154,14 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
             HematoxylinGradientGroup[:, i]
         df['Cytoplasm' + GradientNames[i]] = EosinGradientGroup[:, i]
 
-    IntensityNames = ['MeanIntensity', 'MeanMedianDifferenceIntensity',
-                      'MaxIntensity', 'MinIntensity', 'StdIntensity',
-                      'Entropy', 'Energy', 'Skewness', 'Kurtosis']
+    fint_nuclei = ComputeIntensityFeatures(Label, In, rprops=regions)
+    fint_nuclei.columns = ['Nucleus' + col for col in fint_nuclei.columns]
+    df = pd.concat([df, fint_nuclei], axis=1)
 
-    for i in range(0, len(IntensityNames)):
-        df['Hematoxylin' + IntensityNames[i]] = \
-            HematoxylinIntensityGroup[:, i]
-        df['Cytoplasm' + IntensityNames[i]] = EosinIntensityGroup[:, i]
+    fint_cytoplasm = ComputeIntensityFeatures(Label, Ic, rprops=regions)
+    fint_cytoplasm.columns = ['Cytoplasm.' + col
+                              for col in fint_cytoplasm.columns]
+    df = pd.concat([df, fint_cytoplasm], axis=1)
 
     return df
 

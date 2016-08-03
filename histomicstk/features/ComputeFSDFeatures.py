@@ -5,7 +5,7 @@ from skimage.measure import regionprops
 from skimage.segmentation import find_boundaries
 
 
-def ComputeFSDs(im_label, K=128, Fs=6, Delta=8):
+def ComputeFSDs(im_label, K=128, Fs=6, Delta=8, rprops=None):
     """
     Calculates `Fourier shape descriptors` for each objects.
 
@@ -15,13 +15,18 @@ def ComputeFSDs(im_label, K=128, Fs=6, Delta=8):
         A labeled mask image wherein intensity of a pixel is the ID of the
         object it belongs to. Non-zero values are considered to be foreground
         objects.
-    K : int
+    K : int, optional
         Number of points for boundary resampling to calculate fourier
         descriptors. Default value = 128.
-    Fs : int
+    Fs : int, optional
         Number of frequency bins for calculating FSDs. Default value = 6.
-    Delta : int
+    Delta : int, optional
         Used to dilate nuclei and define cytoplasm region. Default value = 8.
+
+    rprops : output of skimage.measure.regionprops, optional
+        rprops = skimage.measure.regionprops( im_label ). If rprops is not
+        passed then it will be computed inside which will increase the
+        computation time.
 
     Returns
     -------
@@ -44,8 +49,10 @@ def ComputeFSDs(im_label, K=128, Fs=6, Delta=8):
     sizey = im_label.shape[1]
 
     # get the number of objects in Label
-    rprops = regionprops(im_label)
+    if rprops is None:
+        rprops = regionprops(im_label)
 
+    # create pandas data frame containing the features for each object
     numFeatures = len(feature_list)
     numLabels = len(rprops)
     fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)),
