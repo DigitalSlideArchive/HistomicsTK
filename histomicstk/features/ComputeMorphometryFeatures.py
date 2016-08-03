@@ -3,7 +3,7 @@ import pandas as pd
 from skimage.measure import regionprops
 
 
-def ComputeMorphometryFeatures(im_label):
+def ComputeMorphometryFeatures(im_label, rprops=None):
     """
     Calculates morphometry features for each object
 
@@ -14,8 +14,10 @@ def ComputeMorphometryFeatures(im_label):
         object it belongs to. Non-zero values are considered to be foreground
         objects.
 
-    rprops[i] : property
-        A rprops[i] property from regioprops.
+    rprops : output of skimage.measure.regionprops, optional
+        rprops = skimage.measure.regionprops( im_label ). If rprops is not
+        passed then it will be computed inside which will increase the
+        computation time.
 
     Returns
     -------
@@ -25,7 +27,6 @@ def ComputeMorphometryFeatures(im_label):
 
     Notes
     -----
-
     List of morphometry features computed by this function:
 
     Area : int
@@ -80,8 +81,11 @@ def ComputeMorphometryFeatures(im_label):
         'Solidity',
     ]
 
-    rprops = regionprops(im_label)
+    # compute object properties if not provided
+    if rprops is None:
+        rprops = regionprops(im_label)
 
+    # create pandas data frame containing the features for each object
     numFeatures = len(feature_list)
     numLabels = len(rprops)
     fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)),
