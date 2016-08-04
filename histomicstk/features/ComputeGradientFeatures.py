@@ -39,21 +39,28 @@ def ComputeGradientFeatures(im_label, im_intensity,
     -----
     List of gradient features computed by this function:
 
-    MeanGradMag : float
+    Gradient.Mag.Mean : float
         Mean of gradient data.
-    StdGradMag : float
+
+    Gradient.Mag.Std : float
         Standard deviation of gradient data.
-    SkewnessGradMag : float
+
+    Gradient.Mag.Skewness : float
         Skewness of gradient data. Value is 0 when all values are equal.
-    KurtosisGradMag : float
+
+    Gradient.Mag.Kurtosis : float
         Kurtosis of gradient data. Value is -3 when all values are equal.
+
     HistogramEnergy : float
-        Energy of the intensity histogram of object pixels
-    HistogramEntropy : float
-        Entropy of the intensity histogram of object pixels.
-    SumCanny : float
+        Energy of the gradient magnitude histogram of object pixels
+
+    Gradient.Mag.HistEnergy : float
+        Entropy of the gradient magnitude histogram of object pixels.
+
+    Gradient.Canny.Sum : float
         Sum of canny filtered gradient data.
-    MeanCanny : float
+
+    Gradient.Canny.Mean : float
         Mean of canny filtered gradient data.
 
     References
@@ -64,14 +71,14 @@ def ComputeGradientFeatures(im_label, im_intensity,
 
     # List of feature names
     feature_list = [
-        'MeanGradMag',
-        'StdGradMag',
-        'SkewnessGradMag',
-        'KurtosisGradMag',
-        'HistEntropyGradMag',
-        'HistEnergyGradMag',
-        'SumCanny',
-        'MeanCanny',
+        'Gradient.Mag.Mean',
+        'Gradient.Mag.Std',
+        'Gradient.Mag.Skewness',
+        'Gradient.Mag.Kurtosis',
+        'Gradient.Mag.HistEntropy',
+        'Gradient.Mag.HistEnergy',
+        'Gradient.Canny.Sum',
+        'Gradient.Canny.Mean',
     ]
 
     # compute object properties if not provided
@@ -96,16 +103,16 @@ def ComputeGradientFeatures(im_label, im_intensity,
         )
 
         # compute mean
-        fdata.at[i, 'MeanGradMag'] = np.mean(pixelGradients)
+        fdata.at[i, 'Gradient.Mag.Mean'] = np.mean(pixelGradients)
 
         # compute standard deviation
-        fdata.at[i, 'StdGradMag'] = np.std(pixelGradients)
+        fdata.at[i, 'Gradient.Mag.Std'] = np.std(pixelGradients)
 
         # compute skewness
-        fdata.at[i, 'SkewnessGradMag'] = scipy.stats.skew(pixelGradients)
+        fdata.at[i, 'Gradient.Mag.Skewness'] = scipy.stats.skew(pixelGradients)
 
         # compute kurtosis
-        fdata.at[i, 'KurtosisGradMag'] = \
+        fdata.at[i, 'Gradient.Mag.Kurtosis'] = \
             scipy.stats.kurtosis(pixelGradients)
 
         # compute intensity histogram
@@ -113,15 +120,15 @@ def ComputeGradientFeatures(im_label, im_intensity,
         prob = hist/np.sum(hist, dtype=np.float32)
 
         # compute entropy
-        fdata.at[i, 'HistEntropyGradMag'] = scipy.stats.entropy(prob)
+        fdata.at[i, 'Gradient.Mag.HistEntropy'] = scipy.stats.entropy(prob)
 
         # compute energy
-        fdata.at[i, 'HistEnergyGradMag'] = np.sum(prob**2)
+        fdata.at[i, 'Gradient.Mag.HistEnergy'] = np.sum(prob**2)
 
         bw_canny = cannyG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
-        fdata.at[i, 'SumCanny'] = np.sum(bw_canny)
+        canny_sum = np.sum(bw_canny)
+        fdata.at[i, 'Gradient.Canny.Sum'] = canny_sum
 
-        fdata.at[i, 'MeanCanny'] = fdata.at[i, 'SumCanny'] / \
-            len(pixelGradients)
+        fdata.at[i, 'Gradient.Canny.Mean'] = canny_sum / len(pixelGradients)
 
     return fdata
