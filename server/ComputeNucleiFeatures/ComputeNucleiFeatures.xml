@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <executable>
   <category>HistomicsTK</category>
-  <title>Performs Feature Extraction</title>
-  <description>Extracts initial features from an image</description>
+  <title>Computes Nuclei Classification Features</title>
+  <description>Computes features for nuclei classification</description>
   <version>0.1.0</version>
   <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
   <license>Apache 2.0</license>
-  <contributor>Sanghoon Lee (Emory University)</contributor>
+  <contributor>Sanghoon Lee (Emory University), Deepak Roy Chittajallu (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
   <parameters>
     <label>IO</label>
