@@ -18,6 +18,7 @@ The output of this application is a HDF5 file containing the features.
 
 #### Usage:
 
+```
 ComputeNucleiFeatures.py [-h] [-V] [--xml] [--cyto_width <integer>]
                          [--cytoplasm <boolean>]
                          [--foreground_threshold <double>]
