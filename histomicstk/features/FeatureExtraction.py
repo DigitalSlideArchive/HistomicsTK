@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
-from skimage.feature import canny
 from skimage.measure import regionprops
-from skimage.morphology import disk, binary_dilation
 
 from .ComputeFSDFeatures import ComputeFSDFeatures
 from .ComputeGradientFeatures import ComputeGradientFeatures
@@ -77,67 +75,8 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
        and statistics tables and formulae," Crc Press, 1999.
     """
 
-    # get Label size x
-    size_x = Label.shape[0]
-    size_y = Label.shape[1]
-
     # get the number of objects in Label
     regions = regionprops(Label)
-    num = len(regions)
-
-    # initialize gradient feature groups
-    HematoxylinGradientGroup = np.zeros((num, 8))
-    EosinGradientGroup = np.zeros((num, 8))
-
-    # create round structuring element
-    Disk = disk(Delta)
-
-    # compute bw canny and gradient difference for H and E
-    Gnx, Gny = np.gradient(In)
-    diffGn = np.sqrt(Gnx**2 + Gny**2)
-    BW_cannyn = canny(In)
-
-    Gcx, Gcy = np.gradient(Ic)
-    diffGc = np.sqrt(Gcx**2 + Gcy**2)
-    BW_cannyc = canny(Ic)
-
-    # do feature extraction
-    for i in range(0, num):
-
-        # get bounds of dilated nucleus
-        min_row, max_row, min_col, max_col = \
-            _GetBounds(regions[i].bbox, Delta, size_x, size_y)
-
-        # grab nucleus mask
-        Nucleus = (
-            Label[min_row:max_row, min_col:max_col] == regions[i].label
-        ).astype(np.bool)
-
-        # generate object coords for nuclei and cytoplasmic regions
-        Nuclei = regions[i].coords
-
-        # compute Texture, Gradient, Intensity features
-        HematoxylinGradientGroup[i, :] = \
-            ComputeGradientFeatures(In, Nuclei, diffGn, BW_cannyn)
-
-        # get mask for all nuclei in neighborhood
-        Mask = (
-            Label[min_row:max_row, min_col:max_col] > 0
-        ).astype(np.uint8)
-
-        # remove nucleus region from cytoplasm+nucleus mask
-        cytoplasm = (
-            np.logical_xor(Mask, binary_dilation(Nucleus, Disk))
-        )
-
-        # get list of cytoplasm pixels
-        regionCoords = np.argwhere(cytoplasm == 1)
-        regionCoords[:, 0] = regionCoords[:, 0] + min_row
-        regionCoords[:, 1] = regionCoords[:, 1] + min_col
-
-        # compute Texture, Gradient, Intensity features
-        EosinGradientGroup[i, :] = \
-            ComputeGradientFeatures(Ic, regionCoords, diffGc, BW_cannyc)
 
     # initialize panda dataframe
     df = pd.DataFrame()
@@ -148,17 +87,8 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
     ffsds = ComputeFSDFeatures(Label, K, Fs, Delta, rprops=regions)
     df = pd.concat([df, ffsds], axis=1)
 
-    GradientNames = ['MeanGradMag', 'StdGradMag', 'EntropyGradMag',
-                     'EnergyGradMag', 'SkewnessGradMag', 'KurtosisGradMag',
-                     'SumCanny', 'MeanCanny']
-
-    for i in range(0, len(GradientNames)):
-        df['Hematoxylin' + GradientNames[i]] = \
-            HematoxylinGradientGroup[:, i]
-        df['Cytoplasm' + GradientNames[i]] = EosinGradientGroup[:, i]
-
     fint_nuclei = ComputeIntensityFeatures(Label, In, rprops=regions)
-    fint_nuclei.columns = ['Nucleus' + col for col in fint_nuclei.columns]
+    fint_nuclei.columns = ['Nucleus.' + col for col in fint_nuclei.columns]
     df = pd.concat([df, fint_nuclei], axis=1)
 
     cyto_mask = htk_label.ComputeNeighborhoodMask(Label, neigh_width=Delta)
@@ -167,42 +97,13 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
                               for col in fint_cytoplasm.columns]
     df = pd.concat([df, fint_cytoplasm], axis=1)
 
+    fgrad_nuclei = ComputeGradientFeatures(Label, In, rprops=regions)
+    fgrad_nuclei.columns = ['Nucleus.' + col for col in fgrad_nuclei.columns]
+    df = pd.concat([df, fgrad_nuclei], axis=1)
+
+    fgrad_cytoplasm = ComputeGradientFeatures(cyto_mask, Ic)
+    fgrad_cytoplasm.columns = ['Cytoplasm.' + col
+                              for col in fgrad_cytoplasm.columns]
+    df = pd.concat([df, fgrad_cytoplasm], axis=1)
+
     return df
-
-
-def _GetBounds(bbox, delta, M, N):
-    """
-    Returns bounds of object in global label image.
-
-    Parameters
-    ----------
-    bbox : tuple
-        Bounding box (min_row, min_col, max_row, max_col).
-    delta : int
-        Used to dilate nuclei and define cytoplasm region.
-        Default value = 8.
-    M : int
-        X size of label image.
-    N : int
-        Y size of label image.
-
-    Returns
-    -------
-    min_row : int
-        Minum row of the region bounds.
-    max_row : int
-        Maximum row of the region bounds.
-    min_col : int
-        Minum column of the region bounds.
-    max_col : int
-        Maximum column of the region bounds.
-    """
-
-    min_row, min_col, max_row, max_col = bbox
-
-    min_row_out = max(0, (min_row - delta))
-    max_row_out = min(M-1, (max_row + delta))
-    min_col_out = max(0, (min_col - delta))
-    max_col_out = min(N-1, (max_col + delta))
-
-    return min_row_out, max_row_out, min_col_out, max_col_out
