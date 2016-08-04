@@ -9,10 +9,15 @@ from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
 from histomicstk.segmentation import label as htk_label
 
 
-def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm,
-                           fsd_k=128, fsd_freq_bins=6, cyto_width=8):
+def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm=None,
+                           fsd_k=128, fsd_freq_bins=6, cyto_width=8,
+                           morphometry_features_flag=True,
+                           fsd_features_flag=True,
+                           intensity_features_flag=True,
+                           gradient_features_flag=True
+                           ):
     """
-    Calculates features from a label image.
+    Calculates features for nuclei classification
 
     Parameters
     ----------
@@ -34,9 +39,29 @@ def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm,
     fsd_freq_bins : int, optional
         Number of frequency bins for calculating FSDs. Default value = 6.
 
-    cyto_width : scalar
+    cyto_width : float, optional
         Estimated width of the ring-like neighborhood region around each
         nucleus to be considered as its cytoplasm. Default value = 8.
+
+    morphometry_features_flag : bool, optional
+        A flag that can be used to specify whether or not to compute
+        morphometry (size and shape) features.
+        See histomicstk.features.ComputeMorphometryFeatures for more details.
+
+    fsd_features_flag : bool, optional
+        A flag that can be used to specify whether or not to compute
+        Fouried shape descriptor (FSD) features.
+        See `histomicstk.features.ComputeFSDFeatures` for more details.
+
+    intensity_features_flag : bool, optional
+        A flag that can be used to specify whether or not to compute
+        intensity features from the nucleus and cytoplasm channels.
+        See `histomicstk.features.ComputeFSDFeatures` for more details.
+
+    gradient_features_flag : bool, optional
+        A flag that can be used to specify whether or not to compute
+        gradient/edge features from intensity and cytoplasm channels.
+        See `histomicstk.features.ComputeGradientFeatures` for more details.
 
     Returns
     -------
@@ -74,46 +99,73 @@ def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm,
     histomicstk.features.ComputeGradientFeatures,
     """
 
+    feature_list = []
+
     # get the number of objects in im_label
-    regions = regionprops(im_label)
+    nuclei_props = regionprops(im_label)
 
     # compute cytoplasm mask
-    cyto_mask = htk_label.ComputeNeighborhoodMask(im_label,
-                                                  neigh_width=cyto_width)
+    if im_cytoplasm is not None:
+
+        cyto_mask = htk_label.ComputeNeighborhoodMask(im_label,
+                                                      neigh_width=cyto_width)
+
+        cytoplasm_props = regionprops(cyto_mask)
 
     # compute morphometry features
-    fmorph = ComputeMorphometryFeatures(im_label, rprops=regions)
+    if morphometry_features_flag:
+
+        fmorph = ComputeMorphometryFeatures(im_label, rprops=nuclei_props)
+
+        feature_list.append(fmorph)
 
     # compute FSD features
-    ffsd = ComputeFSDFeatures(im_label, fsd_k, fsd_freq_bins, cyto_width,
-                              rprops=regions)
+    if fsd_features_flag:
 
-    # compute nucleus intensity features
-    fint_nuclei = ComputeIntensityFeatures(im_label, im_nuclei, rprops=regions)
-    fint_nuclei.columns = ['Nucleus.' + col for col in fint_nuclei.columns]
+        ffsd = ComputeFSDFeatures(im_label, fsd_k, fsd_freq_bins, cyto_width,
+                                  rprops=nuclei_props)
+
+        feature_list.append(ffsd)
+
+    # compute nuclei intensity features
+    if intensity_features_flag:
+
+        fint_nuclei = ComputeIntensityFeatures(im_label, im_nuclei,
+                                               rprops=nuclei_props)
+        fint_nuclei.columns = ['Nucleus.' + col
+                               for col in fint_nuclei.columns]
+
+        feature_list.append(fint_nuclei)
 
     # compute cytoplasm intensity features
-    fint_cytoplasm = ComputeIntensityFeatures(cyto_mask, im_cytoplasm)
-    fint_cytoplasm.columns = ['Cytoplasm.' + col
-                              for col in fint_cytoplasm.columns]
+    if intensity_features_flag and im_cytoplasm is not None:
 
-    # compute nucleus gradient features
-    fgrad_nuclei = ComputeGradientFeatures(im_label, im_nuclei, rprops=regions)
-    fgrad_nuclei.columns = ['Nucleus.' + col for col in fgrad_nuclei.columns]
+        fint_cytoplasm = ComputeIntensityFeatures(cyto_mask, im_cytoplasm)
+        fint_cytoplasm.columns = ['Cytoplasm.' + col
+                                  for col in fint_cytoplasm.columns]
+
+        feature_list.append(fint_cytoplasm)
+
+    # compute nuclei gradient features
+    if gradient_features_flag:
+
+        fgrad_nuclei = ComputeGradientFeatures(im_label, im_nuclei,
+                                               rprops=nuclei_props)
+        fgrad_nuclei.columns = ['Nucleus.' + col
+                                for col in fgrad_nuclei.columns]
+
+        feature_list.append(fgrad_nuclei)
 
     # compute cytoplasm gradient features
-    fgrad_cytoplasm = ComputeGradientFeatures(cyto_mask, im_cytoplasm)
-    fgrad_cytoplasm.columns = ['Cytoplasm.' + col
-                               for col in fgrad_cytoplasm.columns]
+    if gradient_features_flag and im_cytoplasm is not None:
+
+        fgrad_cytoplasm = ComputeGradientFeatures(cyto_mask, im_cytoplasm)
+        fgrad_cytoplasm.columns = ['Cytoplasm.' + col
+                                   for col in fgrad_cytoplasm.columns]
+
+        feature_list.append(fgrad_cytoplasm)
 
     # Merge all features
-    fdata = pd.concat([
-        fmorph,
-        ffsd,
-        fint_nuclei,
-        fint_cytoplasm,
-        fgrad_nuclei,
-        fgrad_cytoplasm
-    ], axis=1)
+    fdata = pd.concat(feature_list, axis=1)
 
     return fdata
