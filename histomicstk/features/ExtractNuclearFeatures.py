@@ -10,7 +10,7 @@ from histomicstk.segmentation import label as htk_label
 
 
 def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm=None,
-                           fsd_k=128, fsd_freq_bins=6, cyto_width=8,
+                           fsd_bnd_pts=128, fsd_freq_bins=6, cyto_width=8,
                            morphometry_features_flag=True,
                            fsd_features_flag=True,
                            intensity_features_flag=True,
@@ -32,7 +32,7 @@ def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm=None,
     im_cytoplasm : array_like
         Cytoplasm channel intensity image.
 
-    fsd_k : int, optional
+    fsd_bnd_pts : int, optional
         Number of points for boundary resampling to calculate fourier
         descriptors. Default value = 128.
 
@@ -122,7 +122,7 @@ def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm=None,
     # compute FSD features
     if fsd_features_flag:
 
-        ffsd = ComputeFSDFeatures(im_label, fsd_k, fsd_freq_bins, cyto_width,
+        ffsd = ComputeFSDFeatures(im_label, fsd_bnd_pts, fsd_freq_bins, cyto_width,
                                   rprops=nuclei_props)
 
         feature_list.append(ffsd)
