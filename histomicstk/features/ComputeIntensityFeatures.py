@@ -107,7 +107,7 @@ def ComputeIntensityFeatures(im_label, im_intensity,
 
         # get intensities of object pixels
         pixelIntensities = np.sort(
-            im_intensity[rprops[i].Coords[:, 0], rprops[i].Coords[:, 1]]
+            im_intensity[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
         )
 
         # compute min
