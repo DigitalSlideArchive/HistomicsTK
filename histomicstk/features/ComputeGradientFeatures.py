@@ -6,7 +6,7 @@ from skimage.measure import regionprops
 
 
 def ComputeGradientFeatures(im_label, im_intensity,
-                             num_hist_bins=10, rprops=None):
+                            num_hist_bins=10, rprops=None):
     """
     Calculates gradient features from an intensity image.
 
@@ -121,6 +121,7 @@ def ComputeGradientFeatures(im_label, im_intensity,
         bw_canny = cannyG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
         fdata.at[i, 'SumCanny'] = np.sum(bw_canny)
 
-        fdata.at[i, 'MeanCanny'] = fdata.at[i, 'SumCanny']/len(pixelGradients)
+        fdata.at[i, 'MeanCanny'] = fdata.at[i, 'SumCanny'] / \
+            len(pixelGradients)
 
     return fdata
