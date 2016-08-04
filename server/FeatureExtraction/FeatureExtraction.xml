@@ -25,6 +25,46 @@
       <index>1</index>
       <description>Output HDF5 file</description>
     </file>
+    <boolean>
+      <name>size_shape_features</name>
+      <label>Size and Shape Features</label>
+      <channel>input</channel>
+      <longflag>size_shape</longflag>
+      <description>Compute Size and shape Features</description>
+      <default>true</default>
+    </boolean>
+    <boolean>
+      <name>fsd_features</name>
+      <label>Fourier Shape Descriptor Features</label>
+      <channel>input</channel>
+      <longflag>fsd</longflag>
+      <description>Compute Fourier Shape Descriptor Features</description>
+      <default>true</default>
+    </boolean>
+    <boolean>
+      <name>intensity_features</name>
+      <label>Intensity Features</label>
+      <channel>input</channel>
+      <longflag>intensity</longflag>
+      <description>Compute Intensity Features</description>
+      <default>true</default>
+    </boolean>
+    <boolean>
+      <name>gradient_features</name>
+      <label>Gradient/Edge Features</label>
+      <channel>input</channel>
+      <longflag>gradient</longflag>
+      <description>Compute Gradient/Edge Features</description>
+      <default>true</default>
+    </boolean>
+    <boolean>
+      <name>cytoplasm_features</name>
+      <label>Cytoplasm Features</label>
+      <channel>input</channel>
+      <longflag>cytoplasm</longflag>
+      <description>Compute Intensity and Gradient features from the cytoplasm channel</description>
+      <default>true</default>
+    </boolean>
   </parameters>
   <parameters>
     <label>Color Deconvolution</label>
@@ -65,7 +105,7 @@
     </string-enumeration>
   </parameters>
   <parameters>
-    <label>Nuclei segmentation</label>
+    <label>Nuclei segmentation parameters</label>
     <description>Nuclei segmentation parameters</description>
     <double>
       <name>foreground_threshold</name>
@@ -104,28 +144,28 @@
     </double>
   </parameters>
   <parameters>
-    <label>Feature extraction</label>
+    <label>Feature extraction parameters</label>
     <description>Feature extraction parameters</description>
     <integer>
-      <name>K</name>
-      <label>K</label>
-      <description>Number of points for boundary resampling</description>
-      <longflag>k</longflag>
+      <name>cyto_width</name>
+      <label>Cytoplasm width</label>
+      <description>Width of ring-like neighborghood region around each nucleus to be considered as cytoplasm</description>
+      <longflag>cyto_width</longflag>
+      <default>8</default>
+    </integer>
+    <integer>
+      <name>fsd_bnd_pts</name>
+      <label>FSD Boundary Points</label>
+      <description>Number of boundary points for computing FSD features</description>
+      <longflag>fsd_bnd_pts</longflag>
       <default>128</default>
     </integer>
     <integer>
-      <name>Fs</name>
-      <label>Fs</label>
-      <description>Number of frequency bins for calculating FSDs</description>
-      <longflag>fs</longflag>
+      <name>fsd_freq_bins</name>
+      <label>FSD frequency bins</label>
+      <description>Number of frequency bins for calculating FSD features</description>
+      <longflag>fsd_freq_bins</longflag>
       <default>6</default>
-    </integer>
-    <integer>
-      <name>Delta</name>
-      <label>Delta</label>
-      <description>Used to dilate nuclei and define cytoplasm region</description>
-      <longflag>delta</longflag>
-      <default>8</default>
     </integer>
   </parameters>
 </executable>
