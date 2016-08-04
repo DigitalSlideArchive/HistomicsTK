@@ -28,9 +28,6 @@ def ComputeIntensityFeatures(im_label, im_intensity,
         passed then it will be computed inside which will increase the
         computation time.
 
-    Coords : array_like
-        A N x 2 coordinate list of a region.
-
     Returns
     -------
     fdata: pandas.DataFrame
