@@ -86,7 +86,6 @@ def ComputeGradientFeatures(im_label, im_intensity,
 
     Gx, Gy = np.gradient(im_intensity)
     diffG = np.sqrt(Gx**2 + Gy**2)
-    diffG = gaussian_gradient_magnitude(im_intensity, 1)
     cannyG = canny(im_intensity)
 
     for i in range(numLabels):
