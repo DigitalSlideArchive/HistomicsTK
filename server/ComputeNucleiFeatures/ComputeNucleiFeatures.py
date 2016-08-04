@@ -88,17 +88,28 @@ def main(args):
     imNucleiSegMask = htk_seg.label.FilterLabel(
         imNucleiSegMask, Lower=args.min_nucleus_area).astype(np.int)
 
-    # get Hematoxylin and Eosin
-    Hematoxylin = imDeconvolved.Stains[::2, ::2, 0]
-    Eosin = imDeconvolved.Stains[::2, ::2, 1]
-
     #
     # Perform feature extraction
     #
     print('>> Performing feature extraction')
 
-    df = htk_features.ExtractNuclearFeatures(
-        imNucleiSegMask, Hematoxylin, Eosin, W, args.K, args.Fs, args.Delta)
+    im_nuclei = imDeconvolved.Stains[::2, ::2, 0]
+
+    if args.cytoplasm_features:
+        im_cytoplasm = imDeconvolved.Stains[::2, ::2, 1]
+    else:
+        im_cytoplasm = None
+
+    df = htk_features.ComputeNucleiFeatures(
+        imNucleiSegMask, im_nuclei, im_cytoplasm,
+        fsd_bnd_pts=args.fsd_bnd_pts,
+        fsd_freq_bins=args.fsd_freq_bins,
+        cyto_width=args.cyto_width,
+        morphometry_features_flag=args.morphometry_features,
+        fsd_features_flag=args.fsd_features,
+        intensity_features_flag=args.intensity_features,
+        gradient_features_flag=args.gradient_features,
+    )
 
     #
     # Create HDF5 file

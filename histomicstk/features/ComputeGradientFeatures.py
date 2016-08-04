@@ -112,7 +112,7 @@ def ComputeGradientFeatures(im_label, im_intensity,
 
         bw_canny = cannyG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
         canny_sum = np.sum(bw_canny).astype('float')
-        
+
         fdata.at[i, 'Gradient.Canny.Sum'] = canny_sum
 
         fdata.at[i, 'Gradient.Canny.Mean'] = canny_sum / len(pixelGradients)
