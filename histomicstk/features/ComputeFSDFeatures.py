@@ -170,13 +170,13 @@ def _FSDs(X, Y, K, Intervals):
     # initialize F
     F = np.zeros((L-1, )).astype(float)
     # interpolate boundaries
-    iXY = _InterpolateArcLength(X, Y, K)
+    iX, iY = _InterpolateArcLength(X, Y, K)
     # check if iXY.iX is not empty
-    if iXY.iX.size:
+    if iX.size:
         # calculate curvature
         Curvature = np.arctan2(
-            (iXY.iY[1:] - iXY.iY[:-1]),
-            (iXY.iX[1:] - iXY.iX[:-1])
+            (iY[1:] - iY[:-1]),
+            (iX[1:] - iX[:-1])
         )
         # make curvature cumulative
         Curvature = Curvature - Curvature[0]
