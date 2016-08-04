@@ -100,7 +100,7 @@ def main(args):
     else:
         im_cytoplasm = None
 
-    df = htk_features.ExtractNuclearFeatures(
+    df = htk_features.ComputeNucleiFeatures(
         imNucleiSegMask, im_nuclei, im_cytoplasm,
         fsd_bnd_pts=args.fsd_bnd_pts,
         fsd_freq_bins=args.fsd_freq_bins,

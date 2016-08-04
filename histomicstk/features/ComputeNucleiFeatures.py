@@ -9,13 +9,13 @@ from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
 from histomicstk.segmentation import label as htk_label
 
 
-def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm=None,
-                           fsd_bnd_pts=128, fsd_freq_bins=6, cyto_width=8,
-                           morphometry_features_flag=True,
-                           fsd_features_flag=True,
-                           intensity_features_flag=True,
-                           gradient_features_flag=True
-                           ):
+def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
+                          fsd_bnd_pts=128, fsd_freq_bins=6, cyto_width=8,
+                          morphometry_features_flag=True,
+                          fsd_features_flag=True,
+                          intensity_features_flag=True,
+                          gradient_features_flag=True
+                          ):
     """
     Calculates features for nuclei classification
 
