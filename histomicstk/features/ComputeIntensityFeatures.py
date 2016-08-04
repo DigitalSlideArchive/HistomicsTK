@@ -17,7 +17,7 @@ def ComputeIntensityFeatures(im_label, im_intensity,
         objects.
 
     im_intensity : array_like
-        Intensity image
+        Intensity image.
 
     num_hist_bins: int, optional
         Number of bins used to computed the intensity histogram of an object.
