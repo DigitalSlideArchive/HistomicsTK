@@ -38,59 +38,59 @@ def ComputeIntensityFeatures(im_label, im_intensity,
     -----
     List of intensity features computed by this function:
 
-    MinIntensity : float
+    Intensity.Min : float
         Minimum intensity of object pixels.
 
-    MaxIntensity : float
+    Intensity.Max : float
         Maximum intensity of object pixels.
 
-    MeanIntensity : float
+    Intensity.Mean : float
         Mean intensity of object pixels
 
-    MedianIntensity : float
+    Intensity.Median : float
         Median intensity of object pixels
 
-    MeanMedianDifferenceIntensity : float
+    Intensity.MeanMedianDiff : float
         Difference between mean and median intensities of object pixels.
 
-    StdIntensity : float
+    Intensity.Std : float
         Standard deviation of the intensities of object pixels
 
-    IqrIntensity: float
+    Intensity.IQR: float
         Inter-quartile range of the intensities of object pixels
 
-    MadIntensity: float
+    Intensity.MAD: float
         Median absolute deviation of the intensities of object pixels
 
-    SkewnessIntensity : float
+    Intensity.Skewness : float
         Skewness of the intensities of object pixels. Value is 0 when all
         intensity values are equal.
 
-    KurtosisIntensity : float
+    Intensity.Kurtosis : float
         Kurtosis of the intensities of object pixels. Value is -3 when all
         values are equal.
 
-    HistogramEnergy : float
+    Intensity.HistEnergy : float
         Energy of the intensity histogram of object pixels
 
-    HistogramEntropy : float
+    Intensity.HistEntropy : float
         Entropy of the intensity histogram of object pixels.
     """
 
-    # List of feature names in alphabetical order
+    # List of feature names
     feature_list = [
-        'MinIntensity',
-        'MaxIntensity',
-        'MeanIntensity',
-        'MedianIntensity',
-        'MeanMedianDifferenceIntensity',
-        'StdIntensity',
-        'IqrIntensity',
-        'MadIntensity',
-        'SkewnessIntensity',
-        'KurtosisIntensity',
-        'HistogramEnergy',
-        'HistogramEntropy',
+        'Intensity.Min',
+        'Intensity.Max',
+        'Intensity.Mean',
+        'Intensity.Median',
+        'Intensity.MeanMedianDiff',
+        'Intensity.Std',
+        'Intensity.IQR',
+        'Intensity.MAD',
+        'Intensity.Skewness',
+        'Intensity.Kurtosis',
+        'Intensity.HistEnergy',
+        'Intensity.HistEntropy',
     ]
 
     # compute object properties if not provided
@@ -111,34 +111,38 @@ def ComputeIntensityFeatures(im_label, im_intensity,
         )
 
         # compute min
-        fdata.at[i, 'MinIntensity'] = np.min(pixelIntensities)
+        fdata.at[i, 'Intensity.Min'] = np.min(pixelIntensities)
 
         # compute max
-        fdata.at[i, 'MaxIntensity'] = np.max(pixelIntensities)
+        fdata.at[i, 'Intensity.Max'] = np.max(pixelIntensities)
 
         # compute mean
         meanIntensity = np.mean(pixelIntensities)
-        fdata.at[i, 'MeanIntensity'] = meanIntensity
+        fdata.at[i, 'Intensity.Mean'] = meanIntensity
 
         # compute median
         medianIntensity = np.median(pixelIntensities)
-        fdata.at[i, 'MedianIntensity'] = medianIntensity
+        fdata.at[i, 'Intensity.Median'] = medianIntensity
 
         # compute mean median differnece
-        fdata.at[i, 'MeanMedianDifferenceIntensity'] = \
+        fdata.at[i, 'Intensity.MeanMedianDiff'] = \
             meanIntensity - medianIntensity
 
         # compute standard deviation
-        fdata.at[i, 'StdIntensity'] = np.std(pixelIntensities)
+        fdata.at[i, 'Intensity.Std'] = np.std(pixelIntensities)
 
         # compute inter-quartile range
-        fdata.at[i, 'IqrIntensity'] = scipy.stats.iqr(pixelIntensities)
+        fdata.at[i, 'Intensity.IQR'] = scipy.stats.iqr(pixelIntensities)
+
+        # compute median absolute deviation
+        fdata.at[i, 'Intensity.MAD'] = \
+            np.median(np.abs(pixelIntensities - medianIntensity))
 
         # compute skewness
-        fdata.at[i, 'SkewnessIntensity'] = scipy.stats.skew(pixelIntensities)
+        fdata.at[i, 'Intensity.Skewness'] = scipy.stats.skew(pixelIntensities)
 
         # compute kurtosis
-        fdata.at[i, 'KurtosisIntensity'] = \
+        fdata.at[i, 'Intensity.Kurtosis'] = \
             scipy.stats.kurtosis(pixelIntensities)
 
         # compute intensity histogram
@@ -146,9 +150,9 @@ def ComputeIntensityFeatures(im_label, im_intensity,
         prob = hist/np.sum(hist, dtype=np.float32)
 
         # compute entropy
-        fdata.at[i, 'HistogramEntropy'] = scipy.stats.entropy(prob)
+        fdata.at[i, 'Intensity.HistEntropy'] = scipy.stats.entropy(prob)
 
         # compute energy
-        fdata.at[i, 'HistogramEnergy'] = np.sum(prob**2)
+        fdata.at[i, 'Intensity.HistEnergy'] = np.sum(prob**2)
 
     return fdata
