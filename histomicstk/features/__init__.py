@@ -4,7 +4,7 @@ from .ComputeFSDFeatures import ComputeFSDFeatures
 from .ComputeGradientFeatures import ComputeGradientFeatures
 from .ComputeIntensityFeatures import ComputeIntensityFeatures
 from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
-from .FeatureExtraction import FeatureExtraction
+from .ExtractNuclearFeatures import ExtractNuclearFeatures
 
 # list out things that are available for public use
 __all__ = (

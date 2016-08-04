@@ -97,7 +97,7 @@ def main(args):
     #
     print('>> Performing feature extraction')
 
-    df = htk_features.FeatureExtraction(
+    df = htk_features.ExtractNuclearFeatures(
         imNucleiSegMask, Hematoxylin, Eosin, W, args.K, args.Fs, args.Delta)
 
     #
