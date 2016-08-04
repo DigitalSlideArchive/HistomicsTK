@@ -14,7 +14,7 @@ classification:
 Each of the aformentioned groups of features can be toggled on/off
 as needed.
 
-The output of this application is a HDF5 file containing the features.
+The output of this application is an HDF5 file containing the features.
 
 #### Usage:
 
