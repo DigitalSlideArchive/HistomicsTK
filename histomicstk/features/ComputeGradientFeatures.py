@@ -51,7 +51,7 @@ def ComputeGradientFeatures(im_label, im_intensity,
     Gradient.Mag.Kurtosis : float
         Kurtosis of gradient data. Value is -3 when all values are equal.
 
-    HistogramEnergy : float
+    Gradient.Mag.HistEnergy : float
         Energy of the gradient magnitude histogram of object pixels
 
     Gradient.Mag.HistEnergy : float
