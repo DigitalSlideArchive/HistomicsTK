@@ -103,7 +103,7 @@ def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
 
     fgrad_cytoplasm = ComputeGradientFeatures(cyto_mask, Ic)
     fgrad_cytoplasm.columns = ['Cytoplasm.' + col
-                              for col in fgrad_cytoplasm.columns]
+                               for col in fgrad_cytoplasm.columns]
     df = pd.concat([df, fgrad_cytoplasm], axis=1)
 
     return df
