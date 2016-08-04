@@ -122,8 +122,8 @@ def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm=None,
     # compute FSD features
     if fsd_features_flag:
 
-        ffsd = ComputeFSDFeatures(im_label, fsd_bnd_pts, fsd_freq_bins, cyto_width,
-                                  rprops=nuclei_props)
+        ffsd = ComputeFSDFeatures(im_label, fsd_bnd_pts, fsd_freq_bins,
+                                  cyto_width, rprops=nuclei_props)
 
         feature_list.append(ffsd)
 
