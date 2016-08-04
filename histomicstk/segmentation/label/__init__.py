@@ -1,7 +1,8 @@
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
-from .CondenseLabel import CondenseLabel
 from .CompactLabel import CompactLabel
+from .ComputeNeighborhoodMask import ComputeNeighborhoodMask
+from .CondenseLabel import CondenseLabel
 from .DeleteLabel import DeleteLabel
 from .LabelPerimeter import LabelPerimeter
 from .ShuffleLabel import ShuffleLabel
@@ -21,6 +22,7 @@ __all__ = (
     # functions and classes of this package
     'AreaOpenLabel',
     'CompactLabel',
+    'ComputeNeighborhoodMask',
     'CondenseLabel',
     'DeleteLabel',
     'LabelPerimeter',
