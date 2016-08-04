@@ -140,7 +140,8 @@ def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm=None,
     # compute cytoplasm intensity features
     if intensity_features_flag and im_cytoplasm is not None:
 
-        fint_cytoplasm = ComputeIntensityFeatures(cyto_mask, im_cytoplasm)
+        fint_cytoplasm = ComputeIntensityFeatures(cyto_mask, im_cytoplasm,
+                                                  rprops=cytoplasm_props)
         fint_cytoplasm.columns = ['Cytoplasm.' + col
                                   for col in fint_cytoplasm.columns]
 
@@ -159,7 +160,8 @@ def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm=None,
     # compute cytoplasm gradient features
     if gradient_features_flag and im_cytoplasm is not None:
 
-        fgrad_cytoplasm = ComputeGradientFeatures(cyto_mask, im_cytoplasm)
+        fgrad_cytoplasm = ComputeGradientFeatures(cyto_mask, im_cytoplasm,
+                                                  rprops=cytoplasm_props)
         fgrad_cytoplasm.columns = ['Cytoplasm.' + col
                                    for col in fgrad_cytoplasm.columns]
 
