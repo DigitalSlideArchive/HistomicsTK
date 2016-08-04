@@ -29,56 +29,58 @@ def ComputeMorphometryFeatures(im_label, rprops=None):
     -----
     List of morphometry features computed by this function:
 
-    Area : int
+    Size.Area : int
         Number of pixels the object occupies.
 
-    Circularity: float
-        A measure of how similar the shape of an object is to the circle
-
-    Eccentricity : float
-        A measure of aspect ratio computed to be the eccentricity of the
-        ellipse that has the same second-moments as the region. Eccentricity
-        of an ellipse is the ratio of the focal distance (distance between
-        focal points) over the major axis length. The value is in the
-        interval [0, 1). When it is 0, the ellipse becomes a circle.
-
-    EquivalentDiameter : float
-        The diameter of a circle with the same area as the object.
-
-    Extent : float
-        Ratio of area of the object to its axis-aligned bounding box.
-
-    MajorAxisLength : float
+    Size.MajorAxisLength : float
         The length of the major axis of the ellipse that has the same
         normalized second central moments as the object.
 
-    MinorAxisLength : float
+    Size.MinorAxisLength : float
         The length of the minor axis of the ellipse that has the same
         normalized second central moments as the region.
 
-    MinorMajorAxisRatio : float
-
-    Perimeter : float
+    Size.Perimeter : float
         Perimeter of object which approximates the contour as a line
         through the centers of border pixels using a 4-connectivity.
 
-    Solidity : float
+    Shape.Circularity: float
+        A measure of how similar the shape of an object is to the circle
+
+    Shape.Eccentricity : float
+        A measure of aspect ratio computed to be the eccentricity of the
+        ellipse that has the same second-moments as the object region.
+        Eccentricity of an ellipse is the ratio of the focal distance
+        (distance between focal points) over the major axis length. The value
+        is in the interval [0, 1). When it is 0, the ellipse becomes a circle.
+
+    Shape.EquivalentDiameter : float
+        The diameter of a circle with the same area as the object.
+
+    Shape.Extent : float
+        Ratio of area of the object to its axis-aligned bounding box.
+
+    Shape.MinorMajorAxisRatio : float
+        A measure of aspect ratio. Ratio of minor to major axis of the ellipse
+        that has the same second-moments as the object region
+
+    Shape.Solidity : float
         A measure of convexity computed as the ratio of the number of pixels
         in the object to that of its convex hull.
     """
 
     # List of feature names in alphabetical order
     feature_list = [
-        'Area',
-        'Circularity',
-        'Eccentricity',
-        'EquivalentDiameter'
-        'Extent',
-        'MajorAxisLength',
-        'MinorAxisLength',
-        'MinorMajorAxisRatio',
-        'Perimeter',
-        'Solidity',
+        'Size.Area',
+        'Size.MajorAxisLength',
+        'Size.MinorAxisLength',
+        'Size.Perimeter',
+        'Shape.Circularity',
+        'Shape.Eccentricity',
+        'Shape.EquivalentDiameter'
+        'Shape.Extent',
+        'Shape.MinorMajorAxisRatio',
+        'Shape.Solidity',
     ]
 
     # compute object properties if not provided
@@ -94,40 +96,40 @@ def ComputeMorphometryFeatures(im_label, rprops=None):
     for i in range(numLabels):
 
         # compute Area
-        fdata.at[i, 'Area'] = rprops[i].area
+        fdata.at[i, 'Size.Area'] = rprops[i].area
+
+        # compute MajorAxisLength and MinorAxisLength
+        fdata.at[i, 'Size.MajorAxisLength'] = rprops[i].major_axis_length
+        fdata.at[i, 'Size.MinorAxisLength'] = rprops[i].minor_axis_length
+
+        # compute Perimeter
+        fdata.at[i, 'Size.Perimeter'] = rprops[i].perimeter
 
         # compute Circularity
         numerator = 4 * np.pi * rprops[i].area
         denominator = rprops[i].perimeter**2
         if denominator:
-            fdata.at[i, 'Circularity'] = numerator / denominator
+            fdata.at[i, 'Shape.Circularity'] = numerator / denominator
         else:
-            fdata.at[i, 'Circularity'] = 0  # should this be NaN?
+            fdata.at[i, 'Shape.Circularity'] = 0  # should this be NaN?
 
         # compute Eccentricity
-        fdata.at[i, 'Eccentricity'] = rprops[i].eccentricity
+        fdata.at[i, 'Shape.Eccentricity'] = rprops[i].eccentricity
 
         # compute EquivalentDiameter
-        fdata.at[i, 'EquivalentDiameter'] = rprops[i].equivalent_diameter
+        fdata.at[i, 'Shape.EquivalentDiameter'] = rprops[i].equivalent_diameter
 
         # compute Extent
-        fdata.at[i, 'Extent'] = rprops[i].extent
+        fdata.at[i, 'Shape.Extent'] = rprops[i].extent
 
-        # compute MajorAxisLength and MinorAxisLength
-        fdata.at[i, 'MajorAxisLength'] = rprops[i].major_axis_length
-        fdata.at[i, 'MinorAxisLength'] = rprops[i].minor_axis_length
-
-        # compute MajorMinor axis ratios
+        # compute Minor to Major axis ratio
         if rprops[i].major_axis_length > 0:
-            fdata.at[i, 'MinorMajorAxisRatio'] = \
+            fdata.at[i, 'Shape.MinorMajorAxisRatio'] = \
                 rprops[i].minor_axis_length / rprops[i].major_axis_length
         else:
-            fdata.at[i, 'MinorMajorAxisRatio'] = 1
-
-        # compute Perimeter
-        fdata.at[i, 'Perimeter'] = rprops[i].perimeter
+            fdata.at[i, 'Shape.MinorMajorAxisRatio'] = 1
 
         # compute Solidity
-        fdata.at[i, 'Solidity'] = rprops[i].solidity
+        fdata.at[i, 'Shape.Solidity'] = rprops[i].solidity
 
     return fdata
