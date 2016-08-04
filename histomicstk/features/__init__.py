@@ -14,5 +14,5 @@ __all__ = (
     'ComputeGradientFeatures',
     'ComputeIntensityFeatures',
     'ComputeMorphometryFeatures',
-    'FeatureExtraction',
+    'ExtractionNuclearFeatures',
 )

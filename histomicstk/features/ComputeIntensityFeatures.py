@@ -75,6 +75,11 @@ def ComputeIntensityFeatures(im_label, im_intensity,
 
     Intensity.HistEntropy : float
         Entropy of the intensity histogram of object pixels.
+
+    References
+    ----------
+    .. [1] Daniel Zwillinger and Stephen Kokoska. "CRC standard probability
+       and statistics tables and formulae," Crc Press, 1999.
     """
 
     # List of feature names

@@ -9,100 +9,111 @@ from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
 from histomicstk.segmentation import label as htk_label
 
 
-def FeatureExtraction(Label, In, Ic, K=128, Fs=6, Delta=8):
+def ExtractNuclearFeatures(im_label, im_nuclei, im_cytoplasm,
+                           fsd_k=128, fsd_freq_bins=6, cyto_width=8):
     """
     Calculates features from a label image.
 
     Parameters
     ----------
-    Label : array_like
-        A M x N label image.
-    In : array_like
-        A M x N intensity image for Nuclei.
-    Ic : array_like
-        A M x N intensity image for Cytoplasms.
-    K : Number of points for boundary resampling to calculate fourier
+    im_label : array_like
+        A labeled mask image wherein intensity of a pixel is the ID of the
+        object it belongs to. Non-zero values are considered to be foreground
+        objects.
+
+    im_nuclei : array_like
+        Nucleus channel intensity image.
+
+    im_cytoplasm : array_like
+        Cytoplasm channel intensity image.
+
+    fsd_k : int, optional
+        Number of points for boundary resampling to calculate fourier
         descriptors. Default value = 128.
-    Fs : Number of frequency bins for calculating FSDs. Default value = 6.
-    Delta : scalar, used to dilate nuclei and define cytoplasm region.
-            Default value = 8.
+
+    fsd_freq_bins : int, optional
+        Number of frequency bins for calculating FSDs. Default value = 6.
+
+    cyto_width : scalar
+        Estimated width of the ring-like neighborhood region around each
+        nucleus to be considered as its cytoplasm. Default value = 8.
 
     Returns
     -------
-    df : 2-dimensional labeled data structure, float64
-        Pandas data frame.
+    fdata : pandas.DataFrame
+        A pandas data frame containing the features listed below for each
+        object/label
 
     Notes
     -----
-    The following features are computed:
+    List of features computed by this function
 
-    - `Morphometry features`:
-        - CentroidsX,
-        - CentroidsY,
-        - Area,
-        - Perimeter,
-        - MajorAxisLength,
-        - MinorAxisLength,
-        - MajorMinorAxisRatio,
-        - MajorAxisCoordsX,
-        - MajorAxisCoordsY,
-        - Eccentricity,
-        - Circularity,
-        - Extent,
-        - Solidity
+    Morphometry (size and shape) features of the nuclei
+        See histomicstk.features.ComputeMorphometryFeatures for more details.
+        Feature names prefixed by *Size.* or *Shape.*.
 
-    - `Fourier shape descriptors`:
-        - FSD1-FSD6
+    Fourier shape descriptor features
+        See `histomicstk.features.ComputeFSDFeatures` for more details.
+        Feature names are prefixed by *FSD*.
 
-    - Intensity features for hematoxylin and cytoplasm channels:
-        - MinIntensity, MaxIntensity,
-        - MeanIntensity, StdIntensity,
-        - MeanMedianDifferenceIntensity,
-        - Entropy, Energy, Skewness and Kurtosis
+    Intensity features for the nucleus and cytoplasm channels
+        See `histomicstk.features.ComputeFSDFeatures` for more details.
+        Feature names are prefixed by *Nucleus.Intensity.* for nucleus features
+        and *Cytoplasm.Intensity.* for cytoplasm features.
 
-    - Gradient/edge features for hematoxylin and cytoplasm channels:
-        - MeanGradMag, StdGradMag, SkewnessGradMag, KurtosisGradMag,
-        - EntropyGradMag, EnergyGradMag,
-        - SumCanny, MeanCanny
+    Gradient/edge features for the nucleus and cytoplasm channels
+        See `histomicstk.features.ComputeGradientFeatures` for more details.
+        Feature names are prefixed by *Nucleus.Gradient.* for nucleus features
+        and *Cytoplasm.Gradient.* for cytoplasm features.
 
-    References
-    ----------
-    .. [1] D. Zhang et al. "A comparative study on shape retrieval using
-       Fourier descriptors with different shape signatures," In Proc.
-       ICIMADE01, 2001.
-    .. [2] Daniel Zwillinger and Stephen Kokoska. "CRC standard probability
-       and statistics tables and formulae," Crc Press, 1999.
+    See Also
+    --------
+    histomicstk.features.ComputeMorphometryFeatures,
+    histomicstk.features.ComputeFSDFeatures,
+    histomicstk.features.ComputeIntensityFeatures,
+    histomicstk.features.ComputeGradientFeatures,
     """
 
-    # get the number of objects in Label
-    regions = regionprops(Label)
+    # get the number of objects in im_label
+    regions = regionprops(im_label)
 
-    # initialize panda dataframe
-    df = pd.DataFrame()
+    # compute cytoplasm mask
+    cyto_mask = htk_label.ComputeNeighborhoodMask(im_label,
+                                                  neigh_width=cyto_width)
 
-    fmorph = ComputeMorphometryFeatures(Label, rprops=regions)
-    df = pd.concat([df, fmorph], axis=1)
+    # compute morphometry features
+    fmorph = ComputeMorphometryFeatures(im_label, rprops=regions)
 
-    ffsds = ComputeFSDFeatures(Label, K, Fs, Delta, rprops=regions)
-    df = pd.concat([df, ffsds], axis=1)
+    # compute FSD features
+    ffsd = ComputeFSDFeatures(im_label, fsd_k, fsd_freq_bins, cyto_width,
+                              rprops=regions)
 
-    fint_nuclei = ComputeIntensityFeatures(Label, In, rprops=regions)
+    # compute nucleus intensity features
+    fint_nuclei = ComputeIntensityFeatures(im_label, im_nuclei, rprops=regions)
     fint_nuclei.columns = ['Nucleus.' + col for col in fint_nuclei.columns]
-    df = pd.concat([df, fint_nuclei], axis=1)
 
-    cyto_mask = htk_label.ComputeNeighborhoodMask(Label, neigh_width=Delta)
-    fint_cytoplasm = ComputeIntensityFeatures(cyto_mask, Ic)
+    # compute cytoplasm intensity features
+    fint_cytoplasm = ComputeIntensityFeatures(cyto_mask, im_cytoplasm)
     fint_cytoplasm.columns = ['Cytoplasm.' + col
                               for col in fint_cytoplasm.columns]
-    df = pd.concat([df, fint_cytoplasm], axis=1)
 
-    fgrad_nuclei = ComputeGradientFeatures(Label, In, rprops=regions)
+    # compute nucleus gradient features
+    fgrad_nuclei = ComputeGradientFeatures(im_label, im_nuclei, rprops=regions)
     fgrad_nuclei.columns = ['Nucleus.' + col for col in fgrad_nuclei.columns]
-    df = pd.concat([df, fgrad_nuclei], axis=1)
 
-    fgrad_cytoplasm = ComputeGradientFeatures(cyto_mask, Ic)
+    # compute cytoplasm gradient features
+    fgrad_cytoplasm = ComputeGradientFeatures(cyto_mask, im_cytoplasm)
     fgrad_cytoplasm.columns = ['Cytoplasm.' + col
                                for col in fgrad_cytoplasm.columns]
-    df = pd.concat([df, fgrad_cytoplasm], axis=1)
 
-    return df
+    # Merge all features
+    fdata = pd.concat([
+        fmorph,
+        ffsd,
+        fint_nuclei,
+        fint_cytoplasm,
+        fgrad_nuclei,
+        fgrad_cytoplasm
+    ], axis=1)
+
+    return fdata
