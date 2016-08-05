@@ -54,9 +54,6 @@ def graycomatrixext(im_input, im_roi_mask=None,
     gray_limits : array_like, optional
         A two-element array specifying the desired input intensity range.
         Intensity values in the input image will be clipped into this range.
-        If 'GrayLimits' is set to None,
-        the minimum and maximum grayscale values
-        in I as limits, [min(I(:)) max(I(:))].
 
         Default: [0, 1] for binary/logical image, [0, 255] for numeric image
 
@@ -68,16 +65,6 @@ def graycomatrixext(im_input, im_roi_mask=None,
         number of times the value 1 is adjacent to the value 2, both
         1,2 and 2,1 pairings are counted. GLCM created in this way is
         symmetric across its diagonal.
-
-        The GLCM produced by the following syntax,
-
-        graycomatrixext(I, 'offset', [0 1], 'Symmetric', true)
-
-        is equivalent to the sum of the two GLCMs produced by
-        these statements.
-
-        graycomatrixext(I, 'offset', [0 1], 'Symmetric', false)
-        graycomatrixext(I, 'offset', [0 -1], 'Symmetric', false)
 
         Default: False
 
