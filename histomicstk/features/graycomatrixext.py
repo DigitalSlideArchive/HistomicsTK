@@ -3,7 +3,7 @@ import numpy as np
 
 def graycomatrixext(im_input, im_roi_mask=None,
                     offsets=None, num_levels=8, gray_limits=[0, 255],
-                    symmetric=False, normed=True, exclude_boundary=False):
+                    symmetric=False, normed=False, exclude_boundary=False):
     """Computes gray-level co-occurence matrix.
 
     Read the documentation to know the default values used for each of the
@@ -126,25 +126,31 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
     num_offsets = offsets.shape[0]
 
+    # check gray_limits
+    assert( len(gray_limits) == 2 and gray_limits[0] < gray_limits[1] )
+
     # scale input intensity image
+    im_input = im_input.astype('float')
     im_input -= gray_limits[0]
     im_input /= np.float(gray_limits[1] - gray_limits[0])
     im_input *= (num_levels - 1)
-    im_input = np.round(im_input)
+    im_input = np.round(im_input).astype('int')
 
     # compute glcm for each offset
     glcm = np.zeros((num_levels, num_levels, num_offsets))
 
     im_input_flat = np.ravel(im_input)
+
     im_roi_mask_flat = np.ravel(im_roi_mask)
 
     roi_coord_ind = np.nonzero(im_roi_mask)
+
     roi_lin_ind = np.ravel_multi_index(roi_coord_ind, im_roi_mask.shape)
 
     for i in range(num_offsets):
 
         # compute indices of neighboring pixels by applying the offset
-        neigh_coord_ind = roi_coord_ind
+        neigh_coord_ind = list(roi_coord_ind)
 
         for j in range(num_dims):
             neigh_coord_ind[j] += offsets[i, j]
@@ -181,15 +187,17 @@ def graycomatrixext(im_input, im_roi_mask=None,
         pind, pcount = np.unique(pind, return_counts=True)
 
         # put count of each linear index in glcm
-        cur_glcm = np.ravel(glcm[:, :, i])
-        cur_glcm[pind] = pcount
+        cur_glcm = np.zeros((num_levels, num_levels))
+        cur_glcm.ravel()[pind] = pcount
 
         # symmetricize if asked for
         if symmetric:
-            glcm[:, :, i] += glcm[:, :, i].T
+            cur_glcm += cur_glcm.T
 
         # normalize if asked
         if normed:
-            glcm[:, :, i] /= glcm[:, :, i].sum()
+            cur_glcm /= cur_glcm.sum()
+
+        glcm[:, :, i] = cur_glcm
 
     return glcm
