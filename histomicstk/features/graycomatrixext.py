@@ -88,12 +88,12 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
     References
     ----------
-    ..  [1] Haralick, R.M., K. Shanmugan, and I. Dinstein, "Textural Features for
-        Image Classification", IEEE Transactions on Systems, Man, and
+    ..  [1] Haralick, R.M., K. Shanmugan, and I. Dinstein, "Textural Features
+        for Image Classification", IEEE Transactions on Systems, Man, and
         Cybernetics, Vol. SMC-3, 1973, pp. 610-621.
 
-    ..  [2] Haralick, R.M., and L.G. Shapiro. Computer and Robot Vision: Vol. 1,
-        Addison-Wesley, 1992, p. 459.
+    ..  [2] Haralick, R.M., and L.G. Shapiro. Computer and Robot Vision:
+        Vol. 1, Addison-Wesley, 1992, p. 459.
     """
 
     num_dims = len(im_input.shape)
@@ -147,7 +147,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
         for j in range(num_dims):
             neigh_coord_ind[j] += offsets[i, j]
 
-        # throw out pixels whose neighbors that fall outside image
+        # throw out pixels with invalid neighbors
         neigh_valid = np.ones_like(neigh_coord_ind[0], dtype='bool')
 
         for j in range(num_dims):
