@@ -77,7 +77,7 @@ def ComputeMorphometryFeatures(im_label, rprops=None):
         'Size.Perimeter',
         'Shape.Circularity',
         'Shape.Eccentricity',
-        'Shape.EquivalentDiameter'
+        'Shape.EquivalentDiameter',
         'Shape.Extent',
         'Shape.MinorMajorAxisRatio',
         'Shape.Solidity',
