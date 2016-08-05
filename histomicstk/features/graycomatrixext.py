@@ -136,6 +136,8 @@ def graycomatrixext(im_input, im_roi_mask=None,
     glcm = np.zeros((num_levels, num_levels, num_offsets))
 
     im_input_flat = np.ravel(im_input)
+    im_roi_mask_flat = np.ravel(im_roi_mask)
+
     roi_coord_ind = np.nonzero(im_roi_mask)
     roi_lin_ind = np.ravel_multi_index(roi_coord_ind, im_roi_mask.shape)
 
@@ -155,14 +157,18 @@ def graycomatrixext(im_input, im_roi_mask=None,
             neigh_valid[neigh_coord_ind[j] < 0] = False
             neigh_valid[neigh_coord_ind[j] >= num_levels] = False
 
-        valid_roi_lin_ind = np.compress(neigh_valid, roi_lin_ind, axis=0)
-
         for j in range(num_dims):
             neigh_coord_ind[j] = np.compress(neigh_valid,
                                              neigh_coord_ind[j], axis=0)
 
         neigh_lin_ind = np.ravel_multi_index(neigh_coord_ind,
                                              im_roi_mask.shape)
+
+        if exclude_boundary:
+            neigh_valid[im_roi_mask_flat[neigh_lin_ind] == 0] = False
+            neigh_lin_ind = np.compress(neigh_valid, neigh_lin_ind, axis=0)
+
+        valid_roi_lin_ind = np.compress(neigh_valid, roi_lin_ind, axis=0)
 
         # get intensities of pixel pairs which become coord indices in glcm
         p1 = np.take(im_input_flat, valid_roi_lin_ind, axis=0)
