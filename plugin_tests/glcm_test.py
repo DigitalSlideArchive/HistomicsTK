@@ -48,58 +48,44 @@ class GLCMMatrixGenerationTest(base.TestCase):
                           [0, 2, 2, 2],
                           [2, 2, 3, 3]], dtype=np.uint8)
 
-        # test 0 degrees or [0, 1]
+        # test 0, 45, 90, 135 degree offsets
         res_skim = skimage.feature.greycomatrix(
             image, [1],
-            [0],
+            [0, np.pi/4.0, np.pi/2.0, 3*np.pi/4.0],
             levels=4
         )
 
         res_htk = htk.features.graycomatrixext(
             image, num_levels=4, gray_limits=[0, 3],
-            offsets=np.array([[0, 1]])
+            offsets=np.array([[0, 1], [1, 1], [1, 0], [1, -1]])
         )
 
         np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
 
-        # test 90 degrees or [1, 0]
+        # test 0, 45, 90, 135 degree offsets - normalized
         res_skim = skimage.feature.greycomatrix(
             image, [1],
-            [np.pi/2],
-            levels=4
+            [0, np.pi/4.0, np.pi/2.0, 3*np.pi/4.0],
+            levels=4, normed=True
         )
 
         res_htk = htk.features.graycomatrixext(
-            image, num_levels=4, gray_limits=[0, 3],
-            offsets=np.array([[1, 0]])
+            image, num_levels=4, gray_limits=[0, 3], normed=True,
+            offsets=np.array([[0, 1], [1, 1], [1, 0], [1, -1]])
         )
 
         np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
 
-        # test 45 degrees or [1, 1]
+        # test 0, 45, 90, 135 degree offsets - symmetric
         res_skim = skimage.feature.greycomatrix(
             image, [1],
-            [np.pi/4],
-            levels=4
+            [0, np.pi/4.0, np.pi/2.0, 3*np.pi/4.0],
+            levels=4, symmetric=True
         )
 
         res_htk = htk.features.graycomatrixext(
-            image, num_levels=4, gray_limits=[0, 3],
-            offsets=np.array([[1, 1]])
-        )
-
-        np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
-
-        # test 135 degrees or [1, -1]
-        res_skim = skimage.feature.greycomatrix(
-            image, [1],
-            [3 * np.pi/4],
-            levels=4
-        )
-
-        res_htk = htk.features.graycomatrixext(
-            image, num_levels=4, gray_limits=[0, 3],
-            offsets=np.array([[1, -1]])
+            image, num_levels=4, gray_limits=[0, 3], symmetric=True,
+            offsets=np.array([[0, 1], [1, 1], [1, 0], [1, -1]])
         )
 
         np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
