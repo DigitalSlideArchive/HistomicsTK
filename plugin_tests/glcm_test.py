@@ -60,7 +60,7 @@ class GLCMMatrixGenerationTest(base.TestCase):
             offsets=np.array([[0, 1]])
         )
 
-        np.testing.assert_allclose(res_htk, res_skim)
+        np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
 
         # test 90 degrees or [1, 0]
         res_skim = skimage.feature.greycomatrix(
@@ -74,7 +74,7 @@ class GLCMMatrixGenerationTest(base.TestCase):
             offsets=np.array([[1, 0]])
         )
 
-        np.testing.assert_allclose(res_htk, res_skim)
+        np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
 
         # test 45 degrees or [1, 1]
         res_skim = skimage.feature.greycomatrix(
@@ -88,7 +88,7 @@ class GLCMMatrixGenerationTest(base.TestCase):
             offsets=np.array([[1, 1]])
         )
 
-        np.testing.assert_allclose(res_htk, res_skim)
+        np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
 
         # test 135 degrees or [1, -1]
         res_skim = skimage.feature.greycomatrix(
@@ -102,4 +102,4 @@ class GLCMMatrixGenerationTest(base.TestCase):
             offsets=np.array([[1, -1]])
         )
 
-        np.testing.assert_allclose(res_htk, res_skim)
+        np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
