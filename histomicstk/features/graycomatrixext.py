@@ -150,10 +150,10 @@ def graycomatrixext(im_input, im_roi_mask=None,
     for i in range(num_offsets):
 
         # compute indices of neighboring pixels by applying the offset
-        neigh_coord_ind = list(roi_coord_ind)
+        neigh_coord_ind = [None] * len(roi_coord_ind)
 
         for j in range(num_dims):
-            neigh_coord_ind[j] += offsets[i, j]
+            neigh_coord_ind[j] = roi_coord_ind[j] + offsets[i, j]
 
         # throw out pixels with invalid neighbors
         neigh_valid = np.ones_like(neigh_coord_ind[0], dtype='bool')
@@ -188,7 +188,8 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
         # put count of each linear index in glcm
         cur_glcm = np.zeros((num_levels, num_levels))
-        cur_glcm.ravel()[pind] = pcount
+        cur_glcm_flat = np.ravel(cur_glcm)
+        cur_glcm_flat[pind] = pcount
 
         # symmetricize if asked for
         if symmetric:
