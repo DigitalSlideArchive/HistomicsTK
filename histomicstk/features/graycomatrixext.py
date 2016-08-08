@@ -127,7 +127,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
     num_offsets = offsets.shape[0]
 
     # check gray_limits
-    assert( len(gray_limits) == 2 and gray_limits[0] < gray_limits[1] )
+    assert(len(gray_limits) == 2 and gray_limits[0] < gray_limits[1])
 
     # scale input intensity image
     im_input = im_input.astype('float')
