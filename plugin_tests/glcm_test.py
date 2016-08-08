@@ -57,7 +57,7 @@ class GLCMMatrixGenerationTest(base.TestCase):
 
         res_htk = htk.features.graycomatrixext(
             image, num_levels=4, gray_limits=[0, 3],
-            offsets=np.array([[0,1]])
+            offsets=np.array([[0, 1]])
         )
 
         np.testing.assert_allclose(res_htk, res_skim)
@@ -71,7 +71,7 @@ class GLCMMatrixGenerationTest(base.TestCase):
 
         res_htk = htk.features.graycomatrixext(
             image, num_levels=4, gray_limits=[0, 3],
-            offsets=np.array([[1,0]])
+            offsets=np.array([[1, 0]])
         )
 
         np.testing.assert_allclose(res_htk, res_skim)
@@ -85,7 +85,7 @@ class GLCMMatrixGenerationTest(base.TestCase):
 
         res_htk = htk.features.graycomatrixext(
             image, num_levels=4, gray_limits=[0, 3],
-            offsets=np.array([[1,1]])
+            offsets=np.array([[1, 1]])
         )
 
         np.testing.assert_allclose(res_htk, res_skim)
@@ -99,7 +99,7 @@ class GLCMMatrixGenerationTest(base.TestCase):
 
         res_htk = htk.features.graycomatrixext(
             image, num_levels=4, gray_limits=[0, 3],
-            offsets=np.array([[1,-1]])
+            offsets=np.array([[1, -1]])
         )
 
         np.testing.assert_allclose(res_htk, res_skim)
