@@ -165,7 +165,8 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
         for j in range(num_dims):
             neigh_coord_ind[j] = np.compress(neigh_valid,
-                                             neigh_coord_ind[j], axis=0)
+                                             neigh_coord_ind[j], axis=0) \
+                                             .astype(np.int64)
 
         neigh_lin_ind = np.ravel_multi_index(neigh_coord_ind,
                                              im_roi_mask.shape)
