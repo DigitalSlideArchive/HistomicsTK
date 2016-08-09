@@ -60,6 +60,92 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
     fdata: pandas.DataFrame
         A pandas dataframe containing the haralick features.
 
+    Notes
+    -----
+    List of haralick features computed by this function:
+
+    Haralick.ASM.Mean : float
+        Mean of angular second moment of object pixels.
+
+    Haralick.Contrast.Mean : float
+        Mean of contrast of object pixels.
+
+    Haralick.Correlation.Mean : float
+        Mean of correlation of object pixels.
+
+    Haralick.SumofSquar.Mean : float
+        Mean of sum of squares of object pixels.
+
+    Haralick.IDM.Mean : float
+        Mean of inverse difference moment of object pixels.
+
+    Haralick.SumAverage.Mean : float
+        Mean of sum average of object pixels.
+
+    Haralick.SumVariance.Mean : float
+        Mean of sum variance of object pixels.
+
+    Haralick.SumEntropy.Mean : float
+        Mean of sum entropy of object pixels.
+
+    Haralick.Entropy.Mean : float
+        Mean of entropy of object pixels.
+
+    Haralick.Variance.Mean : float
+        Mean of variance of object pixels.
+
+    Haralick.DifferenceEntropy.Mean : float
+        Mean of differnce entropy of object pixels.
+
+    Haralick.IMC1.Mean : float
+        Mean of the first information measures of correlation of object
+        pixels.
+
+    Haralick.IMC2.Mean : float
+        Mean of the second information measures of correlation of object
+        pixels.
+
+    Haralick.ASM.Range : float
+        Range of angular second moment of object pixels.
+
+    Haralick.Contrast.Range : float
+        Range of contrast of object pixels.
+
+    Haralick.Correlation.Range : float
+        Range of correlation of object pixels.
+
+    Haralick.SumofSquar.Range : float
+        Range of sum of squares of object pixels.
+
+    Haralick.IDM.Range : float
+        Range of inverse difference moment of object pixels.
+
+    Haralick.SumAverage.Range : float
+        Range of sum avarage of object pixels.
+
+    Haralick.SumVariance.Range : float
+        Range of sum variance of object pixels.
+
+    Haralick.SumEntropy.Range : float
+        Range of sum entropy of object pixels.
+
+    Haralick.Entropy.Range : float
+        Range of entropy of object pixels.
+
+    Haralick.Variance.Range : float
+        Range of variance of object pixels.
+
+    Haralick.DifferenceEntropy.Range : float
+        Range of differnece entropy of object pixels.
+
+    Haralick.IMC1.Range : float
+        Range the first information measures of correlation of object
+        pixels.
+
+    Haralick.IMC2.Range : float
+        Range the second information measures of correlation of object
+        pixels.
+
     References
     ----------
     .. [1] Haralick, et al. "Textural features for image classification,"
@@ -186,15 +272,15 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
                     pxPlusy[n+m] = pxPlusy[n+m] + nGLCM[n, m]
                     pxMinusy[abs(n-m)] = pxMinusy[abs(n-m)] + nGLCM[n, m]
 
-            # f0: computes angular second moment
+            # computes angular second moment
             ldata.at[r, 'Haralick.ASM'] = np.sum(np.square(nGLCM))
 
-            # f1: computes contrast
+            # computes contrast
             n_Minus = np.arange(num_levels)
             ldata.at[r, 'Haralick.Contrast'] = \
                 np.dot(np.square(n_Minus), pxMinusy)
 
-            # f2: computes correlation
+            # computes correlation
             # gets weighted mean and standard deviation of px and py
             meanx = np.dot(n_Minus, px)
             variance = np.dot(px, np.square(n_Minus)) - np.square(meanx)
@@ -204,41 +290,41 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
             ldata.at[r, 'Haralick.Correlation'] = \
                 (np.dot(np.ravel(xy), nGLCMr) - np.square(meanx)) / variance
 
-            # f3: computes sum of squares : variance
+            # computes sum of squares : variance
             ldata.at[r, 'Haralick.SumofSquar'] = variance
 
-            # f4: computes inverse difference moment
+            # computes inverse difference moment
             xy_IDM = 1. / (1+np.square(x-y))
             ldata.at[r, 'Haralick.IDM'] = \
                 np.dot(np.ravel(xy_IDM), nGLCMr)
 
-            # f5: computes sum average
+            # computes sum average
             n_Plus = np.arange(2*num_levels-1)
             ldata.at[r, 'Haralick.SumAverage'] = \
                 np.dot(n_Plus, pxPlusy)
 
-            # f6: computes sum variance
+            # computes sum variance
             # [1] uses sum entropy, but we use sum average
             ldata.at[r, 'Haralick.SumVariance'] = \
                 np.dot(np.square(n_Plus), pxPlusy) - \
                 np.square(ldata.at[r, 'Haralick.SumAverage'])
 
-            # f7: computes sum entropy
+            # computes sum entropy
             ldata.at[r, 'Haralick.SumEntropy'] = \
                 -np.dot(pxPlusy, np.log2(pxPlusy+e))
 
-            # f8: computes entropy
+            # computes entropy
             ldata.at[r, 'Haralick.Entropy'] = \
                 -np.dot(nGLCMr, np.log2(nGLCMr+e))
 
-            # f9: computes variance px-y
+            # computes variance px-y
             ldata.at[r, 'Haralick.Variance'] = np.var(pxMinusy)
 
-            # f10: computes difference entropy px-y
+            # computes difference entropy px-y
             ldata.at[r, 'Haralick.DifferenceEntropy'] = \
                 -np.dot(pxMinusy, np.log2(pxMinusy+e))
 
-            # f11: computes information measures of correlation
+            # computes information measures of correlation
             # gets entropies of px and py
             HX = -np.dot(px, np.log2(px+e))
             HY = -np.dot(py, np.log2(py+e))
@@ -249,7 +335,7 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
             HXY2 = -np.dot(pxy_ijr, np.log2(pxy_ijr+e))
             ldata.at[r, 'Haralick.IMC1'] = (HXY-HXY1)/max(HX, HY)
 
-            # f12: computes information measures of correlation
+            # computes information measures of correlation
             ldata.at[r, 'Haralick.IMC2'] = \
                 np.sqrt(1 - np.exp(-2.0*(HXY2-HXY)))
 
