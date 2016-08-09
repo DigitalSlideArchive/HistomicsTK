@@ -2,6 +2,7 @@
 # since we mostly have one function per file
 from .ComputeFSDFeatures import ComputeFSDFeatures
 from .ComputeGradientFeatures import ComputeGradientFeatures
+from .ComputeHaralickFeatures import ComputeHaralickFeatures
 from .ComputeIntensityFeatures import ComputeIntensityFeatures
 from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
 from .graycomatrixext import graycomatrixext
@@ -14,6 +15,7 @@ __all__ = (
     # functions and classes of this package
     'ComputeFSDFeatures',
     'ComputeGradientFeatures',
+    'ComputeHaralickFeatures',
     'ComputeIntensityFeatures',
     'ComputeMorphometryFeatures',
     'ComputeNucleiFeatures',
