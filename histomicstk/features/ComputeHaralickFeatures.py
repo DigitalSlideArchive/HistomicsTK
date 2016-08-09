@@ -117,7 +117,6 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
     if len(im_intensity.shape) != 2:  # color image
         raise ValueError("Inputs 'I' should be a grayscale image")
 
-    # extract feature information
     for i in range(numLabels):
         # get bounds of an intensity image
         minr, minc, maxr, maxc = rprops[i].bbox
