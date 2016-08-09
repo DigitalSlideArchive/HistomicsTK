@@ -125,7 +125,8 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
         subImage = im_intensity[minr:maxr+1, minc:maxc+1].astype(np.uint8)
         # gets GLCM or gray-tone spatial dependence matrix
         arrayGLCM = graycomatrixext(subImage, offsets=offsets,
-            num_levels=num_levels, gray_limits=gray_limits)
+                                    num_levels=num_levels,
+                                    gray_limits=gray_limits)
         num_dims = len(subImage.shape)
         # offsets
         if offsets is None:
