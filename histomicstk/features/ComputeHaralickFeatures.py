@@ -118,15 +118,19 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
         raise ValueError("Inputs 'I' should be a grayscale image")
 
     for i in range(numLabels):
+
         # get bounds of an intensity image
         minr, minc, maxr, maxc = rprops[i].bbox
+
         # grab nucleus mask
         subImage = im_intensity[minr:maxr+1, minc:maxc+1].astype(np.uint8)
+
         # gets GLCM or gray-tone spatial dependence matrix
         arrayGLCM = graycomatrixext(subImage, offsets=offsets,
                                     num_levels=num_levels,
                                     gray_limits=gray_limits)
         num_dims = len(subImage.shape)
+
         # offsets
         if offsets is None:
             # set default offset value
@@ -140,28 +144,36 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
         num_offsets = offsets.shape[0]
         f = np.zeros((numFeatures/2, num_offsets))
         for r in range(num_offsets):
+
             # normalize GLCM
             R = np.sum(arrayGLCM[:, :, r], dtype=np.float)
             nGLCM = arrayGLCM[:, :, r]/R
+
             # get marginal-probability matrix summing the rows
             px = np.sum(nGLCM, axis=1)
             py = np.sum(nGLCM, axis=0)
+
             # initialize marginal-probability matrix sets
             # summing normalizedGLCM such that i+j = k or i-j = k
             pxPlusy = np.zeros(2*num_levels-1)
             pxMinusy = np.zeros(num_levels)
+
             # arbitarily small positive constant to avoid log 0
             e = 0.00001
             for n in range(0, num_levels):
                 for m in range(0, num_levels):
+
                     # gets marginal-probability matrix
                     pxPlusy[n+m] = pxPlusy[n+m] + nGLCM[n, m]
                     pxMinusy[abs(n-m)] = pxMinusy[abs(n-m)] + nGLCM[n, m]
+
             # f0: computes angular second moment
             f[0, r] = np.sum(np.square(nGLCM))
+
             # f1: computes contrast
             n_Minus = np.arange(num_levels)
             f[1, r] = np.dot(np.square(n_Minus), pxMinusy)
+
             # f2: computes correlation
             # gets weighted mean and standard deviation of px and py
             meanx = np.dot(n_Minus, px)
@@ -171,26 +183,35 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
             xy = x*y
             f[2, r] = (np.dot(np.ravel(xy), nGLCMr) - np.square(meanx)) / \
                 variance
+
             # f3: computes sum of squares : variance
             f[3, r] = variance
+
             # f4: computes inverse difference moment
             xy_IDM = 1. / (1+np.square(x-y))
             f[4, r] = np.dot(np.ravel(xy_IDM), nGLCMr)
+
             # f5: computes sum average
             n_Plus = np.arange(2*num_levels-1)
             f[5, r] = np.dot(n_Plus, pxPlusy)
+
             # f6: computes sum variance
             # [1] uses sum entropy, but we use sum average
             f[6, r] = np.dot(np.square(n_Plus), pxPlusy) - \
                 np.square(f[5, r])
+
             # f7: computes sum entropy
             f[7, r] = -np.dot(pxPlusy, np.log2(pxPlusy+e))
+
             # f8: computes entropy
             f[8, r] = -np.dot(nGLCMr, np.log2(nGLCMr+e))
+
             # f9: computes variance px-y
             f[9, r] = np.var(pxMinusy)
+
             # f10: computes difference entropy px-y
             f[10, r] = -np.dot(pxMinusy, np.log2(pxMinusy+e))
+
             # f11: computes information measures of correlation
             # gets entropies of px and py
             HX = -np.dot(px, np.log2(px+e))
@@ -201,8 +222,10 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
             HXY1 = -np.dot(nGLCMr, np.log2(pxy_ijr+e))
             HXY2 = -np.dot(pxy_ijr, np.log2(pxy_ijr+e))
             f[11, r] = (HXY-HXY1)/max(HX, HY)
+
             # f12: computes information measures of correlation
             f[12, r] = np.sqrt(1 - np.exp(-2.0*(HXY2-HXY)))
+
         # computes means and ranges of the features
         fdata.at[i, :13] = np.mean(f, axis=1)
         fdata.at[i, 13:26] = np.mean(f, axis=1)
