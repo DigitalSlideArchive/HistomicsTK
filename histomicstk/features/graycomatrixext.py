@@ -42,9 +42,14 @@ def graycomatrixext(im_input, im_roi_mask=None,
         135      |  [-D -D]
 
         Default
-            [1] for 1D,
-            [[1, 0], [0, 1]] for 2D,
-            [[1, 0, 0], [0, 1, 0], [0, 0, 1] for 3D and so on
+            1D: np.array([1])
+            2D : numpy.array([
+                [1, 0],
+                [0, 1],
+                [1, 1],
+                [1, -1]
+                ])
+            3D and higher: numpy.identity(num_image_dims)
 
     num_levels : unsigned int, optional
         An integer specifying the number of gray levels For example, if
@@ -127,7 +132,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
     if offsets is None:
 
         # set default offset value
-        offsets = np.identity(num_dims)
+        offsets = _default_offsets(im_input)
 
     else:
 
@@ -254,3 +259,20 @@ def _default_num_levels(im_input):
         raise ValueError('The type of the argument im_input is invalid')
 
     return num_levels
+
+
+def _default_offsets(im_input):
+
+    num_dims = len(im_input.shape)
+
+    if num_dims == 2:
+
+        offsets = np.array([
+            [0, 1], [1, 0], [1, 1], [1, -1]
+        ])
+
+    else:
+
+        offsets = np.identity(num_dims)
+
+    return offsets

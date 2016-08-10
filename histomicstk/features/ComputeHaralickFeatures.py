@@ -3,7 +3,7 @@ import pandas as pd
 from skimage.measure import regionprops
 from .graycomatrixext import graycomatrixext
 from .graycomatrixext import _default_num_levels
-
+from .graycomatrixext import _default_offsets
 
 def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
                             num_levels=None, gray_limits=None, rprops=None):
@@ -32,21 +32,7 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
         its neighbor. Note that the first dimension corresponds to
         the rows.
 
-        Because this offset is often expressed as an angle, the
-        following table lists the offset values that specify common
-        angles for a 2D image, given the pixel distance D.
-
-        AngleXY  |  OFFSET
-        -------  |  ------
-        0        |  [0 D]
-        45       |  [-D D]
-        90       |  [-D 0]
-        135      |  [-D -D]
-
-        Default
-            [1] for 1D,
-            [[1, 0], [0, 1]] for 2D,
-            [[1, 0, 0], [0, 1, 0], [0, 0, 1] for 3D and so on
+        See `histomicstk.features.graycomatrixext` for more details.
 
     num_levels : unsigned int, optional
         An integer specifying the number of gray levels For example, if
@@ -257,9 +243,12 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
 
     # offsets
     if offsets is None:
+
         # set default offset value
-        offsets = np.identity(num_dims)
+        offsets = _default_offsets(im_intensity)
+
     else:
+
         # check sanity
         if offsets.shape[1] != num_dims:
             raise ValueError(
