@@ -43,7 +43,7 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
 
     num_levels : unsigned int, optional
         An integer specifying the number of gray levels For example, if
-        `num_levels` is 8,  the intensity values of the input image are
+        `NumLevels` is 8,  the intensity values of the input image are
         scaled so they are integers between 1 and 8.  The number of gray
         levels determines the size of the gray-level co-occurrence matrix.
 
@@ -229,7 +229,31 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
                 raise ValueError(
                     'Dimension mismatch between input image and offsets'
                 )
+
         num_offsets = offsets.shape[0]
+
+        # num_levels
+        if num_levels is None:
+
+            if np.issubdtype(subImage.dtype, np.bool_):
+
+                num_levels = 2
+
+            elif np.issubdtype(subImage.dtype, np.number):
+
+                num_levels = 32
+
+            else:
+
+                raise ValueError('The type of the argument im_input is invalid')
+
+        else:
+
+            # check sanity
+            assert(np.issubdtype(type(num_levels), np.number))
+
+            if np.issubdtype(subImage.dtype, np.bool_):
+                assert(num_levels == 2)
 
         # List of local feature names
         local_feature_list = [
