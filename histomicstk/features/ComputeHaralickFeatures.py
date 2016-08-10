@@ -4,8 +4,8 @@ from skimage.measure import regionprops
 from graycomatrixext import graycomatrixext
 
 
-def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
-                            gray_limits=[0, 255], rprops=None):
+def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
+                            num_levels=None, gray_limits=None, rprops=None):
     """
     Calculates 26 Haralick features from an intensity image with the labels.
 
@@ -47,13 +47,14 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None, num_levels=8,
         scaled so they are integers between 1 and 8.  The number of gray
         levels determines the size of the gray-level co-occurrence matrix.
 
-        Default: 8 for numeric image, 2 for binary/logical image
+        Default: 2 for binary/logical image, 32 for numeric image
 
     gray_limits : array_like, optional
         A two-element array specifying the desired input intensity range.
         Intensity values in the input image will be clipped into this range.
 
-        Default: [0, 1] for binary/logical image, [0, 255] for numeric image
+        Default: [0, 1] for boolean-valued image, [0, 255] for integer-valued
+        image, and [0.0, 1.0] for-real valued image
 
     Returns
     -------
