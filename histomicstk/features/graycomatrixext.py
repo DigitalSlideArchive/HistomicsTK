@@ -97,8 +97,6 @@ def graycomatrixext(im_input, im_roi_mask=None,
         Vol. 1, Addison-Wesley, 1992, p. 459.
     """
 
-    assert(isinstance(im_input, np.ndarray))
-
     num_dims = len(im_input.shape)
 
     # roi mask
@@ -107,36 +105,20 @@ def graycomatrixext(im_input, im_roi_mask=None,
         # compute glcm for whole input image
         im_roi_mask = np.ones_like(im_input, dtype='bool')
 
-    else:
-
-        # check sanity
-        assert(isinstance(im_roi_mask, np.ndarray))
-
-        if im_input.shape != im_roi_mask.shape:
-            raise ValueError('size mismatch between input image and roi mask')
+    if im_input.shape != im_roi_mask.shape:
+        raise ValueError('size mismatch between input image and roi mask')
 
     # gray_limits
     if gray_limits is None:
 
         gray_limits = _default_gray_limits(im_input)
 
-    else:
-
-        # check sanity
-        assert(len(gray_limits) == 2 and gray_limits[0] < gray_limits[1])
+    assert(len(gray_limits) == 2 and gray_limits[0] < gray_limits[1])
 
     # num_levels
     if num_levels is None:
 
         num_levels = _default_num_levels(im_input)
-
-    else:
-
-        # check sanity
-        assert(np.issubdtype(type(num_levels), np.number))
-
-        if np.issubdtype(im_input.dtype, np.bool_):
-            assert(num_levels == 2)
 
     # offsets
     if offsets is None:
@@ -228,7 +210,10 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
     return glcm
 
+
 def _default_gray_limits(im_input):
+
+    assert(isinstance(im_input, np.ndarray))
 
     if np.issubdtype(im_input.dtype, np.bool_):
 
@@ -248,7 +233,10 @@ def _default_gray_limits(im_input):
 
     return gray_limits
 
+
 def _default_num_levels(im_input):
+
+    assert(isinstance(im_input, np.ndarray))
 
     if np.issubdtype(im_input.dtype, np.bool_):
 
