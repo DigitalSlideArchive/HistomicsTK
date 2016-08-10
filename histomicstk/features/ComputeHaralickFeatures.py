@@ -8,7 +8,13 @@ from .graycomatrixext import _default_num_levels
 def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
                             num_levels=None, gray_limits=None, rprops=None):
     """
-    Calculates 26 Haralick features from an intensity image with the labels.
+    Calculates 26 Haralick texture features for each object in the given label
+    mask.
+
+    These features are derived from gray-level co-occurence matrix (GLCM)
+    that is a two dimensional histogram containing the counts/probabilities of
+    co-occurring intensity values with a given neighborhood offset in the
+    region occupied by an object in the image.
 
     Parameters
     ----------
@@ -64,89 +70,150 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
 
     Notes
     -----
-    List of haralick features computed by this function:
+    This function computes the following list of haralick features derived
+    from normalized GLCMs (P) of the given list of neighborhood offsets:
 
-    Haralick.ASM.Mean : float
-        Mean of angular second moment of object pixels.
+    Haralick.ASM.Mean, Haralick.ASM.Range : float
+        Mean and range of the angular second moment (ASM) feature for GLCMS
+        of all offsets. It is a measure of image homogeneity and is computed
+        as follows:
 
-    Haralick.Contrast.Mean : float
-        Mean of contrast of object pixels.
+        .. math::
 
-    Haralick.Correlation.Mean : float
-        Mean of correlation of object pixels.
+            ASM = \sum_{i,j=0}^{levels-1} p(i,j)^2
 
-    Haralick.SumofSquar.Mean : float
-        Mean of sum of squares of object pixels.
+    Haralick.Contrast.Mean, Haralick.Contrast.Range : float
+        Mean and range of the Contrast feature for GLCMs of all offsets. It is
+        a measure of the amount of variation between intensities of
+        neighboiring pixels. It is equal to zero for a constant image and
+        increases as the amount of variation increases. It is computed as
+        follows:
 
-    Haralick.IDM.Mean : float
-        Mean of inverse difference moment of object pixels.
+        .. math::
 
-    Haralick.SumAverage.Mean : float
-        Mean of sum average of object pixels.
+            Contrast = \sum_{i,j=0}^{levels-1}  (i-j)^2 p(i,j)
 
-    Haralick.SumVariance.Mean : float
-        Mean of sum variance of object pixels.
+    Haralick.Correlation.Mean, Haralick.Correlation.Range : float
+        Mean and range of the Correlation feature for GLCMs of all offsets. It
+        is a measure of correlation between the intensity values of
+        neighboring pixels. It is computed as follows:
+
+        .. math::
+
+            Correlation =
+            \sum_{i,j=0}^{levels-1} p(i,j)\left[\frac{(i-\\mu_i) \
+            (j-\mu_j)}{\sigma_i \sigma_j}\right]
+
+    Haralick.SumOfSquare.Mean, Haralick.SumOfSquare.Range : float
+        Mean and range of the SumOfSquare feature for GLCMs of all offsets.
+        It is a measure of variance and is computed as follows:
+
+        .. math::
+
+            SumofSquare =
+            \sum_{i,j=0}^{levels-1} (i - \mu)^2 p(i,j)
+
+    Haralick.IDM.Mean, Haralick.IDM.Range : float
+        Mean and range of the inverse difference moment (IDM) feature for
+        GLCMS of all offsets. It is a measure of homogeneity and is computed
+        as follows:
+
+        .. math::
+            IDM = \sum_{i,j=0}^{levels-1} \frac{1}{1 + (i - j)^2} p(i,j)
+
+    Haralick.SumAverage.Mean, Haralick.SumAverage.Range : float
+        Mean and range of sum average feature for GLCMs of all offsets.
+        It is computed as follows:
+
+        .. math::
+
+            SumAverage = \sum_{k=2}^{2 levels} k p_{x+y}(k), \qquad where \\
+
+            p_{x+y}(k) =
+            \sum_{i,j=0}^{levels-1} \delta_{i+j, k} p(i,j) \\
+
+            \delta_{m,n} = \left\{
+            \begin{array}{11}
+                1 & {\rm when ~} m=n \\
+                0 & {\rm when ~} m \ne n
+            \end{array}
+            \right.
+
+    Haralick.SumVariance.Mean, Haralick.SumVariance.Variance : float
+        Mean and range of sum variance feature for the GLCMS of all offsets.
+        It is computed as follows:
+
+        .. math::
+
+            SumVariance =
+            \sum_{k=2}^{2 levels} (k - SumEntropy) p_{x+y}(k)
 
     Haralick.SumEntropy.Mean : float
-        Mean of sum entropy of object pixels.
+        Mean and range of the sum entropy features for GLCMS of all offsets.
+        It is computed as follows:
 
-    Haralick.Entropy.Mean : float
-        Mean of entropy of object pixels.
+        .. math::
 
-    Haralick.Variance.Mean : float
-        Mean of variance of object pixels.
+            SumEntropy =
+            - \sum_{k=2}^{2 levels} p_{x+y}(k) \log(p_{x+y}(k))
+
+    Haralick.Entropy.Mean, Haralick.Entropy.Range : float
+        Mean and range of the entropy features for GLCMs of all offsets.
+        It is computed as follows:
+
+        .. math::
+
+            Entropy = - \sum_{i,j=0}^{levels-1} p(i,j) \log(p(i,j))
+
+
+    Haralick.DifferenceVariance.Mean, Haralick.DifferenceVariance.Range : float
+        Mean and Range of the difference variance feature of GLCMs of all
+        offsets. It is computed as follows:
+
+        .. math::
+
+            DifferenceVariance = {\rm variance \ of ~} p_{x-y}, \qquad where \\
+
+            p_{x-y}(k) =
+            \sum_{i,j=0}^{levels-1} \delta_{|i-j|, k} p(i,j)
 
     Haralick.DifferenceEntropy.Mean : float
-        Mean of differnce entropy of object pixels.
+        Mean and range of the difference entropy feature for GLCMS of all
+        offsets. It is computed as follows:
 
-    Haralick.IMC1.Mean : float
-        Mean of the first information measures of correlation of object
-        pixels.
+        .. math::
+
+            DifferenceEntropy = {\rm entropy \ of ~} p_{x-y}
+
+    Haralick.IMC1.Mean, Haralick.IMC1.Range : float
+        Mean and range of the first information measure of correlation
+        feature for GLCMs of all offsets. It is computed as follows:
+
+        .. math::
+
+            IMC1 = \frac{HXY - HXY1}{\max(HX,HY)}, \qquad where \\
+
+            HXY = -\sum_{i,j=0}^{levels-1} p(i,j) \log(p(i,j)) \\
+
+            HXY1 = -\sum_{i,j=0}^{levels-1} p(i,j) \log(p_x(i) p_y(j)) \\
+
+            HX = -\sum_{i=0}^{levels-1} p_x(i) \log(p_x(i))    \\
+
+            HY = -\sum_{j=0}^{levels-1} p_y(j) \log(p_y(j))    \\
+
+            p_x(i) = \sum_{j=1}^{levels} p(i,j) \\
+
+            p_y(j) = \sum_{j=1}^{levels} p(i,j)
 
     Haralick.IMC2.Mean : float
-        Mean of the second information measures of correlation of object
-        pixels.
+        Mean and range of the second information measure of correlation
+        feature for GLCMs of all offsets. It is computed as follows:
 
-    Haralick.ASM.Range : float
-        Range of angular second moment of object pixels.
+        .. math::
 
-    Haralick.Contrast.Range : float
-        Range of contrast of object pixels.
+            IMC2 = [1 - \exp(-2(HXY2 - HXY))]^{1/2}, \qquad where \\
 
-    Haralick.Correlation.Range : float
-        Range of correlation of object pixels.
-
-    Haralick.SumofSquar.Range : float
-        Range of sum of squares of object pixels.
-
-    Haralick.IDM.Range : float
-        Range of inverse difference moment of object pixels.
-
-    Haralick.SumAverage.Range : float
-        Range of sum avarage of object pixels.
-
-    Haralick.SumVariance.Range : float
-        Range of sum variance of object pixels.
-
-    Haralick.SumEntropy.Range : float
-        Range of sum entropy of object pixels.
-
-    Haralick.Entropy.Range : float
-        Range of entropy of object pixels.
-
-    Haralick.Variance.Range : float
-        Range of variance of object pixels.
-
-    Haralick.DifferenceEntropy.Range : float
-        Range of differnece entropy of object pixels.
-
-    Haralick.IMC1.Range : float
-        Range the first information measures of correlation of object
-        pixels.
-
-    Haralick.IMC2.Range : float
-        Range the second information measures of correlation of object
-        pixels.
+            HXY2 = -\sum_{i,j=0}^{levels-1} p_x(i) p_y(j) \log(p_x(i) p_y(j))
 
     References
     ----------
@@ -159,33 +226,25 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
 
     # List of feature names
     feature_list = [
-        'Haralick.ASM.Mean',
-        'Haralick.Contrast.Mean',
-        'Haralick.Correlation.Mean',
-        'Haralick.SumofSquar.Mean',
-        'Haralick.IDM.Mean',
-        'Haralick.SumAverage.Mean',
-        'Haralick.SumVariance.Mean',
-        'Haralick.SumEntropy.Mean',
-        'Haralick.Entropy.Mean',
-        'Haralick.Variance.Mean',
-        'Haralick.DifferenceEntropy.Mean',
-        'Haralick.IMC1.Mean',
-        'Haralick.IMC2.Mean',
-        'Haralick.ASM.Range',
-        'Haralick.Contrast.Range',
-        'Haralick.Correlation.Range',
-        'Haralick.SumofSquar.Range',
-        'Haralick.IDM.Range',
-        'Haralick.SumAverage.Range',
-        'Haralick.SumVariance.Range',
-        'Haralick.SumEntropy.Range',
-        'Haralick.Entropy.Range',
-        'Haralick.Variance.Range',
-        'Haralick.DifferenceEntropy.Range',
-        'Haralick.IMC1.Range',
-        'Haralick.IMC2.Range',
+        'Haralick.ASM',
+        'Haralick.Contrast',
+        'Haralick.Correlation',
+        'Haralick.SumOfSquare',
+        'Haralick.IDM',
+        'Haralick.SumAverage',
+        'Haralick.SumVariance',
+        'Haralick.SumEntropy',
+        'Haralick.Entropy',
+        'Haralick.DifferenceVariance',
+        'Haralick.DifferenceEntropy',
+        'Haralick.IMC1',
+        'Haralick.IMC2',
     ]
+
+    agg_feature_list = []
+    for fname in feature_list:
+        agg_feature_list.append(fname + '.Mean')
+        agg_feature_list.append(fname + '.Range')
 
     # num_levels
     if num_levels is None:
@@ -215,10 +274,9 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
         rprops = regionprops(im_label)
 
     # create pandas data frame containing the features for each object
-    numFeatures = len(feature_list)
     numLabels = len(rprops)
-    fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)),
-                         columns=feature_list)
+    fdata = pd.DataFrame(np.zeros((numLabels, len(agg_feature_list))),
+                         columns=agg_feature_list)
 
     for i in range(numLabels):
 
@@ -234,25 +292,9 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
                                     gray_limits=gray_limits,
                                     symmetric=True, normed=True)
 
-        # List of local feature names
-        local_feature_list = [
-            'Haralick.ASM',
-            'Haralick.Contrast',
-            'Haralick.Correlation',
-            'Haralick.SumofSquar',
-            'Haralick.IDM',
-            'Haralick.SumAverage',
-            'Haralick.SumVariance',
-            'Haralick.SumEntropy',
-            'Haralick.Entropy',
-            'Haralick.Variance',
-            'Haralick.DifferenceEntropy',
-            'Haralick.IMC1',
-            'Haralick.IMC2',
-        ]
-
-        ldata = pd.DataFrame(np.zeros((num_offsets, len(local_feature_list))),
-                             columns=local_feature_list)
+        # Compute haralick features for each offset
+        ldata = pd.DataFrame(np.zeros((num_offsets, len(feature_list))),
+                             columns=feature_list)
 
         for r in range(num_offsets):
 
@@ -295,7 +337,7 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
                 (np.dot(np.ravel(xy), nGLCMr) - np.square(meanx)) / variance
 
             # computes sum of squares : variance
-            ldata.at[r, 'Haralick.SumofSquar'] = variance
+            ldata.at[r, 'Haralick.SumOfSquare'] = variance
 
             # computes inverse difference moment
             xy_IDM = 1. / (1+np.square(x-y))
@@ -322,7 +364,7 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
                 -np.dot(nGLCMr, np.log2(nGLCMr+e))
 
             # computes variance px-y
-            ldata.at[r, 'Haralick.Variance'] = np.var(pxMinusy)
+            ldata.at[r, 'Haralick.DifferenceVariance'] = np.var(pxMinusy)
 
             # computes difference entropy px-y
             ldata.at[r, 'Haralick.DifferenceEntropy'] = \
@@ -343,57 +385,8 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
             ldata.at[r, 'Haralick.IMC2'] = \
                 np.sqrt(1 - np.exp(-2.0*(HXY2-HXY)))
 
-        fdata.at[i, 'Haralick.ASM.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.ASM'])
-        fdata.at[i, 'Haralick.Contrast.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.Contrast'])
-        fdata.at[i, 'Haralick.Correlation.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.Correlation'])
-        fdata.at[i, 'Haralick.SumofSquar.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.SumofSquar'])
-        fdata.at[i, 'Haralick.IDM.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.IDM'])
-        fdata.at[i, 'Haralick.SumAverage.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.SumAverage'])
-        fdata.at[i, 'Haralick.SumVariance.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.SumVariance'])
-        fdata.at[i, 'Haralick.SumEntropy.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.SumEntropy'])
-        fdata.at[i, 'Haralick.Entropy.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.Entropy'])
-        fdata.at[i, 'Haralick.Variance.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.Variance'])
-        fdata.at[i, 'Haralick.DifferenceEntropy.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.DifferenceEntropy'])
-        fdata.at[i, 'Haralick.IMC1.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.IMC1'])
-        fdata.at[i, 'Haralick.IMC2.Mean'] = \
-            np.mean(ldata.loc[:, 'Haralick.IMC2'])
-        fdata.at[i, 'Haralick.ASM.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.ASM'])
-        fdata.at[i, 'Haralick.Contrast.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.Contrast'])
-        fdata.at[i, 'Haralick.Correlation.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.Correlation'])
-        fdata.at[i, 'Haralick.SumofSquar.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.SumofSquar'])
-        fdata.at[i, 'Haralick.IDM.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.IDM'])
-        fdata.at[i, 'Haralick.SumAverage.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.SumAverage'])
-        fdata.at[i, 'Haralick.SumVariance.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.SumVariance'])
-        fdata.at[i, 'Haralick.SumEntropy.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.SumEntropy'])
-        fdata.at[i, 'Haralick.Entropy.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.Entropy'])
-        fdata.at[i, 'Haralick.Variance.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.Variance'])
-        fdata.at[i, 'Haralick.DifferenceEntropy.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.DifferenceEntropy'])
-        fdata.at[i, 'Haralick.IMC1.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.IMC1'])
-        fdata.at[i, 'Haralick.IMC2.Range'] = \
-            np.ptp(ldata.loc[:, 'Haralick.IMC2'])
+        for fname in ldata.columns:
+            fdata.at[i, fname + '.Mean'] = np.mean(ldata.loc[:, fname])
+            fdata.at[i, fname + '.Range'] = np.ptp(ldata.loc[:, fname])
 
     return fdata
