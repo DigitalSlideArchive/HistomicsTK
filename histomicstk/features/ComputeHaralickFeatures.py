@@ -93,7 +93,6 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
 
             Contrast = \sum_{i,j=0}^{levels-1}  (i-j)^2 p(i,j)
 
-    Haralick.Correlation.Mean, Haralick.Correlation.Range : float
         Mean and range of the Correlation feature for GLCMs of all offsets. It
         is a measure of correlation between the intensity values of
         neighboring pixels. It is computed as follows:
@@ -104,8 +103,8 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
             \sum_{i,j=0}^{levels-1} p(i,j)\left[\frac{(i-\\mu_i) \
             (j-\mu_j)}{\sigma_i \sigma_j}\right]
 
-    Haralick.SumOfSquare.Mean, Haralick.SumOfSquare.Range : float
-        Mean and range of the SumOfSquare feature for GLCMs of all offsets.
+    Haralick.SumOfSquares.Mean, Haralick.SumOfSquares.Range : float
+        Mean and range of the SumOfSquares feature for GLCMs of all offsets.
         It is a measure of variance and is computed as follows:
 
         .. math::
@@ -229,7 +228,7 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
         'Haralick.ASM',
         'Haralick.Contrast',
         'Haralick.Correlation',
-        'Haralick.SumOfSquare',
+        'Haralick.SumOfSquares',
         'Haralick.IDM',
         'Haralick.SumAverage',
         'Haralick.SumVariance',
@@ -337,7 +336,7 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
                 (np.dot(np.ravel(xy), nGLCMr) - np.square(meanx)) / variance
 
             # computes sum of squares : variance
-            ldata.at[r, 'Haralick.SumOfSquare'] = variance
+            ldata.at[r, 'Haralick.SumOfSquares'] = variance
 
             # computes inverse difference moment
             xy_IDM = 1. / (1+np.square(x-y))
