@@ -118,21 +118,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
     # gray_limits
     if gray_limits is None:
 
-        if np.issubdtype(im_input.dtype, np.bool_):
-
-            gray_limits = [0, 1]
-
-        elif np.issubdtype(im_input.dtype, np.integer):
-
-            gray_limits = [0, 255]
-
-        elif np.issubdtype(im_input.dtype, np.floating):
-
-            gray_limits = [0.0, 1.0]
-
-        else:
-
-            raise ValueError('The type of the argument im_input is invalid')
+        gray_limits = _default_gray_limits(im_input)
 
     else:
 
@@ -142,17 +128,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
     # num_levels
     if num_levels is None:
 
-        if np.issubdtype(im_input.dtype, np.bool_):
-
-            num_levels = 2
-
-        elif np.issubdtype(im_input.dtype, np.number):
-
-            num_levels = 32
-
-        else:
-
-            raise ValueError('The type of the argument im_input is invalid')
+        num_levels = _default_num_levels(im_input)
 
     else:
 
@@ -251,3 +227,39 @@ def graycomatrixext(im_input, im_roi_mask=None,
         glcm[:, :, i] = cur_glcm
 
     return glcm
+
+def _default_gray_limits(im_input):
+
+    if np.issubdtype(im_input.dtype, np.bool_):
+
+        gray_limits = [0, 1]
+
+    elif np.issubdtype(im_input.dtype, np.integer):
+
+        gray_limits = [0, 255]
+
+    elif np.issubdtype(im_input.dtype, np.floating):
+
+        gray_limits = [0.0, 1.0]
+
+    else:
+
+        raise ValueError('The type of the argument im_input is invalid')
+
+    return gray_limits
+
+def _default_num_levels(im_input):
+
+    if np.issubdtype(im_input.dtype, np.bool_):
+
+        num_levels = 2
+
+    elif np.issubdtype(im_input.dtype, np.number):
+
+        num_levels = 32
+
+    else:
+
+        raise ValueError('The type of the argument im_input is invalid')
+
+    return num_levels
