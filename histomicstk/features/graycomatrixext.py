@@ -97,7 +97,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
         Vol. 1, Addison-Wesley, 1992, p. 459.
     """
 
-    assert(im_input, np.ndarray)
+    assert(isinstance(im_input, np.ndarray))
 
     num_dims = len(im_input.shape)
 
