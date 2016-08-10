@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 from skimage.measure import regionprops
-from graycomatrixext import graycomatrixext
+from .graycomatrixext import graycomatrixext
+from .graycomatrixext import _default_num_levels
 
 
 def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
@@ -12,12 +13,12 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
     Parameters
     ----------
     im_label : array_like
-        A labeled mask image wherein intensity of a pixel is the ID of the
+        An ND labeled mask image wherein intensity of a pixel is the ID of the
         object it belongs to. Non-zero values are considered to be foreground
         objects.
 
     im_intensity : array_like
-        Intensity image
+        An ND single channel intensity image
 
     offsets : array_like, optional
         A (num_offsets, num_image_dims) array of offset vectors
@@ -186,6 +187,29 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
         'Haralick.IMC2.Range',
     ]
 
+    # num_levels
+    if num_levels is None:
+        num_levels = _default_num_levels(im_intensity)
+
+    # check for consistent shapes between 'I' and 'Label'
+    if im_intensity.shape != im_label.shape:
+        raise ValueError("Inputs 'I' and 'Label' must have same shape")
+
+    num_dims = len(im_intensity.shape)
+
+    # offsets
+    if offsets is None:
+        # set default offset value
+        offsets = np.identity(num_dims)
+    else:
+        # check sanity
+        if offsets.shape[1] != num_dims:
+            raise ValueError(
+                'Dimension mismatch between input image and offsets'
+            )
+
+    num_offsets = offsets.shape[0]
+
     # compute object properties if not provided
     if rprops is None:
         rprops = regionprops(im_label)
@@ -195,14 +219,6 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
     numLabels = len(rprops)
     fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)),
                          columns=feature_list)
-
-    # check for consistent shapes between 'I' and 'Label'
-    if im_intensity.shape != im_label.shape:
-        raise ValueError("Inputs 'I' and 'Label' must have same shape")
-
-    # determine if image is grayscale or RGB
-    if len(im_intensity.shape) != 2:  # color image
-        raise ValueError("Inputs 'I' should be a grayscale image")
 
     for i in range(numLabels):
 
@@ -217,43 +233,6 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
                                     num_levels=num_levels,
                                     gray_limits=gray_limits,
                                     symmetric=True, normed=True)
-        num_dims = len(subImage.shape)
-
-        # offsets
-        if offsets is None:
-            # set default offset value
-            offsets = np.identity(num_dims)
-        else:
-            # check sanity
-            if offsets.shape[1] != num_dims:
-                raise ValueError(
-                    'Dimension mismatch between input image and offsets'
-                )
-
-        num_offsets = offsets.shape[0]
-
-        # num_levels
-        if num_levels is None:
-
-            if np.issubdtype(subImage.dtype, np.bool_):
-
-                num_levels = 2
-
-            elif np.issubdtype(subImage.dtype, np.number):
-
-                num_levels = 32
-
-            else:
-
-                raise ValueError('The type of the argument im_input is invalid')
-
-        else:
-
-            # check sanity
-            assert(np.issubdtype(type(num_levels), np.number))
-
-            if np.issubdtype(subImage.dtype, np.bool_):
-                assert(num_levels == 2)
 
         # List of local feature names
         local_feature_list = [
