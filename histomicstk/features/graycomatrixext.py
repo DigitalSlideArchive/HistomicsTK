@@ -110,7 +110,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
     else:
 
         # check sanity
-        assert(im_roi_mask, np.ndarray)
+        assert(isinstance(im_roi_mask, np.ndarray))
 
         if im_input.shape != im_roi_mask.shape:
             raise ValueError('size mismatch between input image and roi mask')
