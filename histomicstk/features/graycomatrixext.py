@@ -4,7 +4,10 @@ import numpy as np
 def graycomatrixext(im_input, im_roi_mask=None,
                     offsets=None, num_levels=None, gray_limits=None,
                     symmetric=False, normed=False, exclude_boundary=False):
-    """Computes gray-level co-occurence matrix.
+    """Computes gray-level co-occurence matrix (GLCM) within a region of
+    interest (ROI) of an image. GLCM is a 2D histogram/matrix containing the
+    counts/probabilities of co-occuring intensity values at a given offset
+    within an ROI of an image.
 
     Read the documentation to know the default values used for each of the
     optional parameter in different scenarios.
