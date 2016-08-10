@@ -3,6 +3,7 @@ from skimage.measure import regionprops
 
 from .ComputeFSDFeatures import ComputeFSDFeatures
 from .ComputeGradientFeatures import ComputeGradientFeatures
+from .ComputeHaralickFeatures import ComputeHaralickFeatures
 from .ComputeIntensityFeatures import ComputeIntensityFeatures
 from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
 
@@ -14,7 +15,8 @@ def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
                           morphometry_features_flag=True,
                           fsd_features_flag=True,
                           intensity_features_flag=True,
-                          gradient_features_flag=True
+                          gradient_features_flag=True,
+                          haralick_features_flag=True
                           ):
     """
     Calculates features for nuclei classification
@@ -63,6 +65,11 @@ def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
         gradient/edge features from intensity and cytoplasm channels.
         See `histomicstk.features.ComputeGradientFeatures` for more details.
 
+    haralick_features_flag : bool, optional
+        A flag that can be used to specify whether or not to compute
+        haralick features from intensity and cytoplasm channels.
+        See `histomicstk.features.ComputeHaralickFeatures` for more details.
+
     Returns
     -------
     fdata : pandas.DataFrame
@@ -91,12 +98,18 @@ def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
         Feature names are prefixed by *Nucleus.Gradient.* for nucleus features
         and *Cytoplasm.Gradient.* for cytoplasm features.
 
+    Haralick features for the nucleus and cytoplasm channels
+        See `histomicstk.features.ComputeHaralickFeatures` for more details.
+        Feature names are prefixed by *Nucleus.Haralick.* for nucleus features
+        and *Cytoplasm.Haralick.* for cytoplasm features.
+
     See Also
     --------
     histomicstk.features.ComputeMorphometryFeatures,
     histomicstk.features.ComputeFSDFeatures,
     histomicstk.features.ComputeIntensityFeatures,
     histomicstk.features.ComputeGradientFeatures,
+    histomicstk.features.ComputeHaralickFeatures
     """
 
     feature_list = []
@@ -166,6 +179,26 @@ def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
                                    for col in fgrad_cytoplasm.columns]
 
         feature_list.append(fgrad_cytoplasm)
+
+    # compute nuclei haralick features
+    if haralick_features_flag:
+
+        fharalick_nuclei = ComputeHaralickFeatures(im_label, im_nuclei,
+                                                   rprops=nuclei_props)
+        fharalick_nuclei.columns = ['Nucleus.' + col
+                                    for col in fharalick_nuclei.columns]
+
+        feature_list.append(fharalick_nuclei)
+
+    # compute cytoplasm haralick features
+    if haralick_features_flag and im_cytoplasm is not None:
+
+        fharalick_cytoplasm = ComputeHaralickFeatures(cyto_mask, im_cytoplasm,
+                                                      rprops=cytoplasm_props)
+        fharalick_cytoplasm.columns = ['Cytoplasm.' + col
+                                       for col in fharalick_cytoplasm.columns]
+
+        feature_list.append(fharalick_cytoplasm)
 
     # Merge all features
     fdata = pd.concat(feature_list, axis=1)
