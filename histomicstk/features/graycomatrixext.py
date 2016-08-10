@@ -140,21 +140,27 @@ def graycomatrixext(im_input, im_roi_mask=None,
         assert(len(gray_limits) == 2 and gray_limits[0] < gray_limits[1])
 
     # num_levels
-    if np.issubdtype(im_input.dtype, np.bool_):
+    if num_levels is None:
 
-        if num_levels is None:
+        if np.issubdtype(im_input.dtype, np.bool_):
+
             num_levels = 2
-        else:
-            assert(num_levels == 2)
 
-    elif np.issubdtype(im_input.dtype, np.number):
+        elif np.issubdtype(im_input.dtype, np.number):
 
-        if num_levels is None:
             num_levels = 32
+
+        else:
+
+            raise ValueError('The type of the argument im_input is invalid')
 
     else:
 
-        raise ValueError('The type of the argument im_input is invalid')
+        # check sanity
+        assert(np.issubdtype(type(num_levels), np.number))
+
+        if np.issubdtype(im_input.dtype, np.bool_):
+            assert(num_levels == 2)
 
     # offsets
     if offsets is None:
@@ -204,7 +210,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
         for j in range(num_dims):
 
             neigh_valid[neigh_coord_ind[j] < 0] = False
-            neigh_valid[neigh_coord_ind[j] >= num_levels] = False
+            neigh_valid[neigh_coord_ind[j] >= im_roi_mask.shape[j]] = False
 
         for j in range(num_dims):
             neigh_coord_ind[j] = np.compress(neigh_valid, neigh_coord_ind[j],
