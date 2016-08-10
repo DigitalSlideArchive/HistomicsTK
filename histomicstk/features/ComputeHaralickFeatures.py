@@ -5,6 +5,7 @@ from .graycomatrixext import graycomatrixext
 from .graycomatrixext import _default_num_levels
 from .graycomatrixext import _default_offsets
 
+
 def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
                             num_levels=None, gray_limits=None, rprops=None):
     """

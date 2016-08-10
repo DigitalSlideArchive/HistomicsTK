@@ -273,6 +273,7 @@ def _default_offsets(im_input):
 
     else:
 
+        # TODO: need to come up with a better strategy for 3D and higher
         offsets = np.identity(num_dims)
 
     return offsets
