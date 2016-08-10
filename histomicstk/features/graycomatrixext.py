@@ -2,7 +2,7 @@ import numpy as np
 
 
 def graycomatrixext(im_input, im_roi_mask=None,
-                    offsets=None, num_levels=8, gray_limits=[0, 255],
+                    offsets=None, num_levels=32, gray_limits=None,
                     symmetric=False, normed=False, exclude_boundary=False):
     """Computes gray-level co-occurence matrix.
 
@@ -49,13 +49,14 @@ def graycomatrixext(im_input, im_roi_mask=None,
         scaled so they are integers between 1 and 8.  The number of gray
         levels determines the size of the gray-level co-occurrence matrix.
 
-        Default: 8 for numeric image, 2 for binary/logical image
+        Default: 32 for numeric image, 2 for binary/logical image
 
     gray_limits : array_like, optional
         A two-element array specifying the desired input intensity range.
         Intensity values in the input image will be clipped into this range.
 
-        Default: [0, 1] for binary/logical image, [0, 255] for numeric image
+        Default: [0, 1] for boolean-valued image, [0, 255] for integer-valued
+        image, and [0.0, 1.0] for-real valued image
 
     symmetric : bool, optional
         A boolean value that specifies whether or not the ordering of values
@@ -96,6 +97,8 @@ def graycomatrixext(im_input, im_roi_mask=None,
         Vol. 1, Addison-Wesley, 1992, p. 459.
     """
 
+    assert(im_input, np.ndarray)
+
     num_dims = len(im_input.shape)
 
     # roi mask
@@ -107,8 +110,29 @@ def graycomatrixext(im_input, im_roi_mask=None,
     else:
 
         # check sanity
+        assert(im_roi_mask, np.ndarray)
+
         if im_input.shape != im_roi_mask.shape:
             raise ValueError('size mismatch between input image and roi mask')
+
+    # gray_limits
+    if gray_limits is None:
+
+        if np.issubdtype(im_input.dtype, np.bool_):
+
+            gray_limits = [0, 1]
+
+        elif np.issubdtype(im_input.dtype, np.integer):
+
+            gray_limits = [0, 255]
+
+        elif np.issubdtype(im_input.dtype, np.floating):
+
+            gray_limits = [0, 1.0]
+
+        else:
+
+            raise ValueError('the type of im_input is invalid')
 
     # offsets
     if offsets is None:
