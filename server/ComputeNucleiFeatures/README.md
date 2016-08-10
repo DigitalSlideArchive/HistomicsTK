@@ -10,8 +10,9 @@ classification:
 * Fourier shape descriptor features
 * Intensity features from the nucleus and cytoplasm channels
 * Gradient features from the nucleus and cytoplasm channels
+* Haralick texture features for nucleus and cytoplasm channels
 
-Each of the aformentioned groups of features can be toggled on/off
+Each of the aforementioned groups of features can be toggled on/off
 as needed.
 
 The output of this application is an HDF5 file containing the features.
@@ -29,6 +30,7 @@ ComputeNucleiFeatures.py [-h] [-V] [--xml] [--cyto_width <integer>]
                          [--max_radius <double>]
                          [--min_nucleus_area <double>]
                          [--min_radius <double>]
+                         [--num_glcm_levels <integer>]
                          [--size_shape <boolean>]
                          [--stain_1 {hematoxylin,eosin,dab}]
                          [--stain_2 {hematoxylin,eosin,dab}]
@@ -76,6 +78,9 @@ optional arguments:
   --min_radius <double>
                         Minimum nuclear radius (used to set min sigma of the
                         multiscale LoG filter) (default: 4.0)
+  --num_glcm_levels <integer>
+                        Number of GLCM intensity levels (used to compute
+                        haralick features) (default: 32)
   --size_shape <boolean>
                         Compute Size and shape Features (default: True)
   --stain_1 {hematoxylin,eosin,dab}
