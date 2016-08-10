@@ -2,7 +2,7 @@ import numpy as np
 
 
 def graycomatrixext(im_input, im_roi_mask=None,
-                    offsets=None, num_levels=32, gray_limits=None,
+                    offsets=None, num_levels=None, gray_limits=None,
                     symmetric=False, normed=False, exclude_boundary=False):
     """Computes gray-level co-occurence matrix.
 
@@ -49,7 +49,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
         scaled so they are integers between 1 and 8.  The number of gray
         levels determines the size of the gray-level co-occurrence matrix.
 
-        Default: 32 for numeric image, 2 for binary/logical image
+        Default: 2 for binary/logical image, 32 for numeric image
 
     gray_limits : array_like, optional
         A two-element array specifying the desired input intensity range.
@@ -128,11 +128,33 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
         elif np.issubdtype(im_input.dtype, np.floating):
 
-            gray_limits = [0, 1.0]
+            gray_limits = [0.0, 1.0]
 
         else:
 
-            raise ValueError('the type of im_input is invalid')
+            raise ValueError('The type of the argument im_input is invalid')
+
+    else:
+
+        # check sanity
+        assert(len(gray_limits) == 2 and gray_limits[0] < gray_limits[1])
+
+    # num_levels
+    if np.issubdtype(im_input.dtype, np.bool_):
+
+        if num_levels is None:
+            num_levels = 2
+        else:
+            assert(num_levels == 2)
+
+    elif np.issubdtype(im_input.dtype, np.number):
+
+        if num_levels is None:
+            num_levels = 32
+
+    else:
+
+        raise ValueError('The type of the argument im_input is invalid')
 
     # offsets
     if offsets is None:
@@ -149,9 +171,6 @@ def graycomatrixext(im_input, im_roi_mask=None,
             )
 
     num_offsets = offsets.shape[0]
-
-    # check gray_limits
-    assert(len(gray_limits) == 2 and gray_limits[0] < gray_limits[1])
 
     # scale input intensity image
     im_input = im_input.astype('float')
