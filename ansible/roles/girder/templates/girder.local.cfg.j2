@@ -1,0 +1,47 @@
+[global]
+server.socket_host: "0.0.0.0"
+server.socket_port: {{ girder_socket_port }}
+server.thread_pool: 100
+
+[auth]
+# Use "bcrypt" or "sha512"
+hash_alg: "bcrypt"
+
+# Exponent for bcrypt complexity (default=12).
+# Don't change this unless you know what it means.
+bcrypt_rounds: 12
+
+[database]
+uri: "mongodb://{{ mongo_private_ip }}:27017/girder"
+replica_set: None
+
+[server]
+# Set to "production" or "development"
+mode: "development"
+api_root: "api/v1"
+static_root: "static"
+# The api_static_root is the route from the 'api' path to the 'static' path
+api_static_root: "../static"
+
+# [logging]
+# log_root="/path/to/log/root"
+# If log_root is set error and info will be set to error.log and info.log within
+# log root respectively. The paths below will override that setting and are
+# ABSOLUTE paths.
+# error_log_file="/path/to/error.log"
+# info_log_file="/path/to/info.log"
+
+[users]
+# Regular expression used to validate user emails
+email_regex: "^[\w\.\-\+]*@[\w\.\-]*\.\w+$"
+
+# Regular expression that logins must match. All logins are lower()ed before validation.
+login_regex: "^[a-z][\da-z\-\.]{3,}$"
+# Text that will be presented to the user if their login fails the regex
+login_description: "Login must be at least 4 characters, start with a letter, and may only contain \
+                    letters, numbers, dashes, and dots."
+
+# Regular expression that passwords must match
+password_regex: ".{6}.*"
+# Text that will be presented to the user if their password fails the regex
+password_description: "Password must be at least 6 characters."

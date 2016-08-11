@@ -1,0 +1,17 @@
+description "Girder server"
+
+# used to be: start on startup
+# until we found some mounts weren't ready yet while booting:
+start on started mountall
+stop on shutdown
+
+# Automatically Respawn:
+respawn
+respawn limit 20 5
+
+script
+
+    cd {{ girder_root }}
+    exec sudo -u {{ girder_exec_user }} /usr/bin/python -m girder > /dev/null 2>&1
+
+end script

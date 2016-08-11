@@ -1,0 +1,100 @@
+- name: Install package dependencies
+  apt: name={{ item }} state=present
+  sudo: yes
+  with_items:
+    - build-essential
+    - cmake
+    - autoconf
+    - automake
+    - libtool
+    - cmake-curses-gui
+
+- name: Download openjpeg
+  command: wget -O openjpeg-1.5.2.tar.gz https://github.com/uclouvain/openjpeg/archive/version.1.5.2.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+
+- name: Extract openjpeg
+  command: tar -zxf openjpeg-1.5.2.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+
+- name: Configure openjpeg
+  command: cmake .
+  args:
+    chdir: "{{ root_dir }}/openjpeg-version.1.5.2"
+
+- name: Build openjpeg
+  command: make -j2
+  args:
+    chdir: "{{ root_dir }}/openjpeg-version.1.5.2"
+
+- name: Install openjpeg
+  command: make install
+  args:
+    chdir: "{{ root_dir }}/openjpeg-version.1.5.2"
+  sudo: yes
+
+- name: Run ldconfig
+  command: ldconfig
+  sudo: yes
+
+- name: Download libtiff
+  command: wget http://download.osgeo.org/libtiff/tiff-4.0.3.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+
+- name: Extract libtiff
+  command: tar -zxf tiff-4.0.3.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+
+- name: Configure libtiff
+  command: ./configure
+  args:
+    chdir: "{{ root_dir }}/tiff-4.0.3"
+
+- name: Build libtiff
+  command: make -j2
+  args:
+    chdir: "{{ root_dir }}/tiff-4.0.3"
+
+- name: Install libtiff
+  command: make install
+  args:
+    chdir: "{{ root_dir }}/tiff-4.0.3"
+  sudo: yes
+
+- name: Run ldconfig
+  command: ldconfig
+  sudo: yes
+
+- name: Download openslide
+  command: wget -O openslide-3.4.1.tar.gz https://github.com/openslide/openslide/archive/v3.4.1.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+
+- name: Extract openslide
+  command: tar -zxf openslide-3.4.1.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+
+- name: Configure openslide
+  shell: autoreconf -i && ./configure
+  args:
+    chdir: "{{ root_dir }}/openslide-3.4.1"
+
+- name: Build openslide
+  command: make -j2
+  args:
+    chdir: "{{ root_dir }}/openslide-3.4.1"
+
+- name: Install openslide
+  command: make install
+  args:
+    chdir: "{{ root_dir }}/openslide-3.4.1"
+  sudo: yes
+
+- name: Run ldconfig
+  command: ldconfig
+  sudo: yes
