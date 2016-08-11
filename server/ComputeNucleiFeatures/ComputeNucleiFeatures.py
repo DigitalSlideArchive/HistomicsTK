@@ -105,6 +105,7 @@ def main(args):
         fsd_bnd_pts=args.fsd_bnd_pts,
         fsd_freq_bins=args.fsd_freq_bins,
         cyto_width=args.cyto_width,
+        num_glcm_levels=args.num_glcm_levels,
         morphometry_features_flag=args.morphometry_features,
         fsd_features_flag=args.fsd_features,
         intensity_features_flag=args.intensity_features,
