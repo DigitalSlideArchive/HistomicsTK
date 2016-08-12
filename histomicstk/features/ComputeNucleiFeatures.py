@@ -3,6 +3,7 @@ from skimage.measure import regionprops
 
 from .ComputeFSDFeatures import ComputeFSDFeatures
 from .ComputeGradientFeatures import ComputeGradientFeatures
+from .ComputeHaralickFeatures import ComputeHaralickFeatures
 from .ComputeIntensityFeatures import ComputeIntensityFeatures
 from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
 
@@ -11,10 +12,12 @@ from histomicstk.segmentation import label as htk_label
 
 def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
                           fsd_bnd_pts=128, fsd_freq_bins=6, cyto_width=8,
+                          num_glcm_levels=32,
                           morphometry_features_flag=True,
                           fsd_features_flag=True,
                           intensity_features_flag=True,
-                          gradient_features_flag=True
+                          gradient_features_flag=True,
+                          haralick_features_flag=True
                           ):
     """
     Calculates features for nuclei classification
@@ -43,6 +46,14 @@ def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
         Estimated width of the ring-like neighborhood region around each
         nucleus to be considered as its cytoplasm. Default value = 8.
 
+    num_glcm_levels: int, optional
+        An integer specifying the number of gray levels For example, if
+        `NumLevels` is 32,  the intensity values of the input image are
+        scaled so they are integers between 0 and 31.  The number of gray
+        levels determines the size of the gray-level co-occurrence matrix.
+
+        Default: 32
+
     morphometry_features_flag : bool, optional
         A flag that can be used to specify whether or not to compute
         morphometry (size and shape) features.
@@ -62,6 +73,11 @@ def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
         A flag that can be used to specify whether or not to compute
         gradient/edge features from intensity and cytoplasm channels.
         See `histomicstk.features.ComputeGradientFeatures` for more details.
+
+    haralick_features_flag : bool, optional
+        A flag that can be used to specify whether or not to compute
+        haralick features from intensity and cytoplasm channels.
+        See `histomicstk.features.ComputeHaralickFeatures` for more details.
 
     Returns
     -------
@@ -91,12 +107,18 @@ def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
         Feature names are prefixed by *Nucleus.Gradient.* for nucleus features
         and *Cytoplasm.Gradient.* for cytoplasm features.
 
+    Haralick features for the nucleus and cytoplasm channels
+        See `histomicstk.features.ComputeHaralickFeatures` for more details.
+        Feature names are prefixed by *Nucleus.Haralick.* for nucleus features
+        and *Cytoplasm.Haralick.* for cytoplasm features.
+
     See Also
     --------
     histomicstk.features.ComputeMorphometryFeatures,
     histomicstk.features.ComputeFSDFeatures,
     histomicstk.features.ComputeIntensityFeatures,
     histomicstk.features.ComputeGradientFeatures,
+    histomicstk.features.ComputeHaralickFeatures
     """
 
     feature_list = []
@@ -166,6 +188,34 @@ def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
                                    for col in fgrad_cytoplasm.columns]
 
         feature_list.append(fgrad_cytoplasm)
+
+    # compute nuclei haralick features
+    if haralick_features_flag:
+
+        fharalick_nuclei = ComputeHaralickFeatures(
+            im_label, im_nuclei,
+            num_levels=num_glcm_levels,
+            rprops=nuclei_props
+        )
+
+        fharalick_nuclei.columns = ['Nucleus.' + col
+                                    for col in fharalick_nuclei.columns]
+
+        feature_list.append(fharalick_nuclei)
+
+    # compute cytoplasm haralick features
+    if haralick_features_flag and im_cytoplasm is not None:
+
+        fharalick_cytoplasm = ComputeHaralickFeatures(
+            cyto_mask, im_cytoplasm,
+            num_levels=num_glcm_levels,
+            rprops=cytoplasm_props
+        )
+
+        fharalick_cytoplasm.columns = ['Cytoplasm.' + col
+                                       for col in fharalick_cytoplasm.columns]
+
+        feature_list.append(fharalick_cytoplasm)
 
     # Merge all features
     fdata = pd.concat(feature_list, axis=1)

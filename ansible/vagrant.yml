@@ -1,0 +1,32 @@
+---
+- hosts: all
+  roles:
+    - common
+    - mongodb
+    - girder
+    - mq
+    - worker
+    #- itk
+    - openslide
+  vars:
+    vagrant: true
+    root_dir: /opt/histomicstk
+    girder_admin_user: admin
+    girder_admin_email: histomicstk.admin@kitware.com
+    girder_admin_password: password
+    girder_socket_host: localhost
+    girder_socket_port: 8009
+    girder_exec_user: vagrant
+    girder_exec_group: vagrant
+    girder_plugins:
+      - digital_slide_archive
+      - HistomicsTK
+      - homepage
+    girder_celery_user: worker-robot
+    girder_celery_email: histomicstk.celery@kitware.com
+    girder_celery_password: celery
+    girder_root: "{{ root_dir }}/girder"
+    worker_exec_user: vagrant
+    worker_exec_group: vagrant
+    mongo_private_ip: localhost
+    mq_private_ip: localhost

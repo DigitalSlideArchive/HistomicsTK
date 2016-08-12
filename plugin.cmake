@@ -43,6 +43,12 @@ add_python_test(color_normalization
     "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
 )
 
+add_python_test(glcm
+    SUBMODULE GLCMMatrixGenerationTest
+    DBNAME core_glcm_gen
+    PLUGIN HistomicsTK
+)
+
 # front-end tests
 add_web_client_test(
     HistomicsTK_schema "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/parser.js"

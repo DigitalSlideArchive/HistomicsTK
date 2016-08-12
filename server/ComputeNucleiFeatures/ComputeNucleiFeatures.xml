@@ -167,5 +167,12 @@
       <longflag>fsd_freq_bins</longflag>
       <default>6</default>
     </integer>
+    <integer>
+      <name>num_glcm_levels</name>
+      <label>GLCM Intensity Levels</label>
+      <description>Number of GLCM intensity levels (used to compute haralick features)</description>
+      <longflag>num_glcm_levels</longflag>
+      <default>32</default>
+    </integer>
   </parameters>
 </executable>
