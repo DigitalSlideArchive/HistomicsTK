@@ -64,7 +64,7 @@
 
 - name: Clone ctk-cli
   git:
-    repo: git://github.com/commontk/ctk-cli.git
+    repo: git@github.com:cdeepakroy/ctk-cli.git
     dest: "{{ root_dir }}/ctk-cli"
     accept_hostkey: yes
     version: "{{ ctk_cli_version }}"
