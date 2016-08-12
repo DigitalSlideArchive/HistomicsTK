@@ -1,0 +1,248 @@
+- name: Install pycurl package in order to use the apt_repository module
+  apt: pkg=python-pycurl state=present
+  sudo: yes
+
+- name: Download nodejs install script
+  get_url:
+    url: https://deb.nodesource.com/setup_4.x
+    dest: "{{ root_dir }}/node_setup.sh"
+    mode: 0755
+
+- name: Run nodejs PPA install script
+  command: "{{ root_dir }}/node_setup.sh"
+  sudo: yes
+
+- name: Install system package dependencies
+  apt: name={{ item }} state=present update_cache=yes
+  sudo: yes
+  with_items:
+    - libssl-dev
+    - python-pip
+    - python2.7-dev
+    - build-essential
+    - python-software-properties
+    - libffi-dev
+    - nodejs
+    - cmake
+    - cmake-curses-gui
+    - git
+    - postfix
+    - libfreetype6-dev
+    - zlib1g-dev
+    - libpng-dev
+    - libtiff5-dev
+    - libjpeg8-dev
+    - liblcms2-dev
+    - libwebp-dev
+    - tcl8.6-dev
+    - tk8.6-dev
+    - python-tk
+    - libvips-tools
+    - libglib2.0-dev
+    - libjpeg-dev
+    - libxml2-dev
+    - libpng12-dev
+    - autoconf
+    - automake
+    - libtool
+    - pkg-config
+    - libcairo2-dev
+    - libgdk-pixbuf2.0-dev
+    - libxml2-dev
+    - libsqlite3-dev
+    - apt-transport-https
+    - ca-certificates
+    - mongodb-org
+    - vim
+    - python-dev
+    - memcached
+    - libmemcached-dev
+    - libxslt1-dev
+    - apparmor
+    - pandoc
+    - pandoc-citeproc
+
+- name: Clone ctk-cli
+  git:
+    repo: git://github.com/commontk/ctk-cli.git
+    dest: "{{ root_dir }}/ctk-cli"
+    accept_hostkey: yes
+    version: "{{ ctk_cli_version }}"
+
+- name: Clone girder
+  git:
+    repo: git://github.com/girder/girder.git
+    dest: "{{ girder_root }}"
+    accept_hostkey: yes
+    version: "{{ girder_version }}"
+
+- name: Clone HistomicsTK
+  git:
+    repo: git://github.com/DigitalSlideArchive/HistomicsTK.git
+    dest: "{{ root_dir }}/HistomicsTK"
+    accept_hostkey: yes
+    version: "{{ histomicstk_version }}"
+
+- name: Clone large_image plugin
+  git:
+    repo: git://github.com/DigitalSlideArchive/large_image.git
+    dest: "{{ root_dir }}/large_image"
+    accept_hostkey: yes
+    version: "{{ large_image_version }}"
+
+- name: Clone DSA plugin
+  git:
+    repo: git://github.com/DigitalSlideArchive/digital_slide_archive.git
+    dest: "{{ root_dir }}/digital_slide_archive"
+    accept_hostkey: yes
+    version: "{{ dsa_version }}"
+
+- name: Get the most recent version of pip
+  pip: name=pip extra_args="-U"
+  sudo: yes
+
+- name: Install ctk-cli using pip
+  pip:
+    name: "{{ root_dir }}/ctk-cli"
+    extra_args: "-e"
+    state: present
+  sudo: yes
+
+- name: Install girder using pip
+  pip:
+    name: "{{ girder_root }}[worker]"
+    extra_args: "-e"
+    state: present
+  sudo: yes
+
+- name: Install numpy (must be installed before large_image plugin)
+  pip: name=numpy version=1.10.2
+  sudo: yes
+
+- name: Install our external girder plugins
+  command: girder-install plugin -s {{ root_dir }}/large_image {{ root_dir }}/HistomicsTK {{ root_dir }}/digital_slide_archive
+  sudo: yes
+
+- name: Install girder-client pip package
+  pip: name=girder-client version=1.1.1
+  sudo: yes
+
+- name: Set the girder configuration file
+  template: src=girder.local.cfg.j2 dest={{ girder_root }}/girder/conf/girder.local.cfg
+
+- name: Install girder as a service
+  template: src=girder.conf.j2 dest=/etc/init/girder.conf mode=644 owner=root
+  sudo: yes
+
+- name: Start girder as a service
+  service: name=girder state=restarted enabled=yes
+  sudo: yes
+
+- name: Wait for girder startup
+  wait_for:
+    port: "{{ girder_socket_port }}"
+    delay: 1
+
+- name: Ensure girder admin user exists
+  girder:
+    port: "{{ girder_socket_port }}"
+    user:
+      firstName: admin
+      lastName: admin
+      password: "{{ girder_admin_password }}"
+      login: "{{ girder_admin_user }}"
+      email: "{{ girder_admin_email }}"
+      admin: yes
+    state: present
+
+- name: Ensure worker user exists
+  girder:
+    port: "{{ girder_socket_port }}"
+    user:
+      firstName: Worker
+      lastName: Robot
+      password: "{{ girder_celery_password }}"
+      login: "{{ girder_celery_user }}"
+      email: "{{ girder_celery_email }}"
+    state: present
+
+- name: Ensure required plugins are enabled
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    plugins: "{{ girder_plugins }}"
+    state: present
+
+- name: Restart girder as a service to make sure our plugins are running
+  service: name=girder state=restarted enabled=yes
+  sudo: yes
+
+- name: Wait for girder startup
+  wait_for:
+    port: "{{ girder_socket_port }}"
+    delay: 1
+
+- name: Set worker broker setting
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: system/setting
+      parameters:
+        key: worker.broker
+        value: "amqp://guest@{{ mq_private_ip }}//"
+
+- name: Set worker backend setting
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: system/setting
+      parameters:
+        key: worker.backend
+        value: "amqp://guest@{{ mq_private_ip }}//"
+
+- name: Set homepage markdown setting
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: system/setting
+      parameters:
+        key: homepage.markdown
+        value: |
+          # Digital Slide Archive
+          ---
+          ## Bioinformatics Platform
+
+          Welcome to the **Digital Slide Archive**!
+
+          Developers who want to use the Girder REST API should check out the [interactive web API docs](/api/v1).
+
+          The [HistomicsTK](/histomicstk) application is enabled.
+
+- name: Ensure the existence of the filesystem assetstore
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    assetstore:
+      name: default
+      type: filesystem
+      root: "{{ root_dir }}/assetstore"
+      current: true
+    state: present
+
+- name: Ensure the existence of the TCGA collection
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    collection:
+      name: TCGA
+      public: yes
+    state: present
