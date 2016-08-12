@@ -7,22 +7,19 @@ from girder.models.model_base import ModelImporter, AccessControlledModel
 
 import jsonschema
 
-import traceback
 from .docker_image import DockerImage, DockerImageError, \
     DockerImageNotFoundError, DockerCache
-"""
-from six import iteritems
-import os
-from lxml import etree
-from StringIO import StringIO
-"""
+
+# from six import iteritems
+# import os
+# from lxml import etree
+# from StringIO import StringIO
 
 
 class Dockerimagemodel(AccessControlledModel):
     """
     Singleton class to manage access to cached docker image data. Data is
     retrieved as instances of either DockerImage or DockerCache objects
-
     """
     # TODO reference by image id or require image:digest
     imageHash = DockerImage.imageHash
@@ -37,21 +34,23 @@ class Dockerimagemodel(AccessControlledModel):
             self.client = Client(base_url='unix://var/run/docker.sock')
         except DockerException as err:
 
-            raise DockerImageError('could not create the docker client '+err.__str__())
+            raise DockerImageError('could not create the docker '
+                                   'client '+err.__str__())
 
     # TODO image_name:tag and image_name@digest are treated seperate images
 
     def putDockerImage(self, names, jobType, pullIfNotLocal=False):
         """
-        Attempts to cache metadata on the docker images listed in the names list.
-        If the pullIfNotLocal flag is true, the job will attempt to pull the image
-        if it does not exist.
+        Attempts to cache metadata on the docker images listed in the names
+        list.
+        If the pullIfNotLocal flag is true, the job will attempt to pull
+         the image if it does not exist.
         :param names: A list of docker image names(can use with tags or digests)
         :param jobType: defines the jobtype of the job that will be schedueled
          ,used by event listeners to determine if a job succeeded or not
-         :param pullIfNotLocal: Boolean to determine whether a non existent image
+         :param pullIfNotLocal: Boolean to determine whether a non existent
+         image
          should be pulled,(attempts to pull from default docker hub registry)
-
         """
         jobModel = ModelImporter.model('job', 'jobs')
         # list of images to pull and load
@@ -62,15 +61,14 @@ class Dockerimagemodel(AccessControlledModel):
 
             try:
 
-                id = self._ImageExistsLocally(name)
+                self._ImageExistsLocally(name)
 
                 data = self.collection.find_one(DockerImage.getHashKey(name))
 
                 if data is None:
                     loadList.append(name)
-            # exception can be dockerimage related or pymongo
-            except Exception as err:
-
+            # exception can be dockerimage
+            except DockerImageNotFoundError:
                 if pullIfNotLocal:
                     pullList.append(name)
 
@@ -99,7 +97,6 @@ class Dockerimagemodel(AccessControlledModel):
         :param name: The name of the docker image
 
         :returns id: returns the docker image id
-
         """
         try:
             data = self.client.inspect_image(name)
@@ -130,8 +127,10 @@ class Dockerimagemodel(AccessControlledModel):
         results = super(Dockerimagemodel, self).findOne(
             {DockerImage.imageHash: imgHash})
         if results is None:
-            raise DockerImageError('the docker image with the hash'
-                                   ' %s does not exist' % imgHash)
+            raise DockerImageNotFoundError('The docker image with the hash'
+                                           ' %s does not exist in the'
+                                           ' database' % imgHash,
+                                           None)
         return DockerImage(results)
 
     def _getAll(self):
@@ -149,7 +148,8 @@ class Dockerimagemodel(AccessControlledModel):
 
     def saveAllImgs(self, dockerCache):
         """
-        Attempts to same all images in the dockerCache ot the girder-mongo database
+        Attempts to same all images in the dockerCache ot the
+        girder-mongo database
         :param dockerCache: A DockerCache object containing instances of
         DockerImages that are to be cached
         """
@@ -161,8 +161,8 @@ class Dockerimagemodel(AccessControlledModel):
         """
         Attempts to generate a DockerCache object with all images that exist on
         the local machine. If DockerImage meta data is saved in girder but the
-        actual docker image was deleted off the local machine, the meta data for
-        that image will not be included
+        actual docker image was deleted off the local machine, the meta data
+        will be removed from the mongo database
         """
         nonExist = []
         img_list = self._getAll()
@@ -171,7 +171,7 @@ class Dockerimagemodel(AccessControlledModel):
             try:
                 self._ImageExistsLocally(img.name)
                 dockerCache.addImage(img)
-            except DockerImageNotFoundError as err:
+            except DockerImageNotFoundError:
                 nonExist.append(img.name)
         self.removeImages(nonExist)
         return dockerCache
@@ -181,7 +181,6 @@ class Dockerimagemodel(AccessControlledModel):
         Creates an asynchronous job to delete the docker images listed in name
         from the local machine
         :param name:A list of docker image names
-
         """
 
         jobModel = ModelImporter.model('job', 'jobs')
@@ -215,9 +214,10 @@ class Dockerimagemodel(AccessControlledModel):
                 imageData = self._load(hash)
                 super(Dockerimagemodel, self).remove(imageData.getRawData())
         except Exception as err:
-
+            print err
             raise DockerImageError('Could not delete the image data '
-                                   'from the database\n invalid image :'+img)
+                                   'from the database invalid image'
+                                   ' :'+img+' '+err.__str__())
 
     # TODO validate the xml of each cli
     def validate(self, doc):
@@ -225,20 +225,20 @@ class Dockerimagemodel(AccessControlledModel):
             # validate structure of cached data on docker image
             jsonschema.validate(dockerImageStructure.ImageSchema, doc)
             # check cli xml is correct
-            """
-            loc=os.path.dirname(os.path.abspath(__file__))+'/ModuleDescription.xsd'
-            schemaFile = open(loc)
-
-            schemaData = schemaFile.read()
-
-            schema_doc = etree.parse(StringIO(schemaData))
-            schema = etree.XMLSchema(schema_doc)
-
-            for (key, val) in iteritems(doc[DockerImage.cli_dict]):
-                xml = val[DockerImage.xml]
-                cli_xml = etree.parse(xml)
-                schema.assertValid(cli_xml)
-            """
+            #
+            # loc=os.path.dirname(os.path.abspath(__file__))+'/ModuleDescription.xsd'
+            # schemaFile = open(loc)
+            #
+            # schemaData = schemaFile.read()
+            #
+            # schema_doc = etree.parse(StringIO(schemaData))
+            # schema = etree.XMLSchema(schema_doc)
+            #
+            # for (key, val) in iteritems(doc[DockerImage.cli_dict]):
+            #     xml = val[DockerImage.xml]
+            #     cli_xml = etree.parse(xml)
+            #     schema.assertValid(cli_xml)
+            #
             return doc
         except Exception as err:
 

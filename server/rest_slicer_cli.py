@@ -989,7 +989,8 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
 
         # Add REST end-point for each CLI
         for cliRelPath in cliListSpec.keys():
-            restPath = dimg.replace(':', '_').replace('/', '_')
+            restPath = dimg.replace(
+                ':', '_').replace('/', '_').replace('@', '_')
             # create a POST REST route that runs the CLI
             try:
                 cliXML = docker_image.getCLIXML(cliRelPath)
@@ -1007,15 +1008,16 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
 
             cliSuffix = os.path.normpath(cliRelPath).replace(os.sep, '_')
 
-            cliRunHandlerName = 'run_' + cliSuffix
+            cliRunHandlerName = restPath+'_run_' + cliSuffix
             setattr(restResource, cliRunHandlerName, cliRunHandler)
             restResource.route('POST',
                                (restPath, cliRelPath, 'run'),
                                getattr(restResource, cliRunHandlerName))
 
             # store new rest endpoint
-            restResource.storeEndpoints(dimg, ['POST', (cliRelPath, 'run'),
-                                        cliRunHandlerName])
+            restResource.storeEndpoints(
+                dimg, ['POST', (restPath, cliRelPath, 'run'),
+                       cliRunHandlerName])
 
             # create GET REST route that returns the xml of the CLI
             try:
@@ -1031,7 +1033,7 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
                 print(exc_type, fname, exc_tb.tb_lineno)
                 continue
 
-            cliGetXMLSpecHandlerName = 'get_xml_' + cliSuffix
+            cliGetXMLSpecHandlerName = restPath+'_get_xml_' + cliSuffix
             setattr(restResource,
                     cliGetXMLSpecHandlerName,
                     cliGetXMLSpecHandler)
@@ -1039,8 +1041,9 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
                                (restPath, cliRelPath, 'xmlspec',),
                                getattr(restResource, cliGetXMLSpecHandlerName))
 
-            restResource.storeEndpoints(dimg, ['GET', (cliRelPath, 'xmlspec'),
-                                        cliGetXMLSpecHandlerName])
+            restResource.storeEndpoints(
+                dimg, ['GET', (restPath, cliRelPath, 'xmlspec'),
+                       cliGetXMLSpecHandlerName])
 
     return restResource
 

@@ -1,7 +1,6 @@
 
 from six import iteritems, string_types
 import hashlib
-import json
 
 
 class DockerImageError(Exception):
@@ -44,19 +43,17 @@ class DockerImage():
     xml = 'xml'
     cli_dict = 'cli_list'
     # structure of the dictionary to store meta data
-    """
-    {
-    imagehash:<hash of docker image name>
-        cli_list: {
-            cli_name: {
-                      type: < type >
-                      xml: < xml >
-
-    }
-    }
-    docker_image_name: < name >
-    }
-    """
+    # {
+    # imagehash:<hash of docker image name>
+    #     cli_list: {
+    #         cli_name: {
+    #                   type: < type >
+    #                   xml: < xml >
+    #
+    # }
+    # }
+    # docker_image_name: < name >
+    # }
 
     def __init__(self, name):
         try:
@@ -109,7 +106,6 @@ class DockerImage():
         :imgName: The name of the docker image
 
         :returns: The hashkey as a string
-
         """
         imageKey = hashlib.sha256(imgName.encode()).hexdigest()
         return imageKey
@@ -134,7 +130,6 @@ class DockerImage():
             "type"    : <algorithm format(python or R)>
           }
         }
-
         """
         spec_dict = {}
         for (key, val) in iteritems(self.data[DockerImage.cli_dict]):
@@ -148,8 +143,6 @@ class DockerImage():
 class DockerCache:
     """
     This class is used to hold and access meta data on existing images
-
-
     """
     def __init__(self):
         """
@@ -164,9 +157,6 @@ class DockerCache:
     def addImage(self, img):
         """
         Add an image object to the Docker cache
-
-
-
         """
         try:
             if isinstance(img, DockerImage):
@@ -181,7 +171,6 @@ class DockerCache:
     def getDockerImageList(self):
         """
         Get the list docker image names in the cache
-
         """
         return [img.name
                 for (imgHash, img) in iteritems(self.data)]
@@ -189,16 +178,13 @@ class DockerCache:
     def getImages(self):
         """
         Get a list of Docker images objects stored in the cache
-
         """
         return [img
                 for (imgHash, img) in iteritems(self.data)]
 
     def getImage(self, name):
         """
-
         Get an image object using the Docker image name
-
         """
         imageKey = self._getHashKey(name)
         if imageKey in self.data:
@@ -241,4 +227,3 @@ class DockerCache:
             spec_dict[val.name] = val.getCLIListSpec()
 
         return spec_dict
-

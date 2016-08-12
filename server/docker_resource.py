@@ -182,10 +182,12 @@ class DockerResource(Resource):
             if imageName in self.currentEndpoints:
                 endpointList = self.currentEndpoints[imageName]
                 for endpoint in endpointList:
-
-                    self.removeRoute(endpoint[0], endpoint[1],
-                                     getattr(self, endpoint[2]))
-                    delattr(self, endpoint[2])
+                    try:
+                        self.removeRoute(endpoint[0], endpoint[1],
+                                         getattr(self, endpoint[2]))
+                        delattr(self, endpoint[2])
+                    except Exception as err:
+                        print err
                 del self.currentEndpoints[imageName]
 
     def AddRestEndpoints(self, event):

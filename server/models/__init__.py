@@ -1,6 +1,7 @@
-from .docker_image import DockerImage,DockerCache, \
+from .docker_image import DockerImage, DockerCache, \
     DockerImageError, DockerImageDataError, DockerImageNotFoundError
 from .dockerimagemodel import Dockerimagemodel
 
-__all__ = (DockerImage,Dockerimagemodel,DockerCache, DockerImageError,
-           DockerImageDataError, DockerImageNotFoundError)
+# flake8: noqa
+__all__ = ('DockerImage', 'Dockerimagemodel', 'DockerCache', 'DockerImageError',
+           'DockerImageDataError', 'DockerImageNotFoundError')
