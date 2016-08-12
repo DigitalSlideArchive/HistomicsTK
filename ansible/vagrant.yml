@@ -3,11 +3,11 @@
   roles:
     - common
     - mongodb
+    - openslide
     - girder
     - mq
     - worker
     #- itk
-    - openslide
   vars:
     vagrant: true
     root_dir: /opt/histomicstk
