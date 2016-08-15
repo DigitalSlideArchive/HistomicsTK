@@ -58,7 +58,7 @@ histomicstk.views.Visualization = girder.View.extend({
             }, this));
         });
 
-        this.listenTo(histomicstk.events, 'query:image', _.bind(function (image) {
+        this.listenTo(histomicstk.events, 'query:image', function (image) {
             var currentImage = this._controlModel.get('value') || {};
             if (image && currentImage.id !== image) {
                 this._controlModel.set('value', new girder.models.ItemModel({_id: image}));
@@ -66,19 +66,38 @@ histomicstk.views.Visualization = girder.View.extend({
                 this.removeItem();
                 this._controlModel.set('value', null);
             }
-        }, this));
+        });
+
+        // Set image bounds on URL query parameter change
+        this.listenTo(histomicstk.events, 'query:bounds', this._boundsFromQuery);
 
         // fallback to canvas renderer rather than dom
         geo.gl.vglRenderer.fallback = function () {return 'canvas';};
     },
 
     /**
+     * Set the displayed image bounds according to the given query string.
+     */
+    _boundsFromQuery: function (query) {
+        if (!this._map || !query) {
+            return;
+        }
+        var bounds = query.split(',').map(function (v) { return +v; });
+        this._map.bounds({
+            left: bounds[0],
+            right: bounds[1],
+            top: bounds[2],
+            bottom: bounds[3]
+        }, null);
+    },
+
+    /**
      * Create a map object with the given global bounds.
-     * @TODO Either fix the map.maxBounds setter or recreate all the current layers
-     * in the new map object.
      */
     _createMap: function (bounds) {
         if (this._map) {
+            // reset bounds query parameter on map exit
+            histomicstk.router.setQuery('bounds', null, {replace: true, trigger: false});
             this._map.exit();
         }
         bounds.left = bounds.left || 0;
@@ -103,8 +122,8 @@ histomicstk.views.Visualization = girder.View.extend({
             discreteZoom: false,
             interactor: interactor
         });
-        window.map = this._map;
 
+        this._boundsFromQuery(histomicstk.router.getQuery('bounds'));
         this._syncViewport();
         this._map.geoOn(geo.event.pan, _.bind(this._onMouseNavigate, this));
         this.$('.h-visualization-body').empty().append(this._map.node());
@@ -373,6 +392,22 @@ histomicstk.views.Visualization = girder.View.extend({
 
         // schedule a debounced rerender
         this._debouncedRender();
+
+        // Update the bounds in the query string
+        var bounds = this._map.bounds(undefined, null);
+        histomicstk.router.setQuery(
+            'bounds',
+            [
+                bounds.left,
+                bounds.right,
+                bounds.top,
+                bounds.bottom
+            ].join(','),
+            {
+                replace: true,
+                trigger: false
+            }
+        );
     },
 
     _syncViewport: function () {

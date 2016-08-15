@@ -21,7 +21,11 @@ _.extend(histomicstk, {
             if (unparsedQueryString.length > 0) {
                 unparsedQueryString = '?' + unparsedQueryString;
             }
+            this._lastQueryString = queryString;
             this.navigate(routeParts.base + unparsedQueryString, options);
+        },
+        getQuery: function (name) {
+            return (this._lastQueryString || {})[name];
         },
         execute: function (callback, args) {
             var query = girder.parseQueryString(args.pop());
