@@ -107,22 +107,28 @@ class Dockerimagemodel(AccessControlledModel):
         return data['Id']
 
     def save(self, img):
+        """
+        Attempt to save the docker image data in the mongo database
+        :param img: An instance of a dockerImage object
+        :type img: DockerImage
+
+        """
         try:
-            # rely on the parent class to add a '_id' field
+            # rely on the parent model class to add a '_id' field
             super(Dockerimagemodel, self).save(document=img.getRawData(),
-                                               triggerEvents=False)
+                                               triggerEvents=True)
         except Exception as err:
-            raise DockerImageError('Could not save image %s metadata '
-                                   'to database ' % img.name + err.__str__(),
-                                   img.name)
+            raise DockerImageError(
+                'Could not save image %s metadata '
+                'to database ' % img.name + err.__str__(), img.name)
 
     def _load(self, imgHash):
         """
         Attempts to find a specific image in the girder mongo database
         :param imgHash: The hash of the image name used as a key the hash used
          is defined in the DockerImage class
-         :type string:
-        :returns:  The DockerImage instance that was represented by the hash
+         :type imgHash:string
+        :returns:  The DockerImage instance was represented by the hash
         """
         results = super(Dockerimagemodel, self).findOne(
             {DockerImage.imageHash: imgHash})
@@ -137,7 +143,7 @@ class Dockerimagemodel(AccessControlledModel):
         """
         Attempt to find all docker image data that was cached in the
         girder-mongo database
-        :returns: a list of docker image objects
+        :returns: a list of DockerImage objects
         """
         results = super(Dockerimagemodel, self).find()
         img_list = []
@@ -152,6 +158,7 @@ class Dockerimagemodel(AccessControlledModel):
         girder-mongo database
         :param dockerCache: A DockerCache object containing instances of
         DockerImages that are to be cached
+        :type dockerCache:DockerCache
         """
         img_list = dockerCache.getImages()
         for val in img_list:
@@ -159,10 +166,11 @@ class Dockerimagemodel(AccessControlledModel):
 
     def loadAllImages(self):
         """
-        Attempts to generate a DockerCache object with all images that exist on
-        the local machine. If DockerImage meta data is saved in girder but the
+        Attempts to generate a DockerCache object with all image meta data
+        stored in girder.If DockerImage meta data is saved in girder but the
         actual docker image was deleted off the local machine, the meta data
         will be removed from the mongo database
+        :returns: A DockerCache object populated with DockerImage objects
         """
         nonExist = []
         img_list = self._getAll()
@@ -176,11 +184,14 @@ class Dockerimagemodel(AccessControlledModel):
         self.removeImages(nonExist)
         return dockerCache
 
-    def delete_docker_image_from_repo(self, name):
+    def delete_docker_image_from_repo(self, name, jobType):
         """
         Creates an asynchronous job to delete the docker images listed in name
         from the local machine
         :param name:A list of docker image names
+        :type name: list of strings
+        :param jobType: the value to use for the job's type. This is used by
+        event listeners to determine which jobs are related to the DockerImages
         """
 
         jobModel = ModelImporter.model('job', 'jobs')
@@ -193,7 +204,7 @@ class Dockerimagemodel(AccessControlledModel):
             },
             title='Deleting Docker Images',
             user=getCurrentUser(),
-            type='Deleting_Docker_images',
+            type=jobType,
             public=True,
             async=True
         )
@@ -202,10 +213,9 @@ class Dockerimagemodel(AccessControlledModel):
 
     def removeImages(self, imgList):
         """
-        Attempt to
-        :param imgList:
-
-        Returns:
+        Attempt to remove image metadata from the mongo database
+        :param imgList: a list of docker image names
+        :type imgList: a list of strings
 
         """
         try:
@@ -214,10 +224,15 @@ class Dockerimagemodel(AccessControlledModel):
                 imageData = self._load(hash)
                 super(Dockerimagemodel, self).remove(imageData.getRawData())
         except Exception as err:
-            print err
-            raise DockerImageError('Could not delete the image data '
-                                   'from the database invalid image'
-                                   ' :'+img+' '+err.__str__())
+            if isinstance(err, DockerImageNotFoundError):
+                raise DockerImageNotFoundError(
+                    'The image %s with hash %s does not exist '
+                    'in the database' % (img, hash), img)
+            else:
+                raise DockerImageError('Could not delete the image '
+                                       'data from the database invalid '
+                                       'image :'+img+' ' +
+                                       err.__str__(), img)
 
     # TODO validate the xml of each cli
     def validate(self, doc):

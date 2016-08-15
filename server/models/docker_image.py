@@ -13,9 +13,10 @@ class DockerImageError(Exception):
 
     def __str__(self):
         if isinstance(self.imageName, list):
-            return self.message + ' images ' + ' '.join(self.imageName)
+            return self.message + ' (image names ' \
+                                  '[' + ','.join(self.imageName)+']'
         elif isinstance(self.imageName, string_types):
-            return self.message + ' image ' + self.imageName
+            return self.message + ' (image name: ' + self.imageName+' )'
         else:
             return self.message
 
@@ -157,6 +158,8 @@ class DockerCache:
     def addImage(self, img):
         """
         Add an image object to the Docker cache
+        :param img: A docker image object
+        :type img: DockerImage
         """
         try:
             if isinstance(img, DockerImage):
@@ -185,6 +188,8 @@ class DockerCache:
     def getImage(self, name):
         """
         Get an image object using the Docker image name
+        :param name: The docker image name
+        :type name:string
         """
         imageKey = self._getHashKey(name)
         if imageKey in self.data:
@@ -196,6 +201,8 @@ class DockerCache:
         Checks whether an image was already loaded, via docker image name.
         This check does not use the docker image id, and therefore will not
         treat two equivalent images with different names as similar
+        :param name: The docker image name
+        :type name:string
         """
         imageKey = self._getHashKey(name)
         if imageKey in self.data:

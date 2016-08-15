@@ -29,15 +29,18 @@ from girder.api import access
 from girder.api.describe import Description, describeRoute
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
 from girder.plugins.jobs.constants import JobStatus
+from models import DockerImageNotFoundError
 
 
+# TODO add restpoint information in the get endpoint
 class DockerResource(Resource):
     """
-
+    Resource object that handles runtime generation and deletion of rest
+    endpoints
     """
 
     resourceName = ''
-    jobType = ''
+    jobType = 'DockerImageDataJob'
 
     def __init__(self, name):
         super(DockerResource, self).__init__()
@@ -121,12 +124,16 @@ class DockerResource(Resource):
         """
 
         dockermodel = ModelImporter.model('dockerimagemodel', 'HistomicsTK')
-        dockermodel.removeImages(names)
+        try:
 
-        self.deleteImageEndpoints(names)
-        if deleteImage:
+            dockermodel.removeImages(names)
 
-            dockermodel.delete_docker_image_from_repo(names)
+            self.deleteImageEndpoints(names)
+            if deleteImage:
+
+                dockermodel.delete_docker_image_from_repo(names, self.jobType)
+        except DockerImageNotFoundError as err:
+            raise RestException('Invalid docker image name. '+err.__str__())
 
     @access.admin
     @describeRoute(
@@ -137,11 +144,6 @@ class DockerResource(Resource):
             .errorResponse('You are not a system administrator.', 403)
             .errorResponse('Failed to set system setting.', 500)
     )
-    # TODO check the local cache and cloud for different images of same name
-    # TODO how to handle newer images(take the latest or require a confirmation)
-    # TODO use image id to confirm equivalence need v2 manifest schema on cloud
-    # TODO how to handle duplicate clis
-    # TODO create the new REST endpoints
     def setImages(self, params):
         """Validates the new images to be added (if they exist or not) and then
         attempts to collect xml data to be cached. a job is then called to
@@ -150,6 +152,7 @@ class DockerResource(Resource):
         """
         self.requireParams(('name',), params)
         name = params['name']
+
         name = json.loads(name)
         dockerimagemodel = ModelImporter.model('dockerimagemodel',
                                                'HistomicsTK')
@@ -168,6 +171,13 @@ class DockerResource(Resource):
         dockerimagemodel.putDockerImage(name, self.jobType, True)
 
     def storeEndpoints(self, imgName, argList):
+        """
+        information on each rest endpoint is saved so they can be
+        deleted and recreated when docker images are removed or loaded
+        :param imgName: The name of the docker image
+        :argList:details for a specific endpoint. Each image may have many
+        endpoints( 2 per cli)
+        """
         if imgName in self.currentEndpoints:
             self.currentEndpoints[imgName].append(argList)
         else:
@@ -196,12 +206,10 @@ class DockerResource(Resource):
             if job['type'] == self.jobType and job['status']\
                     == JobStatus.SUCCESS:
 
-                    # remove all previos endpoints
+                    # remove all previous endpoints
                     dockermodel = ModelImporter.model('dockerimagemodel',
                                                       'HistomicsTK')
                     cache = dockermodel.loadAllImages()
-                    # corner case where user manually ran docker rmi on an image
-                    # that was loaded. Load all images will only return
-                    # existing image but the old rest endpoint will still exist
+
                     self.deleteImageEndpoints()
                     genRESTEndPointsForSlicerCLIsInDockerCache(self, cache)
