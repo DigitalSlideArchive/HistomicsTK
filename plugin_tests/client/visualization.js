@@ -116,7 +116,7 @@ describe('visualization', function () {
             var loaded = false;
             sinon.stub(histomicstk.router, 'setQuery');
             sinon.stub(histomicstk.router, 'getQuery')
-                .returns('0,100000,0,-100000');
+                .returns('0,100000,0,-100000,0');
             view = new histomicstk.views.Visualization({
                 parentView: parentView,
                 el: $el
@@ -150,6 +150,13 @@ describe('visualization', function () {
             expect(bounds.right).toBeCloseTo(+params[1], 6);
             expect(bounds.top).toBeCloseTo(+params[2], 6);
             expect(bounds.bottom).toBeCloseTo(+params[3], 6);
+        });
+        it('after rotation', function () {
+            view._map.rotation(1);
+            sinon.assert.calledOnce(histomicstk.router.setQuery);
+            expect(histomicstk.router.setQuery.getCall(0).args[0]).toBe('bounds');
+            var params = histomicstk.router.setQuery.getCall(0).args[1].split(',');
+            expect(params[4]).toBeCloseTo(1, 6);
         });
     });
 

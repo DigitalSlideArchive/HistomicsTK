@@ -83,6 +83,7 @@ histomicstk.views.Visualization = girder.View.extend({
             return;
         }
         var bounds = query.split(',').map(function (v) { return +v; });
+        this._map.rotation(bounds[4]);
         this._map.bounds({
             left: bounds[0],
             right: bounds[1],
@@ -401,7 +402,8 @@ histomicstk.views.Visualization = girder.View.extend({
                 bounds.left,
                 bounds.right,
                 bounds.top,
-                bounds.bottom
+                bounds.bottom,
+                this._map.rotation()
             ].join(','),
             {
                 replace: true,
