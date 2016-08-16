@@ -29,7 +29,7 @@ from girder.api import access
 from girder.api.describe import Description, describeRoute
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
 from girder.plugins.jobs.constants import JobStatus
-from models import DockerImageNotFoundError
+from models import DockerImageNotFoundError,DockerImage
 
 
 # TODO add restpoint information in the get endpoint
@@ -67,7 +67,58 @@ class DockerResource(Resource):
     def getDockerImages(self, params):
         dockermodel = ModelImporter.model('dockerimagemodel', 'HistomicsTK')
         dockerCache = dockermodel.loadAllImages()
-        return dockerCache.getAllCliSpec()
+        cache = dockerCache.getImages()
+        data = {}
+        for val in cache:
+            name, tag, imgData = self.createRestDataForImageVersion(val)
+            if name in data:
+                data[name][tag] = imgData
+            else:
+                data[name] = {}
+                data[name][tag] = imgData
+
+        return data
+
+    def createRestDataForImageVersion(self, dockerImage):
+        """
+
+
+        :param dockerImage: DockerImage object
+
+        Returns: structured dictionary documentin clis and rest e
+        ndpoints for this image version
+
+        """
+
+        name = dockerImage.name
+        endpointData = self.currentEndpoints[name]
+
+        if ':' in name:
+            imageAndTag = name.split(':')
+        else:
+            imageAndTag = name.split('@')
+        userAndRepo = imageAndTag[0]
+        tag = imageAndTag[1]
+
+        data = {}
+        cli_dict = dockerImage.getCLIListSpec()
+        #print cli_dict
+        for (cli, val) in six.iteritems(cli_dict):
+            data[cli] = {}
+            #print val
+            data[cli][DockerImage.type] = val
+            for endPoint in endpointData:
+                cli_list = endPoint[1]
+                if cli in cli_list:
+                    if 'xmlspec' in cli_list:
+                        data[cli][DockerImage.xml] = \
+                            self.resourceName + '/' + '/'.join(cli_list)
+                    else:
+                        data[cli]['run'] = self.resourceName + \
+                                           '/' + '/'.join(cli_list)
+        return name, tag, data
+
+
 
     @access.admin
     @describeRoute(
