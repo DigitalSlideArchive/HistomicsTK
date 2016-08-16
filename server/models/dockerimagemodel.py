@@ -7,8 +7,8 @@ from girder.models.model_base import ModelImporter, AccessControlledModel
 
 import jsonschema
 
-from .docker_image import DockerImage, DockerImageError, \
-    DockerImageNotFoundError, DockerCache
+from ..models import DockerImage, DockerImageError, \
+    DockerImageNotFoundError, DockerCache, DockerImageStructure
 
 # from six import iteritems
 # import os
@@ -238,7 +238,7 @@ class Dockerimagemodel(AccessControlledModel):
     def validate(self, doc):
         try:
             # validate structure of cached data on docker image
-            jsonschema.validate(dockerImageStructure.ImageSchema, doc)
+            jsonschema.validate(doc, DockerImageStructure.ImageSchema)
             # check cli xml is correct
             #
             # loc=os.path.dirname(os.path.abspath(__file__))+'/ModuleDescription.xsd'
@@ -258,43 +258,3 @@ class Dockerimagemodel(AccessControlledModel):
         except Exception as err:
 
             raise DockerImageError('Image meta data is invalid ' + err.message)
-
-# TODO add regex for tag and digest names
-# TODO add regex for clis to enforce alpha-numeric name
-
-
-class dockerImageStructure:
-    cli_schema = {
-        'type': 'object',
-        "properties": {
-            DockerImage.type: {'type': 'string'},
-            DockerImage.xml: {'type': 'string'}
-        },
-        'required': [DockerImage.type, DockerImage.xml],
-        'additionalProperties': False
-    }
-
-    cli_list_schema = {
-        'type': 'object',
-
-        "patternProperties": {
-            "^[a-zA-Z0-9_]+$": cli_schema
-        },
-        # an image should have at least one cli
-        'minProperties': 1,
-        'additionalProperties': False
-    }
-
-    ImageSchema = {
-
-        '$schema': 'http://json-schema.org/schema#',
-        'type': 'object',
-        'properties': {
-            DockerImage.imageName: {'type': 'string'},
-            DockerImage.imageHash: {'type': 'string'},
-            DockerImage.cli_dict: cli_list_schema},
-        'required': [DockerImage.imageName, DockerImage.imageHash,
-                     DockerImage.cli_dict],
-        'additionalProperties': False
-
-    }

@@ -1,6 +1,7 @@
 
 from six import iteritems, string_types
 import hashlib
+import jsonschema
 
 
 class DockerImageError(Exception):
@@ -69,6 +70,7 @@ class DockerImage():
                 self.name = name
                 # TODO check/validate schema of dict
             elif isinstance(name, dict):
+                jsonschema.validate(name, DockerImageStructure.ImageSchema)
                 self.data = name.copy()
                 self.name = self.data[DockerImage.imageName]
                 self.hash = DockerImage.getHashKey(self.name)
@@ -234,3 +236,44 @@ class DockerCache:
             spec_dict[val.name] = val.getCLIListSpec()
 
         return spec_dict
+# TODO add regex for tag and digest names
+# TODO add regex for clis to enforce alpha-numeric name
+
+
+class DockerImageStructure:
+    cli_schema = {
+        'type': 'object',
+        "properties": {
+            DockerImage.type: {'type': 'string'},
+            DockerImage.xml: {'type': 'string'}
+        },
+        'required': [DockerImage.type, DockerImage.xml],
+        'additionalProperties': False
+    }
+
+    cli_list_schema = {
+        'type': 'object',
+
+        "patternProperties": {
+            "^[a-zA-Z0-9_-]+$": cli_schema
+        },
+        # an image should have at least one cli
+        'minProperties': 1,
+        'additionalProperties': False
+    }
+
+    ImageSchema = {
+
+        '$schema': 'http://json-schema.org/schema#',
+        'type': 'object',
+        'properties': {
+            DockerImage.imageName: {'type': 'string'},
+            DockerImage.imageHash: {'type': 'string'},
+            DockerImage.cli_dict: cli_list_schema
+
+        },
+        'required': [DockerImage.imageName, DockerImage.imageHash,
+                     DockerImage.cli_dict],
+        'additionalProperties': True
+
+    }

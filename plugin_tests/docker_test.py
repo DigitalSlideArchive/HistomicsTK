@@ -24,11 +24,11 @@ from tests import base
 
 from girder import events
 import threading
-
+import six
 import types
 import json
 # boiler plate to start and stop the server
-TIMEOUT = 300
+TIMEOUT = 180
 
 
 def setUpModule():
@@ -36,6 +36,8 @@ def setUpModule():
     base.startServer()
     global JobStatus
     from girder.plugins.jobs.constants import JobStatus
+    global DockerImage
+    from girder.plugins.HistomicsTK.models.docker_image import DockerImage
 
 
 def tearDownModule():
@@ -93,6 +95,19 @@ class HistomicsTKExampleTest(base.TestCase):
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
         self.deleteImage(img_name, True, True, JobStatus.SUCCESS)
+        try:
+            from docker import Client
+            docker_client = Client(base_url='unix://var/run/docker.sock')
+
+        except Exception as err:
+            self.fail('could not create the docker client '+err.__str__())
+        try:
+            docker_client.inspect_image(img_name)
+            self.fail('If the image was deleted then an attempt to docker '
+                      'inspect it should raise a docker exception')
+        except Exception:
+            pass
+
         self.imageIsLoaded(img_name, exists=False)
         self.noImages()
 
@@ -109,22 +124,73 @@ class HistomicsTKExampleTest(base.TestCase):
         self.noImages()
         self.deleteImage(img_name, False, )
 
-    def imageIsLoaded(self, name, exists):
-        resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
-                            user=self.admin)
+    def testXmlEndpoint(self):
+        # loads an image and attempts to run an arbitrary xml endpoint
+        img_name = "dsarchive/histomicstk:v0.1.3"
+        self.testDockerAdd()
 
-        data = json.loads(self.getBody(resp))
+        name, tag = self.splitName(img_name)
+        data = self.getEndpoint()
+        for (image, tag) in six.iteritems(data):
+            for (version_name, cli) in six.iteritems(tag):
+                for (cli_name, info) in six.iteritems(cli):
+                    route = info['xmlspec']
+                    resp = self.request(
+                        path=route,
+                        user=self.admin)
+                    self.assertStatus(resp, 200)
+                    xmlString = self.getBody(resp)
+                    # TODO validate with xml schema
+                    self.assertNotEqual(xmlString, '')
+
+    def testEndpointDeletion(self):
+        img_name = "dsarchive/histomicstk:v0.1.3"
+        self.testXmlEndpoint()
+        data = self.getEndpoint()
+        self.deleteImage(img_name, True)
+        name, tag = self.splitName(img_name)
+
+        for (image, tag) in six.iteritems(data):
+            for (version_name, cli) in six.iteritems(tag):
+                for (cli_name, info) in six.iteritems(cli):
+                    route = info['xmlspec']
+                    resp = self.request(
+                        path=route,
+                        user=self.admin)
+                    # xml route should have been deleted
+                    self.assertStatus(resp, 400)
+
+    def splitName(self, name):
+        if ':' in name:
+            imageAndTag = name.split(':')
+        else:
+            imageAndTag = name.split('@')
+        return imageAndTag[0], imageAndTag[1]
+
+    def imageIsLoaded(self, name, exists):
+
+        userAndRepo, tag = self.splitName(name)
+
+        data = self.getEndpoint()
         if not exists:
-            self.assertNotHasKeys(data, [name])
+            if userAndRepo in data:
+                imgVersions = data[userAndRepo]
+                self.assertNotHasKeys(imgVersions, [tag])
 
         else:
-            self.assertHasKeys(data, [name])
+            self.assertHasKeys(data, [userAndRepo])
+            imgVersions = data[userAndRepo]
+            self.assertHasKeys(imgVersions, [tag])
 
-    def noImages(self):
+    def getEndpoint(self):
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
                             user=self.admin)
         self.assertStatus(resp, 200)
-        self.assertEqual('{}', self.getBody(resp),
+        return json.loads(self.getBody(resp))
+
+    def noImages(self):
+        data = self.getEndpoint()
+        self.assertEqual({}, data,
                          " There should be no pre existing docker images ")
 
     def deleteImage(self, name,  responseCodeOK, deleteDockerImage=False,

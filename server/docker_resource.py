@@ -29,7 +29,7 @@ from girder.api import access
 from girder.api.describe import Description, describeRoute
 from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
 from girder.plugins.jobs.constants import JobStatus
-from models import DockerImageNotFoundError,DockerImage
+from models import DockerImageNotFoundError, DockerImage
 
 
 # TODO add restpoint information in the get endpoint
@@ -81,12 +81,13 @@ class DockerResource(Resource):
 
     def createRestDataForImageVersion(self, dockerImage):
         """
-
+        Creates a dictionary with rest endpoint information for the given
+        DockerImage object
 
         :param dockerImage: DockerImage object
 
-        Returns: structured dictionary documentin clis and rest e
-        ndpoints for this image version
+        Returns: structured dictionary documentin clis and rest
+        endpoints for this image version
 
         """
 
@@ -102,23 +103,20 @@ class DockerResource(Resource):
 
         data = {}
         cli_dict = dockerImage.getCLIListSpec()
-        #print cli_dict
+
         for (cli, val) in six.iteritems(cli_dict):
             data[cli] = {}
-            #print val
+
             data[cli][DockerImage.type] = val
-            for endPoint in endpointData:
-                cli_list = endPoint[1]
+            cli_endpoints = endpointData[cli]
+
+            for (operation, endpointRoute) in six.iteritems(cli_endpoints):
+                cli_list = endpointRoute[1]
                 if cli in cli_list:
-                    if 'xmlspec' in cli_list:
-                        data[cli][DockerImage.xml] = \
-                            self.resourceName + '/' + '/'.join(cli_list)
-                    else:
-                        data[cli]['run'] = self.resourceName + \
+
+                    data[cli][operation] = '/'+self.resourceName + \
                                            '/' + '/'.join(cli_list)
-        return name, tag, data
-
-
+        return userAndRepo, tag, data
 
     @access.admin
     @describeRoute(
@@ -136,7 +134,6 @@ class DockerResource(Resource):
         .errorResponse('You are not a system administrator.', 403)
         .errorResponse('Failed to set system setting.', 500)
     )
-    # TODO delete REST endpoint
     def deleteImage(self, params):
 
         self.requireParams(('name',), params)
@@ -169,7 +166,7 @@ class DockerResource(Resource):
 
     def _deleteImage(self, names, deleteImage):
         """
-        Removes the docker images and there respective clis from the settings
+        Removes the docker images and there respective clis endpoints
         :param name: The name of the docker image (user/rep:tag)
 
         """
@@ -198,8 +195,7 @@ class DockerResource(Resource):
     def setImages(self, params):
         """Validates the new images to be added (if they exist or not) and then
         attempts to collect xml data to be cached. a job is then called to
-        update the PluginSettings.DOCKER_IMAGES settings with the new
-        information
+        update the girder collection containing the cached docker image data
         """
         self.requireParams(('name',), params)
         name = params['name']
@@ -221,19 +217,42 @@ class DockerResource(Resource):
                                 'strings was not passed in')
         dockerimagemodel.putDockerImage(name, self.jobType, True)
 
-    def storeEndpoints(self, imgName, argList):
+    def storeEndpoints(self, imgName, cli, operation, argList):
         """
         information on each rest endpoint is saved so they can be
-        deleted and recreated when docker images are removed or loaded
-        :param imgName: The name of the docker image
-        :argList:details for a specific endpoint. Each image may have many
-        endpoints( 2 per cli)
+        deleted when docker images are removed or loaded
+        :param imgName: The full name of the docker image with the tag.
+        This name must match exactly with the name the command
+        docker images displays in the console
+        :type imgName: string
+        :param cli: The name of the cli whose rest endpoint is being stored. The
+        cli must match exactly with what teh docker image returns when
+        running <docker image> --list_cli
+        :type cli: string
+        :param operation: The action the rest endpoint will execute run or
+        xmlspec
+        :type operation: string
+        :argList:list of details for a specific endpoint. The arglist should
+        contain [method,route_tuple,endpoint_method_handler_name].The route
+        tuple should consist of the docker image name, the cli name and the
+        operation. Since this tuple forms the rest route, the exact docker
+        image name may not be used due to ':' used in
+        docker image names. As a result the docker name and cli name used
+        in the rest route do not have to match the actual docker name and cli
+        name
+
         """
         if imgName in self.currentEndpoints:
-            self.currentEndpoints[imgName].append(argList)
+            if cli in self.currentEndpoints[imgName]:
+                self.currentEndpoints[imgName][cli][operation] = argList
+            else:
+                self.currentEndpoints[imgName][cli] = {}
+                self.currentEndpoints[imgName][cli][operation] = argList
+
         else:
-            self.currentEndpoints[imgName] = []
-            self.currentEndpoints[imgName].append(argList)
+            self.currentEndpoints[imgName] = {}
+            self.currentEndpoints[imgName][cli] = {}
+            self.currentEndpoints[imgName][cli][operation] = argList
 
     def deleteImageEndpoints(self, imageList=None):
 
@@ -241,26 +260,35 @@ class DockerResource(Resource):
             imageList = self.currentEndpoints.keys()
         for imageName in imageList:
             if imageName in self.currentEndpoints:
-                endpointList = self.currentEndpoints[imageName]
-                for endpoint in endpointList:
-                    try:
-                        self.removeRoute(endpoint[0], endpoint[1],
-                                         getattr(self, endpoint[2]))
-                        delattr(self, endpoint[2])
-                    except Exception as err:
-                        print err
-                del self.currentEndpoints[imageName]
+                for (cli, val) in six.iteritems(
+                        self.currentEndpoints[imageName]):
+                    for (operation, endpoint) in six.iteritems(val):
+                        try:
+                            self.removeRoute(endpoint[0], endpoint[1],
+                                             getattr(self, endpoint[2]))
+                            delattr(self, endpoint[2])
+                        except Exception as err:
+                            print err
+            del self.currentEndpoints[imageName]
 
     def AddRestEndpoints(self, event):
-            job = event.info
+        """
+        Determines if the job event being triggered is due to the caching of
+        new docker images or deleting a docker image off the local machine
+        .If a new image is being loaded all old rest endpoints are deleted
+        and endpoints fro all cached docker images are regenerated
+        :param event: An event dictionary
+        """
 
-            if job['type'] == self.jobType and job['status']\
-                    == JobStatus.SUCCESS:
+        job = event.info
 
-                    # remove all previous endpoints
-                    dockermodel = ModelImporter.model('dockerimagemodel',
-                                                      'HistomicsTK')
-                    cache = dockermodel.loadAllImages()
+        if job['type'] == self.jobType and job['status']\
+                == JobStatus.SUCCESS:
 
-                    self.deleteImageEndpoints()
-                    genRESTEndPointsForSlicerCLIsInDockerCache(self, cache)
+                # remove all previous endpoints
+                dockermodel = ModelImporter.model('dockerimagemodel',
+                                                  'HistomicsTK')
+                cache = dockermodel.loadAllImages()
+
+                self.deleteImageEndpoints()
+                genRESTEndPointsForSlicerCLIsInDockerCache(self, cache)

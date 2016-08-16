@@ -1016,8 +1016,8 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
 
             # store new rest endpoint
             restResource.storeEndpoints(
-                dimg, ['POST', (restPath, cliRelPath, 'run'),
-                       cliRunHandlerName])
+                dimg, cliRelPath, 'run', ['POST', (restPath, cliRelPath, 'run'),
+                                          cliRunHandlerName])
 
             # create GET REST route that returns the xml of the CLI
             try:
@@ -1042,8 +1042,9 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
                                getattr(restResource, cliGetXMLSpecHandlerName))
 
             restResource.storeEndpoints(
-                dimg, ['GET', (restPath, cliRelPath, 'xmlspec'),
-                       cliGetXMLSpecHandlerName])
+                dimg, cliRelPath, 'xmlspec',
+                ['GET', (restPath, cliRelPath, 'xmlspec'),
+                 cliGetXMLSpecHandlerName])
 
     return restResource
 
