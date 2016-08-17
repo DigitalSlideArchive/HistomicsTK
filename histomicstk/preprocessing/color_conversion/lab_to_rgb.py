@@ -1,0 +1,57 @@
+import numpy as np
+
+
+def lab_to_rgb(im_lab):
+    """Transforms an image from LAB to RGB color space
+
+    Parameters
+    ----------
+    im_lab : array_like
+        An image in LAB color space
+
+    Returns
+    -------
+    im_rgb : array_like
+        The RGB representation of the input image 'im_lab'.
+
+    See Also
+    --------
+    histomicstk.preprocessing.color_conversion.rgb_to_lab,
+    histomicstk.preprocessing.color_normalization.ReinhardNorm
+
+    References
+    ----------
+    .. [1] D. Ruderman, T. Cronin, and C. Chiao, "Statistics of cone responses
+       to natural images: implications for visual coding," J. Opt. Soc. Am. A
+       15, 2036-2045 (1998).
+    """
+
+    # get input image dimensions
+    m = im_lab.shape[0]
+    n = im_lab.shape[1]
+
+    # define conversion matrices
+    lab2lms = np.dot(
+        np.array([[1, 1, 1],
+                  [1, 1, -1],
+                  [1, -2, 0]]),
+        np.array([[1 / (3**0.5), 0, 0],
+                  [0, 1 / (6**0.5), 0],
+                  [0, 0, 1 / (2**0.5)]])
+    )
+
+    lms2rgb = np.array([[4.4679, -3.5873, 0.1193],
+                        [-1.2186, 2.3809, -0.1624],
+                        [0.0497, -0.2439, 1.2045]])
+
+    # calculate im_lms values from LAB
+    im_lab = np.reshape(im_lab, (m * n, 3))
+    im_lms = np.dot(lab2lms, np.transpose(im_lab))
+
+    # calculate RGB values from im_lms
+    im_rgb = np.dot(lms2rgb, np.exp(im_lms))
+
+    # reshape to 3-channel image
+    im_rgb = np.reshape(im_rgb.transpose(), (m, n, 3))
+
+    return im_rgb

@@ -40,8 +40,8 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
 
     See Also
     --------
-    histomicstk.preprocessing.color_conversion.RudermanLABFwd,
-    histomicstk.preprocessing.color_conversion.RudermanLABInv
+    histomicstk.preprocessing.color_conversion.rgb_to_lab,
+    histomicstk.preprocessing.color_conversion.lab_to_rgb
 
     References
     ----------
@@ -58,7 +58,7 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
     n = I.shape[1]
 
     # convert input image to LAB color space
-    I_LAB = color_conversion.RudermanLABFwd(I)
+    I_LAB = color_conversion.rgb_to_lab(I)
 
     # calculate SourceMu if not provided
     if SourceMu is None:
@@ -82,7 +82,7 @@ def ReinhardNorm(I, TargetMu, TargetSigma, SourceMu=None, SourceSigma=None):
         I_LAB[:, :, i] = I_LAB[:, :, i] * TargetSigma[i] + TargetMu[i]
 
     # convert back to RGB colorspace
-    I_Normalized = color_conversion.RudermanLABInv(I_LAB)
+    I_Normalized = color_conversion.lab_to_rgb(I_LAB)
     I_Normalized[I_Normalized > 255] = 255
     I_Normalized[I_Normalized < 0] = 0
     I_Normalized = I_Normalized.astype(np.uint8)

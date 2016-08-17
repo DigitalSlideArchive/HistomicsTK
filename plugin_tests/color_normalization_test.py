@@ -56,7 +56,7 @@ class ReinhardNormalizationTest(base.TestCase):
         imReference = skimage.io.imread(refImageFile)[:, :, :3]
 
         # transform reference image to LAB color space
-        imReferenceLAB = color_conversion.RudermanLABFwd(imReference)
+        imReferenceLAB = color_conversion.rgb_to_lab(imReference)
 
         # compute mean and stddev of reference image in LAB color space
         meanRef = np.zeros(3)
@@ -70,7 +70,7 @@ class ReinhardNormalizationTest(base.TestCase):
         imNmzd = color_normalization.ReinhardNorm(imInput, meanRef, stdRef)
 
         # transform reference image to LAB color space
-        imNmzdLAB = color_conversion.RudermanLABFwd(imNmzd)
+        imNmzdLAB = color_conversion.rgb_to_lab(imNmzd)
 
         # compute mean and stddev of normalized input in LAB color space
         meanNmzd = np.zeros(3)

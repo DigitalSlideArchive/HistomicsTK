@@ -1,28 +1,29 @@
 import numpy as np
 
 
-def OpticalDensityFwd(I):
-    """Transforms input RGB image "I" into optical density space
+def rgb_to_od(im_rgb):
+    """Transforms input RGB image `im_rgb` into optical density space
     for color deconvolution.
 
     Parameters
     ----------
-    I : array_like
+    im_rgb : array_like
         A floating-point RGB image with intensity ranges of [0, 255].
 
     Returns
     -------
-    IOut : array_like
+    im_od : array_like
         A floating-point image of corresponding optical density values.
 
 
     See Also
     --------
-    histomicstk.preprocessing.color_conversion.OpticalDensityInv,
+    histomicstk.preprocessing.color_conversion.od_to_rgb,
     histomicstk.preprocessing.color_deconvolution.ColorDeconvolution,
     histomicstk.preprocessing.color_deconvolution.ColorConvolution
     """
 
-    IOut = -(255 * np.log(I / 255)) / np.log(255)
+    # convert to optical density and rescale to [0, 255.0]
+    im_od = -np.log((im_rgb + 1.0) / 256.0) * (255.0 / np.log(256.0))
 
-    return IOut
+    return im_od
