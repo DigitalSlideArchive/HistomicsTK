@@ -1,0 +1,30 @@
+---
+- name: Download miniconda install script
+  command: wget -O install_miniconda.sh https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
+  args:
+    chdir: "{{ root_dir }}"
+
+- name: Run miniconda install script
+  command: bash install_miniconda.sh -f -b -p ./miniconda
+  args:
+    chdir: "{{ root_dir }}"
+
+- name: Update conda packages and add custom channel
+  shell: . miniconda/bin/activate ./miniconda && conda update --yes --all && conda config --add channels https://conda.binstar.org/cdeepakroy
+  args:
+    chdir: "{{ root_dir }}"
+    executable: /bin/bash
+
+- name: Install required conda packages
+  shell: . miniconda/bin/activate ./miniconda && conda install --yes anaconda-client libgfortran==1.0 setuptools==19.4 --file "{{ girder_root }}/plugins/HistomicsTK/requirements_c_conda.txt"
+  args:
+    chdir: "{{ root_dir }}"
+    executable: /bin/bash
+
+- name: Install girder dev requirements for the web client
+  command: girder-install web --dev
+  sudo: yes
+
+- name: Install girder server dev requirements
+  pip: requirements="{{ girder_root }}/requirements-dev.txt"
+  sudo: yes

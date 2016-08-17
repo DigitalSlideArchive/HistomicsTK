@@ -7,6 +7,7 @@
     - girder
     - mq
     - worker
+    - dev
     #- itk
   vars:
     vagrant: true
