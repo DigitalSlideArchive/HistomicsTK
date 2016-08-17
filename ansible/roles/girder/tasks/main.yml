@@ -210,7 +210,15 @@
       root: "{{ root_dir }}/assetstore"
       current: true
     state: present
-  register: fs_assetstore
+
+- name: Get assetstore list
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    get:
+      path: "/assetstore"
+  register: assetstore_list
 
 - name: Ensure the existence of the TCGA collection
   girder:
@@ -244,9 +252,10 @@
     password: "{{ girder_admin_password }}"
     port: "{{ girder_socket_port }}"
     post:
-      path: "assetstore/{{ fs_assetstore['debug']['assetstores']['default']['_id'] }}/import"
+      path: "assetstore/{{ assetstore_list['gc_return'][0]['_id'] }}/import"
       parameters:
         importPath: /vagrant/sample_images
         destinationType: folder
         destinationId: "{{ sample_images_folder['gc_return']['_id'] }}"
+        fileExcludeRegex: "\\.gitignore"
   tags: data_import
