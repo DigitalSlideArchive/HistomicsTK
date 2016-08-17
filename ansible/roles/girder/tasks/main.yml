@@ -16,40 +16,15 @@
   apt: name={{ item }} state=present update_cache=yes
   sudo: yes
   with_items:
-    - libssl-dev
-    - python-pip
-    - python2.7-dev
     - build-essential
-    - python-software-properties
-    - libffi-dev
-    - nodejs
-    - cmake
-    - cmake-curses-gui
     - git
-    - postfix
-    - libfreetype6-dev
-    - zlib1g-dev
-    - libpng-dev
-    - libtiff5-dev
-    - libjpeg8-dev
-    - liblcms2-dev
-    - libwebp-dev
-    - tcl8.6-dev
-    - tk8.6-dev
-    - python-tk
-    - libvips-tools
-    - libglib2.0-dev
+    - python2.7-dev
+    - libffi-dev
     - libjpeg-dev
-    - libxml2-dev
-    - libpng12-dev
-    - autoconf
-    - automake
-    - libtool
-    - pkg-config
-    - libcairo2-dev
-    - libgdk-pixbuf2.0-dev
-    - libxml2-dev
-    - libsqlite3-dev
+    - zlib1g-dev
+    - python-pip
+    - nodejs
+    - postfix
     - apt-transport-https
     - ca-certificates
     - mongodb-org
@@ -64,10 +39,9 @@
 
 - name: Clone ctk-cli
   git:
-    repo: git://github.com/commontk/ctk-cli.git
+    repo: git://github.com/cdeepakroy/ctk-cli.git
     dest: "{{ root_dir }}/ctk-cli"
     accept_hostkey: yes
-    version: "{{ ctk_cli_version }}"
 
 - name: Clone girder
   git:
