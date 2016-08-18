@@ -20,13 +20,15 @@
 # This is to serve as an example for how to create a server-side test in a
 # girder plugin, it is not meant to be useful.
 
-from tests import base
-
-from girder import events
 import threading
 import six
 import types
 import json
+
+
+from tests import base
+from girder import events
+
 # boiler plate to start and stop the server
 TIMEOUT = 180
 
@@ -36,15 +38,10 @@ def setUpModule():
     base.startServer()
     global JobStatus
     from girder.plugins.jobs.constants import JobStatus
-    global DockerImage
-    from girder.plugins.HistomicsTK.models.docker_image import DockerImage
 
 
 def tearDownModule():
     base.stopServer()
-
-# TODO when endpoint information is added to the get endpoint
-# TODO add tests for querying cli xml and running clis
 
 
 class HistomicsTKExampleTest(base.TestCase):
@@ -62,17 +59,24 @@ class HistomicsTKExampleTest(base.TestCase):
         }
         self.admin = self.model('user').createUser(**admin)
 
-    def testBadImageAdd(self):
+        try:
+            from docker import Client
+            self.docker_client = Client(base_url='unix://var/run/docker.sock')
+
+        except Exception as err:
+            self.fail('could not create the docker client ' + str(err))
+
+    def testAddNonExistentImage(self):
         # add a bad image
         img_name = 'null/null:null'
-        self.noImages()
+        self.assertNoImages()
         self.addImage(img_name, JobStatus.ERROR)
-        self.noImages()
+        self.assertNoImages()
 
     def testDockerAdd(self):
         # try to cache a good image to the mongo database
         img_name = "dsarchive/histomicstk:v0.1.3"
-        self.noImages()
+        self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
 
@@ -80,36 +84,31 @@ class HistomicsTKExampleTest(base.TestCase):
         # just delete the meta data in the mongo database
         # dont attempt to delete the docker image
         img_name = "dsarchive/histomicstk:v0.1.3"
-        self.noImages()
+        self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
         self.deleteImage(img_name, True, False)
         self.imageIsLoaded(img_name, exists=False)
-        self.noImages()
+        self.assertNoImages()
 
     def testDockerDeleteFull(self):
         # attempt to delete docker image metadata and the image off the local
         # machine
         img_name = "dsarchive/histomicstk:v0.1.3"
-        self.noImages()
+        self.assertNoImages()
         self.addImage(img_name, JobStatus.SUCCESS)
         self.imageIsLoaded(img_name, True)
         self.deleteImage(img_name, True, True, JobStatus.SUCCESS)
-        try:
-            from docker import Client
-            docker_client = Client(base_url='unix://var/run/docker.sock')
 
-        except Exception as err:
-            self.fail('could not create the docker client '+err.__str__())
         try:
-            docker_client.inspect_image(img_name)
+            self.docker_client.inspect_image(img_name)
             self.fail('If the image was deleted then an attempt to docker '
                       'inspect it should raise a docker exception')
         except Exception:
             pass
 
         self.imageIsLoaded(img_name, exists=False)
-        self.noImages()
+        self.assertNoImages()
 
     def testDockerPull(self):
 
@@ -121,7 +120,7 @@ class HistomicsTKExampleTest(base.TestCase):
     def testBadImageDelete(self):
         # attempt to delete a non existent image
         img_name = 'null/null:null'
-        self.noImages()
+        self.assertNoImages()
         self.deleteImage(img_name, False, )
 
     def testXmlEndpoint(self):
@@ -160,6 +159,13 @@ class HistomicsTKExampleTest(base.TestCase):
                     # xml route should have been deleted
                     self.assertStatus(resp, 400)
 
+    def testAddBadImage(self):
+        # job should fail gracefully after pulling the image
+        img_name = 'library/hello-world:latest'
+        self.assertNoImages()
+        self.addImage(img_name, JobStatus.ERROR)
+        self.assertNoImages()
+
     def splitName(self, name):
         if ':' in name:
             imageAndTag = name.split(':')
@@ -188,7 +194,7 @@ class HistomicsTKExampleTest(base.TestCase):
         self.assertStatus(resp, 200)
         return json.loads(self.getBody(resp))
 
-    def noImages(self):
+    def assertNoImages(self):
         data = self.getEndpoint()
         self.assertEqual({}, data,
                          " There should be no pre existing docker images ")

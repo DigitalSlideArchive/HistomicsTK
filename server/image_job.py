@@ -1,3 +1,23 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+###############################################################################
+#  Copyright Kitware Inc.
+#
+#  Licensed under the Apache License, Version 2.0 ( the "License" );
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+###############################################################################
+
+
 from docker import Client
 from docker.errors import DockerException
 
@@ -37,7 +57,7 @@ def deleteImage(job):
             jobModel.updateJob(
                 job,
                 log='Failed to create the Docker '
-                    'Client\n' + err.__str__() + '\n',
+                    'Client\n' + str(err) + '\n',
                 status=JobStatus.ERROR,
             )
             raise DockerImageError('Could not create the docker client')
@@ -50,7 +70,7 @@ def deleteImage(job):
                 jobModel.updateJob(
                     job,
                     log='Failed to remove  image \n' +
-                        err.__str__() + '\n',
+                        str(err) + '\n',
                     status=JobStatus.RUNNING,
                 )
                 error = True
@@ -75,7 +95,7 @@ def deleteImage(job):
         jobModel.updateJob(
             job,
             log='Error with job'
-                ' \n ' + err.__str__() + '\n',
+                ' \n ' + str(err) + '\n',
             status=JobStatus.ERROR,
 
         )
@@ -111,7 +131,7 @@ def jobPullAndLoad(job):
         except DockerException as err:
             jobModel.updateJob(
                 job,
-                log='Failed to create the Docker Client\n' + err.__str__()+'\n',
+                log='Failed to create the Docker Client\n' + str(err)+'\n',
 
             )
             raise DockerImageError('Could not create the docker client')
@@ -151,7 +171,7 @@ def jobPullAndLoad(job):
         jobModel.updateJob(
             job,
             log='Error with job'
-                ' \n ' + err.__str__()+'\n',
+                ' \n ' + str(err)+'\n',
             status=JobStatus.ERROR,
 
         )
@@ -199,7 +219,7 @@ def LoadMetaData(jobModel, job, docker_client, pullList, loadList, notExistSet):
                 jobModel.updateJob(
                     job,
                     log='Error with recently'
-                        ' pulled image %s' % name + err.__str__() + '\n',
+                        ' pulled image %s' % name + str(err) + '\n',
                     status=JobStatus.ERROR
                 )
                 errorState = True
@@ -219,7 +239,7 @@ def LoadMetaData(jobModel, job, docker_client, pullList, loadList, notExistSet):
             jobModel.updateJob(
                 job,
                 log='Error with recently loading pre-existing image'
-                    'image %s \n ' % name + err.__str__() + '\n',
+                    'image %s \n ' % name + str(err) + '\n',
                 status=JobStatus.ERROR
             )
             errorState = True
@@ -245,7 +265,7 @@ def getDockerOutput(imgName, command, client):
     except Exception as err:
         raise DockerImageError(
             'Attempt to docker run %s %s failed'
-            ' ' % (imgName, command) + err.__str__(), imgName)
+            ' ' % (imgName, command) + str(err), imgName)
     if ret_code != 0:
         raise DockerImageError(
             'Attempt to docker run %s %s failed' % (imgName, command), imgName)
@@ -283,7 +303,7 @@ def getCliData(name, client, img, jobModel, job):
 
         raise DockerImageError('Error getting %s cli '
                                'data from image %s'
-                               ' ' % (name, img)+err.__str__())
+                               ' ' % (name, img)+str(err))
 
 
 def pullDockerImage(client, names):

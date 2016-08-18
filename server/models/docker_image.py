@@ -1,3 +1,22 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+###############################################################################
+#  Copyright Kitware Inc.
+#
+#  Licensed under the Apache License, Version 2.0 ( the "License" );
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+###############################################################################
+
 
 from six import iteritems, string_types
 import hashlib
@@ -27,11 +46,6 @@ class DockerImageNotFoundError(DockerImageError):
         super(DockerImageNotFoundError, self).__init__(message, image_name)
         # list of registries tried(local dockerhub etc )
         self.locations = locations
-
-
-class DockerImageDataError(DockerImageError):
-    def __init__(self, message, image_name):
-        super(DockerImageDataError, self).__init__(message, image_name)
 
 
 class DockerImage():
@@ -81,7 +95,7 @@ class DockerImage():
                                        'bad init val')
         except Exception as err:
                 raise DockerImageError('Could not initialize instance'
-                                       ' of Docker Image \n'+err.__str__())
+                                       ' of Docker Image \n'+str(err))
 
     def addCLI(self, cli_name, cli_data):
         """
@@ -171,23 +185,21 @@ class DockerCache:
                                        'docker image object to cache')
         except Exception as err:
             raise DockerImageError('Failed to add the '
-                                   'docker image to the cache' + err.__str__())
+                                   'docker image to the cache' + str(err))
 
-    def getDockerImageList(self):
+    def getImageNames(self):
         """
         Get the list docker image names in the cache
         """
-        return [img.name
-                for (imgHash, img) in iteritems(self.data)]
+        return [img.name for img in self.data.values()]
 
     def getImages(self):
         """
         Get a list of Docker images objects stored in the cache
         """
-        return [img
-                for (imgHash, img) in iteritems(self.data)]
+        return list(self.data.values())
 
-    def getImage(self, name):
+    def getImageByName(self, name):
         """
         Get an image object using the Docker image name
         :param name: The docker image name
@@ -207,10 +219,7 @@ class DockerCache:
         :type name:string
         """
         imageKey = self._getHashKey(name)
-        if imageKey in self.data:
-            return True
-        else:
-            return False
+        return imageKey in self.data
 
     def _getHashKey(self, name):
         return DockerImage.getHashKey(name)

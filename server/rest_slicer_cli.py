@@ -892,7 +892,7 @@ def genRESTEndPointsForSlicerCLIsInDocker(info, restResource, dockerImages):
             except Exception as e:
                 print ("Failed to create REST endpoints for %s: %s" % (
                     cliRelPath, e))
-                print ("cli handler")
+
                 continue
 
             cliSuffix = os.path.normpath(cliRelPath).replace(os.sep, '_')
@@ -973,15 +973,15 @@ def genRESTEndPointsForSlicerCLIsInDockerCache(restResource, dockerCache):
 
     """
 
-    dockerImages = dockerCache.getDockerImageList()
+    dockerImages = dockerCache.getImageNames()
     # validate restResource argument
-    if not isinstance(restResource, (str, Resource)):
-        raise Exception('restResource must either be a '
-                        'docker resource')
+    if not isinstance(restResource, Resource):
+        raise Exception('restResource must be a '
+                        'Docker Resource')
 
     for dimg in dockerImages:
 
-        docker_image = dockerCache.getImage(dimg)
+        docker_image = dockerCache.getImageByName(dimg)
         # get CLI list
         cliListSpec = docker_image.getCLIListSpec()
 

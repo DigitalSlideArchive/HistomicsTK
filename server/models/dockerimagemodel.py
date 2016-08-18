@@ -1,3 +1,21 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+###############################################################################
+#  Copyright Kitware Inc.
+#
+#  Licensed under the Apache License, Version 2.0 ( the "License" );
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+###############################################################################
 
 from docker import Client
 from docker.errors import DockerException
@@ -35,7 +53,7 @@ class Dockerimagemodel(AccessControlledModel):
         except DockerException as err:
 
             raise DockerImageError('could not create the docker '
-                                   'client '+err.__str__())
+                                   'client '+str(err))
 
     # TODO image_name:tag and image_name@digest are treated seperate images
 
@@ -103,7 +121,7 @@ class Dockerimagemodel(AccessControlledModel):
         except Exception as err:
 
             raise DockerImageNotFoundError('could not find'
-                                           ' the image \n'+err.__str__(), name)
+                                           ' the image \n'+str(err), name)
         return data['Id']
 
     def save(self, img):
@@ -120,7 +138,7 @@ class Dockerimagemodel(AccessControlledModel):
         except Exception as err:
             raise DockerImageError(
                 'Could not save image %s metadata '
-                'to database ' % img.name + err.__str__(), img.name)
+                'to database ' % img.name + str(err), img.name)
 
     def _load(self, imgHash):
         """
@@ -232,7 +250,7 @@ class Dockerimagemodel(AccessControlledModel):
                 raise DockerImageError('Could not delete the image '
                                        'data from the database invalid '
                                        'image :'+img+' ' +
-                                       err.__str__(), img)
+                                       str(err), img)
 
     # TODO validate the xml of each cli
     def validate(self, doc):
@@ -257,4 +275,4 @@ class Dockerimagemodel(AccessControlledModel):
             return doc
         except Exception as err:
 
-            raise DockerImageError('Image meta data is invalid ' + err.message)
+            raise DockerImageError('Image meta data is invalid ' + str(err))

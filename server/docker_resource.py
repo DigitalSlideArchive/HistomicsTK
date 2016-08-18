@@ -71,11 +71,7 @@ class DockerResource(Resource):
         data = {}
         for val in cache:
             name, tag, imgData = self.createRestDataForImageVersion(val)
-            if name in data:
-                data[name][tag] = imgData
-            else:
-                data[name] = {}
-                data[name][tag] = imgData
+            data.setdefault(name, {})[tag] = imgData
 
         return data
 
@@ -168,7 +164,10 @@ class DockerResource(Resource):
         """
         Removes the docker images and there respective clis endpoints
         :param name: The name of the docker image (user/rep:tag)
-
+        :type name: string
+        :param deleteImage: Boolean indicating whether to delete the docker
+        image from the local machine.(if True this is equivalent to
+        docker rmi -f <image> )
         """
 
         dockermodel = ModelImporter.model('dockerimagemodel', 'HistomicsTK')
@@ -181,7 +180,7 @@ class DockerResource(Resource):
 
                 dockermodel.delete_docker_image_from_repo(names, self.jobType)
         except DockerImageNotFoundError as err:
-            raise RestException('Invalid docker image name. '+err.__str__())
+            raise RestException('Invalid docker image name. '+str(err))
 
     @access.admin
     @describeRoute(
@@ -209,6 +208,9 @@ class DockerResource(Resource):
 
                 if not isinstance(img, six.string_types):
                     raise RestException('%s was not a valid string.' % img)
+                if ':' not in img or '@' not in img:
+                    raise RestException('Image %s does not have a tag or '
+                                        'digest' % img)
 
         elif isinstance(name, six.string_types):
                 name = [name]
