@@ -7,6 +7,9 @@
 FROM dsarchive/base_docker_image
 MAINTAINER Deepak Chittajallu <deepak.chittajallu@kitware.com>
 
+# git clone install slicer_cli
+RUN git clone git@github.com:girder/slicer_cli.git
+
 # git clone install ctk-cli
 RUN git clone https://github.com/cdeepakroy/ctk-cli.git && cd ctk-cli \
     git checkout 979d8cb671060e787b725b0226332a72a551592e && \
@@ -34,4 +37,4 @@ RUN python -c "from matplotlib import pylab"
 
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server
-ENTRYPOINT ["/build/miniconda/bin/python", "cli_list_entrypoint.py"]
+ENTRYPOINT ["/build/miniconda/bin/python", "/slicer_cli/server/cli_list_entrypoint.py"]
