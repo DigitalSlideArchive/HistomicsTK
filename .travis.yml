@@ -59,7 +59,7 @@ before_install:
     - git clone https://github.com/DigitalSlideArchive/large_image.git $large_image_path && git -C $large_image_path checkout $LARGE_IMAGE_VERSION
 
     - slicer_cli_path=$girder_path/plugins/slicer_cli
-    - git clone git@github.com:girder/slicer_cli.git $slicer_cli_path && git -C $slicer_cli_path checkout $SLICER_CLI_VERSION
+    - git clone https://github.com/girder/slicer_cli.git $slicer_cli_path && git -C $slicer_cli_path checkout $SLICER_CLI_VERSION
 
     - export MONGO_VERSION=2.6.11
     - export PY_COVG="ON"
