@@ -3,7 +3,7 @@
 # displayed side-by-side.
 # Also tests helper functions:
 # rgb_to_lab.py
-# rgb_lab.py
+# rgb_to_lab.py
 
 import matplotlib.pyplot as plt
 import numpy

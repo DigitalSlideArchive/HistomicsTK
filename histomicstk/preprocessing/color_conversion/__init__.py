@@ -2,7 +2,7 @@
 # since we mostly have one function per file
 from .rgb_to_od import rgb_to_od
 from .od_to_rgb import od_to_rgb
-from .rgb_lab import rgb_to_lab
+from .rgb_to_lab import rgb_to_lab
 from .lab_to_rgb import lab_to_rgb
 
 # list out things that are available for public use

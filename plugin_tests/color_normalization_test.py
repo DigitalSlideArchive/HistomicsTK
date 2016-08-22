@@ -81,5 +81,5 @@ class ReinhardNormalizationTest(base.TestCase):
             stdNmzd[i] = (imNmzdLAB[:, :, i] - meanNmzd[i]).std()
 
         # check if mean and stddev of normalized and reference images are equal
-        self.assertTrue(np.allclose(meanNmzd, meanRef, atol=1e-2))
-        self.assertTrue(np.allclose(stdNmzd, stdRef, atol=1e-2))
+        self.assertTrue(np.allclose(meanNmzd, meanRef, atol=1e-1))
+        self.assertTrue(np.allclose(stdNmzd, stdRef, atol=1e-1))
