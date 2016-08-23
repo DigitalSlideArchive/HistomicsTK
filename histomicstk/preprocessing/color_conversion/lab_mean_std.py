@@ -22,7 +22,7 @@ import numpy as np
 from .rgb_to_lab import rgb_to_lab
 
 
-def compute_lab_mean_std(im_input):
+def lab_mean_std(im_input):
     """Computes the mean and standard deviation of the intensities of each
     channel of the given RGB image in LAB color space. The outputs of this
     function are needed for reinhard color normalization.

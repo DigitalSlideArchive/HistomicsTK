@@ -56,13 +56,13 @@ class ReinhardNormalizationTest(base.TestCase):
         imReference = skimage.io.imread(refImageFile)[:, :, :3]
 
         # get mean and stddev of reference image in lab space
-        meanRef, stdRef = color_conversion.compute_lab_mean_std(imReference)
+        meanRef, stdRef = color_conversion.lab_mean_std(imReference)
 
         # perform color normalization
         imNmzd = color_normalization.reinhard(imInput, meanRef, stdRef)
 
         # transform normalized image to LAB color space
-        meanNmzd, stdNmzd = color_conversion.compute_lab_mean_std(imNmzd)
+        meanNmzd, stdNmzd = color_conversion.lab_mean_std(imNmzd)
 
         # check if mean and stddev of normalized and reference images are equal
         np.testing.assert_allclose(meanNmzd, meanRef, atol=1e-1)

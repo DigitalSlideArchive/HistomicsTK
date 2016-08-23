@@ -39,7 +39,7 @@ def main(args):
     print('>> Performing color normalization')
 
     # compute mean and stddev of input in LAB color space
-    Mu, Sigma = htk_color_conversion.compute_lab_mean_std(imInput)
+    Mu, Sigma = htk_color_conversion.lab_mean_std(imInput)
 
     # perform reinhard normalization
     imNmzd = htk_color_normalization.reinhard(imInput, Mu, Sigma)
