@@ -39,7 +39,7 @@ def main(args):
     print('>> Performing color normalization')
 
     # transform input image to LAB color space
-    imInputLAB = htk_color_conversion.RudermanLABFwd(imInput)
+    imInputLAB = htk_color_conversion.rgb_to_lab(imInput)
 
     # compute mean and stddev of input in LAB color space
     Mu = np.zeros(3)

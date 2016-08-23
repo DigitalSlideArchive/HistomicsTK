@@ -43,8 +43,8 @@ def ColorDeconvolution(I, W):
     --------
     histomicstk.preprocessing.color_deconvolution.ComplementStainMatrix,
     histomicstk.preprocessing.color_deconvolution.ColorConvolution
-    histomicstk.preprocessing.color_conversion,OpticalDensityFwd
-    histomicstk.preprocessing.color_conversion,OpticalDensityInv
+    histomicstk.preprocessing.color_conversion,rgb_to_od
+    histomicstk.preprocessing.color_conversion,od_to_rgb
     """
 
     # complement stain matrix if needed
@@ -73,9 +73,9 @@ def ColorDeconvolution(I, W):
     # tfm back to RGB
     I = I.astype(dtype=numpy.float32)
     I[I == 0] = 1e-16
-    ODfwd = color_conversion.OpticalDensityFwd(I)
+    ODfwd = color_conversion.rgb_to_od(I)
     ODdeconv = numpy.dot(ODfwd, numpy.transpose(Q))
-    ODinv = color_conversion.OpticalDensityInv(ODdeconv)
+    ODinv = color_conversion.od_to_rgb(ODdeconv)
 
     # reshape output
     StainsFloat = numpy.reshape(ODinv, (m, n, 3))
