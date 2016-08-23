@@ -32,7 +32,7 @@ def rgb_to_lab(im_rgb):
     See Also
     --------
     histomicstk.preprocessing.color_conversion.lab_to_rgb,
-    histomicstk.preprocessing.color_normalization.ReinhardNorm
+    histomicstk.preprocessing.color_normalization.reinhard
 
     References
     ----------

@@ -24,7 +24,7 @@ def lab_to_rgb(im_lab):
     See Also
     --------
     histomicstk.preprocessing.color_conversion.rgb_to_lab,
-    histomicstk.preprocessing.color_normalization.ReinhardNorm
+    histomicstk.preprocessing.color_normalization.reinhard
 
     References
     ----------
