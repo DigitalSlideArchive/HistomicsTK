@@ -7,7 +7,6 @@ from .lab_to_rgb import lab_to_rgb
 
 from .compute_lab_mean_std import compute_lab_mean_std  # after rgb_to_lab
 
-
 # list out things that are available for public use
 __all__ = (
 
