@@ -28,3 +28,7 @@
 - name: Install girder server dev requirements
   pip: requirements="{{ girder_root }}/requirements-dev.txt"
   sudo: yes
+
+- name: Install HistomicsTK dev requirements
+  pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements_dev.txt"
+  sudo: yes
