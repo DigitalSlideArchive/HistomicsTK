@@ -1,4 +1,15 @@
 ---
+- name: Ensure the girder group exists
+  group: name="{{ girder_exec_group }}" state=present
+  sudo: yes
+
+- name: Ensure the girder user exists
+  user: shell=/bin/bash
+        name="{{ girder_exec_user }}"
+        groups="{{ girder_exec_group }}"
+        append=yes
+  sudo: yes
+
 - name: Give ownership of root dir to appropriate user
   file:
     path: "{{ root_dir }}"
