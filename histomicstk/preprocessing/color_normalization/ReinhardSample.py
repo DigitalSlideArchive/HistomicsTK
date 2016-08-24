@@ -44,18 +44,18 @@ def ReinhardSample(File, Magnification, Percent, Tile):
 
     See Also
     --------
-    histomicstk.preprocessing.color_conversion.RudermanLABFwd,
-    histomicstk.preprocessing.color_conversion.RudermanLABInv
+    histomicstk.preprocessing.color_conversion.rgb_to_lab,
+    histomicstk.preprocessing.color_conversion.lab_to_rgb
     """
 
     # generate a sampling of RGB pixels from whole-slide image
     RGB = Sample(File, Magnification, Percent, Tile)
 
-    # reshape the 3xN pixel array into an image for RudermanLABFwd
+    # reshape the 3xN pixel array into an image for rgb_to_lab
     RGB = np.reshape(RGB.transpose(), (1, RGB.shape[1], 3))
 
     # perform forward LAB transformation
-    LAB = color_conversion.RudermanLABFwd(RGB)
+    LAB = color_conversion.rgb_to_lab(RGB)
 
     # compute statistics of LAB channels
     Mu = LAB.sum(axis=0).sum(axis=0) / (LAB.size / 3)
