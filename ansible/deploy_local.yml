@@ -1,5 +1,5 @@
 ---
-- hosts: test
+- hosts: local
   roles:
     - common
     - mongodb
