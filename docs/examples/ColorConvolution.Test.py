@@ -4,8 +4,8 @@
 # and recomposed images side-by-side.
 # Also tests helper functions:
 # ComplementStainMatrix.py
-# OpticalDensityFwd.py
-# OpticalDensityInv.py
+# rgb_to_od.py
+# od_to_rgb.py
 
 import matplotlib.pyplot as plt
 import numpy

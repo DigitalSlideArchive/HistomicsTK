@@ -70,7 +70,7 @@ def SparseColorDeconvolution(I, Winit, Beta):
     # transform input RGB to optical density values
     I = I.astype(dtype=np.float32)
     I[I == 0] = 1e-16
-    ODfwd = color_conversion.OpticalDensityFwd(I)
+    ODfwd = color_conversion.rgb_to_od(I)
 
     if Winit is None:
 
