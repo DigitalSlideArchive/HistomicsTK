@@ -27,3 +27,4 @@
 - name: Upgrade system packages
   apt: upgrade=safe force=yes
   sudo: yes
+  when: vagrant is defined
