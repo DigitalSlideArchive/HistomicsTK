@@ -25,5 +25,5 @@
   sudo: yes
 
 - name: Upgrade system packages
-  apt: upgrade=safe
+  apt: upgrade=safe force=yes
   sudo: yes
