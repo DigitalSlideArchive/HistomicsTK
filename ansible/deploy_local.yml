@@ -29,3 +29,6 @@
     worker_exec_group: girder
     mongo_private_ip: localhost
     mq_private_ip: localhost
+  tasks:
+    - debug: msg="Girder is running on port {{ girder_socket_port }}"
+
