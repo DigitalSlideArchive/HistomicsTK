@@ -15,7 +15,7 @@
     girder_admin_password: password
     girder_socket_host: localhost
     girder_socket_port: 8009
-    girder_exec_user: girder
+    girder_exec_user: "{{ lookup('env', 'GIRDER_EXEC_USER') }}"
     girder_exec_group: girder
     girder_plugins:
       - digital_slide_archive
