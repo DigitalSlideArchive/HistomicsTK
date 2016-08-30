@@ -3,4 +3,8 @@ cd {{ root_dir }}/build
 export PYTHONPATH='{{ root_dir }}/miniconda/lib/python2.7/site-packages:{{ root_dir }}/miniconda/lib/python2.7/site-packages/ctk_cli-1.3-py2.7.egg:$PYTHONPATH'
 cmake ../girder
 make -j2
-ctest -j3 -V
+if [ $# -eq 0 ]; then
+  ctest -j3 -V
+else
+  ctest "$@"
+fi
