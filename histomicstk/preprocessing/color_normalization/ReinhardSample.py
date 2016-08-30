@@ -4,39 +4,38 @@ from histomicstk.utils import Sample
 from histomicstk.preprocessing import color_conversion
 
 
-def ReinhardSample(File, Magnification, Percent, Tile):
-    """Samples a whole-slide-image to determine LAB colorspace statistics
+def ReinhardSample(slide_path, magnification, sample_percent, tile_size):
+    """Samples a whole-slide-image to determine sample_pix_lab colorspace statistics
     (mean, variance) needed to perform global Reinhard color normalization.
 
     Normalizing individual tiles independently creates a significant bias
     in the results of segmentation and feature extraction, as the color
     statistics of each tile in a whole-slide image can vary significantly.
-    To remedy this, we sample from the entire whole-slide image in order to
-    obtain the global mean and variance of the LAB colorspace channels that
-    can then be used when processing individual tiles for uniformity. This
-    function can also be used to obtain the global target statistics from
-    an ideal slide that can serve as the normalization standard.
+    To remedy this, we sample a subset of pixels from the entire whole-slide
+    image in order to estimate the global mean and standard deviation of
+    each channel in the Lab color space that are needed for reinhard color
+    normalization.
 
     Parameters
     ----------
-    File : str
+    slide_path : str
         path and filename of slide.
-    Magnification : scalar
+    magnification : scalar
         Desired magnification for sampling. Defaults to native scan
         magnification.
-    Percent : double
+    sample_percent : double
        Percentage of pixels to sample (range (0, 1]).
-    Tile : int
-       Tile size used in sampling high-resolution image.
+    tile_size : int
+       tile_size size used in sampling high-resolution image.
 
     Returns
     -------
-    TargetMu : array_like
+    Mu : array_like
         A 3-element array containing the means of the target image channels
-        in LAB color space.
-    TargetSigma : array_like
+        in sample_pix_lab color space.
+    Sigma : array_like
         A 3-element list containing the standard deviations of the target image
-        channels in LAB color space.
+        channels in sample_pix_lab color space.
 
     Notes
     -----
@@ -44,25 +43,20 @@ def ReinhardSample(File, Magnification, Percent, Tile):
 
     See Also
     --------
-    histomicstk.preprocessing.color_conversion.rgb_to_lab,
-    histomicstk.preprocessing.color_conversion.lab_to_rgb
+    histomicstk.preprocessing.color_conversion.lab_mean_std
+    histomicstk.preprocessing.color_normalization.reinhard
     """
 
-    # generate a sampling of RGB pixels from whole-slide image
-    RGB = Sample(File, Magnification, Percent, Tile)
+    # generate a sampling of sample_pixels_rgb pixels from whole-slide image
+    sample_pixels_rgb = Sample(slide_path, magnification,
+                            sample_percent, tile_size)
 
-    # reshape the 3xN pixel array into an image for rgb_to_lab
-    RGB = np.reshape(RGB.transpose(), (1, RGB.shape[1], 3))
+    # reshape the 3xN pixel array into a 1 x N x 3 image for lab_mean_std
+    sample_pixels_rgb = np.reshape(sample_pixels_rgb.transpose(),
+                                   (1, sample_pixels_rgb.shape[1], 3))
 
-    # perform forward LAB transformation
-    LAB = color_conversion.rgb_to_lab(RGB)
-
-    # compute statistics of LAB channels
-    Mu = LAB.sum(axis=0).sum(axis=0) / (LAB.size / 3)
-    LAB[:, :, 0] = LAB[:, :, 0] - Mu[0]
-    LAB[:, :, 1] = LAB[:, :, 1] - Mu[1]
-    LAB[:, :, 2] = LAB[:, :, 2] - Mu[2]
-    Sigma = ((LAB * LAB).sum(axis=0).sum(axis=0) / (LAB.size / 3 - 1)) ** 0.5
+    # compute mean and stddev of sample pixels in Lab space
+    Mu, Sigma = color_conversion.lab_mean_std(sample_pixels_rgb)
 
     # build named tuple for output
     OutTuple = collections.namedtuple('Statistics', ['Mu', 'Sigma'])
