@@ -3,7 +3,7 @@ import os
 from girder import events
 from girder.utility.webroot import Webroot
 
-from girder.plugins.slicer_cli.rest_slicer_cli import (
+from girder.plugins.slicer_cli_web.rest_slicer_cli import (
     genRESTEndPointsForSlicerCLIsInDockerCache
 )
 
@@ -32,7 +32,8 @@ def load(info):
     resource = DockerResource('HistomicsTK')
     info['apiRoot'].HistomicsTK = resource
 
-    dockerImageModel = ModelImporter.model('dockerimagemodel', 'slicer_cli')
+    dockerImageModel = ModelImporter.model('docker_image_model',
+                                           'slicer_cli_web')
     dockerCache = dockerImageModel.loadAllImages()
 
     genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
