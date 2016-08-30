@@ -37,4 +37,4 @@ RUN python -c "from matplotlib import pylab"
 
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server
-ENTRYPOINT ["/build/miniconda/bin/python", "/slicer_cli/server/cli_list_entrypoint.py"]
+ENTRYPOINT ["/build/miniconda/bin/python", "/slicer_cli_web/server/cli_list_entrypoint.py"]
