@@ -1,0 +1,34 @@
+---
+- hosts: local
+  roles:
+    - common
+    - mongodb
+    - openslide
+    - girder
+    - mq
+    - worker
+    #- itk
+  vars:
+    root_dir: /opt/histomicstk
+    girder_admin_user: admin
+    girder_admin_email: histomicstk.admin@kitware.com
+    girder_admin_password: password
+    girder_socket_host: localhost
+    girder_socket_port: 8080
+    girder_exec_user: "{{ lookup('env', 'GIRDER_EXEC_USER') }}"
+    girder_exec_group: girder
+    girder_plugins:
+      - digital_slide_archive
+      - HistomicsTK
+      - homepage
+    girder_celery_user: worker-robot
+    girder_celery_email: histomicstk.celery@kitware.com
+    girder_celery_password: celery
+    girder_root: "{{ root_dir }}/girder"
+    worker_exec_user: "{{ lookup('env', 'GIRDER_EXEC_USER') }}"
+    worker_exec_group: girder
+    mongo_private_ip: localhost
+    mq_private_ip: localhost
+  tasks:
+    - debug: msg="Girder is running on port {{ girder_socket_port }}"
+

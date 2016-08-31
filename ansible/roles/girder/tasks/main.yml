@@ -262,4 +262,5 @@
         destinationType: folder
         destinationId: "{{ sample_images_folder['gc_return']['_id'] }}"
         fileExcludeRegex: "\\.gitignore"
+  when: vagrant is defined
   tags: data_import
