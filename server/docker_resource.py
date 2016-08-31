@@ -282,15 +282,13 @@ class DockerResource(Resource):
         :param event: An event dictionary
         """
 
-        job = event.info
+        job = event.info['job']
 
-        if job['type'] == self.jobType and job['status']\
-                == JobStatus.SUCCESS:
+        if job['type'] == self.jobType and job['status'] == JobStatus.SUCCESS:
+            # remove all previous endpoints
+            dockermodel = ModelImporter.model('dockerimagemodel',
+                                              'HistomicsTK')
+            cache = dockermodel.loadAllImages()
 
-                # remove all previous endpoints
-                dockermodel = ModelImporter.model('dockerimagemodel',
-                                                  'HistomicsTK')
-                cache = dockermodel.loadAllImages()
-
-                self.deleteImageEndpoints()
-                genRESTEndPointsForSlicerCLIsInDockerCache(self, cache)
+            self.deleteImageEndpoints()
+            genRESTEndPointsForSlicerCLIsInDockerCache(self, cache)
