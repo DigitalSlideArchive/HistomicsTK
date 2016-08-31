@@ -283,9 +283,8 @@ class DockerResource(Resource):
         """
 
         job = event.info['job']
-        status = event.info['params'].get('status', job['status'])
 
-        if job['type'] == self.jobType and status == JobStatus.SUCCESS:
+        if job['type'] == self.jobType and job['status'] == JobStatus.SUCCESS:
             # remove all previous endpoints
             dockermodel = ModelImporter.model('dockerimagemodel',
                                               'HistomicsTK')

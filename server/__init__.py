@@ -35,5 +35,5 @@ def load(info):
 
     events.bind('data.process', 'HistomicsTK', process_annotations)
 
-    events.bind('jobs.job.update', resource.resourceName,
+    events.bind('jobs.job.update.after', resource.resourceName,
                 resource.AddRestEndpoints)

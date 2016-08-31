@@ -210,20 +210,18 @@ class HistomicsTKExampleTest(base.TestCase):
 
             def tempListener(self, girderEvent):
                 job = girderEvent.info['job']
-                jobStatus = girderEvent.info['params'].get(
-                    'status', job['status'])
 
                 if (job['type'] == 'HistomicsTK_job' and
-                        jobStatus in (JobStatus.SUCCESS, JobStatus.ERROR)):
-                    self.assertEqual(jobStatus, status,
+                        job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
+                    self.assertEqual(job['status'], job['status'],
                                      'The status of the job should match')
-                    events.unbind('jobs.job.update', 'HistomicsTK_del')
+                    events.unbind('jobs.job.update.after', 'HistomicsTK_del')
                     # del self.delHandler
                     event.set()
 
             self.delHandler = types.MethodType(tempListener, self)
 
-            events.bind('jobs.job.update', 'HistomicsTK_del', self.delHandler)
+            events.bind('jobs.job.update.after', 'HistomicsTK_del', self.delHandler)
 
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
                             user=self.admin, method='DELETE',
@@ -254,20 +252,19 @@ class HistomicsTKExampleTest(base.TestCase):
 
         def tempListener(self, girderEvent):
             job = girderEvent.info['job']
-            jobStatus = girderEvent.info['params'].get('status', job['status'])
 
             if (job['type'] == 'HistomicsTK_job' and
-                    jobStatus in (JobStatus.SUCCESS, JobStatus.ERROR)):
-                self.assertEqual(jobStatus, status,
+                    job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
+                self.assertEqual(job['status'], status,
                                  'The status of the job should match')
 
-                events.unbind('jobs.job.update', 'HistomicsTK_add')
+                events.unbind('jobs.job.update.after', 'HistomicsTK_add')
 
                 event.set()
 
         self.addHandler = types.MethodType(tempListener, self)
 
-        events.bind('jobs.job.update', 'HistomicsTK_add', self.addHandler)
+        events.bind('jobs.job.update.after', 'HistomicsTK_add', self.addHandler)
 
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
                             user=self.admin, method='PUT',
