@@ -44,7 +44,7 @@ def tearDownModule():
     base.stopServer()
 
 
-class HistomicsTKExampleTest(base.TestCase):
+class DockerImageManagementTest(base.TestCase):
     def setUp(self):
         # adding and removing docker images and using generated rest endpoints
         # requires admin access
