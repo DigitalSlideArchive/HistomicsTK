@@ -101,6 +101,10 @@
   pip: name=girder-client version=1.1.1
   sudo: yes
 
+- name: Install HistomicsTK pypi C requirements
+  pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements_c.txt"
+  sudo: yes
+
 - name: Set the girder configuration file
   template: src=girder.local.cfg.j2 dest={{ girder_root }}/girder/conf/girder.local.cfg
 
@@ -211,6 +215,15 @@
       current: true
     state: present
 
+- name: Get assetstore list
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    get:
+      path: "/assetstore"
+  register: assetstore_list
+
 - name: Ensure the existence of the TCGA collection
   girder:
     username: "{{ girder_admin_user }}"
@@ -220,3 +233,34 @@
       name: TCGA
       public: yes
     state: present
+  register: tcga_collection
+  tags: data_import
+
+- name: Ensure the existence of the sample images folder
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    folder:
+      parentType: collection
+      parentId: "{{ tcga_collection['gc_return']['_id'] }}"
+      name: "Sample Images"
+      public: yes
+    state: present
+  register: sample_images_folder
+  tags: data_import
+
+- name: Import sample images into filesystem assetstore
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    post:
+      path: "assetstore/{{ assetstore_list['gc_return'][0]['_id'] }}/import"
+      parameters:
+        importPath: /vagrant/sample_images
+        destinationType: folder
+        destinationId: "{{ sample_images_folder['gc_return']['_id'] }}"
+        fileExcludeRegex: "\\.gitignore"
+  when: vagrant is defined
+  tags: data_import

@@ -209,23 +209,19 @@ class HistomicsTKExampleTest(base.TestCase):
             event = threading.Event()
 
             def tempListener(self, girderEvent):
-                job = girderEvent.info
+                job = girderEvent.info['job']
 
-                if job['type'] == 'HistomicsTK_job' and \
-                        (job['status'] == JobStatus.SUCCESS or
-                         job['status'] == JobStatus.ERROR):
-
-                    self.assertEqual(job['status'], status,
-                                     "The status of the job should "
-                                     "match")
-                    events.unbind('model.job.save.after', 'HistomicsTK_del')
+                if (job['type'] == 'HistomicsTK_job' and
+                        job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
+                    self.assertEqual(job['status'], job['status'],
+                                     'The status of the job should match')
+                    events.unbind('jobs.job.update.after', 'HistomicsTK_del')
                     # del self.delHandler
                     event.set()
 
             self.delHandler = types.MethodType(tempListener, self)
 
-            events.bind('model.job.save.after', 'HistomicsTK_del',
-                        self.delHandler)
+            events.bind('jobs.job.update.after', 'HistomicsTK_del', self.delHandler)
 
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
                             user=self.admin, method='DELETE',
@@ -255,24 +251,20 @@ class HistomicsTKExampleTest(base.TestCase):
         event = threading.Event()
 
         def tempListener(self, girderEvent):
+            job = girderEvent.info['job']
 
-            job = girderEvent.info
-
-            if job['type'] == 'HistomicsTK_job' and \
-                    (job['status'] == JobStatus.SUCCESS or
-                     job['status'] == JobStatus.ERROR):
-
+            if (job['type'] == 'HistomicsTK_job' and
+                    job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
                 self.assertEqual(job['status'], status,
-                                 "The status of the job should "
-                                 "match ")
+                                 'The status of the job should match')
 
-                events.unbind('model.job.save.after', 'HistomicsTK_add')
+                events.unbind('jobs.job.update.after', 'HistomicsTK_add')
 
                 event.set()
 
         self.addHandler = types.MethodType(tempListener, self)
 
-        events.bind('model.job.save.after', 'HistomicsTK_add', self.addHandler)
+        events.bind('jobs.job.update.after', 'HistomicsTK_add', self.addHandler)
 
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
                             user=self.admin, method='PUT',

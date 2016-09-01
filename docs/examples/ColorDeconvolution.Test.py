@@ -3,7 +3,7 @@
 # intensity images of these stains with the original.
 # Also tests helper functions:
 # ComplementStainMatrix.py
-# OpticalDensityFwd.py
+# rgb_to_od.py
 # OpticalDensityInv.py
 
 import matplotlib.cm as cm

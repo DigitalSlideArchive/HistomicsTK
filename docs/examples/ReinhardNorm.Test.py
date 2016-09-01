@@ -2,8 +2,8 @@
 # color space. The input image, standard image, and normalized output image are
 # displayed side-by-side.
 # Also tests helper functions:
-# RudermanLABFwd.py
-# RudermanLABInv.py
+# rgb_to_lab.py
+# rgb_to_lab.py
 
 import matplotlib.pyplot as plt
 import skimage.io as io

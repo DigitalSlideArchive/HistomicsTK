@@ -38,19 +38,11 @@ def main(args):
     #
     print('>> Performing color normalization')
 
-    # transform input image to LAB color space
-    imInputLAB = htk_color_conversion.RudermanLABFwd(imInput)
-
     # compute mean and stddev of input in LAB color space
-    Mu = np.zeros(3)
-    Sigma = np.zeros(3)
-
-    for i in range(3):
-        Mu[i] = imInputLAB[:, :, i].mean()
-        Sigma[i] = (imInputLAB[:, :, i] - Mu[i]).std()
+    Mu, Sigma = htk_color_conversion.lab_mean_std(imInput)
 
     # perform reinhard normalization
-    imNmzd = htk_color_normalization.ReinhardNorm(imInput, Mu, Sigma)
+    imNmzd = htk_color_normalization.reinhard(imInput, Mu, Sigma)
 
     #
     # Perform color deconvolution
@@ -101,7 +93,7 @@ def main(args):
         "description":   "Nuclei bounding boxes from a segmentation algorithm",
         "attributes": {
             "algorithm": {
-                "color_normalization": "ReinhardNorm",
+                "color_normalization": "reinhard",
                 "color_deconvolution": "ColorDeconvolution",
                 "nuclei_segmentation": ["cLOG",
                                         "MaxClustering",

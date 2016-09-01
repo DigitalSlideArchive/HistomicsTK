@@ -7,7 +7,7 @@ from girder.plugins.slicer_cli_web.rest_slicer_cli import (
     genRESTEndPointsForSlicerCLIsInDockerCache
 )
 
-from girder.plugins.slicer_cli.docker_resource import DockerResource
+from girder.plugins.slicer_cli_web.docker_resource import DockerResource
 
 from .handlers import process_annotations
 
