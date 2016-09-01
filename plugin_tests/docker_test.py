@@ -30,7 +30,7 @@ from tests import base
 from girder import events
 
 # boiler plate to start and stop the server
-TIMEOUT = 180
+TIMEOUT = 360
 
 
 def setUpModule():
