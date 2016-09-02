@@ -44,7 +44,7 @@ def tearDownModule():
     base.stopServer()
 
 
-class HistomicsTKExampleTest(base.TestCase):
+class DockerImageManagementTest(base.TestCase):
     def setUp(self):
         # adding and removing docker images and using generated rest endpoints
         # requires admin access
@@ -211,7 +211,7 @@ class HistomicsTKExampleTest(base.TestCase):
             def tempListener(self, girderEvent):
                 job = girderEvent.info['job']
 
-                if (job['type'] == 'HistomicsTK_job' and
+                if (job['type'] == 'slicer_cli_web_job' and
                         job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
                     self.assertEqual(job['status'], job['status'],
                                      'The status of the job should match')
@@ -221,7 +221,8 @@ class HistomicsTKExampleTest(base.TestCase):
 
             self.delHandler = types.MethodType(tempListener, self)
 
-            events.bind('jobs.job.update.after', 'HistomicsTK_del', self.delHandler)
+            events.bind('jobs.job.update.after', 'HistomicsTK_del',
+                        self.delHandler)
 
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
                             user=self.admin, method='DELETE',
@@ -253,7 +254,7 @@ class HistomicsTKExampleTest(base.TestCase):
         def tempListener(self, girderEvent):
             job = girderEvent.info['job']
 
-            if (job['type'] == 'HistomicsTK_job' and
+            if (job['type'] == 'slicer_cli_web_job' and
                     job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
                 self.assertEqual(job['status'], status,
                                  'The status of the job should match')
@@ -264,7 +265,8 @@ class HistomicsTKExampleTest(base.TestCase):
 
         self.addHandler = types.MethodType(tempListener, self)
 
-        events.bind('jobs.job.update.after', 'HistomicsTK_add', self.addHandler)
+        events.bind('jobs.job.update.after',
+                    'HistomicsTK_add', self.addHandler)
 
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
                             user=self.admin, method='PUT',
