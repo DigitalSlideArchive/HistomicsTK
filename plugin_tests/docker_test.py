@@ -30,7 +30,7 @@ from tests import base
 from girder import events
 
 # boiler plate to start and stop the server
-TIMEOUT = 360
+TIMEOUT = 180
 
 
 def setUpModule():
@@ -221,7 +221,8 @@ class DockerImageManagementTest(base.TestCase):
 
             self.delHandler = types.MethodType(tempListener, self)
 
-            events.bind('jobs.job.update.after', 'HistomicsTK_del', self.delHandler)
+            events.bind('jobs.job.update.after', 'HistomicsTK_del',
+                        self.delHandler)
 
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
                             user=self.admin, method='DELETE',
@@ -264,7 +265,8 @@ class DockerImageManagementTest(base.TestCase):
 
         self.addHandler = types.MethodType(tempListener, self)
 
-        events.bind('jobs.job.update.after', 'HistomicsTK_add', self.addHandler)
+        events.bind('jobs.job.update.after',
+                    'HistomicsTK_add', self.addHandler)
 
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
                             user=self.admin, method='PUT',

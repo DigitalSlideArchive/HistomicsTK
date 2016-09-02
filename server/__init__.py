@@ -28,17 +28,20 @@ def load(info):
     info['serverRoot'].histomicstk = histomicsRoot
     info['serverRoot'].girder = girderRoot
 
-    # passed in resource name must match the attribute added to info[apiroot]
+    # create root resource for all REST end points of HistomicsTK
     resource = DockerResource('HistomicsTK')
-    info['apiRoot'].HistomicsTK = resource
+    setattr(info['apiRoot'], resource.resourceName, resource)
 
+    # load docker images from cache
     dockerImageModel = ModelImporter.model('docker_image_model',
                                            'slicer_cli_web')
     dockerCache = dockerImageModel.loadAllImages()
 
+    # generate REST end points for slicer CLIs of each docker image
     genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
 
+    # auto-ingest annotations into database when a .anot file is uploaded
     events.bind('data.process', 'HistomicsTK', process_annotations)
 
-    events.bind('model.job.save.after', resource.resourceName,
+    events.bind('model.job.update.after', resource.resourceName,
                 resource.AddRestEndpoints)
