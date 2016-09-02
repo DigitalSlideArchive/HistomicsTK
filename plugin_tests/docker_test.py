@@ -211,7 +211,7 @@ class DockerImageManagementTest(base.TestCase):
             def tempListener(self, girderEvent):
                 job = girderEvent.info['job']
 
-                if (job['type'] == 'HistomicsTK_job' and
+                if (job['type'] == 'slicer_cli_web_job' and
                         job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
                     self.assertEqual(job['status'], job['status'],
                                      'The status of the job should match')
@@ -254,7 +254,7 @@ class DockerImageManagementTest(base.TestCase):
         def tempListener(self, girderEvent):
             job = girderEvent.info['job']
 
-            if (job['type'] == 'HistomicsTK_job' and
+            if (job['type'] == 'slicer_cli_web_job' and
                     job['status'] in (JobStatus.SUCCESS, JobStatus.ERROR)):
                 self.assertEqual(job['status'], status,
                                  'The status of the job should match')
