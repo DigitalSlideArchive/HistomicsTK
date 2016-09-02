@@ -83,8 +83,6 @@ before_install:
     - conda update --yes --all
     - conda config --add channels https://conda.binstar.org/cdeepakroy
 
-    - docker pull dsarchive/histomicstk:v0.1.3
-
 install:
     # https://github.com/pypa/pip/issues/2751
     - conda install --yes libgfortran==1.0 setuptools==19.4 --file $main_path/requirements_c_conda.txt

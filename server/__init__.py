@@ -43,5 +43,5 @@ def load(info):
     # auto-ingest annotations into database when a .anot file is uploaded
     events.bind('data.process', 'HistomicsTK', process_annotations)
 
-    events.bind('model.job.update.after', resource.resourceName,
+    events.bind('jobs.job.update.after', resource.resourceName,
                 resource.AddRestEndpoints)
