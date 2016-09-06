@@ -32,6 +32,9 @@ RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
 # pregenerate font cache
 RUN python -c "from matplotlib import pylab"
 
+# git clone install slicer_cli_web
+RUN git clone git@github.com:girder/slicer_cli_web.git
+
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server
-ENTRYPOINT ["/build/miniconda/bin/python", "cli_list_entrypoint.py"]
+ENTRYPOINT ["/build/miniconda/bin/python", "/slicer_cli_web/server/cli_list_entrypoint.py"]
