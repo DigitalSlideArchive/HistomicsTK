@@ -82,6 +82,10 @@
   pip: name=pip extra_args="-U"
   sudo: yes
 
+- name: Install requests
+  pip: name=requests version=2.10.0
+  sudo: yes
+  
 - name: Install ctk-cli using pip
   pip:
     name: "{{ root_dir }}/ctk-cli"
