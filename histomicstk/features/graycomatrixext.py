@@ -34,22 +34,19 @@ def graycomatrixext(im_input, im_roi_mask=None,
         following table lists the offset values that specify common
         angles for a 2D image, given the pixel distance D.
 
-        AngleXY  |  OFFSET
-        -------  |  ------
-        0        |  [0 D]
-        45       |  [-D D]
-        90       |  [-D 0]
-        135      |  [-D -D]
+        ===========  =============
+        Angle (deg)  offset [y, x]
+        ===========  =============
+        0            [0 D]
+        45           [-D D]
+        90           [-D 0]
+        135          [-D -D]
+        ===========  =============
 
         Default
-            1D: np.array([1])
-            2D : numpy.array([
-                [1, 0],
-                [0, 1],
-                [1, 1],
-                [1, -1]
-                ])
-            3D and higher: numpy.identity(num_image_dims)
+        - 1D: np.array([1])
+        - 2D : numpy.array([ [1, 0], [0, 1], [1, 1], [1, -1] ])
+        - 3D and higher: numpy.identity(num_image_dims)
 
     num_levels : unsigned int, optional
         An integer specifying the number of gray levels For example, if
@@ -100,7 +97,6 @@ def graycomatrixext(im_input, im_roi_mask=None,
     ..  [1] Haralick, R.M., K. Shanmugan, and I. Dinstein, "Textural Features
         for Image Classification", IEEE Transactions on Systems, Man, and
         Cybernetics, Vol. SMC-3, 1973, pp. 610-621.
-
     ..  [2] Haralick, R.M., and L.G. Shapiro. Computer and Robot Vision:
         Vol. 1, Addison-Wesley, 1992, p. 459.
     """

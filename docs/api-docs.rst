@@ -1,5 +1,6 @@
 API Documentation
 ==================
 
-.. automodule:: histomicstk
-   :members:
+.. toctree::
+
+   histomicstk

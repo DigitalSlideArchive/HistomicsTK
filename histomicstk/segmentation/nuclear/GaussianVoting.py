@@ -49,7 +49,7 @@ def GaussianVoting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
 
     See Also
     --------
-    ColorDeconvolution
+    histomicstk.preprocessing.color_deconvolution.ColorDeconvolution
 
     References
     ----------

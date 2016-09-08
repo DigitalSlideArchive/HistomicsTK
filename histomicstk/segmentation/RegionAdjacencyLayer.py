@@ -19,7 +19,7 @@ def RegionAdjacencyLayer(Adjacency):
 
     See Also
     --------
-    LabelRegionAdjacency, GraphcutRefine
+    histomicstk.segmentation.LabelRegionAdjacency
     """
 
     # initialize output

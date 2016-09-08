@@ -25,7 +25,8 @@ def GraphColorSequential(Adjacency):
 
     See Also
     --------
-    LabelRegionAdjacency, RegionAdjacencyLayer, GraphcutRefine
+    histomicstk.segmentation.LabelRegionAdjacency,
+    histomicstk.segmentation.RegionAdjacencyLayer
     """
 
     # initialize colors and color count

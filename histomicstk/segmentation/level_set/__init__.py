@@ -1,3 +1,8 @@
+"""
+This package contains functions that implement commonly used level-set based
+methods for segmenting objects/regions in images.
+"""
+
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
 from .ChanVese import ChanVese

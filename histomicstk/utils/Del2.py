@@ -20,7 +20,8 @@ def Del2(X):
 
     See Also
     --------
-    DregEdge, ChanVese
+    histomicstk.segmentation.level_set.DregEdge,
+    histomicstk.segmentation.level_set.ChanVese
     """
 
     # initialize output

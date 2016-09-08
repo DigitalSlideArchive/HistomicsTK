@@ -1,3 +1,8 @@
+"""
+This package contains utility functions that are widely used by functions in
+all other sub-packages of histomicstk
+"""
+
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
 from .Del2 import Del2

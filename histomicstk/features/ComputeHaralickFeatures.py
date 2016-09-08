@@ -80,6 +80,7 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
 
             Contrast = \sum_{i,j=0}^{levels-1}  (i-j)^2 p(i,j)
 
+    Haralick.Correlation.Mean, Haralick.Correlation.Range : float
         Mean and range of the Correlation feature for GLCMs of all offsets. It
         is a measure of correlation between the intensity values of
         neighboring pixels. It is computed as follows:
@@ -87,7 +88,7 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
         .. math::
 
             Correlation =
-            \sum_{i,j=0}^{levels-1} p(i,j)\left[\frac{(i-\\mu_i) \
+            \sum_{i,j=0}^{levels-1} p(i,j)\left[\frac{(i-\mu_i)
             (j-\mu_j)}{\sigma_i \sigma_j}\right]
 
     Haralick.SumOfSquares.Mean, Haralick.SumOfSquares.Range : float
@@ -191,7 +192,7 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
 
             p_y(j) = \sum_{j=1}^{levels} p(i,j)
 
-    Haralick.IMC2.Mean : float
+    Haralick.IMC2.Mean, Haralick.IMC2.Range : float
         Mean and range of the second information measure of correlation
         feature for GLCMs of all offsets. It is computed as follows:
 
@@ -204,10 +205,10 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
     References
     ----------
     .. [1] Haralick, et al. "Textural features for image classification,"
-    IEEE Transactions on Systems, Man, and Cybernatics, vol. 6, pp: 610-621,
-    1973.
+           IEEE Transactions on Systems, Man, and Cybernatics, vol. 6,
+           pp: 610-621, 1973.
     .. [2] Luis Pedro Coelho. "Mahotas: Open source software for scriptable
-    computer vision," Journal of Open Research Software, vol 1, 2013.
+           computer vision," Journal of Open Research Software, vol 1, 2013.
     """
 
     # List of feature names
