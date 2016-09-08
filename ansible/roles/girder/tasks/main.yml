@@ -50,6 +50,13 @@
     accept_hostkey: yes
     version: "{{ girder_version }}"
 
+- name: Clone slicer_cli_web plugin
+  git:
+    repo: git://github.com/girder/slicer_cli_web.git
+    dest: "{{ root_dir }}/slicer_cli_web"
+    accept_hostkey: yes
+    version: "{{ slicer_cli_web_version }}"
+
 - name: Clone HistomicsTK
   git:
     repo: git://github.com/DigitalSlideArchive/HistomicsTK.git
@@ -75,6 +82,10 @@
   pip: name=pip extra_args="-U"
   sudo: yes
 
+- name: Install requests (needed to resolve conflict with docker-py)
+  pip: name=requests version=2.10.0
+  sudo: yes
+  
 - name: Install ctk-cli using pip
   pip:
     name: "{{ root_dir }}/ctk-cli"
@@ -94,7 +105,7 @@
   sudo: yes
 
 - name: Install our external girder plugins
-  command: girder-install plugin -s {{ root_dir }}/large_image {{ root_dir }}/HistomicsTK {{ root_dir }}/digital_slide_archive
+  command: girder-install plugin -s {{ root_dir }}/slicer_cli_web {{ root_dir }}/large_image {{ root_dir }}/HistomicsTK {{ root_dir }}/digital_slide_archive
   sudo: yes
 
 - name: Install girder-client pip package
