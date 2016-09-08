@@ -83,11 +83,11 @@ histomicstk.views.Visualization = girder.View.extend({
             return;
         }
         var bounds = query.split(',').map(function (v) { return +v; });
-        this._map.rotation(bounds[4]);
+        this._map.rotation(bounds[4] * Math.PI / 180);
         this._map.bounds({
             left: bounds[0],
-            right: bounds[1],
-            top: bounds[2],
+            top: bounds[1],
+            right: bounds[2],
             bottom: bounds[3]
         }, null);
     },
@@ -399,17 +399,21 @@ histomicstk.views.Visualization = girder.View.extend({
         histomicstk.router.setQuery(
             'bounds',
             [
-                bounds.left,
-                bounds.right,
-                bounds.top,
-                bounds.bottom,
-                this._map.rotation()
+                this._formatNumber(bounds.left),
+                this._formatNumber(bounds.top),
+                this._formatNumber(bounds.right),
+                this._formatNumber(bounds.bottom),
+                this._formatNumber(this._map.rotation() * 180 / Math.PI)
             ].join(','),
             {
                 replace: true,
                 trigger: false
             }
         );
+    },
+
+    _formatNumber: function (num) {
+        return (Math.round(num * 100) / 100).toString()
     },
 
     _syncViewport: function () {
