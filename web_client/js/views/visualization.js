@@ -86,9 +86,9 @@ histomicstk.views.Visualization = girder.View.extend({
         this._map.rotation(bounds[4] * Math.PI / 180);
         this._map.bounds({
             left: bounds[0],
-            top: bounds[1],
+            top: -bounds[1],
             right: bounds[2],
-            bottom: bounds[3]
+            bottom: -bounds[3]
         }, null);
     },
 
@@ -400,9 +400,9 @@ histomicstk.views.Visualization = girder.View.extend({
             'bounds',
             [
                 this._formatNumber(bounds.left),
-                this._formatNumber(bounds.top),
+                this._formatNumber(-bounds.top),
                 this._formatNumber(bounds.right),
-                this._formatNumber(bounds.bottom),
+                this._formatNumber(-bounds.bottom),
                 this._formatNumber(this._map.rotation() * 180 / Math.PI)
             ].join(','),
             {
