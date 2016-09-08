@@ -37,6 +37,11 @@ girderTest.addCoveredScripts([
     '/clients/web/static/built/plugins/HistomicsTK/templates.js'
 ]);
 
+
+girderTest.importStylesheet(
+    '/clients/web/static/built/plugins/HistomicsTK/plugin.min.css'
+);
+
 describe('visualization', function () {
     var $el, parentView = _.extend({
         registerChildView: function () {},
@@ -48,8 +53,8 @@ describe('visualization', function () {
     beforeEach(function () {
         $el = $('<div/>').css({
             width: '500px',
-            height: '300px'
-        }).appendTo('body');
+            height: '500px'
+        }).attr('id', 'h-vis-container').appendTo('body');
     });
     afterEach(function () {
         $el.remove();
@@ -103,6 +108,56 @@ describe('visualization', function () {
         expect(function () {
             view.addTileLayer({});
         }).toThrow();
+    });
+
+    describe('bounds url parameters', function () {
+        var view;
+        beforeEach(function () {
+            var loaded = false;
+            sinon.stub(histomicstk.router, 'setQuery');
+            sinon.stub(histomicstk.router, 'getQuery')
+                .returns('0,0,100000,100000,0');
+            view = new histomicstk.views.Visualization({
+                parentView: parentView,
+                el: $el
+            }).render();
+
+            view.addItem({id: 'test'}).then(function (layer) {
+                layer.onIdle(function () { window.setTimeout(function () { loaded = true; }, 500)});
+            });
+            waitsFor(function () { return loaded; });
+        });
+        afterEach(function () {
+            view.destroy();
+            histomicstk.router.setQuery.restore();
+            histomicstk.router.getQuery.restore();
+        });
+        it('initial bounds', function () {
+            var bounds = view._map.bounds();
+            expect(bounds.left).toBeCloseTo(0, 6);
+            expect(bounds.right).toBeCloseTo(100000, 6);
+            expect(bounds.top).toBeCloseTo(-100000, 6);
+            expect(bounds.bottom).toBeCloseTo(0, 6);
+        });
+        it('after pan', function () {
+            view._map.pan({x: -10, y: 0});
+            sinon.assert.calledOnce(histomicstk.router.setQuery);
+            expect(histomicstk.router.setQuery.getCall(0).args[0]).toBe('bounds');
+            var params = histomicstk.router.setQuery.getCall(0).args[1].split(',');
+            var bounds = view._map.bounds(undefined, null);
+
+            expect(+bounds.left.toFixed(2)).toBe(+params[0]);
+            expect(+bounds.top.toFixed(2)).toBe(-params[1]);
+            expect(+bounds.right.toFixed(2)).toBe(+params[2]);
+            expect(+bounds.bottom.toFixed(2)).toBe(-params[3]);
+        });
+        it('after rotation', function () {
+            view._map.rotation(Math.PI / 4);
+            sinon.assert.calledOnce(histomicstk.router.setQuery);
+            expect(histomicstk.router.setQuery.getCall(0).args[0]).toBe('bounds');
+            var params = histomicstk.router.setQuery.getCall(0).args[1].split(',');
+            expect(+params[4]).toBe(45);
+        });
     });
 
     describe('mocked rest requests', function () {
