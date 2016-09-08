@@ -3,11 +3,15 @@ import os
 from girder import events
 from girder.utility.webroot import Webroot
 
-from .rest_slicer_cli import genRESTEndPointsForSlicerCLIsInDockerCache
+from girder.plugins.slicer_cli_web.rest_slicer_cli import (
+    genRESTEndPointsForSlicerCLIsInDockerCache
+)
+
+from girder.plugins.slicer_cli_web.docker_resource import DockerResource
+
 from .handlers import process_annotations
 
-from .docker_resource import DockerResource, DockerCache, getDockerImageSettings
-
+from girder.models.model_base import ModelImporter
 _template = os.path.join(
     os.path.dirname(__file__),
     'webroot.mako'
@@ -23,14 +27,21 @@ def load(info):
 
     info['serverRoot'].histomicstk = histomicsRoot
     info['serverRoot'].girder = girderRoot
-    # passed in resource name must match the attribute added to info[apiroot]
+
+    # create root resource for all REST end points of HistomicsTK
     resource = DockerResource('HistomicsTK')
-    info['apiRoot'].HistomicsTK = resource
+    setattr(info['apiRoot'], resource.resourceName, resource)
 
-    dockerCache = DockerCache(getDockerImageSettings())
+    # load docker images from cache
+    dockerImageModel = ModelImporter.model('docker_image_model',
+                                           'slicer_cli_web')
+    dockerCache = dockerImageModel.loadAllImages()
 
-    genRESTEndPointsForSlicerCLIsInDockerCache(info, resource, dockerCache)
+    # generate REST end points for slicer CLIs of each docker image
+    genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
 
+    # auto-ingest annotations into database when a .anot file is uploaded
     events.bind('data.process', 'HistomicsTK', process_annotations)
-    events.bind('model.setting.validate', 'histomicstk_modules',
-                DockerResource.validateSettings)
+
+    events.bind('jobs.job.update.after', resource.resourceName,
+                resource.AddRestEndpoints)

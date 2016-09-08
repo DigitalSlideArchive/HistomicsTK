@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: local
   roles:
     - common
     - mongodb
@@ -7,18 +7,16 @@
     - girder
     - mq
     - worker
-    - dev
     #- itk
   vars:
-    vagrant: true
     root_dir: /opt/histomicstk
     girder_admin_user: admin
     girder_admin_email: histomicstk.admin@kitware.com
     girder_admin_password: password
     girder_socket_host: localhost
-    girder_socket_port: 8009
-    girder_exec_user: vagrant
-    girder_exec_group: vagrant
+    girder_socket_port: 8080
+    girder_exec_user: "{{ lookup('env', 'GIRDER_EXEC_USER') }}"
+    girder_exec_group: girder
     girder_plugins:
       - digital_slide_archive
       - HistomicsTK
@@ -27,7 +25,10 @@
     girder_celery_email: histomicstk.celery@kitware.com
     girder_celery_password: celery
     girder_root: "{{ root_dir }}/girder"
-    worker_exec_user: vagrant
-    worker_exec_group: vagrant
+    worker_exec_user: "{{ lookup('env', 'GIRDER_EXEC_USER') }}"
+    worker_exec_group: girder
     mongo_private_ip: localhost
     mq_private_ip: localhost
+  tasks:
+    - debug: msg="Girder is running on port {{ girder_socket_port }}"
+

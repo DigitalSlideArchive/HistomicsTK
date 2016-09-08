@@ -4,7 +4,7 @@
 # deconvolution are displayed side-by-side for comparison.
 # Also tests helper functions:
 # ComplementStainMatrix.py
-# OpticalDensityFwd.py
+# rgb_to_od.py
 # OpticalDensityInv.py
 
 import matplotlib.cm as cm
