@@ -23,6 +23,9 @@ import numpy as np
 import os
 import skimage.io
 
+from histomicstk.preprocessing import color_conversion
+from histomicstk.preprocessing import color_normalization
+
 
 # boiler plate to start and stop the server if needed
 def setUpModule():
@@ -40,10 +43,7 @@ TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
 
 class ReinhardNormalizationTest(base.TestCase):
 
-    def testColorNormalization(self):
-
-        from histomicstk.preprocessing import color_conversion
-        from histomicstk.preprocessing import color_normalization
+    def test_normalization(self):
 
         inputImageFile = os.path.join(TEST_DATA_DIR, 'L1.png')
 
@@ -55,31 +55,15 @@ class ReinhardNormalizationTest(base.TestCase):
         # read reference image
         imReference = skimage.io.imread(refImageFile)[:, :, :3]
 
-        # transform reference image to LAB color space
-        imReferenceLAB = color_conversion.RudermanLABFwd(imReference)
-
-        # compute mean and stddev of reference image in LAB color space
-        meanRef = np.zeros(3)
-        stdRef = np.zeros(3)
-
-        for i in range(3):
-            meanRef[i] = imReferenceLAB[:, :, i].mean()
-            stdRef[i] = (imReferenceLAB[:, :, i] - meanRef[i]).std()
+        # get mean and stddev of reference image in lab space
+        meanRef, stdRef = color_conversion.lab_mean_std(imReference)
 
         # perform color normalization
-        imNmzd = color_normalization.ReinhardNorm(imInput, meanRef, stdRef)
+        imNmzd = color_normalization.reinhard(imInput, meanRef, stdRef)
 
-        # transform reference image to LAB color space
-        imNmzdLAB = color_conversion.RudermanLABFwd(imNmzd)
-
-        # compute mean and stddev of normalized input in LAB color space
-        meanNmzd = np.zeros(3)
-        stdNmzd = np.zeros(3)
-
-        for i in range(3):
-            meanNmzd[i] = imNmzdLAB[:, :, i].mean()
-            stdNmzd[i] = (imNmzdLAB[:, :, i] - meanNmzd[i]).std()
+        # transform normalized image to LAB color space
+        meanNmzd, stdNmzd = color_conversion.lab_mean_std(imNmzd)
 
         # check if mean and stddev of normalized and reference images are equal
-        self.assertTrue(np.allclose(meanNmzd, meanRef, atol=1e-2))
-        self.assertTrue(np.allclose(stdNmzd, stdRef, atol=1e-2))
+        np.testing.assert_allclose(meanNmzd, meanRef, atol=1e-1)
+        np.testing.assert_allclose(stdNmzd, stdRef, atol=1e-1)

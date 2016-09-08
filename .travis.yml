@@ -36,9 +36,10 @@ addons:
 before_install:
     - CACHE="$HOME/.cache" OPENSLIDE_VERSION="3.4.1" source .install-openslide.sh
 
-    - GIRDER_VERSION=d910e905c4196e3046a129d0edb84e5c7e301596
+    - GIRDER_VERSION=492acc9a011a6cc784a9295e466946da13198587
     - GIRDER_WORKER_VERSION=f834d4d3701df7f6f3f64fcd7d3f22d15b3b1db2
     - LARGE_IMAGE_VERSION=60c32b11abb4d5f0d1696221a7e81ab21c611980
+    - SLICER_CLI_WEB_VERSION=master
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path
@@ -56,6 +57,9 @@ before_install:
 
     - large_image_path=$girder_path/plugins/large_image
     - git clone https://github.com/DigitalSlideArchive/large_image.git $large_image_path && git -C $large_image_path checkout $LARGE_IMAGE_VERSION
+
+    - slicer_cli_web_path=$girder_path/plugins/slicer_cli_web
+    - git clone https://github.com/girder/slicer_cli_web.git $slicer_cli_web_path && git -C $slicer_cli_web_path checkout $SLICER_CLI_WEB_VERSION
 
     - export MONGO_VERSION=2.6.11
     - export PY_COVG="ON"
@@ -84,7 +88,7 @@ install:
     - conda install --yes libgfortran==1.0 setuptools==19.4 --file $main_path/requirements_c_conda.txt
     - pip install -r $main_path/requirements.txt -r $main_path/requirements_c.txt
     - cd $girder_path
-    - pip install -U -r requirements.txt -r requirements-dev.txt -r $main_path/requirements.txt -r $large_image_path/requirements.txt setuptools==19.4
+    - pip install -U -r requirements.txt -r requirements-dev.txt -r $main_path/requirements.txt -r $large_image_path/requirements.txt -r $slicer_cli_web_path/requirements.txt setuptools==19.4
     - npm install
 
 script:
