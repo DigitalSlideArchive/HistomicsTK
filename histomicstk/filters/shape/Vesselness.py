@@ -5,7 +5,7 @@ import histomicstk.utils as htk_utils
 
 def Vesselness(I, Sigma):
     """
-    Calculates "vesselness" measure for grayscale image 'I' at scale 'Sigma'.
+    Calculates vesselness measure for grayscale image `I` at scale `Sigma`.
     Also returns eigenvalues and vectors used for vessel salience filters.
 
     Parameters
