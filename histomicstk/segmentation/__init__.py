@@ -1,3 +1,8 @@
+"""
+This package contains functions for segmenting a variety of objects/structures
+(e.g. nuclei, tissue, cytoplasm) found in histopathology images.
+"""
+
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
 from histomicstk.utils.SimpleMask import SimpleMask

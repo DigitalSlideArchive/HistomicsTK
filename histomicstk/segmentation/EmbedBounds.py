@@ -32,7 +32,7 @@ def EmbedBounds(I, Bounds, Color=[255, 0, 0]):
 
     See Also
     --------
-        LabelPerimeter
+    histomicstk.segmentation.label.LabelPerimeter
     """
 
     # check for consistent shapes between 'I' and 'Bounds'

@@ -54,7 +54,7 @@ def DregEdge(I, Phi, Well='double', Sigma=1.5, dt=1.0, Mu=0.2, Lambda=1,
 
     See Also
     --------
-    GaussianVoting
+    histomicstk.segmentation.nuclear.GaussianVoting
 
     References
     ----------

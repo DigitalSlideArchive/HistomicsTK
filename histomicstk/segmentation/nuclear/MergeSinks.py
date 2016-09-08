@@ -28,7 +28,8 @@ def MergeSinks(Label, Sinks, Radius=5):
 
     See Also
     --------
-    GradientDiffusion, MergeSeeds, ShuffleLabel
+    histomicstk.utils.GradientDiffusion,
+    histomicstk.segmentation.label.ShuffleLabel
     """
 
     # build seed image

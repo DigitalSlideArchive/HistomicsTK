@@ -27,7 +27,7 @@ def DeleteLabel(Label, Index):
 
     See Also
     --------
-    CondenseLabel
+    histomicstk.segmentation.label.CondenseLabel
     """
 
     # initialize output

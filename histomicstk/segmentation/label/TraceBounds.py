@@ -7,8 +7,8 @@ def TraceBounds(Mask, Connectivity=4, XStart=None, YStart=None,
     If a starting point is not provided then a raster scan will be performed to
     identify the starting pixel.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     Mask : array_like
         A boolean type image where foreground pixels have value 'True', and
         background pixels have value 'False'.
@@ -23,26 +23,23 @@ def TraceBounds(Mask, Connectivity=4, XStart=None, YStart=None,
         Maximum boundary length to trace before terminating. Default value =
         np.inf.
 
-    Notes:
-    ------
+    Notes
+    -----
     The Improved Simple Boundary Follower (ISBF) from the reference below is
     used for 4-connected tracing. This algorithm provides accurate tracing with
     competitive execution times. 8-connected tracing is implemented using the
     Moore tracing algorithm.
 
-    Returns:
-    --------
+    Returns
+    -------
     X : array_like
         A 1D array of horizontal coordinates of contour seed pixels for
         tracing.
     Y : array_like
         A 1D array of the vertical coordinates of seed pixels for tracing.
 
-    See Also:
-    ---------
-
-    References:
-    -----------
+    References
+    ----------
     .. [1] J. Seo et al "Fast Contour-Tracing Algorithm Based on a Pixel-
     Following Method for Image Sensors" in Sensors,vol.16,no.353,
     doi:10.3390/s16030353, 2016.

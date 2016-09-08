@@ -1,3 +1,7 @@
+"""
+This package contains implementation of methods to deconvolve or separate
+the stains of histopathology images.
+"""
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
 from .ColorConvolution import ColorConvolution

@@ -19,7 +19,7 @@ def CondenseLabel(Label):
 
     See Also
     --------
-    ShuffleLabel
+    histomicstk.segmentation.label.ShuffleLabel
     """
 
     # initialize output
