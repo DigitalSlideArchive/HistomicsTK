@@ -40,6 +40,6 @@ Installing HistomicsTK as a Girder plugin using Vagrant and Ansible
 - ``git clone git@github.com:DigitalSlideArchive/HistomicsTK.git``
 - ``cd HistomicsTK && vagrant up``
 
-.. Girder_: http://girder.readthedocs.io/en/latest/
-.. large_image_: https://github.com/DigitalSlideArchive/large_image
-.. ctk_cli_: https://github.com/cdeepakroy/ctk-cli
+.. _Girder: http://girder.readthedocs.io/en/latest/
+.. _large_image: https://github.com/DigitalSlideArchive/large_image
+.. _ctk_cli: https://github.com/cdeepakroy/ctk-cli
