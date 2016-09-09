@@ -10,7 +10,7 @@ HistomicsTK can be used in two ways:
    researchers to use and/or extend the analytics functionality within
    HistomicsTK in Python.
 
-2. **As a server-side Girder_ plugin for web-based analysis**: This is intended
+2. **As a server-side Girder plugin for web-based analysis**: This is intended
    to allow pathologists/biologists to apply analysis modules/pipelines in
    HistomicsTK's docker plugins on the data stored in the associated Girder_
    instance over the web.
