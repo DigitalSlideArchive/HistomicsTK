@@ -5,9 +5,11 @@ Installation
 ============
 
 HistomicsTK can be used in two ways:
+
 1. **As a pure python toolkit**: This is intended to enable algorithm
    researchers to use and/or extend the analytics functionality within
    HistomicsTK in Python.
+
 2. **As a server-side Girder_ plugin for web-based analysis**: This is intended
    to allow pathologists/biologists to apply analysis modules/pipelines in
    HistomicsTK's docker plugins on the data stored in the associated Girder_
@@ -19,6 +21,7 @@ Installing HistomicsTK as a Python toolkit
 ------------------------------------------
 
 The following prerequisites should be installed before installing HistomicsTK:
+
 - large_image_
 - ctk_cli_ >= 1.3.1
 
@@ -33,9 +36,9 @@ Installing HistomicsTK as a Girder plugin using Vagrant and Ansible
 
 - Install virtual box - https://www.virtualbox.org/wiki/Downloads.
 - Install vagrant - https://www.vagrantup.com/downloads.html
-- $ `pip install ansible`
-- $ `git clone git@github.com:DigitalSlideArchive/HistomicsTK.git`
-- $ `cd HistomicsTK && vagrant up`
+- ``pip install ansible``
+- ``git clone git@github.com:DigitalSlideArchive/HistomicsTK.git``
+- ``cd HistomicsTK && vagrant up``
 
 .. Girder_: http://girder.readthedocs.io/en/latest/
 .. large_image_: https://github.com/DigitalSlideArchive/large_image
