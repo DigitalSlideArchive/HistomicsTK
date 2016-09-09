@@ -44,6 +44,8 @@ The Girder instance can then be accessed at http://localhost:8009 and the
 front-end UI to apply analysis modules in HistomicsTK's docker plugins
 can be accessed at http://localhost:8009/HistomicsTK.
 
+You can also ssh into the vagrant virtual box using the command ``vagrant ssh`.
+HistomicsTK and its dependencies are installed ad ``/opt/histomicstk``.
 
 .. _Girder: http://girder.readthedocs.io/en/latest/
 .. _large_image: https://github.com/DigitalSlideArchive/large_image
