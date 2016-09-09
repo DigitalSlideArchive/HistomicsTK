@@ -44,6 +44,12 @@ module.exports = function (grunt) {
             }
         },
         copy: {
+            'bootstrap-submenu': {
+                files: [{
+                    '<%= histomics.extjs %>/bootstrap-submenu.js': '<%= histomics.npm %>/bootstrap-submenu/dist/js/bootstrap-submenu.js',
+                    '<%= histomics.extcss %>/bootstrap-submenu.css': '<%= histomics.npm %>/bootstrap-submenu/dist/css/bootstrap-submenu.css'
+                }]
+            },
             'bootstrap-slider': {
                 files: [{
                     '<%= histomics.extjs %>/bootstrap-slider.js': '<%= histomics.npm %>/bootstrap-slider/dist/bootstrap-slider.js',
@@ -80,6 +86,11 @@ module.exports = function (grunt) {
             }
         },
         init: {
+            'copy:bootstrap-submenu': {
+                dependencies: [
+                    'shell:plugin-HistomicsTK'
+                ]
+            },
             'copy:bootstrap-slider': {
                 dependencies: [
                     'shell:plugin-HistomicsTK'

@@ -69,7 +69,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
         });
 
         // For the widget demo, just print the parameters to the console
-        if (this._schemaName === 'demo') {
+        if (this._schemaAPI === 'demo') {
             console.log('Submit'); // eslint-disable-line no-console
             console.log(JSON.stringify(params, null, 2)); // eslint-disable-line no-console
             return;
@@ -77,7 +77,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
 
         // post the job to the server
         girder.restRequest({
-            path: 'HistomicsTK/' + this._schemaName + '/run',
+            path: this._schemaAPI + '/run',
             type: 'POST',
             data: params
         }).then(function (data) {
@@ -152,7 +152,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
      * Remove all panels.
      */
     reset: function () {
-        this._schemaName = null;
+        this._schemaAPI = null;
         this.panels = [];
         this._gui = null;
         this.render();
@@ -188,7 +188,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
         $.ajax(girder.staticRoot + '/built/plugins/HistomicsTK/extra/widget_demo.json')
             .then(_.bind(function (spec) {
                 this._gui = spec;
-                this._schemaName = 'demo';
+                this._schemaAPI = 'demo';
                 this.reload();
             }, this));
         return this;
@@ -206,7 +206,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
         }
 
         girder.restRequest({
-            path: '/HistomicsTK/' + s + '/xmlspec'
+            path: s + '/xmlspec'
         }).then(_.bind(function (xml) {
             var fail = !xml;
             try {
@@ -226,7 +226,7 @@ histomicstk.views.PanelGroup = girder.View.extend({
                 return this;
             }
 
-            this._schemaName = s;
+            this._schemaAPI = s;
             this.reload();
 
             return this;
