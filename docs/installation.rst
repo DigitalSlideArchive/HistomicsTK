@@ -34,8 +34,8 @@ installed as follows::
 Installing HistomicsTK as a Girder plugin using Vagrant and Ansible
 -------------------------------------------------------------------
 
-- Install virtual box - https://www.virtualbox.org/wiki/Downloads.
-- Install vagrant - https://www.vagrantup.com/downloads.html
+- Download and install virtual box - https://www.virtualbox.org/wiki/Downloads
+- Download and install vagrant - https://www.vagrantup.com/downloads.html
 - ``pip install ansible``
 - ``git clone git@github.com:DigitalSlideArchive/HistomicsTK.git``
 - ``cd HistomicsTK && vagrant up``
