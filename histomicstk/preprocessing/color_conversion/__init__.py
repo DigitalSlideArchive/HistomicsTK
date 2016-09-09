@@ -1,3 +1,7 @@
+"""
+This package contains utility functions to convert images between different
+color spaces.
+"""
 # make functions available at the package level using these shadow imports
 # since we mostly have one function per file
 from .rgb_to_od import rgb_to_od

@@ -34,7 +34,7 @@ def MaxClustering(Response, Mask, r=10):
 
     See Also
     --------
-    cLoG
+    histomicstk.filters.shape.cLoG
 
     References
     ----------

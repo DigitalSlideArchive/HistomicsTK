@@ -25,15 +25,14 @@ def gLoG(I, Alpha=1, Range=np.linspace(1.5, 3, np.round((3-1.5)/0.2)+1),
 
     Returns
     -------
-
+    Rsum : array_like
+        Sum of filter responses at specified scales and orientations
+    Maxima: : array_like
+        A binary mask highlighting maxima pixels
 
     Notes
     -----
     Return values are returned as a namedtuple
-
-    See Also
-    --------
-    ColorDeconvolution
 
     References
     ----------

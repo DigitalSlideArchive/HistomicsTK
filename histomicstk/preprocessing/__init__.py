@@ -1,3 +1,6 @@
+"""
+This package contains functions to pre-process histopathology images.
+"""
 # import sub-packages to support nested calls
 from . import color_conversion
 from . import color_deconvolution

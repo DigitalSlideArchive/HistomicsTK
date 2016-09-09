@@ -1,3 +1,6 @@
+"""
+This package contains functions to enhance edges in images.
+"""
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
 from .GaussianGradient import GaussianGradient
