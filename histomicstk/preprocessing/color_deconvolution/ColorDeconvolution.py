@@ -43,8 +43,8 @@ def ColorDeconvolution(I, W):
     --------
     histomicstk.preprocessing.color_deconvolution.ComplementStainMatrix,
     histomicstk.preprocessing.color_deconvolution.ColorConvolution
-    histomicstk.preprocessing.color_conversion,rgb_to_od
-    histomicstk.preprocessing.color_conversion,od_to_rgb
+    histomicstk.preprocessing.color_conversion.rgb_to_od
+    histomicstk.preprocessing.color_conversion.od_to_rgb
     """
 
     # complement stain matrix if needed

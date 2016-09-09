@@ -5,7 +5,7 @@ import histomicstk.utils as htk_utils
 
 def Vesselness(I, Sigma):
     """
-    Calculates "vesselness" measure for grayscale image 'I' at scale 'Sigma'.
+    Calculates vesselness measure for grayscale image `I` at scale `Sigma`.
     Also returns eigenvalues and vectors used for vessel salience filters.
 
     Parameters
@@ -21,12 +21,12 @@ def Vesselness(I, Sigma):
         M x N image of deviation from blob
     Frobenius : array_like
         M x N image of frobenius norm of Hessian - measures presence of
-            structure.
+        structure.
     E : array_like
         M x N x 2 eigenvalue image - see Eigenvalues.py.
     Theta : array_like
         M x N eigenvector angle image for E(:,:,0) in radians
-            see Eigenvalues.py. Oriented parallel to vessel structures.
+        see Eigenvalues.py. Oriented parallel to vessel structures.
 
     References
     ----------

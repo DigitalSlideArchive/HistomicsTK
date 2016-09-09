@@ -12,8 +12,8 @@ def MinimumModel(I, Delta=0.3, MaxLength=255, Compaction=3,
     """Performs a nuclear segmentation using a gradient contour tracing and
     geometry splitting algorithm. Implemented from the reference below.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     I : array_like
         An intensity image used for analyzing local minima/maxima and
         gradients. Dimensions M x N.
@@ -38,16 +38,16 @@ def MinimumModel(I, Delta=0.3, MaxLength=255, Compaction=3,
         Minimum concavity score to consider when performing for geometric
         splitting. Default value = np.inf.
 
-    Notes:
-    ------
+    Notes
+    -----
     Objects are assumed to be dark (as nuclei in hematoxylin channel from color
     deconvolution). Smoothing improves accuracy and computation time by
     eliminating spurious seed points. Specifying a value for 'Delta' prevents
     shallow transitions from being included, also reducing computation time and
     increasing specificity.
 
-    Returns:
-    --------
+    Returns
+    -------
     X : array_like
         A 1D array of horizontal coordinates of contour seed pixels for
         tracing.
@@ -60,15 +60,15 @@ def MinimumModel(I, Delta=0.3, MaxLength=255, Compaction=3,
         A 1D array of the corresponding maximum values for contour tracing of
         seed point X, Y.
 
-    See Also:
-    ---------
-    TraceBounds
+    See Also
+    --------
+    histomicstk.segmentation.label.TraceBounds
 
-    References:
-    -----------
+    References
+    ----------
     .. [1] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
-    Virtual Microscopy Images: A Minimum-Model Approach" in Nature Scientific
-    Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
+           Virtual Microscopy Images: A Minimum-Model Approach" in Nature
+           Scientific Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
     """
 
     # identify contour seed points

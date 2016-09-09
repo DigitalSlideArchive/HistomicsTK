@@ -1,3 +1,8 @@
+"""
+This package contains functions to correct non-uniform staining issues in
+histopathology images.
+"""
+
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
 from .reinhard import reinhard
