@@ -27,12 +27,6 @@ def GaussianGradient(I, Sigma):
     -----
     Return values are returned as a namedtuple
 
-    See Also
-    --------
-
-    References
-    ----------
-
     """
 
     # generate separable gaussian derivative kernels
