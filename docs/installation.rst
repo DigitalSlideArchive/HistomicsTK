@@ -76,5 +76,6 @@ HistomicsTK and its dependencies are installed at the location
 .. _scikit-image: http://scikit-image.org/
 .. _scikit-learn: http://scikit-learn.org/stable/
 .. _scipy: https://www.scipy.org/
+.. _slicer_cli_web: https://github.com/girder/slicer_cli_web
 
 
