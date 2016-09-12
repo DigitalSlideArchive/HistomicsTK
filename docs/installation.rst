@@ -20,7 +20,7 @@ HistomicsTK also leverages the functionality of a number of scientific python
 packages including numpy_, scipy_, scikit-image_, scikit-learn_,
 and pandas_. We recommend using anaconda to ease the cross-platform
 installation of these packages all of which are listed in
-:doc:`../requirments_c_conda.txt`.
+`requirments_c_conda.txt <https://github.com/DigitalSlideArchive/HistomicsTK/blob/master/requirements_c_conda.txt>`__.
 
 Once large_image is installed, HistomicsTK can be installed as follows::
 
@@ -32,8 +32,22 @@ Once large_image is installed, HistomicsTK can be installed as follows::
 We are working on releasing HistomicsTK on PyPI so it can easily be pip
 installed from there.
 
-Installing HistomicsTK as a server-side Girder plugin using Vagrant and Ansible
--------------------------------------------------------------------------------
+Installing HistomicsTK as a server-side Girder plugin using Vagrant
+-------------------------------------------------------------------
+
+To use HistomicsTK as a server-side Girder_ plugin for web-based analysis,
+a few other Girder plugins need to be installed:
+
+- girder_worker_: A distributed task execution engine
+- large_image_: A Girder plugin to create/serve/display large
+  multi-resolution images produced by whole-slide imaging systems and a
+  stand-alone Python package to read/write these images.
+- slicer_cli_web_: A Girder plugin for exposing slicer execution model CLIs
+  over the web using Docker for containerization and girder_worker for
+  distributed execution
+
+We used Vagrant and Ansible to ease the installation of these plugins in
+addition to HistomicsTK as follows:
 
 - Download and install virtual box - https://www.virtualbox.org/wiki/Downloads
 - Download and install vagrant - https://www.vagrantup.com/downloads.html
@@ -48,11 +62,13 @@ docker plugins on data stored in Girder can be accessed at
 http://localhost:8009/histomicstk.
 
 You can also ssh into the vagrant virtual box using the command ``vagrant ssh``.
-HistomicsTK and its dependencies are installed ad ``/opt/histomicstk``.
+HistomicsTK and its dependencies are installed at the location
+``/opt/histomicstk``.
 
 .. _CherryPy: http://www.cherrypy.org/
 .. _ctk_cli: https://github.com/cdeepakroy/ctk-cli
 .. _Girder: http://girder.readthedocs.io/en/latest/
+.. _girder_worker:
 .. _Kitware: http://www.kitware.com/
 .. _large_image: https://github.com/DigitalSlideArchive/large_image
 .. _numpy: http://www.numpy.org/
