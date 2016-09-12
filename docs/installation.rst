@@ -4,28 +4,10 @@
 Installation
 ============
 
-HistomicsTK can be used in two ways:
-
-1. **As a pure python toolkit**: This is intended to enable algorithm
-   researchers to use and/or extend the analytics functionality within
-   HistomicsTK in Python.
-
-2. **As a server-side Girder plugin for web-based analysis**: This is intended
-   to allow pathologists/biologists to apply analysis modules/pipelines
-   containerized in HistomicsTK's docker plugins on data over the web. Girder_
-   is a Python-based framework (under active development by Kitware_) for
-   building web-applications that store, aggregate, and process scientific data.
-   It is built on CherryPy_ and provides functionality for authentication,
-   access control, customizable metadata association, easy upload/download of
-   data, an abstraction layer that exposes data on multiple backends
-   (e.g. Native file system, Amazon S3, MongoDB GridFS) through a uniform
-   RESTful API, and most importantly an extensible plugin framework for
-   server-side analytics. To inherit all these capabilities, HistomicsTK is
-   being developed to act as a Girder plugin in addition to its use as a pure
-   Python toolkit.
-
-
-Here, we describe how to install HistomicsTK for both these scenarios
+As mentioned in the :doc:`index`, HistomicsTK can be used both as a pure
+Python toolkit for algorithm development and as server-side Girder_ plugin
+for web-based analysis. Here, we describe how to install HistomicsTK for both
+these scenarios.
 
 Installing HistomicsTK as a Python toolkit
 ------------------------------------------
@@ -38,7 +20,7 @@ HistomicsTK also leverages the functionality of a number of scientific python
 packages including numpy_, scipy_, scikit-image_, scikit-learn_,
 and pandas_. We recommend using anaconda to ease the cross-platform
 installation of these packages all of which are listed in
-:doc:`requirments_c_conda.txt`.
+:doc:`../requirments_c_conda.txt`.
 
 Once large_image is installed, HistomicsTK can be installed as follows::
 
@@ -47,11 +29,11 @@ Once large_image is installed, HistomicsTK can be installed as follows::
     $ conda install --yes libgfortran==1.0 setuptools==19.4 --file requirements_c_conda.txt
     $ python setup.py install
 
-We are working on getting HistomicsTK onto PyPI so it can easily be pip
+We are working on releasing HistomicsTK on PyPI so it can easily be pip
 installed from there.
 
-Installing HistomicsTK as a Girder plugin using Vagrant and Ansible
-------------------------------------------------------------------------
+Installing HistomicsTK as a server-side Girder plugin using Vagrant and Ansible
+-------------------------------------------------------------------------------
 
 - Download and install virtual box - https://www.virtualbox.org/wiki/Downloads
 - Download and install vagrant - https://www.vagrantup.com/downloads.html
