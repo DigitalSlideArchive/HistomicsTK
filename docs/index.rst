@@ -16,11 +16,11 @@ quantitative analysis of the massive and rapidly growing collections of
 data in the domain of digital pathology. The goal of HistomicsTK is to
 full-fill this gap with funding from the NIH grant U24-CA194362-01_.
 
-Developed in coordination with the `Digital Slide Archive`_, HistomicsTK
-intends to serve the needs of both pathologists/biologists interested in
-using state-of-the-art algorithms to analyze their data, and algorithm
-researchers interested in developing new/improved algorithms and disseminate
-them for wider use by the community.
+Developed in coordination with the `Digital Slide Archive`_ and
+`large_image`_, HistomicsTK aims to serve the needs of both
+pathologists/biologists interested in using state-of-the-art algorithms
+to analyze their data, and algorithm researchers interested in developing
+new/improved algorithms and disseminate them for wider use by the community.
 
 HistomicsTK can be used in two ways:
 
@@ -71,5 +71,6 @@ Indices and tables
 
 .. _Digital Slide Archive: http://github.com/DigitalSlideArchive
 .. _Docker: https://www.docker.com/
+.. _large_image: https://github.com/DigitalSlideArchive/large_image
 .. _Slicer Execution Model: https://www.slicer.org/slicerWiki/index.php/Slicer3:Execution_Model_Documentation
 .. _U24-CA194362-01: http://grantome.com/grant/NIH/U24-CA194362-01
