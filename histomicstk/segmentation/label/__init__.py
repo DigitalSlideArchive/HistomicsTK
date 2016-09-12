@@ -1,3 +1,8 @@
+"""
+This package contains functions for post-processing labeled segmentation
+masks produced by segmentation algorithms.
+"""
+
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
 from .CompactLabel import CompactLabel

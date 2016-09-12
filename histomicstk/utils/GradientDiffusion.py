@@ -44,7 +44,7 @@ def GradientDiffusion(dX, dY, Mask, Mu=5, Lambda=5, Iterations=10,
 
     See Also
     --------
-    GradientFlow
+    histomicstk.segmentation.nuclear.GradientFlow
 
     References
     ----------

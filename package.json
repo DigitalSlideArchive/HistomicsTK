@@ -14,6 +14,7 @@
     "backbone.localstorage": "^1.1.16",
     "bootstrap-colorpicker": "^2.3.0",
     "bootstrap-slider": "^6.1.1",
+    "bootstrap-submenu": "^2.0.4",
     "tinycolor2": "^1.3.0"
   },
   "devDependencies": {

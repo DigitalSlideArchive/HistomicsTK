@@ -23,7 +23,7 @@ def LabelPerimeter(L, Connectivity=4):
 
     See Also
     --------
-    EmbedBounds
+    histomicstk.segmentation.EmbedBounds
     """
 
     # initialize temporary variable

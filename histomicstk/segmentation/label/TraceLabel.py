@@ -7,8 +7,8 @@ def TraceLabel(Label, Connectivity=4):
     """Performs exterior boundary tracing of a multiple objects in a label
     image.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     Mask : array_like
         A boolean type image where foreground pixels have value 'True', and
         background pixels have value 'False'.
@@ -16,8 +16,8 @@ def TraceLabel(Label, Connectivity=4):
         Neighborhood connectivity to evaluate. Valid values are 4 or 8.
         Default value = 4.
 
-    Returns:
-    --------
+    Returns
+    -------
     X : array_like
         A list of 1D arrays of horizontal coordinates for each object in
         'Label'.
@@ -25,24 +25,27 @@ def TraceLabel(Label, Connectivity=4):
         A list of 1D arrays of horizontal coordinates for each object in
         'Label'.
 
-    Notes:
-    ------
-        Objects should be made contiguous using SplitLabel prior to tracing.
-        Returns lists with length Label.max(). Object values missing from
+    Notes
+    -----
+    Objects should be made contiguous using SplitLabel prior to tracing.
+    Returns lists with length Label.max(). Object values missing from
     'Label' will have corresponding boundaries with value 'None' in the
     outputs. Condensing the label image values prior to boundary tracing can
     prevent this.
-        Uses the Improved Simple Boundary Follower (ISBF) from the reference
+
+    Uses the Improved Simple Boundary Follower (ISBF) from the reference
     below for 4-connected tracing. This algorithm provides accurate tracing
     with competitive execution times. 8-connected tracing is implemented using
     the Moore tracing algorithm.
 
-    See Also:
-    ---------
-    SplitLabel, CondenseLabel, TraceBounds
+    See Also
+    --------
+    histomicstk.segmentation.label.SplitLabel,
+    histomicstk.segmentation.label.CondenseLabel,
+    histomicstk.segmentation.label.TraceBounds
 
-    References:
-    -----------
+    References
+    ----------
     .. [1] J. Seo et al "Fast Contour-Tracing Algorithm Based on a Pixel-
     Following Method for Image Sensors" in Sensors,vol.16,no.353,
     doi:10.3390/s16030353, 2016.

@@ -1,6 +1,6 @@
 histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
     events: {
-        'click #g-analysis-menu a': '_selectAnalysis',
+        'click a.g-analysis-item': '_selectAnalysis',
         'click .g-register': '_register',
         'click .g-login': '_login',
         'click .g-logout': '_logout',
@@ -8,7 +8,7 @@ histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
     },
     initialize: function () {
         this.analyses = [];
-        girder.restRequest({path: 'HistomicsTK', error: null})
+        girder.restRequest({path: 'HistomicsTK/HistomicsTK/docker_image', error: null})
             .then(_.bind(function (data) {
                 this.analyses = data;
                 this.render();
@@ -23,11 +23,12 @@ histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
             user: girder.currentUser,
             analyses: this.analyses
         }));
+        this.$('[data-submenu]').submenupicker();
         return this;
     },
     _selectAnalysis: function (evt) {
-        var name = $(evt.currentTarget).data('name');
-        histomicstk.router.setQuery('analysis', name, {trigger: true});
+        var $el = $(evt.target);
+        histomicstk.router.setQuery('analysis', $el.data('api'), {trigger: true});
         evt.preventDefault();
     },
     _register: function (evt) {

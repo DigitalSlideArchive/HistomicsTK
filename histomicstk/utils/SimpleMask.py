@@ -18,6 +18,7 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
     (instead of using expectation-maximization directly on the data which
     is more prone to local minima effects). A maximum-likelihood threshold
     is then derived and used to mask the tissue area in a binarized image.
+
     Parameters
     ----------
     I : array_like
@@ -42,13 +43,15 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
         model. Default value = 0.10.
     MinProb : double, optional
         Minimum probability to qualify as tissue pixel. Default value = 0.05.
+
     Returns
     -------
     Mask : array_like
         A binarized version of `I` where foreground (tissue) has value '1'.
+
     See Also
     --------
-    Sample
+    histomicstk.utils.Sample
     """
 
     # convert image to grayscale, flatten and sample

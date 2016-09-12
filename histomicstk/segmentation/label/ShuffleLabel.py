@@ -19,7 +19,7 @@ def ShuffleLabel(Label):
 
     See Also
     --------
-    CondenseLabel
+    histomicstk.segmentation.label.CondenseLabel
     """
 
     # get list of unique object labels
