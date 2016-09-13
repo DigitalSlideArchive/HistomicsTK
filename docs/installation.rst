@@ -65,10 +65,8 @@ You can also ssh into the vagrant virtual box using the command ``vagrant ssh``.
 HistomicsTK and its dependencies are installed at the location
 ``/opt/histomicstk``.
 
-.. _CherryPy: http://www.cherrypy.org/
-.. _ctk_cli: https://github.com/cdeepakroy/ctk-cli
 .. _Girder: http://girder.readthedocs.io/en/latest/
-.. _girder_worker:
+.. _girder_worker: http://girder-worker.readthedocs.io/en/latest/
 .. _Kitware: http://www.kitware.com/
 .. _large_image: https://github.com/DigitalSlideArchive/large_image
 .. _numpy: http://www.numpy.org/
