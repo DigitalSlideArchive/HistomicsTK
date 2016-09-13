@@ -1,5 +1,5 @@
 =====================================================================
-HistomicsTK - A Python and REST API for Histopathology Image Analysis
+HistomicsTK - A Python Toolkit for Histopathology Image Analysis
 =====================================================================
 |build-status| |codecov-io| |docs-status|
 
