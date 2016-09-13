@@ -77,8 +77,8 @@ def main(args):
         imLog, imFgndMask, args.local_max_search_radius)
 
     # filter out small objects
-    imNucleiSegMask = htk_seg.label.FilterLabel(
-        imNucleiSegMask, Lower=args.min_nucleus_area).astype(np.int)
+    imNucleiSegMask = htk_seg.label.AreaOpenLabel(
+        imNucleiSegMask, args.min_nucleus_area).astype(np.int)
 
     #
     # Generate annotations
