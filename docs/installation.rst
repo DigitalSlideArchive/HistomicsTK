@@ -4,7 +4,7 @@
 Installation
 ============
 
-As mentioned in the :doc:`index`, HistomicsTK can be used both as a pure
+As mentioned in the :doc:`index <index>`, HistomicsTK can be used both as a pure
 Python toolkit for algorithm development and as server-side Girder_ plugin
 for web-based analysis. Here, we describe how to install HistomicsTK for both
 these scenarios.

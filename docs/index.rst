@@ -29,7 +29,8 @@ HistomicsTK can be used in two ways:
   HistomicsTK in Python. HistomicsTK provides algorithms for fundamental
   image analysis tasks such as color normalization, color deconvolution,
   cell-nuclei segmentation, and feature extraction. Please see the
-  :doc:`api-docs` and :doc:`examples` for more information.
+  :doc:`api-docs <api-docs>` and :doc:`examples <examples>` for more
+  information.
 
 - **As a server-side Girder plugin for web-based analysis**: This is intended
   to allow pathologists/biologists to apply analysis modules/pipelines
@@ -49,7 +50,7 @@ HistomicsTK can be used in two ways:
   - girder_worker_: A Girder plugin for distributed task execution.
   - large_image_: A Girder plugin to create/serve/display large
     multi-resolution images produced by whole-slide imaging systems and a
-    stand-alone Python package to read/write these images.
+    stand-alone Python package for reading these images.
   - slicer_cli_web_: A Girder plugin for providing web-based RESTFul access
     to image analysis pipelines developed as `slicer execution model`_
     CLIs and containerized using Docker.
