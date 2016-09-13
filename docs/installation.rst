@@ -18,7 +18,7 @@ large_image to find out how to install it as a Python toolkit/package.
 
 HistomicsTK also leverages the functionality of a number of scientific python
 packages including numpy_, scipy_, scikit-image_, scikit-learn_,
-and pandas_. We recommend using anaconda to ease the cross-platform
+and pandas_. We recommend installing anaconda_ to ease the cross-platform
 installation of these packages all of which are listed in
 `requirments_c_conda.txt <https://github.com/DigitalSlideArchive/HistomicsTK/blob/master/requirements_c_conda.txt>`__.
 
@@ -75,5 +75,6 @@ HistomicsTK and its dependencies are installed at the location
 .. _scikit-learn: http://scikit-learn.org/stable/
 .. _scipy: https://www.scipy.org/
 .. _slicer_cli_web: https://github.com/girder/slicer_cli_web
+.. _anaconda: https://www.continuum.io/downloads
 
 
