@@ -42,7 +42,9 @@ HistomicsTK can be used in two ways:
   HistomicsTK in Python. HistomicsTK provides algorithms for fundamental
   image analysis tasks such as color normalization, color deconvolution,
   cell-nuclei segmentation, and feature extraction. Please see the
-  :doc:`api-docs` and :doc:`examples` for more information.
+  `api-docs <https://histomicstk.readthedocs.io/en/latest/api-docs.html>`
+  and `examples <https://histomicstk.readthedocs.io/en/latest/examples.html>`
+  for more information.
 
 - **As a server-side Girder plugin for web-based analysis**: This is intended
   to allow pathologists/biologists to apply analysis modules/pipelines
@@ -66,8 +68,7 @@ HistomicsTK can be used in two ways:
 
 This work is funded by the NIH grant U24-CA194362-01_.
 
-Please refer to https://histomicstk.readthedocs.org for more information and
-instructions on how to install HistomicsTK.
+Please refer to https://histomicstk.readthedocs.org for more information.
 
 .. _Digital Slide Archive: http://github.com/DigitalSlideArchive
 .. _Docker: https://www.docker.com/
