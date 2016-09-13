@@ -27,7 +27,7 @@ of data. Compared to the related areas of radiology and genomics, there is a
 dearth of mature open-source tools for the management, visualization and
 quantitative analysis of the massive and rapidly growing collections of
 data in the domain of digital pathology. This is precisely the gap that
-we aim fill with the development of HistomicsTK.
+we aim to fill with the development of HistomicsTK.
 
 Developed in coordination with the `Digital Slide Archive`_ and
 `large_image`_, HistomicsTK aims to serve the needs of both
@@ -66,8 +66,7 @@ HistomicsTK can be used in two ways:
   access to image analysis pipelines developed as `slicer execution model`_
   CLIs and containerized using Docker.
 
-This work is funded by the National Cancer Institute (NCI) grant
-U24-CA194362-01_.
+This work is funded by the NIH grant U24-CA194362-01_.
 
 Please refer to https://histomicstk.readthedocs.org for more information.
 
