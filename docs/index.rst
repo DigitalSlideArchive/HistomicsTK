@@ -45,13 +45,14 @@ HistomicsTK can be used in two ways:
   HistomicsTK is being developed to act also as a Girder plugin in addition
   to its use as a pure Python package. To further support web-based analysis,
   HistomicsTK depends on three other Girder plugins:
-  - girder_worker_: A distributed task execution engine
+
+  - girder_worker_: A Girder plugin for distributed task execution.
   - large_image_: A Girder plugin to create/serve/display large
-    multi-resolution images such as ones produced by whole-slide imaging
-    systems and a stand-alone Python package to read/write these images.
-  - slicer_cli_web_: A Girder plugin for exposing `slicer execution model`_
-    CLIs over the web using Docker_ for containerization and girder_worker for
-    distributed task execution.
+    multi-resolution images produced by whole-slide imaging systems and a
+    stand-alone Python package to read/write these images.
+  - slicer_cli_web_: A Girder plugin for providing web-based RESTFul access
+    to image analysis pipelines developed as `slicer execution model`_
+    CLIs and containerized using Docker.
 
 This work is funded by the NIH grant U24-CA194362-01_.
 

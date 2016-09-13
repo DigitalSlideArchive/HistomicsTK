@@ -35,16 +35,16 @@ installed from there.
 Installing HistomicsTK as a server-side Girder plugin using Vagrant
 -------------------------------------------------------------------
 
-To use HistomicsTK as a server-side Girder_ plugin for web-based analysis,
-a few other Girder plugins need to be installed:
+When HistomicsTK is used as a server-side Girder_ plugin for web-based
+analysis, the following three Girder plugins need to be installed:
 
-- girder_worker_: A distributed task execution engine
+- girder_worker_: A Girder plugin for distributed task execution.
 - large_image_: A Girder plugin to create/serve/display large
   multi-resolution images produced by whole-slide imaging systems and a
   stand-alone Python package to read/write these images.
-- slicer_cli_web_: A Girder plugin for exposing slicer execution model CLIs
-  over the web using Docker for containerization and girder_worker for
-  distributed execution
+- slicer_cli_web_: A Girder plugin for providing web-based RESTFul access
+  to image analysis pipelines developed as slicer execution model
+  CLIs and containerized using Docker.
 
 We used Vagrant and Ansible to ease the installation of these plugins in
 addition to HistomicsTK as follows:
