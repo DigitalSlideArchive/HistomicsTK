@@ -55,7 +55,8 @@ HistomicsTK can be used in two ways:
     to image analysis pipelines developed as `slicer execution model`_
     CLIs and containerized using Docker.
 
-This work is funded by the NIH grant U24-CA194362-01_.
+This work is funded by the National Cancer Institute (NCI) grant
+U24-CA194362-01_.
 
 .. toctree::
    :maxdepth: 2
