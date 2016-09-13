@@ -24,7 +24,7 @@ installation of these packages all of which are listed in
 
 Once large_image is installed, HistomicsTK can be installed as follows::
 
-    $ git clone git@github.com:DigitalSlideArchive/HistomicsTK.git
+    $ git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
     $ cd HistomicsTK
     $ conda install --yes libgfortran==1.0 setuptools==19.4 --file requirements_c_conda.txt
     $ python setup.py install
@@ -52,7 +52,7 @@ addition to HistomicsTK as follows:
 - Download and install virtual box - https://www.virtualbox.org/wiki/Downloads
 - Download and install vagrant - https://www.vagrantup.com/downloads.html
 - ``pip install ansible``
-- ``git clone git@github.com:DigitalSlideArchive/HistomicsTK.git``
+- ``git clone https://github.com/DigitalSlideArchive/HistomicsTK.git``
 - ``cd HistomicsTK && vagrant up``
 
 The Girder instance can then be accessed at http://localhost:8009.
