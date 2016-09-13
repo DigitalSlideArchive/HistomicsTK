@@ -24,6 +24,7 @@ import os
 
 from histomicstk.segmentation import label
 
+
 # boiler plate to start and stop the server if needed
 def setUpModule():
     base.enabledPlugins.append('HistomicsTK')
