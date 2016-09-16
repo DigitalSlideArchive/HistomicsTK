@@ -1,4 +1,4 @@
-# This Dockerfile is used to generate the docker image dsarchive/histomicstk
+1;95;0c# This Dockerfile is used to generate the docker image dsarchive/histomicstk
 # This docker image includes miniconda, python wrapped ITK, and the HistomicsTK
 # python package along with their dependencies.
 #
@@ -6,11 +6,6 @@
 
 FROM dsarchive/base_docker_image
 MAINTAINER Deepak Chittajallu <deepak.chittajallu@kitware.com>
-
-# git clone install ctk-cli
-RUN git clone https://github.com/cdeepakroy/ctk-cli.git && cd ctk-cli \
-    git checkout 979d8cb671060e787b725b0226332a72a551592e && \
-    python setup.py install
 
 # copy HistomicsTK files
 ENV htk_path=$PWD/HistomicsTK
@@ -21,8 +16,17 @@ WORKDIR $htk_path
 # Install HistomicsTK and its dependencies
 RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     conda install --yes pip libgfortran==1.0 openslide-python \
-    --file requirements.txt --file requirements_c_conda.txt && \
-    pip install -r requirements_c.txt && \
+    --file requirements_c_conda.txt && \
+    pip install -r requirements.txt -r requirements_c.txt && \
+    # Install HistomicsTK
+    python setup.py install && \
+    # clean up
+    conda clean -i -l -t -y && \
+    rm -rf /root/.cache/pip/*
+
+RUN conda install --yes pip libgfortran==1.0 setuptools==19.4 ctk-cli==1.3.1 \
+    openslide-python --file requirements_c_conda.txt && \
+    pip install -r requirements.txt -r requirements_c.txt && \
     # Install HistomicsTK
     python setup.py install && \
     # clean up
@@ -33,8 +37,8 @@ RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
 RUN python -c "from matplotlib import pylab"
 
 # git clone install slicer_cli_web
-RUN git clone git@github.com:girder/slicer_cli_web.git
+RUN cd /build && git clone https://github.com/girder/slicer_cli_web.git
 
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server
-ENTRYPOINT ["/build/miniconda/bin/python", "/slicer_cli_web/server/cli_list_entrypoint.py"]
+ENTRYPOINT ["/build/miniconda/bin/python", "/build/slicer_cli_web/server/cli_list_entrypoint.py"]
