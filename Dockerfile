@@ -1,4 +1,4 @@
-1;95;0c# This Dockerfile is used to generate the docker image dsarchive/histomicstk
+# This Dockerfile is used to generate the docker image dsarchive/histomicstk
 # This docker image includes miniconda, python wrapped ITK, and the HistomicsTK
 # python package along with their dependencies.
 #
