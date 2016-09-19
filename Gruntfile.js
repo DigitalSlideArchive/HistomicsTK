@@ -49,33 +49,6 @@ module.exports = function (grunt) {
                     '<%= histomics.extjs %>/bootstrap-submenu.js': '<%= histomics.npm %>/bootstrap-submenu/dist/js/bootstrap-submenu.js',
                     '<%= histomics.extcss %>/bootstrap-submenu.css': '<%= histomics.npm %>/bootstrap-submenu/dist/css/bootstrap-submenu.css'
                 }]
-            },
-            'bootstrap-slider': {
-                files: [{
-                    '<%= histomics.extjs %>/bootstrap-slider.js': '<%= histomics.npm %>/bootstrap-slider/dist/bootstrap-slider.js',
-                    '<%= histomics.extcss %>/bootstrap-slider.css': '<%= histomics.npm %>/bootstrap-slider/dist/css/bootstrap-slider.css'
-                }]
-            },
-            'bootstrap-colorpicker': {
-                files: [{
-                    '<%= histomics.extjs %>/bootstrap-colorpicker.js': '<%= histomics.npm %>/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js',
-                    '<%= histomics.extcss %>/bootstrap-colorpicker.css': '<%= histomics.npm %>/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.css'
-                }, {
-                    expand: true,
-                    cwd: '<%= histomics.npm %>/bootstrap-colorpicker/dist/img',
-                    src: ['bootstrap-colorpicker/*.png'],
-                    dest: '<%= histomics.extextra %>'
-                }]
-            },
-            'backbone.localStorage': {
-                files: [{
-                    '<%= histomics.extjs %>/backbone.localStorage.js': '<%= histomics.npm %>/backbone.localstorage/backbone.localStorage.js'
-                }]
-            },
-            tinycolor:  {
-                files: [{
-                    '<%= histomics.extjs %>/tinycolor.js': '<%= histomics.npm %>/tinycolor2/tinycolor.js'
-                }]
             }
         },
         stylus: {
@@ -87,26 +60,6 @@ module.exports = function (grunt) {
         },
         init: {
             'copy:bootstrap-submenu': {
-                dependencies: [
-                    'shell:plugin-HistomicsTK'
-                ]
-            },
-            'copy:bootstrap-slider': {
-                dependencies: [
-                    'shell:plugin-HistomicsTK'
-                ]
-            },
-            'copy:bootstrap-colorpicker': {
-                dependencies: [
-                    'shell:plugin-HistomicsTK'
-                ]
-            },
-            'copy:backbone.localStorage': {
-                dependencies: [
-                    'shell:plugin-HistomicsTK'
-                ]
-            },
-            'copy:tinycolor': {
                 dependencies: [
                     'shell:plugin-HistomicsTK'
                 ]
