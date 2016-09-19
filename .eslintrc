@@ -5,6 +5,7 @@
     "geo": true,
     "girder": true,
     "histomicstk": true,
+    "slicer": true,
     "$": true,
     "_": true,
     "Backbone": true,

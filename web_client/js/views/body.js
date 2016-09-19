@@ -3,7 +3,7 @@ histomicstk.views.Body = girder.View.extend({
         this.visView = new histomicstk.views.Visualization({
             parentView: this
         });
-        this.panelGroupView = new histomicstk.views.PanelGroup({
+        this.panelGroupView = new slicer.views.PanelGroup({
             parentView: this
         });
     },
