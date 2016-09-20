@@ -39,7 +39,7 @@ before_install:
     - GIRDER_VERSION=492acc9a011a6cc784a9295e466946da13198587
     - GIRDER_WORKER_VERSION=f834d4d3701df7f6f3f64fcd7d3f22d15b3b1db2
     - LARGE_IMAGE_VERSION=60c32b11abb4d5f0d1696221a7e81ab21c611980
-    - SLICER_CLI_WEB_VERSION=master
+    - SLICER_CLI_WEB_VERSION=ce457fa47628c6f8a329be656503d63c1844ce19
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path
