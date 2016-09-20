@@ -7,7 +7,11 @@ histomicstk.views.Body = girder.View.extend({
             parentView: this
         });
         this.listenTo(histomicstk.events, 'query:analysis', function (analysis) {
-            this.panelGroupView.setAnalysis(analysis);
+            if (analysis) {
+                this.panelGroupView.setAnalysis(analysis);
+            } else {
+                this.panelGroupView.reset();
+            }
         });
     },
     render: function () {
