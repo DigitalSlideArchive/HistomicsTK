@@ -122,3 +122,13 @@
 - name: Run ldconfig
   command: ldconfig
   sudo: yes
+
+- name: Purge pip cache
+  command: bash -c "if PIP_CACHE=`python -c 'import pip.locations, sys;sys.stdout.write(pip.locations.USER_CACHE_DIR)'`; then rm -r $PIP_CACHE; fi"
+  sudo: yes
+  ignore_errors: yes
+
+- name: Uninstall Pillow, if installed
+  command: pip uninstall Pillow
+  sudo: yes
+  ignore_errors: yes
