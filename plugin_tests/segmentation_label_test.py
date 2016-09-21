@@ -54,7 +54,7 @@ class TraceBoundsTest(base.TestCase):
         # test isbf with 4 connectivity
         res_X, res_Y = label.TraceBounds(mask, 4)
 
-        cython_X, cython_Y = label.TraceBounds(mask, 4)
+        cython_X, cython_Y = label.tracebounds_cython(mask, 4)
 
         # check if isbf of original X, Y and cython version X, Y are equal
         np.testing.assert_allclose(res_X, cython_X)
