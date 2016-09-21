@@ -23,8 +23,8 @@ import numpy as np
 import os
 import skimage.io
 
-from histomicstk.preprocessing import color_conversion
-from histomicstk.preprocessing import color_normalization
+from histomicstk.preprocessing import color_conversion as htk_cvt
+from histomicstk.preprocessing import color_normalization as htk_cn
 
 
 # boiler plate to start and stop the server if needed
@@ -45,25 +45,25 @@ class ReinhardNormalizationTest(base.TestCase):
 
     def test_normalization(self):
 
-        inputImageFile = os.path.join(TEST_DATA_DIR, 'L1.png')
+        input_image_file = os.path.join(TEST_DATA_DIR, 'L1.png')
 
-        refImageFile = os.path.join(TEST_DATA_DIR, 'Easy1.png')
+        ref_image_file = os.path.join(TEST_DATA_DIR, 'Easy1.png')
 
         # read input image
-        imInput = skimage.io.imread(inputImageFile)[:, :, :3]
+        im_input = skimage.io.imread(input_image_file)[:, :, :3]
 
         # read reference image
-        imReference = skimage.io.imread(refImageFile)[:, :, :3]
+        im_reference = skimage.io.imread(ref_image_file)[:, :, :3]
 
         # get mean and stddev of reference image in lab space
-        meanRef, stdRef = color_conversion.lab_mean_std(imReference)
+        mean_ref, std_ref = htk_cvt.lab_mean_std(im_reference)
 
         # perform color normalization
-        imNmzd = color_normalization.reinhard(imInput, meanRef, stdRef)
+        im_nmzd = htk_cn.reinhard(im_input, mean_ref, std_ref)
 
         # transform normalized image to LAB color space
-        meanNmzd, stdNmzd = color_conversion.lab_mean_std(imNmzd)
+        mean_nmzd, std_nmzd = htk_cvt.lab_mean_std(im_nmzd)
 
         # check if mean and stddev of normalized and reference images are equal
-        np.testing.assert_allclose(meanNmzd, meanRef, atol=1e-1)
-        np.testing.assert_allclose(stdNmzd, stdRef, atol=1e-1)
+        np.testing.assert_allclose(mean_nmzd, mean_ref, atol=1e-1)
+        np.testing.assert_allclose(std_nmzd, std_ref, atol=1e-1)
