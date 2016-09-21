@@ -4,7 +4,8 @@
 try:
     from setuptools import setup, find_packages, Extension
 except ImportError:
-    from distutils.core import setup, find_packages, Extension
+    from distutils.core import setup, find_packages
+    from distutils.extension import Extension
 
 import os
 import json
@@ -79,7 +80,7 @@ setup(name='histomicstk',
       test_suite='plugin_tests',
       tests_require=test_requirements,
       ext_modules = cythonize(Extension(
-           "histomicstk/segmentation/label/isbf",
+           "histomicstk.segmentation.label.isbf",
            sources=["histomicstk/segmentation/label/isbf.pyx",
                     "histomicstk/segmentation/label/isbfcpp.cpp"],
            include_dirs=[numpy.get_include()],
