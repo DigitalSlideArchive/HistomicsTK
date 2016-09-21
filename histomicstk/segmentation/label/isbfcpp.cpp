@@ -59,7 +59,7 @@ bool isbfcpp::addList(int x, int y)
   return true;
 }
 
-void isbfcpp::roateMatrix(int rows, int cols, int **input, int **output)
+void isbfcpp::rotateMatrix(int rows, int cols, int **input, int **output)
 {
     int i, j;
     for (i=0; i<rows; i++){
@@ -118,9 +118,9 @@ vector<int> isbfcpp::getList(int rows, int cols, int *size, int *mask, int start
     }
 
     // rotate Matrix for 90, 180, 270 degrees
-    roateMatrix(nrows, ncols, matrix00, matrix270);
-    roateMatrix(ncols, nrows, matrix270, matrix180);
-    roateMatrix(nrows, ncols, matrix180, matrix90);
+    rotateMatrix(nrows, ncols, matrix00, matrix270);
+    rotateMatrix(ncols, nrows, matrix270, matrix180);
+    rotateMatrix(nrows, ncols, matrix180, matrix90);
 
     // set defalut direction
     int DX = 1;
