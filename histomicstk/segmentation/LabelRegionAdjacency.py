@@ -13,7 +13,7 @@ def LabelRegionAdjacency(Label, Neighbors=4):
         objects of interest.
 
     Neighbors : float
-        The nieghbor connectivity to use, either '4' or '8'. Default value = 4.
+        The neighbor connectivity to use, either '4' or '8'. Default value = 4.
 
     Returns
     -------
@@ -21,10 +21,6 @@ def LabelRegionAdjacency(Label, Neighbors=4):
         A binary matrix of size N x N, where N is the number of objects in
         Label. A value of 'True' at Adjacency(i,j) indicates that objects 'i'
         and 'j' are neighbors.
-
-    See Also
-    --------
-    GraphcutRefine
     """
 
     # initialize adjacency matrix for Label.max() total regions

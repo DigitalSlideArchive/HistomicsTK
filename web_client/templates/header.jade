@@ -15,14 +15,29 @@ nav.navbar.navbar-inverse.navbar-fixed-top
       ul.nav.navbar-nav.navbar-right
 
         if (user)
-          li.g-analysis-selection.dropdown
-            a.dropdown-toggle(data-toggle='dropdown' role='button' aria-haspopup='true' aria-expanded='false')
+          li.g-analysis-selection.menu-item.dropdown
+            a(data-toggle='dropdown' data-submenu=true role='button' aria-haspopup='true' aria-expanded='false' tabindex='0')
               | Analyses
               i.icon-down-open
             ul#g-analysis-menu.dropdown-menu(role='menu')
-              each name in analyses
-                li
-                  a(href='#' data-name='#{name}') #{name}
+              each image, imageName in analyses
+                li.dropdown-submenu
+                  a(tabindex='0' href='#' data-name='#{imageName}') #{imageName}
+                  ul.dropdown-menu
+                    each version, versionName in image
+                      li.dropdown-submenu
+                        a(tabindex='0' href='#') #{versionName}
+                        ul.dropdown-menu
+                          each cli, cliName in version
+                            - var api = cli.run.replace(/\/run$/, '');
+                            li
+                              a.g-analysis-item(
+                                tabindex='0',
+                                href='#',
+                                data-api='#{api}',
+                                data-image='#{imageName}',
+                                data-version='#{versionName}',
+                                data-cli='#{cliName}') #{cliName}
 
           li.g-image-selection
             a.g-open-image Open image

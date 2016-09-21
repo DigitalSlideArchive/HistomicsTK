@@ -7,7 +7,7 @@ def ComputeNeighborhoodMask(im_label, neigh_width=8):
     object or region in a given label mask
 
     Parameters
-    -----------
+    ----------
     im_label : array_like
         A labeled mask image wherein intensity of a pixel is the ID of the
         object it belongs to. Non-zero values are considered to be foreground

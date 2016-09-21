@@ -43,7 +43,7 @@ def ChanVese(I, Mask, Sigma, dt=1.0, Mu=0.2, Lambda1=1, Lambda2=1, It=100):
 
     See Also
     --------
-    GaussianVoting
+    histomicstk.segmentation.nuclear.GaussianVoting
 
     References
     ----------

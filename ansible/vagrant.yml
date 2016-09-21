@@ -4,9 +4,10 @@
     - common
     - mongodb
     - openslide
-    - girder
     - mq
     - worker
+    - girder
+    - dev
     #- itk
   vars:
     vagrant: true
