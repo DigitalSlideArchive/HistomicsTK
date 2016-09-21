@@ -33,7 +33,7 @@ public:
     int length();
     void nth_from_last(int n, int &x, int &y);
     bool addList(int x, int y);
-    void roateMatrix(int rows, int cols, int **input, int **output);
+    void rotateMatrix(int rows, int cols, int **input, int **output);
     std::vector<int> getList(int nrows, int ncols, int *size, int *mask, int startX, int startY, float inf);
     void clean();
     ~isbfcpp();
