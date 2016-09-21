@@ -4,9 +4,10 @@ from histomicstk.utils import Sample
 from histomicstk.preprocessing import color_conversion
 
 
-def ReinhardSample(slide_path, magnification, sample_percent, tile_size):
-    """Samples a whole-slide-image to determine sample_pix_lab colorspace statistics
-    (mean, variance) needed to perform global Reinhard color normalization.
+def reinhard_sample(slide_path, magnification, sample_percent, tile_size):
+    """Samples a whole-slide-image to determine sample_pix_lab colorspace
+    statistics (mean, variance) needed to perform global Reinhard color
+    normalization.
 
     Normalizing individual tiles independently creates a significant bias
     in the results of segmentation and feature extraction, as the color
@@ -49,7 +50,7 @@ def ReinhardSample(slide_path, magnification, sample_percent, tile_size):
 
     # generate a sampling of sample_pixels_rgb pixels from whole-slide image
     sample_pixels_rgb = Sample(slide_path, magnification,
-                            sample_percent, tile_size)
+                               sample_percent, tile_size)
 
     # reshape the 3xN pixel array into a 1 x N x 3 image for lab_mean_std
     sample_pixels_rgb = np.reshape(sample_pixels_rgb.transpose(),
