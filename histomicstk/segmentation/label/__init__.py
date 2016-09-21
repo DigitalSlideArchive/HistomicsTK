@@ -12,7 +12,7 @@ from .DeleteLabel import DeleteLabel
 from .LabelPerimeter import LabelPerimeter
 from .ShuffleLabel import ShuffleLabel
 from .TraceBounds import TraceBounds
-# from .tracebounds_cython import tracebounds_cython
+from .trace_boundary import trace_boundary
 
 # must be imported after CondenseLabel
 from .AreaOpenLabel import AreaOpenLabel
