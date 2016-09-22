@@ -22,7 +22,7 @@ from tests import base
 import numpy as np
 import os
 
-from histomicstk.segmentation import label
+from histomicstk.segmentation.label.trace_bounary import trace_boundary
 
 
 # boiler plate to start and stop the server if needed
@@ -43,20 +43,113 @@ class TraceBoundsTest(base.TestCase):
 
     def test_isbf(self):
 
-        mask = np.array([[0, 0, 0, 0, 0, 0],
-                         [0, 0, 1, 1, 0, 0],
-                         [0, 1, 1, 1, 1, 0],
-                         [0, 1, 1, 1, 1, 0],
-                         [0, 1, 1, 1, 1, 0],
-                         [0, 0, 1, 1, 0, 0],
-                         [0, 0, 0, 0, 0, 0]], dtype=np.bool)
+        # refenece left neighbor
+        rx = [1, 1, 1]
+        ry = [2, 1, 2]
 
-        # test isbf with 4 connectivity
-        # res_X, res_Y = label.TraceBounds(mask, 4)
+        # test left neighbor
+        m_left_neighbor = np.array([[0, 0, 0, 0],
+                                    [0, 1, 1, 0],
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0]], dtype=np.bool)
+        x = 1
+        y = 2
 
-        # cython_X, cython_Y = label.tracebounds_cython(mask, 4)
-        # cython_X, cython_Y = label.TraceBounds(mask, 4)
+        by, bx = trace_boundary(m_left_neighbor, Connectivity=4, XStart=y,
+                                YStart=x)
 
-        # check if isbf of original X, Y and cython version X, Y are equal
-        # np.testing.assert_allclose(res_X, cython_X)
-        # np.testing.assert_allclose(res_Y, cython_Y)
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece inner-outer corner at the left-rear
+        rx = [2, 1, 2]
+        ry = [2, 1, 2]
+
+        # test inner-outer corner at the left-rear
+        m_inner_outer_corner_left_rear = np.array([[0, 0, 0, 0],
+                                                   [0, 1, 0, 0],
+                                                   [0, 0, 1, 0],
+                                                   [0, 0, 0, 0]],
+                                                  dtype=np.bool)
+        x = 2
+        y = 2
+
+        by, bx = trace_boundary(m_inner_outer_corner_left_rear,
+                                Connectivity=4, XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece inner-outer corner at the front-left
+        rx = [2, 1, 2]
+        ry = [1, 2, 1]
+
+        # test inner-outer corner at the front-left
+        m_inner_outer_corner_front_rear = np.array([[0, 0, 0, 0],
+                                                    [0, 0, 1, 0],
+                                                    [0, 1, 0, 0],
+                                                    [0, 0, 0, 0]],
+                                                   dtype=np.bool)
+        x = 2
+        y = 1
+
+        by, bx = trace_boundary(m_inner_outer_corner_front_rear,
+                                Connectivity=4, XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece inner corner at the front
+        rx = [2, 2, 1, 2, 2]
+        ry = [1, 2, 2, 2, 1]
+
+        # test inner corner at the front
+        m_inner_corner_front = np.array([[0, 0, 0, 0],
+                                         [0, 0, 1, 0],
+                                         [0, 1, 1, 0],
+                                         [0, 0, 0, 0]], dtype=np.bool)
+        x = 2
+        y = 1
+
+        by, bx = trace_boundary(m_inner_corner_front, Connectivity=4,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece front neighbor
+        rx = [1, 1, 1]
+        ry = [1, 2, 1]
+
+        # test front neighbor
+        m_front_neighbor = np.array([[0, 0, 0, 0],
+                                     [0, 1, 1, 0],
+                                     [0, 0, 0, 0],
+                                     [0, 0, 0, 0]], dtype=np.bool)
+
+        x = 1
+        y = 1
+
+        by, bx = trace_boundary(m_front_neighbor, Connectivity=4,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece front neighbor
+        rx = [1, 2, 1]
+        ry = [1, 2, 1]
+
+        # test outer corner
+        m_outer_corner = np.array([[0, 0, 0, 0],
+                                   [0, 1, 0, 0],
+                                   [0, 0, 1, 0],
+                                   [0, 0, 0, 0]], dtype=np.bool)
+        x = 1
+        y = 1
+
+        by, bx = trace_boundary(m_outer_corner, Connectivity=4,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
