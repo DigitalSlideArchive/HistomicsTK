@@ -22,7 +22,7 @@ from tests import base
 import numpy as np
 import os
 
-from histomicstk.segmentation.label.trace_bounary import trace_boundary
+from histomicstk.segmentation.label.trace_boundary import trace_boundary
 
 
 # boiler plate to start and stop the server if needed
