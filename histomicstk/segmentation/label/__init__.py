@@ -33,7 +33,6 @@ __all__ = (
     'LabelPerimeter',
     'ShuffleLabel',
     'SplitLabel',
-    'TraceBounds',
     'trace_boundary',
     'TraceLabel',
     'WidthOpenLabel',
