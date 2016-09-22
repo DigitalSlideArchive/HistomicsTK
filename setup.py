@@ -84,6 +84,7 @@ setup(name='histomicstk',
            sources=["histomicstk/segmentation/label/isbf.pyx",
                     "histomicstk/segmentation/label/isbfcpp.cpp"],
            include_dirs=[numpy.get_include()],
+           extra_compile_args=["-std=c++11"],
            language="c++",
            )
       )
