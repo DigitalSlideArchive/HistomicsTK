@@ -210,12 +210,31 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
 
       if (sizeofX > 3) {
 
-          // check if the first and the last x and y are equal
+        int fx1 = *boundary_listX.begin();
+        int fx2 = *std::next(boundary_listX.begin(), 1);
+        int fy1 = *boundary_listY.begin();
+        int fy2 = *std::next(boundary_listY.begin(), 1);
+        int lx1 = *std::prev(boundary_listX.end());
+        int ly1 = *std::prev(boundary_listY.end());
+        int lx2 = *std::prev(boundary_listX.end(), 2);
+        int ly2 = *std::prev(boundary_listY.end(), 2);
+        int lx3 = *std::prev(boundary_listX.end(), 3);
+        int ly3 = *std::prev(boundary_listY.end(), 3);
+
+        // check if the first and the last x and y are equal
           if ((sizeofX > inf)|| \
-            ((*std::prev(boundary_listX.end()) == *std::next(boundary_listX.begin(), 1))&&
-            (*std::prev(boundary_listX.end(), 2) == *boundary_listX.begin())&&
-            (*std::prev(boundary_listY.end()) == *std::next(boundary_listY.begin(), 1))&&
-            (*std::prev(boundary_listY.end(), 2) == *boundary_listY.begin()))){
+          ((lx1 == fx2)&&(lx2 == fx1)&&(ly1 == fy2)&&(ly2 == fy1))){
+            // remove the last element
+              boundary_listX.pop_back();
+              boundary_listY.pop_back();
+              break;
+          }
+          if (int(cX.size()) == 2)
+            if ((lx2 == fx2)&&(lx3 == fx1)&&(ly2 == fy2)&&(ly3 == fy1)){
+              boundary_listX.pop_back();
+              boundary_listY.pop_back();
+              boundary_listX.pop_back();
+              boundary_listY.pop_back();
               break;
           }
       }
@@ -224,18 +243,7 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
     // allocate memory for return value
     std::vector <std::vector<int> > boundaries(2, std::vector<int>(sizeofX));
 
-    // remove the last element
-    boundary_listX.pop_back();
-    boundary_listY.pop_back();
-    /*
-    std::vector<int> bX { std::make_move_iterator(begin(boundary_listX)),
-                     std::make_move_iterator(end(boundary_listX)) };
-
-    std::vector<int> bY { std::make_move_iterator(begin(boundary_listY)),
-                    std::make_move_iterator(end(boundary_listY)) };
-    */
     std::vector<int> bX (boundary_listX.begin(), boundary_listX.end());
-
     std::vector<int> bY (boundary_listY.begin(), boundary_listY.end());
 
     boundaries[0] = bX;
