@@ -22,7 +22,7 @@ from tests import base
 import numpy as np
 import os
 
-from histomicstk.segmentation.label.trace_boundary import trace_boundary
+from histomicstk.segmentation import label
 
 
 # boiler plate to start and stop the server if needed
@@ -55,7 +55,7 @@ class TraceBoundsTest(base.TestCase):
         x = 1
         y = 2
 
-        by, bx = trace_boundary(m_left_neighbor, Connectivity=4, XStart=y,
+        by, bx = label.trace_boundary(m_left_neighbor, Connectivity=4, XStart=y,
                                 YStart=x)
 
         np.testing.assert_allclose(rx, bx)
@@ -74,7 +74,7 @@ class TraceBoundsTest(base.TestCase):
         x = 2
         y = 2
 
-        by, bx = trace_boundary(m_inner_outer_corner_left_rear,
+        by, bx = label.trace_boundary(m_inner_outer_corner_left_rear,
                                 Connectivity=4, XStart=y, YStart=x)
 
         np.testing.assert_allclose(rx, bx)
@@ -93,7 +93,7 @@ class TraceBoundsTest(base.TestCase):
         x = 2
         y = 1
 
-        by, bx = trace_boundary(m_inner_outer_corner_front_rear,
+        by, bx = label.trace_boundary(m_inner_outer_corner_front_rear,
                                 Connectivity=4, XStart=y, YStart=x)
 
         np.testing.assert_allclose(rx, bx)
@@ -111,7 +111,7 @@ class TraceBoundsTest(base.TestCase):
         x = 2
         y = 1
 
-        by, bx = trace_boundary(m_inner_corner_front, Connectivity=4,
+        by, bx = label.trace_boundary(m_inner_corner_front, Connectivity=4,
                                 XStart=y, YStart=x)
 
         np.testing.assert_allclose(rx, bx)
@@ -130,7 +130,7 @@ class TraceBoundsTest(base.TestCase):
         x = 1
         y = 1
 
-        by, bx = trace_boundary(m_front_neighbor, Connectivity=4,
+        by, bx = label.trace_boundary(m_front_neighbor, Connectivity=4,
                                 XStart=y, YStart=x)
 
         np.testing.assert_allclose(rx, bx)
@@ -148,7 +148,7 @@ class TraceBoundsTest(base.TestCase):
         x = 1
         y = 1
 
-        by, bx = trace_boundary(m_outer_corner, Connectivity=4,
+        by, bx = label.trace_boundary(m_outer_corner, Connectivity=4,
                                 XStart=y, YStart=x)
 
         np.testing.assert_allclose(rx, bx)
