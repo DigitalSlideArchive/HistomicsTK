@@ -131,16 +131,16 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
 
       if (h[1][0] == 1) {
           // 'left' neighbor
-          cX.at(0) = -1;
-          cY.at(0) = 0;
+          cX[0] = -1;
+          cY[0] = 0;
           DX = -1;
           DY = 0;
       }
       else{
           if((h[2][0] == 1)&&(h[2][1] != 1)){
               // inner-outer corner at left-rear
-              cX.at(0) = -1;
-              cY.at(0) = 1;
+              cX[0] = -1;
+              cY[0] = 1;
               DX = 0;
               DY = 1;
           }
@@ -148,8 +148,8 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
               if(h[0][0] == 1){
                   if(h[0][1] == 1){
                       // inner corner at front
-                      cX.at(0) = 0;
-                      cY.at(0) = -1;
+                      cX[0] = 0;
+                      cY[0] = -1;
                       cX.push_back(-1);
                       cY.push_back(0);
                       DX = 0;
@@ -157,16 +157,16 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
                   }
                   else{
                       // inner-outer corner at front-left
-                      cX.at(0) = -1;
-                      cY.at(0) = -1;
+                      cX[0] = -1;
+                      cY[0] = -1;
                       DX = 0;
                       DY = -1;
                   }
               }
               else if(h[0][1] == 1){
                 // front neighbor
-                cX.at(0) = 0;
-                cY.at(0) = -1;
+                cX[0] = 0;
+                cY[0] = -1;
                 DX = 1;
                 DY = 0;
               }
@@ -182,11 +182,11 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
       float s = sin(angle);
       float c = cos(angle);
 
-      if(!((cX.at(0)==0)&&(cY.at(0)==0))){
+      if(!((cX[0]==0)&&(cY[0]==0))){
           for(int t=0; t< int(cX.size()); t++){
               float a, b;
-              int cx = cX.at(t);
-              int cy = cY.at(t);
+              int cx = cX[t];
+              int cy = cY[t];
 
               a = c*cx - s*cy;
               b = s*cx + c*cy;
