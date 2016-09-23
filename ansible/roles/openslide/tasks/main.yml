@@ -123,12 +123,25 @@
   command: ldconfig
   sudo: yes
 
-- name: Purge pip cache
-  command: bash -c "if PIP_CACHE=`python -c 'import pip.locations, sys;sys.stdout.write(pip.locations.USER_CACHE_DIR)'`; then rm -r $PIP_CACHE; fi"
+- name: Get the most recent version of pip
+  pip: name=pip extra_args="-U"
   sudo: yes
-  ignore_errors: yes
 
-- name: Uninstall Pillow, if installed
-  command: pip uninstall Pillow
+- name: Purge pip cache
+  command: |
+    python -c '
+    import pip.locations, shutil
+    shutil.rmtree(pip.locations.USER_CACHE_DIR, True)
+    '
   sudo: yes
-  ignore_errors: yes
+
+- name: Reinstall python modules that depend on OpenJPEG and libtiff if they are installed.
+  command: |
+    python -c '
+    import pip
+    packages = ["Pillow", "libtiff"]
+    for package in pip.commands.show.search_packages_info(packages):
+    ''  pip.main(["install", "--force-reinstall", "--ignore-installed", 
+    ''           "%s==%s" % (package["name"], package["version"])])
+    '
+  sudo: yes
