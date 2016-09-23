@@ -8,9 +8,6 @@ cimport numpy as np
 
 from libcpp.vector cimport vector
 
-cdef extern from "passInf.h":
-    pass
-
 cdef extern from "isbfcpp.h":
     cdef cppclass isbfcpp:
         isbfcpp() except +
