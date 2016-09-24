@@ -44,3 +44,5 @@ def MergeColinear(X, Y):
     YOut = np.append(Y[0], Y[transitions+1])
     XOut = np.append(XOut, X[-1])
     YOut = np.append(YOut, Y[-1])
+
+    return XOut, YOut
