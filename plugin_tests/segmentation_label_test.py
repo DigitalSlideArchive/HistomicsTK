@@ -44,16 +44,16 @@ class TraceBoundsTest(base.TestCase):
     def test_trace_boundary(self):
 
         # refenece left neighbor
-        rx = [1, 1, 1]
-        ry = [2, 1, 2]
+        rx = [2, 1, 2]
+        ry = [1, 1, 1]
 
         # test left neighbor
         m_left_neighbor = np.array([[0, 0, 0, 0],
-                                    [0, 1, 1, 0],
-                                    [0, 0, 0, 0],
+                                    [0, 1, 0, 0],
+                                    [0, 1, 0, 0],
                                     [0, 0, 0, 0]], dtype=np.bool)
-        x = 1
-        y = 2
+        x = 2
+        y = 1
 
         by, bx = trace_boundary(m_left_neighbor, Connectivity=4, XStart=y,
                                 YStart=x)
@@ -85,7 +85,7 @@ class TraceBoundsTest(base.TestCase):
         ry = [1, 2, 1]
 
         # test inner-outer corner at the front-left
-        m_inner_outer_corner_front_rear = np.array([[0, 0, 0, 0],
+        m_inner_outer_corner_front_left = np.array([[0, 0, 0, 0],
                                                     [0, 0, 1, 0],
                                                     [0, 1, 0, 0],
                                                     [0, 0, 0, 0]],
@@ -93,7 +93,7 @@ class TraceBoundsTest(base.TestCase):
         x = 2
         y = 1
 
-        by, bx = trace_boundary(m_inner_outer_corner_front_rear,
+        by, bx = trace_boundary(m_inner_outer_corner_front_left,
                                 Connectivity=4, XStart=y, YStart=x)
 
         np.testing.assert_allclose(rx, bx)
