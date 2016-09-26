@@ -40,9 +40,6 @@ def trace_boundary(Mask, Connectivity=4, XStart=None, YStart=None,
     Y : array_like
         A 1D array of the vertical coordinates of seed pixels for tracing.
 
-    See Also:
-    ---------
-
     References:
     -----------
     .. [1] J. Seo et al "Fast Contour-Tracing Algorithm Based on a Pixel-
