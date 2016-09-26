@@ -16,7 +16,7 @@ class isbfcpp
 
 public:
     isbfcpp();
-    std::vector <std::vector<int> > rotateMatrix(int rows, int cols,  std::vector <std::vector<int> > input);
+    void rot90(int rows, int cols,  std::vector <std::vector<int> > input, std::vector <std::vector<int> > &output);
     std::vector <std::vector<int> > traceBoundary(int nrows, int ncols, std::vector <std::vector<int> > mask, int startX, int startY, float inf);
     ~isbfcpp();
 
