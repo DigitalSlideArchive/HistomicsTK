@@ -61,16 +61,16 @@ def Sample(slide_path, magnification, percent, tile_size,
         im_tile = tile['tile'][:, :, :3]
 
         # get fgnd mask for current tile
-        mask_scale = magnification / mapping_mag
+        mask_scale = mapping_mag / magnification
 
-        left = tile['gx'] * mask_scale
-        top = tile['gy'] * mask_scale
+        left = np.round(tile['gx'] * mask_scale)
+        top = np.round(tile['gy'] * mask_scale)
 
-        right = left + tile['gwidth'] * mask_scale
-        bottom = top + tile['gheight'] * mask_scale
+        right = np.round(left + tile['gwidth'] * mask_scale)
+        bottom = np.round(top + tile['gheight'] * mask_scale)
 
         tile_fgnd_mask = scipy.misc.imresize(
-            fgnd_mask_lowres[left : right, top : bottom],
+            fgnd_mask_lowres[left: right, top: bottom],
             im_tile.shape,
             interp='nearest'
         )
