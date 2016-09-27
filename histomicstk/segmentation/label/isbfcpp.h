@@ -16,7 +16,10 @@ class isbfcpp
 
 public:
     isbfcpp();
-    void rot90(int rows, int cols,  std::vector <std::vector<int> > input, std::vector <std::vector<int> > &output);
+    void rot90(int nrows, int ncols, std::vector <std::vector<int> > matrix,
+               std::vector <std::vector<int> > &matrix270,
+               std::vector <std::vector<int> > &matrix180,
+               std::vector <std::vector<int> > &matrix90);
     std::vector <std::vector<int> > traceBoundary(int nrows, int ncols, std::vector <std::vector<int> > mask, int startX, int startY, float inf);
     ~isbfcpp();
 
