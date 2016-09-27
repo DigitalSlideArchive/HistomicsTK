@@ -67,3 +67,19 @@ class ReinhardNormalizationTest(base.TestCase):
         # check if mean and stddev of normalized and reference images are equal
         np.testing.assert_allclose(mean_nmzd, mean_ref, atol=1e-1)
         np.testing.assert_allclose(std_nmzd, std_ref, atol=1e-1)
+
+    def test_reinhard_sample(self):
+
+        wsi_path = os.path.join(
+            TEST_DATA_DIR,
+            'TCGA-OR-A5J1-01A-01-TS1.CFE08710-54B8-45B0-86AE-500D6E36D8A5.svs'
+        )
+
+        wsi_mean, wsi_stddev = htk_cn.reinhard_sample(
+            wsi_path, 20, 0.05, 240)
+
+        gt_mean = [7.54740211, -0.23243189, 0.05317158]
+        gt_stddev = [0.96676908, 0.14012439, 0.03045649]
+
+        np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-2)
+        np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)

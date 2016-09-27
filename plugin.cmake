@@ -45,6 +45,7 @@ add_python_test(color_normalization
     PLUGIN HistomicsTK EXTERNAL_DATA
     "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
     "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
+    "plugins/HistomicsTK/TCGA-OR-A5J1-01A-01-TS1.CFE08710-54B8-45B0-86AE-500D6E36D8A5.svs"
 )
 
 add_python_test(glcm
