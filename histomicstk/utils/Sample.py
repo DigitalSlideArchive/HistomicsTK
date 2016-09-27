@@ -48,7 +48,7 @@ def Sample(slide_path, magnification, percent, tile_size,
                              format=large_image.tilesource.TILE_FORMAT_NUMPY)
 
     # compute foreground mask of whole-slide image at low-res
-    fgnd_mask_low_res = SimpleMask(im_lowres)
+    fgnd_mask_lowres = SimpleMask(im_lowres)
 
     # generate sample pixels
     sample_pixels = []
@@ -60,13 +60,23 @@ def Sample(slide_path, magnification, percent, tile_size,
         # get current tile image
         im_tile = tile['tile'][:, :, :3]
 
-        # upsample fgnd mask to desired sampling resolution
-        fgnd_mask = scipy.misc.imresize(fgnd_mask_low_res,
-                                        im_tile.shape,
-                                        interp='nearest')
+        # get fgnd mask for current tile
+        mask_scale = magnification / mapping_mag
+
+        left = tile['gx'] * mask_scale
+        top = tile['gy'] * mask_scale
+
+        right = left + tile['gwidth'] * mask_scale
+        bottom = top + tile['gheight'] * mask_scale
+
+        tile_fgnd_mask = scipy.misc.imresize(
+            fgnd_mask_lowres[left : right, top : bottom],
+            im_tile.shape,
+            interp='nearest'
+        )
 
         # generate linear indices of sample pixels in fgnd mask
-        nz_ind = np.nonzero(fgnd_mask.flatten())[0]
+        nz_ind = np.nonzero(tile_fgnd_mask.flatten())[0]
         sample_ind = np.random.choice(nz_ind, np.ceil(percent * nz_ind.size))
 
         # convert rgb tile image to 3xN array
