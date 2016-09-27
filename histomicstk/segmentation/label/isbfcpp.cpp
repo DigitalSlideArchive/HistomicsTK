@@ -8,13 +8,31 @@ C++ version of ISBF for TraceBounds
 #include <cmath>
 #include <vector>
 
-isbfcpp::isbfcpp(){}
-
-void isbfcpp::rot90(int nrows, int ncols, std::vector <std::vector<int> > input, std::vector <std::vector<int> > &output)
+isbfcpp::isbfcpp()
 {
+}
+
+void isbfcpp::rot90(int nrows, int ncols, std::vector <std::vector<int> > matrix,
+                    std::vector <std::vector<int> > &matrix270,
+                    std::vector <std::vector<int> > &matrix180,
+                    std::vector <std::vector<int> > &matrix90)
+{
+    // 0 to 270 degree
     for (int i=0; i<nrows; i++){
       for (int j=0;j<ncols; j++){
-        output[j][nrows-1-i] = input[i][j];
+        matrix270[j][nrows-1-i] = matrix[i][j];
+      }
+    }
+    // 270 to 180 degree
+    for (int i=0; i<ncols; i++){
+      for (int j=0;j<nrows; j++){
+        matrix180[j][ncols-1-i] = matrix270[i][j];
+      }
+    }
+    // 180 to 90 degree
+    for (int i=0; i<nrows; i++){
+      for (int j=0;j<ncols; j++){
+        matrix90[j][nrows-1-i] = matrix180[i][j];
       }
     }
 }
@@ -35,9 +53,7 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
     std::vector <std::vector<int> > matrix270(ncols, std::vector<int>(nrows));
 
     // rotate matrix for 90, 180, 270 degrees
-    rot90(nrows, ncols, mask, matrix270);
-    rot90(nrows, ncols, matrix270, matrix180);
-    rot90(nrows, ncols, matrix180, matrix90);
+    rot90(nrows, ncols, mask, matrix270, matrix180, matrix90);
 
     // set defalut direction
     int DX = 1;
@@ -235,4 +251,6 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
     return boundary;
 }
 
-isbfcpp::~isbfcpp(){}
+isbfcpp::~isbfcpp()
+{
+}
