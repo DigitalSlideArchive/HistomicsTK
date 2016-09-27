@@ -44,8 +44,10 @@ def Sample(slide_path, magnification, percent, tile_size,
     ts = large_image.getTileSource(slide_path)
 
     # get enitre whole-silde image at low resolution
-    im_lowres = ts.getRegion(scale={'magnification': mapping_mag},
-                             format=large_image.tilesource.TILE_FORMAT_NUMPY)
+    im_lowres, _ = ts.getRegion(
+        scale={'magnification': mapping_mag},
+        format=large_image.tilesource.TILE_FORMAT_NUMPY
+    )
 
     # compute foreground mask of whole-slide image at low-res
     fgnd_mask_lowres = SimpleMask(im_lowres)
