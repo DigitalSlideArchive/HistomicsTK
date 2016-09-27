@@ -8,17 +8,33 @@ C++ version of ISBF for TraceBounds
 #include <cmath>
 #include <vector>
 
-isbfcpp::isbfcpp(){}
-
-std::vector <std::vector<int> > isbfcpp::rotateMatrix(int nrows, int ncols, std::vector <std::vector<int> > input)
+isbfcpp::isbfcpp()
 {
-    std::vector <std::vector<int> > output(ncols, std::vector<int>(nrows));
+}
+
+void isbfcpp::rot90(int nrows, int ncols, std::vector <std::vector<int> > matrix,
+                    std::vector <std::vector<int> > &matrix270,
+                    std::vector <std::vector<int> > &matrix180,
+                    std::vector <std::vector<int> > &matrix90)
+{
+    // 0 to 270 degree
     for (int i=0; i<nrows; i++){
       for (int j=0;j<ncols; j++){
-        output[j][nrows-1-i] = input[i][j];
+        matrix270[j][nrows-1-i] = matrix[i][j];
       }
     }
-    return output;
+    // 270 to 180 degree
+    for (int i=0; i<ncols; i++){
+      for (int j=0;j<nrows; j++){
+        matrix180[j][ncols-1-i] = matrix270[i][j];
+      }
+    }
+    // 180 to 90 degree
+    for (int i=0; i<nrows; i++){
+      for (int j=0;j<ncols; j++){
+        matrix90[j][nrows-1-i] = matrix180[i][j];
+      }
+    }
 }
 
 std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std::vector <std::vector<int> > mask, int startX, int startY, float inf)
@@ -31,24 +47,13 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
     boundary_listX.push_back(startX);
     boundary_listY.push_back(startY);
 
-    // initialize matrix for 0, 90, 180, 270 degrees
-    std::vector <std::vector<int> > matrix00(nrows, std::vector<int>(ncols));
+    // initialize matrix for 90, 180, 270 degrees
     std::vector <std::vector<int> > matrix90(ncols, std::vector<int>(nrows));
     std::vector <std::vector<int> > matrix180(nrows, std::vector<int>(ncols));
     std::vector <std::vector<int> > matrix270(ncols, std::vector<int>(nrows));
 
-    // copy mask to matrix00
-    for(int i=0; i< nrows; i++){
-        for(int j=0; j< ncols; j++){
-            //matrix00[i][j] = mask[i*ncols+j];
-            matrix00[i][j] = mask[i][j];
-        }
-    }
-
     // rotate matrix for 90, 180, 270 degrees
-    matrix270 = rotateMatrix(nrows, ncols, matrix00);
-    matrix180 = rotateMatrix(ncols, nrows, matrix270);
-    matrix90 = rotateMatrix(nrows, ncols, matrix180);
+    rot90(nrows, ncols, mask, matrix270, matrix180, matrix90);
 
     // set defalut direction
     int DX = 1;
@@ -75,8 +80,6 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
       int x = boundary_listX.back();
       int y = boundary_listY.back();
 
-      //cout << DX << " " << DY << endl;
-
       if((DX == 1)&&(DY == 0)){
         for (int i = ncols-x-2; i < ncols-x+1; i++) {
           for (int j = y-1; j < y+1; j++) {
@@ -92,7 +95,7 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
       else if((DX == 0)&&(DY == -1)){
         for (int i = y-1; i < y+2; i++) {
           for (int j = x-1; j < x+1; j++) {
-              h[a][b] = matrix00[i][j];
+              h[a][b] = mask[i][j];
               b++;
           }
           b = 0;
@@ -222,34 +225,32 @@ std::vector <std::vector<int> > isbfcpp::traceBoundary(int nrows, int ncols, std
         int ly3 = *std::prev(boundary_listY.end(), 3);
 
         // check if the first and the last x and y are equal
-          if ((sizeofX > inf)|| \
-          ((lx1 == fx2)&&(lx2 == fx1)&&(ly1 == fy2)&&(ly2 == fy1))){
-            // remove the last element
-              boundary_listX.pop_back();
-              boundary_listY.pop_back();
-              break;
-          }
-          if (int(cX.size()) == 2)
-            if ((lx2 == fx2)&&(lx3 == fx1)&&(ly2 == fy2)&&(ly3 == fy1)){
-              boundary_listX.pop_back();
-              boundary_listY.pop_back();
-              boundary_listX.pop_back();
-              boundary_listY.pop_back();
-              break;
-          }
+        if ((sizeofX > inf)|| \
+        ((lx1 == fx2)&&(lx2 == fx1)&&(ly1 == fy2)&&(ly2 == fy1))){
+          // remove the last element
+            boundary_listX.pop_back();
+            boundary_listY.pop_back();
+            break;
+        }
+        if (int(cX.size()) == 2)
+          if ((lx2 == fx2)&&(lx3 == fx1)&&(ly2 == fy2)&&(ly3 == fy1)){
+            boundary_listX.pop_back();
+            boundary_listY.pop_back();
+            boundary_listX.pop_back();
+            boundary_listY.pop_back();
+            break;
+        }
       }
     }
 
-    // allocate memory for return value
-    std::vector <std::vector<int> > boundaries(2, std::vector<int>(sizeofX));
+    std::vector <std::vector<int> > boundary(2, std::vector<int>(sizeofX));
 
-    std::vector<int> bX (boundary_listX.begin(), boundary_listX.end());
-    std::vector<int> bY (boundary_listY.begin(), boundary_listY.end());
+    boundary[0].assign(boundary_listX.begin(), boundary_listX.end());
+    boundary[1].assign(boundary_listY.begin(), boundary_listY.end());
 
-    boundaries[0] = bX;
-    boundaries[1] = bY;
-
-    return boundaries;
+    return boundary;
 }
 
-isbfcpp::~isbfcpp(){}
+isbfcpp::~isbfcpp()
+{
+}

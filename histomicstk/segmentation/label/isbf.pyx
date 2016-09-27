@@ -11,7 +11,10 @@ from libcpp.vector cimport vector
 cdef extern from "isbfcpp.h":
     cdef cppclass isbfcpp:
         isbfcpp() except +
-        vector[vector[int]] rotateMatrix(int, int, vector[vector[int]] input)
+        void rot90(int, int, vector[vector[int]] matrix,
+                   vector[vector[int]] &matrix270,
+                   vector[vector[int]] &matrix180,
+                   vector[vector[int]] &matrix90)
         vector[vector[int]] traceBoundary(int, int, vector[vector[int]] mask, int, int, float)
 
 def isbf(np.ndarray[int, ndim=2, mode="c"] mask not None, xstart, ystart, INFINITY):
