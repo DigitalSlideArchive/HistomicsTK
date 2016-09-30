@@ -33,7 +33,7 @@ def Sample(slide_path, magnification, percent, tile_size,
     Returns
     -------
     Pixels : array_like
-        A 3xN matrix of RGB pixel values sampled from the slide at `slide_path`.
+        A 3xN matrix of RGB pixel values sampled from the whole-slide.
 
     See Also
     --------
@@ -44,8 +44,9 @@ def Sample(slide_path, magnification, percent, tile_size,
     ts = large_image.getTileSource(slide_path)
 
     # get enitre whole-silde image at low resolution
+    scale_lowres = {'magnification': mapping_mag}
     im_lowres, _ = ts.getRegion(
-        scale={'magnification': mapping_mag},
+        scale_lowres,
         format=large_image.tilesource.TILE_FORMAT_NUMPY
     )
 
@@ -55,24 +56,26 @@ def Sample(slide_path, magnification, percent, tile_size,
     # generate sample pixels
     sample_pixels = []
 
+    scale_highres = {'magnfication': magnification}
+
     for tile in ts.tileIterator(
-            format=large_image.tilesource.TILE_FORMAT_NUMPY,
-            scale={'magnification': magnification}):
+            scale=scale_highres,
+            format=large_image.tilesource.TILE_FORMAT_NUMPY):
 
         # get current tile image
         im_tile = tile['tile'][:, :, :3]
 
+        # get current region in base_pixels
+        rgn_hres = {'left': tile['gx'], 'top': tile['gy'],
+                    'width': tile['gwidth'], 'height': tile['gheight'],
+                    'units': 'base_pixels'}
+
         # get fgnd mask for current tile
-        mask_scale = mapping_mag / magnification
-
-        left = np.round(tile['gx'] * mask_scale)
-        top = np.round(tile['gy'] * mask_scale)
-
-        right = np.round(left + tile['gwidth'] * mask_scale)
-        bottom = np.round(top + tile['gheight'] * mask_scale)
+        rgn_lres = ts.convertRegionScale(rgn_hres, target_scale=scale_highres)
 
         tile_fgnd_mask = scipy.misc.imresize(
-            fgnd_mask_lowres[left: right, top: bottom],
+            fgnd_mask_lowres[rgn_lres['left']: rgn_lres['right'],
+                             rgn_lres['top']: rgn_lres['bottom']],
             im_tile.shape,
             interp='nearest'
         )
@@ -90,7 +93,7 @@ def Sample(slide_path, magnification, percent, tile_size,
 
     # concatenate pixel values in list
     try:
-        sample_pixels = np.concatenate(Pixels, 1)
+        sample_pixels = np.concatenate(sample_pixels, 1)
     except ValueError:
         print "Sampling could not identify any foreground regions."
 
