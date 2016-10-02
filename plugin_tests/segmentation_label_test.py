@@ -39,9 +39,11 @@ TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
                              'plugins/HistomicsTK')
 
 
-class TraceBoundsTest(base.TestCase):
+class TraceBoundaryTest(base.TestCase):
 
     def test_trace_boundary(self):
+
+        # test trace boundary using isbf algorithm
 
         # refenece left neighbor
         rx = [2, 1, 2]
@@ -149,6 +151,160 @@ class TraceBoundsTest(base.TestCase):
         y = 1
 
         by, bx = trace_boundary(m_outer_corner, Connectivity=4,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # test trace boundary using moore neighbor algorithm
+
+        # refenece neighbors
+        rx = [2, 1, 2]
+        ry = [2, 1, 2]
+
+        # test NW
+        m_neighbor = np.array([[0, 0, 0, 0, 0],
+                               [0, 1, 0, 0, 0],
+                               [0, 0, 1, 0, 0],
+                               [0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0]], dtype=np.bool)
+        x = 2
+        y = 2
+
+        by, bx = trace_boundary(m_neighbor, Connectivity=8,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece neighbors
+        rx = [2, 1, 2]
+        ry = [2, 2, 2]
+
+        # test N
+        m_neighbor = np.array([[0, 0, 0, 0, 0],
+                               [0, 0, 1, 0, 0],
+                               [0, 0, 1, 0, 0],
+                               [0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0]], dtype=np.bool)
+        x = 2
+        y = 2
+
+        by, bx = trace_boundary(m_neighbor, Connectivity=8,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece neighbors
+        rx = [2, 1, 2]
+        ry = [2, 3, 2]
+
+        # test NE
+        m_neighbor = np.array([[0, 0, 0, 0, 0],
+                               [0, 0, 0, 1, 0],
+                               [0, 0, 1, 0, 0],
+                               [0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0]], dtype=np.bool)
+        x = 2
+        y = 2
+
+        by, bx = trace_boundary(m_neighbor, Connectivity=8,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece neighbors
+        rx = [2, 2, 2]
+        ry = [2, 3, 2]
+
+        # test E
+        m_neighbor = np.array([[0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0],
+                               [0, 0, 1, 1, 0],
+                               [0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0]], dtype=np.bool)
+        x = 2
+        y = 2
+
+        by, bx = trace_boundary(m_neighbor, Connectivity=8,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece neighbors
+        rx = [2, 3, 2]
+        ry = [2, 3, 2]
+
+        # test SE
+        m_neighbor = np.array([[0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0],
+                               [0, 0, 1, 0, 0],
+                               [0, 0, 0, 1, 0],
+                               [0, 0, 0, 0, 0]], dtype=np.bool)
+        x = 2
+        y = 2
+
+        by, bx = trace_boundary(m_neighbor, Connectivity=8,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece neighbors
+        rx = [2, 3, 2]
+        ry = [2, 2, 2]
+
+        # test S
+        m_neighbor = np.array([[0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0],
+                               [0, 0, 1, 0, 0],
+                               [0, 0, 1, 0, 0],
+                               [0, 0, 0, 0, 0]], dtype=np.bool)
+        x = 2
+        y = 2
+
+        by, bx = trace_boundary(m_neighbor, Connectivity=8,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece neighbors
+        rx = [2, 3, 2]
+        ry = [2, 1, 2]
+
+        # test SW
+        m_neighbor = np.array([[0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0],
+                               [0, 0, 1, 0, 0],
+                               [0, 1, 0, 0, 0],
+                               [0, 0, 0, 0, 0]], dtype=np.bool)
+        x = 2
+        y = 2
+
+        by, bx = trace_boundary(m_neighbor, Connectivity=8,
+                                XStart=y, YStart=x)
+
+        np.testing.assert_allclose(rx, bx)
+        np.testing.assert_allclose(ry, by)
+
+        # refenece neighbors
+        rx = [2, 2, 2]
+        ry = [2, 1, 2]
+
+        # test W
+        m_neighbor = np.array([[0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0],
+                               [0, 1, 1, 0, 0],
+                               [0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0]], dtype=np.bool)
+        x = 2
+        y = 2
+
+        by, bx = trace_boundary(m_neighbor, Connectivity=8,
                                 XStart=y, YStart=x)
 
         np.testing.assert_allclose(rx, bx)
