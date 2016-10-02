@@ -39,7 +39,7 @@ TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
                              'plugins/HistomicsTK')
 
 
-class TraceBoundaryTest(base.TestCase):
+class trace_boundaryTest(base.TestCase):
 
     def test_trace_boundary(self):
 
