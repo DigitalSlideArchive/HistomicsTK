@@ -1,6 +1,6 @@
 import numpy as np
 import ctypes
-from .isbf import isbf
+from .trace_object_boundary import trace_object_boundary
 
 
 def trace_boundary(Mask, Connectivity=4, XStart=None, YStart=None,
@@ -62,109 +62,13 @@ def trace_boundary(Mask, Connectivity=4, XStart=None, YStart=None,
             Y = np.array([], dtype=np.uint32)
             return X, Y
 
-    # choose algorithm based on connectivity
-    if Connectivity == 4:
-        Mask = np.ascontiguousarray(Mask, dtype=ctypes.c_int)
-        X, Y = isbf(Mask, XStart, YStart, MaxLength)
-    elif Connectivity == 8:
-        X, Y = Moore(Mask, XStart, YStart, MaxLength)
-    else:
-        raise ValueError("Input 'Connectivity' must be 4 or 8.")
+    Mask = np.ascontiguousarray(Mask, dtype=ctypes.c_int)
+
+    X, Y = trace_object_boundary(Mask, Connectivity, XStart, YStart,
+                                 MaxLength)
 
     # convert outputs from list to numpy array
     X = np.array(X, dtype=np.uint32)
     Y = np.array(Y, dtype=np.uint32)
-
-    return X, Y
-
-
-def Moore(Mask, XStart, YStart, MaxLength):
-    """Performs exterior boundary tracing of a single object in a binary mask
-    using the Moore-neighbor algorithm.
-
-    Parameters:
-    -----------
-    Mask : array_like
-        A boolean type image where foreground pixels have value 'True', and
-        background pixels have value 'False'.
-    XStart : int
-        Starting horizontal coordinate to begin tracing.
-    YStart : int
-        Starting vertical coordinate to begin tracing.
-    MaxLength : int
-        Maximum boundary length to trace before terminating.
-
-    Returns:
-    --------
-    X : array_like
-        A 1D array of horizontal coordinates of contour seed pixels for
-        tracing.
-    Y : array_like
-        A 1D array of the vertical coordinates of seed pixels for tracing.
-    """
-
-    # initialize outputs
-    X = []
-    Y = []
-
-    # add starting pixel and direction to outputs
-    X.append(XStart)
-    Y.append(YStart)
-
-    # check degenerate case where mask contains 1 pixel
-    if Mask.sum() > 1:
-
-        # initialize direction
-        DX = 1
-        DY = 0
-
-        # define clockwise ordered indices
-        row = [2, 1, 0, 0, 0, 1, 2, 2]
-        col = [0, 0, 0, 1, 2, 2, 2, 1]
-        dX = [-1, 0, 0, 1, 1, 0, 0, -1]
-        dY = [0, -1, -1, 0, 0, 1, 1, 0]
-        oX = [-1, -1, -1, 0, 1, 1, 1, 0]
-        oY = [1, 0, -1, -1, -1, 0, 1, 1]
-
-        while True:
-
-            # rotate template surrounding current location to fit relative frame
-            if (DX == 1) & (DY == 0):
-                T = np.rot90(Mask[Y[-1]-1:Y[-1]+2, X[-1]-1:X[-1]+2], 1)
-                Angle = np.pi/2
-            elif (DX == 0) & (DY == -1):
-                T = Mask[Y[-1]-1:Y[-1]+2, X[-1]-1:X[-1]+2]
-                Angle = 0
-            elif (DX == -1) & (DY == 0):
-                T = np.rot90(Mask[Y[-1]-1:Y[-1]+2, X[-1]-1:X[-1]+2], 3)
-                Angle = 3 * np.pi / 2
-            else:  # (Direction[0] == 0) & (DY[-1] == 1):
-                T = np.rot90(Mask[Y[-1]-1:Y[-1]+2, X[-1]-1:X[-1]+2], 2)
-                Angle = np.pi
-
-            # get first template entry that is 1
-            Move = np.argmax(T[row, col])
-
-            # transform points by incoming directions and add to contours
-            R = np.array([[np.cos(Angle), -np.sin(Angle)],
-                          [np.sin(Angle), np.cos(Angle)]])
-            Coords = R.dot(np.vstack((np.array(oX[Move]),
-                                      np.array(oY[Move])))).round()
-            Direction = R.dot(np.vstack((dX[Move], dY[Move]))).round()
-            DX = Direction[0]
-            DY = Direction[1]
-
-            # capture next location
-            X.append(X[-1] + Coords[0][0])
-            Y.append(Y[-1] + Coords[1][0])
-
-            # check if last two contour points are same as first two points
-            if(len(X) > 3):
-                if(len(X) >= MaxLength) or \
-                    (X[-1] == X[1] and X[-2] == X[0] and
-                     Y[-1] == Y[1] and Y[-2] == Y[0]):
-                        X = X[0:-1]
-                        Y = Y[0:-1]
-                        break
 
     return X, Y
