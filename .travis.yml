@@ -88,9 +88,9 @@ install:
     - conda install --yes libgfortran==1.0 setuptools==19.4 ctk-cli==1.3.1 --file $main_path/requirements_c_conda.txt
     - pip install -r $main_path/requirements.txt -r $main_path/requirements_c.txt
     - cd $girder_path
-    - pip install -U -r requirements.txt -r requirements-dev.txt
-    - pip install -U -r $large_image_path/requirements.txt
-    - pip install -U -r $slicer_cli_web_path/requirements.txt
+    - pip install --yes setuptools==19.4 -U -r requirements.txt -r requirements-dev.txt
+    - pip install --yes setuptools==19.4 -U -r $large_image_path/requirements.txt
+    - pip install --yes setuptools==19.4 -U -r $slicer_cli_web_path/requirements.txt
     - npm install
 
 script:
