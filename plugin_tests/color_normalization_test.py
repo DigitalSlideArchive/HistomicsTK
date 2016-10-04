@@ -30,6 +30,7 @@ from histomicstk.preprocessing import color_normalization as htk_cn
 # boiler plate to start and stop the server if needed
 def setUpModule():
     base.enabledPlugins.append('HistomicsTK')
+    base.enabledPlugins.append('large_image')
     base.startServer()
 
 
