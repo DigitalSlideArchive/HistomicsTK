@@ -92,6 +92,8 @@ install:
     - pip install -U -r $large_image_path/requirements.txt setuptools==19.4
     - pip install -U -r $slicer_cli_web_path/requirements.txt setuptools==19.4
     - npm install
+    - cd $large_image_path
+    - python setup.py install
 
 script:
     - mkdir -p $build_path/girder_testing_build
