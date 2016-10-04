@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from setuptools import setup, find_packages
+    from setuptools import setup, find_packages, Extension
 except ImportError:
     from distutils.core import setup, find_packages
+    from distutils.extension import Extension
 
 import os
 import json
+import numpy
+from Cython.Build import cythonize
 from pkg_resources import parse_requirements, RequirementParseError
 
 with open('README.rst') as readme_file:
@@ -75,4 +78,14 @@ setup(name='histomicstk',
           'Topic :: Software Development :: Libraries :: Python Modules',
       ],
       test_suite='plugin_tests',
-      tests_require=test_requirements)
+      tests_require=test_requirements,
+      ext_modules = cythonize(Extension(
+           "histomicstk.segmentation.label.isbf",
+           sources=["histomicstk/segmentation/label/isbf.pyx",
+                    "histomicstk/segmentation/label/isbfcpp.cpp"],
+           include_dirs=[numpy.get_include()],
+           extra_compile_args=["-std=c++11"],
+           language="c++",
+           )
+      )
+      )

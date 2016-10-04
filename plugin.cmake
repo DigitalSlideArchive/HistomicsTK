@@ -53,6 +53,12 @@ add_python_test(glcm
     PLUGIN HistomicsTK
 )
 
+add_python_test(segmentation_label
+    SUBMODULE TraceBoundsTest
+    DBNAME core_segmentation_trace_bounds
+    PLUGIN HistomicsTK
+)
+
 # front-end tests
 add_web_client_test(
     HistomicsTK_schema "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/parser.js"
