@@ -27,6 +27,7 @@ Once large_image is installed, HistomicsTK can be installed as follows::
     $ git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
     $ cd HistomicsTK
     $ conda install --yes libgfortran==1.0 setuptools==19.4 --file requirements_c_conda.txt
+    $ python setu.py build_ext --inplace
     $ python setup.py install
 
 We are working on releasing HistomicsTK on PyPI so it can easily be pip
