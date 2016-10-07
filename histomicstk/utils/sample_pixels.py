@@ -5,8 +5,8 @@ import scipy
 from .SimpleMask import SimpleMask
 
 
-def Sample(slide_path, magnification, percent, tile_size,
-           mapping_mag=1.25, min_coverage=0.1):
+def sample_pixels(slide_path, magnification, percent, tile_size,
+                  mapping_mag=1.25, min_coverage=0.1):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or

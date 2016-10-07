@@ -1,6 +1,6 @@
 import collections
 import numpy as np
-from histomicstk.utils import Sample
+from histomicstk.utils import sample_pixels
 from histomicstk.preprocessing import color_conversion
 
 
@@ -49,8 +49,8 @@ def reinhard_sample(slide_path, magnification, sample_percent, tile_size):
     """
 
     # generate a sampling of sample_pixels_rgb pixels from whole-slide image
-    sample_pixels_rgb = Sample(slide_path, magnification,
-                               sample_percent, tile_size)
+    sample_pixels_rgb = sample_pixels(slide_path, magnification,
+                                      sample_percent, tile_size)
 
     # reshape the 3xN pixel array into a 1 x N x 3 image for lab_mean_std
     sample_pixels_rgb = np.reshape(sample_pixels_rgb.transpose(),

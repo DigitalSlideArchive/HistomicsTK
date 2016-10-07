@@ -51,7 +51,7 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
 
     See Also
     --------
-    histomicstk.utils.Sample
+    histomicstk.utils.sample_pixels
     """
 
     # convert image to grayscale, flatten and sample

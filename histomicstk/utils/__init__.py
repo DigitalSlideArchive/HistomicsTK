@@ -12,7 +12,7 @@ from .Hessian import Hessian
 from .MergeColinear import MergeColinear
 from .PoissonMixture import PoissonMixture
 from .SimpleMask import SimpleMask
-from .Sample import Sample  # must import after SimpleMask
+from .sample_pixels import sample_pixels  # must import after SimpleMask
 
 
 # list out things that are available for public use
@@ -25,6 +25,6 @@ __all__ = (
     'Hessian',
     'MergeColinear',
     'PoissonMixture',
-    'Sample',
+    'sample_pixels',
     'SimpleMask',
 )
