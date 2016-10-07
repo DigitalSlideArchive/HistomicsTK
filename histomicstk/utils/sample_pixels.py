@@ -71,7 +71,7 @@ def sample_pixels(slide_path, magnification, percent, tile_size,
                     'units': 'base_pixels'}
 
         # get fgnd mask for current tile
-        rgn_lres = ts.convertRegionScale(rgn_hres, target_scale=scale_highres)
+        rgn_lres = ts.convertRegionScale(rgn_hres, targetScale=scale_highres)
 
         tile_fgnd_mask = scipy.misc.imresize(
             fgnd_mask_lowres[rgn_lres['left']: rgn_lres['right'],
