@@ -1,3 +1,7 @@
+# distutils: language = c++
+# distutils: sources = trace_boundary_cpp.cpp
+# distutils: extra_compile_args = -std=c++11
+
 """
 Cython source code: trace_object_boundary
 """
