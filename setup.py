@@ -78,5 +78,7 @@ setup(name='histomicstk',
       ],
       test_suite='plugin_tests',
       tests_require=test_requirements,
-      ext_modules = cythonize('histomicstk/segmentation/label/*.pyx'),
+      ext_modules = cythonize('histomicstk/segmentation/label/*.pyx',
+                              include_path = [numpy.get_include()]
+                             ),
       )
