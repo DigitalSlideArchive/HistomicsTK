@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from setuptools import setup, find_packages, Extension
+    from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup, find_packages
-    from distutils.extension import Extension
 
 import os
 import json
@@ -79,15 +78,5 @@ setup(name='histomicstk',
       ],
       test_suite='plugin_tests',
       tests_require=test_requirements,
-      ext_modules = cythonize(Extension(
-           "histomicstk.segmentation.label.trace_object_boundary",
-           sources=[
-                "histomicstk/segmentation/label/trace_object_boundary.pyx",
-                "histomicstk/segmentation/label/trace_boundary_cpp.cpp"
-           ],
-           include_dirs=[numpy.get_include()],
-           extra_compile_args=["-std=c++11"],
-           language="c++",
-           )
-      )
+      ext_modules = cythonize('*.pyx'),
       )
