@@ -44,6 +44,7 @@ histomicstk.views.Visualization = girder.View.extend({
             .then(_.bind(function (item) {
                 this._controlModel.get('value').set(item);
                 histomicstk.router.setQuery('image', id);
+                this._controlModel.trigger('change', this._controlModel);
                 return this.addItem(this._controlModel.get('value'));
             }, this))
             .fail(_.bind(function () {
