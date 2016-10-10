@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from setuptools import setup, find_packages
+    from setuptools import setup, find_packages, Extension
 except ImportError:
     from distutils.core import setup, find_packages
+    from distutils.extension import Extension
 
 import os
 import json
@@ -78,7 +79,6 @@ setup(name='histomicstk',
       ],
       test_suite='plugin_tests',
       tests_require=test_requirements,
-      ext_modules = cythonize('histomicstk/segmentation/label/*.pyx',
-                              include_dirs = [numpy.get_include()]
-                             ),
+      ext_modules = cythonize('*.pyx'),
+      include_dirs=[numpy.get_include()]
       )
