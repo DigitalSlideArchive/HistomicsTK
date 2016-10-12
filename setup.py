@@ -79,6 +79,14 @@ setup(name='histomicstk',
       ],
       test_suite='plugin_tests',
       tests_require=test_requirements,
-      ext_modules = cythonize('histomicstk/segmentation/label/*.pyx'),
+      ext_modules = cythonize(Extension(
+           "histomicstk.segmentation.label.trace_object_boundary",
+           sources=["histomicstk/segmentation/label/trace_object_boundary.pyx",
+                    "histomicstk/segmentation/label/trace_boundary_cpp.cpp"],
+           include_dirs=[numpy.get_include()],
+           extra_compile_args=["-std=c++11"],
+           language="c++",
+           )
+      )
       include_dirs=[numpy.get_include()]
       )
