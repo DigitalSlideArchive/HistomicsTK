@@ -19,7 +19,7 @@ cdef extern from "trace_boundary_cpp.h":
         vector[vector[int]] moore(int, int, vector[vector[int]] mask, int, int, float)
 
 
-def trace_object_boundary(np.ndarray[int, ndim=2, mode="c"] imLabel not None, connectivity):
+def trace_object_boundary(np.ndarray[int, ndim=2, mode="c"] imLabel not None, connectivity=4):
 
     cdef trace_boundary_cpp res
     res = trace_boundary_cpp()
