@@ -523,7 +523,6 @@ std::vector <std::vector<int> > trace_boundary_cpp::isbf(int nrows, int ncols,
       DY = roundf(j);
       // get length of the current linked list
       sizeofX = boundary_listX.size();
-
       if (sizeofX > 3) {
 
         int fx1 = *boundary_listX.begin();
@@ -536,6 +535,8 @@ std::vector <std::vector<int> > trace_boundary_cpp::isbf(int nrows, int ncols,
         int ly2 = *std::prev(boundary_listY.end(), 2);
         int lx3 = *std::prev(boundary_listX.end(), 3);
         int ly3 = *std::prev(boundary_listY.end(), 3);
+        int lx4 = *std::prev(boundary_listX.end(), 4);
+        int ly4 = *std::prev(boundary_listY.end(), 4);
 
         // check if the first and the last x and y are equal
         if ((sizeofX > inf)|| \
@@ -552,6 +553,32 @@ std::vector <std::vector<int> > trace_boundary_cpp::isbf(int nrows, int ncols,
             boundary_listX.pop_back();
             boundary_listY.pop_back();
             break;
+        }
+        // detect cycle
+        if ((lx1 == lx3)&&(ly1 == ly3)&&(lx2 == lx4)&&(ly2 == ly4)){
+          boundary_listX.pop_back();
+          boundary_listY.pop_back();
+          boundary_listX.pop_back();
+          boundary_listY.pop_back();
+          // change direction from M_PI to 3*M_PI/2
+          if ((DX == 0)&&(DY == 1)){
+            DX = -1;
+            DY = 0;
+          }
+          // from M_PI/2 to M_PI
+          else if ((DX == 1)&&(DY == 0)){
+            DX = 0;
+            DY = 1;
+          }
+          // from 0 to M_PI/2
+          else if ((DX == 0)&&(DY == -1)){
+            DX = 1;
+            DY = 0;
+          }
+          else{
+            DX = 0;
+            DY = -1;
+          }
         }
       }
     }
