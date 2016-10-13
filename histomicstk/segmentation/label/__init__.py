@@ -18,9 +18,6 @@ from .AreaOpenLabel import AreaOpenLabel
 from .SplitLabel import SplitLabel
 from .WidthOpenLabel import WidthOpenLabel
 
-# must be imported after trace_object_boundary
-from .trace_label import trace_label
-
 # list out things that are available for public use
 __all__ = (
 
@@ -34,6 +31,5 @@ __all__ = (
     'ShuffleLabel',
     'SplitLabel',
     'trace_object_boundary',
-    'trace_label',
     'WidthOpenLabel',
 )
