@@ -21,8 +21,9 @@ from tests import base
 
 import numpy as np
 import os
+import ctypes
 
-from histomicstk.segmentation.label import trace_label
+from histomicstk.segmentation.label import trace_object_boundary
 
 
 # boiler plate to start and stop the server if needed
@@ -45,12 +46,6 @@ class trace_boundaryTest(base.TestCase):
 
         # test moore neighbor algorithm
 
-        # refenece neighbors
-        rx = [1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 8, 7, 7, 7,
-              7, 6, 5, 4, 3, 3, 3, 3, 2, 1]
-        ry = [7, 8, 8, 7, 6, 6, 6, 6, 6, 7, 8, 8, 7, 7, 6, 5, 4,
-              3, 2, 1, 2, 3, 4, 5, 6, 7, 7]
-
         m_neighbor = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
                                [0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
@@ -63,7 +58,26 @@ class trace_boundaryTest(base.TestCase):
                                [0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.bool)
 
-        output = trace_label(m_neighbor, Connectivity=8)
+        m_neighbor = np.ascontiguousarray(m_neighbor, dtype=ctypes.c_int)
 
-        np.testing.assert_allclose(rx, output[0][1])
-        np.testing.assert_allclose(ry, output[0][0])
+        # refenece neighbors for isbf
+        rx_isbf = [1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 8, 7, 7, 7,
+                   7, 6, 6, 5, 5, 5, 4, 4, 3, 3, 3, 3, 2, 1]
+        ry_isbf = [7, 8, 8, 7, 6, 6, 6, 6, 6, 7, 8, 8, 7, 7, 6, 5, 4,
+                   3, 3, 2, 2, 1, 2, 2, 3, 3, 4, 5, 6, 7, 7]
+
+        # refenece neighbors for moore
+        rx_moore = [1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 8, 7, 7, 7,
+                    7, 6, 5, 4, 3, 3, 3, 3, 2, 1]
+        ry_moore = [7, 8, 8, 7, 6, 6, 6, 6, 6, 7, 8, 8, 7, 7, 6, 5, 4,
+                    3, 2, 1, 2, 3, 4, 5, 6, 7, 7]
+
+        output_isbf = trace_object_boundary(m_neighbor)
+
+        np.testing.assert_allclose(rx_isbf, output_isbf[0][1])
+        np.testing.assert_allclose(ry_isbf, output_isbf[0][0])
+
+        output_moore = trace_object_boundary(m_neighbor, 8)
+
+        np.testing.assert_allclose(rx_moore, output_moore[0][1])
+        np.testing.assert_allclose(ry_moore, output_moore[0][0])
