@@ -93,7 +93,6 @@ setup(name='histomicstk',
                     "histomicstk/segmentation/label/trace_boundaries_opt.cpp"],
            include_dirs=[numpy.get_include()],
            extra_compile_args=ext_compiler_args,
-           #extra_compile_args=["-O2"],
            language="c++",
            )
       )
