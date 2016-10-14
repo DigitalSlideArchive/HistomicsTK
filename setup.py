@@ -55,7 +55,7 @@ test_requirements = [
 ]
 
 # cython extensions
-ext_compiler_args = ["-std=c++11"]
+ext_compiler_args = ["-std=c++11", "-O2"]
 
 if sys.platform == "darwin":  # osx
     ext_compiler_args.append("-mmacosx-version-min=10.9")
@@ -88,11 +88,12 @@ setup(name='histomicstk',
       test_suite='plugin_tests',
       tests_require=test_requirements,
       ext_modules = cythonize(Extension(
-           "histomicstk.segmentation.label.trace_object_boundary",
-           sources=["histomicstk/segmentation/label/trace_object_boundary.pyx",
-                    "histomicstk/segmentation/label/trace_boundary_cpp.cpp"],
+           "histomicstk.segmentation.label.trace_boundaries",
+           sources=["histomicstk/segmentation/label/trace_boundaries.pyx",
+                    "histomicstk/segmentation/label/trace_boundaries_opt.cpp"],
            include_dirs=[numpy.get_include()],
            extra_compile_args=ext_compiler_args,
+           #extra_compile_args=["-O2"],
            language="c++",
            )
       )
