@@ -103,8 +103,6 @@ histomicstk.views.Visualization = girder.View.extend({
         }
         bounds.left = bounds.left || 0;
         bounds.top = bounds.top || 0;
-        var w = bounds.right - bounds.left;
-        var h = bounds.bottom - bounds.top;
         var interactor = geo.mapInteractor({
             zoomAnimation: false
         });
@@ -116,9 +114,12 @@ histomicstk.views.Visualization = girder.View.extend({
             ingcs: '+proj=longlat +axis=esu',
             gcs: '+proj=longlat +axis=enu',
             maxBounds: bounds,
+            // to appropriate set min and max, we need to know the tile size
+            // (using a single image may require the ability to zoom out).
             clampBoundsX: false,
             clampBoundsY: false,
-            center: {x: w / 2, y: h / 2},
+            center: {x: (bounds.left + bounds.right) / 2,
+                     y: (bounds.top + bounds.bottom) / 2},
             zoom: 0,
             discreteZoom: false,
             interactor: interactor
@@ -171,7 +172,7 @@ histomicstk.views.Visualization = girder.View.extend({
                 return this.addTileLayer(
                     {
                         url: girder.apiRoot + '/item/' + item.id + '/tiles/zxy/{z}/{x}/{y}',
-                        maxLevel: tiles.levels,
+                        maxLevel: tiles.levels - 1,
                         tileWidth: tiles.tileWidth,
                         tileHeight: tiles.tileHeight,
                         sizeX: tiles.sizeX,
@@ -284,7 +285,21 @@ histomicstk.views.Visualization = girder.View.extend({
             attribution: '',
             tileWidth: 256,
             tileHeight: 256,
-            tileRounding: Math.ceil
+            tileRounding: Math.ceil,
+            tilesAtZoom: function (level) {
+                var scale = Math.pow(2, opts.maxLevel - level);
+                return {
+                    x: Math.ceil(opts.sizeX / opts.tileWidth / scale),
+                    y: Math.ceil(opts.sizeY / opts.tileHeight / scale)
+                };
+            },
+            tilesMaxBounds: function (level) {
+                var scale = Math.pow(2, opts.maxLevel - level);
+                return {
+                    x: Math.floor(opts.sizeX / scale),
+                    y: Math.floor(opts.sizeY / scale)
+                };
+            }
         });
 
         // estimate the global bounds if not provided
@@ -296,8 +311,8 @@ histomicstk.views.Visualization = girder.View.extend({
         }
 
         this._createMap({
-            right: opts.sizeX - 1,
-            bottom: opts.sizeY - 1
+            right: opts.sizeX,
+            bottom: opts.sizeY
         });
         layer = this._map.createLayer('osm', opts);
         this._unitsPerPixel = this._map.unitsPerPixel(opts.maxLevel - 1);
