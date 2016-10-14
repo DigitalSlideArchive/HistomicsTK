@@ -49,19 +49,19 @@ std::vector <std::vector<std::vector<int> > > trace_boundary(std::vector <std::v
 
     // start ----- find unique id of labels
 
-    // 2d to 1d array
-    std::vector<int> im1D;
-    im1D.reserve(nrows_img * ncols_img);
-    for(int i = 0; i < nrows_img; i++) {
-       const std::vector<int>& v = imLabels[i];
-       im1D.insert(im1D.end(), v.begin(), v.end());
+    std::set<int> label_set;
+
+    std::vector <std::vector<int> >::iterator row;
+    std::vector<int>::iterator col;
+
+    // iterate imLabels
+    for(row = imLabels.begin(); row != imLabels.end(); row++) {
+        for(col = row->begin(); col != row->end(); col++) {
+          if(*col != 0){
+            label_set.insert(*col);
+          }
+        }
     }
-
-    // initialize label_set with unique id for each label
-    std::set<int> label_set( im1D.begin(), im1D.end() );
-
-    // remove 0 from the set
-    label_set.erase(0);
 
     // end ----- find unique id of labels
 
@@ -72,7 +72,6 @@ std::vector <std::vector<std::vector<int> > > trace_boundary(std::vector <std::v
     // loop from the second element of set
     for (it = label_set.begin(); it != label_set.end(); it++) {
         std::vector<Points> point;
-
         // put each point into struct
         for (int i=0; i < nrows_img; i++) {
             for (int j = 0; j < ncols_img; j++) {
