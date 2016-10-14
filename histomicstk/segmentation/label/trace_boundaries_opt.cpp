@@ -1,5 +1,5 @@
 /*
-C++ version of TraceBounds
+C++ version of trace_boundaries_opt
 */
 #include "trace_boundaries_opt.h"
 
@@ -14,11 +14,7 @@ struct Points {
     int x, y;
 };
 
-trace_boundaries_opt::trace_boundaries_opt()
-{
-}
-
-void trace_boundaries_opt::rot90(int nrows, int ncols,
+void rot90(int nrows, int ncols,
   std::vector <std::vector<int> > input,
   std::vector <std::vector<int> > &output)
 {
@@ -29,7 +25,7 @@ void trace_boundaries_opt::rot90(int nrows, int ncols,
     }
 }
 
-std::vector <std::vector<std::vector<int> > > trace_boundaries_opt::trace_boundary(std::vector <std::vector<int> > imLabels, int connectivity)
+std::vector <std::vector<std::vector<int> > > trace_boundary(std::vector <std::vector<int> > imLabels, int connectivity)
 {
     std::vector <std::vector<std::vector<int> > > output;
 
@@ -180,7 +176,7 @@ std::vector <std::vector<std::vector<int> > > trace_boundaries_opt::trace_bounda
 
 }
 
-std::vector <std::vector<int> > trace_boundaries_opt::moore(int nrows, int ncols,
+std::vector <std::vector<int> > moore(int nrows, int ncols,
   std::vector <std::vector<int> > mask, std::vector <std::vector<int> > mask_90,
   std::vector <std::vector<int> > mask_180, std::vector <std::vector<int> > mask_270,
   int startX, int startY, float inf)
@@ -356,7 +352,7 @@ std::vector <std::vector<int> > trace_boundaries_opt::moore(int nrows, int ncols
 }
 
 
-std::vector <std::vector<int> > trace_boundaries_opt::isbf(int nrows, int ncols,
+std::vector <std::vector<int> > isbf(int nrows, int ncols,
   std::vector <std::vector<int> > mask, std::vector <std::vector<int> > mask_90,
   std::vector <std::vector<int> > mask_180, std::vector <std::vector<int> > mask_270,
   int startX, int startY, float inf)
@@ -589,8 +585,4 @@ std::vector <std::vector<int> > trace_boundaries_opt::isbf(int nrows, int ncols,
     boundary[1].assign(boundary_listY.begin(), boundary_listY.end());
 
     return boundary;
-}
-
-trace_boundaries_opt::~trace_boundaries_opt()
-{
 }
