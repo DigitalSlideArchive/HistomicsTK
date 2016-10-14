@@ -10,6 +10,7 @@ except ImportError:
 import os
 import json
 import numpy
+import sys
 from Cython.Build import cythonize
 from pkg_resources import parse_requirements, RequirementParseError
 
@@ -53,6 +54,13 @@ test_requirements = [
     # TODO: Should we list Girder here?
 ]
 
+# cython extensions
+ext_compiler_args = ["-std=c++11"]
+
+if sys.platform == "darwin":  # osx
+    ext_compiler_args.append("-mmacosx-version-min=10.9")
+
+
 setup(name='histomicstk',
       version=pkginfo['version'],
       description=pkginfo['description'],
@@ -84,8 +92,8 @@ setup(name='histomicstk',
            sources=["histomicstk/segmentation/label/trace_object_boundary.pyx",
                     "histomicstk/segmentation/label/trace_boundary_cpp.cpp"],
            include_dirs=[numpy.get_include()],
-           extra_compile_args=["-std=c++11"],
+           extra_compile_args=ext_compiler_args,
            language="c++",
            )
       )
-      )
+)
