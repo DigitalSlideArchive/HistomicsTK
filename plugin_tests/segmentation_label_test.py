@@ -23,7 +23,7 @@ import numpy as np
 import os
 import ctypes
 
-from histomicstk.segmentation.label import trace_object_boundary
+from histomicstk.segmentation.label import trace_boundaries
 
 
 # boiler plate to start and stop the server if needed
@@ -72,12 +72,12 @@ class trace_boundaryTest(base.TestCase):
         ry_moore = [7, 8, 8, 7, 6, 6, 6, 6, 6, 7, 8, 8, 7, 7, 6, 5, 4,
                     3, 2, 1, 2, 3, 4, 5, 6, 7, 7]
 
-        output_isbf = trace_object_boundary(m_neighbor)
+        output_isbf = trace_boundaries(m_neighbor)
 
         np.testing.assert_allclose(rx_isbf, output_isbf[0][1])
         np.testing.assert_allclose(ry_isbf, output_isbf[0][0])
 
-        output_moore = trace_object_boundary(m_neighbor, 8)
+        output_moore = trace_boundaries(m_neighbor, 8)
 
         np.testing.assert_allclose(rx_moore, output_moore[0][1])
         np.testing.assert_allclose(ry_moore, output_moore[0][0])
