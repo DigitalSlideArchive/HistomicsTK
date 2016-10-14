@@ -11,7 +11,7 @@ from .CondenseLabel import CondenseLabel
 from .DeleteLabel import DeleteLabel
 from .LabelPerimeter import LabelPerimeter
 from .ShuffleLabel import ShuffleLabel
-from .trace_object_boundary import trace_object_boundary
+from .trace_boundaries import trace_boundaries
 
 # must be imported after CondenseLabel
 from .AreaOpenLabel import AreaOpenLabel
@@ -30,6 +30,6 @@ __all__ = (
     'LabelPerimeter',
     'ShuffleLabel',
     'SplitLabel',
-    'trace_object_boundary',
+    'trace_boundaries',
     'WidthOpenLabel',
 )
