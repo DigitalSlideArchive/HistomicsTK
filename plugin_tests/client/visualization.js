@@ -134,10 +134,10 @@ describe('visualization', function () {
         });
         it('initial bounds', function () {
             var bounds = view._map.bounds();
-            expect(bounds.left).toBeCloseTo(0, 6);
-            expect(bounds.right).toBeCloseTo(100000, 6);
-            expect(bounds.top).toBeCloseTo(-100000, 6);
-            expect(bounds.bottom).toBeCloseTo(0, 6);
+            expect(bounds.left).toBeCloseTo(0, 1);
+            expect(bounds.right).toBeCloseTo(100000, 1);
+            expect(bounds.top).toBeCloseTo(-100000, 1);
+            expect(bounds.bottom).toBeCloseTo(0, 1);
         });
         it('after pan', function () {
             view._map.pan({x: -10, y: 0});
@@ -285,7 +285,7 @@ describe('visualization', function () {
             rest.onCall(0).returns($.when([]));
             rest.onCall(1).returns($.when([]));
             rest.onCall(2).returns($.when([]));
-            
+
             var view = new histomicstk.views.Visualization({
                 parentView: parentView,
                 el: $el

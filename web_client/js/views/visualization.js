@@ -70,9 +70,6 @@ histomicstk.views.Visualization = girder.View.extend({
 
         // Set image bounds on URL query parameter change
         this.listenTo(histomicstk.events, 'query:bounds', this._boundsFromQuery);
-
-        // fallback to canvas renderer rather than dom
-        geo.gl.vglRenderer.fallback = function () {return 'canvas';};
     },
 
     /**
@@ -95,7 +92,7 @@ histomicstk.views.Visualization = girder.View.extend({
     /**
      * Create a map object with the given global bounds.
      */
-    _createMap: function (bounds) {
+    _createMap: function (bounds, tileWidth, tileHeight, sizeX, sizeY) {
         if (this._map) {
             // reset bounds query parameter on map exit
             histomicstk.router.setQuery('bounds', null, {replace: true, trigger: false});
@@ -103,27 +100,42 @@ histomicstk.views.Visualization = girder.View.extend({
         }
         bounds.left = bounds.left || 0;
         bounds.top = bounds.top || 0;
+        tileWidth = tileWidth || (bounds.right - bounds.left);
+        tileHeight = tileHeight || (bounds.bottom - bounds.top);
+        sizeX = sizeX || (bounds.right - bounds.left);
+        sizeY = sizeY || (bounds.bottom - bounds.top);
         var interactor = geo.mapInteractor({
             zoomAnimation: false
         });
+        var mapW = this.$el.width() || 100, mapH = this.$el.height() || 100;
+        var minZoom = Math.min(0, Math.floor(Math.log(Math.min(
+                (mapW || tileWidth) / tileWidth,
+                (mapH || tileHeight) / tileHeight)) / Math.log(2))),
+            maxZoom = Math.ceil(Math.log(Math.max(
+                sizeX / tileWidth,
+                sizeY / tileHeight)) / Math.log(2));
 
-        this._map = geo.map({
+        var mapParams ={
             node: '<div style="width: 100%; height: 100%"/>',
-            width: this.$el.width() || 100,
-            height: this.$el.height() || 100,
+            width: mapW,
+            height: mapH,
             ingcs: '+proj=longlat +axis=esu',
             gcs: '+proj=longlat +axis=enu',
             maxBounds: bounds,
-            // to appropriate set min and max, we need to know the tile size
+            min: minZoom,
+            max: maxZoom,
+            // to set min and max appropriately, we need to know the tile size
             // (using a single image may require the ability to zoom out).
             clampBoundsX: false,
             clampBoundsY: false,
             center: {x: (bounds.left + bounds.right) / 2,
                      y: (bounds.top + bounds.bottom) / 2},
-            zoom: 0,
+            zoom: minZoom,
             discreteZoom: false,
-            interactor: interactor
-        });
+            interactor: interactor,
+            unitsPerPixel: Math.pow(2, maxZoom)
+        };
+        this._map = geo.map(mapParams);
 
         this._boundsFromQuery(histomicstk.router.getQuery('bounds'));
         this._syncViewport();
@@ -235,7 +247,8 @@ histomicstk.views.Visualization = girder.View.extend({
      */
     addImageLayer: function (url, bounds) {
         this._createMap(bounds);
-        var layer = this._map.createLayer('feature', {renderer: 'vgl'});
+        var layer = this._map.createLayer(
+            'feature', {features: ['quad.imageCrop']});
         var quad = layer.createFeature('quad');
         quad.data([
             {
@@ -275,6 +288,7 @@ histomicstk.views.Visualization = girder.View.extend({
         }
 
         _.defaults(opts, {
+            features: ['quad.imageCrop'],
             useCredentials: true,
             maxLevel: 10,
             wrapX: false,
@@ -313,7 +327,7 @@ histomicstk.views.Visualization = girder.View.extend({
         this._createMap({
             right: opts.sizeX,
             bottom: opts.sizeY
-        });
+        }, opts.tileWidth, opts.tileHeight, opts.sizeX, opts.sizeY);
         layer = this._map.createLayer('osm', opts);
         this._unitsPerPixel = this._map.unitsPerPixel(opts.maxLevel - 1);
         this._layers.push(layer);
