@@ -90,7 +90,9 @@ install:
     - cd $main_path 
     - python setup.py build_ext --inplace
     - cd $girder_path
-    - pip install -U -r requirements.txt -r requirements-dev.txt -r $large_image_path/requirements.txt -r $slicer_cli_web_path/requirements.txt setuptools==19.4
+    - pip install -U -r requirements.txt -r requirements-dev.txt setuptools==19.4
+    - pip install -U -r $large_image_path/requirements.txt 
+    - pip install -U -r $slicer_cli_web_path/requirements.txt 
     - npm install
 
 script:
