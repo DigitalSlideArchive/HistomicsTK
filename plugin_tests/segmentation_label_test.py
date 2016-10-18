@@ -21,7 +21,6 @@ from tests import base
 
 import numpy as np
 import os
-import ctypes
 
 from histomicstk.segmentation.label import trace_boundaries
 
