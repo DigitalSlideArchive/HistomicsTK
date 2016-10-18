@@ -1,7 +1,7 @@
 /*
 Source of trace_boundaries_opt
 */
-#include "trace_boundaries_opt.hpp"
+#include "trace_boundaries_opt.h"
 
 #include <iostream>
 #include <list>
