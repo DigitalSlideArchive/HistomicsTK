@@ -58,7 +58,7 @@ class trace_boundaryTest(base.TestCase):
                                [0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.bool)
 
-        m_neighbor = np.ascontiguousarray(m_neighbor, dtype=ctypes.c_int)
+        m_neighbor = np.ascontiguousarray(m_neighbor, dtype=np.int)
 
         # refenece neighbors for isbf
         rx_isbf = [1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 8, 7, 7, 7,
