@@ -1,7 +1,7 @@
 /*
-C++ version of trace_boundaries_opt
+Source of trace_boundaries_opt
 */
-#include "trace_boundaries_opt.h"
+#include "trace_boundaries_opt.hpp"
 
 #include <iostream>
 #include <list>
@@ -25,7 +25,8 @@ void rot90(int nrows, int ncols,
     }
 }
 
-std::vector <std::vector<std::vector<int> > > trace_boundary(std::vector <std::vector<int> > imLabels, int connectivity)
+std::vector <std::vector<std::vector<int> > > trace_boundary(std::vector <std::vector<int> > imLabels, int connectivity,
+ float inf, int startX, int startY)
 {
     std::vector <std::vector<std::vector<int> > > output;
 
@@ -128,27 +129,30 @@ std::vector <std::vector<std::vector<int> > > trace_boundary(std::vector <std::v
             }
         }
 
-        // find starting x and y points
-        int startX = 0;
-        int startY = 0;
-        bool flag = false;
 
-        for(int i = 1; i < nrows-1; i++) {
-          for(int j = 1; j < ncols-1; j++) {
-             if((mask[i][j] > 0)&&(!flag)){
-               // check if the nubmer of points is one
-               if(!((mask[i][j+1] == 0)&&(mask[i+1][j] == 0)&&
-                 (mask[i+1][j+1] == 0)&&(mask[i-1][j+1] == 0))) {
-                   startX = j;
-                   startY = i;
-                   flag = true;
-               }
-             }
-          }
+        // find starting x and y points if not defined
+        if ((startX == -1)&&(startY == -1)) {
+            bool flag = false;
+
+            for(int i = 1; i < nrows-1; i++) {
+              for(int j = 1; j < ncols-1; j++) {
+                 if((mask[i][j] > 0)&&(!flag)){
+                   // check if the nubmer of points is one
+                   if(!((mask[i][j+1] == 0)&&(mask[i+1][j] == 0)&&
+                     (mask[i+1][j+1] == 0)&&(mask[i-1][j+1] == 0))) {
+                       startX = j;
+                       startY = i;
+                       flag = true;
+                   }
+                 }
+              }
+            }
         }
 
-        // initialize infinity
-        float inf = std::numeric_limits<float>::infinity();
+        else {
+            startY = startY - minX + 1;
+            startX = startX - minY + 1;
+        }
 
         std::vector <std::vector<int> > coords;
 
@@ -186,7 +190,6 @@ std::vector <std::vector<int> > moore(int nrows, int ncols,
     // push the first x and y points
     boundary_listX.push_back(startX);
     boundary_listY.push_back(startY);
-
     // check degenerate case where mask contains 1 pixel
     int sum = 0;
     for(int i=0; i< nrows; i++){
@@ -223,12 +226,11 @@ std::vector <std::vector<int> > moore(int nrows, int ncols,
 
         std::vector <std::vector<int> > h(rowMoore, std::vector<int>(colMoore));
 
-        // initialize a and b which are indices of ISBF
+        // initialize a and b which are indices of moore
         int a = 0;
         int b = 0;
         int x = boundary_listX.back();
         int y = boundary_listY.back();
-
 
         if((DX == 1)&&(DY == 0)){
           for (int i = ncols-x-2; i < ncols-x+1; i++) {
@@ -289,7 +291,6 @@ std::vector <std::vector<int> > moore(int nrows, int ncols,
             }
           }
         }
-
         int cX = oX[Move];
         int cY = oY[Move];
         DX = dX[Move];
@@ -303,9 +304,6 @@ std::vector <std::vector<int> > moore(int nrows, int ncols,
 
         p = c*cX - s*cY;
         q = s*cX + c*cY;
-
-        x = boundary_listX.back();
-        y = boundary_listY.back();
 
         boundary_listX.push_back(x+roundf(p));
         boundary_listY.push_back(y+roundf(q));
