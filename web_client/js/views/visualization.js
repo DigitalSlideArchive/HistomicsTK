@@ -44,6 +44,7 @@ histomicstk.views.Visualization = girder.View.extend({
             .then(_.bind(function (item) {
                 this._controlModel.get('value').set(item);
                 histomicstk.router.setQuery('image', id);
+                this._controlModel.trigger('change', this._controlModel);
                 return this.addItem(this._controlModel.get('value'));
             }, this))
             .fail(_.bind(function () {
@@ -481,9 +482,9 @@ histomicstk.views.Visualization = girder.View.extend({
     }
 });
 
-histomicstk.dialogs.image = new histomicstk.views.ItemSelectorWidget({
+histomicstk.dialogs.image = new slicer.views.ItemSelectorWidget({
     parentView: null,
-    model: new histomicstk.models.Widget({
+    model: new slicer.models.Widget({
         type: 'file'
     })
 });
