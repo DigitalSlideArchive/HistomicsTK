@@ -21,7 +21,7 @@ __all__ = (
 
     # functions and classes of this package
     'embed_boundaries',
-    'map_color,
+    'map_color',
     'rag',
     'rag_add_layer',
     'SimpleMask',
