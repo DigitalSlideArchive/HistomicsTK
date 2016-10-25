@@ -1,5 +1,5 @@
-histomicstk.views.AnnotationSelectorWidget = histomicstk.views.Panel.extend({
-    events: _.extend(histomicstk.views.Panel.prototype.events, {
+histomicstk.views.AnnotationSelectorWidget = slicer.views.Panel.extend({
+    events: _.extend(slicer.views.Panel.prototype.events, {
         'click .h-annotation > span': 'toggleAnnotation'
     }),
     initialize: function () {
