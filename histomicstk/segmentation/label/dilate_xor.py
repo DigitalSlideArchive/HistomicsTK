@@ -2,7 +2,7 @@ import numpy as np
 from scipy.ndimage.morphology import distance_transform_edt
 
 
-def ComputeNeighborhoodMask(im_label, neigh_width=8):
+def dilate_xor(im_label, neigh_width=8):
     """Computes a label mask highlighting a ring-like neighborhood of each
     object or region in a given label mask
 

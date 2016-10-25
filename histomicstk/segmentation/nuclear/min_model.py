@@ -7,7 +7,7 @@ import skimage.morphology as mo
 from skimage.draw import polygon
 
 
-def MinimumModel(I, Delta=0.3, MaxLength=255, Compaction=3,
+def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
                  MinArea=100, MinWidth=5, MinDepth=2, MinConcavity=np.inf):
     """Performs a nuclear segmentation using a gradient contour tracing and
     geometry splitting algorithm. Implemented from the reference below.
@@ -62,7 +62,7 @@ def MinimumModel(I, Delta=0.3, MaxLength=255, Compaction=3,
 
     See Also
     --------
-    histomicstk.segmentation.label.TraceBounds
+    histomicstk.segmentation.label.trace_boundaries
 
     References
     ----------
@@ -72,32 +72,32 @@ def MinimumModel(I, Delta=0.3, MaxLength=255, Compaction=3,
     """
 
     # identify contour seed points
-    X, Y, Min, Max = SeedContours(I, Delta)
+    X, Y, Min, Max = seed_contours(I, Delta)
 
     # trace contours from seeds
-    cXs, cYs = TraceContours(I, X, Y, Min, Max, MaxLength=255)
+    cXs, cYs = trace_contours(I, X, Y, Min, Max, MaxLength=255)
 
     # score successfully traced contours
-    Scores = ScoreContours(I, cXs, cYs)
+    Scores = score_contours(I, cXs, cYs)
 
     # construct label image from scored contours
-    Label = LabelContour(I.shape, cXs, cYs, Scores)
+    Label = label_contour(I.shape, cXs, cYs, Scores)
 
     # compact contours to remove spurs - the paper calls this "optimization"
-    Label = label.CompactLabel(Label, Compaction)
+    Label = label.compact(Label, Compaction)
 
     # cleanup label image
-    Label = label.SplitLabel(Label)
-    Label = label.AreaOpenLabel(Label, MinArea)
-    Label = label.WidthOpenLabel(Label, MinWidth)
+    Label = label.split(Label)
+    Label = label.area_open(Label, MinArea)
+    Label = label.width_open(Label, MinWidth)
 
     # split objects with concavities
-    Label = SplitConcavities(Label, MinDepth, MinConcavity)
+    Label = split_concavities(Label, MinDepth, MinConcavity)
 
     return Label
 
 
-def SeedContours(I, Delta=0.3):
+def seed_contours(I, Delta=0.3):
     """Detects seed pixels for contour tracing by finding max-gradient points
     between local minima and maxima in an intensity image.
 
@@ -248,7 +248,7 @@ def SeedContours(I, Delta=0.3):
     return X, Y, Min, Max
 
 
-def TraceContours(I, X, Y, Min, Max, MaxLength=255):
+def trace_contours(I, X, Y, Min, Max, MaxLength=255):
     """Performs contour tracing of seed pixels in an intensity image using
     gradient information.
 
@@ -321,7 +321,7 @@ def TraceContours(I, X, Y, Min, Max, MaxLength=255):
         pY = Y[i] - max(0, Y[i]-np.ceil(MaxLength/2.0)) + 1
 
         # trace boundary, check stopping condition, append to list of contours
-        cX, cY = label.TraceBounds(Embed, Connectivity=4,
+        cX, cY = label.trace_boundaries(Embed, Connectivity=4,
                                    XStart=pX, YStart=pY, MaxLength=MaxLength)
         if(cX[0] == cX[-1] and cY[0] == cY[-1] and len(cX) <= MaxLength):
 
@@ -336,7 +336,7 @@ def TraceContours(I, X, Y, Min, Max, MaxLength=255):
     return cXs, cYs
 
 
-def ScoreContours(I, cXs, cYs):
+def score_contours(I, cXs, cYs):
     """Scores boundary contours using gradient information. Implemented from
     the reference below. Each contour is weighted by the average gradient and
     number of local gradient maxima along its path.
@@ -402,7 +402,7 @@ def ScoreContours(I, cXs, cYs):
     return Scores
 
 
-def LabelContour(Shape, cXs, cYs, Scores):
+def label_contour(Shape, cXs, cYs, Scores):
     """Constructs a label image from scored contours. Masks for contours with
     low priority/score are placed first into the label image and then are
     overwritten by higher priority contours.
@@ -470,7 +470,7 @@ def LabelContour(Shape, cXs, cYs, Scores):
     return Label
 
 
-def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
+def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
     """Performs splitting of objects in a label image using geometric scoring
     of concavities. Attempts to perform splits at narrow regions that are
     perpendicular to the object's convex hull boundaries.
@@ -499,7 +499,7 @@ def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
 
     See Also:
     ---------
-    LabelContours, MinimumModel
+    label_contours, min_model
 
     References:
     -----------
@@ -515,7 +515,7 @@ def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
 
     # condense label image
     if np.unique(Convex).size-1 != Convex.max():
-        Convex = label.CondenseLabel(Convex)
+        Convex = label.condense(Convex)
 
     # get locations of objects in initial image
     Locations = ms.find_objects(Convex)
@@ -543,7 +543,7 @@ def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         Hull = mo.convex_hull_image(Mask)
 
         # generate boundary coordinates, trim duplicate point
-        X, Y = label.TraceBounds(Mask, Connectivity=8)
+        X, Y = label.trace_boundaries(Mask, Connectivity=8)
         X = np.array(X[:-1], dtype=np.uint32)
         Y = np.array(Y[:-1], dtype=np.uint32)
 
@@ -625,7 +625,7 @@ def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
                         for b in np.arange(kCandidates.size):
 
                             # calculate length score
-                            Ls = LengthScore(iX[j][jCandidates[a]],
+                            Ls = length_score(iX[j][jCandidates[a]],
                                              iY[j][jCandidates[a]],
                                              iX[k][kCandidates[b]],
                                              iY[k][kCandidates[b]],
@@ -633,7 +633,7 @@ def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
                                              Depths[k][kCandidates[b]])
 
                             # calculate angle score
-                            As = AngleScore(iX[j][0], iY[j][0],
+                            As = angle_score(iX[j][0], iY[j][0],
                                             iX[j][-1], iY[j][-1],
                                             iX[k][0], iY[k][0],
                                             iX[k][-1], iY[k][-1],
@@ -663,7 +663,7 @@ def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
             if Scores[ArgMin[0], ArgMin[1]] <= MinConcavity:
 
                 # perform cut
-                SplitMask = Cut(Mask,
+                SplitMask = cut(Mask,
                                 Xcut1[ArgMin[0], ArgMin[1]].astype(np.float),
                                 Ycut1[ArgMin[0], ArgMin[1]].astype(np.float),
                                 Xcut2[ArgMin[0], ArgMin[1]].astype(np.float),
@@ -694,7 +694,7 @@ def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
     return Convex
 
 
-def AngleScore(ax1, ay1, bx1, by1, ax2, ay2, bx2, by2, cx1, cy1, cx2, cy2):
+def angle_score(ax1, ay1, bx1, by1, ax2, ay2, bx2, by2, cx1, cy1, cx2, cy2):
     """Scores the angles produced by cutting line (cx1, cy1)->(cx2, cy2) given
     the convex hull segments (ax1, ay1)->(bx1, by1) and (ax2, ay2)->(bx2, by2)
     spanning the concavities. See Figure 6 in reference below for a full
@@ -736,7 +736,7 @@ def AngleScore(ax1, ay1, bx1, by1, ax2, ay2, bx2, by2, cx1, cy1, cx2, cy2):
     return Score
 
 
-def LengthScore(x1, y1, x2, y2, d1, d2):
+def length_score(x1, y1, x2, y2, d1, d2):
     """Scores the length of the cutting line (x1, y1)->(x2, y2) made at a
     concavity depth of d1 and d2.
 
@@ -765,7 +765,7 @@ def LengthScore(x1, y1, x2, y2, d1, d2):
     return LengthScore
 
 
-def Cut(Mask, x1, y1, x2, y2):
+def cut(Mask, x1, y1, x2, y2):
     """Performs a cut across a binary mask, zeroing pixels that round to
     positions on the line (x1, y1)->(x2, y2).
 

@@ -129,8 +129,7 @@ def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
     # compute cytoplasm mask
     if im_cytoplasm is not None:
 
-        cyto_mask = htk_label.ComputeNeighborhoodMask(im_label,
-                                                      neigh_width=cyto_width)
+        cyto_mask = htk_label.dilate_xor(im_label, neigh_width=cyto_width)
 
         cytoplasm_props = regionprops(cyto_mask)
 

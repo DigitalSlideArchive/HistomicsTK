@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def LabelPerimeter(L, Connectivity=4):
+def perimeter(L, Connectivity=4):
     """Converts a label or binary mask image to a binary perimeter image.
 
     Uses 4-neighbor or 8-neighbor shifts to detect pixels whose values do
@@ -23,7 +23,7 @@ def LabelPerimeter(L, Connectivity=4):
 
     See Also
     --------
-    histomicstk.segmentation.EmbedBounds
+    histomicstk.segmentation.embed_boundaries
     """
 
     # initialize temporary variable

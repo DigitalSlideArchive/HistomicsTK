@@ -3,7 +3,7 @@ from scipy.ndimage.morphology import distance_transform_edt as dtx
 import scipy.ndimage.filters as filters
 
 
-def ChanVese(I, Mask, Sigma, dt=1.0, Mu=0.2, Lambda1=1, Lambda2=1, It=100):
+def chan_vese(I, Mask, Sigma, dt=1.0, Mu=0.2, Lambda1=1, Lambda2=1, It=100):
     """Region-based level sets.
 
     Region-based level set implementation based on the Chan-Vese method.
@@ -43,7 +43,7 @@ def ChanVese(I, Mask, Sigma, dt=1.0, Mu=0.2, Lambda1=1, Lambda2=1, It=100):
 
     See Also
     --------
-    histomicstk.segmentation.nuclear.GaussianVoting
+    histomicstk.segmentation.nuclear.gaussian_voting
 
     References
     ----------
@@ -54,11 +54,9 @@ def ChanVese(I, Mask, Sigma, dt=1.0, Mu=0.2, Lambda1=1, Lambda2=1, It=100):
 
     # smoothed gradient of input image
     I = filters.gaussian_filter(I, Sigma, mode='constant', cval=0)
-#    dsI = np.gradient(sI)
-#    I = 1/(1 + dsI[0]**2 + dsI[1]**2)
 
     # generate signed distance map
-    Phi = ConvertMask(Mask)
+    Phi = convert_mask(Mask)
 
     # evolve level set function
     for i in range(0, It):
@@ -69,7 +67,7 @@ def ChanVese(I, Mask, Sigma, dt=1.0, Mu=0.2, Lambda1=1, Lambda2=1, It=100):
         Force = Lambda2 * (I - C2)**2 - Lambda1 * (I - C1)**2
 
         # curvature of image
-        Curvature = Kappa(Phi)
+        Curvature = kappa(Phi)
 
         # evolve
         Phi += dt * Force / np.max(np.abs(Force)) + Mu*Curvature
@@ -77,13 +75,13 @@ def ChanVese(I, Mask, Sigma, dt=1.0, Mu=0.2, Lambda1=1, Lambda2=1, It=100):
     return Phi
 
 
-def ConvertMask(Mask):
+def convert_mask(Mask):
     # convert binary mask to signed distance function
     Phi0 = dtx(1-Mask) - dtx(Mask) + Mask - 1/2
     return Phi0
 
 
-def Kappa(Phi):
+def kappa(Phi):
     dPhi = np.gradient(Phi)  # calculate gradient of level set image
     xdPhi = np.gradient(dPhi[1])
     ydPhi = np.gradient(dPhi[0])
@@ -91,15 +89,3 @@ def Kappa(Phi):
          ydPhi[0]*(dPhi[1]**2)) / ((dPhi[0]**2 + dPhi[1]**2 + 1e-10)**(3/2))
     K *= (xdPhi[1]**2 + ydPhi[0]**2)**(1/2)
     return K
-
-
-def Impulse(X, Epsilon):
-    # Smooth dirac delta function.
-
-    # calculate smoothed impulse everywhere
-    Xout = (1 + np.cos(np.pi * X / Epsilon)) / (2 * Epsilon)
-
-    # zero out values |x| > Epsilon
-    Xout[np.absolute(X) > Epsilon] = 0
-
-    return Xout

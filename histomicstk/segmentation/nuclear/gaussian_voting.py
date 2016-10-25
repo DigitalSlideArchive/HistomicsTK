@@ -6,7 +6,7 @@ import scipy.signal as signal
 import histomicstk as htk
 
 
-def GaussianVoting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
+def gaussian_voting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
     """Performs nuclear detection using Gaussian kernel voting.
 
     Uses a gaussian kernel to localize the centroids of cell nuclei. Takes
@@ -49,7 +49,7 @@ def GaussianVoting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
 
     See Also
     --------
-    histomicstk.preprocessing.color_deconvolution.ColorDeconvolution
+    histomicstk.preprocessing.color_deconvolution.color_deconvolution
 
     References
     ----------
@@ -66,7 +66,7 @@ def GaussianVoting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
     r = (rmax + rmin) / 2
 
     # generate separable gaussian derivative kernels
-    Grad = htk.filters.edge.GaussianGradient(I, sSigma)
+    Grad = htk.filters.edge.gaussian_grad(I, sSigma)
     dMag = (Grad.dX**2 + Grad.dY**2)**0.5
 
     # threshold gradient image to identify voting pixels

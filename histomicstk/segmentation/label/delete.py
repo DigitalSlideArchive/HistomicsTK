@@ -2,7 +2,7 @@ import numpy as np
 import scipy.ndimage.measurements as ms
 
 
-def DeleteLabel(Label, Index):
+def delete(Label, Index):
     """
     Deletes objects with values in 'Index' from label image, writing them over
     with zeros to assimilate with background.
@@ -27,7 +27,7 @@ def DeleteLabel(Label, Index):
 
     See Also
     --------
-    histomicstk.segmentation.label.CondenseLabel
+    histomicstk.segmentation.label.condense
     """
 
     # initialize output

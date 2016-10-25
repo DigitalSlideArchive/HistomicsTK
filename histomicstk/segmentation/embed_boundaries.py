@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def EmbedBounds(I, Bounds, Color=[255, 0, 0]):
+def embed_boundaries(I, Bounds, Color=[255, 0, 0]):
     """Embeds object boundaries into an RGB color, grayscale or binary
     image, returning a color rendering of the image and object
     boundaries.
@@ -32,7 +32,7 @@ def EmbedBounds(I, Bounds, Color=[255, 0, 0]):
 
     See Also
     --------
-    histomicstk.segmentation.label.LabelPerimeter
+    histomicstk.segmentation.label.perimeter
     """
 
     # check for consistent shapes between 'I' and 'Bounds'

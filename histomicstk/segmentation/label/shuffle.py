@@ -2,7 +2,7 @@ import numpy as np
 from skimage import measure as ms
 
 
-def ShuffleLabel(Label):
+def shuffle(Label):
     """
     Shuffles labels in a label image to improve visualization and enhance
     object boundaries.

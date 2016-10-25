@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def RegionAdjacencyLayer(Adjacency):
+def rag_add_layer(Adjacency):
     """Adds an additional layer of dependence to a region adjacency graph,
     connecting each node to the neighbors of its immediate neighbors.
 
@@ -19,7 +19,7 @@ def RegionAdjacencyLayer(Adjacency):
 
     See Also
     --------
-    histomicstk.segmentation.LabelRegionAdjacency
+    histomicstk.segmentation.rag
     """
 
     # initialize output

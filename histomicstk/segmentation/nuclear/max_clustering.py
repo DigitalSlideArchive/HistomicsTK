@@ -2,7 +2,7 @@ import numpy as np
 import scipy.ndimage.measurements as spm
 
 
-def MaxClustering(Response, Mask, r=10):
+def max_clustering(Response, Mask, r=10):
     """Local max clustering pixel aggregation for nuclear segmentation.
     Takes as input a constrained log or other filtered nuclear image, a binary
     nuclear mask, and a clustering radius. For each pixel in the nuclear mask,
@@ -34,7 +34,7 @@ def MaxClustering(Response, Mask, r=10):
 
     See Also
     --------
-    histomicstk.filters.shape.cLoG
+    histomicstk.filters.shape.clog
 
     References
     ----------

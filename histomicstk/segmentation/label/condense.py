@@ -2,7 +2,7 @@ import numpy as np
 import scipy.ndimage.measurements as ms
 
 
-def CondenseLabel(Label):
+def condense(Label):
     """
     Shifts labels in a label image to fill in gaps corresponding to missing
     values.
@@ -19,7 +19,7 @@ def CondenseLabel(Label):
 
     See Also
     --------
-    histomicstk.segmentation.label.ShuffleLabel
+    histomicstk.segmentation.label.shuffle
     """
 
     # initialize output

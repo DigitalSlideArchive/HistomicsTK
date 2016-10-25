@@ -1,10 +1,10 @@
 import numpy as np
 import scipy.ndimage.measurements as ms
 
-from .CondenseLabel import CondenseLabel
+from .condense import condense
 
 
-def SplitLabel(Label, Connectivity=8):
+def split(Label, Connectivity=8):
     """Re-labels objects that have multiple non-contiguous portions to create
     a new label image where each object is contiguous.
 
@@ -27,9 +27,9 @@ def SplitLabel(Label, Connectivity=8):
 
     See Also
     --------
-    histomicstk.segmentation.label.AreaOpenLabel,
-    histomicstk.segmentation.label.CondenseLabel,
-    histomicstk.segmentation.label.ShuffleLabel
+    histomicstk.segmentation.label.area_open,
+    histomicstk.segmentation.label.condense,
+    histomicstk.segmentation.label.shuffle
     """
 
     # copy input image
@@ -47,7 +47,7 @@ def SplitLabel(Label, Connectivity=8):
 
     # condense label image
     if np.unique(Split).size-1 != Split.max():
-        Split = CondenseLabel(Split)
+        Split = condense(Split)
 
     # get locations of objects in initial image
     Locations = ms.find_objects(Split)

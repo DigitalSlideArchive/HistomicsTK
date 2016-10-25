@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def LabelRegionAdjacency(Label, Neighbors=4):
+def rag(Label, Neighbors=4):
     """Constructs a region adjacency graph for a label image using either
     4-neighbor or 8-neighbor connectivity. Background pixels are not included
     (Label == 0). Not intended to build large graphs from individual pixels.

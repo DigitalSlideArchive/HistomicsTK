@@ -2,10 +2,10 @@ import numpy as np
 import scipy.ndimage.morphology as mp
 import scipy.ndimage.measurements as ms
 
-from .CondenseLabel import CondenseLabel
+from .condense import condense
 
 
-def WidthOpenLabel(Label, Width):
+def width_open(Label, Width):
     """Removes thin objects from label image using maximum of distance
     transform values within each object.
 
@@ -31,10 +31,10 @@ def WidthOpenLabel(Label, Width):
 
     See Also
     --------
-    histomicstk.segmentation.label.CondenseLabel,
-    histomicstk.segmentation.label.ShuffleLabel,
-    histomicstk.segmentation.label.SplitLabel,
-    histomicstk.segmentation.label.AreaOpenLabel
+    histomicstk.segmentation.label.condense,
+    histomicstk.segmentation.label.shuffle,
+    histomicstk.segmentation.label.split,
+    histomicstk.segmentation.label.area_open
     """
 
     # copy input image
@@ -42,7 +42,7 @@ def WidthOpenLabel(Label, Width):
 
     # condense label image
     if np.unique(Thinned).size-1 != Thinned.max():
-        Thinned = CondenseLabel(Thinned)
+        Thinned = condense(Thinned)
 
     # get locations of objects in initial label image
     Locations = ms.find_objects(Thinned)
@@ -68,6 +68,6 @@ def WidthOpenLabel(Label, Width):
             W[W == i] = 0
 
     # condense to fill gaps
-    Thinned = CondenseLabel(Thinned)
+    Thinned = condense(Thinned)
 
     return Thinned

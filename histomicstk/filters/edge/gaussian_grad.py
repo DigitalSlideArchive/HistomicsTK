@@ -3,7 +3,7 @@ import numpy as np
 import scipy.signal as signal
 
 
-def GaussianGradient(I, Sigma):
+def gaussian_grad(I, Sigma):
     """Performs smoothing with derivative gaussian kernel.
 
     Uses seperable convolution to simultaneously smooth and calculate the

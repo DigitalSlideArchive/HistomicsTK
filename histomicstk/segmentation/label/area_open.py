@@ -1,10 +1,10 @@
 import numpy as np
 import scipy.ndimage.measurements as ms
 
-from .CondenseLabel import CondenseLabel
+from .condense import condense
 
 
-def AreaOpenLabel(Label, Area):
+def area_open(Label, Area):
     """Removes small objects from label image.
 
     Parameters
@@ -27,10 +27,10 @@ def AreaOpenLabel(Label, Area):
 
     See Also
     --------
-    histomicstk.segmentation.label.CondenseLabel,
-    histomicstk.segmentation.label.ShuffleLabel,
-    histomicstk.segmentation.label.SplitLabel,
-    histomicstk.segmentation.label.WidthOpenLabel
+    histomicstk.segmentation.label.condense,
+    histomicstk.segmentation.label.shuffle,
+    histomicstk.segmentation.label.split,
+    histomicstk.segmentation.label.width_open
     """
 
     # copy input image
@@ -57,6 +57,6 @@ def AreaOpenLabel(Label, Area):
             Template[Template == i] = 0
 
     # condense to fill gaps
-    Opened = CondenseLabel(Opened)
+    Opened = condense(Opened)
 
     return Opened

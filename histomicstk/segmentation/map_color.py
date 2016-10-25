@@ -2,7 +2,7 @@ import numpy as np
 from sets import Set
 
 
-def GraphColorSequential(Adjacency):
+def map_color(Adjacency):
     """Generates a coloring of an adjacency graph using the sequential coloring
     algorithm. Used to bin regions from a label image into a small number of
     independent groups that can be processed seperately with algorithms like
@@ -25,8 +25,8 @@ def GraphColorSequential(Adjacency):
 
     See Also
     --------
-    histomicstk.segmentation.LabelRegionAdjacency,
-    histomicstk.segmentation.RegionAdjacencyLayer
+    histomicstk.segmentation.rag,
+    histomicstk.segmentation.rag_add_layer
     """
 
     # initialize colors and color count

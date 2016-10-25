@@ -3,7 +3,7 @@ import scipy.ndimage.filters as ft
 import scipy.ndimage.morphology as mp
 
 
-def CompactLabel(Label, Compaction=3):
+def compact(Label, Compaction=3):
     """Performs a thinning operation on a label image to remove thin
     protrusions from objects that are in contact with the background. Applies a
     distance transform and sequentially removes pixels with small distances to
@@ -28,11 +28,11 @@ def CompactLabel(Label, Compaction=3):
 
     See Also
     --------
-    histomicstk.segmentation.label.AreaOpenLabel,
-    histomicstk.segmentation.label.CondenseLabel,
-    histomicstk.segmentation.label.ShuffleLabel,
-    histomicstk.segmentation.label.SplitLabel,
-    histomicstk.segmentation.label.WidthOpenLabel
+    histomicstk.segmentation.label.area_open,
+    histomicstk.segmentation.label.condense,
+    histomicstk.segmentation.label.shuffle,
+    histomicstk.segmentation.label.split,
+    histomicstk.segmentation.label.width_open
 
     References
     ----------

@@ -3,7 +3,7 @@ import numpy as np
 import scipy.ndimage.filters as filters
 
 
-def DregEdge(I, Phi, Well='double', Sigma=1.5, dt=1.0, Mu=0.2, Lambda=1,
+def reg_edge(I, Phi, Well='double', Sigma=1.5, dt=1.0, Mu=0.2, Lambda=1,
              Alpha=-3, Epsilon=1.5, It=100):
     """Distance-regularized edge-based level sets.
 
@@ -54,7 +54,7 @@ def DregEdge(I, Phi, Well='double', Sigma=1.5, dt=1.0, Mu=0.2, Lambda=1,
 
     See Also
     --------
-    histomicstk.segmentation.nuclear.GaussianVoting
+    histomicstk.segmentation.nuclear.gaussian_voting
 
     References
     ----------
@@ -73,7 +73,7 @@ def DregEdge(I, Phi, Well='double', Sigma=1.5, dt=1.0, Mu=0.2, Lambda=1,
     for i in range(0, It):
 
         # fix boundary conditions
-        Phi = NeumannBounds(Phi)
+        Phi = neumann_bounds(Phi)
 
         # calculate gradient of level set image
         dPhi = np.gradient(Phi)
@@ -83,14 +83,14 @@ def DregEdge(I, Phi, Well='double', Sigma=1.5, dt=1.0, Mu=0.2, Lambda=1,
 
         # build regularization function
         if Well == 'single':
-            Reg = SingleWell(Phi, Curve)
+            Reg = single_well(Phi, Curve)
         elif Well == 'double':
-            Reg = DoubleWell(Phi, dPhi, mPhi, Curve, i)
+            Reg = double_well(Phi, dPhi, mPhi, Curve, i)
         else:
             Reg = np.zeros(Phi.shape)
 
         # area and boundary-length energy function terms
-        iPhi = Impulse(Phi, Epsilon)
+        iPhi = impulse(Phi, Epsilon)
         Area = iPhi * G
         Edge = iPhi * (dG[0] * (dPhi[0] / (mPhi + 1e-10)) +
                        dG[1] * (dPhi[1] / (mPhi + 1e-10))) + iPhi * G * Curve
@@ -102,7 +102,7 @@ def DregEdge(I, Phi, Well='double', Sigma=1.5, dt=1.0, Mu=0.2, Lambda=1,
     return Phi
 
 
-def Initialize(Mask, c0=2):
+def initialize(Mask, c0=2):
     # initialize scaled binary-step image
     Phi0 = np.zeros(Mask.shape)
     Phi0[Mask > 0] = -c0
@@ -110,12 +110,12 @@ def Initialize(Mask, c0=2):
     return Phi0
 
 
-def SingleWell(Phi, Curve):
+def single_well(Phi, Curve):
     # Single-well potential function
     return 4 * htk_utls.Del2(Phi)-Curve
 
 
-def DoubleWell(Phi, dPhi, mPhi, Curve, i):
+def double_well(Phi, dPhi, mPhi, Curve, i):
     # Double-well potential function
     SmallMask = (mPhi <= 1) & (mPhi >= 0)
     LargeMask = (mPhi > 1)
@@ -127,7 +127,7 @@ def DoubleWell(Phi, dPhi, mPhi, Curve, i):
     return Well
 
 
-def Impulse(X, Epsilon):
+def impulse(X, Epsilon):
     # Smooth dirac delta function.
 
     # calculate smoothed impulse everywhere
@@ -139,7 +139,7 @@ def Impulse(X, Epsilon):
     return Xout
 
 
-def NeumannBounds(Phi):
+def neumann_bounds(Phi):
     # Transofrm input to enforce Neumann boundary conditions.
 
     # copy input
