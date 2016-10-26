@@ -7,7 +7,7 @@ all other sub-packages of histomicstk
 # since we mostly have one function per file
 from .Del2 import Del2
 from .Eigenvalues import Eigenvalues
-from .GradientDiffusion import GradientDiffusion
+from .gradient_diffusion import gradient_diffusion
 from .Hessian import Hessian
 from .MergeColinear import MergeColinear
 from .PoissonMixture import PoissonMixture
@@ -21,7 +21,7 @@ __all__ = (
     # functions and classes of this package
     'Del2',
     'Eigenvalues',
-    'GradientDiffusion',
+    'gradient_diffusion',
     'Hessian',
     'MergeColinear',
     'PoissonMixture',
