@@ -3,7 +3,7 @@ import numpy as np
 import openslide
 
 
-def TilingSchedule(File, Magnification, Tile, tol=0.002):
+def tiling_schedule(File, Magnification, Tile, tol=0.002):
     """Generates parameters needed to tile a whole-slide-image using OpenSlide
     for a given resolution `Magnification` and tilesize `Tile`.
 
@@ -52,7 +52,7 @@ def TilingSchedule(File, Magnification, Tile, tol=0.002):
 
     See Also
     --------
-    histomicstk.utils.ConvertSchedule
+    histomicstk.utils.convert_schedule
     """
 
     # check if slide can be opened

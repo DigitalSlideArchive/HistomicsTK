@@ -2,7 +2,7 @@ import numpy as np
 import scipy as sp
 
 
-def PoissonMixture(I, Mu=None, InitialTau=None, Tol=0.1):
+def poisson_mixture(I, Mu=None, InitialTau=None, Tol=0.1):
     """Generates a Poisson mixture model to fit pixel intensities for
     foreground/background masking.
 

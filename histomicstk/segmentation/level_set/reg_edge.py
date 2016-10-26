@@ -112,7 +112,7 @@ def initialize(Mask, c0=2):
 
 def single_well(Phi, Curve):
     # Single-well potential function
-    return 4 * htk_utls.Del2(Phi)-Curve
+    return 4 * htk_utls.del2(Phi)-Curve
 
 
 def double_well(Phi, dPhi, mPhi, Curve, i):
@@ -123,7 +123,7 @@ def double_well(Phi, dPhi, mPhi, Curve, i):
         (2 * np.pi) + LargeMask * (mPhi - 1)
     dP = ((P != 0) * P + (P == 0)) / ((mPhi != 0) * mPhi + (mPhi == 0))
     Well = np.gradient(dP * dPhi[0] - dPhi[0])[0] + \
-        np.gradient(dP * dPhi[1] - dPhi[1])[1] + 4 * htk_utls.Del2(Phi)
+        np.gradient(dP * dPhi[1] - dPhi[1])[1] + 4 * htk_utls.del2(Phi)
     return Well
 
 

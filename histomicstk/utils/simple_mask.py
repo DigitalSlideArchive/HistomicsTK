@@ -6,7 +6,7 @@ from scipy.optimize import fmin_slsqp
 from scipy import signal
 
 
-def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
+def simple_mask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
                MinPeak=10, MaxPeak=25, Percent=0.10, MinProb=0.05):
     """Performs segmentation of the foreground (tissue)
     Uses a simple two-component Gaussian mixture model to mask tissue areas
@@ -79,12 +79,12 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
         TissuePeak = np.asscalar(xHist[np.round(0.66*xHist.size)])
 
     # analyze background peak to estimate variance parameter via FWHM
-    BGScale = _EstimateVariance(xHist, yHist, BGPeak)
+    BGScale = estimate_variance(xHist, yHist, BGPeak)
     if BGScale == -1:
         BGScale = DefaultBGScale
 
     # analyze tissue peak to estimate variance parameter via FWHM
-    TissueScale = _EstimateVariance(xHist, yHist, TissuePeak)
+    TissueScale = estimate_variance(xHist, yHist, TissuePeak)
     if TissueScale == -1:
         TissueScale = DefaultTissueScale
 
@@ -97,19 +97,19 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
     yHist = yHist.flatten()
 
     # define gaussian mixture model
-    def GaussianMixture(x, mu1, mu2, sigma1, sigma2, p):
+    def gaussian_mixture(x, mu1, mu2, sigma1, sigma2, p):
         rv1 = norm(loc=mu1, scale=sigma1)
         rv2 = norm(loc=mu2, scale=sigma2)
         return p * rv1.pdf(x) + (1 - p) * rv2.pdf(x)
 
     # define gaussian mixture model residuals
-    def GaussianResiduals(Parameters, y, x):
+    def gaussian_residuals(Parameters, y, x):
         mu1, mu2, sigma1, sigma2, p = Parameters
-        yhat = GaussianMixture(x, mu1, mu2, sigma1, sigma2, p)
+        yhat = gaussian_mixture(x, mu1, mu2, sigma1, sigma2, p)
         return sum((y - yhat) ** 2)
 
     # fit Gaussian mixture model and unpack results
-    Parameters = fmin_slsqp(GaussianResiduals,
+    Parameters = fmin_slsqp(gaussian_residuals,
                             [BGPeak, TissuePeak, BGScale, TissueScale, Mix],
                             args=(yHist, xHist),
                             bounds=[(0, 255), (0, 255),
@@ -148,7 +148,7 @@ def SimpleMask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
     return Mask
 
 
-def _EstimateVariance(x, y, Peak):
+def estimate_variance(x, y, Peak):
     """Estimates variance of a peak in a histogram using the FWHM of an
     approximate normal distribution.
     Starting from a user-supplied peak and histogram, this method traces down

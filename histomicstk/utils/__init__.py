@@ -5,26 +5,26 @@ all other sub-packages of histomicstk
 
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
-from .Del2 import Del2
-from .Eigenvalues import Eigenvalues
+from .del2 import del2
+from .eigenvalues import eigenvalues
 from .gradient_diffusion import gradient_diffusion
-from .Hessian import Hessian
-from .MergeColinear import MergeColinear
-from .PoissonMixture import PoissonMixture
-from .SimpleMask import SimpleMask
-from .Sample import Sample  # must import after SimpleMask
+from .hessian import hessian
+from .merge_colinear import merge_colinear
+from .poisson_mixture import poisson_mixture
+from .simple_mask import simple_mask
+from .sample import sample  # must import after SimpleMask
 
 
 # list out things that are available for public use
 __all__ = (
 
     # functions and classes of this package
-    'Del2',
-    'Eigenvalues',
+    'del2',
+    'eigenvalues',
     'gradient_diffusion',
-    'Hessian',
-    'MergeColinear',
-    'PoissonMixture',
-    'Sample',
-    'SimpleMask',
+    'hessian',
+    'merge_colinear',
+    'poisson_mixture',
+    'sample',
+    'simple_mask',
 )

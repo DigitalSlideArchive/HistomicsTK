@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def Del2(X):
+def del2(X):
     """Discrete Laplacian with edge-value extrapolation.
 
     Calculates the discrete Laplacian of an input image. Edge values are
@@ -20,8 +20,7 @@ def Del2(X):
 
     See Also
     --------
-    histomicstk.segmentation.level_set.DregEdge,
-    histomicstk.segmentation.level_set.ChanVese
+    histomicstk.segmentation.level_set.reg_edge
     """
 
     # initialize output

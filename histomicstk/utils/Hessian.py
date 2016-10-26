@@ -2,7 +2,7 @@ import numpy as np
 from scipy.ndimage.filters import convolve
 
 
-def Hessian(I, Sigma):
+def hessian(I, Sigma):
     """
     Calculates hessian of image I convolved with a gaussian kernel with
     covariance C = [Sigma^2 0; 0 Sigma^2].

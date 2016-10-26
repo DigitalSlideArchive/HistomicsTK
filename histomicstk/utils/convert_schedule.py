@@ -2,7 +2,7 @@ import collections
 import openslide
 
 
-def ConvertSchedule(Schedule, Magnification, tol=0.002):
+def convert_schedule(Schedule, Magnification, tol=0.002):
     """Converts a tiling schedule to a new magnification
 
     Parameters
@@ -47,7 +47,7 @@ def ConvertSchedule(Schedule, Magnification, tol=0.002):
 
     See Also
     --------
-    histomicstk.utils.TilingSchedule
+    histomicstk.utils.tiling_schedule
     """
 
     # check if slide can be opened

@@ -3,7 +3,7 @@ import scipy.ndimage as ndi
 from skimage import morphology
 
 
-def gLoG(I, Alpha=1, Range=np.linspace(1.5, 3, np.round((3-1.5)/0.2)+1),
+def glog(I, Alpha=1, Range=np.linspace(1.5, 3, np.round((3-1.5)/0.2)+1),
          Theta=np.pi/4, Tau=0.6, Eps=0.6):
     """Performs generalized Laplacian of Gaussian blob detection.
 
@@ -86,12 +86,12 @@ def gLoG(I, Alpha=1, Range=np.linspace(1.5, 3, np.round((3-1.5)/0.2)+1),
         SigmaY = np.exp(Range[YRange])
         for Sy in SigmaY:
             for Th in Thetas:
-                Kernel = gLoGKernel(Sx, Sy, Th)
+                Kernel = glogkernel(Sx, Sy, Th)
                 Kernel = (1 + np.log(Sx)**Alpha) * (1 + np.log(Sy)**Alpha) *\
                     Kernel
                 Rsum += ndi.convolve(I, Kernel, mode='constant', cval=0.0)
                 print(Sx, Sy, Th)
-        Kernel = gLoGKernel(Sx, Sx, 0)
+        Kernel = glogkernel(Sx, Sx, 0)
         Kernel = (1 + np.log(Sx)**Alpha) * (1 + np.log(Sx)**Alpha) * Kernel
         Rsum += ndi.convolve(I, Kernel, mode='constant', cval=0.0)
         print(Sx, Sx, 0)
@@ -104,7 +104,7 @@ def gLoG(I, Alpha=1, Range=np.linspace(1.5, 3, np.round((3-1.5)/0.2)+1),
     return Rsum, Maxima
 
 
-def gLoGKernel(SigmaX, SigmaY, Theta):
+def glogkernel(SigmaX, SigmaY, Theta):
     N = np.ceil(2 * 3 * SigmaX)
     X, Y = np.meshgrid(np.linspace(0, N, N + 1) - N / 2,
                        np.linspace(0, N, N + 1) - N / 2)

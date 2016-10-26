@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def MergeColinear(X, Y):
+def merge_colinear(X, Y):
     """Processes boundary coordinates in polyline with vertices X, Y to remove
     redundant colinear points. Polyline is not assumed to be open or closed.
 

@@ -3,7 +3,7 @@ import numpy as np
 import histomicstk.utils as htk_utils
 
 
-def Vesselness(I, Sigma):
+def vesselness(I, Sigma):
     """
     Calculates vesselness measure for grayscale image `I` at scale `Sigma`.
     Also returns eigenvalues and vectors used for vessel salience filters.
@@ -23,10 +23,10 @@ def Vesselness(I, Sigma):
         M x N image of frobenius norm of Hessian - measures presence of
         structure.
     E : array_like
-        M x N x 2 eigenvalue image - see Eigenvalues.py.
+        M x N x 2 eigenvalue image - see eigenvalues.py.
     Theta : array_like
         M x N eigenvector angle image for E(:,:,0) in radians
-        see Eigenvalues.py. Oriented parallel to vessel structures.
+        see eigenvalues.py. Oriented parallel to vessel structures.
 
     References
     ----------
@@ -37,10 +37,10 @@ def Vesselness(I, Sigma):
     """
 
     # calculate hessian matrix
-    H = Sigma**2 * htk_utils.Hessian(I, Sigma)
+    H = Sigma**2 * htk_utils.hessian(I, Sigma)
 
     # calculate eigenvalue image
-    E, V1, V2 = htk_utils.Eigenvalues(H)
+    E, V1, V2 = htk_utils.eigenvalues(H)
 
     # compute blobness measures
     Deviation = E[:, :, 0]/(E[:, :, 1] + np.spacing(1))

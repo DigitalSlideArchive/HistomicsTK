@@ -2,12 +2,12 @@ import numpy as np
 import openslide
 import scipy
 
-from .TilingSchedule import TilingSchedule
-from .ConvertSchedule import ConvertSchedule
-from .SimpleMask import SimpleMask
+from .tiling_schedule import tiling_schedule
+from .convert_schedule import convert_schedule
+from .simple_mask import simple_mask
 
 
-def Sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
+def sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -46,10 +46,10 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
     Slide = openslide.OpenSlide(File)
 
     # generate tiling schedule for desired sampling magnification
-    Schedule = TilingSchedule(File, Magnification, Tile)
+    Schedule = tiling_schedule(File, Magnification, Tile)
 
     # convert tiling schedule to low-resolution for tissue mapping
-    lrSchedule = ConvertSchedule(Schedule, MappingMag)
+    lrSchedule = convert_schedule(Schedule, MappingMag)
 
     # get width, height of image at low-res reading magnification
     lrHeight = Slide.level_dimensions[lrSchedule.Level][1]
@@ -73,7 +73,7 @@ def Sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
         lrWidth = LR.shape[1]
 
     # mask
-    Mask = SimpleMask(LR)
+    Mask = simple_mask(LR)
 
     # pad mask to match overall size of evenly tiled image
     MaskHeight = lrSchedule.Tout * lrSchedule.Y.shape[0]

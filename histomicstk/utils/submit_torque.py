@@ -2,7 +2,7 @@ import os
 import subprocess
 
 
-def SubmitTorque(JobString, JobID, Mem=512):
+def submit_torque(JobString, JobID, Mem=512):
     """Submits a job to a Torque scheduler using qsub.
     Takes as input a string representing the contents of the job script file.
     This string defines a Linux command line call to Python that invokes a
