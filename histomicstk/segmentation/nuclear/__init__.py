@@ -10,7 +10,7 @@ from .min_model import min_model
 
 __all__ = (
     'gaussian_voting',
-    'gradient_flow',
+    'gvf_tracking',
     'max_clustering',
     'min_model'
 )
