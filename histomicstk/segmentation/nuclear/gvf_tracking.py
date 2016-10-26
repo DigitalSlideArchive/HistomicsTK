@@ -67,7 +67,7 @@ def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
     # diffusion iterations
     if Diffusions > 0:
         dx, dy = gradient_diffusion(dx, dy, Mask, Mu, Lambda, Diffusions,
-                                   dT)
+                                    dT)
 
     # normalize to unit magnitude
     Mag = ((dx**2 + dy**2)**0.5 + np.finfo(float).eps)
@@ -105,9 +105,9 @@ def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
 
             # calculate step
             xStep = round_float(dx[Trajectory[points-1, 1],
-                                  Trajectory[points-1, 0]])
+                                Trajectory[points-1, 0]])
             yStep = round_float(dy[Trajectory[points-1, 1],
-                                  Trajectory[points-1, 0]])
+                                Trajectory[points-1, 0]])
 
             # check image edge
             if ((Trajectory[points-1, 0] + xStep < 0) or
