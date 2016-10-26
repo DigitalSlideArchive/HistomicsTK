@@ -46,6 +46,65 @@ std::vector <std::vector<std::vector<int> > > trace_boundary(std::vector <std::v
     rot90(nrows_img, ncols_img, imLabels_180, imLabels_90);
 
     // end ----- rotate matrix
+    // find starting x and y points if not defined
+    if ((startX == -1)&&(startY == -1)) {
+        bool flag = false;
+
+        for(int i = 1; i < nrows_img-1; i++) {
+          for(int j = 1; j < ncols_img-1; j++) {
+             if((imLabels[i][j] > 0)&&(!flag)){
+               // check if the nubmer of points is one
+               if(!((imLabels[i][j+1] == 0)&&(imLabels[i+1][j] == 0)&&
+                 (imLabels[i+1][j+1] == 0)&&(imLabels[i-1][j+1] == 0))) {
+                   startX = j;
+                   startY = i;
+                   flag = true;
+               }
+             }
+          }
+        }
+    }
+
+    std::vector <std::vector<int> > coords;
+
+    if (connectivity == 4) {
+        coords = isbf(nrows_img, ncols_img, imLabels,
+          imLabels_90, imLabels_180, imLabels_270, startX, startY, inf);
+    }
+    else {
+        coords = moore(nrows_img, ncols_img, imLabels,
+          imLabels_90, imLabels_180, imLabels_270, startX, startY, inf);
+    }
+
+    // append current coords to output vector
+    output.push_back(coords);
+
+
+    return output;
+
+}
+
+std::vector <std::vector<std::vector<int> > > trace_label(std::vector <std::vector<int> > imLabels, int connectivity,
+ float inf)
+{
+    std::vector <std::vector<std::vector<int> > > output;
+
+    // start ----- rotate matrix
+
+    int nrows_img = imLabels.size();
+    int ncols_img = imLabels[0].size();
+
+    // initialize matrix for 90, 180, 270 degrees
+    std::vector <std::vector<int> > imLabels_90(ncols_img, std::vector<int>(nrows_img));
+    std::vector <std::vector<int> > imLabels_180(nrows_img, std::vector<int>(ncols_img));
+    std::vector <std::vector<int> > imLabels_270(ncols_img, std::vector<int>(nrows_img));
+
+    // rotate label matrix for 90, 180, 270 degrees
+    rot90(nrows_img, ncols_img, imLabels, imLabels_270);
+    rot90(ncols_img, nrows_img, imLabels_270, imLabels_180);
+    rot90(nrows_img, ncols_img, imLabels_180, imLabels_90);
+
+    // end ----- rotate matrix
 
 
     // start ----- find unique id of labels
@@ -129,31 +188,32 @@ std::vector <std::vector<std::vector<int> > > trace_boundary(std::vector <std::v
             }
         }
 
-
+        int startX = 0;
+        int startY = 0;
         // find starting x and y points if not defined
-        if ((startX == -1)&&(startY == -1)) {
-            bool flag = false;
+        //if ((startX == -1)&&(startY == -1)) {
+        bool flag = false;
 
-            for(int i = 1; i < nrows-1; i++) {
-              for(int j = 1; j < ncols-1; j++) {
-                 if((mask[i][j] > 0)&&(!flag)){
-                   // check if the nubmer of points is one
-                   if(!((mask[i][j+1] == 0)&&(mask[i+1][j] == 0)&&
-                     (mask[i+1][j+1] == 0)&&(mask[i-1][j+1] == 0))) {
-                       startX = j;
-                       startY = i;
-                       flag = true;
-                   }
-                 }
-              }
-            }
+        for(int i = 1; i < nrows-1; i++) {
+          for(int j = 1; j < ncols-1; j++) {
+             if((mask[i][j] > 0)&&(!flag)){
+               // check if the nubmer of points is one
+               if(!((mask[i][j+1] == 0)&&(mask[i+1][j] == 0)&&
+                 (mask[i+1][j+1] == 0)&&(mask[i-1][j+1] == 0))) {
+                   startX = j;
+                   startY = i;
+                   flag = true;
+               }
+             }
+          }
         }
-
+        //}
+        /*
         else {
             startY = startY - minX + 1;
             startX = startX - minY + 1;
         }
-
+        */
         std::vector <std::vector<int> > coords;
 
         if (connectivity == 4) {
@@ -178,6 +238,7 @@ std::vector <std::vector<std::vector<int> > > trace_boundary(std::vector <std::v
     return output;
 
 }
+
 
 std::vector <std::vector<int> > moore(int nrows, int ncols,
   std::vector <std::vector<int> > mask, std::vector <std::vector<int> > mask_90,
