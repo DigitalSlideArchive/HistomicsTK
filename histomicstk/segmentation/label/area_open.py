@@ -38,7 +38,7 @@ def area_open(Label, Area):
 
     # condense label image
     if np.unique(Opened).size-1 != Opened.max():
-        Opened = CondenseLabel(Opened)
+        Opened = condense(Opened)
 
     # count pixels in each object
     Counts, Edges = np.histogram(Opened, bins=Opened.max()+1)
