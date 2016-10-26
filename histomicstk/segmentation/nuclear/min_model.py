@@ -8,7 +8,7 @@ from skimage.draw import polygon
 
 
 def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
-                 MinArea=100, MinWidth=5, MinDepth=2, MinConcavity=np.inf):
+              MinArea=100, MinWidth=5, MinDepth=2, MinConcavity=np.inf):
     """Performs a nuclear segmentation using a gradient contour tracing and
     geometry splitting algorithm. Implemented from the reference below.
 
@@ -322,7 +322,8 @@ def trace_contours(I, X, Y, Min, Max, MaxLength=255):
 
         # trace boundary, check stopping condition, append to list of contours
         cX, cY = label.trace_boundaries(Embed, Connectivity=4,
-                                   XStart=pX, YStart=pY, MaxLength=MaxLength)
+                                        XStart=pX, YStart=pY,
+                                        MaxLength=MaxLength)
         if(cX[0] == cX[-1] and cY[0] == cY[-1] and len(cX) <= MaxLength):
 
             # add window offset to contour coordinates
@@ -626,21 +627,21 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
 
                             # calculate length score
                             Ls = length_score(iX[j][jCandidates[a]],
-                                             iY[j][jCandidates[a]],
-                                             iX[k][kCandidates[b]],
-                                             iY[k][kCandidates[b]],
-                                             Depths[j][jCandidates[a]],
-                                             Depths[k][kCandidates[b]])
+                                              iY[j][jCandidates[a]],
+                                              iX[k][kCandidates[b]],
+                                              iY[k][kCandidates[b]],
+                                              Depths[j][jCandidates[a]],
+                                              Depths[k][kCandidates[b]])
 
                             # calculate angle score
                             As = angle_score(iX[j][0], iY[j][0],
-                                            iX[j][-1], iY[j][-1],
-                                            iX[k][0], iY[k][0],
-                                            iX[k][-1], iY[k][-1],
-                                            iX[j][jCandidates[a]],
-                                            iY[j][jCandidates[a]],
-                                            iX[k][kCandidates[b]],
-                                            iY[k][kCandidates[b]])
+                                             iX[j][-1], iY[j][-1],
+                                             iX[k][0], iY[k][0],
+                                             iX[k][-1], iY[k][-1],
+                                             iX[j][jCandidates[a]],
+                                             iY[j][jCandidates[a]],
+                                             iX[k][kCandidates[b]],
+                                             iY[k][kCandidates[b]])
 
                             # combine scores
                             Score = (Ls + As) / 2
