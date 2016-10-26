@@ -5,7 +5,7 @@ This package contains functions for segmenting a variety of objects/structures
 
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
-from histomicstk.utils.SimpleMask import SimpleMask
+from histomicstk.utils.simple_mask import simple_mask
 from .embed_boundaries import embed_boundaries
 from .map_color import map_color
 from .rag import rag
@@ -24,7 +24,7 @@ __all__ = (
     'map_color',
     'rag',
     'rag_add_layer',
-    'SimpleMask',
+    'simple_mask',
 
     # sub-packages
     'label',
