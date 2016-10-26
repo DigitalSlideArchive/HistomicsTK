@@ -11,15 +11,12 @@ from .CondenseLabel import CondenseLabel
 from .DeleteLabel import DeleteLabel
 from .LabelPerimeter import LabelPerimeter
 from .ShuffleLabel import ShuffleLabel
-from .trace_boundary import trace_boundary
+from .trace_boundaries import trace_boundaries
 
 # must be imported after CondenseLabel
 from .AreaOpenLabel import AreaOpenLabel
 from .SplitLabel import SplitLabel
 from .WidthOpenLabel import WidthOpenLabel
-
-# must be imported after TraceBounds
-from .TraceLabel import TraceLabel
 
 # list out things that are available for public use
 __all__ = (
@@ -33,7 +30,6 @@ __all__ = (
     'LabelPerimeter',
     'ShuffleLabel',
     'SplitLabel',
-    'trace_boundary',
-    'TraceLabel',
+    'trace_boundaries',
     'WidthOpenLabel',
 )
