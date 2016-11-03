@@ -1,4 +1,4 @@
-import LayoutHeaderUserView from 'girder/views/layout/LayoutHeaderUserView';
+import HeaderUserView from 'girder/views/layout/HeaderUserView';
 import { logout } from 'girder/auth';
 
 import router from '../router';
@@ -6,7 +6,7 @@ import router from '../router';
 import header from '../templates/header.pug';
 import '../stylesheets/header.styl';
 
-var Header = LayoutHeaderUserView.extend({
+var Header = HeaderUserView.extend({
     events: {
         'click a.g-analysis-item': '_selectAnalysis',
         'click .g-register': '_register',

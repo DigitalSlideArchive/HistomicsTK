@@ -1,6 +1,6 @@
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 
-import annotationSelectorWidget from '../template/annotationSelectorWidget.pug';
+import annotationSelectorWidget from '../templates/annotationSelectorWidget.pug';
 import '../stylesheets/annotationSelectorWidget.styl';
 
 var AnnotationSelectorWidget = Panel.extend({
