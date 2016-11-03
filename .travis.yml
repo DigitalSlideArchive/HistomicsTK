@@ -56,7 +56,7 @@ addons:
 before_install:
     - CACHE="$HOME/.cache" OPENJPEG_VERSION=2.1.2 OPENJPEG_FILE=v2.1.2.tar.gz OPENJPEG_DIR=openjpeg-2.1.2 LIBTIFF_VERSION=4.0.6 OPENSLIDE_VERSION=3.4.1 source .install-openslide.sh
 
-    - GIRDER_VERSION="v1.7.0"
+    - GIRDER_VERSION=master
     - GIRDER_WORKER_VERSION=master
     - LARGE_IMAGE_VERSION="girder-1.7"
     - SLICER_CLI_WEB_VERSION="girder-1.7"
@@ -119,6 +119,7 @@ install:
     - npm-install-retry
     - cd $large_image_path
     - python setup.py install
+    - BABEL_ENV=cover girder-install web --plugins=HistomicsTK,slicer_cli_web,large_image,worker,jobs --dev
 
 script:
     - mkdir -p $build_path/girder_testing_build
