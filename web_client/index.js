@@ -1,12 +1,25 @@
-/**
- * Top level namespace.
- */
-var histomicstk = window.histomicstk || {};
+import * as models from './models';
+import * as collections from './collections';
+import * as views from './views';
+import * as dialogs from './dialogs';
+import router from './router';
+import events from './events';
 
+export {
+    models,
+    collections,
+    views,
+    dialogs,
+    router,
+    events
+};
+
+/*
 _.extend(histomicstk, {
-    models: {},
-    collections: {},
-    views: {},
+    models: models,
+    collections: collections,
+    views: views,
+    events: events,
     router: new (girder.Router.extend({
         setQuery: function (name, value, options) {
             var curRoute = Backbone.history.fragment,
@@ -36,17 +49,16 @@ _.extend(histomicstk, {
 
             _.each(this._lastQueryString || {}, function (value, key) {
                 if (!_.has(query, key)) {
-                    histomicstk.events.trigger('query:' + key, null, query);
+                    events.trigger('query:' + key, null, query);
                 }
             });
             _.each(query, function (value, key) {
-                histomicstk.events.trigger('query:' + key, value, query);
+                events.trigger('query:' + key, value, query);
             });
-            histomicstk.events.trigger('query', query);
+            events.trigger('query', query);
             this._lastQueryString = query;
         }
     }))(),
-    events: _.clone(Backbone.Events),
     dialogs: {
         login: new girder.views.LoginView({parentView: null}),
         register: new girder.views.RegisterView({parentView: null})
@@ -75,7 +87,7 @@ _.extend(histomicstk, {
                         this.set(user);
                     }
                     girder.events.on('g:login', function () {
-                        slicer.rootPath.set(girder.currentUser.attributes);
+                        // slicer.rootPath.set(girder.currentUser.attributes);
                     });
                 }, this));
             }, this));
@@ -87,3 +99,4 @@ _.extend(histomicstk, {
         slicer.rootPath = new RootModel().fetch();
     }
 })();
+*/

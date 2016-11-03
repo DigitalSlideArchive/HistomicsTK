@@ -1,5 +1,10 @@
-histomicstk.views.AnnotationSelectorWidget = slicer.views.Panel.extend({
-    events: _.extend(slicer.views.Panel.prototype.events, {
+import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+
+import annotationSelectorWidget from '../template/annotationSelectorWidget.pug';
+import '../stylesheets/annotationSelectorWidget.styl';
+
+var AnnotationSelectorWidget = Panel.extend({
+    events: _.extend(Panel.prototype.events, {
         'click .h-annotation > span': 'toggleAnnotation'
     }),
     initialize: function () {
@@ -29,7 +34,7 @@ histomicstk.views.AnnotationSelectorWidget = slicer.views.Panel.extend({
         return this;
     },
     render: function () {
-        this.$el.html(histomicstk.templates.annotationSelectorWidget({
+        this.$el.html(annotationSelectorWidget({
             annotations: this.collection.toArray(),
             id: 'annotation-panel-container',
             title: 'Annotations'
@@ -43,3 +48,5 @@ histomicstk.views.AnnotationSelectorWidget = slicer.views.Panel.extend({
         this.render();
     }
 });
+
+export default AnnotationSelectorWidget;

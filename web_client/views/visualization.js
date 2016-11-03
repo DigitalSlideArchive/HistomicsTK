@@ -1,5 +1,18 @@
+import geo from 'geojs';
+import View from 'girder/views/View';
+import ItemSelectorWidget from 'girder_plugins/slicer_cli_web/views/ItemSelectorWidget';
+import WidgetModel from 'girder_plugins/slicer_cli_web/models/WidgetModel';
+
+import AnnotationSelectorWidget from './annotationSelectorWidget';
+import router from '../router';
+import events from '../events';
+import * as dialogs from '../dialogs';
+
+import visualization from '../templates/visualization.pug';
+import '../stylesheets/visualization.styl';
+
 /* global d3 */
-histomicstk.views.Visualization = girder.View.extend({
+var Visualization = View.extend({
     initialize: function () {
         // rendered annotation layers
         this._annotations = {};
@@ -11,9 +24,9 @@ histomicstk.views.Visualization = girder.View.extend({
         this._layers = [];
 
         // control model for file widget
-        this._controlModel = histomicstk.dialogs.image.model;
+        this._controlModel = dialogs.image.model;
 
-        this._annotationList = new histomicstk.views.AnnotationSelectorWidget({
+        this._annotationList = new AnnotationSelectorWidget({
             parentView: this
         });
 
@@ -43,7 +56,7 @@ histomicstk.views.Visualization = girder.View.extend({
             })
             .then(_.bind(function (item) {
                 this._controlModel.get('value').set(item);
-                histomicstk.router.setQuery('image', id);
+                router.setQuery('image', id);
                 this._controlModel.trigger('change', this._controlModel);
                 return this.addItem(this._controlModel.get('value'));
             }, this))
@@ -54,12 +67,12 @@ histomicstk.views.Visualization = girder.View.extend({
                     timeout: 5000,
                     icon: 'attention'
                 };
-                girder.events.trigger('g:alert', info);
-                histomicstk.router.setQuery('image', null, {replace: true});
+                events.trigger('g:alert', info);
+                router.setQuery('image', null, {replace: true});
             }, this));
         });
 
-        this.listenTo(histomicstk.events, 'query:image', function (image) {
+        this.listenTo(events, 'query:image', function (image) {
             var currentImage = this._controlModel.get('value') || {};
             if (image && currentImage.id !== image) {
                 this._controlModel.set('value', new girder.models.ItemModel({_id: image}));
@@ -70,7 +83,7 @@ histomicstk.views.Visualization = girder.View.extend({
         });
 
         // Set image bounds on URL query parameter change
-        this.listenTo(histomicstk.events, 'query:bounds', this._boundsFromQuery);
+        this.listenTo(events, 'query:bounds', this._boundsFromQuery);
     },
 
     /**
@@ -96,7 +109,7 @@ histomicstk.views.Visualization = girder.View.extend({
     _createMap: function (bounds, tileWidth, tileHeight, sizeX, sizeY) {
         if (this._map) {
             // reset bounds query parameter on map exit
-            histomicstk.router.setQuery('bounds', null, {replace: true, trigger: false});
+            router.setQuery('bounds', null, {replace: true, trigger: false});
             this._map.exit();
         }
         bounds.left = bounds.left || 0;
@@ -116,7 +129,7 @@ histomicstk.views.Visualization = girder.View.extend({
                 sizeX / tileWidth,
                 sizeY / tileHeight)) / Math.log(2));
 
-        var mapParams ={
+        var mapParams = {
             node: '<div style="width: 100%; height: 100%"/>',
             width: mapW,
             height: mapH,
@@ -138,7 +151,7 @@ histomicstk.views.Visualization = girder.View.extend({
         };
         this._map = geo.map(mapParams);
 
-        this._boundsFromQuery(histomicstk.router.getQuery('bounds'));
+        this._boundsFromQuery(router.getQuery('bounds'));
         this._syncViewport();
         this._map.geoOn(geo.event.pan, _.bind(this._onMouseNavigate, this));
         this.$('.h-visualization-body').empty().append(this._map.node());
@@ -366,8 +379,7 @@ histomicstk.views.Visualization = girder.View.extend({
     },
 
     render: function () {
-
-        this.$el.html(histomicstk.templates.visualization());
+        this.$el.html(visualization());
         return this;
     },
 
@@ -426,24 +438,20 @@ histomicstk.views.Visualization = girder.View.extend({
 
         // Update the bounds in the query string
         var bounds = this._map.bounds(undefined, null);
-        histomicstk.router.setQuery(
-            'bounds',
-            [
-                this._formatNumber(bounds.left),
-                this._formatNumber(-bounds.top),
-                this._formatNumber(bounds.right),
-                this._formatNumber(-bounds.bottom),
-                this._formatNumber(this._map.rotation() * 180 / Math.PI)
-            ].join(','),
-            {
-                replace: true,
-                trigger: false
-            }
-        );
+        router.setQuery('bounds', [
+            this._formatNumber(bounds.left),
+            this._formatNumber(-bounds.top),
+            this._formatNumber(bounds.right),
+            this._formatNumber(-bounds.bottom),
+            this._formatNumber(this._map.rotation() * 180 / Math.PI)
+        ].join(','), {
+            replace: true,
+            trigger: false
+        });
     },
 
     _formatNumber: function (num) {
-        return (Math.round(num * 100) / 100).toString()
+        return (Math.round(num * 100) / 100).toString();
     },
 
     _syncViewport: function () {
@@ -482,9 +490,11 @@ histomicstk.views.Visualization = girder.View.extend({
     }
 });
 
-histomicstk.dialogs.image = new slicer.views.ItemSelectorWidget({
+dialogs.image = new ItemSelectorWidget({
     parentView: null,
-    model: new slicer.models.Widget({
+    model: new WidgetModel({
         type: 'file'
     })
 });
+
+export default Visualization;

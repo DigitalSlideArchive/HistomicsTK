@@ -1,12 +1,22 @@
-histomicstk.views.Body = girder.View.extend({
+import View from 'girder/views/View';
+import PanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
+
+import Visualization from './visualization';
+import events from '../events';
+import * as dialogs from '../dialogs';
+
+import body from '../templates/body.pug';
+import '../stylesheets/body.styl';
+
+var Body = View.extend({
     initialize: function () {
-        this.visView = new histomicstk.views.Visualization({
+        this.visView = new Visualization({
             parentView: this
         });
-        this.panelGroupView = new slicer.views.PanelGroup({
+        this.panelGroupView = new PanelGroup({
             parentView: this
         });
-        this.listenTo(histomicstk.events, 'query:analysis', function (analysis) {
+        this.listenTo(events, 'query:analysis', function (analysis) {
             if (analysis) {
                 this.panelGroupView.setAnalysis(analysis);
             } else {
@@ -14,19 +24,19 @@ histomicstk.views.Body = girder.View.extend({
             }
         });
         this.listenTo(
-            histomicstk.dialogs.image.model,
+            dialogs.image.model,
             'change',
             function (control) {
                 if (!control || !control.get('value') || !control.get('value').id) {
-                    return
+                    return;
                 }
                 this._setImage(control.get('value'));
             }
         );
-        this._setImage(histomicstk.dialogs.image.model.get('value'));
+        this._setImage(dialogs.image.model.get('value'));
     },
     render: function () {
-        this.$el.html(histomicstk.templates.body());
+        this.$el.html(body());
         this.visView.setElement(this.$('#h-vis-container')).render();
         this.panelGroupView.setElement(this.$('#h-panel-controls-container')).render();
     },
@@ -43,10 +53,12 @@ histomicstk.views.Body = girder.View.extend({
         var file = new girder.models.FileModel({_id: item.get('largeImage').fileId});
         file.once('g:fetched', function () {
             this.panelGroupView
-                .models(undefined, function (m) { return m.get('type') === 'image'})
+                .models(undefined, function (m) { return m.get('type') === 'image'; })
                 .forEach(function (m) {
                     m.set('value', file);
                 });
         }, this).fetch();
     }
 });
+
+export default Body;

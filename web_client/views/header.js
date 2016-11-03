@@ -1,4 +1,12 @@
-histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
+import LayoutHeaderUserView from 'girder/views/layout/LayoutHeaderUserView';
+import { logout } from 'girder/auth';
+
+import router from '../router';
+
+import header from '../templates/header.pug';
+import '../stylesheets/header.styl';
+
+var Header = LayoutHeaderUserView.extend({
     events: {
         'click a.g-analysis-item': '_selectAnalysis',
         'click .g-register': '_register',
@@ -19,7 +27,7 @@ histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
         this.listenTo(girder.events, 'g:logout', this.render);
     },
     render: function () {
-        this.$el.html(histomicstk.templates.header({
+        this.$el.html(header({
             user: girder.currentUser,
             analyses: this.analyses
         }));
@@ -28,23 +36,25 @@ histomicstk.views.Header = girder.views.LayoutHeaderUserView.extend({
     },
     _selectAnalysis: function (evt) {
         var $el = $(evt.target);
-        histomicstk.router.setQuery('analysis', $el.data('api'), {trigger: true});
+        router.setQuery('analysis', $el.data('api'), {trigger: true});
         evt.preventDefault();
     },
     _register: function (evt) {
-        histomicstk.router.setQuery('dialog', 'register', {trigger: true});
+        router.setQuery('dialog', 'register', {trigger: true});
         evt.preventDefault();
     },
     _login: function (evt) {
-        histomicstk.router.setQuery('dialog', 'login', {trigger: true});
+        router.setQuery('dialog', 'login', {trigger: true});
         evt.preventDefault();
     },
     _logout: function (evt) {
-        girder.logout();
+        logout();
         evt.preventDefault();
     },
     _openImage: function (evt) {
-        histomicstk.router.setQuery('dialog', 'image', {trigger: true});
+        router.setQuery('dialog', 'image', {trigger: true});
         evt.preventDefault();
     }
 });
+
+export default Header;
