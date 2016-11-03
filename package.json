@@ -1,6 +1,6 @@
 {
   "name": "HistomicsTK",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/DigitalSlideArchive/HistomicsTK",
   "bugs": {
     "url": "https://github.com/DigitalSlideArchive/HitomicsTK/issues"
@@ -9,12 +9,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/DigitalSlideArchive/HistomicsTK.git"
-  },
-  "dependencies": {
-    "bootstrap-submenu": "^2.0.4"
-  },
-  "devDependencies": {
-    "sinon": "1.17.3"
   },
   "scripts": {}
 }
