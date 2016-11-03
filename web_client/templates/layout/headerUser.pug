@@ -1,0 +1,24 @@
+.h-current-user-text
+  if (user)
+    .h-portrait-wrapper
+    .h-user-link-wrapper
+      a.h-user-link(data-toggle="dropdown", data-target="#g-user-action-menu")
+        | `${user.get('firstName')} ${user.get('lastName')}`
+        i.icon-down-open
+      #g-user-action-menu.dropdown
+        ul.dropdown-menu(role="menu")
+          li(role="presentation")
+            a.g-my-settings
+              i.icon-cog
+              | My account
+          li.divider(role="presentation")
+          li(role="presentation")
+            a.g-logout
+              i.icon-logout
+              | Log out
+  else
+    .h-login-link-wrapper
+      a.g-register Register
+      |  or
+      a.g-login  Log In
+        i.icon-login

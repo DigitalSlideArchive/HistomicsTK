@@ -1,11 +1,11 @@
 import AnnotationSelectorWidget from './annotationSelectorWidget';
-import Body from './body';
-import Header from './header';
 import Visualization from './visualization';
+import layout from './layout';
+import body from './body';
 
 export {
+    body,
+    layout,
     AnnotationSelectorWidget,
-    Body,
-    Header,
     Visualization
 };
