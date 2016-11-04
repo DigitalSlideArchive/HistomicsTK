@@ -1,4 +1,6 @@
-import { getCurrentUser } from 'girder/auth';
+import { getCurrentUser, setCurrentUser } from 'girder/auth';
+import { restRequest } from 'girder/rest';
+import events from 'girder/events';
 
 import router from '../../router';
 import View from '../View';
@@ -8,20 +10,20 @@ import headerUserTemplate from '../../templates/layout/headerUser.pug';
 var HeaderUserView = View.extend({
     events: {
         'click a.g-login': function () {
-            girder.events.trigger('g:loginUi');
+            events.trigger('g:loginUi');
         },
 
         'click a.g-register': function () {
-            girder.events.trigger('g:registerUi');
+            events.trigger('g:registerUi');
         },
 
         'click a.g-logout': function () {
-            girder.restRequest({
+            restRequest({
                 path: 'user/authentication',
                 type: 'DELETE'
             }).done(_.bind(function () {
-                girder.currentUser = null;
-                girder.events.trigger('g:login');
+                setCurrentUser(null);
+                events.trigger('g:login');
             }, this));
         },
 
@@ -32,18 +34,21 @@ var HeaderUserView = View.extend({
     },
 
     initialize: function () {
-        girder.events.on('g:login', this.render, this);
+        events.on('g:login', this.render, this);
     },
 
     render: function () {
+        var currentUser = getCurrentUser();
         this.$el.html(headerUserTemplate({
-            user: girder.getCurrentUser()
+            user: currentUser
         }));
 
-        if (girder.currentUser) {
+        if (currentUser) {
+            /*
             this.$('.c-portrait-wrapper').css(
                 'background-image', 'url(' +
-                girder.currentUser.getGravatarUrl(36) + ')');
+                currentUser.getGravatarUrl(36) + ')');
+                */
         }
         return this;
     }

@@ -1,7 +1,7 @@
-import { cancelRestRequest, apiRoot, staticRoot } from 'girder/rest';
+import { cancelRestRequests, apiRoot, staticRoot } from 'girder/rest';
 import { getCurrentUser } from 'girder/auth';
 import * as version from 'girder/version';
-import GirderFrontPageView from 'girder/views/FrontPageView';
+import GirderFrontPageView from 'girder/views/body/FrontPageView';
 
 import frontPageTemplate from '../../templates/body/frontPage.pug';
 import '../../stylesheets/body/frontPage.styl';
@@ -10,7 +10,7 @@ var FrontPageView = GirderFrontPageView.extend({
     events: {},
 
     initialize: function () {
-        cancelRestRequest('fetch');
+        cancelRestRequests('fetch');
         this.render();
     },
 

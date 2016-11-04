@@ -17,11 +17,20 @@
     <div id="g-global-info-apiroot" class="hide">${apiRoot}</div>
     <div id="g-global-info-staticroot" class="hide">${staticRoot}</div>
     <script src="${staticRoot}/built/girder.ext.min.js"></script>
-    <script src="${staticRoot}/built/plugins/large_image/geo.min.js"></script>
     <script src="${staticRoot}/built/girder.app.min.js"></script>
+    <script>
+    $(function () {
+      girder.router.enabled(false);
+      girder.events.trigger('g:appload.before');
+      var app = new girder.plugins.HistomicsTK.App({
+        el: 'body',
+        parentView: null
+      });
+      girder.events.trigger('g:appload.after');
+    });
+    </script>
     % for plugin in pluginJs:
     <script src="${staticRoot}/built/plugins/${plugin}/plugin.min.js"></script>
     % endfor
-    <script src="${staticRoot}/built/plugins/HistomicsTK/histomics.main.min.js"></script>
   </body>
 </html>

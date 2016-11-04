@@ -1,7 +1,7 @@
-// import Backbone from 'backbone'
-import router from 'girder/router';
+import Backbone from 'backbone';
+// import router from 'girder/router';
 
 // unbind standard girder routes
 // Backbone.history.handlers = [];
 
-export default router;
+export default new Backbone.Router();
