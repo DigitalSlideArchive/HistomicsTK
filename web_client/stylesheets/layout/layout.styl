@@ -1,5 +1,4 @@
-$headerHeight = 54px
-$portraitHeight = 38px
+$headerHeight = 52px
 
 .h-header-wrapper
   height $headerHeight
@@ -56,11 +55,9 @@ $portraitHeight = 38px
       &:active
         background linear-gradient(bottom, white 60%, #f6f6f6 100%)
 
-#g-app-body-container
+#g-app-body-container.h-full-page-body
   margin 0
   margin-top $headerHeight
   min-height 0
-  padding 12px 15px
-
-.h-body-nopad
-  padding 0 !important
+  padding 0px 0px
+  overflow hidden

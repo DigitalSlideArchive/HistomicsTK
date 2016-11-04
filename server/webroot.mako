@@ -20,6 +20,7 @@
     <script src="${staticRoot}/built/girder.app.min.js"></script>
     <script>
     $(function () {
+      $('body').css('overflow', 'hidden');
       girder.router.enabled(false);
       girder.events.trigger('g:appload.before');
       var app = new girder.plugins.HistomicsTK.App({
