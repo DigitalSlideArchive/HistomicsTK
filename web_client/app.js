@@ -17,16 +17,11 @@ var App = GirderApp.extend({
         this.$el.html(layoutTemplate());
 
         new HeaderView({
-            el: this.$('#h-app-header-container'),
+            el: this.$('#g-app-header-container'),
             parentView: this
         }).render();
 
         return this;
-    },
-
-    navigateTo: function () {
-        this.$('#g-app-body-container').removeClass('h-body-nopad');
-        return GirderApp.prototype.navigateTo.apply(this, arguments);
     },
 
     /**

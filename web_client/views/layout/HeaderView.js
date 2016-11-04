@@ -1,10 +1,14 @@
 import View from '../View';
 import HeaderUserView from './HeaderUserView';
+import router from '../../router';
 
 import headerTemplate from '../../templates/layout/header.pug';
 
 var HeaderView = View.extend({
     events: {
+        'click .g-app-title': function () {
+            router.navigate('', {trigger: true});
+        }
     },
 
     render: function () {
@@ -16,7 +20,7 @@ var HeaderView = View.extend({
         });
 
         new HeaderUserView({
-            el: this.$('.h-current-user-wrapper'),
+            el: this.$('.g-current-user-wrapper'),
             parentView: this
         }).render();
     }
