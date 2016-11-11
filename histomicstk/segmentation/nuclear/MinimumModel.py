@@ -323,15 +323,15 @@ def TraceContours(I, X, Y, Min, Max, MaxLength=255):
         # trace boundary, check stopping condition, append to list of contours
         cX, cY = label.TraceBounds(Embed, Connectivity=4,
                                    XStart=pX, YStart=pY, MaxLength=MaxLength)
-        if(cX[0] == cX[-1] and cY[0] == cY[-1] and len(cX) <= MaxLength):
+        if(cX[0] == cX[-1] and cY[0] == cY[-1] and cX.size <= MaxLength):
 
             # add window offset to contour coordinates
-            cX = [x + max(0, X[i]-np.ceil(MaxLength/2.0)) - 1 for x in cX]
-            cY = [y + max(0, Y[i]-np.ceil(MaxLength/2.0)) - 1 for y in cY]
+            cX = cX + max(0, X[i]-np.ceil(MaxLength/2.0)) - 1
+            cY = cY + max(0, Y[i]-np.ceil(MaxLength/2.0)) - 1
 
             # append to list of candidate contours
-            cXs.append(np.array(cX, dtype=np.uint32))
-            cYs.append(np.array(cY, dtype=np.uint32))
+            cXs.append(cX)
+            cYs.append(cX)
 
     return cXs, cYs
 
@@ -544,8 +544,8 @@ def SplitConcavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
 
         # generate boundary coordinates, trim duplicate point
         X, Y = label.TraceBounds(Mask, Connectivity=8)
-        X = np.array(X[:-1], dtype=np.uint32)
-        Y = np.array(Y[:-1], dtype=np.uint32)
+        X = X[:-1]
+        Y = Y[:-1]
 
         # calculate distance transform of object boundary pixels to convex hull
         Distance = mp.distance_transform_edt(Hull)

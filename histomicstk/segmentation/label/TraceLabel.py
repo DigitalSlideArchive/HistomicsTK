@@ -62,10 +62,10 @@ def TraceLabel(Label, Connectivity=4):
     for i in np.arange(1, Label.max()+1):
 
         # process non-empty objects
-        if not Locations[i] is None:
+        if not Locations[i-1] is None:
 
             # capture patch containing object of interest
-            Patch = Label[Locations[i]] == i
+            Patch = Label[Locations[i-1]] == i
 
             # pad edges for tracing
             Embed = np.zeros((Patch.shape[0]+2, Patch.shape[1]+2),
@@ -76,17 +76,17 @@ def TraceLabel(Label, Connectivity=4):
             cX, cY = TraceBounds(Embed, Connectivity)
 
             # add window offset to contour coordinates
-            cX = cX + Locations[i][1].start - 1
-            cY = cY + Locations[i][0].start - 1
+            cX = cX + Locations[i-1][1].start - 1
+            cY = cY + Locations[i-1][0].start - 1
 
             # append to list of candidate contours
             X.append(np.array(cX, dtype=np.uint32))
             Y.append(np.array(cY, dtype=np.uint32))
 
-    else:
+        else:
 
-        # append None to Outputs X, Y
-        X.append(None)
-        Y.append(None)
+            # append None to Outputs X, Y
+            X.append(None)
+            Y.append(None)
 
     return X, Y
