@@ -34,29 +34,29 @@
     - libsqlite3-dev
 
 - name: Download openjpeg
-  command: wget -O openjpeg-1.5.2.tar.gz https://github.com/uclouvain/openjpeg/archive/version.1.5.2.tar.gz
+  command: wget -O openjpeg-2.1.2.tar.gz https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz
   args:
     chdir: "{{ root_dir }}"
 
 - name: Extract openjpeg
-  command: tar -zxf openjpeg-1.5.2.tar.gz
+  command: tar -zxf openjpeg-2.1.2.tar.gz
   args:
     chdir: "{{ root_dir }}"
 
 - name: Configure openjpeg
   command: cmake .
   args:
-    chdir: "{{ root_dir }}/openjpeg-version.1.5.2"
+    chdir: "{{ root_dir }}/openjpeg-2.1.2"
 
 - name: Build openjpeg
   command: make -j2
   args:
-    chdir: "{{ root_dir }}/openjpeg-version.1.5.2"
+    chdir: "{{ root_dir }}/openjpeg-2.1.2"
 
 - name: Install openjpeg
   command: make install
   args:
-    chdir: "{{ root_dir }}/openjpeg-version.1.5.2"
+    chdir: "{{ root_dir }}/openjpeg-2.1.2"
   sudo: yes
 
 - name: Run ldconfig

@@ -45,6 +45,10 @@
     - pandoc
     - pandoc-citeproc
 
+- name: Install node-gyp
+  command: "bash -c 'npm install -g node-gyp-install && /usr/lib/node_modules/node-gyp-install/bin.js'"
+  become: yes
+
 - name: Clone ctk-cli
   git:
     repo: git://github.com/cdeepakroy/ctk-cli.git
@@ -100,6 +104,15 @@
     extra_args: "-e"
     state: present
   sudo: yes
+
+
+- name: Create directory for build
+  file: state=directory path="{{ root_dir }}/girder/clients/web/static/built"
+
+- name: Download fontello.zip
+  command: wget -O fontello.zip https://data.kitware.com/api/v1/file/57c5d1fc8d777f10f269dece/download
+  args:
+    chdir: "{{ root_dir }}/girder/clients/web/static/built"
 
 - name: Install girder using pip
   pip:
