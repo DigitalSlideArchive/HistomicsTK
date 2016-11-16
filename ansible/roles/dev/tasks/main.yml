@@ -21,6 +21,16 @@
     chdir: "{{ root_dir }}"
     executable: /bin/bash
 
+- name: Ensure we have a locally built Pillow in conda's environment
+  shell: . miniconda/bin/activate ./miniconda && pip install --upgrade --no-cache-dir --force-reinstall Pillow
+  args:
+    chdir: "{{ root_dir }}"
+    executable: /bin/bash
+
+- name: Ensure setuptools 19.4 in the local pip environment, too.
+  pip: name="setuptools==19.4"
+  sudo: yes
+
 - name: Install girder dev requirements for the web client
   command: girder-install web --dev
   sudo: yes

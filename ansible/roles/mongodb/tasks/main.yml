@@ -1,4 +1,19 @@
 ---
+- name: Copy the huge pages disablement script
+  copy: src=files/disable-transparent-hugepages dest=/etc/init.d/disable-transparent-hugepages mode=0755 backup=no force=yes
+  sudo: yes
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Make sure the huge pages script runs at boot time
+  command: update-rc.d disable-transparent-hugepages defaults
+  sudo: yes
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Run the huge pages script now
+  command: /etc/init.d/disable-transparent-hugepages start
+  sudo: yes
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
 - name: Fetch GPG key for MongoDB
   sudo: yes
   command: apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927

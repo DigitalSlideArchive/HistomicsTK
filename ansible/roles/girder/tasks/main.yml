@@ -46,7 +46,7 @@
     - pandoc-citeproc
 
 - name: Install node-gyp
-  command: "bash -c 'npm install -g node-gyp-install && /usr/lib/node_modules/node-gyp-install/bin.js'"
+  shell: "npm install -g node-gyp-install && /usr/lib/node_modules/node-gyp-install/bin.js"
   become: yes
 
 - name: Clone ctk-cli
@@ -97,7 +97,7 @@
 - name: Install requests (needed to resolve conflict with docker-py)
   pip: name=requests version=2.10.0
   sudo: yes
-  
+
 - name: Install ctk-cli using pip
   pip:
     name: "{{ root_dir }}/ctk-cli"
@@ -122,11 +122,17 @@
   sudo: yes
 
 - name: Install numpy (must be installed before large_image plugin)
-  pip: name=numpy version=1.10.2
+  pip: name=numpy version=1.11.2
+  sudo: yes
+
+- name: Install python libtiff from git
+  pip: name='git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5' extra_args='--force-reinstall --ignore-installed --upgrade' editable=False
   sudo: yes
 
 - name: Install our external girder plugins
   command: girder-install plugin -s {{ root_dir }}/slicer_cli_web {{ root_dir }}/large_image {{ root_dir }}/HistomicsTK {{ root_dir }}/digital_slide_archive
+  environment:
+    GIRDER_LOCAL_FONTELLO_ARCHIVE: "{{ root_dir }}/girder/clients/web/static/built/fontello.zip"
   sudo: yes
 
 - name: Install girder-client pip package
