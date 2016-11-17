@@ -54,8 +54,8 @@ add_python_test(glcm
 )
 
 add_python_test(segmentation_label
-    SUBMODULE trace_boundaryTest
-    DBNAME core_segmentation_trace_boundary
+    SUBMODULE TraceBoundaryTest
+    DBNAME core_trace_boundary
     PLUGIN HistomicsTK
 )
 
