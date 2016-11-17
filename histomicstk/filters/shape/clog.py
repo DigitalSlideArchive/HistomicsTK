@@ -2,7 +2,7 @@ import numpy as np
 import scipy as sp
 
 
-def cLoG(I, Mask, SigmaMin=30*1.414, SigmaMax=50*1.414):
+def clog(I, Mask, SigmaMin=30*1.414, SigmaMax=50*1.414):
     """Constrainted Laplacian of Gaussian filter.
 
     Takes as input a grayscale nuclear image and binary mask of cell nuclei,
