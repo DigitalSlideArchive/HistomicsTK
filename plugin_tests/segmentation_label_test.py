@@ -22,7 +22,7 @@ from tests import base
 import numpy as np
 import os
 
-from histomicstk.segmentation.label import trace_boundary
+from histomicstk.segmentation.label import trace_boundaries
 
 
 # boiler plate to start and stop the server if needed
@@ -39,117 +39,44 @@ TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
                              'plugins/HistomicsTK')
 
 
-class TraceBoundsTest(base.TestCase):
+class trace_boundaryTest(base.TestCase):
 
     def test_trace_boundary(self):
 
-        # refenece left neighbor
-        rx = [2, 1, 2]
-        ry = [1, 1, 1]
+        # test moore neighbor algorithm
 
-        # test left neighbor
-        m_left_neighbor = np.array([[0, 0, 0, 0],
-                                    [0, 1, 0, 0],
-                                    [0, 1, 0, 0],
-                                    [0, 0, 0, 0]], dtype=np.bool)
-        x = 2
-        y = 1
+        m_neighbor = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
+                               [0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
+                               [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+                               [0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+                               [0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                               [0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+                               [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+                               [0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
+                               [0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
+                               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.bool)
 
-        by, bx = trace_boundary(m_left_neighbor, Connectivity=4, XStart=y,
-                                YStart=x)
+        m_neighbor = np.ascontiguousarray(m_neighbor, dtype=np.int)
 
-        np.testing.assert_allclose(rx, bx)
-        np.testing.assert_allclose(ry, by)
+        # refenece neighbors for isbf
+        rx_isbf = [1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 8, 7, 7, 7,
+                   7, 6, 6, 5, 5, 5, 4, 4, 3, 3, 3, 3, 2, 1]
+        ry_isbf = [7, 8, 8, 7, 6, 6, 6, 6, 6, 7, 8, 8, 7, 7, 6, 5, 4,
+                   3, 3, 2, 2, 1, 2, 2, 3, 3, 4, 5, 6, 7, 7]
 
-        # refenece inner-outer corner at the left-rear
-        rx = [2, 1, 2]
-        ry = [2, 1, 2]
+        # refenece neighbors for moore
+        rx_moore = [1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 8, 7, 7, 7,
+                    7, 6, 5, 4, 3, 3, 3, 3, 2, 1]
+        ry_moore = [7, 8, 8, 7, 6, 6, 6, 6, 6, 7, 8, 8, 7, 7, 6, 5, 4,
+                    3, 2, 1, 2, 3, 4, 5, 6, 7, 7]
 
-        # test inner-outer corner at the left-rear
-        m_inner_outer_corner_left_rear = np.array([[0, 0, 0, 0],
-                                                   [0, 1, 0, 0],
-                                                   [0, 0, 1, 0],
-                                                   [0, 0, 0, 0]],
-                                                  dtype=np.bool)
-        x = 2
-        y = 2
+        output_isbf = trace_boundaries(m_neighbor)
 
-        by, bx = trace_boundary(m_inner_outer_corner_left_rear,
-                                Connectivity=4, XStart=y, YStart=x)
+        np.testing.assert_allclose(rx_isbf, output_isbf[0][1])
+        np.testing.assert_allclose(ry_isbf, output_isbf[0][0])
 
-        np.testing.assert_allclose(rx, bx)
-        np.testing.assert_allclose(ry, by)
+        output_moore = trace_boundaries(m_neighbor, 8)
 
-        # refenece inner-outer corner at the front-left
-        rx = [2, 1, 2]
-        ry = [1, 2, 1]
-
-        # test inner-outer corner at the front-left
-        m_inner_outer_corner_front_left = np.array([[0, 0, 0, 0],
-                                                    [0, 0, 1, 0],
-                                                    [0, 1, 0, 0],
-                                                    [0, 0, 0, 0]],
-                                                   dtype=np.bool)
-        x = 2
-        y = 1
-
-        by, bx = trace_boundary(m_inner_outer_corner_front_left,
-                                Connectivity=4, XStart=y, YStart=x)
-
-        np.testing.assert_allclose(rx, bx)
-        np.testing.assert_allclose(ry, by)
-
-        # refenece inner corner at the front
-        rx = [2, 2, 1, 2, 2]
-        ry = [1, 2, 2, 2, 1]
-
-        # test inner corner at the front
-        m_inner_corner_front = np.array([[0, 0, 0, 0],
-                                         [0, 0, 1, 0],
-                                         [0, 1, 1, 0],
-                                         [0, 0, 0, 0]], dtype=np.bool)
-        x = 2
-        y = 1
-
-        by, bx = trace_boundary(m_inner_corner_front, Connectivity=4,
-                                XStart=y, YStart=x)
-
-        np.testing.assert_allclose(rx, bx)
-        np.testing.assert_allclose(ry, by)
-
-        # refenece front neighbor
-        rx = [1, 1, 1]
-        ry = [1, 2, 1]
-
-        # test front neighbor
-        m_front_neighbor = np.array([[0, 0, 0, 0],
-                                     [0, 1, 1, 0],
-                                     [0, 0, 0, 0],
-                                     [0, 0, 0, 0]], dtype=np.bool)
-
-        x = 1
-        y = 1
-
-        by, bx = trace_boundary(m_front_neighbor, Connectivity=4,
-                                XStart=y, YStart=x)
-
-        np.testing.assert_allclose(rx, bx)
-        np.testing.assert_allclose(ry, by)
-
-        # refenece front neighbor
-        rx = [1, 2, 1]
-        ry = [1, 2, 1]
-
-        # test outer corner
-        m_outer_corner = np.array([[0, 0, 0, 0],
-                                   [0, 1, 0, 0],
-                                   [0, 0, 1, 0],
-                                   [0, 0, 0, 0]], dtype=np.bool)
-        x = 1
-        y = 1
-
-        by, bx = trace_boundary(m_outer_corner, Connectivity=4,
-                                XStart=y, YStart=x)
-
-        np.testing.assert_allclose(rx, bx)
-        np.testing.assert_allclose(ry, by)
+        np.testing.assert_allclose(rx_moore, output_moore[0][1])
+        np.testing.assert_allclose(ry_moore, output_moore[0][0])
