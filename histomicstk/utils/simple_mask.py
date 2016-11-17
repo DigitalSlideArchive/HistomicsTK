@@ -7,7 +7,7 @@ from scipy import signal
 
 
 def simple_mask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
-               MinPeak=10, MaxPeak=25, Percent=0.10, MinProb=0.05):
+                MinPeak=10, MaxPeak=25, Percent=0.10, MinProb=0.05):
     """Performs segmentation of the foreground (tissue)
     Uses a simple two-component Gaussian mixture model to mask tissue areas
     from background in brightfield H&E images. Kernel-density estimation is
