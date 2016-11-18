@@ -3,16 +3,16 @@ import numpy as np
 import histomicstk.utils as htk_utils
 
 
-def vesselness(I, Sigma):
+def vesselness(im_input, sigma):
     """
-    Calculates vesselness measure for grayscale image `I` at scale `Sigma`.
+    Calculates vesselness measure for grayscale image `im_input` at scale `sigma`.
     Also returns eigenvalues and vectors used for vessel salience filters.
 
     Parameters
     ----------
-    I : array_like
+    im_input : array_like
         M x N grayscale image.
-    Sigma : double
+    sigma : double
         standard deviation of gaussian kernel.
 
     Returns
@@ -37,7 +37,7 @@ def vesselness(I, Sigma):
     """
 
     # calculate hessian matrix
-    H = Sigma**2 * htk_utils.hessian(I, Sigma)
+    H = sigma ** 2 * htk_utils.hessian(im_input, sigma)
 
     # calculate eigenvalue image
     E, V1, V2 = htk_utils.eigenvalues(H)
