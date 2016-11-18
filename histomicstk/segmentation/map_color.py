@@ -38,7 +38,8 @@ def map_color(adj_mat):
     for i in range(1, adj_mat.shape[0]):
 
         # get indices neighbors of node 'i'
-        Neighbors = np.nonzero(adj_mat[i,])[0].flatten()
+        Neighbors = np.nonzero(adj_mat[i, ])[0].flatten()
+
         if(Neighbors.size > 0):
 
             # get colors of neighbors
@@ -52,7 +53,7 @@ def map_color(adj_mat):
                 Reference = Set(range(1, ColorCount+1))
                 Diff = Reference.difference(Set(NeighborColors))
                 if len(Diff) == 0:
-                    ColorCount = ColorCount + 1
+                    ColorCount += 1
                     Colors[i] = ColorCount
                 else:
                     Colors[i] = min(Diff)

@@ -42,11 +42,11 @@ def embed_boundaries(im_input, im_perim, color=[255, 0, 0]):
     # determine image type
     if np.issubclass_(im_input.dtype.type, np.float_):
         if im_input.max() < 1.0:
-            im_input = im_input * 255
+            im_input *= 255
             im_input = im_input.astype(np.uint8)
     elif np.issubclass_(im_input.dtype.type, np.bool_):
         im_input = im_input.astype(np.uint8)
-        im_input = im_input * 255
+        im_input *= 255
 
     # determine if image is grayscale or RGB
     if len(im_input.shape) == 3:  # color image
@@ -65,8 +65,8 @@ def embed_boundaries(im_input, im_perim, color=[255, 0, 0]):
 
     # generate output image
     im_embed = np.dstack((Red[:, :, np.newaxis],
-                      Green[:, :, np.newaxis],
-                      Blue[:, :, np.newaxis])).astype(np.uint8)
+                          Green[:, :, np.newaxis],
+                          Blue[:, :, np.newaxis])).astype(np.uint8)
 
     # concatenate channels to form output
     return im_embed
