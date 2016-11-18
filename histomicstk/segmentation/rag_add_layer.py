@@ -1,21 +1,21 @@
 import numpy as np
 
 
-def rag_add_layer(Adjacency):
+def rag_add_layer(adj_mat):
     """Adds an additional layer of dependence to a region adjacency graph,
     connecting each node to the neighbors of its immediate neighbors.
 
     Parameters
     ----------
-    Adjacency : array_like
+    adj_mat : array_like
         A binary matrix of size N x N, where N is the number of objects in
-        Label. A value of 'True' at Adjacency(i,j) indicates that objects 'i'
+        Label. A value of 'True' at adj_mat(i,j) indicates that objects 'i'
         and 'j' are neighbors.
 
     Returns
     -------
     Layered : array_like
-        A version of 'Adjacency' with additional edges to connect 2-neighbors.
+        A version of 'adj_mat' with additional edges to connect 2-neighbors.
 
     See Also
     --------
@@ -23,17 +23,17 @@ def rag_add_layer(Adjacency):
     """
 
     # initialize output
-    Layered = Adjacency.copy()
+    Layered = adj_mat.copy()
 
     # iterate through each object, adding edges to neighbors of neighbors
-    for i in range(Adjacency.shape[0]):
+    for i in range(adj_mat.shape[0]):
 
         # get immediate neighbors
-        Neighbors = np.nonzero(Adjacency[i, ])[0].flatten()
+        Neighbors = np.nonzero(adj_mat[i,])[0].flatten()
 
         # for each immediate neighbor, add second neighbors
         for j in range(Neighbors.size):
-            Hops = np.nonzero(Adjacency[Neighbors[j], ])[0].flatten()
+            Hops = np.nonzero(adj_mat[Neighbors[j],])[0].flatten()
             Layered[Hops, i] = True
             Layered[i, Hops] = True
 
