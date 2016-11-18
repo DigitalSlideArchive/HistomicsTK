@@ -3,7 +3,7 @@ import scipy.ndimage.filters as ft
 import scipy.ndimage.morphology as mp
 
 
-def compact(Label, Compaction=3):
+def compact(im_label, compaction=3):
     """Performs a thinning operation on a label image to remove thin
     protrusions from objects that are in contact with the background. Applies a
     distance transform and sequentially removes pixels with small distances to
@@ -11,9 +11,9 @@ def compact(Label, Compaction=3):
 
     Parameters
     ----------
-    Label : array_like
+    im_label : array_like
         A labeled segmentation mask
-    Compaction : int
+    compaction : int
         Factor used in compacting objects to remove thin protrusions. Refered
         to as d in the reference below. Default value = 3.
 
@@ -23,7 +23,7 @@ def compact(Label, Compaction=3):
 
     Returns
     -------
-    Compact : array_like
+    im_compact : array_like
         A labeled segmentation mask with thin protrusions removed.
 
     See Also
@@ -42,10 +42,10 @@ def compact(Label, Compaction=3):
     """
 
     # copy input image
-    Compact = Label.copy()
+    im_compact = im_label.copy()
 
     # generate distance map of label image
-    D = mp.distance_transform_cdt(Compact > 0, metric='taxicab')
+    D = mp.distance_transform_cdt(im_compact > 0, metric='taxicab')
 
     # define 4-neighbors filtering kernel
     Kernel = np.zeros((3, 3), dtype=np.bool)
@@ -53,7 +53,7 @@ def compact(Label, Compaction=3):
     Kernel[:, 1] = True
 
     # sweep over distance values from d-1 to 1
-    for i in np.arange(Compaction-1, 0, -1):
+    for i in np.arange(compaction-1, 0, -1):
 
         # four-neighbor maxima of distance transform
         MaxD = ft.maximum_filter(D, footprint=Kernel)
@@ -65,6 +65,6 @@ def compact(Label, Compaction=3):
         D[Decrement] -= 1
 
     # zero label pixels where D == 0
-    Compact[D == 0] = 0
+    im_compact[D == 0] = 0
 
-    return Compact
+    return im_compact
