@@ -106,13 +106,16 @@ def glog(im_input, alpha=1,
 
 
 def glogkernel(sigma_x, sigma_y, theta):
+
     N = np.ceil(2 * 3 * sigma_x)
     X, Y = np.meshgrid(np.linspace(0, N, N + 1) - N / 2,
                        np.linspace(0, N, N + 1) - N / 2)
-    a = np.cos(theta) ** 2 / (2 * sigma_x ** 2) + np.sin(theta) ** 2 / (2 * sigma_y ** 2)
-    b = -np.sin(2 * theta) / (4 * sigma_x ** 2) + np.sin(2 * theta) / \
-                                                  (4 * sigma_y ** 2)
-    c = np.sin(theta) ** 2 / (2 * sigma_x ** 2) + np.cos(theta) ** 2 / (2 * sigma_y ** 2)
+    a = np.cos(theta) ** 2 / (2 * sigma_x ** 2) + \
+        np.sin(theta) ** 2 / (2 * sigma_y ** 2)
+    b = -np.sin(2 * theta) / (4 * sigma_x ** 2) + \
+        np.sin(2 * theta) / (4 * sigma_y ** 2)
+    c = np.sin(theta) ** 2 / (2 * sigma_x ** 2) + \
+        np.cos(theta) ** 2 / (2 * sigma_y ** 2)
     D2Gxx = ((2*a*X + 2*b*Y)**2 - 2*a) * np.exp(-(a*X**2 + 2*b*X*Y + c*Y**2))
     D2Gyy = ((2*b*X + 2*c*Y)**2 - 2*c) * np.exp(-(a*X**2 + 2*b*X*Y + c*Y**2))
     Gaussian = np.exp(-(a*X**2 + 2*b*X*Y + c*Y**2))
