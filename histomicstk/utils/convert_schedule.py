@@ -2,14 +2,14 @@ import collections
 import openslide
 
 
-def convert_schedule(Schedule, Magnification, tol=0.002):
+def convert_schedule(schedule, magnification, tol=0.002):
     """Converts a tiling schedule to a new magnification
 
     Parameters
     ----------
-    Schedule : collections.namedtuple
+    schedule : collections.namedtuple
         schedule obtained from TilingSchedule.
-    Magnification : scalar
+    magnification : scalar
         Desired magnification to convert schedule to.
     tol : double, optional
         Acceptable mismatch percentage for desired magnification.
@@ -52,9 +52,9 @@ def convert_schedule(Schedule, Magnification, tol=0.002):
 
     # check if slide can be opened
     try:
-        Slide = openslide.OpenSlide(Schedule.File)
+        Slide = openslide.OpenSlide(schedule.File)
     except openslide.OpenSlideError:
-        print("Cannot find file '" + Schedule.File + "'")
+        print("Cannot find file '" + schedule.File + "'")
         return
     except openslide.OpenSlideUnsupportedFormatError:
         print("Slide format not supported. Consult OpenSlide documentation")
@@ -68,7 +68,7 @@ def convert_schedule(Schedule, Magnification, tol=0.002):
 
     # determine if desired magnification is avilable in file
     Available = tuple(Objective / x for x in Factors)
-    Mismatch = tuple(x - Magnification for x in Available)
+    Mismatch = tuple(x - magnification for x in Available)
     AbsMismatch = tuple(abs(x) for x in Mismatch)
     if min(AbsMismatch) <= tol:
         Level = int(AbsMismatch.index(min(AbsMismatch)))
@@ -76,20 +76,20 @@ def convert_schedule(Schedule, Magnification, tol=0.002):
     else:
         # pick next highest level, downsample
         Level = int(max([i for (i, val) in enumerate(Mismatch) if val > 0]))
-        Factor = Magnification / Available[Level]
+        Factor = magnification / Available[Level]
 
     # translate parameters of input tiling schedule into new schedule
-    Tout = int(round(((Schedule.Tout * Schedule.Factor) /
-                      Schedule.Magnification) * Magnification / Factor))
+    Tout = int(round(((schedule.Tout * schedule.Factor) /
+                      schedule.Magnification) * magnification / Factor))
 
     Stride = Tout * Available[0] / Available[Level]  # noqa
-    X = Schedule.X
-    Y = Schedule.Y
-    dX = Schedule.dX
-    dY = Schedule.dY
+    X = schedule.X
+    Y = schedule.Y
+    dX = schedule.dX
+    dY = schedule.dY
 
     # calculate scale difference between base and desired magnifications
-    Scale = Magnification / Objective
+    Scale = magnification / Objective
 
     # collect outputs in container
     TilingSchedule = collections.namedtuple('TilingSchedule',
@@ -97,12 +97,13 @@ def convert_schedule(Schedule, Magnification, tol=0.002):
                                              'Tout', 'Factor',
                                              'Magnification', 'File', 'X', 'Y',
                                              'dX', 'dY'])
-    Converted = TilingSchedule(Level,
-                               Scale,
-                               Tout,
-                               Factor,
-                               Magnification,
-                               Schedule.File,
-                               X, Y, dX, dY)
 
-    return Converted
+    conv_schedule = TilingSchedule(Level,
+                                   Scale,
+                                   Tout,
+                                   Factor,
+                                   magnification,
+                                   schedule.File,
+                                   X, Y, dX, dY)
+
+    return conv_schedule
