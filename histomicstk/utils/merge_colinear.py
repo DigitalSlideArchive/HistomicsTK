@@ -1,33 +1,33 @@
 import numpy as np
 
 
-def merge_colinear(X, Y):
+def merge_colinear(x, y):
     """Processes boundary coordinates in polyline with vertices X, Y to remove
     redundant colinear points. Polyline is not assumed to be open or closed.
 
     Parameters
     ----------
-    X : array_like
+    x : array_like
         One dimensional array of horizontal boundary coordinates.
-    Y : array_like
+    y : array_like
         One dimensional array of vertical boundary coordinates.
 
     Returns
     -------
-    XOut : array_like
+    xout : array_like
         X with colinear boundary points removed.
     YOUt : array_like
         Y with colinear boundary points removed.
     """
 
     # compute boundary differences
-    dX = np.diff(X)
-    dY = np.diff(Y)
+    dX = np.diff(x)
+    dY = np.diff(y)
 
     # detect and delete stationary repeats
     Repeats = np.argwhere((dX == 0) & (dY == 0))
-    np.delete(X, Repeats)
-    np.delete(Y, Repeats)
+    np.delete(x, Repeats)
+    np.delete(y, Repeats)
     np.delete(dX, Repeats)
     np.delete(dY, Repeats)
 
@@ -40,9 +40,9 @@ def merge_colinear(X, Y):
     transitions = np.argwhere(dslope != 0)
 
     # construct merged sequences
-    XOut = np.append(X[0], X[transitions+1])
-    YOut = np.append(Y[0], Y[transitions+1])
-    XOut = np.append(XOut, X[-1])
-    YOut = np.append(YOut, Y[-1])
+    xout = np.append(x[0], x[transitions + 1])
+    yout = np.append(y[0], y[transitions + 1])
+    xout = np.append(xout, x[-1])
+    yout = np.append(yout, y[-1])
 
-    return XOut, YOut
+    return xout, yout
