@@ -7,7 +7,7 @@ This package contains functions for segmenting a variety of objects/structures
 # since we mostly have one function per file
 from histomicstk.utils.simple_mask import simple_mask
 from .embed_boundaries import embed_boundaries
-from .map_color import map_color
+from .rag_color import rag_color
 from .rag import rag
 from .rag_add_layer import rag_add_layer
 
@@ -21,7 +21,7 @@ __all__ = (
 
     # functions and classes of this package
     'embed_boundaries',
-    'map_color',
+    'rag_color',
     'rag',
     'rag_add_layer',
     'simple_mask',

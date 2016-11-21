@@ -2,11 +2,11 @@ import numpy as np
 from sets import Set
 
 
-def map_color(adj_mat):
+def rag_color(adj_mat):
     """Generates a coloring of an adjacency graph using the sequential coloring
     algorithm. Used to bin regions from a label image into a small number of
-    independent groups that can be processed seperately with algorithms like
-    multilabel graph cuts or individual active contours. The rationale is to
+    independent groups that can be processed separately with algorithms like
+    multi-label graph cuts or individual active contours. The rationale is to
     color adjacent objects with distinct colors so that their contours can be
     co-evolved.
 
