@@ -23,10 +23,10 @@ def vesselness(im_input, sigma):
         M x N image of frobenius norm of Hessian - measures presence of
         structure.
     E : array_like
-        M x N x 2 eigenvalue image - see eigenvalues.py.
+        M x N x 2 eigenvalue image - see eigen.py.
     Theta : array_like
         M x N eigenvector angle image for E(:,:,0) in radians
-        see eigenvalues.py. Oriented parallel to vessel structures.
+        see eigen.py. Oriented parallel to vessel structures.
 
     References
     ----------
@@ -40,7 +40,7 @@ def vesselness(im_input, sigma):
     H = sigma ** 2 * htk_utils.hessian(im_input, sigma)
 
     # calculate eigenvalue image
-    E, V1, V2 = htk_utils.eigenvalues(H)
+    E, V1, V2 = htk_utils.eigen(H)
 
     # compute blobness measures
     Deviation = E[:, :, 0]/(E[:, :, 1] + np.spacing(1))

@@ -6,7 +6,7 @@ all other sub-packages of histomicstk
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
 from .del2 import del2
-from .eigenvalues import eigenvalues
+from .eigen import eigen
 from .gradient_diffusion import gradient_diffusion
 from .hessian import hessian
 from .merge_colinear import merge_colinear
@@ -20,7 +20,7 @@ __all__ = (
 
     # functions and classes of this package
     'del2',
-    'eigenvalues',
+    'eigen',
     'gradient_diffusion',
     'hessian',
     'merge_colinear',
