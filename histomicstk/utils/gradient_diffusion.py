@@ -2,8 +2,8 @@ import numpy as np
 import scipy.ndimage.filters as spf
 
 
-def gradient_diffusion(dX, dY, Mask, Mu=5, Lambda=5, Iterations=10,
-                       dT=0.05):
+def gradient_diffusion(im_dx, im_dy, im_fgnd_mask,
+                       mu=5, lamda=5, iterations=10, dt=0.05):
     """
     Diffusion of gradient field using Navier-Stokes equation. Used for
     smoothing/denoising a gradient field.
@@ -15,31 +15,31 @@ def gradient_diffusion(dX, dY, Mask, Mu=5, Lambda=5, Iterations=10,
 
     Parameters
     ----------
-    dX : array_like
+    im_dx : array_like
         Horizontal component of gradient image.
-    dY : array_like
+    im_dy : array_like
         Vertical component of gradient image.
-    Mu : float
-        Weight parmeter from Navier-Stokes equation - weights divergence and
-        Laplacian terms. Default value = 5.
-    Lambda : float
-        Weight parameter from Navier-Stokes equation - used to weight
-        divergence. Default value = 5.
-    Mask : array_like
+    im_fgnd_mask : array_like
         Binary mask where foreground objects have value 1, and background
         objects have value 0. Used to restrict influence of background vectors
         on diffusion process.
-    Iterations : float
+    mu : float
+        Weight parmeter from Navier-Stokes equation - weights divergence and
+        Laplacian terms. Default value = 5.
+    lamda : float
+        Weight parameter from Navier-Stokes equation - used to weight
+        divergence. Default value = 5.
+    iterations : float
         Number of time-steps to use in solving Navier-Stokes. Default value =
         10.
-    dT : float
+    dt : float
         Timestep to be used in solving Navier-Stokes. Default value = 0.05.
 
     Returns
     -------
-    vX : array_like
+    im_vx : array_like
         Horizontal component of diffused gradient.
-    vY : array_like
+    im_vy : array_like
         Vertical component of diffused gradient.
 
     See Also
@@ -53,23 +53,25 @@ def gradient_diffusion(dX, dY, Mask, Mu=5, Lambda=5, Iterations=10,
     """
 
     # initialize solution
-    vX = dX.copy()
-    vY = dY.copy()
+    im_vx = im_dx.copy()
+    im_vy = im_dy.copy()
 
     # iterate for prescribed number of iterations
-    for it in range(Iterations):
+    for it in range(iterations):
 
         # calculate divergence of current solution
-        vXY, vXX = np.gradient(vX)
-        vYY, vYX = np.gradient(vY)
+        vXY, vXX = np.gradient(im_vx)
+        vYY, vYX = np.gradient(im_vy)
         Div = vXX + vYY
         DivY, DivX = np.gradient(Div)
 
         # calculate laplacians of current solution
-        vX += dT*(Mu * spf.laplace(vX) + (Lambda + Mu) * DivX + Mask *
-                  (dX - vX))
-        vY += dT*(Mu * spf.laplace(vY) + (Lambda + Mu) * DivY + Mask *
-                  (dY - vY))
+        im_vx += dt * (mu * spf.laplace(im_vx) +
+                       (lamda + mu) * DivX +
+                       im_fgnd_mask * (im_dx - im_vx))
+        im_vy += dt * (mu * spf.laplace(im_vy) +
+                       (lamda + mu) * DivY +
+                       im_fgnd_mask * (im_dy - im_vy))
 
     # return solution
-    return vX, vY
+    return im_vx, im_vy
