@@ -69,15 +69,15 @@ def main(args):
         imNucleiStain < args.foreground_threshold)
 
     # run adaptive multi-scale LoG filter
-    imLog = htk_shape_filters.cLoG(imNucleiStain, imFgndMask,
-                                   SigmaMin=args.min_radius * np.sqrt(2),
-                                   SigmaMax=args.max_radius * np.sqrt(2))
+    imLog = htk_shape_filters.clog(imNucleiStain, imFgndMask,
+                                   sigma_min=args.min_radius * np.sqrt(2),
+                                   sigma_max=args.max_radius * np.sqrt(2))
 
-    imNucleiSegMask, Seeds, Max = htk_seg.nuclear.MaxClustering(
+    imNucleiSegMask, Seeds, Max = htk_seg.nuclear.max_clustering(
         imLog, imFgndMask, args.local_max_search_radius)
 
     # filter out small objects
-    imNucleiSegMask = htk_seg.label.AreaOpenLabel(
+    imNucleiSegMask = htk_seg.label.area_open(
         imNucleiSegMask, args.min_nucleus_area).astype(np.int)
 
     #
