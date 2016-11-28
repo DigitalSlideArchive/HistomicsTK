@@ -3,17 +3,17 @@ import numpy as np
 import openslide
 
 
-def tiling_schedule(File, Magnification, Tile, tol=0.002):
+def tiling_schedule(slide_path, magnification, tile_size, tol=0.002):
     """Generates parameters needed to tile a whole-slide-image using OpenSlide
     for a given resolution `Magnification` and tilesize `Tile`.
 
     Parameters
     ----------
-    File : str
+    slide_path : str
        path and filename of slide.
-    Magnification : double
+    magnification : double
        desired magnification.
-    Tile : int
+    tile_size : int
        tilesize at desired magnification.
     tol: double
        acceptable mismatch percentage for desired magnification
@@ -57,9 +57,9 @@ def tiling_schedule(File, Magnification, Tile, tol=0.002):
 
     # check if slide can be opened
     try:
-        Slide = openslide.OpenSlide(File)
+        Slide = openslide.OpenSlide(slide_path)
     except openslide.OpenSlideError:
-        print("Cannot find file '" + File + "'")
+        print("Cannot find file '" + slide_path + "'")
         return
     except openslide.OpenSlideUnsupportedFormatError:
         print("Slide format not supported. Consult OpenSlide documentation")
@@ -75,28 +75,28 @@ def tiling_schedule(File, Magnification, Tile, tol=0.002):
     Available = tuple(Objective / x for x in Factors)
 
     # find highest magnification greater than or equal to 'Desired'
-    Mismatch = tuple(x - Magnification for x in Available)
+    Mismatch = tuple(x - magnification for x in Available)
     AbsMismatch = tuple(abs(x) for x in Mismatch)
     if min(AbsMismatch) <= tol:
         Level = int(AbsMismatch.index(min(AbsMismatch)))
         Factor = 1
     else:  # pick next highest level, downsample
         Level = int(max([i for (i, val) in enumerate(Mismatch) if val > 0]))
-        Factor = Magnification / Available[Level]
+        Factor = magnification / Available[Level]
 
     # adjust tilesize based on resizing factor
-    Tout = int(round(Tile / Factor))
+    Tout = int(round(tile_size / Factor))
 
     # generate X, Y coordinates for tiling
     Stride = Tout * Available[0] / Available[Level]
     X = np.arange(0, Dims[0][0], Stride)
     Y = np.arange(0, Dims[0][1], Stride)
     X, Y = np.meshgrid(X, Y)
-    dX = X / (Available[0] / Magnification)
-    dY = Y / (Available[0] / Magnification)
+    dX = X / (Available[0] / magnification)
+    dY = Y / (Available[0] / magnification)
 
     # calculate scale difference between base and desired magnifications
-    Scale = Magnification / Objective
+    Scale = magnification / Objective
 
     # collect outputs in container
     TilingSchedule = collections.namedtuple('TilingSchedule',
@@ -104,7 +104,7 @@ def tiling_schedule(File, Magnification, Tile, tol=0.002):
                                              'Tout', 'Factor',
                                              'Magnification', 'File', 'X', 'Y',
                                              'dX', 'dY'])
-    Schedule = TilingSchedule(Level, Scale, Tout, Factor,
-                              Magnification, File, X, Y, dX, dY)
+    schedule = TilingSchedule(Level, Scale, Tout, Factor,
+                              magnification, slide_path, X, Y, dX, dY)
 
-    return Schedule
+    return schedule
