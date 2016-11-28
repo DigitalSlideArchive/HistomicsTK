@@ -10,7 +10,7 @@ from .eigen import eigen
 from .gradient_diffusion import gradient_diffusion
 from .hessian import hessian
 from .merge_colinear import merge_colinear
-from .poisson_mixture import fit_poisson_mixture
+from .fit_poisson_mixture import fit_poisson_mixture
 from .simple_mask import simple_mask
 from .sample import sample  # must import after SimpleMask
 
