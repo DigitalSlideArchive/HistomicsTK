@@ -6,8 +6,9 @@ from scipy.optimize import fmin_slsqp
 from scipy import signal
 
 
-def simple_mask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
-                MinPeak=10, MaxPeak=25, Percent=0.10, MinProb=0.05):
+def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
+                min_peak_width=10, max_peak_width=25,
+                percent=0.10, min_tissue_prob=0.05):
     """Performs segmentation of the foreground (tissue)
     Uses a simple two-component Gaussian mixture model to mask tissue areas
     from background in brightfield H&E images. Kernel-density estimation is
@@ -21,32 +22,32 @@ def simple_mask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
 
     Parameters
     ----------
-    I : array_like
+    im_rgb : array_like
         An RGB image of type unsigned char.
-    BW : double, optional
+    bandwidth : double, optional
         Bandwidth for kernel density estimation - used for smoothing the
         grayscale histogram. Default value = 2.
-    DefaultBGScale : double, optional
+    bgnd_std : double, optional
         Standard deviation of background gaussian to be used if
         estimation fails. Default value = 2.5.
-    DefaultTissueScale: double, optional
+    tissue_std: double, optional
         Standard deviation of tissue gaussian to be used if estimation fails.
         Default value = 30.
-    MinPeak: double, optional
+    min_peak_width: double, optional
         Minimum peak width for finding peaks in KDE histogram. Used to
         initialize curve fitting process. Default value = 10.
-    MaxPeak: double, optional
+    max_peak_width: double, optional
         Maximum peak width for finding peaks in KDE histogram. Used to
         initialize curve fitting process. Default value = 25.
-    Percent: double, optional
+    percent: double, optional
         Percentage of pixels to sample for building foreground/background
         model. Default value = 0.10.
-    MinProb : double, optional
+    min_tissue_prob : double, optional
         Minimum probability to qualify as tissue pixel. Default value = 0.05.
 
     Returns
     -------
-    Mask : array_like
+    im_mask : array_like
         A binarized version of `I` where foreground (tissue) has value '1'.
 
     See Also
@@ -55,13 +56,14 @@ def simple_mask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
     """
 
     # convert image to grayscale, flatten and sample
-    I = 255 * color.rgb2gray(I)
-    I = I.astype(np.uint8)
-    sI = I.flatten()[:, np.newaxis]
-    sI = sI[np.random.uniform(1, sI.size, (Percent * I.size,)).astype(int)]
+    im_rgb = 255 * color.rgb2gray(im_rgb)
+    im_rgb = im_rgb.astype(np.uint8)
+    sI = im_rgb.flatten()[:, np.newaxis]
+    sI = sI[np.random.uniform(1, sI.size,
+                              (percent * im_rgb.size,)).astype(int)]
 
     # kernel-density smoothed histogram
-    KDE = KernelDensity(kernel='gaussian', bandwidth=BW).fit(sI)
+    KDE = KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(sI)
     xHist = np.linspace(0, 255, 256)[:, np.newaxis]
     yHist = np.exp(KDE.score_samples(xHist))[:, np.newaxis]
     yHist = yHist / sum(yHist)
@@ -71,7 +73,8 @@ def simple_mask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
 
     # identify initial mean parameters for gaussian mixture distribution
     # take highest peak among remaining peaks as background
-    Peaks = signal.find_peaks_cwt(yHist.flatten(), np.arange(MinPeak, MaxPeak))
+    Peaks = signal.find_peaks_cwt(yHist.flatten(),
+                                  np.arange(min_peak_width, max_peak_width))
     BGPeak = Peaks[0]
     if len(Peaks) > 1:
         TissuePeak = Peaks[yHist[Peaks[1:]].argmax() + 1]
@@ -81,12 +84,12 @@ def simple_mask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
     # analyze background peak to estimate variance parameter via FWHM
     BGScale = estimate_variance(xHist, yHist, BGPeak)
     if BGScale == -1:
-        BGScale = DefaultBGScale
+        BGScale = bgnd_std
 
     # analyze tissue peak to estimate variance parameter via FWHM
     TissueScale = estimate_variance(xHist, yHist, TissuePeak)
     if TissueScale == -1:
-        TissueScale = DefaultTissueScale
+        TissueScale = tissue_std
 
     # solve for mixing parameter
     Mix = yHist[BGPeak] * (BGScale * (2 * np.pi)**0.5)
@@ -134,7 +137,7 @@ def simple_mask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
     ML = xHist[Candidates[Filtered[0]][0]]
 
     # identify limits for tissue model (MinProb, 1-MinProb)
-    Endpoints = np.asarray(Tissue.interval(1 - MinProb / 2))
+    Endpoints = np.asarray(Tissue.interval(1 - min_tissue_prob / 2))
 
     # invert threshold and tissue mean
     ML = 255 - ML
@@ -142,13 +145,14 @@ def simple_mask(I, BW=2, DefaultBGScale=2.5, DefaultTissueScale=30,
     Endpoints = np.sort(255 - Endpoints)
 
     # generate mask
-    Mask = (I <= ML) & (I >= Endpoints[0]) & (I <= Endpoints[1])
-    Mask = Mask.astype(np.uint8)
+    im_mask = (im_rgb <= ML) & (im_rgb >= Endpoints[0]) & \
+              (im_rgb <= Endpoints[1])
+    im_mask = im_mask.astype(np.uint8)
 
-    return Mask
+    return im_mask
 
 
-def estimate_variance(x, y, Peak):
+def estimate_variance(x, y, peak):
     """Estimates variance of a peak in a histogram using the FWHM of an
     approximate normal distribution.
     Starting from a user-supplied peak and histogram, this method traces down
@@ -161,11 +165,11 @@ def estimate_variance(x, y, Peak):
         vector of x-histogram locations.
     y : array_like
         vector of y-histogram locations.
-    Peak : double
+    peak : double
         index of peak in y to estimate variance of
     Returns
     -------
-    Scale : double
+    scale : double
         Standard deviation of normal distribution approximating peak. Value is
         -1 if fitting process fails.
     See Also
@@ -174,35 +178,35 @@ def estimate_variance(x, y, Peak):
     """
 
     # analyze peak to estimate variance parameter via FWHM
-    Left = Peak
-    while y[Left] > y[Peak] / 2 and Left >= 0:
+    Left = peak
+    while y[Left] > y[peak] / 2 and Left >= 0:
         Left -= 1
         if Left == -1:
             break
-    Right = Peak
-    while y[Right] > y[Peak] / 2 and Right < y.size:
+    Right = peak
+    while y[Right] > y[peak] / 2 and Right < y.size:
         Right += 1
         if Right == y.size:
             break
     if Left != -1 and Right != y.size:
         LeftSlope = y[Left + 1] - y[Left] / (x[Left + 1] - x[Left])
-        Left = (y[Peak] / 2 - y[Left]) / LeftSlope + x[Left]
+        Left = (y[peak] / 2 - y[Left]) / LeftSlope + x[Left]
         RightSlope = y[Right] - y[Right - 1] / (x[Right] - x[Right - 1])
-        Right = (y[Peak] / 2 - y[Right]) / RightSlope + x[Right]
-        Scale = (Right - Left) / 2.355
+        Right = (y[peak] / 2 - y[Right]) / RightSlope + x[Right]
+        scale = (Right - Left) / 2.355
     if Left == -1:
         if Right == y.size:
-            Scale = -1
+            scale = -1
         else:
             RightSlope = y[Right] - y[Right - 1] / (x[Right] - x[Right - 1])
-            Right = (y[Peak] / 2 - y[Right]) / RightSlope + x[Right]
-            Scale = 2 * (Right - x[Peak]) / 2.355
+            Right = (y[peak] / 2 - y[Right]) / RightSlope + x[Right]
+            scale = 2 * (Right - x[peak]) / 2.355
     if Right == y.size:
         if Left == -1:
-            Scale = -1
+            scale = -1
         else:
             LeftSlope = y[Left + 1] - y[Left] / (x[Left + 1] - x[Left])
-            Left = (y[Peak] / 2 - y[Left]) / LeftSlope + x[Left]
-            Scale = 2 * (x[Peak] - Left) / 2.355
+            Left = (y[peak] / 2 - y[Left]) / LeftSlope + x[Left]
+            scale = 2 * (x[peak] - Left) / 2.355
 
-    return Scale
+    return scale
