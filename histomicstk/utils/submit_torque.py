@@ -2,7 +2,7 @@ import os
 import subprocess
 
 
-def submit_torque(JobString, JobID, Mem=512):
+def submit_torque(job_string, job_id, mem=512):
     """Submits a job to a Torque scheduler using qsub.
     Takes as input a string representing the contents of the job script file.
     This string defines a Linux command line call to Python that invokes a
@@ -13,16 +13,16 @@ def submit_torque(JobString, JobID, Mem=512):
 
     Parameters
     ----------
-    JobString : str
+    job_string : str
         Formatted string to invoke python function defining arguments.
-    JobID : string
+    job_id : string
         String to assign name to job in PBS scheduler (-N option).
-    Mem : int, optional
+    mem : int, optional
         Free memory parameter for 'mem_free', in MB, as defined by qsub.
     """
 
     # create job file in working directory
-    Script = open('%s.pbs' % JobID, 'w')
+    Script = open('%s.pbs' % job_id, 'w')
 
     # add commands to CD to working directory
     Script.write('#!/bin/bash\n')
@@ -32,9 +32,9 @@ def submit_torque(JobString, JobID, Mem=512):
     Script.write('cd ${PBS_O_WORKDIR}\n\n')
 
     # print command to file
-    if JobString[-1] != '\n':
-        JobString += '\n'
-    Script.write(JobString)
+    if job_string[-1] != '\n':
+        job_string += '\n'
+    Script.write(job_string)
 
     # print wait command to job file
     # Script.write('wait $(ps | grep python | awk ''{print $2}'') && cat %s ' +
@@ -44,18 +44,18 @@ def submit_torque(JobString, JobID, Mem=512):
     Script.close()
 
     # submit job through qsub via system call
-    if not JobID[0].isalpha():
-        JobID = '.' + JobID
+    if not job_id[0].isalpha():
+        job_id = '.' + job_id
     try:
-        Result = subprocess.check_output('qsub -N %s %s.pbs' % (JobID, JobID),
+        result = subprocess.check_output('qsub -N %s %s.pbs' % (job_id, job_id),
                                          stderr=subprocess.STDOUT, shell=True)
     except subprocess.CalledProcessError as error:
-        Result = error
+        result = error
 
-    print('qsub -N %s %s.sh' % (JobID, JobID))
+    print('qsub -N %s %s.sh' % (job_id, job_id))
 
     # delete job file
-    os.remove('%s.pbs' % JobID)
+    os.remove('%s.pbs' % job_id)
 
     # return output
-    return Result
+    return result
