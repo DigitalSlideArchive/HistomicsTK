@@ -7,7 +7,8 @@ from .convert_schedule import convert_schedule
 from .simple_mask import simple_mask
 
 
-def sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
+def sample(slide_path, magnification, percent, tile_size,
+           mapping_mag=1.25, min_coverage=0.1):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -16,24 +17,24 @@ def sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
 
     Parameters
     ----------
-    File : str
+    slide_path : str
         path and filename of slide.
-    Magnification : double
+    magnification : double
         Desired magnification for sampling (defaults to native scan
         magnification).
-    Percent : double
+    percent : double
         Percentage of pixels to sample. Must be in the range [0, 1].
-    Tile : int
+    tile_size : int
         Tile size used in sampling high-resolution image.
-    MappingMag: double, optional
+    mapping_mag: double, optional
         low resolution magnification. Default value = 1.25.
-    Coverage: double, optional
+    min_coverage: double, optional
         minimum percent of tile covered by tissue to be included in sampling.
         Ranges between [0,1). Default value = 0.1.
 
     Returns
     -------
-    Pixels : array_like
+    pixels : array_like
         A 3xN matrix of RGB pixel values sampled from the slide at `File`.
 
     See Also
@@ -43,13 +44,13 @@ def sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
     """
 
     # open image
-    Slide = openslide.OpenSlide(File)
+    Slide = openslide.OpenSlide(slide_path)
 
     # generate tiling schedule for desired sampling magnification
-    Schedule = tiling_schedule(File, Magnification, Tile)
+    Schedule = tiling_schedule(slide_path, magnification, tile_size)
 
     # convert tiling schedule to low-resolution for tissue mapping
-    lrSchedule = convert_schedule(Schedule, MappingMag)
+    lrSchedule = convert_schedule(Schedule, mapping_mag)
 
     # get width, height of image at low-res reading magnification
     lrHeight = Slide.level_dimensions[lrSchedule.Level][1]
@@ -82,7 +83,7 @@ def sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
     LRMask[0:lrHeight, 0:lrWidth] = Mask
 
     # sample from tile at full resolution that contain more than 1/2 foreground
-    Pixels = list()
+    pixels = list()
     for i in range(Schedule.X.shape[0]):
         for j in range(Schedule.X.shape[1]):
             lrTileMask = LRMask[
@@ -90,42 +91,42 @@ def sample(File, Magnification, Percent, Tile, MappingMag=1.25, Coverage=0.1):
                 j * lrSchedule.Tout:(j + 1) * lrSchedule.Tout].astype(np.uint8)
             TissueCount = sum(lrTileMask.flatten().astype(
                 np.float)) / (lrSchedule.Tout**2)
-            if TissueCount > Coverage:
+            if TissueCount > min_coverage:
                 # region from desired magnfication
-                Tile = Slide.read_region((int(Schedule.X[i, j]),
-                                          int(Schedule.Y[i, j])),
-                                         Schedule.Level,
-                                         (Schedule.Tout, Schedule.Tout))
-                Tile = np.asarray(Tile)
-                Tile = Tile[:, :, :3]
+                tile_size = Slide.read_region((int(Schedule.X[i, j]),
+                                               int(Schedule.Y[i, j])),
+                                              Schedule.Level,
+                                              (Schedule.Tout, Schedule.Tout))
+                tile_size = np.asarray(tile_size)
+                tile_size = tile_size[:, :, :3]
 
                 # resize if desired magnification is not provided by the file
                 if Schedule.Factor != 1.0:
-                    Tile = scipy.misc.imresize(Tile,
-                                               Schedule.Factor,
-                                               interp='nearest')
+                    tile_size = scipy.misc.imresize(tile_size,
+                                                    Schedule.Factor,
+                                                    interp='nearest')
 
                 # upsample tile mask from low-resolution to high-resolution
                 TileMask = scipy.misc.imresize(lrTileMask,
-                                               Tile.shape,
+                                               tile_size.shape,
                                                interp='nearest')
 
                 # generate linear indices of pixels in mask
                 Indices = np.nonzero(TileMask.flatten())[0]
                 Sampling = np.random.uniform(0, Indices.size,
-                                             (np.ceil(Percent *
+                                             (np.ceil(percent *
                                                       Indices.size),))
                 Indices = Indices[Sampling.astype(np.int)]
 
                 # convert rgb tile to 3xN array and sample with linear indices
-                Vectorized = np.reshape(Tile,
-                                        (Tile.shape[0] * Tile.shape[1], 3))
-                Pixels.append(Vectorized[Indices, :].transpose())
+                Vectorized = np.reshape(tile_size,
+                                        (tile_size.shape[0] * tile_size.shape[1], 3))
+                pixels.append(Vectorized[Indices, :].transpose())
 
     # concatenate pixel values in list
     try:
-        Pixels = np.concatenate(Pixels, 1)
+        pixels = np.concatenate(pixels, 1)
     except ValueError:
         print "Sampling could not identify any foreground regions."
 
-    return Pixels
+    return pixels
