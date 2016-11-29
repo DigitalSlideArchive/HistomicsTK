@@ -58,6 +58,8 @@ def sample_pixels(slide_path, magnification, percent, tile_size,
 
     scale_highres = {'magnfication': magnification}
 
+    i = 0
+
     for tile in ts.tileIterator(
             scale=scale_highres,
             format=large_image.tilesource.TILE_FORMAT_NUMPY):
@@ -71,22 +73,26 @@ def sample_pixels(slide_path, magnification, percent, tile_size,
                     'units': 'base_pixels'}
 
         # get foreground mask for current tile at low resolution
-        rgn_lres = ts.convertRegionScale(rgn_hres, targetScale=scale_lowres)
+        rgn_lres = ts.convertRegionScale(rgn_hres,
+                                         targetScale=scale_lowres,
+                                         targetUnits='mag_pixels')
 
         left = rgn_lres['left']
-        right = rgn_lres['left'] + rgn_lres['width']
+        right = rgn_lres['left'] + np.floor(rgn_lres['width'])
         top = rgn_lres['top']
-        bottom = rgn_lres['top'] + rgn_lres['height']
+        bottom = rgn_lres['top'] + np.floor(rgn_lres['height'])
 
-        tile_fgnd_mask_lowres = fgnd_mask_lowres[left:right, top:bottom]
+        tile_fgnd_mask_lres = fgnd_mask_lowres[top:bottom, left:right]
 
         # skip tile if there is not enough foreground in the slide
-        if tile_fgnd_mask_lowres.mean() < min_coverage:
+        cur_fgnd_frac = tile_fgnd_mask_lres.mean()
+
+        if np.isnan(cur_fgnd_frac) or cur_fgnd_frac < min_coverage:
             continue
 
         # get tile foreground mask at resolution of current tile
         tile_fgnd_mask = scipy.misc.imresize(
-            tile_fgnd_mask_lowres,
+            tile_fgnd_mask_lres,
             im_tile.shape,
             interp='nearest'
         )
