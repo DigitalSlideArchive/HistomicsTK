@@ -12,7 +12,7 @@ from .hessian import hessian
 from .merge_colinear import merge_colinear
 from .fit_poisson_mixture import fit_poisson_mixture
 from .simple_mask import simple_mask
-from .sample import sample  # must import after SimpleMask
+from .sample_pixels import sample_pixels  # must import after SimpleMask
 
 # list out things that are available for public use
 __all__ = (
