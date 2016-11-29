@@ -73,9 +73,12 @@ def sample_pixels(slide_path, magnification, percent, tile_size,
         # get foreground mask for current tile at low resolution
         rgn_lres = ts.convertRegionScale(rgn_hres, targetScale=scale_lowres)
 
-        tile_fgnd_mask_lowres = \
-            fgnd_mask_lowres[rgn_lres['left']: rgn_lres['right'],
-                             rgn_lres['top']: rgn_lres['bottom']]
+        left = rgn_lres['left']
+        right = rgn_lres['left'] + rgn_lres['width']
+        top = rgn_lres['top']
+        bottom = rgn_lres['top'] + rgn_lres['height']
+
+        tile_fgnd_mask_lowres = fgnd_mask_lowres[left:right, top:bottom]
 
         # skip tile if there is not enough foreground in the slide
         if tile_fgnd_mask_lowres.mean() < min_coverage:
