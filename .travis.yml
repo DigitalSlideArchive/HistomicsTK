@@ -36,10 +36,10 @@ addons:
 before_install:
     - CACHE="$HOME/.cache" OPENSLIDE_VERSION="3.4.1" source .install-openslide.sh
 
-    - GIRDER_VERSION=492acc9a011a6cc784a9295e466946da13198587
+    - GIRDER_VERSION="v1.7.0"
     - GIRDER_WORKER_VERSION=f834d4d3701df7f6f3f64fcd7d3f22d15b3b1db2
     - LARGE_IMAGE_VERSION=35889a8480418d4854d9d8f19025d872872fe96c
-    - SLICER_CLI_WEB_VERSION=cd7b9f374f1fd07002bc40200f5e52323074e33e
+    - SLICER_CLI_WEB_VERSION=d7db8fb5e39c069b3e8d444ceebf50b2e544e67d
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path
