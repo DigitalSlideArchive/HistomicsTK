@@ -54,7 +54,7 @@ _.extend(histomicstk, {
 });
 
 (function () {
-    // Set histomicstk.rootPath which will serve as the path root
+    // Set slicer.rootPath which will serve as the path root
     // for all file dialogs.  This defaults to `/collections/TCGA`
     // but falls back to the logged in user model on error.
     var RootModel = girder.Model.extend({
@@ -75,7 +75,7 @@ _.extend(histomicstk, {
                         this.set(user);
                     }
                     girder.events.on('g:login', function () {
-                        histomicstk.rootPath.set(girder.currentUser.attributes);
+                        slicer.rootPath.set(girder.currentUser.attributes);
                     });
                 }, this));
             }, this));
@@ -83,7 +83,7 @@ _.extend(histomicstk, {
         }
     });
 
-    if (!histomicstk.rootPath) {
-        histomicstk.rootPath = new RootModel().fetch();
+    if (!slicer.rootPath) {
+        slicer.rootPath = new RootModel().fetch();
     }
 })();

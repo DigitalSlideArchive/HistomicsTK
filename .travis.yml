@@ -36,10 +36,11 @@ addons:
 before_install:
     - CACHE="$HOME/.cache" OPENSLIDE_VERSION="3.4.1" source .install-openslide.sh
 
-    - GIRDER_VERSION=156fc37ba6ca947c299d09b4d56ad9ee7efaf13f
-    - GIRDER_WORKER_VERSION=29c1f504e0f5335d5e6d370bb1077e4df4e05a78
-    - LARGE_IMAGE_VERSION=7219fcbece6a675f2bf762f8d9c76f1bd26f0859
-    - SLICER_CLI_WEB_VERSION=master
+    - GIRDER_VERSION=v1.7.0
+    - GIRDER_WORKER_VERSION=745cfcaa6328ca633ab45ce4bcb7bfc11cec453d
+    - LARGE_IMAGE_VERSION=master
+    - SLICER_CLI_WEB_VERSION=cd7b9f374f1fd07002bc40200f5e52323074e33e
+
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path
@@ -87,10 +88,12 @@ install:
     # https://github.com/pypa/pip/issues/2751
     - conda install --yes libgfortran==1.0 setuptools==19.4 ctk-cli==1.3.1 --file $main_path/requirements_c_conda.txt
     - pip install -r $main_path/requirements.txt -r $main_path/requirements_c.txt
+    - cd $main_path 
+    - python setup.py build_ext --inplace
     - cd $girder_path
     - pip install -U -r requirements.txt -r requirements-dev.txt setuptools==19.4
-    - pip install -U -r $large_image_path/requirements.txt setuptools==19.4
-    - pip install -U -r $slicer_cli_web_path/requirements.txt setuptools==19.4
+    - pip install -U -r $large_image_path/requirements.txt
+    - pip install -U -r $slicer_cli_web_path/requirements.txt 
     - npm install
     - cd $large_image_path
     - python setup.py install

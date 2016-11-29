@@ -2,7 +2,7 @@ import large_image
 import numpy as np
 import scipy
 
-from .SimpleMask import SimpleMask
+from .simple_mask import simple_mask
 
 
 def sample_pixels(slide_path, magnification, percent, tile_size,
@@ -51,7 +51,7 @@ def sample_pixels(slide_path, magnification, percent, tile_size,
     )
 
     # compute foreground mask of whole-slide image at low-res
-    fgnd_mask_lowres = SimpleMask(im_lowres)
+    fgnd_mask_lowres = simple_mask(im_lowres)
 
     # generate sample pixels
     sample_pixels = []
@@ -71,11 +71,19 @@ def sample_pixels(slide_path, magnification, percent, tile_size,
                     'units': 'base_pixels'}
 
         # get fgnd mask for current tile
-        rgn_lres = ts.convertRegionScale(rgn_hres, target_scale=scale_highres)
+        rgn_lres = ts.convertRegionScale(rgn_hres, target_scale=scale_lowres)
 
-        tile_fgnd_mask = scipy.misc.imresize(
+        tile_fgnd_mask_lowres = \
             fgnd_mask_lowres[rgn_lres['left']: rgn_lres['right'],
-                             rgn_lres['top']: rgn_lres['bottom']],
+                             rgn_lres['top']: rgn_lres['bottom']]
+
+        # skip tile if there is not enough foreground in the slide
+        if tile_fgnd_mask_lowres.mean() < min_coverage:
+            continue
+
+        # get tile foreground mask at resolution of current tile
+        tile_fgnd_mask = scipy.misc.imresize(
+            tile_fgnd_mask_lowres,
             im_tile.shape,
             interp='nearest'
         )

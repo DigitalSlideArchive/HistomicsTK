@@ -60,7 +60,7 @@ def reinhard_sample(slide_path, magnification, sample_percent, tile_size):
     Mu, Sigma = color_conversion.lab_mean_std(sample_pixels_rgb)
 
     # build named tuple for output
-    OutTuple = collections.namedtuple('Statistics', ['Mu', 'Sigma'])
-    Output = OutTuple(Mu, Sigma)
+    ReinhardStats = collections.namedtuple('ReinhardStats', ['Mu', 'Sigma'])
+    stats = ReinhardStats(Mu, Sigma)
 
-    return Output
+    return stats

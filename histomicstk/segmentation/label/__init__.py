@@ -5,35 +5,31 @@ masks produced by segmentation algorithms.
 
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
-from .CompactLabel import CompactLabel
-from .ComputeNeighborhoodMask import ComputeNeighborhoodMask
-from .CondenseLabel import CondenseLabel
-from .DeleteLabel import DeleteLabel
-from .LabelPerimeter import LabelPerimeter
-from .ShuffleLabel import ShuffleLabel
-from .TraceBounds import TraceBounds
+from .compact import compact
+from .dilate_xor import dilate_xor
+from .condense import condense
+from .delete import delete
+from .perimeter import perimeter
+from .shuffle import shuffle
+from .trace_boundaries import trace_boundaries
 
 # must be imported after CondenseLabel
-from .AreaOpenLabel import AreaOpenLabel
-from .SplitLabel import SplitLabel
-from .WidthOpenLabel import WidthOpenLabel
-
-# must be imported after TraceBounds
-from .TraceLabel import TraceLabel
+from .area_open import area_open
+from .split import split
+from .width_open import width_open
 
 # list out things that are available for public use
 __all__ = (
 
     # functions and classes of this package
-    'AreaOpenLabel',
-    'CompactLabel',
-    'ComputeNeighborhoodMask',
-    'CondenseLabel',
-    'DeleteLabel',
-    'LabelPerimeter',
-    'ShuffleLabel',
-    'SplitLabel',
-    'TraceBounds',
-    'TraceLabel',
-    'WidthOpenLabel',
+    'area_open',
+    'compact',
+    'dilate_xor',
+    'condense',
+    'delete',
+    'perimeter',
+    'shuffle',
+    'split',
+    'trace_boundaries',
+    'width_open',
 )
