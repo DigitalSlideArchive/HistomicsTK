@@ -70,7 +70,7 @@ def sample_pixels(slide_path, magnification, percent, tile_size,
                     'width': tile['gwidth'], 'height': tile['gheight'],
                     'units': 'base_pixels'}
 
-        # get fgnd mask for current tile
+        # get foreground mask for current tile at low resolution
         rgn_lres = ts.convertRegionScale(rgn_hres, target_scale=scale_lowres)
 
         tile_fgnd_mask_lowres = \
