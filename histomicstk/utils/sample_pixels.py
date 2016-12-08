@@ -5,7 +5,7 @@ import scipy
 from .simple_mask import simple_mask
 
 
-def sample_pixels(slide_path, magnification, percent, tile_size,
+def sample_pixels(slide_path, magnification, percent,
                   mapping_mag=1.25, min_coverage=0.1):
     """Generates a sampling of pixels from a whole-slide image.
 
@@ -22,8 +22,6 @@ def sample_pixels(slide_path, magnification, percent, tile_size,
         magnification).
     percent : double
         Percentage of pixels to sample. Must be in the range [0, 1].
-    tile_size : int
-        tile_size size used in sampling high-resolution image.
     mapping_mag: double, optional
         low resolution magnification. Default value = 1.25.
     min_coverage: double, optional
