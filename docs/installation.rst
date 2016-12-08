@@ -22,13 +22,15 @@ and pandas_. We recommend installing anaconda_ to ease the cross-platform
 installation of these packages all of which are listed in
 `requirments_c_conda.txt <https://github.com/DigitalSlideArchive/HistomicsTK/blob/master/requirements_c_conda.txt>`__.
 
-Once large_image is installed, HistomicsTK can be installed as follows::
+Once large_image is installed as a python package, HistomicsTK can be
+installed as follows::
 
     $ git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
     $ cd HistomicsTK
     $ conda install --yes libgfortran==1.0 setuptools==19.4 --file requirements_c_conda.txt
-    $ python setu.py build_ext --inplace
-    $ python setup.py install
+    $ pip install --no-cache-dir -r requirements.txt -r requirements_c.txt
+    $ python setup.py build_ext --inplace
+    $ pip install .
 
 We are working on releasing HistomicsTK on PyPI so it can easily be pip
 installed from there.
