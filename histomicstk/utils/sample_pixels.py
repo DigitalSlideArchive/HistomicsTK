@@ -49,7 +49,7 @@ def sample_pixels(slide_path, magnification, percent,
     )
 
     # compute foreground mask of whole-slide image at low-res
-    fgnd_mask_lowres = simple_mask(im_lowres)
+    fgnd_mask_lowres = htk.utils.simple_mask(im_lowres)
 
     # generate sample pixels
     sample_pixels = []
@@ -61,9 +61,6 @@ def sample_pixels(slide_path, magnification, percent,
     for tile in ts.tileIterator(
             scale=scale_highres,
             format=large_image.tilesource.TILE_FORMAT_NUMPY):
-
-        # get current tile image
-        im_tile = tile['tile'][:, :, :3]
 
         # get current region in base_pixels
         rgn_hres = {'left': tile['gx'], 'top': tile['gy'],
@@ -98,6 +95,9 @@ def sample_pixels(slide_path, magnification, percent,
         # generate linear indices of sample pixels in fgnd mask
         nz_ind = np.nonzero(tile_fgnd_mask.flatten())[0]
         sample_ind = np.random.choice(nz_ind, np.ceil(percent * nz_ind.size))
+
+        # get current tile image
+        im_tile = tile['tile'][:, :, :3]
 
         # convert rgb tile image to 3xN array
         tile_pix_rgb = np.reshape(im_tile,
