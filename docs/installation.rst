@@ -27,7 +27,8 @@ installed as follows::
 
     $ git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
     $ cd HistomicsTK
-    $ conda install --yes libgfortran==1.0 setuptools==19.4 --file requirements_c_conda.txt
+    $ conda install --add channels https://conda.binstar.org/cdeepakroy
+    $ conda install --yes libgfortran==1.0 ctk_cli==1.3.1 --file requirements_c_conda.txt
     $ pip install --no-cache-dir -r requirements.txt -r requirements_c.txt
     $ python setup.py build_ext --inplace
     $ pip install .
