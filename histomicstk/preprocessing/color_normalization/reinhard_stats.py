@@ -4,10 +4,9 @@ from histomicstk.utils import sample_pixels
 from histomicstk.preprocessing import color_conversion
 
 
-def reinhard_sample(slide_path, magnification, sample_percent):
-    """Samples a whole-slide-image to determine sample_pix_lab colorspace
-    statistics (mean, variance) needed to perform global Reinhard color
-    normalization.
+def reinhard_stats(slide_path, magnification, sample_percent):
+    """Samples a whole-slide-image to determine colorspace statistics (mean,
+    variance) needed to perform global Reinhard color normalization.
 
     Normalizing individual tiles independently creates a significant bias
     in the results of segmentation and feature extraction, as the color

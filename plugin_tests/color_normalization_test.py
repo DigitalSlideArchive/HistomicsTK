@@ -76,7 +76,7 @@ class ReinhardNormalizationTest(base.TestCase):
             'sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs'  # noqa
         )
 
-        wsi_mean, wsi_stddev = htk_cn.reinhard_sample(
+        wsi_mean, wsi_stddev = htk_cn.reinhard_stats(
             wsi_path, 20, 0.1)
 
         gt_mean = [8.8926656, -0.07490518, 0.02185799]
