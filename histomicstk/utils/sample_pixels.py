@@ -5,7 +5,7 @@ import scipy
 from .simple_mask import simple_mask
 
 
-def sample_pixels(slide_path, magnification, percent,
+def sample_pixels(slide_path, magnification, sample_percent,
                   mapping_mag=1.25, min_coverage=0.1):
     """Generates a sampling of pixels from a whole-slide image.
 
@@ -20,12 +20,12 @@ def sample_pixels(slide_path, magnification, percent,
     magnification : double
         Desired magnification for sampling (defaults to native scan
         magnification).
-    percent : double
+    sample_percent : double
         Percentage of pixels to sample. Must be in the range [0, 1].
     mapping_mag: double, optional
         low resolution magnification. Default value = 1.25.
     min_coverage: double, optional
-        minimum percent of tile covered by tissue to be included in sampling.
+        minimum sample_percent of tile covered by tissue to be included in sampling.
         Ranges between [0,1). Default value = 0.1.
 
     Returns
@@ -42,46 +42,48 @@ def sample_pixels(slide_path, magnification, percent,
     ts = large_image.getTileSource(slide_path)
 
     # get enitre whole-silde image at low resolution
-    scale_lowres = {'magnification': mapping_mag}
-    im_lowres, _ = ts.getRegion(
+    scale_lres = {'magnification': mapping_mag}
+    im_lres, _ = ts.getRegion(
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
-        scale=scale_lowres
+        scale=scale_lres
     )
+    im_lres = im_lres[:, :, :3]
 
     # compute foreground mask of whole-slide image at low-res
-    fgnd_mask_lowres = simple_mask(im_lowres)
+    im_fgnd_mask_lres = simple_mask(im_lres)
 
     # generate sample pixels
     sample_pixels = []
 
-    scale_highres = {'magnfication': magnification}
+    scale_hres = {'magnfication': magnification}
 
     for tile in ts.tileIterator(
-            scale=scale_highres,
+            scale=scale_hres,
             format=large_image.tilesource.TILE_FORMAT_NUMPY):
 
         # get current region in base_pixels
         rgn_hres = {'left': tile['gx'], 'top': tile['gy'],
-                    'width': tile['gwidth'], 'height': tile['gheight'],
+                    'right': tile['gx'] + tile['gwidth'],
+                    'bottom': tile['gy'] + tile['gheight'],
                     'units': 'base_pixels'}
 
         # get foreground mask for current tile at low resolution
         rgn_lres = ts.convertRegionScale(rgn_hres,
-                                         targetScale=scale_lowres,
+                                         targetScale=scale_lres,
                                          targetUnits='mag_pixels')
 
-        left = rgn_lres['left']
-        right = rgn_lres['left'] + np.floor(rgn_lres['width'])
-        top = rgn_lres['top']
-        bottom = rgn_lres['top'] + np.floor(rgn_lres['height'])
-
-        tile_fgnd_mask_lres = fgnd_mask_lowres[top:bottom, left:right]
+        tile_fgnd_mask_lres = \
+            im_fgnd_mask_lres[rgn_lres['top']:rgn_lres['bottom'],
+                              rgn_lres['left']:rgn_lres['right']]
 
         # skip tile if there is not enough foreground in the slide
         cur_fgnd_frac = tile_fgnd_mask_lres.mean()
 
-        if np.isnan(cur_fgnd_frac) or cur_fgnd_frac < min_coverage:
+        if np.isnan(cur_fgnd_frac) or cur_fgnd_frac <= min_coverage:
             continue
+
+        # get current tile image
+        im_tile = tile['tile'][:, :, :3]
 
         # get tile foreground mask at resolution of current tile
         tile_fgnd_mask = scipy.misc.imresize(
@@ -92,10 +94,8 @@ def sample_pixels(slide_path, magnification, percent,
 
         # generate linear indices of sample pixels in fgnd mask
         nz_ind = np.nonzero(tile_fgnd_mask.flatten())[0]
-        sample_ind = np.random.choice(nz_ind, np.ceil(percent * nz_ind.size))
-
-        # get current tile image
-        im_tile = tile['tile'][:, :, :3]
+        sample_ind = np.random.choice(nz_ind,
+                                      np.ceil(sample_percent * nz_ind.size))
 
         # convert rgb tile image to 3xN array
         tile_pix_rgb = np.reshape(im_tile,
@@ -106,8 +106,8 @@ def sample_pixels(slide_path, magnification, percent,
 
     # concatenate pixel values in list
     try:
-        sample_pixels = np.concatenate(sample_pixels, 1)
+        sample_pixels = np.concatenate(sample_pixels, 0)
     except ValueError:
         print "Sampling could not identify any foreground regions."
 
-    return sample_pixels
+    return sample_pixels.T
