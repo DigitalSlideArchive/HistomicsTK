@@ -49,14 +49,12 @@ def sample_pixels(slide_path, magnification, percent,
     )
 
     # compute foreground mask of whole-slide image at low-res
-    fgnd_mask_lowres = htk.utils.simple_mask(im_lowres)
+    fgnd_mask_lowres = simple_mask(im_lowres)
 
     # generate sample pixels
     sample_pixels = []
 
     scale_highres = {'magnfication': magnification}
-
-    i = 0
 
     for tile in ts.tileIterator(
             scale=scale_highres,
