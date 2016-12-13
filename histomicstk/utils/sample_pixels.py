@@ -6,7 +6,7 @@ from .simple_mask import simple_mask
 
 
 def sample_pixels(slide_path, magnification, sample_percent,
-                  mapping_mag=1.25, min_coverage=0.1):
+                  tissue_seg_mag=1.25, min_coverage=0.1):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -22,8 +22,9 @@ def sample_pixels(slide_path, magnification, sample_percent,
         magnification).
     sample_percent : double
         Percentage of pixels to sample. Must be in the range [0, 1].
-    mapping_mag: double, optional
-        low resolution magnification. Default value = 1.25.
+    tissue_seg_mag: double, optional
+        low resolution magnification at which foreground will be segmented.
+        Default value = 1.25.
     min_coverage: double, optional
         minimum sample_percent of tile covered by tissue to be included in sampling.
         Ranges between [0,1). Default value = 0.1.
@@ -42,7 +43,7 @@ def sample_pixels(slide_path, magnification, sample_percent,
     ts = large_image.getTileSource(slide_path)
 
     # get enitre whole-silde image at low resolution
-    scale_lres = {'magnification': mapping_mag}
+    scale_lres = {'magnification': tissue_seg_mag}
     im_lres, _ = ts.getRegion(
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         scale=scale_lres
