@@ -136,7 +136,8 @@ class DockerImageManagementTest(base.TestCase):
                     route = info['xmlspec']
                     resp = self.request(
                         path=route,
-                        user=self.admin)
+                        user=self.admin,
+                        isJson=False)
                     self.assertStatus(resp, 200)
                     xmlString = self.getBody(resp)
                     # TODO validate with xml schema
@@ -155,7 +156,8 @@ class DockerImageManagementTest(base.TestCase):
                     route = info['xmlspec']
                     resp = self.request(
                         path=route,
-                        user=self.admin)
+                        user=self.admin,
+                        isJson=False)
                     # xml route should have been deleted
                     self.assertStatus(resp, 400)
 
