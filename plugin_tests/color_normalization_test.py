@@ -69,18 +69,20 @@ class ReinhardNormalizationTest(base.TestCase):
         np.testing.assert_allclose(mean_nmzd, mean_ref, atol=1e-1)
         np.testing.assert_allclose(std_nmzd, std_ref, atol=1e-1)
 
-    def test_reinhard_sample(self):
+    def test_reinhard_stats(self):
 
         wsi_path = os.path.join(
             TEST_DATA_DIR,
             'sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs'  # noqa
         )
 
+        np.random.seed(1)
+
         wsi_mean, wsi_stddev = htk_cn.reinhard_stats(
             wsi_path, 20, 0.1)
 
-        gt_mean = [8.8926656, -0.07490518, 0.02185799]
-        gt_stddev = [0.62641097, 0.12579525, 0.02201708]
+        gt_mean = [8.88150931, -0.07665037, 0.02211699]
+        gt_stddev = [0.63423921, 0.12760392, 0.02212977]
 
         np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-3)
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-3)
