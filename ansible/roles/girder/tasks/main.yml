@@ -286,6 +286,7 @@
       public: yes
     state: present
   register: sample_images_folder
+  when: vagrant is defined
   tags: data_import
 
 - name: Import sample images into filesystem assetstore
