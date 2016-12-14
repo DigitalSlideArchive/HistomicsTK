@@ -49,9 +49,9 @@ def reinhard_stats(slide_path, magnification, sample_percent):
     sample_pixels_rgb = sample_pixels(slide_path, magnification,
                                       sample_percent)
 
-    # reshape the 3xN pixel array into a 1 x N x 3 image for lab_mean_std
-    sample_pixels_rgb = np.reshape(sample_pixels_rgb.transpose(),
-                                   (1, sample_pixels_rgb.shape[1], 3))
+    # reshape the Nx3 pixel array into a 1 x N x 3 image for lab_mean_std
+    sample_pixels_rgb = np.reshape(sample_pixels_rgb,
+                                   (1, sample_pixels_rgb.shape[0], 3))
 
     # compute mean and stddev of sample pixels in Lab space
     Mu, Sigma = color_conversion.lab_mean_std(sample_pixels_rgb)

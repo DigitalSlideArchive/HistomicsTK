@@ -32,7 +32,7 @@ def sample_pixels(slide_path, magnification, sample_percent,
     Returns
     -------
     Pixels : array_like
-        A 3xN matrix of RGB pixel values sampled from the whole-slide.
+        A Nx3 matrix of RGB pixel values sampled from the whole-slide.
 
     See Also
     --------
@@ -98,7 +98,7 @@ def sample_pixels(slide_path, magnification, sample_percent,
         sample_ind = np.random.choice(nz_ind,
                                       np.ceil(sample_percent * nz_ind.size))
 
-        # convert rgb tile image to 3xN array
+        # convert rgb tile image to Nx3 array
         tile_pix_rgb = np.reshape(im_tile,
                                   (im_tile.shape[0] * im_tile.shape[1], 3))
 
@@ -111,4 +111,4 @@ def sample_pixels(slide_path, magnification, sample_percent,
     except ValueError:
         print "Sampling could not identify any foreground regions."
 
-    return sample_pixels.T
+    return sample_pixels
