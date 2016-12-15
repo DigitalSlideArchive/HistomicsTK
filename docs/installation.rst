@@ -27,8 +27,8 @@ installed as follows::
 
     $ git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
     $ cd HistomicsTK
-    $ conda install --add channels https://conda.binstar.org/cdeepakroy
-    $ conda install --yes libgfortran==1.0 ctk_cli==1.3.1 --file requirements_c_conda.txt
+    $ conda config --add channels https://conda.binstar.org/cdeepakroy
+    $ conda install --yes libgfortran==1.0 ctk-cli==1.3.1 --file requirements_c_conda.txt
     $ pip install --no-cache-dir -r requirements.txt -r requirements_c.txt
     $ python setup.py build_ext --inplace
     $ pip install .
@@ -59,7 +59,9 @@ addition to HistomicsTK as follows:
 - ``git clone https://github.com/DigitalSlideArchive/HistomicsTK.git``
 - ``cd HistomicsTK && vagrant up``
 
-The Girder instance can then be accessed at http://localhost:8009.
+The Girder instance can then be accessed at http://localhost:8009. Any image
+placed in the sample_images subdirectory of the directory where HistomicsTK
+is cloned directory will be seen in the TCGA collection of Girder.
 
 The front-end UI that allows you to apply analysis modules in HistomicsTK's
 docker plugins on data stored in Girder can be accessed at
