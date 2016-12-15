@@ -83,5 +83,5 @@ class ReinhardNormalizationTest(base.TestCase):
         gt_mean = [8.88150931, -0.07665037, 0.02211699]
         gt_stddev = [0.63423921, 0.12760392, 0.02212977]
 
-        np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-3)
-        np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-3)
+        np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-2)
+        np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)
