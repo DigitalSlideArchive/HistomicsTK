@@ -142,8 +142,9 @@ var Visualization = View.extend({
             // (using a single image may require the ability to zoom out).
             clampBoundsX: false,
             clampBoundsY: false,
-            center: {x: (bounds.left + bounds.right) / 2,
-                     y: (bounds.top + bounds.bottom) / 2},
+            center: {
+                x: (bounds.left + bounds.right) / 2,
+                y: (bounds.top + bounds.bottom) / 2},
             zoom: minZoom,
             discreteZoom: false,
             interactor: interactor,
