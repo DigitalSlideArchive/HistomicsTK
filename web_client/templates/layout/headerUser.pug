@@ -1,0 +1,25 @@
+.g-user-text
+  if user
+    a.g-user-dropdown-link(data-toggle="dropdown", data-target="#g-user-action-menu")
+      | #[i.icon-user] #{user.get('login')}
+      i.icon-down-open
+    #g-user-action-menu.dropdown
+      ul.dropdown-menu(role="menu")
+        li(role="presentation")
+          a.g-my-folders(href=`/girder#jobs/user/${user.id}`, target='girder')
+            i.icon-tasks
+            | My jobs
+        li(role="presentation")
+          a.g-my-settings(href=`/girder#useraccount/${user.id}`, target='girder')
+            i.icon-cog
+            | My account
+        li.divider(role="presentation")
+        li(role="presentation")
+          a.g-logout
+            i.icon-logout
+            | Log out
+  else
+    a.g-register Register
+    .g-or-text or
+    a.g-login Log In
+      i.icon-login

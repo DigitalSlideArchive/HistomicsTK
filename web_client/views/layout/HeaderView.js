@@ -1,8 +1,11 @@
 import View from '../View';
 import HeaderUserView from './HeaderUserView';
+import HeaderImageView from './HeaderImageView';
 import router from '../../router';
+import events from '../../events';
 
 import headerTemplate from '../../templates/layout/header.pug';
+import '../../stylesheets/layout/header.styl';
 
 var HeaderView = View.extend({
     events: {
@@ -11,7 +14,12 @@ var HeaderView = View.extend({
         }
     },
 
-    render: function () {
+    initialize() {
+        this.listenTo(events, 'h:imageOpened', this._setImageText);
+        return View.prototype.initialize.apply(this, arguments);
+    },
+
+    render() {
         this.$el.html(headerTemplate());
 
         this.$('a[title]').tooltip({
@@ -20,9 +28,20 @@ var HeaderView = View.extend({
         });
 
         new HeaderUserView({
-            el: this.$('.g-current-user-wrapper'),
+            el: this.$('.h-current-user-wrapper'),
             parentView: this
         }).render();
+
+        new HeaderImageView({
+            el: this.$('.h-image-menu-wrapper'),
+            parentView: this
+        }).render();
+
+        return this;
+    },
+
+    _setImageText(img) {
+        console.log(img);
     }
 });
 
