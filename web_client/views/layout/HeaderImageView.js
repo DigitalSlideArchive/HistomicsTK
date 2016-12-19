@@ -7,6 +7,7 @@ import '../../stylesheets/layout/headerImage.styl';
 var HeaderImageView = View.extend({
     events: {
         'click .h-open-image': function (evt) {
+            events.trigger('h:openImageUi');
         }
     },
 
@@ -19,11 +20,9 @@ var HeaderImageView = View.extend({
     },
 
     render() {
-        var name = 'Open image...';
-        if (this.imageModel) {
-            name = this.imageModel.get('name');
-        }
-        this.$el.html(headerImageTemplate({name}));
+        this.$el.html(headerImageTemplate({
+            image: this.imageModel
+        }));
         return this;
     }
 });

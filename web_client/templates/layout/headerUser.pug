@@ -1,23 +1,24 @@
 if user
+  - var login = user.get('login');
   a.h-user-dropdown-link(data-toggle='dropdown')
-    | #[span.icon-user] #{user.get('login')} #[span.icon-down-open]
+    | #[span.icon-user] #{login} #[span.icon-down-open]
   ul.dropdown-menu(role='menu')
-    li(role='presentation')
+    li
       a.g-my-folders(href=`/girder#jobs/user/${user.id}`, target='girder')
         i.icon-tasks
         | My jobs
-    li(role='presentation')
+    li
       a.g-my-settings(href=`/girder#useraccount/${user.id}`, target='girder')
         i.icon-cog
         | My account
-    li.divider(role='presentation')
-    li(role='presentation')
+    li.divider
+    li
       a.g-logout
         i.icon-logout
         | Log out
 else
   p.navbar-text
-    a.g-register Register
+    a.navbar-link.g-register Register
     | #{' or '}
-    a.g-login Log In
+    a.navbar-link.g-login Log In
       i.icon-login
