@@ -16,7 +16,7 @@
     executable: /bin/bash
 
 - name: Install required conda packages
-  shell: . miniconda/bin/activate ./miniconda && conda install --yes anaconda-client libgfortran==1.0 setuptools==19.4 --file "{{ girder_root }}/plugins/HistomicsTK/requirements_c_conda.txt"
+  shell: . miniconda/bin/activate ./miniconda && conda install --yes anaconda-client libgfortran==1.0 setuptools>=19.4 --file "{{ girder_root }}/plugins/HistomicsTK/requirements_c_conda.txt"
   args:
     chdir: "{{ root_dir }}"
     executable: /bin/bash
@@ -28,7 +28,7 @@
     executable: /bin/bash
 
 - name: Ensure setuptools 19.4 in the local pip environment, too.
-  pip: name="setuptools==19.4"
+  pip: name="setuptools>=19.4"
   sudo: yes
 
 - name: Install girder dev requirements for the web client
