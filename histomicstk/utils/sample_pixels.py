@@ -36,8 +36,7 @@ def sample_pixels(slide_path, magnification, sample_percent,
 
     See Also
     --------
-    histomicstk.preprocessing.color_normalization.reinhard,
-    histomicstk.preprocessing.color_deconvolution.SparseColorDeconvolution
+    histomicstk.preprocessing.color_normalization.reinhard
     """
 
     ts = large_image.getTileSource(slide_path)
