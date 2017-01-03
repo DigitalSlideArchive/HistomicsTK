@@ -15,8 +15,6 @@ var FrontPageView = GirderFrontPageView.extend({
     },
 
     render: function () {
-        this.$el.addClass('h-body-nopad');
-
         this.$el.html(frontPageTemplate({
             apiRoot,
             staticRoot,

@@ -1,6 +1,31 @@
 .h-image-body
   height calc(100vh - 52px)
 
+  .h-image-controls-container
+    pointer-events none
+
+    position fixed
+    left 300px
+    width 46px
+    height calc(100vh - 52px)
+    margin-left -300px
+    overflow-y hidden
+    transition all 0.5s ease
+    z-index 1000
+
+    button
+      pointer-events auto
+
+    .h-image-controls
+      height 100%
+      pointer-events auto
+      overflow-y auto
+      background white
+
+  .h-image-controls-container.h-visible
+    width 346px
+
+
   .h-image-view-container
     height 100%
     width 100%
