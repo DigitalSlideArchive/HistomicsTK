@@ -1,31 +1,66 @@
 .h-image-body
-  height calc(100vh - 52px)
 
   .h-image-controls-container
-    pointer-events none
 
-    position fixed
-    left 300px
-    width 46px
+    .nav-tabs
+      position fixed
+      z-index 1000
+      float left
+      border-bottom 0
+
+      li
+        float none
+        margin 0
+
+        a
+          margin-right 0
+          border 0
+          border-radius 0
+          background-color #333
+
+          &:hover
+            background-color #444
+
+      li.active
+        a
+          background-color #fff
+          border 0
+
+          i
+            color #333
+
+      i
+        color #fff
+
+    .tab-content
+
+      .tab-pane
+        position fixed
+        height calc(100vh - 52px)
+        width 300px
+        padding-top 1.6rem
+        padding-bottom 1.6rem
+        padding-right 1.6rem
+        padding-left calc(50px + 1.6rem)
+        z-index 900
+        display none
+        background-color #fff
+        overflow-y auto
+
+      .active
+        display block
+
+
+  .h-image-view-body
     height calc(100vh - 52px)
-    margin-left -300px
-    overflow-y hidden
-    transition all 0.5s ease
-    z-index 1000
-
-    button
-      pointer-events auto
-
-    .h-image-controls
-      height 100%
-      pointer-events auto
-      overflow-y auto
-      background white
-
-  .h-image-controls-container.h-visible
-    width 346px
-
-
-  .h-image-view-container
-    height 100%
     width 100%
+    position absolute
+    top 52px
+    left 0
+
+    .h-image-view-container
+      height 100%
+      width 100%
+
+    .h-image-view-container:focus
+      border 0

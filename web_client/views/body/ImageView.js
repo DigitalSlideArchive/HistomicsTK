@@ -7,11 +7,7 @@ import imageTemplate from '../../templates/body/image.pug';
 import '../../stylesheets/body/image.styl';
 
 var ImageView = View.extend({
-    events: {
-        'click .h-expand-control': function (evt) {
-            this.$('.h-image-controls-container').toggleClass('h-visible');
-        }
-    },
+    events: {},
     initialize(settings) {
         this.viewerWidget = null;
         events.trigger('h:imageOpened', null);

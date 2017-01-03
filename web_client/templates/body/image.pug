@@ -1,6 +1,31 @@
 .h-image-body
   .h-image-controls-container
-    button.h-expand-control.pull-right.btn.btn-default(type='button')
-      i.icon-cog
-    .h-image-controls
-  .h-image-view-container
+
+    ul.nav.nav-tabs
+      li.active
+        a.h-close(href='#h-close-control', data-toggle='tab')
+          i.icon-cancel
+      li
+        a(href='#h-analysis-control', data-toggle='tab')
+          i.icon-cog-alt
+      li
+        a(href='#h-annotation-control', data-toggle='tab')
+          i.icon-pencil
+      li
+        a(href='#h-image-info-control', data-toggle='tab')
+          i.icon-info
+
+    .tab-content
+      #h-close-control.active
+      #h-analysis-control.tab-pane
+        | Open analysis button
+      #h-annotation-control.tab-pane
+        | Show annotations
+      #h-image-info-control.tab-pane
+        | Show image metadata
+
+
+
+
+  .h-image-view-body
+    .h-image-view-container
