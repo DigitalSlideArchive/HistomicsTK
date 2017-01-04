@@ -26,6 +26,13 @@ var ImageView = View.extend({
                 // store a reference to the underlying viewer
                 this.viewer = this.viewerWidget.viewer;
             });
+            this.$('[data-toggle="tab"]').tooltip({
+                trigger: 'hover',
+                placement: 'right',
+                animate: true,
+                delay: 500,
+                container: 'body'
+            });
         }
     },
     destroy() {
