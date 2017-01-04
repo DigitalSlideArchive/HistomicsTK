@@ -1,0 +1,8 @@
+.h-analysis-panel
+  button.btn.btn-default.h-open-analysis-button.dropdown-toggle(data-toggle='dropdown')
+    | Analyses
+    span.caret
+  ul.dropdown-menu
+    each image, imageName in analyses
+      li
+        a(href='#', data-image=imageName) #{imageName}
