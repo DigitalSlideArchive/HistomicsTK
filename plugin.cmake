@@ -61,12 +61,12 @@ add_python_test(segmentation_label
 )
 
 # front-end tests
-add_web_client_test(
-    HistomicsTK_visualization "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/visualization.js"
-    ENABLEDPLUGINS "HistomicsTK" "large_image")
-add_web_client_test(
-    HistomicsTK_body "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/body.js"
-    ENABLEDPLUGINS "HistomicsTK" "large_image")
+#add_web_client_test(
+#    HistomicsTK_visualization "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/visualization.js"
+#    ENABLEDPLUGINS "HistomicsTK" "large_image")
+#add_web_client_test(
+#    HistomicsTK_body "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/body.js"
+#    ENABLEDPLUGINS "HistomicsTK" "large_image")
 
 
 add_eslint_test(
