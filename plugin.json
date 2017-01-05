@@ -7,8 +7,5 @@
         "file": "Gruntfile.js"
     },
     "npm": {
-        "dependencies": {
-            "geojs": "^0.10.4"
-        }
     }
 }
