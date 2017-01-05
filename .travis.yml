@@ -94,13 +94,14 @@ before_install:
     - mkdir -p $HOME/.cache/node_modules || true
     - ln -sf $HOME/.cache/node_modules .
     - npm install -g npm
+    - npm install -g npm-install-retry
     - npm --version
     - npm prune
 
     - wget -O $build_path/install_miniconda.sh https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
     - bash $build_path/install_miniconda.sh -b -p $build_path/miniconda
     - source $build_path/miniconda/bin/activate $build_path/miniconda
-    - conda update --yes --all
+    - conda update --yes --quiet --all 'python<=2.7.12'
     - conda config --add channels https://conda.binstar.org/cdeepakroy
 
 install:
@@ -115,7 +116,7 @@ install:
     - pip install -U -r $slicer_cli_web_path/requirements.txt 
     - pip install "git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5" --force-reinstall --ignore-installed --upgrade
     - pip install Pillow --force-reinstall --ignore-installed --upgrade
-    - npm install
+    - npm-install-retry
     - cd $large_image_path
     - python setup.py install
 
