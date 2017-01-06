@@ -45,6 +45,10 @@
     - pandoc
     - pandoc-citeproc
 
+- name: Install node-gyp
+  shell: "npm install -g node-gyp-install && /usr/lib/node_modules/node-gyp-install/bin.js"
+  become: yes
+
 - name: Clone ctk-cli
   git:
     repo: git://github.com/cdeepakroy/ctk-cli.git
@@ -93,13 +97,22 @@
 - name: Install requests (needed to resolve conflict with docker-py)
   pip: name=requests version=2.10.0
   sudo: yes
-  
+
 - name: Install ctk-cli using pip
   pip:
     name: "{{ root_dir }}/ctk-cli"
     extra_args: "-e"
     state: present
   sudo: yes
+
+
+- name: Create directory for build
+  file: state=directory path="{{ root_dir }}/girder/clients/web/static/built"
+
+- name: Download fontello.zip
+  command: wget -O fontello.zip https://data.kitware.com/api/v1/file/57c5d1fc8d777f10f269dece/download
+  args:
+    chdir: "{{ root_dir }}/girder/clients/web/static/built"
 
 - name: Install girder using pip
   pip:
@@ -109,11 +122,23 @@
   sudo: yes
 
 - name: Install numpy (must be installed before large_image plugin)
-  pip: name=numpy version=1.10.2
+  pip: name=numpy version=1.11.2
+  sudo: yes
+
+- name: Install python libtiff from git
+  pip: name='git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5' extra_args='--force-reinstall --ignore-installed --upgrade --no-cache-dir' editable=False
   sudo: yes
 
 - name: Install our external girder plugins
   command: girder-install plugin -s {{ root_dir }}/slicer_cli_web {{ root_dir }}/large_image {{ root_dir }}/HistomicsTK {{ root_dir }}/digital_slide_archive
+  environment:
+    GIRDER_LOCAL_FONTELLO_ARCHIVE: "{{ root_dir }}/girder/clients/web/static/built/fontello.zip"
+  sudo: yes
+
+- name: Install large_image via setup
+  command: python setup.py install
+  args:
+    chdir: "{{ root_dir }}/large_image"
   sudo: yes
 
 - name: Install girder-client pip package
@@ -267,6 +292,7 @@
       public: yes
     state: present
   register: sample_images_folder
+  when: vagrant is defined
   tags: data_import
 
 - name: Import sample images into filesystem assetstore

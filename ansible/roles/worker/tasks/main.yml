@@ -50,8 +50,8 @@
 - name: Install girder_worker
   sudo: yes
   pip:
-    name: /opt/girder_worker[docker,girder_io]
-    extra_args: "-e"
+    name: ""
+    extra_args: "-e /opt/girder_worker[docker,girder_io]"
     state: present
 
 
