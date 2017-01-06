@@ -135,11 +135,10 @@
     GIRDER_LOCAL_FONTELLO_ARCHIVE: "{{ root_dir }}/girder/clients/web/static/built/fontello.zip"
   sudo: yes
 
-- name: Install large_image using pip
-  pip:
-    name: "{{ root_dir }}/large_image"
-    extra_args: "-e"
-    state: present
+- name: Install large_image via setup
+  command: python setup.py install
+  args:
+    chdir: "{{ root_dir }}/large_image"
   sudo: yes
 
 - name: Install girder-client pip package
