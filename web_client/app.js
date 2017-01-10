@@ -7,6 +7,7 @@ import { splitRoute } from 'girder/misc';
 
 import router from './router';
 import HeaderView from './views/layout/HeaderView';
+import bindRoutes from './routes';
 
 import layoutTemplate from './templates/layout/layout.pug';
 import './stylesheets/layout/layout.styl';
@@ -39,7 +40,9 @@ var App = GirderApp.extend({
         } else {
             router.navigate('/', {trigger: true});
         }
-    }
+    },
+
+    bindRoutes: bindRoutes
 });
 
 export default App;

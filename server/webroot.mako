@@ -26,6 +26,7 @@
         el: 'body',
         parentView: null
       });
+      app.bindRoutes();
       girder.events.trigger('g:appload.after');
     });
     </script>
