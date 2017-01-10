@@ -1,3 +1,6 @@
+import Backbone from 'backbone';
+import _ from 'underscore';
+
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 
 import annotationSelectorWidget from '../templates/annotationSelectorWidget.pug';
