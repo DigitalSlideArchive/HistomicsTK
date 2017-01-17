@@ -9,7 +9,7 @@ import '../../stylesheets/layout/header.styl';
 
 var HeaderView = View.extend({
     events: {
-        'click .g-app-title': function () {
+        'click #h-navbar-brand': function () {
             router.navigate('', {trigger: true});
         }
     },
