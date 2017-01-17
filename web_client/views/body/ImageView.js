@@ -11,6 +11,7 @@ var ImageView = View.extend({
     initialize(settings) {
         this.viewerWidget = null;
         events.trigger('h:imageOpened', null);
+        this.listenTo(events, 'query:analysis', this.openAnalysis);
         this.render();
     },
     render() {
@@ -35,6 +36,9 @@ var ImageView = View.extend({
         this.viewerWidget = null;
         events.trigger('h:imageOpened', null);
         return View.prototype.destroy.apply(this, arguments);
+    },
+    openAnalysis(q) {
+        console.log(q);
     }
 });
 
