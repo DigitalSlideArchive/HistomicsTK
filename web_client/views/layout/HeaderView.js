@@ -1,4 +1,5 @@
 import View from '../View';
+import HeaderAnalysesView from './HeaderAnalysesView';
 import HeaderUserView from './HeaderUserView';
 import HeaderImageView from './HeaderImageView';
 import router from '../../router';
@@ -34,6 +35,11 @@ var HeaderView = View.extend({
 
         new HeaderImageView({
             el: this.$('.h-image-menu-wrapper'),
+            parentView: this
+        }).render();
+
+        new HeaderAnalysesView({
+            el: this.$('.h-analyses-wrapper'),
             parentView: this
         }).render();
 

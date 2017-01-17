@@ -34,12 +34,6 @@ var AnalysisPanel = View.extend({
                 }
             }
         }));
-    },
-    fixPosition(button) {
-        var menu = button.next('.dropdown-menu');
-        var top = button.offset().top + button.outerHeight();
-        menu.css('top', top + 'px');
-        menu.css('left', button.offset().left + 'px');
     }
 });
 
