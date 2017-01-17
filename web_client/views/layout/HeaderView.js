@@ -3,7 +3,6 @@ import HeaderAnalysesView from './HeaderAnalysesView';
 import HeaderUserView from './HeaderUserView';
 import HeaderImageView from './HeaderImageView';
 import router from '../../router';
-import events from '../../events';
 
 import headerTemplate from '../../templates/layout/header.pug';
 import '../../stylesheets/layout/header.styl';
@@ -16,7 +15,6 @@ var HeaderView = View.extend({
     },
 
     initialize() {
-        this.listenTo(events, 'h:imageOpened', this._setImageText);
         return View.prototype.initialize.apply(this, arguments);
     },
 
@@ -44,10 +42,6 @@ var HeaderView = View.extend({
         }).render();
 
         return this;
-    },
-
-    _setImageText(img) {
-        console.log(img);
     }
 });
 
