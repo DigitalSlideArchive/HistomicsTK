@@ -1,6 +1,6 @@
 - name: Install package dependencies
   apt: name={{ item }} state=present
-  sudo: yes
+  become: true
   with_items:
     - build-essential
     - cmake
@@ -33,4 +33,4 @@
   command: make install
   args:
     chdir: "{{ root_dir }}/ITK-build"
-  sudo: yes
+  become: true

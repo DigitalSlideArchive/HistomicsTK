@@ -1,0 +1,32 @@
+FROM ubuntu:16.04
+MAINTAINER David Manthey <david.manthey@kitware.com>
+
+RUN apt-get update
+RUN apt-get install -y git python2.7-dev python-pip libssl-dev sudo net-tools vim
+RUN pip install -U pip
+RUN pip install -U ansible
+RUN adduser --disabled-password --gecos '' ubuntu && \
+    adduser ubuntu sudo && \
+    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+USER ubuntu
+WORKDIR /home/ubuntu
+RUN git clone https://github.com/DigitalSlideArchive/HistomicsTK
+WORKDIR /home/ubuntu/HistomicsTK
+ENV GIRDER_EXEC_USER ubuntu
+COPY . /home/ubuntu/HistomicsTK/ansible/.
+WORKDIR /home/ubuntu/HistomicsTK/ansible
+# RUN ansible-playbook -i inventory/local docker_ansible.yml --tags common
+
+# RUN ansible-playbook -i inventory/local docker_ansible.yml --tags openslide
+# RUN ansible-playbook -i inventory/local docker_ansible.yml --tags girder --extra-vars=docker=true
+RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=histomicstk
+
+WORKDIR /opt/histomicstk/girder
+EXPOSE 8080
+
+# If the environment vairable
+#   HOST_MONGO=true
+# is set, mongodb is added to the /etc/hosts as mapping to the docker host ip
+# address
+CMD sudo python /opt/histomicstk/set_hosts.py && \
+    python -m girder >/opt/logs/girder.log 2>&1

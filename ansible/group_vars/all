@@ -1,10 +1,11 @@
 ---
 ctk_cli_version: master
-girder_version: "v1.7.0"
-slicer_cli_web_version: master
-histomicstk_version: master
+girder_version: master
+slicer_cli_web_version: girder-2
+histomicstk_version: girder-2
 large_image_version: master
-dsa_version: master
+dsa_version: girder-2
 girder_worker_version: master
 itk_version: master
 mongo_dbpath: /mongodata
+mongo_worker_database: girder_worker

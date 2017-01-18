@@ -1,0 +1,206 @@
+---
+- name: Create directory for logs
+  file: state=directory path="{{ root_dir }}/logs"
+
+- name: Create directory for assetstore
+  file: state=directory path="{{ root_dir }}/assetstore"
+
+- name: Ensure files that may be shared are owned by the right user and are public
+  file:
+    path: "{{ item }}"
+    owner: "{{ girder_exec_user }}"
+    group: "{{ girder_exec_group }}"
+    mode: u=rwX,g=rX,o=rX
+    recurse: yes
+  with_items:
+    - "{{ root_dir }}/logs"
+    - "{{ root_dir }}/assetstore"
+  become: true
+
+- name: Restart girder as a service
+  service: name=girder state=restarted enabled=yes
+  become: true
+  when: docker is undefined
+
+- name: Wait for girder startup
+  wait_for:
+    port: "{{ girder_socket_port }}"
+    delay: 1
+
+- name: Ensure girder admin user exists
+  girder:
+    port: "{{ girder_socket_port }}"
+    user:
+      firstName: admin
+      lastName: admin
+      password: "{{ girder_admin_password }}"
+      login: "{{ girder_admin_user }}"
+      email: "{{ girder_admin_email }}"
+      admin: yes
+    state: present
+
+- name: Ensure worker user exists
+  girder:
+    port: "{{ girder_socket_port }}"
+    user:
+      firstName: Worker
+      lastName: Robot
+      password: "{{ girder_celery_password }}"
+      login: "{{ girder_celery_user }}"
+      email: "{{ girder_celery_email }}"
+    state: present
+
+- name: Ensure required plugins are enabled
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    plugins: "{{ girder_plugins }}"
+    state: present
+
+- name: Install girder web if necessary
+  command: girder-install web
+
+- name: Restart girder as a service to make sure our plugins are running
+  service: name=girder state=restarted enabled=yes
+  become: true
+  when: docker is undefined
+
+- name: Restart girder via web
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: "system/restart"
+  when: docker is defined
+
+- name: Wait for girder startup
+  wait_for:
+    port: "{{ girder_socket_port }}"
+    delay: 1
+
+- name: Set worker broker setting
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: system/setting
+      parameters:
+        key: worker.broker
+        value: "amqp://guest@{{ mq_private_ip }}//"
+
+- name: Set worker backend setting
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: system/setting
+      parameters:
+        key: worker.backend
+        value: "amqp://guest@{{ mq_private_ip }}//"
+
+- name: Set worker backend setting
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: system/setting
+      parameters:
+        key: worker.api_url
+        value: "{{ girder_api_url }}"
+
+- name: Set homepage markdown setting
+  girder:
+    port: "{{ girder_socket_port }}"
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    put:
+      path: system/setting
+      parameters:
+        key: homepage.markdown
+        value: |
+          # Digital Slide Archive
+          ---
+          ## Bioinformatics Platform
+
+          Welcome to the **Digital Slide Archive**!
+
+          Developers who want to use the Girder REST API should check out the [interactive web API docs](/api/v1).
+
+          The [HistomicsTK](/histomicstk) application is enabled.
+
+- name: Ensure the existence of the filesystem assetstore
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    assetstore:
+      name: default
+      type: filesystem
+      root: "{{ root_dir }}/assetstore"
+      current: true
+    state: present
+
+- name: Get assetstore list
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    get:
+      path: "/assetstore"
+  register: assetstore_list
+
+- name: Ensure the existence of the TCGA collection
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    collection:
+      name: TCGA
+      public: yes
+    state: present
+  register: tcga_collection
+  tags: data_import
+
+- name: Ensure the existence of the sample images folder
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    folder:
+      parentType: collection
+      parentId: "{{ tcga_collection['gc_return']['_id'] }}"
+      name: "Sample Images"
+      public: yes
+    state: present
+  register: sample_images_folder
+  when: (vagrant is defined) or (docker is defined)
+  tags: data_import
+
+- name: Import sample images into filesystem assetstore
+  girder:
+    username: "{{ girder_admin_user }}"
+    password: "{{ girder_admin_password }}"
+    port: "{{ girder_socket_port }}"
+    post:
+      path: "assetstore/{{ assetstore_list['gc_return'][0]['_id'] }}/import"
+      parameters:
+        importPath: /vagrant/sample_images
+        destinationType: folder
+        destinationId: "{{ sample_images_folder['gc_return']['_id'] }}"
+        fileExcludeRegex: "\\.gitignore"
+  when: vagrant is defined
+  tags: data_import
+
+- name: Create test running helper script
+  template: src=run_tests.sh.j2 dest=/home/vagrant/run_tests.sh mode=0755
+  when: vagrant is defined
+
+- name: Create test running helper script
+  template: src=run_tests.sh.j2 dest=/home/ubuntu/run_tests.sh mode=0755
+  when: docker is defined
+

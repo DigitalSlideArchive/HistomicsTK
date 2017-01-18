@@ -1,35 +1,35 @@
 ---
 - name: Copy the huge pages disablement script
   copy: src=files/disable-transparent-hugepages dest=/etc/init.d/disable-transparent-hugepages mode=0755 backup=no force=yes
-  sudo: yes
+  become: true
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: Make sure the huge pages script runs at boot time
   command: update-rc.d disable-transparent-hugepages defaults
-  sudo: yes
+  become: true
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: Run the huge pages script now
   command: /etc/init.d/disable-transparent-hugepages start
-  sudo: yes
+  become: true
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: Fetch GPG key for MongoDB
-  sudo: yes
+  become: true
   command: apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
 
 - name: Add MongoDB PPA
-  sudo: yes
+  become: true
   shell: echo "deb http://repo.mongodb.org/apt/ubuntu `lsb_release -c -s`/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
   args:
     creates: /etc/apt/sources.list.d/mongodb-org-3.2.list
 
 - name: Install latest MongoDB package
-  sudo: yes
+  become: true
   apt: pkg=mongodb-org update_cache=yes
 
 - name: Make mongo listen on private IP interface
-  sudo: yes
+  become: true
   lineinfile:
     dest: /etc/mongod.conf
     state: present
@@ -37,7 +37,7 @@
     line: "  bindIp: {{ mongo_private_ip }}"
 
 - name: Configure DB path to use
-  sudo: yes
+  become: true
   lineinfile:
     dest: /etc/mongod.conf
     state: present
@@ -45,7 +45,7 @@
     line: "  dbPath: {{ mongo_dbpath }}"
 
 - name: Ensure DB directory exists
-  sudo: yes
+  become: true
   file:
     path: "{{ mongo_dbpath }}"
     state: directory
@@ -53,7 +53,7 @@
     group: mongodb
 
 - name: Run mongo daemon
-  sudo: yes
+  become: true
   service: name=mongod state=restarted
 
 - name: Wait for Mongo startup

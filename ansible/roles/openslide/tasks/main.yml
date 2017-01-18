@@ -1,6 +1,6 @@
 - name: Install package dependencies
   apt: name={{ item }} state=present
-  sudo: yes
+  become: true
   with_items:
     - libssl-dev
     - python-pip
@@ -55,14 +55,14 @@
 
 # openjpeg
 - name: Download openjpeg
-  command: wget -O openjpeg-2.1.2.tar.gz https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  get_url:
+    url: https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz
+    dest: "{{ root_dir }}/openjpeg-2.1.2.tar.gz"
 
 - name: Extract openjpeg
-  command: tar -zxf openjpeg-2.1.2.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  unarchive:
+    src: "{{ root_dir }}/openjpeg-2.1.2.tar.gz"
+    dest: "{{ root_dir }}"
 
 - name: Configure openjpeg
   command: cmake .
@@ -78,22 +78,22 @@
   command: make install
   args:
     chdir: "{{ root_dir }}/openjpeg-2.1.2"
-  sudo: yes
+  become: true
 
 - name: Run ldconfig
   command: ldconfig
-  sudo: yes
+  become: true
 
 # libtiff
 - name: Download libtiff
-  command: wget http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  get_url:
+    url: http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz
+    dest: "{{ root_dir }}"
 
 - name: Extract libtiff
-  command: tar -zxf tiff-4.0.6.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  unarchive:
+    src: "{{ root_dir }}/tiff-4.0.6.tar.gz"
+    dest: "{{ root_dir }}"
 
 - name: Configure libtiff
   command: ./configure
@@ -109,22 +109,22 @@
   command: make install
   args:
     chdir: "{{ root_dir }}/tiff-4.0.6"
-  sudo: yes
+  become: true
 
 - name: Run ldconfig
   command: ldconfig
-  sudo: yes
+  become: true
 
 # Openslide
 - name: Download openslide
-  command: wget -O openslide-3.4.1.tar.gz https://github.com/openslide/openslide/archive/v3.4.1.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  get_url:
+    url: https://github.com/openslide/openslide/archive/v3.4.1.tar.gz
+    dest: "{{ root_dir }}/openslide-3.4.1.tar.gz"
 
 - name: Extract openslide
-  command: tar -zxf openslide-3.4.1.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  unarchive:
+    src: "{{ root_dir }}/openslide-3.4.1.tar.gz"
+    dest: "{{ root_dir }}"
 
 - name: Configure openslide
   shell: autoreconf -i && ./configure
@@ -140,22 +140,22 @@
   command: make install
   args:
     chdir: "{{ root_dir }}/openslide-3.4.1"
-  sudo: yes
+  become: true
 
 - name: Run ldconfig
   command: ldconfig
-  sudo: yes
+  become: true
 
 # vips
 - name: Download vips
-  command: wget -O vips-8.4.5.tar.gz http://www.vips.ecs.soton.ac.uk/supported/current/vips-8.4.5.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  get_url:
+    url: http://www.vips.ecs.soton.ac.uk/supported/current/vips-8.4.5.tar.gz
+    dest: "{{ root_dir }}/vips-8.4.5.tar.gz"
 
 - name: Extract vips
-  command: tar -zxf vips-8.4.5.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  unarchive:
+    src: "{{ root_dir }}/vips-8.4.5.tar.gz"
+    dest: "{{ root_dir }}"
 
 - name: Configure vips
   shell: ./configure
@@ -171,16 +171,16 @@
   command: make install
   args:
     chdir: "{{ root_dir }}/vips-8.4.5"
-  sudo: yes
+  become: true
 
 - name: Run ldconfig
   command: ldconfig
-  sudo: yes
+  become: true
 
 # Update python packages
 - name: Get the most recent version of pip
   pip: name=pip extra_args="-U"
-  sudo: yes
+  become: true
 
 - name: Purge pip cache
   command: |
@@ -188,7 +188,7 @@
     import pip.locations, shutil
     shutil.rmtree(pip.locations.USER_CACHE_DIR, True)
     '
-  sudo: yes
+  become: true
 
 - name: Reinstall python modules that depend on OpenJPEG and libtiff if they are installed.
   command: |
@@ -199,4 +199,4 @@
     ''  pip.main(["install", "--force-reinstall", "--ignore-installed",
     ''           "%s==%s" % (package["name"], package["version"])])
     '
-  sudo: yes
+  become: true
