@@ -1,57 +1,58 @@
 - name: Install package dependencies
-  apt: name={{ item }} state=present
-  become: true
-  with_items:
-    - libssl-dev
-    - python-pip
-    - python2.7-dev
-    - python-software-properties
+  apt:
+    state: present
+    name:
+      - libssl-dev
+      - python-pip
+      - python2.7-dev
+      - python-software-properties
 
-    - build-essential
-    - cmake
-    - cmake-curses-gui
-    - libtiff5-dev
-    - libjpeg8-dev
-    - zlib1g-dev
-    - libfreetype6-dev
-    - liblcms2-dev
-    - libwebp-dev
-    - tcl8.6-dev
-    - tk8.6-dev
-    - python-tk
-    - libvips-tools
-    - libglib2.0-dev
-    - libjpeg-dev
-    - libxml2-dev
-    - libpng12-dev
-    - autoconf
-    - automake
-    - libtool
-    - pkg-config
-    - libcairo2-dev
-    - libgdk-pixbuf2.0-dev
-    - libxml2-dev
-    - libsqlite3-dev
-    # To update vips
-    - build-essential
-    - gobject-introspection
-    - libcfitsio3-dev
-    - libexif-dev
-    - libfftw3-dev
-    - libgif-dev
-    - libgirepository1.0-dev
-    - libglib2.0-dev
-    - libgsf-1-dev
-    - libjpeg-turbo8-dev
-    - libmagick++-dev
-    - libmatio-dev
-    - liborc-0.4-dev
-    - libpango1.0-dev
-    - libxml2-dev
-    - pkg-config
-    - python-gi-dev
-    # Don't install libpoppler; it needs an older version of libtif
-    # - libpoppler-glib-dev
+      - build-essential
+      - cmake
+      - cmake-curses-gui
+      - libtiff5-dev
+      - libjpeg8-dev
+      - zlib1g-dev
+      - libfreetype6-dev
+      - liblcms2-dev
+      - libwebp-dev
+      - tcl8.6-dev
+      - tk8.6-dev
+      - python-tk
+      - libvips-tools
+      - libglib2.0-dev
+      - libjpeg-dev
+      - libxml2-dev
+      - libpng12-dev
+      - autoconf
+      - automake
+      - libtool
+      - pkg-config
+      - libcairo2-dev
+      - libgdk-pixbuf2.0-dev
+      - libxml2-dev
+      - libsqlite3-dev
+      # To update vips
+      - build-essential
+      - gobject-introspection
+      - libcfitsio3-dev
+      - libexif-dev
+      - libfftw3-dev
+      - libgif-dev
+      - libgirepository1.0-dev
+      - libglib2.0-dev
+      - libgsf-1-dev
+      - libjpeg-turbo8-dev
+      - libmagick++-dev
+      - libmatio-dev
+      - liborc-0.4-dev
+      - libpango1.0-dev
+      - libxml2-dev
+      - pkg-config
+      - python-gi-dev
+      # Don't install libpoppler; it needs an older version of libtif
+      # - libpoppler-glib-dev
+  become: true
 
 # openjpeg
 - name: Download openjpeg

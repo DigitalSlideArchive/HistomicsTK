@@ -1,9 +1,10 @@
 - name: Install pycurl and apt-transport-https package in order to use the apt_repository module and install from https
-  apt: name={{ item }} state=present
+  apt: 
+    name:
+      - python-pycurl
+      - apt-transport-https
+    state: present
   become: true
-  with_items:
-    - python-pycurl
-    - apt-transport-https
 
 - name: NodeJS | Add PPA key
   command: "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68576280"

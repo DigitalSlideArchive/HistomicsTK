@@ -1,13 +1,14 @@
 - name: Install package dependencies
-  apt: name={{ item }} state=present
+  apt:
+    name:
+      - build-essential
+      - cmake
+      - git
+      - python-pip
+      - python-software-properties
+      - python2.7-dev
+    state: present
   become: true
-  with_items:
-    - build-essential
-    - cmake
-    - git
-    - python-pip
-    - python-software-properties
-    - python2.7-dev
 
 - name: Clone ITK
   git:

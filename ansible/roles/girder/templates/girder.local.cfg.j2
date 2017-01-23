@@ -57,6 +57,6 @@ cache_python_memory_portion: 8
 #  cache_memcached_url is one or a list of memcached servers, such as
 #  ["127.0.0.1", "192.168.10.5"].  Default is "127.0.0.1".  You may want to
 #  edit options in /etc/memcached.conf as well.
-cache_memcached_url: "127.0.0.1"
+cache_memcached_url: "{{ memcached_url }}"
 cache_memcached_username: None
 cache_memcached_password: None

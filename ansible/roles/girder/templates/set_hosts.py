@@ -15,5 +15,7 @@ if os.environ.get('HOST_RMQ') == 'true':
     if 'rmq' not in [line.split()[-1] for line in hosts]:
         hosts.append('%s rmq' % hostip)
         changed = True
+hosts.append('%s dockerhost' % hostip)
+changed = True
 if changed:
     open('/etc/hosts', 'wb').write('\n'.join(hosts) + '\n')

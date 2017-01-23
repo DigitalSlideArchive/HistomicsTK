@@ -16,19 +16,21 @@
     state: present
 
 - name: Install worker dependencies
+  apt: 
+    update_cache: yes
+    name:
+      - libffi-dev
+      - libssl-dev
+      - python-pip
+      - python-dev
+      - git
+      - libjpeg-dev
+      - libfreetype6-dev
+      - zlib1g-dev
+      - libpng-dev
+      - docker-engine
+    state: present
   become: true
-  apt: update_cache=yes name={{ item }} state=present
-  with_items:
-    - libffi-dev
-    - libssl-dev
-    - python-pip
-    - python-dev
-    - git
-    - libjpeg-dev
-    - libfreetype6-dev
-    - zlib1g-dev
-    - libpng-dev
-    - docker-engine
 
 - name: Start docker daemon
   service: name=docker state=started enabled=yes

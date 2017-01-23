@@ -51,7 +51,5 @@
     girder_api_url: http://histomicstk:8080/api/v1
     mongo_girder_database: girder
     mq_private_ip: rmq
-  tasks:
-    - debug: msg="Girder is running on port {{ girder_socket_port }}"
-      when: docker is undefined
+    memcached_url: dockerhost
 

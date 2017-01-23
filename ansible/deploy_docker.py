@@ -84,7 +84,8 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
                     BaseName: client.create_endpoint_config(aliases=[key])
                 }),
                 **params)
-        print('Starting %s - %s' % (image, name))
+        if ctn.get('State') != 'running':
+            print('Starting %s - %s' % (image, name))
         client.start(container=ctn.get('Id'))
     else:
         env['HOST_RMQ'] = 'true'
@@ -120,7 +121,8 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
                 }),
                 **params)
             os.system('docker update --restart=always %s' % ctn.get('Id'))
-        print('Starting %s - %s' % (image, name))
+        if ctn.get('State') != 'running':
+            print('Starting %s - %s' % (image, name))
         client.start(container=ctn.get('Id'))
     else:
         env['HOST_MONGO'] = 'true'
@@ -151,11 +153,6 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
             'hostname': key,
             'name': name,
             'environment': env.copy(),
-            'volumes': [
-                '/opt/logs',
-                '/usr/bin/docker',
-                '/var/run/docker.sock',
-            ]
         }
         print('Creating %s - %s' % (image, name))
         ctn = client.create_container(
@@ -165,7 +162,8 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
             }),
             **params)
         os.system('docker update --restart=always %s' % ctn.get('Id'))
-    print('Starting %s - %s' % (image, name))
+    if ctn.get('State') != 'running':
+        print('Starting %s - %s' % (image, name))
     client.start(container=ctn.get('Id'))
 
     key = 'histomicstk'
@@ -198,13 +196,6 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
             'name': name,
             'environment': env.copy(),
             'ports': [8080],
-            'volumes': [
-                '/opt/logs',
-                '/opt/histomicstk/assetstore',
-                '/opt/histomicstk/logs',
-                '/usr/bin/docker',
-                '/var/run/docker.sock',
-            ],
         }
         print('Creating %s - %s' % (image, name))
         ctn = client.create_container(
@@ -214,7 +205,8 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
             }),
             **params)
         os.system('docker update --restart=always %s' % ctn.get('Id'))
-    print('Starting %s - %s' % (image, name))
+    if ctn.get('State') != 'running':
+        print('Starting %s - %s' % (image, name))
     client.start(container=ctn.get('Id'))
 
     if provision:
@@ -240,8 +232,30 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
             if not kwargs.get('retry'):
                 raise Exception('Failed to provision')
 
-    # import pprint
-    # pprint.pprint(client.containers(all=True))
+
+def containers_status(**kwargs):
+    """"
+    Report the status of any containers we are responsible for.
+    """
+    client = docker.from_env()
+
+    keys = ImageList.keys()
+    results = []
+    for key in keys:
+        ctn = get_docker_image_and_container(client, key, False)
+        entry = {
+            'key': key,
+            'name': ImageList[key]['name'],
+            'state': 'not created',
+        }
+        if ctn:
+            entry['state'] = ctn.get('State', entry['state'])
+            entry['status'] = ctn.get('Status')
+        results.append(entry)
+    print_table(results, collections.OrderedDict([
+        ('name', 'Name'),
+        ('state', 'State'),
+        ('status', 'Status')]))
 
 
 def containers_stop(remove=False, **kwargs):
@@ -393,13 +407,47 @@ def network_remove(client, name):
     client.remove_network(net[0].get('Id'))
 
 
+def print_table(table, headers):
+    """
+    Format and print a table.
+
+    :param table: a list of dictionaries to display.
+    :param headers: an order dictionary of keys to display with the values
+        being the column headers.
+    """
+    widths = {}
+    for key in headers:
+        widths[key] = len(str(headers[key]))
+        for row in table:
+            if key in row:
+                widths[key] = max(widths[key], len(str(row[key])))
+    format = '  '.join(['%%-%ds' % widths[key] for key in headers])
+    print(format % tuple([headers[key] for key in headers]))
+    for row in table:
+        print(format % tuple([row.get(key, '') for key in headers]))
+
+
+def show_info():
+    """
+    Print additional installation notes.
+    """
+    print("""
+Running containers can be joined using a command like
+  docker exec -i -t histomicstk_histomicstk bash
+
+To allow docker containers to use memcached, make sure the host is running
+memcached and it is listening on the docker IP address (or listening on all
+addresses via -l 0.0.0.0).
+""")
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Provision and run HistomicsTK in docker containers.')
     parser.add_argument(
         'command',
         choices=['start', 'restart', 'stop', 'rm', 'remove', 'status',
-                 'build', 'provision'],
+                 'build', 'provision', 'info'],
         help='Start, stop, stop and remove, restart, check the status of, or '
              'build our own docker containers')
     parser.add_argument(
@@ -412,6 +460,9 @@ if __name__ == '__main__':
         '--db', '-d', dest='mongodb_path', default='~/.histomicstk/db',
         help='Database path (if a Mongo docker container is used).  Use '
              '"docker" for the default docker storage location.')
+    parser.add_argument(
+        '--info', action='store_true',
+        help='Show installation and usage notes.')
     parser.add_argument(
         '--logs', '--log', '-l', default='~/.histomicstk/logs',
         help='Logs path.')
@@ -426,8 +477,11 @@ if __name__ == '__main__':
         '--port', '-p', type=int, default=8080,
         help='Girder access port.')
     parser.add_argument(
-        '--retry', '-r', action='store_true',
+        '--retry', '-r', action='store_true', default=True,
         help='Retry builds and provisioning until they succeed')
+    parser.add_argument(
+        '--no-retry', '--once', '-1', dest='retry', action='store_false',
+        help='Do not retry builds and provisioning until they succeed')
     parser.add_argument(
         '--rmq', default='docker',
         choices=['docker', 'host'],
@@ -446,15 +500,18 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if args.info or args.command == 'info':
+        show_info()
+
     if args.command == 'provision':
         args.command = 'start'
         args.provision = True
 
     if args.build or args.command == 'build':
         images_build(args.retry)
-    if args.command in ('stop', 'restart', 'rm'):
-        containers_stop(remove=args.command in ('remove', 'rm'))
+    if args.command in ('stop', 'restart', 'rm', 'remove'):
+        containers_stop(remove=args.command in ('rm', 'remove'))
     if args.command in ('start', 'restart'):
         containers_start(**vars(args))
-    # if args.command in ('status', ) or args.status:
-    #     containers_status(**vars(args))
+    if args.command in ('status', ) or args.status:
+        containers_status(**vars(args))
