@@ -18,5 +18,6 @@ scipy==0.16.0
 scikit-learn==0.17.1
 pandas==0.18.1
 
-# We want Pillow 3.2.0.  Make sure conda doesn't change it on us.
-Pillow==3.2.0
+# Don't have conda install Pillow; we need a version that is linked against
+# our own libraries, and conda may not do that.
+# Pillow==3.2.0

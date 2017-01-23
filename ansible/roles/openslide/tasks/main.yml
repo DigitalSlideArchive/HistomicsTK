@@ -32,67 +32,90 @@
     - libgdk-pixbuf2.0-dev
     - libxml2-dev
     - libsqlite3-dev
+    # To update vips
+    - build-essential
+    - gobject-introspection
+    - libcfitsio3-dev
+    - libexif-dev
+    - libfftw3-dev
+    - libgif-dev
+    - libgirepository1.0-dev
+    - libglib2.0-dev
+    - libgsf-1-dev
+    - libjpeg-turbo8-dev
+    - libmagick++-dev
+    - libmatio-dev
+    - liborc-0.4-dev
+    - libpango1.0-dev
+    - libxml2-dev
+    - pkg-config
+    - python-gi-dev
+    # Don't install libpoppler; it needs an older version of libtif
+    # - libpoppler-glib-dev
 
+# openjpeg
 - name: Download openjpeg
-  command: wget -O openjpeg-1.5.2.tar.gz https://github.com/uclouvain/openjpeg/archive/version.1.5.2.tar.gz
+  command: wget -O openjpeg-2.1.2.tar.gz https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz
   args:
     chdir: "{{ root_dir }}"
 
 - name: Extract openjpeg
-  command: tar -zxf openjpeg-1.5.2.tar.gz
+  command: tar -zxf openjpeg-2.1.2.tar.gz
   args:
     chdir: "{{ root_dir }}"
 
 - name: Configure openjpeg
   command: cmake .
   args:
-    chdir: "{{ root_dir }}/openjpeg-version.1.5.2"
+    chdir: "{{ root_dir }}/openjpeg-2.1.2"
 
 - name: Build openjpeg
   command: make -j2
   args:
-    chdir: "{{ root_dir }}/openjpeg-version.1.5.2"
+    chdir: "{{ root_dir }}/openjpeg-2.1.2"
 
 - name: Install openjpeg
   command: make install
   args:
-    chdir: "{{ root_dir }}/openjpeg-version.1.5.2"
+    chdir: "{{ root_dir }}/openjpeg-2.1.2"
   sudo: yes
 
 - name: Run ldconfig
   command: ldconfig
   sudo: yes
 
+# libtiff
 - name: Download libtiff
-  command: wget http://download.osgeo.org/libtiff/tiff-4.0.3.tar.gz
+  command: wget http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz
   args:
     chdir: "{{ root_dir }}"
 
 - name: Extract libtiff
-  command: tar -zxf tiff-4.0.3.tar.gz
+  command: tar -zxf tiff-4.0.6.tar.gz
   args:
     chdir: "{{ root_dir }}"
 
 - name: Configure libtiff
   command: ./configure
   args:
-    chdir: "{{ root_dir }}/tiff-4.0.3"
+    chdir: "{{ root_dir }}/tiff-4.0.6"
 
 - name: Build libtiff
   command: make -j2
   args:
-    chdir: "{{ root_dir }}/tiff-4.0.3"
+    chdir: "{{ root_dir }}/tiff-4.0.6"
 
 - name: Install libtiff
   command: make install
   args:
-    chdir: "{{ root_dir }}/tiff-4.0.3"
+    chdir: "{{ root_dir }}/tiff-4.0.6"
   sudo: yes
 
 - name: Run ldconfig
   command: ldconfig
   sudo: yes
 
+# Openslide
 - name: Download openslide
   command: wget -O openslide-3.4.1.tar.gz https://github.com/openslide/openslide/archive/v3.4.1.tar.gz
   args:
@@ -123,6 +146,38 @@
   command: ldconfig
   sudo: yes
 
+# vips
+- name: Download vips
+  command: wget -O vips-8.4.5.tar.gz http://www.vips.ecs.soton.ac.uk/supported/current/vips-8.4.5.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+
+- name: Extract vips
+  command: tar -zxf vips-8.4.5.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+
+- name: Configure vips
+  shell: ./configure
+  args:
+    chdir: "{{ root_dir }}/vips-8.4.5"
+
+- name: Build vips
+  command: make
+  args:
+    chdir: "{{ root_dir }}/vips-8.4.5"
+
+- name: Install vips
+  command: make install
+  args:
+    chdir: "{{ root_dir }}/vips-8.4.5"
+  sudo: yes
+
+- name: Run ldconfig
+  command: ldconfig
+  sudo: yes
+
+# Update python packages
 - name: Get the most recent version of pip
   pip: name=pip extra_args="-U"
   sudo: yes
@@ -141,7 +196,7 @@
     import pip
     packages = ["Pillow", "libtiff"]
     for package in pip.commands.show.search_packages_info(packages):
-    ''  pip.main(["install", "--force-reinstall", "--ignore-installed", 
+    ''  pip.main(["install", "--force-reinstall", "--ignore-installed",
     ''           "%s==%s" % (package["name"], package["version"])])
     '
   sudo: yes

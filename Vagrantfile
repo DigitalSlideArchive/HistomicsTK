@@ -13,7 +13,19 @@ Vagrant.configure("2") do |config|
     # v.customize ["modifyhd", ":id", "--resize", 100 * 1024]
   end
 
-  config.vm.provision "ansible" do |ansible|
+  provisioner_type = if
+      Gem::Version.new(Vagrant::VERSION) > Gem::Version.new('1.8.1')
+    then
+      # Vagrant > 1.8.1 is required due to
+      # https://github.com/mitchellh/vagrant/issues/6793
+      "ansible_local"
+    else
+      "ansible"
+    end
+  config.vm.provision provisioner_type do |ansible|
     ansible.playbook = "ansible/vagrant.yml"
+    if provisioner_type == "ansible_local"
+      ansible.provisioning_path = "/vagrant"
+    end
   end
 end
