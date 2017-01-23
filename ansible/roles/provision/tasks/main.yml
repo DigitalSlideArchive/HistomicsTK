@@ -17,6 +17,20 @@
     - "{{ root_dir }}/assetstore"
   become: true
 
+- name: Create directory for mounts
+  file: state=directory path="{{ root_dir }}/mounts"
+  when: docker is defined
+
+- name: Ensure mounts directory is owned by the right user and is public
+  file:
+    path: "{{ root_dir }}/mounts"
+    owner: "{{ girder_exec_user }}"
+    group: "{{ girder_exec_group }}"
+    mode: u=rwX,g=rX,o=rX
+    recurse: false
+  become: true
+  when: docker is defined
+
 - name: Restart girder as a service
   service: name=girder state=restarted enabled=yes
   become: true

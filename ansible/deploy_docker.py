@@ -37,8 +37,8 @@ ImageList = collections.OrderedDict([
 ])
 
 
-def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
-                     mongodb_path='docker', provision=False, **kwargs):
+def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
+                     **kwargs):
     """
     Start all appropriate containers.  This is, at least, girder_worker and
     histomicstk.  Optionally, mongodb and rabbitmq are included.
@@ -51,8 +51,6 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
         host, otherwise the IP for the mongo instance, where DOCKER_HOST maps
         to the docker host and anything else is passed through.  The database
         is always 'girder'.
-    :param mongodb_path: the path to use for mongo when run in docker.  If
-        'docker', use an internal data directory.
     :param provision: if True, reprovision after starting.  Otherwise, only
         provision if the histomictk container is created.
     """
@@ -61,8 +59,178 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
 
     network_create(client, BaseName)
 
+    for key in ImageList:
+        func = 'container_start_' + key
+        if func in globals():
+            if globals()[func](client, env, key, port=port, rmq=rmq,
+                               mongo=mongo, provision=provision, **kwargs):
+                provision = True
+
+    if provision:
+        ctn = get_docker_image_and_container(client, 'histomicstk')
+        # docker exec -i -t histomicstk_histomicstk bash -c
+        # 'cd /home/ubuntu/HistomicsTK/ansible && ansible-playbook -i
+        # inventory/local docker_ansible.yml --extra-vars=docker=provision'
+        tries = 1
+        while True:
+            cmd = client.exec_create(
+                container=ctn.get('Id'),
+                cmd="bash -c 'cd /home/ubuntu/HistomicsTK/ansible && "
+                    "ansible-playbook -i inventory/local docker_ansible.yml "
+                    "--extra-vars=docker=provision'",
+                tty=True,
+            )
+            for output in client.exec_start(cmd.get('Id'), stream=True):
+                print(output.strip())
+            cmd = client.exec_inspect(cmd.get('Id'))
+            if not cmd['ExitCode']:
+                break
+            print('Error provisioning (try %d)' % tries)
+            tries += 1
+            if not kwargs.get('retry'):
+                raise Exception('Failed to provision')
+
+
+def container_start_histomicstk(client, env, key='histomicstk', port=8080,
+                                rmq='docker', mongo='docker', provision=False,
+                                **kwargs):
+    """
+    Start a histomicstk container.
+
+    :param client: docker client.
+    :param env: dictionary to store environment variables.
+    :param key: key within the ImageList.
+    :param port: default port to expose.
+    :param rmq: 'docker' to use a docker for rabbitmq, 'host' to use the docker
+        host, otherwise the IP for the rabbitmq instance, where DOCKER_HOST
+        maps to the docker host and anything else is passed through.
+    :param mongo: 'docker' to use a docker for mongo, 'host' to use the docker
+        host, otherwise the IP for the mongo instance, where DOCKER_HOST maps
+        to the docker host and anything else is passed through.  The database
+        is always 'girder'.
+    :param provision: if True, reprovision after starting.  Otherwise, only
+        provision if the histomictk container is created.
+    :returns: True if the container should be provisioned.
+    """
+    image = ImageList[key]['tag']
+    name = ImageList[key]['name']
+    ctn = get_docker_image_and_container(client, key)
+    if ctn is None:
+        provision = True
+        config = {
+            'restart_policy': {'name': 'always'},
+            'privileged': True,  # so we can run docker
+            'links': {},
+            'port_bindings': {8080: int(port)},
+            'binds': [
+                get_path(kwargs['logs']) + ':/opt/logs:rw',
+                get_path(kwargs['logs']) + ':/opt/histomicstk/logs:rw',
+                get_path(kwargs['assetstore']) + ':/opt/histomicstk/assetstore:rw',
+                '/usr/bin/docker:/usr/bin/docker',
+                '/var/run/docker.sock:/var/run/docker.sock',
+            ],
+        }
+        mountNumber = 1
+        for mount in kwargs.get('mount', []):
+            mountParts = mount.split(':')
+            if len(mountParts) < 2:
+                mountParts.append('')
+            if mountParts[1] == '':
+                mountParts[1] = 'mount%d' % mountNumber
+                mountNumber += 1
+            if '/' not in mountParts[1]:
+                mountParts[1] = '/opt/histomicstk/mounts/%s' % mountParts[1]
+            config['binds'].append(':'.join(mountParts))
+        if rmq == 'docker':
+            config['links'][ImageList['rmq']['name']] = 'rmq'
+        if mongo == 'docker':
+            config['links'][ImageList['mongodb']['name']] = 'mongodb'
+        params = {
+            'image': image,
+            'detach': True,
+            'hostname': key,
+            'name': name,
+            'environment': env.copy(),
+            'ports': [8080],
+        }
+        print('Creating %s - %s' % (image, name))
+        ctn = client.create_container(
+            host_config=client.create_host_config(**config),
+            networking_config=client.create_networking_config({
+                BaseName: client.create_endpoint_config(aliases=[key])
+            }),
+            **params)
+    if ctn.get('State') != 'running':
+        print('Starting %s - %s' % (image, name))
+    client.start(container=ctn.get('Id'))
+    return provision
+
+
+def container_start_mongodb(client, env, key='mongodb', mongo='docker',
+                            mongodb_path='docker', **kwargs):
+    """
+    Start a mongo container if desired, or set an environment variable so other
+    containers know where to find it.
+
+    :param client: docker client.
+    :param env: dictionary to store environment variables.
+    :param key: key within the ImageList.
+    :param mongo: 'docker' to use a docker for mongo, 'host' to use the docker
+        host, otherwise the IP for the mongo instance, where DOCKER_HOST maps
+        to the docker host and anything else is passed through.  The database
+        is always 'girder'.
+    :param mongodb_path: the path to use for mongo when run in docker.  If
+        'docker', use an internal data directory.
+    """
+    if mongo == 'docker':
+        image = ImageList[key]['tag']
+        name = ImageList[key]['name']
+        ctn = get_docker_image_and_container(client, key)
+        if ctn is None:
+            config = {
+                'restart_policy': {'name': 'always'},
+            }
+            params = {
+                'image': image,
+                'detach': True,
+                'hostname': key,
+                'name': name,
+            }
+            if mongodb_path != 'docker':
+                params['volumes'] = ['/data/db']
+                config['binds'] = [
+                    get_path(mongodb_path) + ':/data/db:rw',
+                ]
+            print('Creating %s - %s' % (image, name))
+            ctn = client.create_container(
+                host_config=client.create_host_config(**config),
+                networking_config=client.create_networking_config({
+                    BaseName: client.create_endpoint_config(aliases=[key])
+                }),
+                **params)
+        if ctn.get('State') != 'running':
+            print('Starting %s - %s' % (image, name))
+        client.start(container=ctn.get('Id'))
+    else:
+        env['HOST_MONGO'] = 'true'
+        # If we generate the girder worker config file on the fly, update this
+        # to something like:
+        # env['HOST_MONGO'] = mongo if mongo != 'host' else 'DOCKER_HOST'
+
+
+def container_start_rmq(client, env, key='rmq', rmq='docker', **kwargs):
+    """
+    Start a rabbitmq container if desired, or set an environment variable so
+    other containers know where to find it.
+
+    :param client: docker client.
+    :param env: dictionary to store environment variables.
+    :param key: key within the ImageList.
+    :param rmq: 'docker' to use a docker for rabbitmq, 'host' to use the docker
+        host, otherwise the IP for the rabbitmq instance, where DOCKER_HOST
+        maps to the docker host and anything else is passed through.
+    """
     if rmq == 'docker':
-        key = 'rmq'
         image = ImageList[key]['tag']
         name = ImageList[key]['name']
         ctn = get_docker_image_and_container(client, key)
@@ -93,44 +261,18 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
         # to something like:
         # env['HOST_RMQ'] = rmq if rmq != 'host' else 'DOCKER_HOST'
 
-    if mongo == 'docker':
-        key = 'mongodb'
-        image = ImageList[key]['tag']
-        name = ImageList[key]['name']
-        ctn = get_docker_image_and_container(client, key)
-        if ctn is None:
-            config = {
-                'restart_policy': {'name': 'always'},
-            }
-            params = {
-                'image': image,
-                'detach': True,
-                'hostname': key,
-                'name': name,
-            }
-            if mongodb_path != 'docker':
-                params['volumes'] = ['/data/db']
-                config['binds'] = [
-                    get_path(mongodb_path) + ':/data/db:rw',
-                ]
-            print('Creating %s - %s' % (image, name))
-            ctn = client.create_container(
-                host_config=client.create_host_config(**config),
-                networking_config=client.create_networking_config({
-                    BaseName: client.create_endpoint_config(aliases=[key])
-                }),
-                **params)
-            os.system('docker update --restart=always %s' % ctn.get('Id'))
-        if ctn.get('State') != 'running':
-            print('Starting %s - %s' % (image, name))
-        client.start(container=ctn.get('Id'))
-    else:
-        env['HOST_MONGO'] = 'true'
-        # If we generate the girder worker config file on the fly, update this
-        # to something like:
-        # env['HOST_MONGO'] = mongo if mongo != 'host' else 'DOCKER_HOST'
 
-    key = 'worker'
+def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
+    """
+    Start a girder_worker container.
+
+    :param client: docker client.
+    :param env: dictionary to store environment variables.
+    :param key: key within the ImageList.
+    :param rmq: 'docker' to use a docker for rabbitmq, 'host' to use the docker
+        host, otherwise the IP for the rabbitmq instance, where DOCKER_HOST
+        maps to the docker host and anything else is passed through.
+    """
     image = ImageList[key]['tag']
     name = ImageList[key]['name']
     ctn = get_docker_image_and_container(client, key)
@@ -161,76 +303,9 @@ def containers_start(port=8080, rmq='docker', mongo='docker',  # noqa
                 BaseName: client.create_endpoint_config(aliases=[key])
             }),
             **params)
-        os.system('docker update --restart=always %s' % ctn.get('Id'))
     if ctn.get('State') != 'running':
         print('Starting %s - %s' % (image, name))
     client.start(container=ctn.get('Id'))
-
-    key = 'histomicstk'
-    image = ImageList[key]['tag']
-    name = ImageList[key]['name']
-    ctn = get_docker_image_and_container(client, key)
-    if ctn is None:
-        provision = True
-        config = {
-            'restart_policy': {'name': 'always'},
-            'privileged': True,  # so we can run docker
-            'links': {},
-            'port_bindings': {8080: int(port)},
-            'binds': [
-                get_path(kwargs['logs']) + ':/opt/logs:rw',
-                get_path(kwargs['logs']) + ':/opt/histomicstk/logs:rw',
-                get_path(kwargs['assetstore']) + ':/opt/histomicstk/assetstore:rw',
-                '/usr/bin/docker:/usr/bin/docker',
-                '/var/run/docker.sock:/var/run/docker.sock',
-            ],
-        }
-        if rmq == 'docker':
-            config['links'][ImageList['rmq']['name']] = 'rmq'
-        if mongo == 'docker':
-            config['links'][ImageList['mongodb']['name']] = 'mongodb'
-        params = {
-            'image': image,
-            'detach': True,
-            'hostname': key,
-            'name': name,
-            'environment': env.copy(),
-            'ports': [8080],
-        }
-        print('Creating %s - %s' % (image, name))
-        ctn = client.create_container(
-            host_config=client.create_host_config(**config),
-            networking_config=client.create_networking_config({
-                BaseName: client.create_endpoint_config(aliases=[key])
-            }),
-            **params)
-        os.system('docker update --restart=always %s' % ctn.get('Id'))
-    if ctn.get('State') != 'running':
-        print('Starting %s - %s' % (image, name))
-    client.start(container=ctn.get('Id'))
-
-    if provision:
-        # docker exec -i -t histomicstk_histomicstk bash -c
-        # 'cd /home/ubuntu/HistomicsTK/ansible && ansible-playbook -i
-        # inventory/local docker_ansible.yml --extra-vars=docker=provision'
-        tries = 1
-        while True:
-            cmd = client.exec_create(
-                container=ctn.get('Id'),
-                cmd="bash -c 'cd /home/ubuntu/HistomicsTK/ansible && "
-                    "ansible-playbook -i inventory/local docker_ansible.yml "
-                    "--extra-vars=docker=provision'",
-                tty=True,
-            )
-            for output in client.exec_start(cmd.get('Id'), stream=True):
-                print(output.strip())
-            cmd = client.exec_inspect(cmd.get('Id'))
-            if not cmd['ExitCode']:
-                break
-            print('Error provisioning (try %d)' % tries)
-            tries += 1
-            if not kwargs.get('retry'):
-                raise Exception('Failed to provision')
 
 
 def containers_status(**kwargs):
@@ -461,6 +536,12 @@ if __name__ == '__main__':
         help='Database path (if a Mongo docker container is used).  Use '
              '"docker" for the default docker storage location.')
     parser.add_argument(
+        '--mount', '--extra', '-e', action='append',
+        help='Extra volumes to mount.  These are mounted internally at '
+        '/opt/histomicstk/mounts/(name), and are specified in the form '
+        '(host path)[:(name)[:ro]].  If no name is specified, mountX is used, '
+        'starting at mount1.')
+    parser.add_argument(
         '--info', action='store_true',
         help='Show installation and usage notes.')
     parser.add_argument(
@@ -489,6 +570,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--status', '-s', action='store_true',
         help='Report the status of relevant docker containers and images.')
+    parser.add_argument('-verbose', '-v', action='count', default=0)
 
     # Should we add an optional url or host value for rmq and mongo?
     # Should we allow installing packages in a local directory to make it
@@ -499,6 +581,8 @@ if __name__ == '__main__':
     # Add status command
 
     args = parser.parse_args()
+    if args.verbose >= 2:
+        print('Parsed arguments: %r' % args)
 
     if args.info or args.command == 'info':
         show_info()
