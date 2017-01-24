@@ -88,7 +88,7 @@
 
 - name: Clone large_image plugin
   git:
-    repo: git://github.com/DigitalSlideArchive/large_image.git
+    repo: git://github.com/girder/large_image.git
     dest: "{{ root_dir }}/large_image"
     accept_hostkey: yes
     version: "{{ large_image_version }}"

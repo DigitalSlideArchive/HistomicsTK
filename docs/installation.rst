@@ -74,7 +74,7 @@ HistomicsTK and its dependencies are installed at the location
 .. _Girder: http://girder.readthedocs.io/en/latest/
 .. _girder_worker: http://girder-worker.readthedocs.io/en/latest/
 .. _Kitware: http://www.kitware.com/
-.. _large_image: https://github.com/DigitalSlideArchive/large_image
+.. _large_image: https://github.com/girder/large_image
 .. _numpy: http://www.numpy.org/
 .. _pandas: http://pandas.pydata.org/
 .. _scikit-image: http://scikit-image.org/

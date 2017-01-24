@@ -82,7 +82,7 @@ Please refer to https://histomicstk.readthedocs.org for more information.
 .. _CherryPy: http://www.cherrypy.org/
 .. _Girder: http://girder.readthedocs.io/en/latest/
 .. _girder_worker: http://girder-worker.readthedocs.io/en/latest/
-.. _large_image: https://github.com/DigitalSlideArchive/large_image
+.. _large_image: https://github.com/girder/large_image
 .. _slicer_cli_web: https://github.com/girder/slicer_cli_web
 .. _slicer execution model: https://www.slicer.org/slicerWiki/index.php/Slicer3:Execution_Model_Documentation
 

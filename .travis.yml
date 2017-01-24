@@ -76,7 +76,7 @@ before_install:
     - pip install -U -r $girder_worker_path/requirements.txt -r $girder_worker_path/girder_worker/plugins/girder_io/requirements.txt
 
     - large_image_path=$girder_path/plugins/large_image
-    - git clone https://github.com/DigitalSlideArchive/large_image.git $large_image_path && git -C $large_image_path checkout $LARGE_IMAGE_VERSION
+    - git clone https://github.com/girder/large_image.git $large_image_path && git -C $large_image_path checkout $LARGE_IMAGE_VERSION
 
     - slicer_cli_web_path=$girder_path/plugins/slicer_cli_web
     - git clone https://github.com/girder/slicer_cli_web.git $slicer_cli_web_path && git -C $slicer_cli_web_path checkout $SLICER_CLI_WEB_VERSION
