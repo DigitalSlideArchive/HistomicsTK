@@ -97,8 +97,8 @@ def sample_pixels(slide_path, magnification, sample_percent,
 
         # generate linear indices of sample pixels in fgnd mask
         nz_ind = np.nonzero(tile_fgnd_mask.flatten())[0]
-        sample_ind = np.random.choice(nz_ind,
-                                      np.ceil(sample_percent * nz_ind.size))
+        num_samples = np.int(sample_percent * nz_ind.size)
+        sample_ind = np.random.choice(nz_ind, num_samples)
 
         # convert rgb tile image to Nx3 array
         tile_pix_rgb = np.reshape(im_tile,
