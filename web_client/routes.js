@@ -15,11 +15,6 @@ function bindRoutes() {
         var model = new ItemModel({_id: id});
         events.trigger('g:navigateTo', ImageView, { model });
     });
-
-    Router.route('image/:id/analysis/:analysis', function (id, analysis) {
-        var model = new ItemModel({_id: id});
-        events.trigger('g:navigateTo', ImageView, { model, analysis });
-    });
     return Router;
 }
 

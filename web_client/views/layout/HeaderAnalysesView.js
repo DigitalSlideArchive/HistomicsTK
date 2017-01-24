@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import { restRequest } from 'girder/rest';
 
+import events from '../../events';
 import router from '../../router';
 import View from '../View';
 import headerAnalysesTemplate from '../../templates/layout/headerAnalyses.pug';
@@ -13,17 +14,29 @@ var HeaderUserView = View.extend({
     events: {
         'click .h-analysis-item': '_setAnalysis'
     },
-    render() {
-        restRequest({
-            path: 'HistomicsTK/HistomicsTK/docker_image'
-        }).then((analyses) => {
-            if (_.keys(analyses || {}).length > 0) {
-                this.$el.html(headerAnalysesTemplate({
-                    analyses: analyses || {}
-                }));
-                this.$('.h-analyses-dropdown-link').submenupicker();
-            }
+    initialize() {
+        this.image = null;
+        this.listenTo(events, 'h:imageOpened', function (image) {
+            this.image = image;
+            this.render();
         });
+    },
+    render() {
+        if (this.image) {
+            this.$el.removeClass('hidden');
+            restRequest({
+                path: 'HistomicsTK/HistomicsTK/docker_image'
+            }).then((analyses) => {
+                if (_.keys(analyses || {}).length > 0) {
+                    this.$el.html(headerAnalysesTemplate({
+                        analyses: analyses || {}
+                    }));
+                    this.$('.h-analyses-dropdown-link').submenupicker();
+                }
+            });
+        } else {
+            this.$el.addClass('hidden');
+        }
         return this;
     },
     _setAnalysis(evt) {

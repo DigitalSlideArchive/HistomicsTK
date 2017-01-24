@@ -2,6 +2,7 @@ import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geoj
 
 import events from '../../events';
 import View from '../View';
+import ControlPanel from '../panels/ControlPanel';
 
 import imageTemplate from '../../templates/body/image.pug';
 import '../../stylesheets/body/image.styl';
@@ -11,7 +12,10 @@ var ImageView = View.extend({
     initialize(settings) {
         this.viewerWidget = null;
         events.trigger('h:imageOpened', null);
-        this.listenTo(events, 'query:analysis', this.openAnalysis);
+        this.controlPanel = new ControlPanel({
+            el: this.$('#h-app-control-panel-container'),
+            parentView: this
+        });
         this.render();
     },
     render() {
@@ -28,6 +32,7 @@ var ImageView = View.extend({
                 this.viewer = this.viewerWidget.viewer;
             });
         }
+        this.controlPanel.render();
     },
     destroy() {
         if (this.viewerWidget) {
@@ -36,9 +41,6 @@ var ImageView = View.extend({
         this.viewerWidget = null;
         events.trigger('h:imageOpened', null);
         return View.prototype.destroy.apply(this, arguments);
-    },
-    openAnalysis(q) {
-        console.log(q);
     }
 });
 
