@@ -1,8 +1,9 @@
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
+import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 
 import events from '../../events';
 import View from '../View';
-import ControlPanel from '../panels/ControlPanel';
+// import ControlPanel from '../panels/ControlPanel';
 
 import imageTemplate from '../../templates/body/image.pug';
 import '../../stylesheets/body/image.styl';
@@ -12,8 +13,7 @@ var ImageView = View.extend({
     initialize(settings) {
         this.viewerWidget = null;
         events.trigger('h:imageOpened', null);
-        this.controlPanel = new ControlPanel({
-            el: this.$('#h-app-control-panel-container'),
+        this.controlPanel = new SlicerPanelGroup({
             parentView: this
         });
         this.render();
@@ -32,7 +32,7 @@ var ImageView = View.extend({
                 this.viewer = this.viewerWidget.viewer;
             });
         }
-        this.controlPanel.render();
+        this.controlPanel.setElement('#h-control-panel-container').render();
     },
     destroy() {
         if (this.viewerWidget) {
