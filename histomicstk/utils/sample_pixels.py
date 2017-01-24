@@ -72,9 +72,12 @@ def sample_pixels(slide_path, magnification, sample_percent,
                                          targetScale=scale_lres,
                                          targetUnits='mag_pixels')
 
-        tile_fgnd_mask_lres = \
-            im_fgnd_mask_lres[rgn_lres['top']:rgn_lres['bottom'],
-                              rgn_lres['left']:rgn_lres['right']]
+        top = np.int(rgn_lres['top'])
+        bottom = np.int(rgn_lres['bottom'])
+        left = np.int(rgn_lres['left'])
+        right = np.int(rgn_lres['right'])
+
+        tile_fgnd_mask_lres = im_fgnd_mask_lres[top:bottom, left:right]
 
         # skip tile if there is not enough foreground in the slide
         cur_fgnd_frac = tile_fgnd_mask_lres.mean()
