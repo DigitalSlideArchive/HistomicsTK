@@ -6,9 +6,9 @@ import skimage.morphology
 
 from ctk_cli import CLIArgumentParser
 
-import histomicstk.preprocessing.color_conversion as htk_color_conversion
-import histomicstk.preprocessing.color_normalization as htk_color_normalization
-import histomicstk.preprocessing.color_deconvolution as htk_color_deconvolution
+import histomicstk.preprocessing.color_conversion as htk_ccvt
+import histomicstk.preprocessing.color_normalization as htk_cnorm
+import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.filters.shape as htk_shape_filters
 import histomicstk.segmentation as htk_seg
 import histomicstk.features as htk_features
@@ -16,7 +16,7 @@ import histomicstk.features as htk_features
 import logging
 logging.basicConfig()
 
-stainColorMap = {
+stain_color_map = {
     'hematoxylin': [0.65, 0.70, 0.29],
     'eosin':       [0.07, 0.99, 0.11],
     'dab':         [0.27, 0.57, 0.78],
@@ -31,7 +31,7 @@ def main(args):
     #
     print('>> Reading input image')
 
-    imInput = skimage.io.imread(args.inputImageFile)[:, :, :3]
+    im_input = skimage.io.imread(args.inputImageFile)[:, :, :3]
 
     #
     # Perform color normalization
@@ -39,25 +39,25 @@ def main(args):
     print('>> Performing color normalization')
 
     # compute mean and stddev of input in LAB color space
-    Mu, Sigma = htk_color_conversion.lab_mean_std(imInput)
+    mu, sigma = htk_ccvt.lab_mean_std(im_input)
 
     # perform reinhard normalization
-    imNmzd = htk_color_normalization.reinhard(imInput, Mu, Sigma)
+    im_nmzd = htk_cnorm.reinhard(im_input, mu, sigma)
 
     #
     # Perform color deconvolution
     #
     print('>> Performing color deconvolution')
 
-    stainColor_1 = stainColorMap[args.stain_1]
-    stainColor_2 = stainColorMap[args.stain_2]
-    stainColor_3 = stainColorMap[args.stain_3]
+    stain_color_1 = stain_color_map[args.stain_1]
+    stain_color_2 = stain_color_map[args.stain_2]
+    stain_color_3 = stain_color_map[args.stain_3]
 
-    W = np.array([stainColor_1, stainColor_2, stainColor_3]).T
+    w = np.array([stain_color_1, stain_color_2, stain_color_3]).T
 
-    imDeconvolved = htk_color_deconvolution.ColorDeconvolution(imNmzd, W)
+    im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
 
-    imNucleiStain = imDeconvolved.Stains[::2, ::2, 0].astype(np.float)
+    im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
 
     #
     # Perform nuclei segmentation
@@ -65,35 +65,35 @@ def main(args):
     print('>> Performing nuclei segmentation')
 
     # segment foreground
-    imFgndMask = sp.ndimage.morphology.binary_fill_holes(
-        imNucleiStain < args.foreground_threshold)
+    im_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
+        im_nuclei_stain < args.foreground_threshold)
 
     # run adaptive multi-scale LoG filter
-    imLog = htk_shape_filters.clog(imNucleiStain, imFgndMask,
-                                   sigma_min=args.min_radius * np.sqrt(2),
-                                   sigma_max=args.max_radius * np.sqrt(2))
+    im_log = htk_shape_filters.clog(im_nuclei_stain, im_fgnd_mask,
+                                    sigma_min=args.min_radius * np.sqrt(2),
+                                    sigma_max=args.max_radius * np.sqrt(2))
 
-    imNucleiSegMask, Seeds, Max = htk_seg.nuclear.max_clustering(
-        imLog, imFgndMask, args.local_max_search_radius)
+    im_nuclei_seg_mask, seeds, max = htk_seg.nuclear.max_clustering(
+        im_log, im_fgnd_mask, args.local_max_search_radius)
 
     # filter out small objects
-    imNucleiSegMask = htk_seg.label.area_open(
-        imNucleiSegMask, args.min_nucleus_area).astype(np.int)
+    im_nuclei_seg_mask = htk_seg.label.area_open(
+        im_nuclei_seg_mask, args.min_nucleus_area).astype(np.int)
 
     #
     # Perform feature extraction
     #
     print('>> Performing feature extraction')
 
-    im_nuclei = imDeconvolved.Stains[::2, ::2, 0]
+    im_nuclei = im_stains[:, :, 0]
 
     if args.cytoplasm_features:
-        im_cytoplasm = imDeconvolved.Stains[::2, ::2, 1]
+        im_cytoplasm = im_stains[:, :, 1]
     else:
         im_cytoplasm = None
 
     df = htk_features.ComputeNucleiFeatures(
-        imNucleiSegMask, im_nuclei, im_cytoplasm,
+        im_nuclei_seg_mask, im_nuclei, im_cytoplasm,
         fsd_bnd_pts=args.fsd_bnd_pts,
         fsd_freq_bins=args.fsd_freq_bins,
         cyto_width=args.cyto_width,

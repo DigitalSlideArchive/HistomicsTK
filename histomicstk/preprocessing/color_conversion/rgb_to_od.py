@@ -19,8 +19,8 @@ def rgb_to_od(im_rgb):
     See Also
     --------
     histomicstk.preprocessing.color_conversion.od_to_rgb,
-    histomicstk.preprocessing.color_deconvolution.ColorDeconvolution,
-    histomicstk.preprocessing.color_deconvolution.ColorConvolution
+    histomicstk.preprocessing.color_deconvolution.color_deconvolution,
+    histomicstk.preprocessing.color_deconvolution.color_convolution
     """
 
     # convert to optical density and rescale to [0, 255.0]

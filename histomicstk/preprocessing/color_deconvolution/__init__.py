@@ -4,19 +4,19 @@ the stains of histopathology images.
 """
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
-from .ColorConvolution import ColorConvolution
-from .ComplementStainMatrix import ComplementStainMatrix
-from .SparseColorDeconvolution import SparseColorDeconvolution
+from .color_convolution import color_convolution
+from .complement_stain_matrix import complement_stain_matrix
+from .sparse_color_deconvolution import sparse_color_deconvolution
 
 # must be imported after ComplementStainMatrix
-from .ColorDeconvolution import ColorDeconvolution
+from .color_deconvolution import color_deconvolution
 
 # list out things that are available for public use
 __all__ = (
 
     # functions and classes of this package
-    'ColorConvolution',
-    'ColorDeconvolution',
-    'ComplementStainMatrix',
-    'SparseColorDeconvolution',
+    'color_convolution',
+    'color_deconvolution',
+    'complement_stain_matrix',
+    'sparse_color_deconvolution',
 )

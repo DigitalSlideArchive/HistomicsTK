@@ -36,8 +36,7 @@ def sample_pixels(slide_path, magnification, sample_percent,
 
     See Also
     --------
-    histomicstk.preprocessing.color_normalization.reinhard,
-    histomicstk.preprocessing.color_deconvolution.SparseColorDeconvolution
+    histomicstk.preprocessing.color_normalization.reinhard
     """
 
     ts = large_image.getTileSource(slide_path)
@@ -73,9 +72,12 @@ def sample_pixels(slide_path, magnification, sample_percent,
                                          targetScale=scale_lres,
                                          targetUnits='mag_pixels')
 
-        tile_fgnd_mask_lres = \
-            im_fgnd_mask_lres[rgn_lres['top']:rgn_lres['bottom'],
-                              rgn_lres['left']:rgn_lres['right']]
+        top = np.int(rgn_lres['top'])
+        bottom = np.int(rgn_lres['bottom'])
+        left = np.int(rgn_lres['left'])
+        right = np.int(rgn_lres['right'])
+
+        tile_fgnd_mask_lres = im_fgnd_mask_lres[top:bottom, left:right]
 
         # skip tile if there is not enough foreground in the slide
         cur_fgnd_frac = tile_fgnd_mask_lres.mean()
@@ -95,8 +97,8 @@ def sample_pixels(slide_path, magnification, sample_percent,
 
         # generate linear indices of sample pixels in fgnd mask
         nz_ind = np.nonzero(tile_fgnd_mask.flatten())[0]
-        sample_ind = np.random.choice(nz_ind,
-                                      np.ceil(sample_percent * nz_ind.size))
+        num_samples = np.int(sample_percent * nz_ind.size)
+        sample_ind = np.random.choice(nz_ind, num_samples)
 
         # convert rgb tile image to Nx3 array
         tile_pix_rgb = np.reshape(im_tile,

@@ -1,10 +1,10 @@
 from histomicstk.preprocessing import color_conversion
-from .ComplementStainMatrix import ComplementStainMatrix
+from .complement_stain_matrix import complement_stain_matrix
 import collections
 import numpy
 
 
-def ColorDeconvolution(I, W):
+def color_deconvolution(im_rgb, w):
     """Performs color deconvolution.
     The given RGB Image `I` is first first transformed into optical density
     space, and then projected onto the stain vectors in the columns of the
@@ -12,13 +12,13 @@ def ColorDeconvolution(I, W):
 
     For deconvolving H&E stained image use:
 
-    `W` = array([[0.650, 0.072, 0], [0.704, 0.990, 0], [0.286, 0.105, 0]])
+    `w` = array([[0.650, 0.072, 0], [0.704, 0.990, 0], [0.286, 0.105, 0]])
 
     Parameters
     ----------
-    I : array_like
+    im_rgb : array_like
         Input RGB Image that needs to be deconvolved.
-    W : array_like
+    w : array_like
         A 3x3 matrix containing the color vectors in columns.
         For two stain images the third column is zero and will be
         complemented using cross-product. Atleast two of the three
@@ -34,46 +34,46 @@ def ColorDeconvolution(I, W):
     StainsFloat : array_like
         An intensity image of deconvolved stains that is unbounded,
         suitable for reconstructing color images of deconvolved stains
-        with ColorConvolution.
-    Wc : array_like
+        with color_convolution.
+    wc : array_like
         A 3x3 complemented stain matrix. Useful for color image
-        reconstruction with ColorConvolution.
+        reconstruction with color_convolution.
 
     See Also
     --------
-    histomicstk.preprocessing.color_deconvolution.ComplementStainMatrix,
-    histomicstk.preprocessing.color_deconvolution.ColorConvolution
+    histomicstk.preprocessing.color_deconvolution.complement_stain_matrix,
+    histomicstk.preprocessing.color_deconvolution.color_convolution
     histomicstk.preprocessing.color_conversion.rgb_to_od
     histomicstk.preprocessing.color_conversion.od_to_rgb
     """
 
     # complement stain matrix if needed
-    if numpy.linalg.norm(W[:, 2]) <= 1e-16:
-        Wc = ComplementStainMatrix(W)
+    if numpy.linalg.norm(w[:, 2]) <= 1e-16:
+        wc = complement_stain_matrix(w)
     else:
-        Wc = W.copy()
+        wc = w.copy()
 
     # normalize stains to unit-norm
-    for i in range(Wc.shape[1]):
-        Norm = numpy.linalg.norm(Wc[:, i])
+    for i in range(wc.shape[1]):
+        Norm = numpy.linalg.norm(wc[:, i])
         if Norm >= 1e-16:
-            Wc[:, i] /= Norm
+            wc[:, i] /= Norm
 
     # invert stain matrix
-    Q = numpy.linalg.inv(Wc)
+    Q = numpy.linalg.inv(wc)
 
     # transform 3D input image to 2D RGB matrix format
-    m = I.shape[0]
-    n = I.shape[1]
-    if I.shape[2] == 4:
-        I = I[:, :, (0, 1, 2)]
-    I = numpy.reshape(I, (m * n, 3))
+    m = im_rgb.shape[0]
+    n = im_rgb.shape[1]
+    if im_rgb.shape[2] == 4:
+        im_rgb = im_rgb[:, :, (0, 1, 2)]
+    im_rgb = numpy.reshape(im_rgb, (m * n, 3))
 
     # transform input RGB to optical density values and deconvolve,
     # tfm back to RGB
-    I = I.astype(dtype=numpy.float32)
-    I[I == 0] = 1e-16
-    ODfwd = color_conversion.rgb_to_od(I)
+    im_rgb = im_rgb.astype(dtype=numpy.float32)
+    im_rgb[im_rgb == 0] = 1e-16
+    ODfwd = color_conversion.rgb_to_od(im_rgb)
     ODdeconv = numpy.dot(ODfwd, numpy.transpose(Q))
     ODinv = color_conversion.od_to_rgb(ODdeconv)
 
@@ -88,6 +88,6 @@ def ColorDeconvolution(I, W):
     # return
     Unmixed = collections.namedtuple('Unmixed',
                                      ['Stains', 'StainsFloat', 'Wc'])
-    Output = Unmixed(Stains, StainsFloat, Wc)
+    Output = Unmixed(Stains, StainsFloat, wc)
 
     return Output
