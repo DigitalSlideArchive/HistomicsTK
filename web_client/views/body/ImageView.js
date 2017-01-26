@@ -26,6 +26,7 @@ var ImageView = View.extend({
     },
     render() {
         if (this.model.id === this._openId) {
+            this.controlPanel.setElement('.h-control-panel-container').render();
             return;
         }
         this.$el.html(imageTemplate());
@@ -42,7 +43,7 @@ var ImageView = View.extend({
                 this.viewer = this.viewerWidget.viewer;
             });
         }
-        this.controlPanel.setElement('#h-control-panel-container').render();
+        this.controlPanel.setElement('.h-control-panel-container').render();
     },
     destroy() {
         if (this.viewerWidget) {
