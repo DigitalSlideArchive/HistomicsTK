@@ -19,8 +19,8 @@ def od_to_rgb(im_od):
     See Also
     --------
     histomicstk.preprocessing.color_conversion.rgb_to_od,
-    histomicstk.preprocessing.color_deconvolution.ColorDeconvolution,
-    histomicstk.preprocessing.color_deconvolution.ColorConvolution
+    histomicstk.preprocessing.color_deconvolution.color_deconvolution,
+    histomicstk.preprocessing.color_deconvolution.color_convolution
     """
 
     im_rgb = 256.0 * np.exp(-im_od * np.log(256.0) / 255.0) - 1.0
