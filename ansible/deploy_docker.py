@@ -131,7 +131,10 @@ def container_start_histomicstk(client, env, key='histomicstk', port=8080,
             ],
         }
         mountNumber = 1
-        for mount in kwargs.get('mount', []):
+        mounts = kwargs.get('mount')
+        if mounts is None:
+            mounts = []
+        for mount in mounts:
             mountParts = mount.split(':')
             if len(mountParts) < 2:
                 mountParts.append('')
