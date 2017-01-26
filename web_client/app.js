@@ -14,7 +14,7 @@ import './stylesheets/layout/layout.styl';
 
 var App = GirderApp.extend({
 
-    render: function () {
+    render() {
         this.$el.html(layoutTemplate());
 
         new HeaderView({
@@ -29,7 +29,7 @@ var App = GirderApp.extend({
      * On login we re-render the current body view; whereas on
      * logout, we redirect to the front page.
      */
-    login: function () {
+    login() {
         var route = splitRoute(Backbone.history.fragment).base;
         Backbone.history.fragment = null;
         eventStream.close();
@@ -40,6 +40,13 @@ var App = GirderApp.extend({
         } else {
             router.navigate('/', {trigger: true});
         }
+    },
+
+    navigateTo(view) {
+        if (this.bodyView instanceof view) {
+            return this;
+        }
+        return GirderApp.prototype.navigateTo.apply(this, arguments);
     },
 
     bindRoutes: bindRoutes

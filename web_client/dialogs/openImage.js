@@ -26,7 +26,7 @@ function createDialog() {
         if (!model) {
             return;
         }
-        router.navigate('image/' + model.id, {trigger: true});
+        router.setQuery('image', model.id, {trigger: true});
     });
     return widget;
 }

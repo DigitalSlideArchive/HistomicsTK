@@ -1,9 +1,9 @@
+import ItemModel from 'girder/models/ItemModel';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
 import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 
 import events from '../../events';
 import View from '../View';
-// import ControlPanel from '../panels/ControlPanel';
 
 import imageTemplate from '../../templates/body/image.pug';
 import '../../stylesheets/body/image.styl';
@@ -12,15 +12,25 @@ var ImageView = View.extend({
     events: {},
     initialize(settings) {
         this.viewerWidget = null;
+        this._openId = null;
+        if (!this.model) {
+            this.model = new ItemModel();
+        }
+        this.listenTo(this.model, 'g:fetched', this.render);
         events.trigger('h:imageOpened', null);
+        this.listenTo(events, 'query:image', this.openImage);
         this.controlPanel = new SlicerPanelGroup({
             parentView: this
         });
         this.render();
     },
     render() {
+        if (this.model.id === this._openId) {
+            return;
+        }
         this.$el.html(imageTemplate());
-        if (this.model) {
+        if (this.model.id) {
+            this._openId = this.model.id;
             this.viewerWidget = new GeojsViewer({
                 parentView: this,
                 el: this.$('.h-image-view-container'),
@@ -41,6 +51,14 @@ var ImageView = View.extend({
         this.viewerWidget = null;
         events.trigger('h:imageOpened', null);
         return View.prototype.destroy.apply(this, arguments);
+    },
+    openImage(id) {
+        if (id) {
+            this.model.set({_id: id}).fetch();
+        } else {
+            this.model.set({_id: null});
+            this.render();
+        }
     }
 });
 
