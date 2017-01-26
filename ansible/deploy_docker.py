@@ -285,6 +285,7 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
                 get_path(kwargs['logs']) + ':/opt/logs:rw',
                 '/usr/bin/docker:/usr/bin/docker',
                 '/var/run/docker.sock:/var/run/docker.sock',
+                '/tmp/girder_worker:/tmp/girder_worker',
             ]
         }
         if rmq == 'docker':
@@ -573,12 +574,11 @@ if __name__ == '__main__':
     parser.add_argument('-verbose', '-v', action='count', default=0)
 
     # Should we add an optional url or host value for rmq and mongo?
-    # Should we allow installing packages in a local directory to make it
+    # Should we allow installing git repos in a local directory to make it
     #   easier to develop python and javascript?
-    # We should show how to run the ctests
+    # We should figure out how to run the ctests
     # Add a provisioning step to copy sample data (possibly by mounting the
-    #   appropriate host directory).
-    # Add status command
+    #   appropriate host directory if it exists).
 
     args = parser.parse_args()
     if args.verbose >= 2:

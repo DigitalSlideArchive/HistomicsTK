@@ -5,7 +5,7 @@ broker=amqp://guest@{{ mq_private_ip }}/
 
 [girder_worker]
 # root dir where temp files for jobs will be written
-tmp_root=tmp
+tmp_root=/tmp/girder_worker
 # comma-separated list of plugins to enable
 plugins_enabled=docker,girder_io
 # colon-separated list of additional plugin loading paths
