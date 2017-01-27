@@ -1,4 +1,4 @@
-from . import trace_boundaries_cython
+from .trace_boundaries_cython import trace_boundaries_cython
 
 
 def trace_boundaries(im_label,
@@ -48,5 +48,6 @@ def trace_boundaries(im_label,
     doi:10.3390/s16030353, 2016.
     """
 
-    return trace_boundaries_cython.trace_boundaries(
-        im_label, conn, trace_all, x_start, y_start, max_length)
+    return trace_boundaries_cython(
+        im_label.astype('int64'),
+        conn, trace_all, x_start, y_start, max_length)

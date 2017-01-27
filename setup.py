@@ -88,7 +88,7 @@ setup(name='histomicstk',
       test_suite='plugin_tests',
       tests_require=test_requirements,
       ext_modules = cythonize(Extension(
-           "histomicstk.segmentation.label.trace_boundaries",
+           "histomicstk.segmentation.label.trace_boundaries_cython",
            sources=["histomicstk/segmentation/label/trace_boundaries_cython.pyx",
                     "histomicstk/segmentation/label/trace_boundaries_opt.cpp"],
            include_dirs=[numpy.get_include()],

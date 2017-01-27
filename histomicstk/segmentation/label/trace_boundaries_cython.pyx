@@ -6,7 +6,7 @@ cimport trace_boundaries_opt
 from libcpp.vector cimport vector
 
 
-def trace_boundaries(
+def trace_boundaries_cython(
     np.ndarray[np.int64_t, ndim=2, mode="c"] im_label not None,
     Connectivity=4, trace_all=False, 
     x_start=None, y_start=None, max_length=None):
