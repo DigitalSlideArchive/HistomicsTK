@@ -369,19 +369,25 @@ def get_docker_image_and_container(client, key, pullOrBuild=True):
     :param client: docker client.
     :param key: key in the ImageList.
     :param pullOrBuild: if True, try to pull or build the image if it isn't
-        present.
+        present.  If 'pull', try to pull the image (not build), even if we
+        already have it.
     :returns: docker container or None.
     """
     name = ImageList[key]['name']
     if pullOrBuild:
+        pull = False
         image = ImageList[key]['tag']
         try:
             client.inspect_image(image)
         except docker.errors.NotFound:
+            pull = True
+        if pull or pullOrBuild == 'pull':
             print('Pulling %s' % image)
             try:
                 client.pull(image)
-            except 'foo':
+            except Exception:
+                if pullOrBuild == 'pull':
+                    raise
                 if not ImageList[key].get('pull'):
                     images_build(True, key)
     containers = client.containers(all=True)
@@ -458,6 +464,16 @@ def images_build(retry=False, names=None):
         print('Done building %s\n' % name)
 
 
+def images_repull(**kwargs):
+    """"
+    Repull all docker images.
+    """
+    client = docker.from_env()
+    keys = ImageList.keys()
+    for key in keys:
+        get_docker_image_and_container(client, key, 'pull')
+
+
 def network_create(client, name):
     """
     Ensure a network exists with a specified name.
@@ -526,7 +542,7 @@ if __name__ == '__main__':
     parser.add_argument(
         'command',
         choices=['start', 'restart', 'stop', 'rm', 'remove', 'status',
-                 'build', 'provision', 'info'],
+                 'build', 'provision', 'info', 'pull'],
         help='Start, stop, stop and remove, restart, check the status of, or '
              'build our own docker containers')
     parser.add_argument(
@@ -562,6 +578,9 @@ if __name__ == '__main__':
         '--port', '-p', type=int, default=8080,
         help='Girder access port.')
     parser.add_argument(
+        '--pull', action='store_true',
+        help='Repull docker images.')
+    parser.add_argument(
         '--retry', '-r', action='store_true', default=True,
         help='Retry builds and provisioning until they succeed')
     parser.add_argument(
@@ -594,6 +613,8 @@ if __name__ == '__main__':
         args.command = 'start'
         args.provision = True
 
+    if args.pull or args.command == 'pull':
+        images_repull()
     if args.build or args.command == 'build':
         images_build(args.retry)
     if args.command in ('stop', 'restart', 'rm', 'remove'):
