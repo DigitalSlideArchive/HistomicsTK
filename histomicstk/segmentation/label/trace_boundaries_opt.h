@@ -14,11 +14,11 @@ void rot90(std::vector <std::vector<int> > input, std::vector <std::vector<int> 
 
 std::vector< std::vector<std::vector<int> > > trace_boundary(
     std::vector <std::vector<int> > imLabel, int connectivity=4,
-    float inf=INFINITY, int startX=-1, int startY=-1);
+    float max_length=INFINITY, int startX=-1, int startY=-1);
 
 std::vector< std::vector<std::vector<int> > > trace_label(
     std::vector <std::vector<int> > imLabel, int connectivity=4,
-    float inf=INFINITY);
+    float max_length=INFINITY);
 
 std::vector<std::vector<int> > isbf(std::vector <std::vector<int> > mask,
     std::vector<std::vector<int> > mask_90,
