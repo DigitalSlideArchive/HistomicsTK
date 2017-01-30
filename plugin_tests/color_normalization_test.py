@@ -23,8 +23,8 @@ import numpy as np
 import os
 import skimage.io
 
-from histomicstk.preprocessing import color_conversion
-from histomicstk.preprocessing import color_normalization
+from histomicstk.preprocessing import color_conversion as htk_cvt
+from histomicstk.preprocessing import color_normalization as htk_cn
 
 
 # boiler plate to start and stop the server if needed
@@ -45,25 +45,43 @@ class ReinhardNormalizationTest(base.TestCase):
 
     def test_normalization(self):
 
-        inputImageFile = os.path.join(TEST_DATA_DIR, 'L1.png')
+        input_image_file = os.path.join(TEST_DATA_DIR, 'L1.png')
 
-        refImageFile = os.path.join(TEST_DATA_DIR, 'Easy1.png')
+        ref_image_file = os.path.join(TEST_DATA_DIR, 'Easy1.png')
 
         # read input image
-        imInput = skimage.io.imread(inputImageFile)[:, :, :3]
+        im_input = skimage.io.imread(input_image_file)[:, :, :3]
 
         # read reference image
-        imReference = skimage.io.imread(refImageFile)[:, :, :3]
+        im_reference = skimage.io.imread(ref_image_file)[:, :, :3]
 
         # get mean and stddev of reference image in lab space
-        meanRef, stdRef = color_conversion.lab_mean_std(imReference)
+        mean_ref, std_ref = htk_cvt.lab_mean_std(im_reference)
 
         # perform color normalization
-        imNmzd = color_normalization.reinhard(imInput, meanRef, stdRef)
+        im_nmzd = htk_cn.reinhard(im_input, mean_ref, std_ref)
 
         # transform normalized image to LAB color space
-        meanNmzd, stdNmzd = color_conversion.lab_mean_std(imNmzd)
+        mean_nmzd, std_nmzd = htk_cvt.lab_mean_std(im_nmzd)
 
         # check if mean and stddev of normalized and reference images are equal
-        np.testing.assert_allclose(meanNmzd, meanRef, atol=1e-1)
-        np.testing.assert_allclose(stdNmzd, stdRef, atol=1e-1)
+        np.testing.assert_allclose(mean_nmzd, mean_ref, atol=1e-1)
+        np.testing.assert_allclose(std_nmzd, std_ref, atol=1e-1)
+
+    def test_reinhard_stats(self):
+
+        wsi_path = os.path.join(
+            TEST_DATA_DIR,
+            'sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs'  # noqa
+        )
+
+        np.random.seed(1)
+
+        wsi_mean, wsi_stddev = htk_cn.reinhard_stats(
+            wsi_path, 20, 0.1)
+
+        gt_mean = [8.88150931, -0.07665037, 0.02211699]
+        gt_stddev = [0.63423921, 0.12760392, 0.02212977]
+
+        np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-2)
+        np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)

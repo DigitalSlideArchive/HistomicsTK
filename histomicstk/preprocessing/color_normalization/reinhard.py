@@ -29,12 +29,12 @@ def reinhard(im_src, target_mu, target_sigma, src_mu=None, src_sigma=None):
 
     src_mu : array_like, optional
         A 3-element array containing the means of the source image channels in
-        LAB color space. Used with ReinhardSample for uniform normalization of
+        LAB color space. Used with reinhard_stats for uniform normalization of
         tiles from a slide.
 
     src_sigma : array, optional
         A 3-element array containing the standard deviations of the source
-        image channels in LAB color space. Used with ReinhardSample for
+        image channels in LAB color space. Used with reinhard_stats for
         uniform normalization of tiles tiles from a slide.
 
     Returns

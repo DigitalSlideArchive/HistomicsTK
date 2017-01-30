@@ -52,15 +52,14 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
 
     See Also
     --------
-    histomicstk.utils.Sample
+    histomicstk.utils.sample_pixels
     """
 
     # convert image to grayscale, flatten and sample
     im_rgb = 255 * color.rgb2gray(im_rgb)
     im_rgb = im_rgb.astype(np.uint8)
-    sI = im_rgb.flatten()[:, np.newaxis]
-    sI = sI[np.random.uniform(1, sI.size,
-                              (percent * im_rgb.size,)).astype(int)]
+    num_samples = np.int(percent * im_rgb.size)
+    sI = np.random.choice(im_rgb.flatten(), num_samples)[:, np.newaxis]
 
     # kernel-density smoothed histogram
     KDE = KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(sI)
