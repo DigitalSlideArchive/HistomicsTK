@@ -2,8 +2,7 @@ import cython
 
 import numpy as np
 cimport numpy as np
-from . cimport trace_boundaries_opt
-# cimport trace_boundaries_opt
+cimport trace_boundaries_opt
 from libcpp.vector cimport vector
 
 
