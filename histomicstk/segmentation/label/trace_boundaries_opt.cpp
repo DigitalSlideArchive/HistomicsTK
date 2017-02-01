@@ -30,8 +30,8 @@ void rot90(
 
 std::vector< std::vector<std::vector<int> > > trace_boundary(
     std::vector< std::vector<int> > imLabel,
-    int connectivity,
-    int startX, int startY, float max_length)
+    int connectivity, float max_length
+    int startX, int startY)
 {
     std::vector< std::vector<std::vector<int> > > output;
 

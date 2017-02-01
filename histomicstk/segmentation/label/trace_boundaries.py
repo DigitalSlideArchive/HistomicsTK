@@ -2,6 +2,7 @@ from .trace_boundaries_cython import trace_boundaries_cython
 
 import numpy as np
 
+
 def trace_boundaries(im_label,
                      conn=4, trace_all=False,
                      x_start=None, y_start=None, max_length=None):

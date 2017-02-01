@@ -8,7 +8,7 @@ from libcpp.vector cimport vector
 
 def trace_boundaries_cython(
     np.ndarray[np.int64_t, ndim=2, mode="c"] im_label not None,
-    Connectivity=4, trace_all=False, 
+    connectivity=4, trace_all=False, 
     x_start=None, y_start=None, max_length=None):
 
     cdef vector[vector[vector[int]]] output
@@ -19,19 +19,19 @@ def trace_boundaries_cython(
     if trace_all:
 
         output = trace_boundaries_opt.trace_label(
-            im_label, Connectivity, max_length)
+            im_label, connectivity, max_length)
 
     else:
 
         if x_start is None and y_start is None:
 
             output = trace_boundaries_opt.trace_boundary(
-                im_label, Connectivity, max_length)
+                im_label, connectivity, max_length)
 
         elif x_start is not None and y_start is not None:
 
             output = trace_boundaries_opt.trace_boundary(
-                im_label, Connectivity, max_length, x_start, y_start)
+                im_label, connectivity, max_length, x_start, y_start)
 
         else:
 
