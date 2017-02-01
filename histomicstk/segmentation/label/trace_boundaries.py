@@ -10,8 +10,8 @@ def trace_boundaries(im_label,
     mask. If a starting point is not provided then a raster scan will be performed
     to identify the starting pixel.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     im_label : array_like
         A binary mask image.
     conn : int
@@ -28,23 +28,23 @@ def trace_boundaries(im_label,
         Maximum boundary length to trace before terminating. Default value =
         None.
 
-    Notes:
-    ------
+    Notes
+    -----
     The Improved Simple Boundary Follower (ISBF) from the reference below is
     used for 4-connected tracing. This algorithm provides accurate tracing with
     competitive execution times. 8-connected tracing is implemented using the
     Moore tracing algorithm.
 
-    Returns:
-    --------
+    Returns
+    -------
     X : array_like
         A 1D array of horizontal coordinates of contour seed pixels for
         tracing.
     Y : array_like
         A 1D array of the vertical coordinates of seed pixels for tracing.
 
-    References:
-    -----------
+    References
+    ----------
     .. [1] J. Seo et al "Fast Contour-Tracing Algorithm Based on a Pixel-
     Following Method for Image Sensors" in Sensors,vol.16,no.353,
     doi:10.3390/s16030353, 2016.
