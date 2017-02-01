@@ -1,5 +1,6 @@
 from .trace_boundaries_cython import trace_boundaries_cython
 
+import numpy as np
 
 def trace_boundaries(im_label,
                      conn=4, trace_all=False,
@@ -49,5 +50,5 @@ def trace_boundaries(im_label,
     """
 
     return trace_boundaries_cython(
-        im_label.astype('int64'),
+        np.ascontiguousarray(im_label, dtype=np.int),
         conn, trace_all, x_start, y_start, max_length)
