@@ -59,7 +59,7 @@ before_install:
     - GIRDER_VERSION="v1.7.0"
     - GIRDER_WORKER_VERSION=master
     - LARGE_IMAGE_VERSION="girder-1.7"
-    - SLICER_CLI_WEB_VERSION=master
+    - SLICER_CLI_WEB_VERSION="girder-1.7"
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path
