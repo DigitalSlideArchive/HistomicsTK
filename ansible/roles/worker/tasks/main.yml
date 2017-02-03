@@ -102,6 +102,20 @@
   become: true
   when: docker is undefined
 
+- name: Create tmp directory
+  file: state=directory path="/tmp/girder_worker"
+  become: true
+  when: docker is defined
+
+- name: Ensure tmp directory is owned by the right user and is public
+  file:
+    path: "/tmp/girder_worker"
+    owner: "{{ girder_exec_user }}"
+    group: "{{ girder_exec_group }}"
+    mode: u=rwx,g=rwx,o=rwx
+  become: true
+  when: docker is defined
+
 - name: Add a script to set hosts if necessary
   template:
       src: set_hosts.py
