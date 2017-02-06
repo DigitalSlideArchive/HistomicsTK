@@ -14,108 +14,111 @@ struct Points {
     int x, y;
 };
 
-void rot90(int nrows, int ncols,
-  std::vector <std::vector<int> > input,
-  std::vector <std::vector<int> > &output)
+void rot90(
+  std::vector< std::vector<int> > input,
+  std::vector< std::vector<int> > &output)
 {
-    for (int i=0; i<nrows; i++){
-      for (int j=0;j<ncols; j++){
+    int nrows = input.size();
+    int ncols = input[0].size();
+
+    for(int i = 0; i < nrows; i++){
+      for (int j = 0; j < ncols; j++){
         output[j][nrows-1-i] = input[i][j];
       }
     }
 }
 
-std::vector <std::vector<std::vector<int> > > trace_boundary(std::vector <std::vector<int> > imLabels, int connectivity,
- float inf, int startX, int startY)
+std::vector< std::vector<std::vector<int> > > trace_boundary(
+    std::vector< std::vector<int> > imLabel,
+    int connectivity, float max_length,
+    int startX, int startY)
 {
-    std::vector <std::vector<std::vector<int> > > output;
+    std::vector< std::vector<std::vector<int> > > output;
 
-    // start ----- rotate matrix
+    int nrows = imLabel.size();
+    int ncols = imLabel[0].size();
 
-    int nrows_img = imLabels.size();
-    int ncols_img = imLabels[0].size();
+    // compute rotated versions of label mask
+    std::vector<std::vector<int> > imLabel_90(ncols, std::vector<int>(nrows));
+    std::vector<std::vector<int> > imLabel_180(nrows, std::vector<int>(ncols));
+    std::vector<std::vector<int> > imLabel_270(ncols, std::vector<int>(nrows));
 
-    // initialize matrix for 90, 180, 270 degrees
-    std::vector <std::vector<int> > imLabels_90(ncols_img, std::vector<int>(nrows_img));
-    std::vector <std::vector<int> > imLabels_180(nrows_img, std::vector<int>(ncols_img));
-    std::vector <std::vector<int> > imLabels_270(ncols_img, std::vector<int>(nrows_img));
+    rot90(imLabel, imLabel_270);
+    rot90(imLabel_270, imLabel_180);
+    rot90(imLabel_180, imLabel_90);
 
-    // rotate label matrix for 90, 180, 270 degrees
-    rot90(nrows_img, ncols_img, imLabels, imLabels_270);
-    rot90(ncols_img, nrows_img, imLabels_270, imLabels_180);
-    rot90(nrows_img, ncols_img, imLabels_180, imLabels_90);
-
-    // end ----- rotate matrix
     // find starting x and y points if not defined
     if ((startX == -1)&&(startY == -1)) {
+
         bool flag = false;
 
-        for(int i = 1; i < nrows_img-1; i++) {
-          for(int j = 1; j < ncols_img-1; j++) {
-             if((imLabels[i][j] > 0)&&(!flag)){
-               // check if the nubmer of points is one
-               if(!((imLabels[i][j+1] == 0)&&(imLabels[i+1][j] == 0)&&
-                 (imLabels[i+1][j+1] == 0)&&(imLabels[i-1][j+1] == 0))) {
+        for(int i = 1; i < nrows-1; i++) {
+
+          for(int j = 1; j < ncols-1; j++) {
+
+             if(imLabel[i][j] > 0 && !flag) {
+
+               // check if the number of points is one
+               if(!(imLabel[i][j+1] == 0 && imLabel[i+1][j] == 0 &&
+                    imLabel[i+1][j+1] == 0 && imLabel[i-1][j+1] == 0)) {
                    startX = j;
                    startY = i;
                    flag = true;
+                   break;
                }
              }
           }
+
+          if(flag)
+            break;
         }
     }
 
-    std::vector <std::vector<int> > coords;
+    std::vector< std::vector<int> > coords;
 
     if (connectivity == 4) {
-        coords = isbf(nrows_img, ncols_img, imLabels,
-          imLabels_90, imLabels_180, imLabels_270, startX, startY, inf);
+        coords = isbf(
+            imLabel, imLabel_90, imLabel_180, imLabel_270,
+            startX, startY, max_length);
     }
     else {
-        coords = moore(nrows_img, ncols_img, imLabels,
-          imLabels_90, imLabels_180, imLabels_270, startX, startY, inf);
+        coords = moore(
+            imLabel, imLabel_90, imLabel_180, imLabel_270,
+            startX, startY, max_length);
     }
 
     // append current coords to output vector
     output.push_back(coords);
 
-
     return output;
-
 }
 
-std::vector <std::vector<std::vector<int> > > trace_label(std::vector <std::vector<int> > imLabels, int connectivity,
- float inf)
+std::vector< std::vector<std::vector<int> > > trace_label(
+    std::vector< std::vector<int> > imLabel,
+    int connectivity,
+    float max_length)
 {
-    std::vector <std::vector<std::vector<int> > > output;
+    std::vector< std::vector<std::vector<int> > > output;
 
-    // start ----- rotate matrix
+    int nrows = imLabel.size();
+    int ncols = imLabel[0].size();
 
-    int nrows_img = imLabels.size();
-    int ncols_img = imLabels[0].size();
+    // compute rotated versions of label mask
+    std::vector<std::vector<int> > imLabel_90(ncols, std::vector<int>(nrows));
+    std::vector<std::vector<int> > imLabel_180(nrows, std::vector<int>(ncols));
+    std::vector<std::vector<int> > imLabel_270(ncols, std::vector<int>(nrows));
 
-    // initialize matrix for 90, 180, 270 degrees
-    std::vector <std::vector<int> > imLabels_90(ncols_img, std::vector<int>(nrows_img));
-    std::vector <std::vector<int> > imLabels_180(nrows_img, std::vector<int>(ncols_img));
-    std::vector <std::vector<int> > imLabels_270(ncols_img, std::vector<int>(nrows_img));
+    rot90(imLabel, imLabel_270);
+    rot90(imLabel_270, imLabel_180);
+    rot90(imLabel_180, imLabel_90);
 
-    // rotate label matrix for 90, 180, 270 degrees
-    rot90(nrows_img, ncols_img, imLabels, imLabels_270);
-    rot90(ncols_img, nrows_img, imLabels_270, imLabels_180);
-    rot90(nrows_img, ncols_img, imLabels_180, imLabels_90);
-
-    // end ----- rotate matrix
-
-
-    // start ----- find unique id of labels
-
+    // find label ids of objects present
     std::set<int> label_set;
 
-    std::vector <std::vector<int> >::iterator row;
+    std::vector< std::vector<int> >::iterator row;
     std::vector<int>::iterator col;
 
-    // iterate imLabels
-    for(row = imLabels.begin(); row != imLabels.end(); row++) {
+    for(row = imLabel.begin(); row != imLabel.end(); row++) {
         for(col = row->begin(); col != row->end(); col++) {
           if(*col != 0){
             label_set.insert(*col);
@@ -123,25 +126,24 @@ std::vector <std::vector<std::vector<int> > > trace_label(std::vector <std::vect
         }
     }
 
-    // end ----- find unique id of labels
-
-
-    // initialize iterator
+    // trace each object one at a time
     std::set<int>::iterator it;
 
-    // loop from the second element of set
     for (it = label_set.begin(); it != label_set.end(); it++) {
+
+        int cur_lid = *it;
+
+        // find x and y bounds of current object
         std::vector<Points> point;
-        // put each point into struct
-        for (int i=0; i < nrows_img; i++) {
-            for (int j = 0; j < ncols_img; j++) {
-                if (imLabels[i][j] == *it) {
+
+        for (int i=0; i < nrows; i++) {
+            for (int j = 0; j < ncols; j++) {
+                if(imLabel[i][j] == cur_lid) {
                     point.push_back({i, j});
                 }
             }
         }
 
-        // get min max of x and y
         auto mmX = std::minmax_element(point.begin(), point.end(),
             [] (Points const& lhs, Points const& rhs) {return lhs.x < rhs.x;});
         auto mmY = std::minmax_element(point.begin(), point.end(),
@@ -153,59 +155,67 @@ std::vector <std::vector<std::vector<int> > > trace_label(std::vector <std::vect
         int maxY = mmY.second->y;
 
         // initialize number of rows and cols of mask with padding
-        int nrows = maxX-minX+3;
-        int ncols = maxY-minY+3;
+        int nrows_mask = maxX - minX + 3;
+        int ncols_mask = maxY - minY + 3;
 
-        std::vector <std::vector<int> > mask(nrows, std::vector<int>(ncols));
-        std::vector <std::vector<int> > mask_90(ncols, std::vector<int>(nrows));
-        std::vector <std::vector<int> > mask_180(nrows, std::vector<int>(ncols));
-        std::vector <std::vector<int> > mask_270(ncols, std::vector<int>(nrows));
+        std::vector<std::vector<int> > mask(
+            nrows_mask, std::vector<int>(ncols_mask, 0));
 
-        for (int i = 1; i < nrows-1; i++) {
-            for (int j = 1; j < ncols-1; j++) {
-                mask[i][j] = imLabels[minX+i-1][minY+j-1];
-                mask_90[j][i] = imLabels_90[ncols_img-maxY+j-2][minX+i-1];
-                mask_180[i][j] = imLabels_180[nrows_img-maxX+i-2][ncols_img-maxY+j-2];
-                mask_270[j][i] = imLabels_270[minY+j-1][nrows_img-maxX+i-2];
+        std::vector<std::vector<int> > mask_90(
+            ncols_mask, std::vector<int>(nrows_mask, 0));
+
+        std::vector<std::vector<int> > mask_180(
+            nrows_mask, std::vector<int>(ncols_mask, 0));
+
+        std::vector<std::vector<int> > mask_270(
+            ncols_mask, std::vector<int>(nrows_mask, 0));
+
+        for (int i = 1; i < nrows_mask-1; i++) {
+
+            for (int j = 1; j < ncols_mask-1; j++) {
+
+                if(imLabel[minX+i-1][minY+j-1] == cur_lid)
+                    mask[i][j] = 1;
+
+                if(imLabel_90[ncols_mask-maxY+j-2][minX+i-1] == cur_lid)
+                    mask_90[j][i] = 1;
+
+                if(imLabel_180[nrows_mask-maxX+i-2][ncols_mask-maxY+j-2] == cur_lid)
+                    mask_180[i][j] = 1;
+
+                if(imLabel_270[minY+j-1][nrows_mask-maxX+i-2] == cur_lid)
+                    mask_270[j][i] = 1;
             }
         }
 
-        // set current label number to 1
-        for (int i = 1; i < nrows-1; i++) {
-            for (int j = 1; j < ncols-1; j++) {
-                if (mask[i][j] > 0) {
-                  mask[i][j] = 1;
-                }
-                if (mask_180[i][j] > 0) {
-                  mask_180[i][j] = 1;
-                }
-                if (mask_90[j][i] > 0) {
-                  mask_90[j][i] = 1;
-                }
-                if (mask_270[j][i] > 0) {
-                  mask_270[j][i] = 1;
-                }
-            }
-        }
 
+        // find starting x and y points
         int startX = 0;
         int startY = 0;
-        // find starting x and y points if not defined
+
         //if ((startX == -1)&&(startY == -1)) {
         bool flag = false;
 
-        for(int i = 1; i < nrows-1; i++) {
-          for(int j = 1; j < ncols-1; j++) {
-             if((mask[i][j] > 0)&&(!flag)){
+        for(int i = 1; i < nrows_mask-1; i++) {
+
+          for(int j = 1; j < ncols_mask-1; j++) {
+
+             if(mask[i][j] > 0 && !flag) {
+
                // check if the nubmer of points is one
-               if(!((mask[i][j+1] == 0)&&(mask[i+1][j] == 0)&&
-                 (mask[i+1][j+1] == 0)&&(mask[i-1][j+1] == 0))) {
+               if(!(mask[i][j+1] == 0 && mask[i+1][j] == 0 &&
+                    mask[i+1][j+1] == 0 && mask[i-1][j+1] == 0)) {
                    startX = j;
                    startY = i;
                    flag = true;
+                   break;
                }
+
              }
           }
+
+          if(flag)
+            break;
         }
         //}
         /*
@@ -214,43 +224,53 @@ std::vector <std::vector<std::vector<int> > > trace_label(std::vector <std::vect
             startX = startX - minY + 1;
         }
         */
-        std::vector <std::vector<int> > coords;
+        std::vector< std::vector<int> > coords;
 
         if (connectivity == 4) {
-            coords = isbf(nrows, ncols, mask,
-              mask_90, mask_180, mask_270, startX, startY, inf);
+            coords = isbf(
+                mask, mask_90, mask_180, mask_270,
+                startX, startY, max_length);
         }
         else {
-            coords = moore(nrows, ncols, mask,
-              mask_90, mask_180, mask_270, startX, startY, inf);
+            coords = moore(
+                mask, mask_90, mask_180, mask_270,
+                startX, startY, max_length);
         }
 
         int ncols_coords = coords[0].size();
+
         // add window offset from original labels coordinates
         for(int i = 0; i < ncols_coords; i++) {
              coords[0][i] = coords[0][i] + minY - 1;
              coords[1][i] = coords[1][i] + minX - 1;
         }
+
         // append current coords to output vector
         output.push_back(coords);
     }
 
     return output;
-
 }
 
 
-std::vector <std::vector<int> > moore(int nrows, int ncols,
-  std::vector <std::vector<int> > mask, std::vector <std::vector<int> > mask_90,
-  std::vector <std::vector<int> > mask_180, std::vector <std::vector<int> > mask_270,
-  int startX, int startY, float inf)
+std::vector< std::vector<int> > moore(
+    std::vector< std::vector<int> > mask,
+    std::vector< std::vector<int> > mask_90,
+    std::vector< std::vector<int> > mask_180,
+    std::vector< std::vector<int> > mask_270,
+    int startX, int startY, float max_length)
 {
+    int nrows = mask.size();
+    int ncols = mask[0].size();
+
     // initialize boundary vector
     std::list<int> boundary_listX;
     std::list<int> boundary_listY;
+
     // push the first x and y points
     boundary_listX.push_back(startX);
     boundary_listY.push_back(startY);
+
     // check degenerate case where mask contains 1 pixel
     int sum = 0;
     for(int i=0; i< nrows; i++){
@@ -285,7 +305,7 @@ std::vector <std::vector<int> > moore(int nrows, int ncols,
       // loop until true
       while(1) {
 
-        std::vector <std::vector<int> > h(rowMoore, std::vector<int>(colMoore));
+        std::vector< std::vector<int> > h(rowMoore, std::vector<int>(colMoore));
 
         // initialize a and b which are indices of moore
         int a = 0;
@@ -390,7 +410,7 @@ std::vector <std::vector<int> > moore(int nrows, int ncols,
           int ly2 = *std::prev(boundary_listY.end(), 2);
 
           // check if the first and the last x and y are equal
-          if ((sizeofX > inf)|| \
+          if ((sizeofX > max_length)|| \
           ((lx1 == fx2)&&(lx2 == fx1)&&(ly1 == fy2)&&(ly2 == fy1))){
             // remove the last element
               boundary_listX.pop_back();
@@ -401,7 +421,7 @@ std::vector <std::vector<int> > moore(int nrows, int ncols,
       }
     }
 
-    std::vector <std::vector<int> > boundary(2, std::vector<int>(sizeofX));
+    std::vector< std::vector<int> > boundary(2, std::vector<int>(sizeofX));
 
     boundary[0].assign(boundary_listX.begin(), boundary_listX.end());
     boundary[1].assign(boundary_listY.begin(), boundary_listY.end());
@@ -410,11 +430,16 @@ std::vector <std::vector<int> > moore(int nrows, int ncols,
 }
 
 
-std::vector <std::vector<int> > isbf(int nrows, int ncols,
-  std::vector <std::vector<int> > mask, std::vector <std::vector<int> > mask_90,
-  std::vector <std::vector<int> > mask_180, std::vector <std::vector<int> > mask_270,
-  int startX, int startY, float inf)
+std::vector< std::vector<int> > isbf(
+    std::vector< std::vector<int> > mask,
+    std::vector< std::vector<int> > mask_90,
+    std::vector< std::vector<int> > mask_180,
+    std::vector< std::vector<int> > mask_270,
+    int startX, int startY, float max_length)
 {
+    int nrows = mask.size();
+    int ncols = mask[0].size();
+
     // initialize boundary vector
     std::list<int> boundary_listX;
     std::list<int> boundary_listY;
@@ -439,7 +464,7 @@ std::vector <std::vector<int> > isbf(int nrows, int ncols,
     // loop until true
     while(1) {
 
-      std::vector <std::vector<int> > h(rowISBF, std::vector<int>(colISBF));
+      std::vector< std::vector<int> > h(rowISBF, std::vector<int>(colISBF));
 
       // initialize a and b which are indices of ISBF
       int a = 0;
@@ -593,7 +618,7 @@ std::vector <std::vector<int> > isbf(int nrows, int ncols,
         int ly4 = *std::prev(boundary_listY.end(), 4);
 
         // check if the first and the last x and y are equal
-        if ((sizeofX > inf)|| \
+        if ((sizeofX > max_length)|| \
         ((lx1 == fx2)&&(lx2 == fx1)&&(ly1 == fy2)&&(ly2 == fy1))){
           // remove the last element
             boundary_listX.pop_back();
@@ -637,7 +662,7 @@ std::vector <std::vector<int> > isbf(int nrows, int ncols,
       }
     }
 
-    std::vector <std::vector<int> > boundary(2, std::vector<int>(sizeofX));
+    std::vector< std::vector<int> > boundary(2, std::vector<int>(sizeofX));
 
     boundary[0].assign(boundary_listX.begin(), boundary_listX.end());
     boundary[1].assign(boundary_listY.begin(), boundary_listY.end());
