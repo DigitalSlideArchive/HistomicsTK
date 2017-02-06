@@ -1,0 +1,4 @@
+jupyter
+-r requirements_c.txt
+-r requirements_c_conda.txt
+-r requirements.txt

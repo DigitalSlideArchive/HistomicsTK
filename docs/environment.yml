@@ -8,6 +8,7 @@ dependencies:
 - scipy
 - scikit-learn
 - pandas
+- jupyter
 - pip:
   - sphinx
   - nbsphinx

@@ -1,5 +1,6 @@
 conda:
     file: docs/environment.yml
+requirements_file: requirements_rtd.txt
 python:
     version: 2
     setup_py_install: true
