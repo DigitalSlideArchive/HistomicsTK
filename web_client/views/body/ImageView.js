@@ -1,3 +1,5 @@
+import _ from 'underscore';
+
 import ItemModel from 'girder/models/ItemModel';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
 import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
@@ -17,6 +19,7 @@ var ImageView = View.extend({
             this.model = new ItemModel();
         }
         this.listenTo(this.model, 'g:fetched', this.render);
+        this.listenTo(events, 'h:analysis', this._setImageInput);
         events.trigger('h:imageOpened', null);
         this.listenTo(events, 'query:image', this.openImage);
         this.controlPanel = new SlicerPanelGroup({
@@ -55,11 +58,27 @@ var ImageView = View.extend({
     },
     openImage(id) {
         if (id) {
-            this.model.set({_id: id}).fetch();
+            this.model.set({_id: id}).fetch().then(() => {
+                this._setImageInput();
+            });
         } else {
             this.model.set({_id: null});
             this.render();
         }
+    },
+    /**
+     * Set any input image parameters to the currently open image.
+     */
+    _setImageInput() {
+        if (!this.model.id) {
+            return;
+        }
+        var image = this.model;
+        _.each(this.controlPanel.models(), (model) => {
+            if (model.get('type') === 'image') {
+                model.set('value', image, {trigger: true});
+            }
+        });
     }
 });
 
