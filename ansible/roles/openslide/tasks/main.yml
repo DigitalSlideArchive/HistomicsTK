@@ -30,7 +30,6 @@
       - pkg-config
       - libcairo2-dev
       - libgdk-pixbuf2.0-dev
-      - libxml2-dev
       - libsqlite3-dev
       # To update vips
       - build-essential

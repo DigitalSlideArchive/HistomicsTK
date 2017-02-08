@@ -37,6 +37,28 @@ ImageList = collections.OrderedDict([
 ])
 
 
+def config_mounts(mounts, config):
+    """
+    Add extra mounts to a docker configuration.
+
+    :param mounts: a list of mounts to add, or None.
+    :config: a config dictionary.  Mounts are added to the binds entry.
+    """
+    mountNumber = 1
+    if mounts is None:
+        mounts = []
+    for mount in mounts:
+        mountParts = mount.split(':')
+        if len(mountParts) < 2:
+            mountParts.append('')
+        if mountParts[1] == '':
+            mountParts[1] = 'mount%d' % mountNumber
+            mountNumber += 1
+        if '/' not in mountParts[1]:
+            mountParts[1] = '/opt/histomicstk/mounts/%s' % mountParts[1]
+        config['binds'].append(':'.join(mountParts))
+
+
 def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
                      **kwargs):
     """
@@ -130,20 +152,7 @@ def container_start_histomicstk(client, env, key='histomicstk', port=8080,
                 '/var/run/docker.sock:/var/run/docker.sock',
             ],
         }
-        mountNumber = 1
-        mounts = kwargs.get('mount')
-        if mounts is None:
-            mounts = []
-        for mount in mounts:
-            mountParts = mount.split(':')
-            if len(mountParts) < 2:
-                mountParts.append('')
-            if mountParts[1] == '':
-                mountParts[1] = 'mount%d' % mountNumber
-                mountNumber += 1
-            if '/' not in mountParts[1]:
-                mountParts[1] = '/opt/histomicstk/mounts/%s' % mountParts[1]
-            config['binds'].append(':'.join(mountParts))
+        config_mounts(kwargs.get('mount'), config)
         if rmq == 'docker':
             config['links'][ImageList['rmq']['name']] = 'rmq'
         if mongo == 'docker':
@@ -289,8 +298,10 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
                 '/usr/bin/docker:/usr/bin/docker',
                 '/var/run/docker.sock:/var/run/docker.sock',
                 '/tmp/girder_worker:/tmp/girder_worker',
+                get_path(kwargs['assetstore']) + ':/opt/histomicstk/assetstore:rw',
             ]
         }
+        config_mounts(kwargs.get('mount'), config)
         if rmq == 'docker':
             config['links'][ImageList['rmq']['name']] = 'rmq'
         params = {
@@ -556,11 +567,9 @@ if __name__ == '__main__':
         help='Database path (if a Mongo docker container is used).  Use '
              '"docker" for the default docker storage location.')
     parser.add_argument(
-        '--mount', '--extra', '-e', action='append',
-        help='Extra volumes to mount.  These are mounted internally at '
-        '/opt/histomicstk/mounts/(name), and are specified in the form '
-        '(host path)[:(name)[:ro]].  If no name is specified, mountX is used, '
-        'starting at mount1.')
+        '--image', action='append',
+        help='Override docker image information.  The value is of the form '
+        'key:tag:dockerfile.')
     parser.add_argument(
         '--info', action='store_true',
         help='Show installation and usage notes.')
@@ -571,6 +580,12 @@ if __name__ == '__main__':
         '--mongo', '-m', default='docker',
         choices=['docker', 'host'],
         help='Either use mongo from docker or from host.')
+    parser.add_argument(
+        '--mount', '--extra', '-e', action='append',
+        help='Extra volumes to mount.  These are mounted internally at '
+        '/opt/histomicstk/mounts/(name), and are specified in the form '
+        '(host path)[:(name)[:ro]].  If no name is specified, mountX is used, '
+        'starting at mount1.')
     parser.add_argument(
         '--provision', action='store_true',
         help='Reprovision the Girder the docker containers are started.')
@@ -605,6 +620,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.verbose >= 2:
         print('Parsed arguments: %r' % args)
+
+    if args.image:
+        for imagestr in args.image:
+            key, tag, dockerfile = imagestr.split(':')
+            ImageList[key]['tag'] = tag
+            ImageList[key]['dockerfile'] = dockerfile
 
     if args.info or args.command == 'info':
         show_info()
