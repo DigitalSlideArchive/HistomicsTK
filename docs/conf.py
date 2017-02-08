@@ -53,7 +53,7 @@ extensions = ['sphinx.ext.autodoc',
 
 autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
                         'nimfa',
-                        'openslide', 'pandas',
+                        'openslide', 'pandas', 'large_image',
                         'scipy',
                         'scipy.ndimage.morphology','scipy.ndimage.filters',
                         'scipy.ndimage.measurements',
