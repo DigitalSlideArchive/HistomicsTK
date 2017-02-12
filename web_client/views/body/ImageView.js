@@ -1,6 +1,8 @@
 import _ from 'underscore';
 
+import { restRequest } from 'girder/rest';
 import ItemModel from 'girder/models/ItemModel';
+import FileModel from 'girder/models/FileModel';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
 import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 
@@ -68,16 +70,67 @@ var ImageView = View.extend({
     },
     /**
      * Set any input image parameters to the currently open image.
+     * The jobs endpoints expect file id's rather than item id's,
+     * so we have to choose an appropriate file id for a number of
+     * scenarios.
+     *
+     *  * A normal item: Pick the first file id.  Here we have
+     *    to make another rest call to get the files contained
+     *    in the item.
+     *
+     *  * A large image item: choose originalId over fileId
+     *    because slicer endpoints can't yet handle tiled image
+     *    formats.
+     *
+     *  After getting the file id we have to make another rest
+     *  call to fetch the full file model from the server.  Once
+     *  this is complete, set the widget value.
      */
     _setImageInput() {
         if (!this.model.id) {
             return;
         }
-        var image = this.model;
-        _.each(this.controlPanel.models(), (model) => {
-            if (model.get('type') === 'image') {
-                model.set('value', image, {trigger: true});
-            }
+
+        // helper functions passed through promises
+        var getItemFile = (itemId) => {
+            return restRequest({
+                path: 'item/' + itemId + '/files',
+                data: {
+                    limit: 1,
+                    offset: 0
+                }
+            }).then((files) => {
+                if (!files.length) {
+                    throw new Error('Item does not contain a file.');
+                }
+                return new FileModel(files[0]);
+            });
+        };
+
+        var getFileModel = (fileId) => {
+            return restRequest({
+                path: 'file/' + fileId
+            }).then((file) => {
+                return new FileModel(file);
+            });
+        };
+        var largeImage = this.model.get('largeImage');
+        var promise;
+
+        if (largeImage) {
+            // Until slicer jobs can handle tiled input formats use
+            // the original file if available.
+            promise = getFileModel(largeImage.originalId || largeImage.fileId);
+        } else {
+            promise = getItemFile(this.model.id);
+        }
+
+        return promise.then((file) => {
+            _.each(this.controlPanel.models(), (model) => {
+                if (model.get('type') === 'image') {
+                    model.set('value', file, {trigger: true});
+                }
+            });
         });
     }
 });
