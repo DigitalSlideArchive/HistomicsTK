@@ -15,18 +15,12 @@ WORKDIR $htk_path
 
 # Install HistomicsTK and its dependencies
 RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
+    conda install --yes -c conda-forge pylibmc && \
     conda install --yes pip libgfortran==1.0 openslide-python \
     --file requirements_c_conda.txt && \
-    pip install -r requirements.txt -r requirements_c.txt && \
-    # Install HistomicsTK
-    python setup.py install && \
-    # clean up
-    conda clean -i -l -t -y && \
-    rm -rf /root/.cache/pip/*
-
-RUN conda install --yes pip libgfortran==1.0 setuptools==19.4 ctk-cli==1.3.1 \
-    openslide-python --file requirements_c_conda.txt && \
-    pip install -r requirements.txt -r requirements_c.txt && \
+    pip install -r requirements.txt -r requirements_c.txt ctk_cli && \
+    # Install large_image
+    pip install 'git+https://github.com/girder/large_image#egg=large_image' && \
     # Install HistomicsTK
     python setup.py install && \
     # clean up
@@ -35,6 +29,9 @@ RUN conda install --yes pip libgfortran==1.0 setuptools==19.4 ctk-cli==1.3.1 \
 
 # pregenerate font cache
 RUN python -c "from matplotlib import pylab"
+
+# pregenerate libtiff wrapper
+RUN python -c "import libtiff"
 
 # git clone install slicer_cli_web
 RUN cd /build && git clone https://github.com/girder/slicer_cli_web.git
