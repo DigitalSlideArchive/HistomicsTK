@@ -1,5 +1,5 @@
 =====================================================================
-HistomicsTK |build-status| |codecov-io| |docs-status| |code-health|
+HistomicsTK |build-status| |codecov-io| |docs-status| |code-health| |gitter|
 =====================================================================
 
 .. |build-status| image:: https://travis-ci.org/DigitalSlideArchive/HistomicsTK.svg?branch=master
@@ -17,6 +17,10 @@ HistomicsTK |build-status| |codecov-io| |docs-status| |code-health|
 .. |code-health| image:: https://landscape.io/github/DigitalSlideArchive/HistomicsTK/master/landscape.svg?style=flat
    :target: https://landscape.io/github/DigitalSlideArchive/HistomicsTK/master
    :alt: Code Health
+
+.. |gitter| image:: https://badges.gitter.im/DigitalSlideArchive/HistomicsTK.svg
+   :alt: Join the chat at https://gitter.im/DigitalSlideArchive/HistomicsTK
+   :target: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 HistomicsTK is a Python and REST API for the analysis of Histopathology images
 in association with clinical and genomic data.
