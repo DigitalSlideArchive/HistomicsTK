@@ -26,6 +26,8 @@ function createDialog() {
         if (!model) {
             return;
         }
+        // reset image bounds when opening a new image
+        router.setQuery('bounds', null, {trigger: false});
         router.setQuery('image', model.id, {trigger: true});
     });
     return widget;
