@@ -3,10 +3,10 @@ import numpy as np
 import histomicstk.utils as htk_utils
 
 
-def vesselness(im_input, sigma):
+def membraneness(im_input, sigma):
     """
-    Calculates vesselness measure for grayscale image `im_input` at scale `sigma`.
-    Also returns eigenvalues and vectors used for vessel salience filters.
+    Calculates membraneness measure for grayscale image `im_input` at scale `sigma`.
+    Also returns eigenvalues and vectors used for membrane salience filters.
 
     Parameters
     ----------
