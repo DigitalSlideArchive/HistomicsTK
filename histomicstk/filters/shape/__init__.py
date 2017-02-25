@@ -8,6 +8,7 @@ shapes (e.g. blobs, vessels)
 from .clog import clog
 from .glog import glog
 from .membraneness import membraneness
+from .membranefilter import membranefilter
 
 # list out things that are available for public use
 __all__ = (
@@ -16,4 +17,5 @@ __all__ = (
     'clog',
     'glog',
     'membraneness',
+    'membranefilter',
 )
