@@ -62,10 +62,10 @@ def main(args):
     im_deviation = 255 * im_deviation / im_deviation.max()
 
     # segmentation
-    im_mask = im_deviation > args.foreground_threshold* \
+    im_mask = im_deviation > args.foreground_threshold * \
         skimage.filters.threshold_otsu(im_deviation)
     im_opened = sp.ndimage.binary_opening(
-        im_mask, structure=np.ones((3,3))
+        im_mask, structure=np.ones((3, 3))
     ).astype(np.int)
 
     # skeletonization
@@ -77,7 +77,7 @@ def main(args):
     print('>> Performing membrane label detection')
 
     # set default branch mask
-    branch_mask = np.ones((3,3))
+    branch_mask = np.ones((3, 3))
 
     # perform convolution
     im_branch_mask = sp.signal.convolve2d(
@@ -102,7 +102,7 @@ def main(args):
 
     # get labels
     im_label = skimage.color.label2rgb(labeled_array)
-    im_label = 255 * im_label / im_label.max();
+    im_label = 255 * im_label / im_label.max()
 
     # get x and y points of intersection between branches
     px, py = np.where(im_branches > 0)
@@ -112,7 +112,7 @@ def main(args):
     #
     print('>> Performing membrane color rendering')
 
-    split_points = np.where(im_split>0)
+    split_points = np.where(im_split > 0)
 
     red = im_input[:, :, 0]
     lred = im_label[:, :, 0]
@@ -126,7 +126,7 @@ def main(args):
 
     # generate membrane labeled image
     im_membraned_color = np.concatenate(
-        (red[...,np.newaxis], green[...,np.newaxis], blue[...,np.newaxis]),
+        (red[..., np.newaxis], green[..., np.newaxis], blue[..., np.newaxis]),
         axis=2
     )
     im_membraned_color[px, py, :] = 255
