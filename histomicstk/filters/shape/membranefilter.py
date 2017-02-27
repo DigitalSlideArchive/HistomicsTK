@@ -45,6 +45,7 @@ def membranefilter(im_input, sigmas, beta, c):
     # convert image to double if necessary
     if np.issubdtype(im_input.dtype, np.uint8):
         im_input = im_input.astype('double')
+        im_input = im_input / 255
     else:
         im_input = im_input/im_input.max()
 
