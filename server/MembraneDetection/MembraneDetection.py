@@ -57,7 +57,10 @@ def main(args):
 
     # membrane filtering
     im_deviation, im_thetas = htk_shape_filters.membranefilter(
-        im_membrane_stain, [1, 2, 3], 4, 2
+        im_membrane_stain,
+        np.arange(args.filter_sigma_min, args.filter_sigma_max+1),
+        args.filter_beta,
+        args.filter_c
     )
     im_deviation = 255 * im_deviation / im_deviation.max()
 
