@@ -95,5 +95,33 @@
       <longflag>branch_merge_dilation</longflag>
       <default>1</default>
     </double>
+    <double>
+      <name>filter_sigma_max</name>
+      <label>membrane filter sigma max</label>
+      <description>Membrane filter sigma max</description>
+      <longflag>filter_sigma_max</longflag>
+      <default>3</default>
+    </double>
+    <double>
+      <name>filter_sigma_min</name>
+      <label>membrane filter sigma min</label>
+      <description>Membrane filter sigma min</description>
+      <longflag>filter_sigma_min</longflag>
+      <default>1</default>
+    </double>
+    <double>
+      <name>filter_beta</name>
+      <label>membrane filter beta</label>
+      <description>Membrane filter beta</description>
+      <longflag>filter_beta</longflag>
+      <default>4</default>
+    </double>
+    <double>
+      <name>filter_c</name>
+      <label>membrane filter c</label>
+      <description>Membrane filter c</description>
+      <longflag>filter_c</longflag>
+      <default>2</default>
+    </double>
   </parameters>
 </executable>
