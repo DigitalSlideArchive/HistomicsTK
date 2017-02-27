@@ -29,6 +29,13 @@ def membranefilter(im_input, sigmas, beta, c):
         M x N intensity image of membrane filter response.
     Thetas : array_like
         M x N image of membrane parallel angles in radians.
+
+    References
+    ----------
+    .. [1] Frangi, Alejandro F., et al. "Multiscale vessel enhancement
+           filtering." Medical Image Computing and Computer-Assisted
+           Interventation. MICCAI98. Springer Berlin Heidelberg,1998.
+           130-137.
     """
 
     # get size of input image 'I'
