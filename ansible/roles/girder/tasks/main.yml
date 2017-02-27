@@ -1,5 +1,5 @@
 - name: Install pycurl and apt-transport-https package in order to use the apt_repository module and install from https
-  apt: 
+  apt:
     name:
       - python-pycurl
       - apt-transport-https
@@ -8,21 +8,23 @@
 
 - name: NodeJS | Add PPA key
   command: "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68576280"
-  become: yes
+  become: true
 
 - name: NodeJS | Add PPA
   apt_repository:
     repo: "deb https://deb.nodesource.com/node_6.x {{ ansible_distribution_release }} main"
-  become: yes
+  become: true
 
 - name: NodeJS | Install package
   apt:
     name: nodejs
-  become: yes
+  become: true
 
 - name: Fetch GPG key for MongoDB
+  apt_key:
+    keyserver: hkp://keyserver.ubuntu.com:80
+    id: EA312927
   become: true
-  command: apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
 
 - name: Add MongoDB PPA
   become: true
@@ -57,7 +59,7 @@
 
 - name: Install node-gyp
   shell: "npm install -g node-gyp-install && /usr/lib/node_modules/node-gyp-install/bin.js"
-  become: yes
+  become: true
 
 - name: Clone ctk-cli
   git:
@@ -133,8 +135,20 @@
   pip: name='git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5' extra_args='--force-reinstall --ignore-installed --upgrade --no-cache-dir' editable=False
   become: true
 
-- name: Install our external girder plugins
-  command: girder-install plugin -s {{ root_dir }}/slicer_cli_web {{ root_dir }}/large_image {{ root_dir }}/HistomicsTK {{ root_dir }}/digital_slide_archive
+- name: Install our external girder plugins - slicer_cli_web
+  command: girder-install plugin -s {{ root_dir }}/slicer_cli_web
+  become: true
+
+- name: Install our external girder plugins - large_image
+  command: girder-install plugin -s {{ root_dir }}/large_image
+  become: true
+
+- name: Install our external girder plugins - HistomicsTK
+  command: girder-install plugin -s {{ root_dir }}/HistomicsTK
+  become: true
+
+- name: Install our external girder plugins - digital_slide_archive
+  command: girder-install plugin -s {{ root_dir }}/digital_slide_archive
   become: true
 
 - name: Install girder-client pip package
@@ -145,7 +159,7 @@
   command: python setup.py install
   args:
     chdir: "{{ root_dir }}/large_image"
-  become: yes
+  become: true
 
 - name: Install HistomicsTK pypi C requirements
   pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements_c.txt"
@@ -219,7 +233,7 @@
     extra_args: "-e"
     state: present
   become: true
-  
+
 - name: Install girder as a service
   template: src=girder.conf.j2 dest=/etc/init/girder.conf mode=644 owner=root
   become: true

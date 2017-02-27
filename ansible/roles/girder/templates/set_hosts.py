@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 
 hostip = os.popen('netstat -nr').read().split('\n0.0.0.0')[1].strip().split()[0]
 
@@ -19,3 +20,18 @@ hosts.append('%s dockerhost' % hostip)
 changed = True
 if changed:
     open('/etc/hosts', 'wb').write('\n'.join(hosts) + '\n')
+
+# Make sure we are a member of the group that docker's socket file belongs to
+
+sockpath = '/var/run/docker.sock'
+if os.path.exists(sockpath):
+    docker_gid = os.stat(sockpath).st_gid
+    if not os.popen('getent group %s' % docker_gid).read():
+        # make sure there is no group called dockerhost
+        os.system('sudo delgroup dockerhost')
+        # create a group called dockerhost with the group id from the host
+        os.system('sudo addgroup --gid=%s dockerhost' % docker_gid)
+        # add the current user to it
+        os.system('sudo usermod -aG %s `id -u -n`' % docker_gid)
+        # Force a restart so the group is available
+        sys.exit(1)

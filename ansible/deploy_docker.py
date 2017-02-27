@@ -148,10 +148,9 @@ def container_start_histomicstk(client, env, key='histomicstk', port=8080,
                 get_path(kwargs['logs']) + ':/opt/logs:rw',
                 get_path(kwargs['logs']) + ':/opt/histomicstk/logs:rw',
                 get_path(kwargs['assetstore']) + ':/opt/histomicstk/assetstore:rw',
-                '/usr/bin/docker:/usr/bin/docker',
-                '/var/run/docker.sock:/var/run/docker.sock',
             ],
         }
+        config['binds'].extend(docker_mounts())
         config_mounts(kwargs.get('mount'), config)
         if rmq == 'docker':
             config['links'][ImageList['rmq']['name']] = 'rmq'
@@ -295,12 +294,11 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
             'links': {},
             'binds': [
                 get_path(kwargs['logs']) + ':/opt/logs:rw',
-                '/usr/bin/docker:/usr/bin/docker',
-                '/var/run/docker.sock:/var/run/docker.sock',
                 '/tmp/girder_worker:/tmp/girder_worker',
                 get_path(kwargs['assetstore']) + ':/opt/histomicstk/assetstore:rw',
             ]
         }
+        config['binds'].extend(docker_mounts())
         config_mounts(kwargs.get('mount'), config)
         if rmq == 'docker':
             config['links'][ImageList['rmq']['name']] = 'rmq'
@@ -369,6 +367,19 @@ def containers_stop(remove=False, **kwargs):
 
     if remove:
         network_remove(client, BaseName)
+
+
+def docker_mounts():
+    """
+    Return a list of mounts needed to work with the host's docker.
+
+    :return: a list of volumes need to work with girder.
+    """
+    mounts = [
+        '/usr/bin/docker:/usr/bin/docker',
+        '/var/run/docker.sock:/var/run/docker.sock',
+    ]
+    return mounts
 
 
 def get_docker_image_and_container(client, key, pullOrBuild=True):
