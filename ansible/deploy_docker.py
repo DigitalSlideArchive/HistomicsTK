@@ -6,6 +6,7 @@ import docker
 import os
 import six
 import sys
+import time
 from distutils.version import LooseVersion
 
 if not (LooseVersion('1.9') <= LooseVersion(docker.version) < LooseVersion('2')):
@@ -78,6 +79,7 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
     """
     client = docker.from_env()
     env = {}
+    started = False
 
     network_create(client, BaseName)
 
@@ -87,6 +89,9 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
             if globals()[func](client, env, key, port=port, rmq=rmq,
                                mongo=mongo, provision=provision, **kwargs):
                 provision = True
+                started = True
+    if started:
+        time.sleep(5)
 
     if provision:
         ctn = get_docker_image_and_container(client, 'histomicstk')
@@ -95,18 +100,21 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
         # inventory/local docker_ansible.yml --extra-vars=docker=provision'
         tries = 1
         while True:
-            cmd = client.exec_create(
-                container=ctn.get('Id'),
-                cmd="bash -c 'cd /home/ubuntu/HistomicsTK/ansible && "
-                    "ansible-playbook -i inventory/local docker_ansible.yml "
-                    "--extra-vars=docker=provision'",
-                tty=True,
-            )
-            for output in client.exec_start(cmd.get('Id'), stream=True):
-                print(output.strip())
-            cmd = client.exec_inspect(cmd.get('Id'))
-            if not cmd['ExitCode']:
-                break
+            try:
+                cmd = client.exec_create(
+                    container=ctn.get('Id'),
+                    cmd="bash -c 'cd /home/ubuntu/HistomicsTK/ansible && "
+                        "ansible-playbook -i inventory/local docker_ansible.yml "
+                        "--extra-vars=docker=provision'",
+                    tty=True,
+                )
+                for output in client.exec_start(cmd.get('Id'), stream=True):
+                    print(output.strip())
+                cmd = client.exec_inspect(cmd.get('Id'))
+                if not cmd['ExitCode']:
+                    break
+            except (ValueError, docker.errors.APIError):
+                time.sleep(1)
             print('Error provisioning (try %d)' % tries)
             tries += 1
             if not kwargs.get('retry'):

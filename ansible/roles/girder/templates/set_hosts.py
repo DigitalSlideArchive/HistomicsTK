@@ -33,5 +33,7 @@ if os.path.exists(sockpath):
         os.system('sudo addgroup --gid=%s dockerhost' % docker_gid)
         # add the current user to it
         os.system('sudo usermod -aG %s `id -u -n`' % docker_gid)
+        # add the girder user to it
+        os.system('sudo usermod -aG %s {{ girder_exec_user }}' % docker_gid)
         # Force a restart so the group is available
         sys.exit(1)
