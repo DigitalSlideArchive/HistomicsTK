@@ -143,9 +143,9 @@
 
           Welcome to the **Digital Slide Archive**!
 
-          Developers who want to use the Girder REST API should check out the [interactive web API docs](/api/v1).
+          Developers who want to use the Girder REST API should check out the [interactive web API docs](api/v1).
 
-          The [HistomicsTK](/histomicstk) application is enabled.
+          The [HistomicsTK](histomicstk) application is enabled.
 
 - name: Ensure the existence of the filesystem assetstore
   girder:
