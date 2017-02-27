@@ -15,7 +15,7 @@
     "type"    : "python"
   },
 
-  "MembraneDetection": {
+  "DetectMembranes": {
     "type"    : "python"
   }
 }
