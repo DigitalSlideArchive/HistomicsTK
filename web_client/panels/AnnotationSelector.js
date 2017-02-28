@@ -3,10 +3,10 @@ import _ from 'underscore';
 
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 
-import annotationSelectorWidget from '../templates/annotationSelectorWidget.pug';
-import '../stylesheets/annotationSelectorWidget.styl';
+import annotationSelectorWidget from '../templates/panels/annotationSelector.pug';
+import '../stylesheets/panels/annotationSelector.styl';
 
-var AnnotationSelectorWidget = Panel.extend({
+var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
         'click .h-annotation > span': 'toggleAnnotation'
     }),
@@ -52,4 +52,4 @@ var AnnotationSelectorWidget = Panel.extend({
     }
 });
 
-export default AnnotationSelectorWidget;
+export default AnnotationSelector;
