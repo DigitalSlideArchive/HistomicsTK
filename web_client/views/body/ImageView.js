@@ -7,6 +7,7 @@ import FileModel from 'girder/models/FileModel';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
 import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 
+import AnnotationSelector from '../../panels/AnnotationSelector';
 import router from '../../router';
 import events from '../../events';
 import View from '../View';
@@ -59,6 +60,11 @@ var ImageView = View.extend({
                     });
                 }
             });
+            this.annotationSelector = new AnnotationSelector({
+                parentView: this,
+                model: this.model
+            });
+            this.annotationSelector.setElement('.h-annotation-selector').render();
         }
         this.controlPanel.setElement('.h-control-panel-container').render();
     },

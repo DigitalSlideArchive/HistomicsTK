@@ -1,6 +1,8 @@
 import Backbone from 'backbone';
 import _ from 'underscore';
 
+import { restRequest } from 'girder/rest';
+import eventStream from 'girder/utilities/EventStream';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 
 import annotationSelectorWidget from '../templates/panels/annotationSelector.pug';
@@ -10,33 +12,34 @@ var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
         'click .h-annotation > span': 'toggleAnnotation'
     }),
-    initialize: function () {
-        this.listenTo(girder.eventStream, 'g:event.job_status', function (evt) {
-            if (evt.data.status > 2) {
+    initialize(settings) {
+        this.collection = new Backbone.Collection();
+        this.listenTo(this.collection, 'all', this.render);
+        this.listenTo(eventStream, 'g:event.job_status', function (evt) {
+            if (this.collection && evt.data.status > 2) {
                 this.collection.fetch();
             }
         });
-    },
-    setItem: function (item) {
-        if (this.collection) {
-            this.stopListening(this.collection);
+        if (settings.parentItem) {
+            this.setItem(settings.parentItem);
         }
-
+    },
+    setItem(item) {
         this.parentItem = item;
-        this.collection = this.parentItem.annotations;
-
-        if (this.collection) {
-            this.collection.append = true;
-
-            this.listenTo(this.collection, 'g:changed', this.render);
-            this.listenTo(this.collection, 'add', this.render);
-            this.collection.fetch();
-        } else {
-            this.collection = new Backbone.Collection();
+        if (!this.parentItem) {
+            this.collection.reset();
+            return;
         }
-        return this;
+        return restRequest({
+            path: 'annotation',
+            data: {
+                itemId: this.parentItem.id
+            }
+        }).then((annotations) => {
+            this.collection.reset(annotations);
+        });
     },
-    render: function () {
+    render() {
         this.$el.html(annotationSelectorWidget({
             annotations: this.collection.toArray(),
             id: 'annotation-panel-container',
@@ -44,7 +47,7 @@ var AnnotationSelector = Panel.extend({
         }));
         return this;
     },
-    toggleAnnotation: function (evt) {
+    toggleAnnotation(evt) {
         var id = $(evt.currentTarget).data('id');
         var model = this.collection.get(id);
         model.set('displayed', !model.get('displayed'));
