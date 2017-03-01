@@ -45,6 +45,7 @@ var AnnotationSelector = Panel.extend({
             id: 'annotation-panel-container',
             title: 'Annotations'
         }));
+        this.$('.s-panel-content').collapse({toggle: false});
         return this;
     },
     toggleAnnotation(evt) {
