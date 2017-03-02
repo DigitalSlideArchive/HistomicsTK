@@ -9,6 +9,7 @@ from .clog import clog
 from .glog import glog
 from .membraneness import membraneness
 from .membranefilter import membranefilter
+from .find_branches import find_branches
 
 # list out things that are available for public use
 __all__ = (
@@ -18,4 +19,5 @@ __all__ = (
     'glog',
     'membraneness',
     'membranefilter',
+    'find_branches',
 )
