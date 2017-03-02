@@ -55,12 +55,6 @@ def membrane_detection(I, min_sigma=1, max_sigma=3, beta=4, c=2,
         Splitted image where positive values correspond to splitted points.
     Branches : array_like
         Branche image of where positive values correspond to membrane branches.
-
-    References
-    ----------
-    .. [1] M.A. Olsen et al "Convolution approach for feature detection in
-           topological skeletons obtained from vascular patterns,"
-           IEEE CIBIM, pp.163-167, 2011.
     """
 
     # membrane filtering
@@ -80,50 +74,8 @@ def membrane_detection(I, min_sigma=1, max_sigma=3, beta=4, c=2,
     # skeletonization
     im_skeleton = skimage.morphology.skeletonize(im_opened)
 
-    # default kernels to be used for detecting branches
-    kernel = []
-
-    kernel.append(np.array([[0, 1, 0],
-                            [1, 1, 1],
-                            [0, 0, 0]]))
-
-    kernel.append(np.array([[0, 1, 0],
-                            [1, 1, 0],
-                            [0, 0, 1]]))
-
-    kernel.append(np.array([[0, 0, 1],
-                            [0, 1, 0],
-                            [1, 0, 1]]))
-
-    kernel.append(np.array([[0, 0, 1],
-                            [1, 1, 0],
-                            [0, 0, 1]]))
-
-    kernel.append(np.array([[0, 1, 0],
-                            [1, 1, 1],
-                            [0, 1, 0]]))
-
-    kernel.append(np.array([[1, 0, 1],
-                            [0, 1, 0],
-                            [1, 0, 1]]))
-
-    Branches = np.zeros_like(im_skeleton)
-
     # find branches
-    for i in range(len(kernel)):
-        current_kernel = kernel[i]
-        if i < 4:
-            for j in range(4):
-                current_kernel = np.rot90(current_kernel)
-                im_conv = sp.signal.convolve2d(
-                    im_skeleton, current_kernel, boundary='fill', mode='same'
-                )
-                Branches[np.where(im_conv > 3)] = 1
-        else:
-            im_conv = sp.signal.convolve2d(
-                im_skeleton, current_kernel, boundary='fill', mode='same'
-            )
-            Branches[np.where(im_conv > 4)] = 1
+    Branches = htk_shape_filters.find_branches(im_skeleton)
 
     # small labels removal
     im_split = im_skeleton & ~sp.ndimage.binary_opening(
@@ -148,8 +100,6 @@ def membrane_detection(I, min_sigma=1, max_sigma=3, beta=4, c=2,
 
     # remove branches in the small labels
     Branches = Branches & im_label_mask
-
-
 
     # membrane label detection
     Split = im_label_mask & ~sp.ndimage.binary_dilation(
