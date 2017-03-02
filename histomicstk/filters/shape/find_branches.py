@@ -58,10 +58,14 @@ def find_branches(im_input):
         if i < 4:
             for j in range(4):
                 current_kernel = np.rot90(current_kernel)
-                im_conv = sp.signal.convolve2d(im_input, current_kernel, boundary='fill', mode='same')
+                im_conv = sp.signal.convolve2d(
+                    im_input, current_kernel, boundary='fill', mode='same'
+                )
                 Branches[np.where(im_conv > 3)] = 1
         else:
-            im_conv = sp.signal.convolve2d(im_input, current_kernel, boundary='fill', mode='same')
+            im_conv = sp.signal.convolve2d(
+                im_input, current_kernel, boundary='fill', mode='same'
+            )
             Branches[np.where(im_conv > 4)] = 1
 
     return Branches
