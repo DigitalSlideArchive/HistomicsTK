@@ -56,9 +56,9 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
     """
 
     # convert image to grayscale, flatten and sample
-    im_input = color.rgb2gray(im_rgb).astype(np.uint8)
+    im_rgb = color.rgb2gray(im_rgb).astype(np.uint8)
     num_samples = np.int(percent * im_rgb.size)
-    sI = np.random.choice(im_input.flatten(), num_samples)[:, np.newaxis]
+    sI = np.random.choice(im_rgb.flatten(), num_samples)[:, np.newaxis]
 
     # kernel-density smoothed histogram
     KDE = KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(sI)
@@ -115,7 +115,9 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
                             args=(yHist, xHist),
                             bounds=[(0, 255), (0, 255),
                                     (np.spacing(1), 10),
-                                    (np.spacing(1), 50), (0, 1)])
+                                    (np.spacing(1), 50), (0, 1)],
+                            iprint=0)
+
     muBackground = Parameters[0]
     muTissue = Parameters[1]
     sigmaBackground = Parameters[2]
