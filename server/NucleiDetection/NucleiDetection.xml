@@ -86,7 +86,7 @@
       <label>Minimum Radius</label>
       <description>Minimum nuclear radius (used to set min sigma of the multiscale LoG filter)</description>
       <longflag>min_radius</longflag>
-      <default>10</default>
+      <default>6</default>
     </double>
     <double>
       <name>max_radius</name>
@@ -108,6 +108,49 @@
       <description>Minimum area that each nucleus should have</description>
       <longflag>min_nucleus_area</longflag>
       <default>80</default>
+    </double>
+  </parameters>
+  <parameters>
+    <label>Dask</label>
+    <description>Dask parameters for parallelization</description>
+    <string>
+      <name>Scheduler address</name>
+      <label>scheduler_address</label>
+      <description>Address of the dask scheduler in the format '127.0.0.1:8786', Default value = 'null' sets up a cluster on the local machine</description>
+      <longflag>scheduler_address</longflag>
+      <default>null</default>
+    </string>
+  </parameters>
+  <parameters>
+    <label>General</label>
+    <description>General parameters</description>
+    <string>
+      <name>analysis_roi</name>
+      <label>Analysis ROI</label>
+      <description>Region of interest within which the analysis will be done. Must be in the format "{'left': 0, 'top': 0, 'width': 100, 'height': 100, 'units': 'base_pixels'}" accepted by the region parameter of large_image.TileSource.tileIterator (https://github.com/girder/large_image/blob/master/server/tilesource/base.py#L1328). Default behavior is to process the whole image.</description>
+      <longflag>analysis_roi</longflag>
+      <default>null</default>
+    </string>
+    <double>
+      <name>analysis_tile_size</name>
+      <label>Analysis Tile Size</label>
+      <description>Tile size for blockwise analysis</description>
+      <longflag>analysis_tile_size</longflag>
+      <default>4096</default>
+    </double>
+    <double>
+      <name>analysis_mag</name>
+      <label>Analysis Magnification</label>
+      <description>The magnification at which the analysis should be performed.</description>
+      <longflag>analysis_mag</longflag>
+      <default>20</default>
+    </double>
+    <double>
+      <name>min_fgnd_frac</name>
+      <label>Minimum foreground fraction</label>
+      <description>The minimum amount of foreground that must be present in a tile for it to be abalyzed</description>
+      <longflag>min_fgnd_frac</longflag>
+      <default>0.5</default>
     </double>
   </parameters>
 </executable>

@@ -3,12 +3,20 @@ import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.filters.shape as htk_shape_filters
 import histomicstk.segmentation as htk_seg
+import histomicstk.utils as htk_utils
+
+import large_image
+
+import dask
+from dask.distributed import Client, LocalCluster
+import multiprocessing
 
 import numpy as np
 import json
 import scipy as sp
 import skimage.io
 import skimage.measure
+import itertools
 
 from ctk_cli import CLIArgumentParser
 
@@ -24,116 +32,212 @@ stain_color_map = {
 }
 
 
+def detect_nuclei_kofahi(im_input, args):
+
+    # perform color normalization
+    im_nmzd = htk_cnorm.reinhard(im_input, args.target_mu, args.target_sigma)
+
+    # perform color decovolution
+    w = np.array([stain_color_map[args.stain_1],
+                  stain_color_map[args.stain_2],
+                  stain_color_map[args.stain_3]]).T
+
+    im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
+
+    im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
+
+    # segment foreground (assumes nuclei are darker on a bright background)
+    im_nuclei_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
+        im_nuclei_stain < args.foreground_threshold)
+
+    # run adaptive multi-scale LoG filter
+    im_log = htk_shape_filters.clog(im_nuclei_stain, im_nuclei_fgnd_mask,
+                                    sigma_min=args.min_radius * np.sqrt(2),
+                                    sigma_max=args.max_radius * np.sqrt(2))
+
+    # apply local maximum clustering
+    im_nuclei_seg_mask, seeds, max = htk_seg.nuclear.max_clustering(
+        im_log, im_nuclei_fgnd_mask, args.local_max_search_radius)
+
+    # filter out small objects
+    im_nuclei_seg_mask = htk_seg.label.area_open(
+        im_nuclei_seg_mask, args.min_nucleus_area).astype(np.int)
+
+    return im_nuclei_seg_mask
+
+
+def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
+
+    # get slide tile source
+    ts = large_image.getTileSource(slide_path)
+
+    # get requested tile
+    tile_info = ts.getSingleTile(tile_position=tile_position, **it_kwargs)
+
+    # get tile image
+    im_tile = tile_info['tile'][:, :, :3]
+
+    # segment nuclei
+    im_nuclei_seg_mask = detect_nuclei_kofahi(im_tile, args)
+
+    # generate nuclei bounding boxes annotations
+    obj_props = skimage.measure.regionprops(im_nuclei_seg_mask)
+
+    nuclei_bbox_list = []
+
+    gx = tile_info['gx']
+    gy = tile_info['gy']
+    wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
+    hfrac = tile_info['gheight'] / np.double(tile_info['height'])
+
+    for i in range(len(obj_props)):
+
+        cx = obj_props[i].centroid[1]
+        cy = obj_props[i].centroid[0]
+        width = obj_props[i].bbox[3] - obj_props[i].bbox[1] + 1
+        height = obj_props[i].bbox[2] - obj_props[i].bbox[0] + 1
+
+        # convert to base pixel coords
+        cx = gx + cx * wfrac
+        cy = gy + cy * hfrac
+        width *= wfrac
+        height *= hfrac
+
+        # create annotation json
+        cur_bbox = {
+            "type":        "rectangle",
+            "center":      [cx, cy, 0],
+            "width":       width,
+            "height":      height,
+        }
+
+        nuclei_bbox_list.append(cur_bbox)
+
+    return nuclei_bbox_list
+
+
 def main(args):
+
+    #
+    # Initiate Dask client
+    #
+    print('>> Creating Dask client')
+
+    scheduler_address = json.loads(args.scheduler_address)
+
+    if scheduler_address is None:
+
+        scheduler_address = LocalCluster(
+            n_workers=multiprocessing.cpu_count()-1, scheduler_port=0)
+
+    c = Client(scheduler_address)
+    print c
 
     #
     # Read Input Image
     #
     print('>> Reading input image')
 
-    im_input = skimage.io.imread(args.inputImageFile)[:, :, :3]
+    ts = large_image.getTileSource(args.inputImageFile)
+
+    ts_metadata = ts.getMetadata()
+
+    print json.dumps(ts_metadata, indent = 2)
+
+    is_wsi = ts_metadata['magnification'] is not None
 
     #
-    # Perform color normalization
+    # Compute tissue/foreground mask at low-res for whole slide images
     #
-    print('>> Performing color normalization')
+    print('>> Computing tissue/foreground mask at low-res')
 
-    # compute mean and stddev of input in LAB color space
-    mu, sigma = htk_ccvt.lab_mean_std(im_input)
+    if is_wsi:
 
-    # perform reinhard normalization
-    im_nmzd = htk_cnorm.reinhard(im_input, mu, sigma)
+        # get image at low-res
+        maxSize = max(ts_metadata['sizeX'], ts_metadata['sizeY'])
 
-    #
-    # Perform color deconvolution
-    #
-    print('>> Performing color deconvolution')
+        downsample_factor = 2**np.floor(np.log2(maxSize / 2048))
 
-    stain_color_1 = stain_color_map[args.stain_1]
-    stain_color_2 = stain_color_map[args.stain_2]
-    stain_color_3 = stain_color_map[args.stain_3]
+        fgnd_seg_mag = ts_metadata['magnification'] / downsample_factor
 
-    w = np.array([stain_color_1, stain_color_2, stain_color_3]).T
+        fgnd_seg_scale = {'magnification': fgnd_seg_mag}
 
-    im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
+        im_lres, _ = ts.getRegion(
+            scale=fgnd_seg_scale,
+            format=large_image.tilesource.TILE_FORMAT_NUMPY
+        )
 
-    im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
+        im_lres = im_lres[:, :, :3]
 
-    #
-    # Perform nuclei segmentation
-    #
-    print('>> Performing nuclei segmentation')
-
-    # segment foreground
-    im_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
-        im_nuclei_stain < args.foreground_threshold)
-
-    # run adaptive multi-scale LoG filter
-    im_log = htk_shape_filters.clog(im_nuclei_stain, im_fgnd_mask,
-                                    sigma_min=args.min_radius * np.sqrt(2),
-                                    sigma_max=args.max_radius * np.sqrt(2))
-
-    im_nuclei_seg_mask, seeds, max = htk_seg.nuclear.max_clustering(
-        im_log, im_fgnd_mask, args.local_max_search_radius)
-
-    # filter out small objects
-    im_nuclei_seg_mask = htk_seg.label.area_open(
-        im_nuclei_seg_mask, args.min_nucleus_area).astype(np.int)
+        # compute foreground mask at low-res
+        im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)
 
     #
-    # Generate annotations
+    # Create Dask compute graph for nuclei detection on foreground tiles
     #
-    obj_props = skimage.measure.regionprops(im_nuclei_seg_mask)
-
-    print 'Number of nuclei = ', len(obj_props)
-
-    # create basic schema
-    annotation = {
-        "name":          "Nuclei",
-        "description":   "Nuclei bounding boxes from a segmentation algorithm",
-        "attributes": {
-            "algorithm": {
-                "color_normalization": "reinhard",
-                "color_deconvolution": "ColorDeconvolution",
-                "nuclei_segmentation": ["cLOG",
-                                        "MaxClustering",
-                                        "FilterLabel"]
-            }
-        },
-        "elements": []
+    it_kwargs = {
+        'format': large_image.tilesource.TILE_FORMAT_NUMPY,
+        'region': json.loads(args.analysis_roi),
+        'tile_size': {'width': args.analysis_tile_size},
+        'scale': {'magnification': args.analysis_mag},
     }
 
-    # add each nucleus as an element into the annotation schema
-    for i in range(len(obj_props)):
+    tile_nuclei_list = []
 
-        c = [obj_props[i].centroid[1], obj_props[i].centroid[0], 0]
-        width = obj_props[i].bbox[3] - obj_props[i].bbox[1] + 1
-        height = obj_props[i].bbox[2] - obj_props[i].bbox[0] + 1
+    for tile in ts.tileIterator(**it_kwargs):
 
-        cur_bbox = {
-            "type":        "rectangle",
-            "center":      c,
-            "width":       width,
-            "height":      height,
-            "rotation":    0,
-            "fillColor":   "rgba(255, 255, 255, 0)",
-            "lineWidth":   2,
-            "lineColor":   "rgb(34, 139, 34)"
-        }
+        if is_wsi:
 
-        annotation["elements"].append(cur_bbox)
+            # get current region in base_pixels
+            rgn_hres = {'left': tile['gx'], 'top': tile['gy'],
+                        'right': tile['gx'] + tile['gwidth'],
+                        'bottom': tile['gy'] + tile['gheight'],
+                        'units': 'base_pixels'}
+
+            # get foreground mask for current tile at low resolution
+            rgn_lres = ts.convertRegionScale(rgn_hres,
+                                             targetScale=fgnd_seg_scale,
+                                             targetUnits='mag_pixels')
+
+            top = np.int(rgn_lres['top'])
+            bottom = np.int(rgn_lres['bottom'])
+            left = np.int(rgn_lres['left'])
+            right = np.int(rgn_lres['right'])
+
+            im_tile_fgnd_mask_lres = im_fgnd_mask_lres[top:bottom, left:right]
+
+            # skip tile if there is not enough foreground in the slide
+            cur_fgnd_frac = im_tile_fgnd_mask_lres.mean()
+
+            if (np.isnan(cur_fgnd_frac) or
+                        cur_fgnd_frac <= args.min_fgnd_frac):
+                continue
+
+        # detect nuclei
+        cur_nuclei_list = dask.delayed(detect_tile_nuclei)(
+            args.inputImageFile,
+            tile['tile_position']['position'],
+            args, **it_kwargs)
+
+        # append result to list
+        tile_nuclei_list.append(cur_nuclei_list)
+
+    def collect(x):
+        return x
+
+    tile_nuclei_list = dask.delayed(collect)(tile_nuclei_list).compute()
+
+    nuclei_list = list(itertools.chain.from_iterable(tile_nuclei_list))
+
+    print 'Number of nuclei = ', len(nuclei_list)
 
     #
-    # Save output segmentation mask
+    # Write annotation file
     #
-    print('>> Outputting nuclei segmentation mask')
-
-    skimage.io.imsave(args.outputNucleiMaskFile, im_nuclei_seg_mask)
-
-    #
-    # Save output annotation
-    #
-    print('>> Outputting nuclei annotation')
+    annotation = {
+        "name":     "Nuclei",
+        "elements": nuclei_list
+    }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, indent=2, sort_keys=False)
