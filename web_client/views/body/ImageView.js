@@ -62,7 +62,7 @@ var ImageView = View.extend({
             });
             this.annotationSelector = new AnnotationSelector({
                 parentView: this,
-                model: this.model
+                parentItem: this.model
             });
             this.annotationSelector.setElement('.h-annotation-selector').render();
         }

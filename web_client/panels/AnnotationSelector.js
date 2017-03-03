@@ -1,7 +1,7 @@
-import Backbone from 'backbone';
 import _ from 'underscore';
 
 import { restRequest } from 'girder/rest';
+import ItemCollection from 'girder/collections/ItemCollection';
 import eventStream from 'girder/utilities/EventStream';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 
@@ -13,11 +13,11 @@ var AnnotationSelector = Panel.extend({
         'click .h-annotation > span': 'toggleAnnotation'
     }),
     initialize(settings) {
-        this.collection = new Backbone.Collection();
+        this.collection = new ItemCollection();
         this.listenTo(this.collection, 'all', this.render);
         this.listenTo(eventStream, 'g:event.job_status', function (evt) {
-            if (this.collection && evt.data.status > 2) {
-                this.collection.fetch();
+            if (this.parentItem && evt.data.status > 2) {
+                this.setItem(this.parentItem);
             }
         });
         if (settings.parentItem) {
