@@ -1,9 +1,8 @@
 import _ from 'underscore';
 
-import { restRequest } from 'girder/rest';
-import ItemCollection from 'girder/collections/ItemCollection';
 import eventStream from 'girder/utilities/EventStream';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+import AnnotationCollection from 'girder_plugins/large_image/collections/AnnotationCollection';
 
 import annotationSelectorWidget from '../templates/panels/annotationSelector.pug';
 import '../stylesheets/panels/annotationSelector.styl';
@@ -13,7 +12,7 @@ var AnnotationSelector = Panel.extend({
         'click .h-annotation > span': 'toggleAnnotation'
     }),
     initialize(settings) {
-        this.collection = new ItemCollection();
+        this.collection = new AnnotationCollection();
         this.listenTo(this.collection, 'all', this.render);
         this.listenTo(eventStream, 'g:event.job_status', function (evt) {
             if (this.parentItem && evt.data.status > 2) {
@@ -26,18 +25,11 @@ var AnnotationSelector = Panel.extend({
     },
     setItem(item) {
         this.parentItem = item;
+        this.collection.reset();
         if (!this.parentItem) {
-            this.collection.reset();
             return;
         }
-        return restRequest({
-            path: 'annotation',
-            data: {
-                itemId: this.parentItem.id
-            }
-        }).then((annotations) => {
-            this.collection.reset(annotations);
-        });
+        this.collection.fetch({itemId: item.id}, true);
     },
     render() {
         this.$el.html(annotationSelectorWidget({

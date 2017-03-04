@@ -30,6 +30,10 @@ var ImageView = View.extend({
         this.controlPanel = new SlicerPanelGroup({
             parentView: this
         });
+        this.annotationSelector = new AnnotationSelector({
+            parentView: this
+        });
+        this.listenTo(this.annotationSelector.collection, 'change:displayed', this.toggleAnnotation);
         this.render();
     },
     render() {
@@ -60,10 +64,7 @@ var ImageView = View.extend({
                     });
                 }
             });
-            this.annotationSelector = new AnnotationSelector({
-                parentView: this,
-                parentItem: this.model
-            });
+            this.annotationSelector.setItem(this.model);
             this.annotationSelector.setElement('.h-annotation-selector').render();
         }
         this.controlPanel.setElement('.h-control-panel-container').render();
@@ -188,6 +189,22 @@ var ImageView = View.extend({
         });
         var rotation = parseFloat(bounds[4]) || 0;
         this.viewer.rotation(rotation * Math.PI / 180);
+    },
+
+    toggleAnnotation(annotation) {
+        if (!this.viewerWidget) {
+            // We may need a way to queue annotation draws while viewer
+            // initializes, but for now ignore them.
+            return;
+        }
+
+        if (annotation.get('displayed')) {
+            annotation.fetch().then(() => {
+                this.viewerWidget.drawAnnotation(annotation);
+            });
+        } else {
+            this.viewerWidget.removeAnnotation(annotation);
+        }
     }
 });
 
