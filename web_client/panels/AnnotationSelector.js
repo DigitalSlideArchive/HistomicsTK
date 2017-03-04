@@ -25,11 +25,13 @@ var AnnotationSelector = Panel.extend({
     },
     setItem(item) {
         this.parentItem = item;
-        this.collection.reset();
-        if (!this.parentItem) {
+        if (!this.parentItem || !this.parentItem.id) {
+            this.collection.reset();
+            this.render();
             return;
         }
-        this.collection.fetch({itemId: item.id}, true);
+        this.collection.fetch({itemId: item.id}, true)
+            .then(() => this.render());
     },
     render() {
         this.$el.html(annotationSelectorWidget({
