@@ -16,7 +16,7 @@ WORKDIR $htk_path
 # Install HistomicsTK and its dependencies
 RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     conda install --yes -c conda-forge pylibmc && \
-    conda install --yes pip libgfortran==1.0 openslide-python ctk_cli==1.3.1 \
+    conda install --yes pip libgfortran==1.0 openslide-python ctk-cli==1.3.1 \
     --file requirements_c_conda.txt && \
     pip install -r requirements.txt -r requirements_c.txt && \
     # Install large_image
