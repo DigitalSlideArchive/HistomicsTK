@@ -8,6 +8,7 @@ import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geoj
 import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 
 import AnnotationSelector from '../../panels/AnnotationSelector';
+import RegionSelector from '../../panels/RegionSelector';
 import router from '../../router';
 import events from '../../events';
 import View from '../View';
@@ -27,12 +28,17 @@ var ImageView = View.extend({
         this.listenTo(events, 'h:analysis', this._setImageInput);
         events.trigger('h:imageOpened', null);
         this.listenTo(events, 'query:image', this.openImage);
+
         this.controlPanel = new SlicerPanelGroup({
             parentView: this
         });
         this.annotationSelector = new AnnotationSelector({
             parentView: this
         });
+        this.regionSelector = new RegionSelector({
+            parentView: this
+        });
+
         this.listenTo(this.annotationSelector.collection, 'change:displayed', this.toggleAnnotation);
         this.render();
     },
@@ -57,6 +63,9 @@ var ImageView = View.extend({
                 // set the viewer bounds on first load
                 this.setImageBounds();
 
+                // also set the query string
+                this.setBoundsQuery();
+
                 // update the query string on pan events
                 if (this.viewer) {
                     this.viewer.geoOn(geo.event.pan, () => {
@@ -66,6 +75,7 @@ var ImageView = View.extend({
             });
             this.annotationSelector.setItem(this.model);
             this.annotationSelector.setElement('.h-annotation-selector').render();
+            this.regionSelector.setElement('.h-region-selector').render();
         }
         this.controlPanel.setElement('.h-control-panel-container').render();
     },
