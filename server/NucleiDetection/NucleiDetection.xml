@@ -18,13 +18,6 @@
       <channel>input</channel>
       <index>0</index>
     </image>
-    <image>
-      <name>outputNucleiMaskFile</name>
-      <label>Output Nuclei Segmentation Mask</label>
-      <description>Output nuclei segmentation label mask</description>
-      <channel>output</channel>
-      <index>1</index>
-    </image>
     <file fileExtensions=".anot" reference="inputImageFile">
       <name>outputNucleiAnnotationFile</name>
       <label>Output Nuclei Annotation File</label>
@@ -114,8 +107,8 @@
     <label>Dask</label>
     <description>Dask parameters for parallelization</description>
     <string>
-      <name>Scheduler address</name>
-      <label>scheduler_address</label>
+      <name>scheduler_address</name>
+      <label>Scheduler Address</label>
       <description>Address of the dask scheduler in the format '127.0.0.1:8786', Default value = 'null' sets up a cluster on the local machine</description>
       <longflag>scheduler_address</longflag>
       <default>null</default>
@@ -124,13 +117,12 @@
   <parameters>
     <label>General</label>
     <description>General parameters</description>
-    <string>
+    <region>
       <name>analysis_roi</name>
       <label>Analysis ROI</label>
-      <description>Region of interest within which the analysis will be done. Must be in the format "{'left': 0, 'top': 0, 'width': 100, 'height': 100, 'units': 'base_pixels'}" accepted by the region parameter of large_image.TileSource.tileIterator (https://github.com/girder/large_image/blob/master/server/tilesource/base.py#L1328). Default behavior is to process the whole image.</description>
+      <description>Region of interest within which the analysis should be done. Must be in the format "{'left': 0, 'top': 0, 'width': 100, 'height': 100, 'units': 'base_pixels'}" accepted by the region parameter of large_image.TileSource.tileIterator (https://github.com/girder/large_image/blob/master/server/tilesource/base.py#L1328). Default behavior is to process the whole image.</description>
       <longflag>analysis_roi</longflag>
-      <default>null</default>
-    </string>
+    </region>
     <double>
       <name>analysis_tile_size</name>
       <label>Analysis Tile Size</label>

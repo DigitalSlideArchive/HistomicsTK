@@ -11,6 +11,7 @@ import dask
 from dask.distributed import Client, LocalCluster
 import multiprocessing
 
+import os
 import numpy as np
 import json
 import scipy as sp
@@ -72,7 +73,8 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
     ts = large_image.getTileSource(slide_path)
 
     # get requested tile
-    tile_info = ts.getSingleTile(tile_position=tile_position, **it_kwargs)
+    tile_info = ts.getSingleTile(tile_position=np.int(tile_position),
+                                 **it_kwargs)
 
     # get tile image
     im_tile = tile_info['tile'][:, :, :3]
@@ -121,7 +123,7 @@ def main(args):
     #
     # Initiate Dask client
     #
-    print('>> Creating Dask client')
+    print('>> Creating Dask client ...')
 
     scheduler_address = json.loads(args.scheduler_address)
 
@@ -149,9 +151,9 @@ def main(args):
     #
     # Compute tissue/foreground mask at low-res for whole slide images
     #
-    print('>> Computing tissue/foreground mask at low-res')
-
     if is_wsi:
+
+        print('>> Computing tissue/foreground mask at low-res ...')
 
         # get image at low-res
         maxSize = max(ts_metadata['sizeX'], ts_metadata['sizeY'])
@@ -175,12 +177,23 @@ def main(args):
     #
     # Create Dask compute graph for nuclei detection on foreground tiles
     #
+    print('>> Creating a dask graph for tile-wise parallelization ...')
+
     it_kwargs = {
         'format': large_image.tilesource.TILE_FORMAT_NUMPY,
-        'region': json.loads(args.analysis_roi),
-        'tile_size': {'width': args.analysis_tile_size},
+        'tile_size': {'width': np.round(args.analysis_tile_size)},
         'scale': {'magnification': args.analysis_mag},
     }
+
+    if args.analysis_roi is not None:
+
+        it_kwargs['region'] = {
+            'left':   args.analysis_roi[0],
+            'top':    args.analysis_roi[1],
+            'width':  args.analysis_roi[2],
+            'height': args.analysis_roi[3],
+            'units':  'base_pixels'
+        }
 
     tile_nuclei_list = []
 
@@ -234,8 +247,13 @@ def main(args):
     #
     # Write annotation file
     #
+    print('>> Writing annotation file ...')
+
+    annot_fname = os.path.splitext(
+        os.path.basename(args.outputNucleiAnnotationFile))[0]
+
     annotation = {
-        "name":     "Nuclei",
+        "name":     annot_fname,
         "elements": nuclei_list
     }
 
@@ -244,4 +262,5 @@ def main(args):
 
 
 if __name__ == "__main__":
+
     main(CLIArgumentParser().parse_args())
