@@ -6,6 +6,7 @@ import ItemModel from 'girder/models/ItemModel';
 import FileModel from 'girder/models/FileModel';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
 import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
+import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 
 import AnnotationSelector from '../../panels/AnnotationSelector';
 import RegionSelector from '../../panels/RegionSelector';
@@ -39,6 +40,7 @@ var ImageView = View.extend({
             parentView: this
         });
 
+        this.listenTo(events, 'h:select-region', this.showRegion);
         this.listenTo(this.annotationSelector.collection, 'change:displayed', this.toggleAnnotation);
         this.render();
     },
@@ -215,6 +217,45 @@ var ImageView = View.extend({
         } else {
             this.viewerWidget.removeAnnotation(annotation);
         }
+    },
+
+    showRegion(region) {
+        this.viewerWidget.removeAnnotation(
+            new AnnotationModel({_id: 'region-selection'})
+        );
+
+        if (!region) {
+            return;
+        }
+
+        var center = [
+            (region.left + region.right) / 2,
+            (region.top + region.bottom) / 2,
+            0
+        ];
+        var width = region.right - region.left;
+        var height = region.bottom - region.top;
+        var fillColor = 'rgba(255,255,255,0)';
+        var lineColor = 'rgba(0,0,0,1)';
+        var lineWidth = 2;
+        var rotation = 0;
+        var annotation = new AnnotationModel({
+            _id: 'region-selection',
+            name: 'Region',
+            annotation: {
+                elements: [{
+                    type: 'rectangle',
+                    center,
+                    width,
+                    height,
+                    rotation,
+                    fillColor,
+                    lineColor,
+                    lineWidth
+                }]
+            }
+        });
+        this.viewerWidget.drawAnnotation(annotation);
     }
 });
 

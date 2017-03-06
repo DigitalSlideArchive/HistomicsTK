@@ -1,6 +1,7 @@
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 
 import router from '../router';
+import events from '../events';
 
 import regionSelector from '../templates/panels/regionSelector.pug';
 import '../stylesheets/panels/regionSelector.styl';
@@ -22,12 +23,13 @@ var RegionSelector = Panel.extend({
         var top = parseFloat(bounds[1]);
         var right = parseFloat(bounds[2]);
         var bottom = parseFloat(bounds[3]);
-        this.$('.h-region-value').val(JSON.stringify({
-            left, right, top, bottom
-        }));
+        var obj = {left, right, top, bottom};
+        this.$('.h-region-value').val(JSON.stringify(obj));
+        events.trigger('h:select-region', obj);
     },
     clearRegion() {
         this.$('.h-region-value').val('');
+        events.trigger('h:select-region', null);
     }
 });
 
