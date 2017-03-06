@@ -16,11 +16,11 @@ WORKDIR $htk_path
 # Install HistomicsTK and its dependencies
 RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     conda install --yes -c conda-forge pylibmc && \
-    conda install --yes pip libgfortran==1.0 openslide-python \
+    conda install --yes pip libgfortran==1.0 openslide-python ctk_cli==1.3.1 \
     --file requirements_c_conda.txt && \
-    pip install -r requirements.txt -r requirements_c.txt ctk_cli && \
+    pip install -r requirements.txt -r requirements_c.txt && \
     # Install large_image
-    pip install 'git+https://github.com/girder/large_image#egg=large_image' && \
+    pip install 'git+https://github.com/girder/large_image@girder-1.7#egg=large_image' && \
     # Install HistomicsTK
     python setup.py install && \
     # clean up
@@ -34,7 +34,9 @@ RUN python -c "from matplotlib import pylab"
 RUN python -c "import libtiff"
 
 # git clone install slicer_cli_web
-RUN cd /build && git clone https://github.com/girder/slicer_cli_web.git
+RUN cd /build && \
+    git clone https://github.com/girder/slicer_cli_web.git && \
+    cd slicer_cli_web && git checkout "girder-1.7"
 
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server
