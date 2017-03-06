@@ -36,7 +36,9 @@ stain_color_map = {
 def detect_nuclei_kofahi(im_input, args):
 
     # perform color normalization
-    im_nmzd = htk_cnorm.reinhard(im_input, args.target_mu, args.target_sigma)
+    im_nmzd = htk_cnorm.reinhard(im_input,
+                                 args.reference_mu_lab,
+                                 args.reference_std_lab)
 
     # perform color decovolution
     w = np.array([stain_color_map[args.stain_1],
@@ -120,17 +122,33 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
 
 def main(args):
 
+    print('\n>> CLI Parameters ...\n')
+
+    print args
+
+    if len(args.reference_mu_lab) != 3:
+        raise ValueError('Reference Mean LAB should be a 3 element vector.')
+
+    if len(args.reference_std_lab) != 3:
+        raise ValueError('Reference Stddev LAB should be a 3 element vector.')
+
+    if args.analysis_roi is not None and len(args.analysis_roi) != 4:
+        raise ValueError('Analysis ROI must be a vector of 4 elements.')
+
     #
     # Initiate Dask client
     #
-    print('>> Creating Dask client ...')
+    print('\n>> Creating Dask client ...\n')
 
     scheduler_address = json.loads(args.scheduler_address)
 
     if scheduler_address is None:
 
         scheduler_address = LocalCluster(
-            n_workers=multiprocessing.cpu_count()-1, scheduler_port=0)
+            n_workers=multiprocessing.cpu_count()-1,
+            scheduler_port=0,
+            silence_logs=False
+        )
 
     c = Client(scheduler_address)
     print c
@@ -138,7 +156,7 @@ def main(args):
     #
     # Read Input Image
     #
-    print('>> Reading input image')
+    print('\n>> Reading input image ... \n')
 
     ts = large_image.getTileSource(args.inputImageFile)
 
@@ -153,7 +171,7 @@ def main(args):
     #
     if is_wsi:
 
-        print('>> Computing tissue/foreground mask at low-res ...')
+        print('\n>> Computing tissue/foreground mask at low-res ...\n')
 
         # get image at low-res
         maxSize = max(ts_metadata['sizeX'], ts_metadata['sizeY'])
@@ -177,7 +195,7 @@ def main(args):
     #
     # Create Dask compute graph for nuclei detection on foreground tiles
     #
-    print('>> Creating a dask graph for tile-wise parallelization ...')
+    print('\n>> Creating a dask graph for tile-wise parallelization ...\n')
 
     it_kwargs = {
         'format': large_image.tilesource.TILE_FORMAT_NUMPY,
@@ -247,7 +265,7 @@ def main(args):
     #
     # Write annotation file
     #
-    print('>> Writing annotation file ...')
+    print('\n>> Writing annotation file ...\n')
 
     annot_fname = os.path.splitext(
         os.path.basename(args.outputNucleiAnnotationFile))[0]

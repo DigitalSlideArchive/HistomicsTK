@@ -27,6 +27,24 @@
     </file>
   </parameters>
   <parameters>
+    <label>Color Normalization</label>
+    <description>Color Normalization parameters</description>
+    <double-vector>
+      <name>reference_mu_lab</name>
+      <label>Reference Mean LAB</label>
+      <description>Mean of reference image in LAB color space for Reinhard color normalization</description>
+      <longflag>reference_mu_lab</longflag>
+      <default>8.63234435, -0.11501964, 0.03868433</default>
+    </double-vector>
+    <double-vector>
+      <name>reference_std_lab</name>
+      <label>Reference Stddev LAB</label>
+      <description>Standard deviation of reference image in LAB color space for Reinhard color normalization</description>
+      <longflag>reference_std_lab</longflag>
+      <default>0.57506023, 0.10403329, 0.01364062</default>
+    </double-vector>
+  </parameters>
+  <parameters>
     <label>Color Deconvolution</label>
     <description>Color Deconvolution parameters</description>
     <string-enumeration>
@@ -120,7 +138,7 @@
     <region>
       <name>analysis_roi</name>
       <label>Analysis ROI</label>
-      <description>Region of interest within which the analysis should be done. Must be in the format "{'left': 0, 'top': 0, 'width': 100, 'height': 100, 'units': 'base_pixels'}" accepted by the region parameter of large_image.TileSource.tileIterator (https://github.com/girder/large_image/blob/master/server/tilesource/base.py#L1328). Default behavior is to process the whole image.</description>
+      <description>Region of interest within which the analysis should be done. Must be a four element vector in the format "left, top, width, height" in the space of the base layer. Default behavior is to process the whole image.</description>
       <longflag>analysis_roi</longflag>
     </region>
     <double>
