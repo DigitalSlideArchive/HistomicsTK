@@ -126,6 +126,9 @@ def main(args):
 
     print args
 
+    if ~os.path.isfile(args.inputImageFile):
+        raise IOError('Input image file does not exist.')
+
     if len(args.reference_mu_lab) != 3:
         raise ValueError('Reference Mean LAB should be a 3 element vector.')
 
