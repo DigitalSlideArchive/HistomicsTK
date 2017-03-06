@@ -73,7 +73,7 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
     ts = large_image.getTileSource(slide_path)
 
     # get requested tile
-    tile_info = ts.getSingleTile(tile_position=np.int(tile_position),
+    tile_info = ts.getSingleTile(tile_position=tile_position,
                                  **it_kwargs)
 
     # get tile image
@@ -181,7 +181,7 @@ def main(args):
 
     it_kwargs = {
         'format': large_image.tilesource.TILE_FORMAT_NUMPY,
-        'tile_size': {'width': np.round(args.analysis_tile_size)},
+        'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
     }
 
