@@ -101,7 +101,7 @@ before_install:
     - wget -O $build_path/install_miniconda.sh https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
     - bash $build_path/install_miniconda.sh -b -p $build_path/miniconda
     - source $build_path/miniconda/bin/activate $build_path/miniconda
-    - conda update --yes --quiet --all 'python<=2.7.12'
+    - conda update --yes --quiet --all 'python<=2.7.13'
     - conda config --add channels https://conda.binstar.org/cdeepakroy
 
 install:
