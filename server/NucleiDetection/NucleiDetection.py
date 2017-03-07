@@ -1,4 +1,3 @@
-import histomicstk.preprocessing.color_conversion as htk_ccvt
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.filters.shape as htk_shape_filters
@@ -165,7 +164,7 @@ def main(args):
 
     ts_metadata = ts.getMetadata()
 
-    print json.dumps(ts_metadata, indent = 2)
+    print json.dumps(ts_metadata, indent=2)
 
     is_wsi = ts_metadata['magnification'] is not None
 
@@ -243,8 +242,7 @@ def main(args):
             # skip tile if there is not enough foreground in the slide
             cur_fgnd_frac = im_tile_fgnd_mask_lres.mean()
 
-            if (np.isnan(cur_fgnd_frac) or
-                        cur_fgnd_frac <= args.min_fgnd_frac):
+            if np.isnan(cur_fgnd_frac) or cur_fgnd_frac <= args.min_fgnd_frac:
                 continue
 
         # detect nuclei
