@@ -26,7 +26,7 @@ def sample_pixels(slide_path, sample_percent, magnification=None,
         low resolution magnification at which foreground will be segmented.
         Default value = 1.25.
     min_coverage: double, optional
-        minimum sample_percent of tile covered by tissue to be included
+        minimum fraction of tile covered by tissue for it to be included
         in sampling. Ranges between [0,1). Default value = 0.1.
 
     Returns
