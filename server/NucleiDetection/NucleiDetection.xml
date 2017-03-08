@@ -140,6 +140,7 @@
       <label>Analysis ROI</label>
       <description>Region of interest within which the analysis should be done. Must be a four element vector in the format "left, top, width, height" in the space of the base layer. Default behavior is to process the whole image.</description>
       <longflag>analysis_roi</longflag>
+      <default></default>
     </region>
     <double>
       <name>analysis_tile_size</name>
