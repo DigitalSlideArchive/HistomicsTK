@@ -9,7 +9,6 @@ import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 
 import AnnotationSelector from '../../panels/AnnotationSelector';
-import RegionSelector from '../../panels/RegionSelector';
 import router from '../../router';
 import events from '../../events';
 import View from '../View';
@@ -36,12 +35,11 @@ var ImageView = View.extend({
         this.annotationSelector = new AnnotationSelector({
             parentView: this
         });
-        this.regionSelector = new RegionSelector({
-            parentView: this
-        });
 
         this.listenTo(events, 'h:select-region', this.showRegion);
         this.listenTo(this.annotationSelector.collection, 'change:displayed', this.toggleAnnotation);
+
+        this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
         this.render();
     },
     render() {
@@ -77,7 +75,6 @@ var ImageView = View.extend({
             });
             this.annotationSelector.setItem(this.model);
             this.annotationSelector.setElement('.h-annotation-selector').render();
-            this.regionSelector.setElement('.h-region-selector').render();
         }
         this.controlPanel.setElement('.h-control-panel-container').render();
     },
@@ -217,6 +214,16 @@ var ImageView = View.extend({
         } else {
             this.viewerWidget.removeAnnotation(annotation);
         }
+    },
+
+    widgetRegion(model) {
+        var value = model.get('value');
+        this.showRegion({
+            left: parseFloat(value[0]),
+            right: parseFloat(value[0]) + parseFloat(value[2]),
+            top: parseFloat(value[1]),
+            bottom: parseFloat(value[1]) + parseFloat(value[3])
+        });
     },
 
     showRegion(region) {
