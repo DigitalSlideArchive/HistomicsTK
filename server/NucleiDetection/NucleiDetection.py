@@ -134,7 +134,7 @@ def main(args):
     if len(args.reference_std_lab) != 3:
         raise ValueError('Reference Stddev LAB should be a 3 element vector.')
 
-    if args.analysis_roi is not None and len(args.analysis_roi) != 4:
+    if len(args.analysis_roi) != 4:
         raise ValueError('Analysis ROI must be a vector of 4 elements.')
 
     #
@@ -195,9 +195,9 @@ def main(args):
         im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)
 
     #
-    # Create Dask compute graph for nuclei detection on foreground tiles
+    # Detect nuclei in paralle using Dask
     #
-    print('\n>> Creating a dask graph for tile-wise parallelization ...\n')
+    print('\n>> Detecting nuclei in parallel using Dask ...\n')
 
     it_kwargs = {
         'format': large_image.tilesource.TILE_FORMAT_NUMPY,
@@ -205,7 +205,12 @@ def main(args):
         'scale': {'magnification': args.analysis_mag},
     }
 
-    if args.analysis_roi is not None:
+    if np.all(np.array(args.analysis_roi) == -1):
+        process_whole_image = True
+    else:
+        process_whole_image = False
+
+    if not process_whole_image:
 
         it_kwargs['region'] = {
             'left':   args.analysis_roi[0],
