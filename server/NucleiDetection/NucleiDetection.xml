@@ -23,10 +23,10 @@
       <label>Output Nuclei Annotation File</label>
       <description>Output nuclei annotation file</description>
       <channel>output</channel>
-      <index>2</index>
+      <index>1</index>
     </file>
   </parameters>
-  <parameters>
+  <parameters advanced="true">
     <label>Color Normalization</label>
     <description>Color Normalization parameters</description>
     <double-vector>
@@ -44,7 +44,7 @@
       <default>0.57506023, 0.10403329, 0.01364062</default>
     </double-vector>
   </parameters>
-  <parameters>
+  <parameters advanced="true">
     <label>Color Deconvolution</label>
     <description>Color Deconvolution parameters</description>
     <string-enumeration>
@@ -121,18 +121,7 @@
       <default>80</default>
     </double>
   </parameters>
-  <parameters>
-    <label>Dask</label>
-    <description>Dask parameters for parallelization</description>
-    <string>
-      <name>scheduler_address</name>
-      <label>Scheduler Address</label>
-      <description>Address of the dask scheduler in the format '127.0.0.1:8786', Default value = 'null' sets up a cluster on the local machine</description>
-      <longflag>scheduler_address</longflag>
-      <default>null</default>
-    </string>
-  </parameters>
-  <parameters>
+  <parameters advanced="true">
     <label>General</label>
     <description>General parameters</description>
     <region>
@@ -158,9 +147,20 @@
     <double>
       <name>min_fgnd_frac</name>
       <label>Minimum foreground fraction</label>
-      <description>The minimum amount of foreground that must be present in a tile for it to be abalyzed</description>
+      <description>The minimum amount of foreground that must be present in a tile for it to be analyzed</description>
       <longflag>min_fgnd_frac</longflag>
       <default>0.5</default>
     </double>
+  </parameters>
+  <parameters  advanced="true">
+    <label>Dask</label>
+    <description>Dask parameters</description>
+    <string>
+      <name>scheduler_address</name>
+      <label>Scheduler Address</label>
+      <description>Address of the dask scheduler in the format '127.0.0.1:8786', Default value = 'null' sets up a cluster on the local machine</description>
+      <longflag>scheduler_address</longflag>
+      <default>null</default>
+    </string>
   </parameters>
 </executable>
