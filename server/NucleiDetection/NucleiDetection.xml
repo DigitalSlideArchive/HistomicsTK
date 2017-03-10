@@ -18,22 +18,33 @@
       <channel>input</channel>
       <index>0</index>
     </image>
-    <image>
-      <name>outputNucleiMaskFile</name>
-      <label>Output Nuclei Segmentation Mask</label>
-      <description>Output nuclei segmentation label mask</description>
-      <channel>output</channel>
-      <index>1</index>
-    </image>
     <file fileExtensions=".anot" reference="inputImageFile">
       <name>outputNucleiAnnotationFile</name>
       <label>Output Nuclei Annotation File</label>
       <description>Output nuclei annotation file</description>
       <channel>output</channel>
-      <index>2</index>
+      <index>1</index>
     </file>
   </parameters>
-  <parameters>
+  <parameters advanced="true">
+    <label>Color Normalization</label>
+    <description>Color Normalization parameters</description>
+    <double-vector>
+      <name>reference_mu_lab</name>
+      <label>Reference Mean LAB</label>
+      <description>Mean of reference image in LAB color space for Reinhard color normalization</description>
+      <longflag>reference_mu_lab</longflag>
+      <default>8.63234435, -0.11501964, 0.03868433</default>
+    </double-vector>
+    <double-vector>
+      <name>reference_std_lab</name>
+      <label>Reference Stddev LAB</label>
+      <description>Standard deviation of reference image in LAB color space for Reinhard color normalization</description>
+      <longflag>reference_std_lab</longflag>
+      <default>0.57506023, 0.10403329, 0.01364062</default>
+    </double-vector>
+  </parameters>
+  <parameters advanced="true">
     <label>Color Deconvolution</label>
     <description>Color Deconvolution parameters</description>
     <string-enumeration>
@@ -86,7 +97,7 @@
       <label>Minimum Radius</label>
       <description>Minimum nuclear radius (used to set min sigma of the multiscale LoG filter)</description>
       <longflag>min_radius</longflag>
-      <default>10</default>
+      <default>6</default>
     </double>
     <double>
       <name>max_radius</name>
@@ -109,5 +120,48 @@
       <longflag>min_nucleus_area</longflag>
       <default>80</default>
     </double>
+  </parameters>
+  <parameters advanced="true">
+    <label>General</label>
+    <description>General parameters</description>
+    <region>
+      <name>analysis_roi</name>
+      <label>Analysis ROI</label>
+      <description>Region of interest within which the analysis should be done. Must be a four element vector in the format "left, top, width, height" in the space of the base layer. Default value of "-1, -1, -1, -1" indicates that the whole image should be processed.</description>
+      <longflag>analysis_roi</longflag>
+      <default>-1,-1,-1,-1</default>
+    </region>
+    <double>
+      <name>analysis_tile_size</name>
+      <label>Analysis Tile Size</label>
+      <description>Tile size for blockwise analysis</description>
+      <longflag>analysis_tile_size</longflag>
+      <default>4096</default>
+    </double>
+    <double>
+      <name>analysis_mag</name>
+      <label>Analysis Magnification</label>
+      <description>The magnification at which the analysis should be performed.</description>
+      <longflag>analysis_mag</longflag>
+      <default>20</default>
+    </double>
+    <double>
+      <name>min_fgnd_frac</name>
+      <label>Minimum foreground fraction</label>
+      <description>The minimum amount of foreground that must be present in a tile for it to be analyzed</description>
+      <longflag>min_fgnd_frac</longflag>
+      <default>0.5</default>
+    </double>
+  </parameters>
+  <parameters  advanced="true">
+    <label>Dask</label>
+    <description>Dask parameters</description>
+    <string>
+      <name>scheduler_address</name>
+      <label>Scheduler Address</label>
+      <description>Address of the dask scheduler in the format '127.0.0.1:8786', Default value = 'null' sets up a cluster on the local machine</description>
+      <longflag>scheduler_address</longflag>
+      <default>null</default>
+    </string>
   </parameters>
 </executable>

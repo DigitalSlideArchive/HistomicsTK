@@ -11,7 +11,7 @@ from .condense import condense
 from .delete import delete
 from .perimeter import perimeter
 from .shuffle import shuffle
-from .trace_boundaries import trace_boundaries
+from .trace_object_boundaries import trace_object_boundaries
 
 # must be imported after CondenseLabel
 from .area_open import area_open
@@ -30,6 +30,6 @@ __all__ = (
     'perimeter',
     'shuffle',
     'split',
-    'trace_boundaries',
+    'trace_object_boundaries',
     'width_open',
 )
