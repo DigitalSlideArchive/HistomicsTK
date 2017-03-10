@@ -20,7 +20,7 @@ RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     --file requirements_c_conda.txt && \
     pip install -r requirements.txt -r requirements_c.txt && \
     # Install large_image
-    pip install 'git+https://github.com/girder/large_image@girder-1.7#egg=large_image' && \
+    pip install 'git+https://github.com/girder/large_image#egg=large_image' && \
     # Install HistomicsTK
     python setup.py install && \
     # clean up
@@ -35,8 +35,7 @@ RUN python -c "import libtiff"
 
 # git clone install slicer_cli_web
 RUN cd /build && \
-    git clone https://github.com/girder/slicer_cli_web.git && \
-    cd slicer_cli_web && git checkout "girder-1.7"
+    git clone https://github.com/girder/slicer_cli_web.git
 
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server
