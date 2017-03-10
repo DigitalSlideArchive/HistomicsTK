@@ -3,9 +3,9 @@ from .trace_boundaries_cython import trace_boundaries_cython
 import numpy as np
 
 
-def trace_boundaries(im_label,
-                     conn=4, trace_all=False,
-                     x_start=None, y_start=None, max_length=None):
+def trace_object_boundaries(im_label,
+                            conn=4, trace_all=False,
+                            x_start=None, y_start=None, max_length=None):
     """Performs exterior boundary tracing of one or more objects in a label
     mask. If a starting point is not provided then a raster scan will be performed
     to identify the starting pixel.

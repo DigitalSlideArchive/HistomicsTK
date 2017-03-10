@@ -62,7 +62,7 @@ def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
 
     See Also
     --------
-    histomicstk.segmentation.label.trace_boundaries
+    histomicstk.segmentation.label.trace_object_boundaries
 
     References
     ----------
@@ -321,9 +321,9 @@ def trace_contours(I, X, Y, Min, Max, MaxLength=255):
         pY = Y[i] - max(0, Y[i]-np.ceil(MaxLength/2.0)) + 1
 
         # trace boundary, check stopping condition, append to list of contours
-        cX, cY = label.trace_boundaries(Embed, conn=4,
-                                        x_start=pX, y_start=pY,
-                                        MaxLength=MaxLength)
+        cX, cY = label.trace_object_boundaries(Embed, conn=4,
+                                               x_start=pX, y_start=pY,
+                                               MaxLength=MaxLength)
         if(cX[0] == cX[-1] and cY[0] == cY[-1] and len(cX) <= MaxLength):
 
             # add window offset to contour coordinates
@@ -544,7 +544,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         Hull = mo.convex_hull_image(Mask)
 
         # generate boundary coordinates, trim duplicate point
-        X, Y = label.trace_boundaries(Mask, conn=8)
+        X, Y = label.trace_object_boundaries(Mask, conn=8)
         X = np.array(X[:-1], dtype=np.uint32)
         Y = np.array(Y[:-1], dtype=np.uint32)
 

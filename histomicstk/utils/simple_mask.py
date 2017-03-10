@@ -116,7 +116,9 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
                             args=(yHist, xHist),
                             bounds=[(0, 255), (0, 255),
                                     (np.spacing(1), 10),
-                                    (np.spacing(1), 50), (0, 1)])
+                                    (np.spacing(1), 50), (0, 1)],
+                            iprint=0)
+
     muBackground = Parameters[0]
     muTissue = Parameters[1]
     sigmaBackground = Parameters[2]
