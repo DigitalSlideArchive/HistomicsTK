@@ -30,7 +30,8 @@ var AnnotationSelector = Panel.extend({
             this.render();
             return;
         }
-        this.collection.fetch({itemId: item.id}, true)
+        this.collection.offset = 0;
+        this.collection.fetch({itemId: item.id})
             .then(() => this.render());
     },
     render() {
