@@ -3,10 +3,7 @@ import histomicstk.filters.shape as htk_shape_filters
 import numpy as np
 import scipy as sp
 
-import skimage.color
 import skimage.filters
-import skimage.io
-import skimage.measure
 import skimage.morphology
 
 
