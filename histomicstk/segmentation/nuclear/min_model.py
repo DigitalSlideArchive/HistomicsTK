@@ -321,9 +321,12 @@ def trace_contours(I, X, Y, Min, Max, MaxLength=255):
         pY = Y[i] - max(0, Y[i]-np.ceil(MaxLength/2.0)) + 1
 
         # trace boundary, check stopping condition, append to list of contours
-        cX, cY = label.trace_object_boundaries(Embed, conn=4,
+        output = label.trace_object_boundaries(Embed, conn=4, trace_all=False,
                                                x_start=pX, y_start=pY,
-                                               MaxLength=MaxLength)
+                                               max_length=MaxLength)
+        cX = output[0][0]
+        cY = output[0][1]
+
         if(cX[0] == cX[-1] and cY[0] == cY[-1] and len(cX) <= MaxLength):
 
             # add window offset to contour coordinates
@@ -544,9 +547,10 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         Hull = mo.convex_hull_image(Mask)
 
         # generate boundary coordinates, trim duplicate point
-        X, Y = label.trace_object_boundaries(Mask, conn=8)
-        X = np.array(X[:-1], dtype=np.uint32)
-        Y = np.array(Y[:-1], dtype=np.uint32)
+        output = label.trace_object_boundaries(Mask, conn=8)
+
+        X = np.array(output[0][0][:-1], dtype=np.uint32)
+        Y = np.array(output[0][1][:-1], dtype=np.uint32)
 
         # calculate distance transform of object boundary pixels to convex hull
         Distance = mp.distance_transform_edt(Hull)
