@@ -5,7 +5,7 @@ import scipy
 from .simple_mask import simple_mask
 
 
-def sample_pixels(slide_path, magnification, sample_percent,
+def sample_pixels(slide_path, sample_percent, magnification=None,
                   tissue_seg_mag=1.25, min_coverage=0.1):
     """Generates a sampling of pixels from a whole-slide image.
 
@@ -17,17 +17,17 @@ def sample_pixels(slide_path, magnification, sample_percent,
     ----------
     slide_path : str
         path and filename of slide.
-    magnification : double
-        Desired magnification for sampling (defaults to native scan
-        magnification).
     sample_percent : double
         Percentage of pixels to sample. Must be in the range [0, 1].
+    magnification : double
+        Desired magnification for sampling.
+        Default value : None (for native scan magnification).
     tissue_seg_mag: double, optional
         low resolution magnification at which foreground will be segmented.
         Default value = 1.25.
     min_coverage: double, optional
-        minimum sample_percent of tile covered by tissue to be included in sampling.
-        Ranges between [0,1). Default value = 0.1.
+        minimum fraction of tile covered by tissue for it to be included
+        in sampling. Ranges between [0,1). Default value = 0.1.
 
     Returns
     -------
