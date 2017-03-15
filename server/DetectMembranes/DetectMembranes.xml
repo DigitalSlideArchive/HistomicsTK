@@ -75,13 +75,6 @@
       <default>0.4</default>
     </double>
     <double>
-      <name>branch_threshold</name>
-      <label>Branch Threshold</label>
-      <description>Membrane branch threshold</description>
-      <longflag>branch_threshold</longflag>
-      <default>3</default>
-    </double>
-    <double>
       <name>branch_split_dilation</name>
       <label>branch split dilation</label>
       <description>Membrane branch dilation scale to split labels</description>
@@ -94,6 +87,13 @@
       <description>Membrane branch dilation scale to merge labels</description>
       <longflag>branch_merge_dilation</longflag>
       <default>1</default>
+    </double>
+    <double>
+      <name>min_labelsize</name>
+      <label>Minimum Label Size</label>
+      <description>Minimum label size to be removed</description>
+      <longflag>min_labelsize</longflag>
+      <default>100</default>
     </double>
     <double>
       <name>filter_sigma_max</name>
