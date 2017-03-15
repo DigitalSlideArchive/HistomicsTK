@@ -108,6 +108,6 @@ def membrane_neighbors(m_label, h_label, branches, length=25,
 
                 if labels:
                     labels = np.unique(labels).tolist()
-                    m_dict[i] = labels
+                    m_dict[rprops[i].label] = labels
 
     return m_dict
