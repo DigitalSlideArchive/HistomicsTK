@@ -102,10 +102,10 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
         height = obj_props[i].bbox[2] - obj_props[i].bbox[0] + 1
 
         # convert to base pixel coords
-        cx = gx + cx * wfrac
-        cy = gy + cy * hfrac
-        width *= wfrac
-        height *= hfrac
+        cx = np.round(gx + cx * wfrac, 2)
+        cy = np.round(gy + cy * hfrac, 2)
+        width = np.round(width * wfrac, 2)
+        height = np.round(height * hfrac, 2)
 
         # create annotation json
         cur_bbox = {
