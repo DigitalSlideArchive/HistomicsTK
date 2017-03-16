@@ -112,7 +112,8 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
             "center":      [cx, cy, 0],
             "width":       width,
             "height":      height,
-            "rotation":    0
+            "rotation":    0,
+            "fillColor":   "rgba(0,0,0,0)"
         }
 
         nuclei_bbox_list.append(cur_bbox)
