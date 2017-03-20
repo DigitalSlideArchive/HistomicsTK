@@ -35,8 +35,7 @@ RUN python -c "import libtiff"
 
 # git clone install slicer_cli_web
 RUN cd /build && \
-    git clone https://github.com/girder/slicer_cli_web.git && \
-    cd slicer_cli_web && git checkout "girder-1.7"
+    git clone https://github.com/girder/slicer_cli_web.git
 
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server

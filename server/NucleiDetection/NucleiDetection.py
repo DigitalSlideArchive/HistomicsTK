@@ -17,6 +17,7 @@ import scipy as sp
 import skimage.io
 import skimage.measure
 import itertools
+import time
 
 from ctk_cli import CLIArgumentParser
 
@@ -101,10 +102,10 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
         height = obj_props[i].bbox[2] - obj_props[i].bbox[0] + 1
 
         # convert to base pixel coords
-        cx = gx + cx * wfrac
-        cy = gy + cy * hfrac
-        width *= wfrac
-        height *= hfrac
+        cx = np.round(gx + cx * wfrac, 2)
+        cy = np.round(gy + cy * hfrac, 2)
+        width = np.round(width * wfrac, 2)
+        height = np.round(height * hfrac, 2)
 
         # create annotation json
         cur_bbox = {
@@ -112,7 +113,8 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
             "center":      [cx, cy, 0],
             "width":       width,
             "height":      height,
-            "rotation":    0
+            "rotation":    0,
+            "fillColor":   "rgba(0,0,0,0)"
         }
 
         nuclei_bbox_list.append(cur_bbox)
@@ -120,7 +122,55 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
     return nuclei_bbox_list
 
 
+def compute_tile_foreground_fraction(slide_path, tile_position,
+                                     im_fgnd_mask_lres, fgnd_seg_scale,
+                                     **it_kwargs):
+
+    # get slide tile source
+    ts = large_image.getTileSource(slide_path)
+
+    # get requested tile
+    tile = ts.getSingleTile(tile_position=tile_position,
+                            **it_kwargs)
+
+    # get current region in base_pixels
+    rgn_hres = {'left': tile['gx'], 'top': tile['gy'],
+                'right': tile['gx'] + tile['gwidth'],
+                'bottom': tile['gy'] + tile['gheight'],
+                'units': 'base_pixels'}
+
+    # get foreground mask for current tile at low resolution
+    rgn_lres = ts.convertRegionScale(rgn_hres,
+                                     targetScale=fgnd_seg_scale,
+                                     targetUnits='mag_pixels')
+
+    top = np.int(rgn_lres['top'])
+    bottom = np.int(rgn_lres['bottom'])
+    left = np.int(rgn_lres['left'])
+    right = np.int(rgn_lres['right'])
+
+    im_tile_fgnd_mask_lres = im_fgnd_mask_lres[top:bottom, left:right]
+
+    # compute foreground fraction
+    cur_fgnd_frac = im_tile_fgnd_mask_lres.mean()
+
+    if np.isnan(cur_fgnd_frac):
+        cur_fgnd_frac = 0
+
+    return cur_fgnd_frac
+
+
+def collect(x):
+    return x
+
+
+def disp_time(seconds):
+    return time.strftime("%H:%M:%S", time.gmtime(seconds))
+
+
 def main(args):
+
+    total_start_time = time.time()
 
     print('\n>> CLI Parameters ...\n')
 
@@ -137,6 +187,11 @@ def main(args):
 
     if len(args.analysis_roi) != 4:
         raise ValueError('Analysis ROI must be a vector of 4 elements.')
+
+    if np.all(np.array(args.analysis_roi) == -1):
+        process_whole_image = True
+    else:
+        process_whole_image = False
 
     #
     # Initiate Dask client
@@ -196,20 +251,15 @@ def main(args):
         im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)
 
     #
-    # Detect nuclei in paralle using Dask
+    # Compute foreground fraction of tiles in parallel using Dask
     #
-    print('\n>> Detecting nuclei in parallel using Dask ...\n')
+    tile_fgnd_frac_list = [1.0]
 
     it_kwargs = {
         'format': large_image.tilesource.TILE_FORMAT_NUMPY,
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
     }
-
-    if np.all(np.array(args.analysis_roi) == -1):
-        process_whole_image = True
-    else:
-        process_whole_image = False
 
     if not process_whole_image:
 
@@ -221,53 +271,75 @@ def main(args):
             'units':  'base_pixels'
         }
 
+    if is_wsi:
+
+        print('\n>> Computing foreground fraction of all tiles ...\n')
+
+        start_time = time.time()
+
+        num_tiles = ts.getSingleTile(**it_kwargs)['iterator_range']['position']
+
+        print 'Number of tiles = %d' % num_tiles
+
+        tile_fgnd_frac_list = [None] * num_tiles
+
+        for tile_position in range(num_tiles):
+
+            tile_fgnd_frac_list[tile_position] = dask.delayed(compute_tile_foreground_fraction)(
+                args.inputImageFile, tile_position,
+                im_fgnd_mask_lres,
+                fgnd_seg_scale,
+                **it_kwargs
+            )
+
+        tile_fgnd_frac_cgraph = dask.delayed(collect)(tile_fgnd_frac_list)
+        tile_fgnd_frac_list = np.array(tile_fgnd_frac_cgraph.compute())
+
+        num_fgnd_tiles = np.count_nonzero(
+            tile_fgnd_frac_list >= args.min_fgnd_frac)
+
+        percent_fgnd_tiles = 100.0 * num_fgnd_tiles / num_tiles
+
+        fgnd_frac_comp_time = time.time() - start_time
+
+        print 'Number of foreground tiles = %d (%.2f%%)' % (
+            num_fgnd_tiles, percent_fgnd_tiles)
+
+        print 'Time taken = %s' % disp_time(fgnd_frac_comp_time)
+
+    #
+    # Detect nuclei in parallel using Dask
+    #
+    print('\n>> Detecting nuclei ...\n')
+
+    start_time = time.time()
+
     tile_nuclei_list = []
 
     for tile in ts.tileIterator(**it_kwargs):
 
-        if is_wsi:
+        tile_position = tile['tile_position']['position']
 
-            # get current region in base_pixels
-            rgn_hres = {'left': tile['gx'], 'top': tile['gy'],
-                        'right': tile['gx'] + tile['gwidth'],
-                        'bottom': tile['gy'] + tile['gheight'],
-                        'units': 'base_pixels'}
-
-            # get foreground mask for current tile at low resolution
-            rgn_lres = ts.convertRegionScale(rgn_hres,
-                                             targetScale=fgnd_seg_scale,
-                                             targetUnits='mag_pixels')
-
-            top = np.int(rgn_lres['top'])
-            bottom = np.int(rgn_lres['bottom'])
-            left = np.int(rgn_lres['left'])
-            right = np.int(rgn_lres['right'])
-
-            im_tile_fgnd_mask_lres = im_fgnd_mask_lres[top:bottom, left:right]
-
-            # skip tile if there is not enough foreground in the slide
-            cur_fgnd_frac = im_tile_fgnd_mask_lres.mean()
-
-            if np.isnan(cur_fgnd_frac) or cur_fgnd_frac <= args.min_fgnd_frac:
-                continue
+        if is_wsi and tile_fgnd_frac_list[tile_position] <= args.min_fgnd_frac:
+            continue
 
         # detect nuclei
         cur_nuclei_list = dask.delayed(detect_tile_nuclei)(
             args.inputImageFile,
-            tile['tile_position']['position'],
+            tile_position,
             args, **it_kwargs)
 
         # append result to list
         tile_nuclei_list.append(cur_nuclei_list)
 
-    def collect(x):
-        return x
+    nuclei_detection_time = time.time() - start_time
 
     tile_nuclei_list = dask.delayed(collect)(tile_nuclei_list).compute()
 
     nuclei_list = list(itertools.chain.from_iterable(tile_nuclei_list))
 
     print 'Number of nuclei = ', len(nuclei_list)
+    print "Time taken = %s" % disp_time(nuclei_detection_time)
 
     #
     # Write annotation file
@@ -285,6 +357,9 @@ def main(args):
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, indent=2, sort_keys=False)
 
+    total_time_taken = time.time() - total_start_time
+
+    print 'Total analysis time = %s' % disp_time(total_time_taken)
 
 if __name__ == "__main__":
 
