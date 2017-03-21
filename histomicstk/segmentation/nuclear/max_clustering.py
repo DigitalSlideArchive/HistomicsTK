@@ -141,7 +141,7 @@ def max_clustering(Response, Mask, r=10):
         Trajectory[0, 0] = px[i]
         Trajectory[0, 1] = py[i]
 
-        while ~Tracked[Trajectory[Id, 1], Trajectory[Id, 0]]:
+        while not Tracked[Trajectory[Id, 1], Trajectory[Id, 0]]:
 
             # increment trajectory counter
             Id += 1
