@@ -51,6 +51,9 @@ def max_clustering(Response, Mask, r=10):
     if Mask.dtype != np.dtype('bool'):
         raise TypeError("Input 'Mask' must be a bool")
 
+    MaskedResponse = Response.copy()
+    MaskedResponse[~Mask] = Response.min()
+
     # define kernel for max filter
     Kernel = np.zeros((2*r+1, 2*r+1), dtype=bool)
     X, Y = np.meshgrid(np.linspace(0, 2*r, 2*r+1), np.linspace(0, 2*r, 2*r+1))
@@ -63,11 +66,7 @@ def max_clustering(Response, Mask, r=10):
     Y = Y[Kernel].astype(np.int)
 
     # pad input array to simplify filtering
-    I = Response.min() * np.ones((Response.shape[0]+2*r,
-                                  Response.shape[1]+2*r))
-    MaskedResponse = Response.copy()
-    MaskedResponse[~Mask] = Response.min()
-    I[r:r+Response.shape[0], r:r+Response.shape[1]] = MaskedResponse
+    I = np.pad(MaskedResponse, r, 'constant', constant_values=Response.min())
 
     # initialize coordinate arrays and max value arrays
     Max = np.zeros(I.shape)
@@ -76,8 +75,8 @@ def max_clustering(Response, Mask, r=10):
 
     # define pixels for local neighborhoods
     py, px = np.nonzero(Mask)
-    py = py + np.int(r)
-    px = px + np.int(r)
+    py += np.int(r)
+    px += np.int(r)
 
     # perform max filtering
     for i in np.arange(0, px.size, 1):
@@ -94,8 +93,8 @@ def max_clustering(Response, Mask, r=10):
     Col = Col[r:Response.shape[0]+r, r:Response.shape[1]+r]
 
     # subtract out padding offset for px, py
-    py = py - r
-    px = px - r
+    py -= r
+    px -= r
 
     # identify connected regions of local maxima and define their seeds
     Label = spm.label((Response == Max) & Mask)[0]
@@ -107,12 +106,15 @@ def max_clustering(Response, Mask, r=10):
     Maxima = spm.maximum(Response, Label, np.arange(1, Label.max()+1))
 
     # handle seeds lying outside non-convex objects
-    Fix = np.nonzero(Label[Seeds[:, 0].astype(np.uint32),
-                           Seeds[:, 1].astype(np.uint32)] !=
+    Fix = np.nonzero(Label[Seeds[:, 0], Seeds[:, 1]] !=
                      np.arange(1, Label.max()+1))[0]
-    if(Fix.size > 0):
+
+    if Fix.size > 0:
+
         Locations = spm.find_objects(Label)
+
         for i in np.arange(Fix.size):
+
             Patch = Label[Locations[Fix[i]]]
             Pixels = np.nonzero(Patch)
             dX = Pixels[1] - (Seeds[Fix[i], 1] - Locations[Fix][1].start)
@@ -129,26 +131,24 @@ def max_clustering(Response, Mask, r=10):
     Tracked[Label > 0] = True
 
     # track each pixel and update
+    Trajectory = np.zeros((1000, 2), dtype=np.int)
+
     for i in np.arange(0, px.size, 1):
 
         # initialize tracking trajectory
         Id = 0
-        Alloc = 1
-        Trajectory = np.zeros((1000, 2), dtype=np.int)
+        # Trajectory = np.zeros((1000, 2), dtype=np.int)
         Trajectory[0, 0] = px[i]
         Trajectory[0, 1] = py[i]
 
-        while(~Tracked[Trajectory[Id, 1], Trajectory[Id, 0]]):
+        while ~Tracked[Trajectory[Id, 1], Trajectory[Id, 0]]:
 
             # increment trajectory counter
             Id += 1
 
             # if overflow, copy and reallocate
-            if(Id == 1000*Alloc):
-                temp = Trajectory
-                Trajectory = np.zeros((1000*(Alloc+1), 2), dtype=np.int)
-                Trajectory[0:1000*(Alloc), ] = temp
-                Alloc += 1
+            if Id >= Trajectory.shape[0]:
+                Trajectory.resize((Trajectory.shape[0]+1000, 2))
 
             # add local max to trajectory
             Trajectory[Id, 0] = Col[Trajectory[Id-1, 1], Trajectory[Id-1, 0]]
