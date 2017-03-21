@@ -20,7 +20,7 @@ RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     --file requirements_c_conda.txt && \
     pip install -r requirements.txt -r requirements_c.txt && \
     # Install large_image
-    pip install 'git+https://github.com/girder/large_image#egg=large_image' && \
+    pip install 'git+https://github.com/girder/large_image@girder-1.7#egg=large_image' && \
     # Install HistomicsTK
     python setup.py install && \
     # clean up
