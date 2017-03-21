@@ -56,10 +56,10 @@ addons:
 before_install:
     - CACHE="$HOME/.cache" OPENJPEG_VERSION=2.1.2 OPENJPEG_FILE=v2.1.2.tar.gz OPENJPEG_DIR=openjpeg-2.1.2 LIBTIFF_VERSION=4.0.6 OPENSLIDE_VERSION=3.4.1 source .install-openslide.sh
 
-    - GIRDER_VERSION="v1.7.0"
+    - GIRDER_VERSION=master
     - GIRDER_WORKER_VERSION=master
-    - LARGE_IMAGE_VERSION="girder-1.7"
-    - SLICER_CLI_WEB_VERSION="girder-1.7"
+    - LARGE_IMAGE_VERSION=master
+    - SLICER_CLI_WEB_VERSION=master
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path
@@ -105,13 +105,15 @@ before_install:
     - conda config --add channels https://conda.binstar.org/cdeepakroy
 
 install:
+    - cd $girder_path
+    - python setup.py develop
     # https://github.com/pypa/pip/issues/2751
     - conda install --yes libgfortran==1.0 ctk-cli==1.4.1 --file $main_path/requirements_c_conda.txt
     - pip install -r $main_path/requirements.txt -r $main_path/requirements_c.txt
     - cd $main_path 
     - python setup.py build_ext --inplace
     - cd $girder_path
-    - pip install -U -r requirements.txt -r requirements-dev.txt setuptools==19.4
+    - pip install -U -r requirements.txt -r requirements-dev.txt
     - pip install -U -r $large_image_path/requirements.txt
     - pip install -U -r $slicer_cli_web_path/requirements.txt 
     - pip install "git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5" --force-reinstall --ignore-installed --upgrade
@@ -119,6 +121,7 @@ install:
     - npm-install-retry
     - cd $large_image_path
     - python setup.py install
+    - BABEL_ENV=cover girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
 
 script:
     - mkdir -p $build_path/girder_testing_build

@@ -1,17 +1,6 @@
 {
-  "extends": "eslint:recommended",
-  "root": true,
+  "extends": "girder",
   "globals": {
-    "geo": true,
-    "girder": true,
-    "histomicstk": true,
-    "slicer": true,
-    "$": true,
-    "_": true,
-    "Backbone": true,
-    "tinycolor": true
-  },
-  "env": {
-    "browser": true
+    "girder": false
   }
 }
