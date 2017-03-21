@@ -167,7 +167,7 @@ var ImageView = View.extend({
             promise = $.when(
                 getTilesDef(this.model.id),
                 getFileModel(largeImage.originalId || largeImage.fileId)
-            );
+            ).then((a, b) => b); // resolve with the file model
         } else {
             promise = getItemFile(this.model.id);
         }
