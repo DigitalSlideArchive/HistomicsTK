@@ -6,10 +6,10 @@ block title
 block content
   .input-group
     input.h-zoom-slider.form-control(
-      type="range", min=min, max=max, step=step, value=value)
+      type="range", min=min, max=max, step=step, value=value, disabled=disabled)
     span.h-zoom-value.input-group-addon #{value}
   .btn-group.btn-group-justified.h-zoom-buttons
-    each val in [0, 1, 2.5, 5, 10, 20]
+    each val in buttons
       if val
         - var text = val;
       else

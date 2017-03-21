@@ -143,6 +143,14 @@ var ImageView = View.extend({
             });
         };
 
+        var getTilesDef = (itemId) => {
+            return restRequest({
+                path: 'item/' + itemId + '/tiles'
+            }).then((tiles) => {
+                this.zoomWidget.setMaxMagnification(tiles.magnification || 20);
+            });
+        };
+
         var getFileModel = (fileId) => {
             return restRequest({
                 path: 'file/' + fileId
@@ -156,7 +164,10 @@ var ImageView = View.extend({
         if (largeImage) {
             // Until slicer jobs can handle tiled input formats use
             // the original file if available.
-            promise = getFileModel(largeImage.originalId || largeImage.fileId);
+            promise = $.when(
+                getTilesDef(this.model.id),
+                getFileModel(largeImage.originalId || largeImage.fileId)
+            );
         } else {
             promise = getItemFile(this.model.id);
         }
