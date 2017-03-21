@@ -5,11 +5,11 @@ import zoomWidget from '../templates/panels/zoomWidget.pug';
 import '../stylesheets/panels/zoomWidget.styl';
 
 var ZoomWidget = Panel.extend({
-    events: {
+    events: _.extend(Panel.prototype.events, {
         'click .h-zoom-button': '_zoomButton',
         'input .h-zoom-slider': '_zoomSliderInput',
         'change .h-zoom-slider': '_zoomSliderChange'
-    },
+    }),
     initialize() {
         this._maxMag = 20;
         this._maxZoom = 8;
@@ -30,6 +30,7 @@ var ZoomWidget = Panel.extend({
             value: Math.log2(value),
             enabled: !!this.viewer
         }));
+        this.$('.s-panel-content').collapse({toggle: false});
         this._zoomSliderInput();
     },
     setViewer(viewer) {
