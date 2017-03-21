@@ -1,5 +1,8 @@
 extends ./panel.pug
 
+block title
+  | #[span.icon-zoom-in] #{title}
+
 block content
   .input-group
     input.h-zoom-slider.form-control(
