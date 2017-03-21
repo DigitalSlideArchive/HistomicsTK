@@ -53,7 +53,7 @@ extensions = ['sphinx.ext.autodoc',
 
 autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
                         'nimfa',
-                        'openslide', 'pandas',
+                        'openslide', 'pandas', 'large_image',
                         'scipy',
                         'scipy.ndimage.morphology','scipy.ndimage.filters',
                         'scipy.ndimage.measurements',
@@ -62,7 +62,7 @@ autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
                         'skimage.segmentation', 'skimage.morphology',
                         'skimage.draw',
                         'sklearn.cluster', 'sklearn.neighbors.kde',
-                        'histomicstk.segmentation.label.trace_boundaries']
+                        'histomicstk.segmentation.label.trace_boundaries_cython']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -1,0 +1,17 @@
+.s-panel-title-container
+  span.s-panel-title
+    block title
+      | #{title}
+  span.s-panel-controls
+    if collapsed
+      i.icon-down-open
+    else
+      i.icon-up-open
+    if removeButton
+      i.icon-cancel.s-remove-panel(data-target=`#${id}`)
+
+- var attrs = {}
+if !collapsed
+  - attrs.class = 'in'
+.s-panel-content.collapse&attributes(attrs)
+  block content
