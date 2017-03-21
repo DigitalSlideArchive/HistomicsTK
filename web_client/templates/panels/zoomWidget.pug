@@ -1,0 +1,16 @@
+extends ./panel.pug
+
+block content
+  .input-group
+    input.h-zoom-slider.form-control(
+      type="range", min=min, max=max, step=step, value=value)
+    span.h-zoom-value.input-group-addon #{value}
+  .btn-group.btn-group-justified.h-zoom-buttons
+    each val in [0, 1, 2.5, 5, 10, 20]
+      if val
+        - var text = val;
+      else
+        - var text = 'Fit';
+        - val = Math.pow(2, min);
+      .btn-group
+        button.btn.btn-default.h-zoom-button(type="button", data-value=val) #{text}
