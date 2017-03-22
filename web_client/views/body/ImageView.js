@@ -9,6 +9,7 @@ import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 
 import AnnotationSelector from '../../panels/AnnotationSelector';
+import ZoomWidget from '../../panels/ZoomWidget';
 import router from '../../router';
 import events from '../../events';
 import View from '../View';
@@ -33,6 +34,9 @@ var ImageView = View.extend({
             parentView: this
         });
         this.annotationSelector = new AnnotationSelector({
+            parentView: this
+        });
+        this.zoomWidget = new ZoomWidget({
             parentView: this
         });
 
@@ -72,6 +76,10 @@ var ImageView = View.extend({
                         this.setBoundsQuery();
                     });
                 }
+
+                this.zoomWidget
+                    .setViewer(this.viewer)
+                    .setElement('.h-zoom-widget').render();
             });
             this.annotationSelector.setItem(this.model);
             this.annotationSelector.setElement('.h-annotation-selector').render();
@@ -135,6 +143,14 @@ var ImageView = View.extend({
             });
         };
 
+        var getTilesDef = (itemId) => {
+            return restRequest({
+                path: 'item/' + itemId + '/tiles'
+            }).then((tiles) => {
+                this.zoomWidget.setMaxMagnification(tiles.magnification || 20);
+            });
+        };
+
         var getFileModel = (fileId) => {
             return restRequest({
                 path: 'file/' + fileId
@@ -148,7 +164,10 @@ var ImageView = View.extend({
         if (largeImage) {
             // Until slicer jobs can handle tiled input formats use
             // the original file if available.
-            promise = getFileModel(largeImage.originalId || largeImage.fileId);
+            promise = $.when(
+                getTilesDef(this.model.id),
+                getFileModel(largeImage.originalId || largeImage.fileId)
+            ).then((a, b) => b); // resolve with the file model
         } else {
             promise = getItemFile(this.model.id);
         }
