@@ -73,8 +73,10 @@
     plugins: "{{ girder_plugins }}"
     state: present
 
-- name: Install girder web if necessary
-  command: girder-install web
+# Girder web was already installed with all pluigins, so this shouldn't be
+# necessary.
+# - name: Install girder web if necessary
+#   command: girder-install web
 
 - name: Restart girder as a service to make sure our plugins are running
   service: name=girder state=restarted enabled=yes
