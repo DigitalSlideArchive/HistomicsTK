@@ -3,6 +3,8 @@
 import argparse
 import collections
 import docker
+import getpass
+import json
 import os
 import six
 import sys
@@ -60,6 +62,56 @@ def config_mounts(mounts, config):
         config['binds'].append(':'.join(mountParts))
 
 
+def containers_provision(**kwargs):
+    """
+    Provision or reprovision the containers.
+    """
+    client = docker.from_env()
+    ctn = get_docker_image_and_container(client, 'histomicstk')
+
+    username = kwargs.get('username')
+    password = kwargs.get('password')
+    if username == '':
+        username = six.moves.input('Admin login: ')
+    if password == '':
+        password = getpass.getpass('Password for %s: ' % (
+            username if username else 'default admin user'))
+    # docker exec -i -t histomicstk_histomicstk bash -c
+    # 'cd /home/ubuntu/HistomicsTK/ansible && ansible-playbook -i
+    # inventory/local docker_ansible.yml --extra-vars=docker=provision'
+    extra_vars = {
+        'docker': 'provision'
+    }
+    if username:
+        extra_vars['girder_admin_user'] = username
+        extra_vars['girder_no_create_admin'] = True
+    if password:
+        extra_vars['girder_admin_password'] = password
+        extra_vars['girder_no_create_admin'] = True
+    ansible_command = (
+        'ansible-playbook -i inventory/local docker_ansible.yml '
+        '--extra-vars=' + six.moves.shlex_quote(json.dumps(extra_vars)))
+    exec_command = 'bash -c ' + six.moves.shlex_quote(
+        'cd /home/ubuntu/HistomicsTK/ansible && ' + ansible_command)
+    print exec_command  # ##DWM::
+    tries = 1
+    while True:
+        try:
+            cmd = client.exec_create(
+                container=ctn.get('Id'), cmd=exec_command, tty=True)
+            for output in client.exec_start(cmd.get('Id'), stream=True):
+                print(output.strip())
+            cmd = client.exec_inspect(cmd.get('Id'))
+            if not cmd['ExitCode']:
+                break
+        except (ValueError, docker.errors.APIError):
+            time.sleep(1)
+        print('Error provisioning (try %d)' % tries)
+        tries += 1
+        if not kwargs.get('retry'):
+            raise Exception('Failed to provision')
+
+
 def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
                      **kwargs):
     """
@@ -94,31 +146,7 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
         time.sleep(5)
 
     if provision:
-        ctn = get_docker_image_and_container(client, 'histomicstk')
-        # docker exec -i -t histomicstk_histomicstk bash -c
-        # 'cd /home/ubuntu/HistomicsTK/ansible && ansible-playbook -i
-        # inventory/local docker_ansible.yml --extra-vars=docker=provision'
-        tries = 1
-        while True:
-            try:
-                cmd = client.exec_create(
-                    container=ctn.get('Id'),
-                    cmd="bash -c 'cd /home/ubuntu/HistomicsTK/ansible && "
-                        "ansible-playbook -i inventory/local docker_ansible.yml "
-                        "--extra-vars=docker=provision'",
-                    tty=True,
-                )
-                for output in client.exec_start(cmd.get('Id'), stream=True):
-                    print(output.strip())
-                cmd = client.exec_inspect(cmd.get('Id'))
-                if not cmd['ExitCode']:
-                    break
-            except (ValueError, docker.errors.APIError):
-                time.sleep(1)
-            print('Error provisioning (try %d)' % tries)
-            tries += 1
-            if not kwargs.get('retry'):
-                raise Exception('Failed to provision')
+        containers_provision(**kwargs)
 
 
 def container_start_histomicstk(client, env, key='histomicstk', port=8080,
@@ -606,6 +634,10 @@ if __name__ == '__main__':
         '(host path)[:(name)[:ro]].  If no name is specified, mountX is used, '
         'starting at mount1.')
     parser.add_argument(
+        '--password', '--pass', '--passwd', '--pw',
+        help='Override the Girder admin password used in provisioning.  Set '
+        'to an empty string to be prompted for username and password.')
+    parser.add_argument(
         '--provision', action='store_true',
         help='Reprovision the Girder the docker containers are started.')
     parser.add_argument(
@@ -627,7 +659,11 @@ if __name__ == '__main__':
     parser.add_argument(
         '--status', '-s', action='store_true',
         help='Report the status of relevant docker containers and images.')
-    parser.add_argument('-verbose', '-v', action='count', default=0)
+    parser.add_argument(
+        '--username', '--user',
+        help='Override the Girder admin username used in provisioning.  Set '
+        'to an empty string to be prompted for username and password.')
+    parser.add_argument('--verbose', '-v', action='count', default=0)
 
     # Should we add an optional url or host value for rmq and mongo?
     # Should we allow installing git repos in a local directory to make it

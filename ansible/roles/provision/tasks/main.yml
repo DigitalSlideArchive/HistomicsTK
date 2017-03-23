@@ -52,6 +52,7 @@
       email: "{{ girder_admin_email }}"
       admin: yes
     state: present
+  when: girder_no_create_admin is undefined
 
 - name: Ensure worker user exists
   girder:
