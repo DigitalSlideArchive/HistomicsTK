@@ -3,6 +3,7 @@
     name:
       - python-pycurl
       - apt-transport-https
+    install_recommends: no
     state: present
   become: true
 
@@ -18,6 +19,7 @@
 - name: NodeJS | Install package
   apt:
     name: nodejs
+    install_recommends: no
   become: true
 
 - name: Fetch GPG key for MongoDB
@@ -33,29 +35,32 @@
     creates: /etc/apt/sources.list.d/mongodb-org-3.2.list
 
 - name: Install system package dependencies
-  apt: name={{ item }} state=present update_cache=yes
+  apt:
+    state: present
+    update_cache: yes
+    name:
+      - build-essential
+      - git
+      - python2.7-dev
+      - libffi-dev
+      - libjpeg-dev
+      - zlib1g-dev
+      - python-pip
+      - nodejs
+      - postfix
+      - apt-transport-https
+      - ca-certificates
+      - mongodb-org
+      - vim
+      - python-dev
+      - memcached
+      - libmemcached-dev
+      - libxslt1-dev
+      - apparmor
+      - pandoc
+      - pandoc-citeproc
+    install_recommends: no
   become: true
-  with_items:
-    - build-essential
-    - git
-    - python2.7-dev
-    - libffi-dev
-    - libjpeg-dev
-    - zlib1g-dev
-    - python-pip
-    - nodejs
-    - postfix
-    - apt-transport-https
-    - ca-certificates
-    - mongodb-org
-    - vim
-    - python-dev
-    - memcached
-    - libmemcached-dev
-    - libxslt1-dev
-    - apparmor
-    - pandoc
-    - pandoc-citeproc
 
 - name: Install node-gyp
   shell: "npm install -g node-gyp-install && /usr/lib/node_modules/node-gyp-install/bin.js"

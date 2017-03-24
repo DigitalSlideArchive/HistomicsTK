@@ -51,6 +51,7 @@
       - python-gi-dev
       # Don't install libpoppler; it needs an older version of libtif
       # - libpoppler-glib-dev
+    install_recommends: no
   become: true
 
 # openjpeg
@@ -176,6 +177,19 @@
 - name: Run ldconfig
   command: ldconfig
   become: true
+
+- name: Install Vips python connector
+  copy:
+    src: "{{ root_dir }}/vips-8.4.5/python/packages/gi/overrides/Vips.py"
+    dest: /usr/lib/python2.7/dist-packages/gi/overrides/
+  become: true
+
+- name: Enable Vips python connector
+  lineinfile:
+    dest: $HOME/.bashrc
+    line: 'export GI_TYPELIB_PATH=/usr/local/lib/girepository-1.0'
+    insertafter: 'EOF'
+    state: present
 
 # Update python packages
 - name: Get the most recent version of pip

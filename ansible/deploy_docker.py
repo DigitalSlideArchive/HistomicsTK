@@ -93,7 +93,6 @@ def containers_provision(**kwargs):
         '--extra-vars=' + six.moves.shlex_quote(json.dumps(extra_vars)))
     exec_command = 'bash -c ' + six.moves.shlex_quote(
         'cd /home/ubuntu/HistomicsTK/ansible && ' + ansible_command)
-    print exec_command  # ##DWM::
     tries = 1
     while True:
         try:
@@ -635,6 +634,7 @@ if __name__ == '__main__':
         'starting at mount1.')
     parser.add_argument(
         '--password', '--pass', '--passwd', '--pw',
+        const='', default=None, nargs='?',
         help='Override the Girder admin password used in provisioning.  Set '
         'to an empty string to be prompted for username and password.')
     parser.add_argument(
@@ -660,7 +660,7 @@ if __name__ == '__main__':
         '--status', '-s', action='store_true',
         help='Report the status of relevant docker containers and images.')
     parser.add_argument(
-        '--username', '--user',
+        '--username', '--user', const='', default=None, nargs='?',
         help='Override the Girder admin username used in provisioning.  Set '
         'to an empty string to be prompted for username and password.')
     parser.add_argument('--verbose', '-v', action='count', default=0)
