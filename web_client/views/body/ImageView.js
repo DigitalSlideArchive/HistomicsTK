@@ -80,6 +80,9 @@ var ImageView = View.extend({
                     this.viewer.geoOn(geo.event.mousemove, (evt) => {
                         this.showCoordinates(evt);
                     });
+
+                    // remove the hidden class from the coordinates display
+                    this.$('.h-image-coordinates-container').removeClass('hidden');
                 }
 
                 this.zoomWidget
