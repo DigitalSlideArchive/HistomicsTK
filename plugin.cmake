@@ -60,6 +60,15 @@ add_python_test(segmentation_label
     PLUGIN HistomicsTK
 )
 
+add_python_test(nuclei_segmentation
+    SUBMODULE NucleiSegmentationTest
+    DBNAME core_nuclei_seg_kofahi
+    PLUGIN HistomicsTK EXTERNAL_DATA
+    "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
+    "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
+    "plugins/HistomicsTK/Easy1_seg_kofahi.png" # put Easy1_seg_kofahi.png.sha512 in plugin_tests/data
+)
+
 # front-end tests
 #add_web_client_test(
 #    HistomicsTK_visualization "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/visualization.js"
