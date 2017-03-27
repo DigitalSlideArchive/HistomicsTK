@@ -45,7 +45,7 @@ def sparse_color_deconvolution(im_rgb, w_init, beta):
 
     See Also
     --------
-    histomicstk.preprocessing.color_deconvolution.ColorDeconvolution
+    histomicstk.preprocessing.color_deconvolution.color_deconvolution
 
     References
     ----------

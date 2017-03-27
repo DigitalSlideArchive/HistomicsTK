@@ -35,7 +35,7 @@ def color_deconvolution(im_rgb, w):
         An intensity image of deconvolved stains that is unbounded,
         suitable for reconstructing color images of deconvolved stains
         with color_convolution.
-    wc : array_like
+    Wc : array_like
         A 3x3 complemented stain matrix. Useful for color image
         reconstruction with color_convolution.
 
