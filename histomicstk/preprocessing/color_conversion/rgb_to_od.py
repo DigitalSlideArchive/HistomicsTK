@@ -19,6 +19,7 @@ def rgb_to_od(im_rgb):
     See Also
     --------
     histomicstk.preprocessing.color_conversion.od_to_rgb,
+    histomicstk.preprocessing.color_conversion.rgb_to_sda,
     histomicstk.preprocessing.color_deconvolution.color_deconvolution,
     histomicstk.preprocessing.color_deconvolution.color_convolution
     """
