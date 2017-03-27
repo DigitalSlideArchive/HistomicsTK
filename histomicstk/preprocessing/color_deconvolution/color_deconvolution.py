@@ -1,4 +1,5 @@
 from histomicstk.preprocessing import color_conversion
+from histomicstk.utils.linalg import normalize
 from .complement_stain_matrix import complement_stain_matrix
 import collections
 import numpy
@@ -51,13 +52,10 @@ def color_deconvolution(im_rgb, w):
     if numpy.linalg.norm(w[:, 2]) <= 1e-16:
         wc = complement_stain_matrix(w)
     else:
-        wc = w.copy()
+        wc = w
 
     # normalize stains to unit-norm
-    for i in range(wc.shape[1]):
-        Norm = numpy.linalg.norm(wc[:, i])
-        if Norm >= 1e-16:
-            wc[:, i] /= Norm
+    wc = normalize(wc)
 
     # invert stain matrix
     Q = numpy.linalg.inv(wc)
