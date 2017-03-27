@@ -55,8 +55,8 @@ def detect_nuclei_kofahi(im_input, args):
 
     # run adaptive multi-scale LoG filter
     im_log = htk_shape_filters.clog(im_nuclei_stain, im_nuclei_fgnd_mask,
-                                    sigma_min=args.min_radius * np.sqrt(2),
-                                    sigma_max=args.max_radius * np.sqrt(2))
+                                    sigma_min=args.min_radius / np.sqrt(2),
+                                    sigma_max=args.max_radius / np.sqrt(2))
 
     # apply local maximum clustering
     im_nuclei_seg_mask, seeds, max = htk_seg.nuclear.max_clustering(
