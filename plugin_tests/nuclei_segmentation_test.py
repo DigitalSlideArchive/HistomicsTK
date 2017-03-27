@@ -88,7 +88,7 @@ class NucleiSegmentationTest(base.TestCase):
 
         # run adaptive multi-scale LoG filter
         im_log = htk_shape_filters.clog(im_nuclei_stain, im_nuclei_fgnd_mask,
-                                        sigma_min=12 / np.sqrt(2),
+                                        sigma_min=20 / np.sqrt(2),
                                         sigma_max=30 / np.sqrt(2))
 
         # apply local maximum clustering
