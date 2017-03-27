@@ -7,6 +7,7 @@ the stains of histopathology images.
 from .color_convolution import color_convolution
 from .complement_stain_matrix import complement_stain_matrix
 from .sparse_color_deconvolution import sparse_color_deconvolution
+from .macenko_stain_matrix import macenko_stain_matrix
 
 # must be imported after ComplementStainMatrix
 from .color_deconvolution import color_deconvolution
@@ -19,4 +20,5 @@ __all__ = (
     'color_deconvolution',
     'complement_stain_matrix',
     'sparse_color_deconvolution',
+    'macenko_stain_matrix',
 )
