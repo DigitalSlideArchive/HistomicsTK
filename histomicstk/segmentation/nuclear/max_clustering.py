@@ -3,6 +3,7 @@ import skimage.measure
 
 from ._max_clustering_cython import _max_clustering_cython
 
+
 def max_clustering(im_response, im_fgnd_mask, r=10):
     """Local max clustering pixel aggregation for nuclear segmentation.
     Takes as input a constrained log or other filtered nuclear image, a binary
