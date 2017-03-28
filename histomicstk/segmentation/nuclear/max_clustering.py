@@ -78,7 +78,7 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
 
     num_labels = len(obj_props)
 
-    maxima = [obj_props[i].max_intensity for i in range(num_labels)]
+    maxima = np.array([obj_props[i].max_intensity for i in range(num_labels)])
     maxima = min_resp + maxima * resp_range
 
     seeds = np.array(
