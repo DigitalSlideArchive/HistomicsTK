@@ -16,6 +16,7 @@
     girder_admin_email: histomicstk.admin@kitware.com
     girder_admin_password: password
     girder_socket_port: 8080
+    girder_socket_scheme: http
     girder_exec_user: vagrant
     girder_exec_group: vagrant
     girder_plugins:

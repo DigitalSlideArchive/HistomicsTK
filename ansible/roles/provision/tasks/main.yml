@@ -44,6 +44,7 @@
 - name: Ensure girder admin user exists
   girder:
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     user:
       firstName: admin
       lastName: admin
@@ -57,6 +58,7 @@
 - name: Ensure worker user exists
   girder:
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     user:
       firstName: Worker
       lastName: Robot
@@ -68,6 +70,7 @@
 - name: Ensure required plugins are enabled
   girder:
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     plugins: "{{ girder_plugins }}"
@@ -86,6 +89,7 @@
 - name: Restart girder via web
   girder:
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     put:
@@ -100,6 +104,7 @@
 - name: Set worker broker setting
   girder:
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     put:
@@ -111,6 +116,7 @@
 - name: Set worker backend setting
   girder:
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     put:
@@ -122,6 +128,7 @@
 - name: Set worker backend setting
   girder:
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     put:
@@ -133,6 +140,7 @@
 - name: Set homepage markdown setting
   girder:
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     put:
@@ -155,6 +163,7 @@
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     assetstore:
       name: default
       type: filesystem
@@ -167,6 +176,7 @@
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     get:
       path: "/assetstore"
   register: assetstore_list
@@ -176,6 +186,7 @@
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     collection:
       name: TCGA
       public: yes
@@ -188,6 +199,7 @@
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     folder:
       parentType: collection
       parentId: "{{ tcga_collection['gc_return']['_id'] }}"
@@ -203,6 +215,7 @@
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
     port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
     post:
       path: "assetstore/{{ assetstore_list['gc_return'][0]['_id'] }}/import"
       parameters:
