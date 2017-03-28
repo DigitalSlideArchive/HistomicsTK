@@ -70,11 +70,19 @@ var ImageView = View.extend({
                 // also set the query string
                 this.setBoundsQuery();
 
-                // update the query string on pan events
                 if (this.viewer) {
+                    // update the query string on pan events
                     this.viewer.geoOn(geo.event.pan, () => {
                         this.setBoundsQuery();
                     });
+
+                    // update the coordinate display on mouse move
+                    this.viewer.geoOn(geo.event.mousemove, (evt) => {
+                        this.showCoordinates(evt);
+                    });
+
+                    // remove the hidden class from the coordinates display
+                    this.$('.h-image-coordinates-container').removeClass('hidden');
                 }
 
                 this.zoomWidget
@@ -282,7 +290,17 @@ var ImageView = View.extend({
             }
         });
         this.viewerWidget.drawAnnotation(annotation);
+    },
+
+    showCoordinates(evt) {
+        if (this.viewer) {
+            var pt = evt.geo;
+            this.$('.h-image-coordinates').text(
+                pt.x.toFixed() + ', ' + pt.y.toFixed()
+            );
+        }
     }
+
 });
 
 export default ImageView;
