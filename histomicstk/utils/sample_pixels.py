@@ -6,7 +6,7 @@ from .simple_mask import simple_mask
 
 
 def sample_pixels(slide_path, sample_percent, magnification=None,
-                  tissue_seg_mag=1.25, min_coverage=0.1):
+                  tissue_seg_mag=1.25, min_coverage=0.1, background=False):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -28,6 +28,9 @@ def sample_pixels(slide_path, sample_percent, magnification=None,
     min_coverage: double, optional
         minimum fraction of tile covered by tissue for it to be included
         in sampling. Ranges between [0,1). Default value = 0.1.
+    background: bool, optional
+        sample the background instead of the foreground if True. min_coverage
+        then refers to the amount of background. Default value = False
 
     Returns
     -------
@@ -49,8 +52,9 @@ def sample_pixels(slide_path, sample_percent, magnification=None,
     )
     im_lres = im_lres[:, :, :3]
 
-    # compute foreground mask of whole-slide image at low-res
-    im_fgnd_mask_lres = simple_mask(im_lres)
+    # compute foreground mask of whole-slide image at low-res.
+    # it will actually be a background mask if background is set.
+    im_fgnd_mask_lres = bool(background) ^ simple_mask(im_lres)
 
     # generate sample pixels
     sample_pixels = []
