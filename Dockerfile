@@ -14,9 +14,8 @@ COPY . $htk_path/
 WORKDIR $htk_path
 
 # Install HistomicsTK and its dependencies
-RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
-    conda install --yes -c conda-forge pylibmc && \
-    conda install --yes pip libgfortran==1.0 openslide-python ctk-cli==1.4.1 \
+RUN conda install --yes -c conda-forge pylibmc && \
+    conda install --yes libgfortran==1.0 \
     --file requirements_c_conda.txt && \
     pip install -r requirements.txt -r requirements_c.txt && \
     # Install large_image
@@ -25,12 +24,6 @@ RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     python setup.py install && \
     # clean up
     conda clean -i -l -t -y && \
-    rm -rf /root/.cache/pip/*
-
-# Ensure we have a locally built Pillow and libtiff in conda's environment
-RUN pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed \
-    Pillow \
-    libtiff && \
     rm -rf /root/.cache/pip/*
 
 # pregenerate font cache
