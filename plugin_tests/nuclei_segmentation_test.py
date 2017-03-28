@@ -100,7 +100,7 @@ class NucleiSegmentationTest(base.TestCase):
             im_nuclei_seg_mask, 80).astype(np.int)
 
         # check if segmentation mask matches ground truth
-        gtruth_mask_file = os.path.join(TEST_DATA_DIR, 'Easy1_seg_kofahi.png')
+        gtruth_mask_file = os.path.join(TEST_DATA_DIR, 'Easy1_nuclei_seg_kofahi.png')
 
         im_gtruth_mask = skimage.io.imread(gtruth_mask_file)
 
