@@ -20,11 +20,17 @@ RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
     --file requirements_c_conda.txt && \
     pip install -r requirements.txt -r requirements_c.txt && \
     # Install large_image
-    pip install 'git+https://github.com/girder/large_image@girder-1.7#egg=large_image' && \
+    pip install 'git+https://github.com/girder/large_image#egg=large_image' && \
     # Install HistomicsTK
     python setup.py install && \
     # clean up
     conda clean -i -l -t -y && \
+    rm -rf /root/.cache/pip/*
+
+# Ensure we have a locally built Pillow and libtiff in conda's environment
+RUN pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed \
+    Pillow \
+    libtiff && \
     rm -rf /root/.cache/pip/*
 
 # pregenerate font cache

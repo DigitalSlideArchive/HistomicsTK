@@ -1,7 +1,8 @@
 import json
 
-from girder.constants import TerminalColor, AccessType
+from girder.constants import AccessType
 from girder.utility.model_importer import ModelImporter
+from girder import logger
 
 
 def process_annotations(event):
@@ -13,16 +14,16 @@ def process_annotations(event):
         try:
             reference = json.loads(reference)
         except (ValueError, TypeError):
-            print(TerminalColor.error(
+            logger.error(
                 'Warning: Could not get reference from the annotation param. '
                 'Make sure you have at ctk-cli>=1.3.1 installed.'
-            ))
-            return
+            )
+            raise
 
         if 'userId' not in reference or 'itemId' not in reference:
-            print(TerminalColor.error(
+            logger.error(
                 'Annotation reference does not contain required information.'
-            ))
+            )
             return
 
         userId = reference['userId']
@@ -37,16 +38,16 @@ def process_annotations(event):
         # load models from the database
         user = User.load(userId, force=True)
         image = File.load(imageId, level=AccessType.READ, user=user)
-        item = Item.load(image['itemId'], level=AccessType.WRITE, user=user)
+        item = Item.load(image['itemId'], level=AccessType.READ, user=user)
         file = File.load(
             info.get('file', {}).get('_id'),
             level=AccessType.READ, user=user
         )
 
         if not (item and user and file):
-            print(TerminalColor.error(
+            logger.error(
                 'Could not load models from the database'
-            ))
+            )
             return
 
         try:
@@ -54,13 +55,19 @@ def process_annotations(event):
                 ''.join(File.download(file)())
             )
         except Exception:
-            print(TerminalColor.error(
+            logger.error(
                 'Could not parse annotation file'
-            ))
-            return
+            )
+            raise
 
-        Annotation.createAnnotation(
-            item,
-            user,
-            data
-        )
+        try:
+            Annotation.createAnnotation(
+                item,
+                user,
+                data
+            )
+        except Exception:
+            logger.error(
+                'Could not create annotation object from data'
+            )
+            raise
