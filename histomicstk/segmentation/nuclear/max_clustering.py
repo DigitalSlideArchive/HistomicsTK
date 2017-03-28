@@ -30,7 +30,7 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
         share mutual sinks.
     seeds : array_like
         An N x 2 array defining the (x,y) coordinates of nuclei seeds.
-    maxima : array_like
+    max_response : array_like
         An N x 1 array containing the maximum response value corresponding to
         'seeds'.
 
@@ -57,15 +57,6 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
     # identify connected regions of local maxima and define their seeds
     im_label = skimage.measure.label(im_fgnd_mask & (im_response == mval))
 
-    im_label_flat = im_label.ravel()
-
-    # set label of each foreground pixel to the label of its nearest peak
-    pind = np.flatnonzero(im_fgnd_mask)
-
-    mind_flat = mind.ravel()
-
-    im_label_flat[pind] = im_label_flat[mind_flat[pind]]
-
     # compute normalized response
     min_resp = im_response.min()
     max_resp = im_response.max()
@@ -78,12 +69,10 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
 
     num_labels = len(obj_props)
 
-    maxima = np.array([obj_props[i].max_intensity for i in range(num_labels)])
-    maxima = min_resp + maxima * resp_range
-
+    # extract object seeds
     seeds = np.array(
         [obj_props[i].weighted_centroid for i in range(num_labels)])
-    seeds = np.round(seeds).astype(np.uint32)
+    seeds = np.round(seeds).astype(np.int)
 
     # fix seeds outside the object region - happens for non-convex objects
     for i in range(num_labels):
@@ -104,5 +93,17 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
 
         assert im_label[seeds[i, 0], seeds[i, 1]] == obj_props[i].label
 
+    # get seed responses
+    max_response = im_response[seeds[:, 0], seeds[:, 1]]
+
+    # set label of each foreground pixel to the label of its nearest peak
+    im_label_flat = im_label.ravel()
+
+    pind = np.flatnonzero(im_fgnd_mask)
+
+    mind_flat = mind.ravel()
+
+    im_label_flat[pind] = im_label_flat[mind_flat[pind]]
+
     # return
-    return im_label, seeds, maxima
+    return im_label, seeds, max_response
