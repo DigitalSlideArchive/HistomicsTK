@@ -5,8 +5,9 @@ import scipy
 from .simple_mask import simple_mask
 
 
-def sample_pixels(slide_path, sample_percent, magnification=None,
-                  tissue_seg_mag=1.25, min_coverage=0.1, background=False):
+def sample_pixels(slide_path, sample_percent=None, magnification=None,
+                  tissue_seg_mag=1.25, min_coverage=0.1, background=False,
+                  sample_approximate_total=None):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -31,6 +32,9 @@ def sample_pixels(slide_path, sample_percent, magnification=None,
     background: bool, optional
         sample the background instead of the foreground if True. min_coverage
         then refers to the amount of background. Default value = False
+    sample_approximate_total: int, optional
+        use instead of sample_percent to specify roughly how many pixels to
+        sample. The fewer tiles are excluded, the more accurate this will be.
 
     Returns
     -------
@@ -42,7 +46,14 @@ def sample_pixels(slide_path, sample_percent, magnification=None,
     histomicstk.preprocessing.color_normalization.reinhard
     """
 
+    if (sample_percent is None) == (sample_approximate_total is None):
+        raise ValueError('Exactly one of sample_percent and ' +
+                         'sample_approximate_total must have a value.')
+
     ts = large_image.getTileSource(slide_path)
+
+    if magnification is None:
+        magnification = ts.getMetadata()['magnification']
 
     # get enitre whole-silde image at low resolution
     scale_lres = {'magnification': tissue_seg_mag}
@@ -55,6 +66,11 @@ def sample_pixels(slide_path, sample_percent, magnification=None,
     # compute foreground mask of whole-slide image at low-res.
     # it will actually be a background mask if background is set.
     im_fgnd_mask_lres = bool(background) ^ simple_mask(im_lres)
+
+    if sample_approximate_total is not None:
+        scale_ratio = float(magnification) / tissue_seg_mag
+        total_fgnd_pixels = np.count_nonzero(im_fgnd_mask_lres) * scale_ratio ** 2
+        sample_percent = sample_approximate_total / total_fgnd_pixels
 
     # generate sample pixels
     sample_pixels = []
