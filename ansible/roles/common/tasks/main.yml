@@ -1,13 +1,16 @@
 ---
 - name: Ensure the girder group exists
-  group: name="{{ girder_exec_group }}" state=present
+  group:
+    name: "{{ girder_exec_group }}"
+    state: present
   become: true
 
 - name: Ensure the girder user exists
-  user: shell=/bin/bash
-        name="{{ girder_exec_user }}"
-        groups="{{ girder_exec_group }}"
-        append=yes
+  user:
+    shell: /bin/bash
+    name: "{{ girder_exec_user }}"
+    groups: "{{ girder_exec_group }}"
+    append: yes
   become: true
 
 - name: Give ownership of root dir to appropriate user
@@ -30,12 +33,21 @@
   when: (vagrant is defined) or (docker is defined)
 
 - name: Upgrade system packages
-  apt: 
+  apt:
     upgrade: safe
     force: yes
     update_cache: yes
   become: true
   when: (vagrant is defined) or (docker is defined)
+
+- name: Install pycurl and apt-transport-https package in order to use the apt_repository module and install from https
+  apt:
+    name:
+      - python-pycurl
+      - apt-transport-https
+    install_recommends: no
+    state: present
+  become: true
 
 - name: Create a docker group
   group:

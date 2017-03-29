@@ -1,15 +1,8 @@
 ---
-- name: Install apt-transport-https package in order to install from https
-  apt:
-    name: apt-transport-https
-    state: present
-    install_recommends: no
-  become: true
-
 - name: Fetch GPG key for docker package
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
-    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    id: 0EBFCD88
   become: true
 
 - name: Add docker PPA

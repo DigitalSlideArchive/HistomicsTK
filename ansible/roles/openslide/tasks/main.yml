@@ -1,3 +1,4 @@
+---
 - name: Install package dependencies
   apt:
     state: present
