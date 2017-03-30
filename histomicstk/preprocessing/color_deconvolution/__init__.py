@@ -9,6 +9,7 @@ from .complement_stain_matrix import complement_stain_matrix
 from .sparse_color_deconvolution import sparse_color_deconvolution
 from .macenko_stain_matrix import macenko_stain_matrix
 from .snmf_stain_matrix import snmf_stain_matrix
+from .rgb_macenko_stain_matrix import rgb_macenko_stain_matrix
 
 # must be imported after ComplementStainMatrix
 from .color_deconvolution import color_deconvolution
@@ -23,4 +24,5 @@ __all__ = (
     'sparse_color_deconvolution',
     'macenko_stain_matrix',
     'snmf_stain_matrix',
+    'rgb_macenko_stain_matrix',
 )
