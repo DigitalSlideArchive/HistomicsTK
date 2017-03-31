@@ -9,6 +9,7 @@ import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 
 import AnnotationSelector from '../../panels/AnnotationSelector';
+import ZoomWidget from '../../panels/ZoomWidget';
 import router from '../../router';
 import events from '../../events';
 import View from '../View';
@@ -33,6 +34,9 @@ var ImageView = View.extend({
             parentView: this
         });
         this.annotationSelector = new AnnotationSelector({
+            parentView: this
+        });
+        this.zoomWidget = new ZoomWidget({
             parentView: this
         });
 
@@ -66,12 +70,24 @@ var ImageView = View.extend({
                 // also set the query string
                 this.setBoundsQuery();
 
-                // update the query string on pan events
                 if (this.viewer) {
+                    // update the query string on pan events
                     this.viewer.geoOn(geo.event.pan, () => {
                         this.setBoundsQuery();
                     });
+
+                    // update the coordinate display on mouse move
+                    this.viewer.geoOn(geo.event.mousemove, (evt) => {
+                        this.showCoordinates(evt);
+                    });
+
+                    // remove the hidden class from the coordinates display
+                    this.$('.h-image-coordinates-container').removeClass('hidden');
                 }
+
+                this.zoomWidget
+                    .setViewer(this.viewer)
+                    .setElement('.h-zoom-widget').render();
             });
             this.annotationSelector.setItem(this.model);
             this.annotationSelector.setElement('.h-annotation-selector').render();
@@ -135,6 +151,14 @@ var ImageView = View.extend({
             });
         };
 
+        var getTilesDef = (itemId) => {
+            return restRequest({
+                path: 'item/' + itemId + '/tiles'
+            }).then((tiles) => {
+                this.zoomWidget.setMaxMagnification(tiles.magnification || 20);
+            });
+        };
+
         var getFileModel = (fileId) => {
             return restRequest({
                 path: 'file/' + fileId
@@ -148,7 +172,10 @@ var ImageView = View.extend({
         if (largeImage) {
             // Until slicer jobs can handle tiled input formats use
             // the original file if available.
-            promise = getFileModel(largeImage.originalId || largeImage.fileId);
+            promise = $.when(
+                getTilesDef(this.model.id),
+                getFileModel(largeImage.originalId || largeImage.fileId)
+            ).then((a, b) => b); // resolve with the file model
         } else {
             promise = getItemFile(this.model.id);
         }
@@ -263,7 +290,17 @@ var ImageView = View.extend({
             }
         });
         this.viewerWidget.drawAnnotation(annotation);
+    },
+
+    showCoordinates(evt) {
+        if (this.viewer) {
+            var pt = evt.geo;
+            this.$('.h-image-coordinates').text(
+                pt.x.toFixed() + ', ' + pt.y.toFixed()
+            );
+        }
     }
+
 });
 
 export default ImageView;
