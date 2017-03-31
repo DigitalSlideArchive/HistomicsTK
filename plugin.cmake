@@ -66,7 +66,7 @@ add_python_test(nuclei_segmentation
     PLUGIN HistomicsTK EXTERNAL_DATA
     "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
     "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
-    "plugins/HistomicsTK/Easy1_nuclei_seg_kofahi.png" # put Easy1_nuclei_seg_kofahi.png.sha512 in plugin_tests/data
+    "plugins/HistomicsTK/Easy1_nuclei_seg_kofahi.npy" # put Easy1_nuclei_seg_kofahi.npy.sha512 in plugin_tests/data
 )
 
 # front-end tests
