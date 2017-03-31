@@ -103,6 +103,8 @@ class NucleiSegmentationTest(base.TestCase):
         gtruth_mask_file = os.path.join(TEST_DATA_DIR,
                                         'Easy1_nuclei_seg_kofahi.png')
 
-        im_gtruth_mask = skimage.io.imread(gtruth_mask_file)
+        im_gtruth_mask = skimage.io.imread(gtruth_mask_file).astype(np.int)
+
+        print np.mean(im_nuclei_seg_mask == im_gtruth_mask)
 
         np.testing.assert_allclose(im_nuclei_seg_mask, im_gtruth_mask)
