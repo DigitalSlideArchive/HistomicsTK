@@ -20,6 +20,7 @@
 from tests import base
 
 import os
+import sys
 
 import scipy as sp
 import numpy as np
@@ -104,5 +105,8 @@ class NucleiSegmentationTest(base.TestCase):
                                         'Easy1_nuclei_seg_kofahi.npy')
 
         im_gtruth_mask = np.load(gtruth_mask_file)
+
+        sys.stderr.write('%r\n' % im_nuclei_seg_mask)
+        sys.stderr.write('%r\n' % im_gtruth_mask)
 
         np.testing.assert_allclose(im_nuclei_seg_mask, im_gtruth_mask)
