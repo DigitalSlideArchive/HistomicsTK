@@ -106,7 +106,4 @@ class NucleiSegmentationTest(base.TestCase):
 
         im_gtruth_mask = np.load(gtruth_mask_file)
 
-        sys.stderr.write('%r\n' % im_nuclei_seg_mask)
-        sys.stderr.write('%r\n' % im_gtruth_mask)
-
         np.testing.assert_allclose(im_nuclei_seg_mask, im_gtruth_mask)
