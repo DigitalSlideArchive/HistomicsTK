@@ -20,7 +20,6 @@
 from tests import base
 
 import os
-import sys
 
 import scipy as sp
 import numpy as np
