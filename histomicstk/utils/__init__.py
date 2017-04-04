@@ -6,6 +6,7 @@ all other sub-packages of histomicstk
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
 from .convert_image_to_matrix import convert_image_to_matrix
+from .convert_matrix_to_image import convert_matrix_to_image
 from .del2 import del2
 from .eigen import eigen
 from .exclude_nonfinite import exclude_nonfinite
@@ -20,6 +21,7 @@ from .sample_pixels import sample_pixels  # must import after SimpleMask
 __all__ = (
 
     # functions and classes of this package
+    'convert_matrix_to_image',
     'convert_image_to_matrix',
     'del2',
     'eigen',
