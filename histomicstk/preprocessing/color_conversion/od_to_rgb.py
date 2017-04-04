@@ -1,5 +1,4 @@
-import numpy as np
-
+from .sda_to_rgb import sda_to_rgb
 
 def od_to_rgb(im_od):
     """Transforms input optical density image `im_od` into RGB space
@@ -24,6 +23,4 @@ def od_to_rgb(im_od):
     histomicstk.preprocessing.color_deconvolution.color_convolution
     """
 
-    im_rgb = 256.0 * np.exp(-im_od * np.log(256.0) / 255.0) - 1.0
-
-    return im_rgb
+    return sda_to_rgb(im_od, None) # compatibility mode
