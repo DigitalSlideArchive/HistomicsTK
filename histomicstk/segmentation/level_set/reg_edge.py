@@ -58,9 +58,10 @@ def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
 
     References
     ----------
-    .. [1] C. Li, C. Xu, C. Gui, M.D. fox, "Distance Regularized Level Set
-           Evolution and Its Application to Image Segmentation," in IEEE
-           Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.
+    .. C. Li, C. Xu, C. Gui, M.D. fox, "Distance Regularized Level Set
+       Evolution and Its Application to Image Segmentation," in IEEE
+       Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.
+
     """
 
     # smoothed gradient of input image

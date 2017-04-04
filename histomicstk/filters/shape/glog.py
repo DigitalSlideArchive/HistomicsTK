@@ -38,9 +38,10 @@ def glog(im_input, alpha=1,
 
     References
     ----------
-    .. [1] H. Kong, H.C. Akakin, S.E. Sarma, "A Generalized Laplacian of
-           Gaussian Filter for Blob Detection and Its Applications," in IEEE
-           Transactions on Cybernetics, vol.43,no.6,pp.1719-33, 2013.
+    .. H. Kong, H.C. Akakin, S.E. Sarma, "A Generalized Laplacian of
+       Gaussian Filter for Blob Detection and Its Applications," in IEEE
+       Transactions on Cybernetics, vol.43,no.6,pp.1719-33, 2013.
+
     """
 
     # initialize sigma

@@ -62,12 +62,10 @@ U24-CA194362-01_.
    :maxdepth: 2
 
    installation
-   usage
    api-docs
    examples
    contributing
    authors
-   history
 
 Indices and tables
 ==================
