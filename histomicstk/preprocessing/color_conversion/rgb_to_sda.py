@@ -20,6 +20,11 @@ def rgb_to_sda(im_rgb, I_0, allow_negatives=False):
     im_sda : array_like
         Shaped like `im_rgb`, with output values 0..255 where `im_rgb` >= 1
 
+    Note
+    ----
+    For compatibility purposes, passing I_0=None invokes the behavior of
+    rgb_to_od.
+
     See Also
     --------
     histomicstk.preprocessing.color_conversion.sda_to_rgb,
@@ -30,6 +35,10 @@ def rgb_to_sda(im_rgb, I_0, allow_negatives=False):
     is_matrix = im_rgb.ndim == 2
     if is_matrix:
         im_rgb = im_rgb.T
+
+    if I_0 is None: # rgb_to_od compatibility
+        im_rgb = im_rgb.astype(float) + 1
+        I_0 = 256
 
     if not allow_negatives:
         im_rgb = np.minimum(im_rgb, I_0)

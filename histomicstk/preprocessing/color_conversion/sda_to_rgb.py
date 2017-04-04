@@ -12,6 +12,11 @@ def sda_to_rgb(im_sda, I_0):
     I_0 : float or array_like
         Background intensity, either per-channel or for all channels
 
+    Note
+    ----
+    For compatibility purposes, passing I_0=None invokes the behavior of
+    od_to_rgb.
+
     See Also
     --------
     histomicstk.preprocessing.color_conversion.rgb_to_sda,
@@ -24,5 +29,9 @@ def sda_to_rgb(im_sda, I_0):
     if is_matrix:
         im_sda = im_sda.T
 
+    od = I_0 is None
+    if od: # od_to_rgb compatibility
+        I_0 = 256
+
     im_rgb = I_0 ** (1 - im_sda / 255.)
-    return im_rgb.T if is_matrix else im_rgb
+    return (im_rgb.T if is_matrix else im_rgb) - od
