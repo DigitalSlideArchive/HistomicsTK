@@ -1,8 +1,9 @@
 import numpy as np
+import histomicstk.utils as utils
 from histomicstk.preprocessing import color_conversion
 
 
-def color_convolution(im_stains, w):
+def color_convolution(im_stains, w, I_0=None):
     """Performs Color Convolution
     Reconstructs a color image from the stain matrix `w` and
     the individual images stored as channels in `im_stains` and generated
@@ -17,6 +18,9 @@ def color_convolution(im_stains, w):
         In the case of two stains, the third column is zero and will be
         complemented using cross-product. The matrix should contain a
         minumum two nonzero columns.
+    I_0 : float or array_like, optional
+        A float a 3-vector containing background RGB intensities.
+        If unspecified, use the old OD conversion.
 
     Returns
     -------
@@ -30,23 +34,21 @@ def color_convolution(im_stains, w):
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
     histomicstk.preprocessing.color_conversion.rgb_to_od
     histomicstk.preprocessing.color_conversion.od_to_rgb
+    histomicstk.preprocessing.color_conversion.rgb_to_sda
+    histomicstk.preprocessing.color_conversion.sda_to_rgb
     """
 
     # transform 3D input stain image to 2D stain matrix format
-    m = im_stains.shape[0]
-    n = im_stains.shape[1]
-    im_stains = np.reshape(im_stains, (m * n, 3))
+    m = utils.convert_image_to_matrix(im_stains)
 
     # transform input stains to optical density values, convolve and
     # tfm back to stain
-    im_stains = im_stains.astype(dtype=np.float32)
-    ODfwd = color_conversion.rgb_to_od(im_stains)
-    ODdeconv = np.dot(ODfwd, np.transpose(w))
-    ODinv = color_conversion.od_to_rgb(ODdeconv)
+    sda_fwd = color_conversion.rgb_to_sda(m, 255 if I_0 is not None else None)
+    sda_conv = np.dot(w, sda_fwd)
+    sda_inv = color_conversion.sda_to_rgb(sda_conv, I_0)
 
     # reshape output, transform type
-    im_rgb = np.reshape(ODinv, (m, n, 3))
-    im_rgb[im_rgb > 255] = 255
-    im_rgb = im_rgb.astype(np.uint8)
+    im_rgb = (utils.convert_matrix_to_image(sda_inv, im_stains.shape)
+              .clip(0, 255).astype(np.uint8))
 
     return im_rgb
