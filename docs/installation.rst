@@ -18,9 +18,12 @@ large_image to find out how to install it as a Python toolkit/package.
 
 HistomicsTK also leverages the functionality of a number of scientific python
 packages including numpy_, scipy_, scikit-image_, scikit-learn_,
-and pandas_. We recommend installing anaconda_ to ease the cross-platform
-installation of these packages all of which are listed in
+and pandas_.  If you have not built libtiff or openjpeg locally, we recommend
+installing anaconda_ to ease the cross-platform installation of these packages
+all of which are listed in
 `requirments_c_conda.txt <https://github.com/DigitalSlideArchive/HistomicsTK/blob/master/requirements_c_conda.txt>`__.
+If libtiff or openjpeg were built locally, use pip to install these packages,
+as otherwise the binaries may not match properly.
 
 Once large_image is installed as a python package, HistomicsTK can be
 installed as follows::
@@ -28,10 +31,17 @@ installed as follows::
     $ git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
     $ cd HistomicsTK
     $ conda config --add channels https://conda.binstar.org/cdeepakroy
-    $ conda install --yes libgfortran==1.0 ctk-cli==1.3.1 --file requirements_c_conda.txt
+    $ conda install --yes ctk-cli==1.4.1
+    $ pip install --no-cache-dir -r requirements_c_conda.txt
     $ pip install --no-cache-dir -r requirements.txt -r requirements_c.txt
     $ python setup.py build_ext --inplace
     $ pip install .
+
+If you build libtiff or openjpeg locally, ensure that the appropriate pip files
+have also been installed locally so that they use the correct libraries::
+
+    $ pip install --upgrade --force-reinstall --ignore-installed --no-cache-dir openslide-python Pillow
+    $ pip install --upgrade --force-reinstall --ignore-installed 'git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5'
 
 We are working on releasing HistomicsTK on PyPI so it can easily be pip
 installed from there.

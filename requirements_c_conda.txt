@@ -5,18 +5,21 @@
 #
 #########################################################
 
-# large_image requires numpy==1.10.2
-numpy==1.10.2
+# using a later version than 1.10.2 from conda causes a python import of a
+# locally built version libtiff to segfault.  Using a pip install of a later 
+# version throws an error regarding loading libmkl_avx.so or libmkl_def.so
+# unless scipy and scikit-image are also installed from pip and not conda.
+numpy>=1.10.2
 
-# scikit-image / scipy / numpy have compatability bugs with some versions
-# Do not change these versions without extensive testing
-scikit-image==0.12.3
-scipy==0.16.0
+scikit-image>=0.12.3
+scipy>=0.16.0
 
-# If Conda is used, "libgfortran==1.0" must also be specified
+# If Conda is used, some versions of numpy require that "libgfortran==1.0" must
+# also be specified *before* the packages in this file
+# libgfortran==1.0
 
-scikit-learn==0.17.1
-pandas==0.18.1
+scikit-learn>=0.17.1
+pandas>=0.18.1
 
 # Don't have conda install Pillow; we need a version that is linked against
 # our own libraries, and conda may not do that.
