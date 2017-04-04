@@ -108,7 +108,7 @@ install:
     - cd $girder_path
     - python setup.py develop
     - conda install --yes ctk-cli==1.4.1
-    - pip install -r requirements_c_conda.txt && \
+    - pip install -r $main_path/requirements_c_conda.txt 
     - pip install -r $main_path/requirements.txt -r $main_path/requirements_c.txt
     - cd $main_path 
     - python setup.py build_ext --inplace
