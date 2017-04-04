@@ -77,6 +77,9 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
 
     scale_hres = {'magnfication': magnification}
 
+    # Accumulator for probabilistic rounding
+    frac_accum = 0.
+
     for tile in ts.tileIterator(
             scale=scale_hres,
             format=large_image.tilesource.TILE_FORMAT_NUMPY):
@@ -117,7 +120,18 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
 
         # generate linear indices of sample pixels in fgnd mask
         nz_ind = np.nonzero(tile_fgnd_mask.flatten())[0]
-        num_samples = np.int(sample_percent * nz_ind.size)
+
+        # Handle fractions in the desired sample size by rounding up
+        # or down, weighted by the fractional amount.  To reduce
+        # variance, the fraction is adjusted by a running counter that
+        # factors in previous random decisions.
+        float_samples = sample_percent * nz_ind.size
+        num_samples = int(np.floor(float_samples))
+        frac_accum += float_samples - num_samples
+        r = np.random.binomial(1, np.clip(frac_accum, 0, 1))
+        num_samples += r
+        frac_accum -= r
+
         sample_ind = np.random.choice(nz_ind, num_samples)
 
         # convert rgb tile image to Nx3 array
