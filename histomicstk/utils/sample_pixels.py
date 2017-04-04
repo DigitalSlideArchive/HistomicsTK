@@ -75,7 +75,7 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
     # generate sample pixels
     sample_pixels = []
 
-    scale_hres = {'magnfication': magnification}
+    scale_hres = {'magnification': magnification}
 
     # Accumulator for probabilistic rounding
     frac_accum = 0.
