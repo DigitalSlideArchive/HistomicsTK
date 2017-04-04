@@ -6,7 +6,7 @@
   <version>0.1.0</version>
   <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
   <license>Apache 2.0</license>
-  <contributor>Deepak Roy Chittajallu (Kitware)</contributor>
+  <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
   <parameters>
     <label>IO</label>
@@ -60,5 +60,17 @@
       <longflag>stainColor_3</longflag>
       <default>0,0,0</default>
     </double-vector>
+    <boolean>
+      <name>largeImage</name>
+      <label>Large Image?</label>
+      <longflag>largeImage</longflag>
+      <description>True if the input image is a large image that should be handled with large_image</description>
+    </boolean>
+    <integer-vector>
+      <name>region</name>
+      <label>Region</label>
+      <longflag>region</longflag>
+      <description>left,top,width,height of the region of interest</description>
+    </integer-vector>
   </parameters>
 </executable>

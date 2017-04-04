@@ -2,6 +2,7 @@ import numpy as np
 import skimage.io
 
 from ctk_cli import CLIArgumentParser
+import large_image
 
 import histomicstk.preprocessing.color_deconvolution as htk_cd
 
@@ -16,7 +17,17 @@ def main(args):
 
     print(args.inputImageFile)
 
-    im_input = skimage.io.imread(args.inputImageFile)
+    if args.largeImage:
+        if args.region is None:
+            raise ValueError('Region must be provided when using --largeImage')
+        ts = large_image.getTileSource(args.inputImageFile)
+        if len(args.region) != 4:
+            raise ValueError('Exactly four values required for --region')
+        im_input = ts.getRegion(format=large_image.tilesource.TILE_FORMAT_NUMPY,
+                                region=dict(zip(['left', 'top', 'width', 'height'],
+                                                args.region)))[0]
+    else:
+        im_input = skimage.io.imread(args.inputImageFile)
 
     # Create stain matrix
     print('>> Creating stain matrix')
