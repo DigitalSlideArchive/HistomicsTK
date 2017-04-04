@@ -122,7 +122,9 @@ install:
     - cd $large_image_path
     - python setup.py install
     - BABEL_ENV=cover girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
-    - pip install ipython sphinx sphinx_rtd_theme nbsphinx travis-sphinx
+    - conda install --yes jupyter
+    - pip conda jupyter sphinx sphinx_rtd_theme nbsphinx
+    - pip install travis-sphinx
 
 script:
     - mkdir -p $build_path/girder_testing_build
