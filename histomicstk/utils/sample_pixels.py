@@ -55,7 +55,7 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
     if magnification is None:
         magnification = ts.getMetadata()['magnification']
 
-    # get enitre whole-silde image at low resolution
+    # get entire whole-slide image at low resolution
     scale_lres = {'magnification': tissue_seg_mag}
     im_lres, _ = ts.getRegion(
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
