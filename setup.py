@@ -73,9 +73,7 @@ ext_list = [
     Extension(
         "histomicstk.segmentation.nuclear._max_clustering_cython",
         sources=["histomicstk/segmentation/nuclear/_max_clustering_cython.pyx"],
-        include_dirs=[numpy.get_include()],
-        extra_compile_args=ext_compiler_args,
-        language="c++",
+        include_dirs=[numpy.get_include()]
     )
 ]
 
