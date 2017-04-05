@@ -20,8 +20,8 @@ import os
 # directory, add these directories to sys.path here. If the directory is
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
-sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.abspath('../histomictk'))
+docs_dir = os.path.dirname(__file__)
+sys.path.insert(0, os.path.abspath(os.path.join(docs_dir, '..')))
 
 # on_rtd is whether we are on readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -62,7 +62,7 @@ autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
                         'skimage.segmentation', 'skimage.morphology',
                         'skimage.draw',
                         'sklearn.cluster', 'sklearn.neighbors.kde',
-                        'histomicstk.segmentation.label.trace_boundaries_cython']
+                        'segmentation.label.trace_boundaries_cython']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -164,7 +164,8 @@ pygments_style = 'sphinx'
 # here, relative to this directory. They are copied after the builtin
 # static files, so a file named "default.css" will overwrite the builtin
 # "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
+html_static_path = []
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page
 # bottom, using the given strftime format.

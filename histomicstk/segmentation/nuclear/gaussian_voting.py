@@ -53,10 +53,10 @@ def gaussian_voting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
 
     References
     ----------
-    .. [1] X. Qi, F. Xing, D.J. Foran, L. Yang, "Robust Segmentation of
-           Overlapping Cells in Histopathology Specimens Using Parallel
-           Seed Detection and Repulsive Level Set," in IEEE Transactions
-           on Biomedical Engineering, vol.59,no.23,pp.754-65, 2011.
+    .. X. Qi, F. Xing, D.J. Foran, L. Yang, "Robust Segmentation of
+       Overlapping Cells in Histopathology Specimens Using Parallel
+       Seed Detection and Repulsive Level Set," in IEEE Transactions
+       on Biomedical Engineering, vol.59,no.23,pp.754-65, 2011.
     """
 
     # calculate standard deviation of voting kernel
