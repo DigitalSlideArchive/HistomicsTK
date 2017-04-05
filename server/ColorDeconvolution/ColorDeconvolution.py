@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import skimage.io
 
@@ -50,6 +52,14 @@ def main(args):
 
     print args.outputStainImageFile_3
     skimage.io.imsave(args.outputStainImageFile_3, im_stains[:, :, 2])
+
+    if args.returnParameterFile is not None:
+        with open(args.returnParameterFile, 'w') as f:
+            f.write('region = ' + ','.join(map(str, args.region)) + '\n')
+            for i in range(1, 4):
+                name = 'outputStainImageFile_{}'.format(i)
+                # Just use the absolute path
+                f.write('{} = {}\n'.format(name, os.path.abspath(getattr(args, name))))
 
 if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())

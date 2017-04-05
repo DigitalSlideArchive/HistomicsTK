@@ -72,5 +72,30 @@
       <longflag>region</longflag>
       <description>left,top,width,height of the region of interest</description>
     </integer-vector>
+    <!-- And now the output parameters -->
+    <integer-vector>
+      <name>region</name>
+      <label>Region</label>
+      <channel>output</channel>
+      <description>left,top,width,height of the region of interest</description>
+    </integer-vector>
+    <string>
+      <name>outputStainImageFile_1</name>
+      <label>Output Image of Stain 1</label>
+      <channel>output</channel>
+      <description>Output Image of Stain 1</description>
+    </string>
+    <string>
+      <name>outputStainImageFile_2</name>
+      <label>Output Image of Stain 2</label>
+      <channel>output</channel>
+      <description>Output Image of Stain 2</description>
+    </string>
+    <string>
+      <name>outputStainImageFile_3</name>
+      <label>Output Image of Stain 3</label>
+      <channel>output</channel>
+      <description>Output Image of Stain 3</description>
+    </string>
   </parameters>
 </executable>
