@@ -101,14 +101,14 @@ before_install:
     - wget -O $build_path/install_miniconda.sh https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
     - bash $build_path/install_miniconda.sh -b -p $build_path/miniconda
     - source $build_path/miniconda/bin/activate $build_path/miniconda
-    - conda update --yes --quiet --all 'python<=2.7.12'
+    - conda update --yes --quiet --all
     - conda config --add channels https://conda.binstar.org/cdeepakroy
 
 install:
     - cd $girder_path
     - python setup.py develop
-    # https://github.com/pypa/pip/issues/2751
-    - conda install --yes libgfortran==1.0 ctk-cli==1.4.1 --file $main_path/requirements_c_conda.txt
+    - conda install --yes ctk-cli==1.4.1
+    - pip install -r $main_path/requirements_c_conda.txt 
     - pip install -r $main_path/requirements.txt -r $main_path/requirements_c.txt
     - cd $main_path 
     - python setup.py build_ext --inplace
@@ -116,8 +116,8 @@ install:
     - pip install -U -r requirements.txt -r requirements-dev.txt
     - pip install -U -r $large_image_path/requirements.txt
     - pip install -U -r $slicer_cli_web_path/requirements.txt 
-    - pip install "git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5" --force-reinstall --ignore-installed --upgrade
-    - pip install Pillow --force-reinstall --ignore-installed --upgrade
+    - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
+    - pip install "git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5" --force-reinstall --ignore-installed --upgrade --no-cache-dir
     - npm-install-retry
     - cd $large_image_path
     - python setup.py install
