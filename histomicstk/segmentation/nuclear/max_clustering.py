@@ -1,8 +1,10 @@
 import numpy as np
-import scipy.ndimage.measurements as spm
+import skimage.measure
+
+from ._max_clustering_cython import _max_clustering_cython
 
 
-def max_clustering(Response, Mask, r=10):
+def max_clustering(im_response, im_fgnd_mask, r=10):
     """Local max clustering pixel aggregation for nuclear segmentation.
     Takes as input a constrained log or other filtered nuclear image, a binary
     nuclear mask, and a clustering radius. For each pixel in the nuclear mask,
@@ -11,11 +13,11 @@ def max_clustering(Response, Mask, r=10):
 
     Parameters
     ----------
-    Response : array_like
+    im_response : array_like
         A filtered-smoothed image where the maxima correspond to nuclear
         center. Typically obtained by constrained-LoG filtering on a
         hematoxylin intensity image obtained from ColorDeconvolution.
-    Mask : array_like
+    im_fgnd_mask : array_like
         A binary mask of type boolean where nuclei pixels have value
         'True', and non-nuclear pixels have value 'False'.
     r : float
@@ -23,14 +25,14 @@ def max_clustering(Response, Mask, r=10):
 
     Returns
     -------
-    Label : array_like
-        Label image where positive values correspond to foreground pixels that
+    im_label : array_like
+        im_label image where positive values correspond to foreground pixels that
         share mutual sinks.
-    Seeds : array_like
+    seeds : array_like
         An N x 2 array defining the (x,y) coordinates of nuclei seeds.
-    Maxima : array_like
+    max_response : array_like
         An N x 1 array containing the maximum response value corresponding to
-        'Seeds'.
+        'seeds'.
 
     See Also
     --------
@@ -47,117 +49,61 @@ def max_clustering(Response, Mask, r=10):
        Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.
     """
 
-    # check type of input mask
-    if Mask.dtype != np.dtype('bool'):
-        raise TypeError("Input 'Mask' must be a bool")
-
-    # define kernel for max filter
-    Kernel = np.zeros((2*r+1, 2*r+1), dtype=bool)
-    X, Y = np.meshgrid(np.linspace(0, 2*r, 2*r+1), np.linspace(0, 2*r, 2*r+1))
-    X -= r
-    Y -= r
-    Kernel[(X**2 + Y**2)**0.5 <= r] = True
-
-    # define linear coordinates of postive kernel entries
-    X = X[Kernel].astype(np.int)
-    Y = Y[Kernel].astype(np.int)
-
-    # pad input array to simplify filtering
-    I = Response.min() * np.ones((Response.shape[0]+2*r,
-                                  Response.shape[1]+2*r))
-    MaskedResponse = Response.copy()
-    MaskedResponse[~Mask] = Response.min()
-    I[r:r+Response.shape[0], r:r+Response.shape[1]] = MaskedResponse
-
-    # initialize coordinate arrays and max value arrays
-    Max = np.zeros(I.shape)
-    Row = np.zeros(I.shape, dtype=np.int)
-    Col = np.zeros(I.shape, dtype=np.int)
-
-    # define pixels for local neighborhoods
-    py, px = np.nonzero(Mask)
-    py = py + np.int(r)
-    px = px + np.int(r)
-
-    # perform max filtering
-    for i in np.arange(0, px.size, 1):
-
-        # calculate local max value and position around px[i], py[i]
-        Index = np.argmax(I[py[i]+Y, px[i]+X])
-        Max[py[i], px[i]] = I[py[i]+Y[Index], px[i]+X[Index]]
-        Row[py[i], px[i]] = py[i] + Y[Index] - r
-        Col[py[i], px[i]] = px[i] + X[Index] - r
-
-    # trim outputs
-    Max = Max[r:Response.shape[0]+r, r:Response.shape[1]+r]
-    Row = Row[r:Response.shape[0]+r, r:Response.shape[1]+r]
-    Col = Col[r:Response.shape[0]+r, r:Response.shape[1]+r]
-
-    # subtract out padding offset for px, py
-    py = py - r
-    px = px - r
+    # find local maxima of all foreground pixels
+    mval, mind = _max_clustering_cython(
+        im_response, im_fgnd_mask.astype(np.int32), r
+    )
 
     # identify connected regions of local maxima and define their seeds
-    Label = spm.label((Response == Max) & Mask)[0]
-    Seeds = np.array(spm.center_of_mass(Response, Label,
-                                        np.arange(1, Label.max()+1)))
-    Seeds = np.round(Seeds).astype(np.uint32)
+    im_label = skimage.measure.label(im_fgnd_mask & (im_response == mval))
 
-    # capture maxima for each connected region
-    Maxima = spm.maximum(Response, Label, np.arange(1, Label.max()+1))
+    # compute normalized response
+    min_resp = im_response.min()
+    max_resp = im_response.max()
+    resp_range = max_resp - min_resp
 
-    # handle seeds lying outside non-convex objects
-    Fix = np.nonzero(Label[Seeds[:, 0].astype(np.uint32),
-                           Seeds[:, 1].astype(np.uint32)] !=
-                     np.arange(1, Label.max()+1))[0]
-    if(Fix.size > 0):
-        Locations = spm.find_objects(Label)
-        for i in np.arange(Fix.size):
-            Patch = Label[Locations[Fix[i]]]
-            Pixels = np.nonzero(Patch)
-            dX = Pixels[1] - (Seeds[Fix[i], 1] - Locations[Fix][1].start)
-            dY = Pixels[0] - (Seeds[Fix[i], 0] - Locations[Fix][0].start)
-            Dist = (dX**2 + dY**2)**0.5
-            NewSeed = np.argmin(Dist)
-            Seeds[Fix[i], 1] = np.array(Locations[Fix][1].start +
-                                        Pixels[1][NewSeed]).astype(np.uint32)
-            Seeds[Fix[i], 0] = np.array(Locations[Fix][0].start +
-                                        Pixels[0][NewSeed]).astype(np.uint32)
+    im_response_nmzd = (im_response - min_resp) / resp_range
 
-    # initialize tracking and segmentation masks
-    Tracked = np.zeros(Max.shape, dtype=bool)
-    Tracked[Label > 0] = True
+    # compute object properties
+    obj_props = skimage.measure.regionprops(im_label, im_response_nmzd)
 
-    # track each pixel and update
-    for i in np.arange(0, px.size, 1):
+    num_labels = len(obj_props)
 
-        # initialize tracking trajectory
-        Id = 0
-        Alloc = 1
-        Trajectory = np.zeros((1000, 2), dtype=np.int)
-        Trajectory[0, 0] = px[i]
-        Trajectory[0, 1] = py[i]
+    # extract object seeds
+    seeds = np.array(
+        [obj_props[i].weighted_centroid for i in range(num_labels)])
+    seeds = np.round(seeds).astype(np.int)
 
-        while(~Tracked[Trajectory[Id, 1], Trajectory[Id, 0]]):
+    # fix seeds outside the object region - happens for non-convex objects
+    for i in range(num_labels):
 
-            # increment trajectory counter
-            Id += 1
+        sy = seeds[i, 0]
+        sx = seeds[i, 1]
 
-            # if overflow, copy and reallocate
-            if(Id == 1000*Alloc):
-                temp = Trajectory
-                Trajectory = np.zeros((1000*(Alloc+1), 2), dtype=np.int)
-                Trajectory[0:1000*(Alloc), ] = temp
-                Alloc += 1
+        if im_label[sy, sx] == obj_props[i].label:
+            continue
 
-            # add local max to trajectory
-            Trajectory[Id, 0] = Col[Trajectory[Id-1, 1], Trajectory[Id-1, 0]]
-            Trajectory[Id, 1] = Row[Trajectory[Id-1, 1], Trajectory[Id-1, 0]]
+        # find object point with closest manhattan distance to center of mass
+        pts = obj_props[i].coords
 
-        # label sequence and add to tracked list
-        Tracked[Trajectory[0:Id, 1], Trajectory[0:Id, 0]] = True
-        Label[Trajectory[0:Id, 1], Trajectory[0:Id, 0]] = \
-            Label[Trajectory[Id, 1], Trajectory[Id, 0]]
+        ydist = np.abs(pts[:, 0] - sy)
+        xdist = np.abs(pts[:, 1] - sx)
+
+        seeds[i, :] = pts[np.argmin(xdist + ydist), :]
+
+        assert im_label[seeds[i, 0], seeds[i, 1]] == obj_props[i].label
+
+    # get seed responses
+    max_response = im_response[seeds[:, 0], seeds[:, 1]]
+
+    # set label of each foreground pixel to the label of its nearest peak
+    im_label_flat = im_label.ravel()
+
+    pind = np.flatnonzero(im_fgnd_mask)
+
+    mind_flat = mind.ravel()
+
+    im_label_flat[pind] = im_label_flat[mind_flat[pind]]
 
     # return
-    return Label, Seeds, Maxima
+    return im_label, seeds, max_response
