@@ -78,8 +78,9 @@ def ComputeIntensityFeatures(im_label, im_intensity,
 
     References
     ----------
-    .. [1] Daniel Zwillinger and Stephen Kokoska. "CRC standard probability
+    .. Daniel Zwillinger and Stephen Kokoska. "CRC standard probability
        and statistics tables and formulae," Crc Press, 1999.
+
     """
 
     # List of feature names
