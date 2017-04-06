@@ -53,8 +53,8 @@ def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
 
     References
     ----------
-    .. [1] G. Li et al "3D cell nuclei segmentation based on gradient flow
-           tracking" in BMC Cell Biology,vol.40,no.8, 2007.
+    .. G. Li et al "3D cell nuclei segmentation based on gradient flow
+       tracking" in BMC Cell Biology,vol.40,no.8, 2007.
     """
 
     # get image shape

@@ -204,11 +204,11 @@ def ComputeHaralickFeatures(im_label, im_intensity, offsets=None,
 
     References
     ----------
-    .. [1] Haralick, et al. "Textural features for image classification,"
-           IEEE Transactions on Systems, Man, and Cybernatics, vol. 6,
-           pp: 610-621, 1973.
-    .. [2] Luis Pedro Coelho. "Mahotas: Open source software for scriptable
-           computer vision," Journal of Open Research Software, vol 1, 2013.
+    .. Haralick, et al. "Textural features for image classification,"
+       IEEE Transactions on Systems, Man, and Cybernatics, vol. 6,
+       pp: 610-621, 1973.
+    .. Luis Pedro Coelho. "Mahotas: Open source software for scriptable
+       computer vision," Journal of Open Research Software, vol 1, 2013.
     """
 
     # List of feature names
