@@ -39,6 +39,12 @@ add_python_test(import_package PLUGIN HistomicsTK)
 
 add_python_test(color_conversion PLUGIN HistomicsTK)
 
+add_python_test(color_deconvolution PLUGIN HistomicsTK
+    SUBMODULE MacenkoTest
+    DBNAME core_color_deconvolution_macenko
+    EXTERNAL_DATA "plugins/HistomicsTK/Easy1.png"
+)
+
 add_python_test(color_normalization
     SUBMODULE ReinhardNormalizationTest
     DBNAME core_color_normalization_reinhard
@@ -46,6 +52,13 @@ add_python_test(color_normalization
     "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
     "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
     "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
+)
+
+add_python_test(color_normalization
+    SUBMODULE BackgroundIntensityTest
+    DBNAME core_color_normalization_background_intensity
+    PLUGIN HistomicsTK
+    EXTERNAL_DATA "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
 )
 
 add_python_test(glcm
