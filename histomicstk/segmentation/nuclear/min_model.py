@@ -324,15 +324,20 @@ def trace_contours(I, X, Y, Min, Max, MaxLength=255):
         cX, cY = label.trace_object_boundaries(Embed, conn=4,
                                                x_start=pX, y_start=pY,
                                                MaxLength=MaxLength)
-        if(cX[0] == cX[-1] and cY[0] == cY[-1] and len(cX) <= MaxLength):
+        if cX[0][0] == cX[0][-1] and cY[0][0] == cY[0][-1] and\
+                len(cX[0]) <= MaxLength:
 
             # add window offset to contour coordinates
-            cX = [x + max(0, X[i]-np.ceil(MaxLength/2.0)) - 1 for x in cX]
-            cY = [y + max(0, Y[i]-np.ceil(MaxLength/2.0)) - 1 for y in cY]
+            cX[0] = [
+                x + max(0, X[i]-np.ceil(MaxLength/2.0)) - 1 for x in cX[0]
+            ]
+            cY[0] = [
+                y + max(0, Y[i]-np.ceil(MaxLength/2.0)) - 1 for y in cY[0]
+            ]
 
             # append to list of candidate contours
-            cXs.append(np.array(cX, dtype=np.uint32))
-            cYs.append(np.array(cY, dtype=np.uint32))
+            cXs.append(np.array(cX[0], dtype=np.uint32))
+            cYs.append(np.array(cY[0], dtype=np.uint32))
 
     return cXs, cYs
 
@@ -545,8 +550,8 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
 
         # generate boundary coordinates, trim duplicate point
         X, Y = label.trace_object_boundaries(Mask, conn=8)
-        X = np.array(X[:-1], dtype=np.uint32)
-        Y = np.array(Y[:-1], dtype=np.uint32)
+        X = np.array(X[0][:-1], dtype=np.uint32)
+        Y = np.array(Y[0][:-1], dtype=np.uint32)
 
         # calculate distance transform of object boundary pixels to convex hull
         Distance = mp.distance_transform_edt(Hull)
