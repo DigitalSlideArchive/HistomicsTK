@@ -48,7 +48,7 @@ def gradient_diffusion(im_dx, im_dy, im_fgnd_mask,
 
     References
     ----------
-    .. [1] G. Li et al "3D cell nuclei segmentation based on gradient flow
+    .. [#] G. Li et al "3D cell nuclei segmentation based on gradient flow
            tracking" in BMC Cell Biology,vol.40,no.8, 2007.
     """
 

@@ -49,10 +49,10 @@ def reinhard(im_src, target_mu, target_sigma, src_mu=None, src_sigma=None):
 
     References
     ----------
-    .. [1] E. Reinhard, M. Adhikhmin, B. Gooch, P. Shirley, "Color transfer
+    .. [#] E. Reinhard, M. Adhikhmin, B. Gooch, P. Shirley, "Color transfer
        between images," in IEEE Computer Graphics and Applications, vol.21,
        no.5,pp.34-41, 2001.
-    .. [2] D. Ruderman, T. Cronin, and C. Chiao, "Statistics of cone responses
+    .. [#] D. Ruderman, T. Cronin, and C. Chiao, "Statistics of cone responses
        to natural images: implications for visual coding," J. Opt. Soc. Am. A
        vol.15, pp.2036-2045, 1998.
     """

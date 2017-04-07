@@ -47,7 +47,7 @@ def trace_object_boundaries(im_label,
 
     References
     ----------
-    .. J. Seo et al "Fast Contour-Tracing Algorithm Based on a Pixel-
+    .. [#] J. Seo et al "Fast Contour-Tracing Algorithm Based on a Pixel-
        Following Method for Image Sensors" in Sensors,vol.16,no.353,
        doi:10.3390/s16030353, 2016.
 
