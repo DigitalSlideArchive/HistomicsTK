@@ -49,11 +49,11 @@ def macenko_stain_matrix(im_sda, minimum_magnitude=16,
 
     References
     ----------
-    .. [1] Van Eycke, Y. R., Allard, J., Salmon, I., Debeir, O., &
+    .. [#] Van Eycke, Y. R., Allard, J., Salmon, I., Debeir, O., &
            Decaestecker, C. (2017).  Image processing in digital pathology: an
            opportunity to solve inter-batch variability of immunohistochemical
            staining.  Scientific Reports, 7.
-    .. [2] Macenko, M., Niethammer, M., Marron, J. S., Borland, D.,
+    .. [#] Macenko, M., Niethammer, M., Marron, J. S., Borland, D.,
            Woosley, J. T., Guan, X., ... & Thomas, N. E. (2009, June).
            A method for normalizing histology slides for quantitative analysis.
            In Biomedical Imaging: From Nano to Macro, 2009.  ISBI'09.

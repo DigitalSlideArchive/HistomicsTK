@@ -37,11 +37,11 @@ def snmf_stain_matrix(im_sda, w_init, beta=0.2):
 
     References
     ----------
-    .. [1] Van Eycke, Y. R., Allard, J., Salmon, I., Debeir, O., &
+    .. [#] Van Eycke, Y. R., Allard, J., Salmon, I., Debeir, O., &
            Decaestecker, C. (2017).  Image processing in digital pathology: an
            opportunity to solve inter-batch variability of immunohistochemical
            staining.  Scientific Reports, 7.
-    .. [2] Xu, J., Xiang, L., Wang, G., Ganesan, S., Feldman, M., Shih, N. N.,
+    .. [#] Xu, J., Xiang, L., Wang, G., Ganesan, S., Feldman, M., Shih, N. N.,
            ... & Madabhushi, A. (2015). Sparse Non-negative Matrix Factorization
            (SNMF) based color unmixing for breast histopathological image
            analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.
