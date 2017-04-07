@@ -15,9 +15,9 @@ def _trace_object_boundaries_cython(long[:, :] im_label not None, long connectiv
 
     cdef int flag = 0
 
-    cdef long[:, :] im_label_270 = rot90(im_label)
-    cdef long[:, :] im_label_180 = rot90(im_label_270)
-    cdef long[:, :] im_label_90 = rot90(im_label_180)
+    cdef long[:, :] im_label_270 = _rot90(im_label)
+    cdef long[:, :] im_label_180 = _rot90(im_label_270)
+    cdef long[:, :] im_label_90 = _rot90(im_label_180)
 
     cdef long i, j, t
 
@@ -41,19 +41,19 @@ def _trace_object_boundaries_cython(long[:, :] im_label not None, long connectiv
     by = []
 
     if connectivity == 4:
-        bx, by = isbf(
+        bx, by = _isbf(
             im_label, im_label_90, im_label_180, im_label_270,
             x_start, y_start, max_length);
 
     else:
-        bx, by = moore(
+        bx, by = _moore(
             im_label, im_label_90, im_label_180, im_label_270,
             x_start, y_start, max_length);
 
     return np.asarray(bx), np.asarray(by)
 
 
-cdef long[:, :] rot90(long[:, :] input):
+cdef long[:, :] _rot90(long[:, :] input):
 
     cdef long nrows = input.shape[0]
     cdef long ncols = input.shape[1]
@@ -69,7 +69,7 @@ cdef long[:, :] rot90(long[:, :] input):
     return output
 
 
-def moore(long[:, :] mask, long[:, :] mask_90, long[:, :] mask_180, long[:, :] mask_270, int x_start, int y_start, float max_length):
+def _moore(long[:, :] mask, long[:, :] mask_90, long[:, :] mask_180, long[:, :] mask_270, int x_start, int y_start, float max_length):
 
     cdef long nrows = mask.shape[0]
     cdef long ncols = mask.shape[1]
@@ -232,7 +232,7 @@ def moore(long[:, :] mask, long[:, :] mask_90, long[:, :] mask_180, long[:, :] m
     return list_bx, list_by
 
 
-def isbf(long[:, :] mask, long[:, :] mask_90, long[:, :] mask_180, long[:, :] mask_270, int x_start, int y_start, float max_length):
+def _isbf(long[:, :] mask, long[:, :] mask_90, long[:, :] mask_180, long[:, :] mask_270, int x_start, int y_start, float max_length):
 
     cdef long nrows = mask.shape[0]
     cdef long ncols = mask.shape[1]
