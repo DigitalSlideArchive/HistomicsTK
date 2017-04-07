@@ -59,7 +59,7 @@ if sys.platform == "darwin":  # osx
 
 ext_list = [
     Extension(
-        "histomicstk.segmentation.label.trace_boundaries_cython",
+        "histomicstk.segmentation.label._trace_object_boundaries_cython",
         sources=[
             "histomicstk/segmentation/label/_trace_object_boundaries_cython.pyx",
         ],
