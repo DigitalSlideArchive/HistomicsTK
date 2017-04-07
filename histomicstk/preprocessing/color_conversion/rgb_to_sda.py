@@ -13,7 +13,7 @@ def rgb_to_sda(im_rgb, I_0, allow_negatives=False):
         Background intensity, either per-channel or for all channels
 
     allow_negatives : bool
-        If True, would-be negative values in the output are clipped to 0
+        If False, would-be negative values in the output are clipped to 0
 
     Returns
     -------
