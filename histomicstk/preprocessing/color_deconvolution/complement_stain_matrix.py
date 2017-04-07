@@ -23,8 +23,26 @@ def complement_stain_matrix(w):
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
     """
 
-    stain0 = w[:, 0]
-    stain1 = w[:, 1]
-    stain2 = np.cross(stain0, stain1)
-    # Normalize new vector to have unit norm
-    return np.array([stain0, stain1, stain2 / np.linalg.norm(stain2)]).T
+    # copy input to output for initialization
+    w_comp = w.copy()
+
+    # calculate directed cross-product of first two columns
+    if (w[0, 0]**2 + w[0, 1]**2) > 1:
+        w_comp[0, 2] = 0
+    else:
+        w_comp[0, 2] = (1 - (w[0, 0] ** 2 + w[0, 1] ** 2)) ** 0.5
+
+    if (w[1, 0]**2 + w[1, 1]**2) > 1:
+        w_comp[1, 2] = 0
+    else:
+        w_comp[1, 2] = (1 - (w[1, 0] ** 2 + w[1, 1] ** 2)) ** 0.5
+
+    if (w[2, 0]**2 + w[2, 1]**2) > 1:
+        w_comp[2, 2] = 0
+    else:
+        w_comp[2, 2] = (1 - (w[2, 0] ** 2 + w[2, 1] ** 2)) ** 0.5
+
+    # normalize new vector to unit-norm
+    w_comp[:, 2] = w_comp[:, 2] / np.linalg.norm(w_comp[:, 2])
+
+    return w_comp

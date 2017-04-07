@@ -48,9 +48,10 @@ def chan_vese(im_input, im_mask, sigma,
 
     References
     ----------
-    .. [1] C. Li, C. Xu, C. Gui, M.D. fox, "Distance Regularized Level Set
-           Evolution and Its Application to Image Segmentation," in IEEE
-           Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.
+    .. C. Li, C. Xu, C. Gui, M.D. fox, "Distance Regularized Level Set
+       Evolution and Its Application to Image Segmentation," in IEEE
+       Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.
+
     """
 
     # smoothed gradient of input image
