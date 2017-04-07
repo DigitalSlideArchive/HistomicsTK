@@ -34,7 +34,7 @@ def ComputeFSDFeatures(im_label, K=128, Fs=6, Delta=8, rprops=None):
 
     References
     ----------
-    .. D. Zhang et al. "A comparative study on shape retrieval using
+    .. [#] D. Zhang et al. "A comparative study on shape retrieval using
        Fourier descriptors with different shape signatures," In Proc.
        ICIMADE01, 2001.
 

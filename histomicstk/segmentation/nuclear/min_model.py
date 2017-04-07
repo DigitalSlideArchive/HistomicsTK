@@ -66,7 +66,7 @@ def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
 
     References
     ----------
-    .. S. Weinert et al "Detection and Segmentation of Cell Nuclei in
+    .. [#] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
        Virtual Microscopy Images: A Minimum-Model Approach" in Nature
        Scientific Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
     """

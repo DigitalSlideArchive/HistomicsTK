@@ -94,11 +94,11 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
     References
     ----------
-    .. Haralick, R.M., K. Shanmugan, and I. Dinstein, "Textural Features
+    .. [#] Haralick, R.M., K. Shanmugan, and I. Dinstein, "Textural Features
        for Image Classification", IEEE Transactions on Systems, Man, and
        Cybernetics, Vol. SMC-3, 1973, pp. 610-621.
 
-    .. Haralick, R.M., and L.G. Shapiro. Computer and Robot Vision:
+    .. [#] Haralick, R.M., and L.G. Shapiro. Computer and Robot Vision:
        Vol. 1, Addison-Wesley, 1992, p. 459.
 
     """
