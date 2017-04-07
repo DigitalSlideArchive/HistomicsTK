@@ -61,7 +61,7 @@ def ComputeGradientFeatures(im_label, im_intensity,
 
     References
     ----------
-    .. Daniel Zwillinger and Stephen Kokoska. "CRC standard probability
+    .. [#] Daniel Zwillinger and Stephen Kokoska. "CRC standard probability
        and statistics tables and formulae," Crc Press, 1999.
 
     """
