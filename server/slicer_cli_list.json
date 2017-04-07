@@ -13,5 +13,9 @@
 
   "ComputeNucleiFeatures": {
     "type"    : "python"
+  },
+
+  "DetectMembranes": {
+    "type"    : "python"
   }
 }

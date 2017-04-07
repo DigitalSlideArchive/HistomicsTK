@@ -15,6 +15,7 @@ from .rag_add_layer import rag_add_layer
 from . import label
 from . import level_set
 from . import nuclear
+from . import membranes
 
 # list out things that are available for public use
 __all__ = (
@@ -30,4 +31,5 @@ __all__ = (
     'label',
     'level_set',
     'nuclear',
+    'membranes',
 )

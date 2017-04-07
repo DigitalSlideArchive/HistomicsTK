@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Performs Membrane Detection</title>
+  <description>Detect membranes in a IHC image</description>
+  <version>0.1.0</version>
+  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Sanghoon Lee (Emory University), Deepak Roy Chittajallu (Kitware)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters.</description>
+    <image>
+      <name>inputImageFile</name>
+      <label>Input Image</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description>Input image to be deconvolved</description>
+    </image>
+    <image>
+      <name>outputMembraneLabelFile</name>
+      <label>Output Membrane Labels</label>
+      <description>Output membrane segmentation label</description>
+      <channel>output</channel>
+      <index>1</index>
+    </image>
+  </parameters>
+  <parameters>
+    <label>Color Deconvolution</label>
+    <description>Color Deconvolution parameters</description>
+    <string-enumeration>
+      <name>stain_1</name>
+      <label>stain-1</label>
+      <description>Name of stain-1</description>
+      <channel>input</channel>
+      <longflag>stain_1</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <default>hematoxylin</default>
+    </string-enumeration>
+    <string-enumeration>
+      <name>stain_2</name>
+      <label>stain-2</label>
+      <description>Name of stain-2</description>
+      <channel>input</channel>
+      <longflag>stain_2</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <default>eosin</default>
+    </string-enumeration>
+    <string-enumeration>
+      <name>stain_3</name>
+      <label>stain-3</label>
+      <description>Name of stain-3</description>
+      <channel>input</channel>
+      <longflag>stain_3</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>null</element>
+      <default>null</default>
+    </string-enumeration>
+  </parameters>
+  <parameters>
+    <label>Membrane segmentation</label>
+    <description>Membrane segmentation parameters</description>
+    <double>
+      <name>foreground_threshold</name>
+      <label>Foreground Intensity Threshold</label>
+      <description>Intensity value to use as threshold to segment foreground in membrane stain image</description>
+      <longflag>foreground_threshold</longflag>
+      <default>0.4</default>
+    </double>
+    <double>
+      <name>branch_split_dilation</name>
+      <label>branch split dilation</label>
+      <description>Membrane branch dilation scale to split labels</description>
+      <longflag>branch_split_dilation</longflag>
+      <default>3</default>
+    </double>
+    <double>
+      <name>branch_merge_dilation</name>
+      <label>branch merge dilation</label>
+      <description>Membrane branch dilation scale to merge labels</description>
+      <longflag>branch_merge_dilation</longflag>
+      <default>1</default>
+    </double>
+    <double>
+      <name>min_labelsize</name>
+      <label>Minimum Label Size</label>
+      <description>Minimum label size to be removed</description>
+      <longflag>min_labelsize</longflag>
+      <default>100</default>
+    </double>
+    <double>
+      <name>filter_sigma_max</name>
+      <label>membrane filter sigma max</label>
+      <description>Membrane filter sigma max</description>
+      <longflag>filter_sigma_max</longflag>
+      <default>3</default>
+    </double>
+    <double>
+      <name>filter_sigma_min</name>
+      <label>membrane filter sigma min</label>
+      <description>Membrane filter sigma min</description>
+      <longflag>filter_sigma_min</longflag>
+      <default>1</default>
+    </double>
+    <double>
+      <name>filter_beta</name>
+      <label>membrane filter beta</label>
+      <description>Membrane filter beta</description>
+      <longflag>filter_beta</longflag>
+      <default>4</default>
+    </double>
+    <double>
+      <name>filter_c</name>
+      <label>membrane filter c</label>
+      <description>Membrane filter c</description>
+      <longflag>filter_c</longflag>
+      <default>2</default>
+    </double>
+  </parameters>
+</executable>

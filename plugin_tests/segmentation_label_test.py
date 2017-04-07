@@ -69,12 +69,12 @@ class TraceBoundaryTest(base.TestCase):
         ry_moore = [7, 8, 8, 7, 6, 6, 6, 6, 6, 7, 8, 8, 7, 7, 6, 5, 4,
                     3, 2, 1, 2, 3, 4, 5, 6, 7, 7]
 
-        output_isbf = trace_object_boundaries(m_neighbor)
+        output_isbf_x, output_isbf_y = trace_object_boundaries(m_neighbor)
 
-        np.testing.assert_allclose(rx_isbf, output_isbf[0][1])
-        np.testing.assert_allclose(ry_isbf, output_isbf[0][0])
+        np.testing.assert_allclose(rx_isbf, output_isbf_x[0])
+        np.testing.assert_allclose(ry_isbf, output_isbf_y[0])
 
-        output_moore = trace_object_boundaries(m_neighbor, 8)
+        output_moore_x, output_moore_y = trace_object_boundaries(m_neighbor, 8)
 
-        np.testing.assert_allclose(rx_moore, output_moore[0][1])
-        np.testing.assert_allclose(ry_moore, output_moore[0][0])
+        np.testing.assert_allclose(rx_moore, output_moore_x[0])
+        np.testing.assert_allclose(ry_moore, output_moore_y[0])
