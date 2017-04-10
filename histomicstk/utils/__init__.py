@@ -32,7 +32,4 @@ __all__ = (
     'fit_poisson_mixture',
     'sample_pixels',
     'simple_mask',
-
-    # Modules
-    'linalg',
 )
