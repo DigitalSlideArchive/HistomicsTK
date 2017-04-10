@@ -20,9 +20,20 @@ def main(args):
     print(args.inputImageFile)
 
     ts = large_image.getTileSource(args.inputImageFile)
+
     if len(args.region) != 4:
         raise ValueError('Exactly four values required for --region')
+
     useWholeImage = args.region == [-1] * 4
+
+    if args.maxRegionSize != -1:
+        if useWholeImage:
+            size = max(ts.sizeX, ts.sizeY)
+        else:
+            size = max(args.region[-2:])
+        if size > args.maxRegionSize:
+            raise ValueError('Requested region is too large!  Please see --maxRegionSize')
+
     im_input = ts.getRegion(format=large_image.tilesource.TILE_FORMAT_NUMPY,
                             **({} if useWholeImage else dict(
                                 region=dict(zip(['left', 'top', 'width', 'height'],

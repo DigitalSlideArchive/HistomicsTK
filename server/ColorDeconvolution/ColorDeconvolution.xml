@@ -67,6 +67,12 @@
       <description>left,top,width,height of the region of interest.  All -1 means the whole image is used.</description>
       <default>-1,-1,-1,-1</default>
     </region>
+    <integer>
+      <longflag>maxRegionSize</longflag>
+      <label>Maximum region size</label>
+      <description>Maximum width and height allowed when processing an image, in order to prevent accidentally running on too large a region.  Use -1 for no limit</description>
+      <default>5000</default>
+    </integer>
     <!-- And now the output parameters -->
     <region>
       <name>region</name>
