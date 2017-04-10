@@ -2,14 +2,14 @@ from ctk_cli import CLIArgumentParser
 import numpy
 
 from histomicstk.utils import sample_pixels
-from histomicstk.preprocessing.color_deconvolution import rgb_macenko_stain_matrix
+from histomicstk.preprocessing.color_deconvolution import rgb_separate_stains_macenko_pca
 
 def main(args):
     returnParameterFile, args = splitArgs(args)
     args['macenko']['I_0'] = numpy.array(args['macenko']['I_0'])
 
     sample = sample_pixels(**args['sample'])
-    stain_matrix = rgb_macenko_stain_matrix(sample.T, **args['macenko'])
+    stain_matrix = rgb_separate_stains_macenko_pca(sample.T, **args['macenko'])
     with open(returnParameterFile, 'w') as f:
         for i, stain in enumerate(stain_matrix.T):
             f.write('stainColor_{} = {}\n'.format(i+1, ','.join(map(str, stain))))

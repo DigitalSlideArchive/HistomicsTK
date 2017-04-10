@@ -1,7 +1,7 @@
-from .macenko_stain_matrix import macenko_stain_matrix
+from .separate_stains_macenko_pca import separate_stains_macenko_pca
 from ..color_conversion import rgb_to_sda
 
-def rgb_macenko_stain_matrix(im_rgb, I_0, *args, **kwargs):
+def rgb_separate_stains_macenko_pca(im_rgb, I_0, *args, **kwargs):
     """Compute the stain matrix for color deconvolution with the "Macenko"
     method from an RGB image or matrix.
 
@@ -22,13 +22,13 @@ def rgb_macenko_stain_matrix(im_rgb, I_0, *args, **kwargs):
     Note
     ----
     For additional input arguments and documentation, please see
-    histomicstk.preprocessing.color_deconvolution.macenko_stain_matrix.
+    histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca.
     im_sda is computed and passed as part of this routine.
 
     See Also
     --------
-    histomicstk.preprocessing.color_deconvolution.macenko_stain_matrix
+    histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca
 
     """
     im_sda = rgb_to_sda(im_rgb, I_0)
-    return macenko_stain_matrix(im_sda, *args, **kwargs)
+    return separate_stains_macenko_pca(im_sda, *args, **kwargs)

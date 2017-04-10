@@ -4,11 +4,11 @@ from .complement_stain_matrix import complement_stain_matrix
 
 import numpy
 
-def macenko_stain_matrix(im_sda, minimum_magnitude=16,
-                         min_angle_percentile=0.01,
-                         max_angle_percentile=0.99):
-    """Compute the stain matrix for color deconvolution with the "Macenko"
-    method.
+def separate_stains_macenko_pca(im_sda, minimum_magnitude=16,
+                                min_angle_percentile=0.01,
+                                max_angle_percentile=0.99):
+    """Compute the stain matrix for color deconvolution with the PCA-based
+    "Macenko" method.
 
     For a two-stain image or matrix in SDA space, this method works by
     computing a best-fit plane with PCA, wherein it selects the stain
@@ -58,6 +58,7 @@ def macenko_stain_matrix(im_sda, minimum_magnitude=16,
            A method for normalizing histology slides for quantitative analysis.
            In Biomedical Imaging: From Nano to Macro, 2009.  ISBI'09.
            IEEE International Symposium on (pp. 1107-1110). IEEE.
+
     """
     # Image matrix
     m = utils.exclude_nonfinite(utils.convert_image_to_matrix(im_sda))

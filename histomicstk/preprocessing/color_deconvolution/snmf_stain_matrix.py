@@ -33,7 +33,7 @@ def snmf_stain_matrix(im_sda, w_init, beta=0.2):
     See Also
     --------
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
-    histomicstk.preprocessing.color_deconvolution.macenko_stain_matrix
+    histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca
 
     References
     ----------

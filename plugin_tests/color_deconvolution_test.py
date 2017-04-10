@@ -48,7 +48,7 @@ class MacenkoTest(base.TestCase):
 
         #np.random.seed(1)
 
-        w = htk_dcv.rgb_macenko_stain_matrix(im, 255)
+        w = htk_dcv.rgb_separate_stains_macenko_pca(im, 255)
 
         w_expected = [[ 0.089411,  0.558021, -0.130574],
                       [ 0.837138,  0.729935,  0.546981],
