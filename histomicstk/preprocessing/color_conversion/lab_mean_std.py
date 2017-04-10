@@ -49,12 +49,12 @@ def lab_mean_std(im_input):
 
     References
     ----------
-    .. E. Reinhard, M. Adhikhmin, B. Gooch, P. Shirley, "Color transfer
+    .. [#] E. Reinhard, M. Adhikhmin, B. Gooch, P. Shirley, "Color transfer
        between images," in IEEE Computer Graphics and Applications, vol.21,
        no.5,pp.34-41, 2001.
-    .. D. Ruderman, T. Cronin, and C. Chiao, "Statistics of cone responses
-       to natural images: implications for visual coding," J. Opt. Soc. Am. A
-       vol.15, pp.2036-2045, 1998.
+    .. [#] D. Ruderman, T. Cronin, and C. Chiao, "Statistics of cone
+       responses to natural images: implications for visual coding,"
+       J. Opt. Soc. Am. A vol.15, pp.2036-2045, 1998.
 
     """
     im_lab = rgb_to_lab(im_input)
