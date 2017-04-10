@@ -6,7 +6,7 @@ import numpy
 import numpy.linalg as np_linalg
 
 
-def snmf_stain_matrix(im_sda, w_init, beta=0.2):
+def separate_stains_xu_snmf(im_sda, w_init, beta=0.2):
     """Compute the stain matrix for color deconvolution with SNMF (sparse
     non-negative matrix factorization).
 

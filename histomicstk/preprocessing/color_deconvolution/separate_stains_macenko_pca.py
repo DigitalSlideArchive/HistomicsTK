@@ -45,7 +45,7 @@ def separate_stains_macenko_pca(im_sda, minimum_magnitude=16,
     See Also
     --------
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
-    histomicstk.preprocessing.color_deconvolution.snmf_stain_matrix
+    histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf
 
     References
     ----------
