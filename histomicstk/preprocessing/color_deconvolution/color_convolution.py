@@ -43,7 +43,8 @@ def color_convolution(im_stains, w, I_0=None):
 
     # transform input stains to optical density values, convolve and
     # tfm back to stain
-    sda_fwd = color_conversion.rgb_to_sda(m, 255 if I_0 is not None else None)
+    sda_fwd = color_conversion.rgb_to_sda(m, 255 if I_0 is not None else None,
+                                          allow_negatives=True)
     sda_conv = np.dot(w, sda_fwd)
     sda_inv = color_conversion.sda_to_rgb(sda_conv, I_0)
 
