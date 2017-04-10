@@ -66,19 +66,19 @@
       <longflag>largeImage</longflag>
       <description>True if the input image is a large image that should be handled with large_image</description>
     </boolean>
-    <integer-vector>
+    <region>
       <name>region</name>
       <label>Region</label>
       <longflag>region</longflag>
       <description>left,top,width,height of the region of interest</description>
-    </integer-vector>
+    </region>
     <!-- And now the output parameters -->
-    <integer-vector>
+    <region>
       <name>region</name>
       <label>Region</label>
       <channel>output</channel>
       <description>left,top,width,height of the region of interest</description>
-    </integer-vector>
+    </region>
     <string>
       <name>outputStainImageFile_1</name>
       <label>Output Image of Stain 1</label>
