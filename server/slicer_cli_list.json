@@ -17,5 +17,9 @@
 
   "BackgroundIntensity": {
     "type"    : "python"
+  },
+
+  "SeparateStainsMacenkoPCA": {
+    "type"    : "python"
   }
 }
