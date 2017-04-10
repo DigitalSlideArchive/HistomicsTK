@@ -1,6 +1,6 @@
 from histomicstk.preprocessing import color_conversion
 import histomicstk.utils as utils
-from histomicstk.utils.linalg import normalize
+from ._linalg import normalize
 from .complement_stain_matrix import complement_stain_matrix
 import collections
 import numpy

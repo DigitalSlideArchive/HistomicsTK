@@ -1,5 +1,5 @@
 import histomicstk.utils as utils
-import histomicstk.utils.linalg as htk_linalg
+from . import _linalg as htk_linalg
 
 import nimfa
 import numpy

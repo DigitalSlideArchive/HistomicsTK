@@ -1,5 +1,5 @@
 import histomicstk.utils as utils
-import histomicstk.utils.linalg as linalg
+from . import _linalg as linalg
 from .complement_stain_matrix import complement_stain_matrix
 
 import numpy
