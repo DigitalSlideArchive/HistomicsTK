@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <executable>
   <category>HistomicsTK</category>
-  <title>Compute Stain Matrix (Macenko method)</title>
+  <title>Separate Stains (PCA-based Macenko method)</title>
   <description>Sample the foreground of a slide to compute the stain vectors using the Macenko method.</description>
   <version>0.1.0</version>
   <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
