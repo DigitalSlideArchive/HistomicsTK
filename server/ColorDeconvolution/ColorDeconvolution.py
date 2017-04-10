@@ -19,17 +19,14 @@ def main(args):
 
     print(args.inputImageFile)
 
-    if args.largeImage:
-        if args.region is None:
-            raise ValueError('Region must be provided when using --largeImage')
-        ts = large_image.getTileSource(args.inputImageFile)
-        if len(args.region) != 4:
-            raise ValueError('Exactly four values required for --region')
-        im_input = ts.getRegion(format=large_image.tilesource.TILE_FORMAT_NUMPY,
+    ts = large_image.getTileSource(args.inputImageFile)
+    if len(args.region) != 4:
+        raise ValueError('Exactly four values required for --region')
+    useWholeImage = args.region == [-1] * 4
+    im_input = ts.getRegion(format=large_image.tilesource.TILE_FORMAT_NUMPY,
+                            **({} if useWholeImage else dict(
                                 region=dict(zip(['left', 'top', 'width', 'height'],
-                                                args.region)))[0]
-    else:
-        im_input = skimage.io.imread(args.inputImageFile)
+                                                args.region)))))[0]
 
     # Create stain matrix
     print('>> Creating stain matrix')
