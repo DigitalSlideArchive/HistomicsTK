@@ -55,3 +55,20 @@ class MacenkoTest(base.TestCase):
                       [ 0.539635,  0.394725, -0.826899]]
 
         np.testing.assert_allclose(w, w_expected, atol=1e-6)
+
+class ColorDeconvolutionTest(base.TestCase):
+
+    def test_roundtrip(self):
+        im_path = os.path.join(TEST_DATA_DIR, 'Easy1.png')
+        im = skimage.io.imread(im_path)[..., :3]
+
+        w = np.array([[0.650, 0.072, 0],
+                      [0.704, 0.990, 0],
+                      [0.286, 0.105, 0]])
+
+        conv_result = htk_dcv.color_deconvolution(im, w, 255)
+
+        im_reconv = htk_dcv.color_convolution(conv_result.StainsFloat,
+                                              conv_result.Wc, 255)
+
+        np.testing.assert_allclose(im, im_reconv, atol=1)

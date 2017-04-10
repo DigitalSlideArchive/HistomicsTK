@@ -45,6 +45,10 @@ add_python_test(color_deconvolution PLUGIN HistomicsTK
     EXTERNAL_DATA "plugins/HistomicsTK/Easy1.png"
 )
 
+add_python_test(color_deconvolution PLUGIN HistomicsTK
+    EXTERNAL_DATA "plugins/HistomicsTK/Easy1.png"
+)
+
 add_python_test(color_normalization
     SUBMODULE ReinhardNormalizationTest
     DBNAME core_color_normalization_reinhard
