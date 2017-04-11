@@ -2,7 +2,7 @@ import numpy as np
 import scipy as sp
 
 
-def clog(im_input, mask, sigma_min=30 * 1.414, sigma_max=50 * 1.414):
+def clog(im_input, mask, sigma_min, sigma_max):
     """Constrainted Laplacian of Gaussian filter.
 
     Takes as input a grayscale nuclear image and binary mask of cell nuclei,
@@ -18,18 +18,22 @@ def clog(im_input, mask, sigma_min=30 * 1.414, sigma_max=50 * 1.414):
     mask : array_like
         A binary image where nuclei pixels have value 1/True, and non-nuclear
         pixels have value 0/False.
-    sigma_min : float
-        A scalar defining the minimum scaled nuclear radius. Radius is scaled
-        by sqrt(2). Default value = 30 * 2 ** 0.5.
-    sigma_max : float
-        A scalar defining the maximum scaled nuclear radius. Radius is scaled
-        by sqrt(2). Default value = 50 * 2 ** 0.5.
+    sigma_min : double
+        Minumum sigma value for the scale space. For blob detection, set this
+        equal to minimum-blob-radius / sqrt(2).
+    sigma_max : double
+        Maximum sigma value for the scale space. For blob detection, set this
+        equal to maximum-blob-radius / sqrt(2).
 
     Returns
     -------
     im_log_max : array_like
         An intensity image containing the maximal LoG filter response accross
         all scales for each pixel
+    im_sigma_max : array_like
+        An intensity image containing the sigma value corresponding to the
+        maximal LoG response at each pixel. The nuclei/blob radius value for
+        a given sigma can be estimated to be equal to sigma * sqrt(2).
 
     References
     ----------
@@ -38,39 +42,52 @@ def clog(im_input, mask, sigma_min=30 * 1.414, sigma_max=50 * 1.414):
            Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.
     """
 
-    # convert intensity image type to float if needed
-    if im_input.dtype == np.uint8:
-        im_input = im_input.astype(np.float)
+    # convert intensity image type to float
+    im_input = im_input.astype(np.float)
 
     # generate distance map
-    Distance = sp.ndimage.morphology.distance_transform_edt(mask)
+    im_dmap = sp.ndimage.morphology.distance_transform_edt(mask)
 
-    # initialize constraint
-    Constraint = np.maximum(sigma_min, np.minimum(sigma_max, 2 * Distance))
+    # compute max sigma at each pixel as 2 times the distance to background
+    im_sigma_ubound = 2.0 * im_dmap
+
+    # clip max sigma values to specified range
+    im_sigma_ubound = np.clip(im_sigma_ubound, sigma_min, sigma_max)
 
     # initialize log filter response array
-    im_log_max = np.finfo(Distance.dtype).min * np.ones(mask.shape)
+    MIN_FLOAT = np.finfo(im_input.dtype).min
 
-    # LoG filter over scales
-    Start = np.floor(sigma_min)
-    Stop = np.ceil(sigma_max)
-    Sigmas = np.linspace(Start, Stop, Stop-Start+1)
-    for Sigma in Sigmas:
+    im_log_max = np.zeros_like(im_input)
+    im_log_max[:, :] = MIN_FLOAT
+
+    im_sigma_max = np.zeros_like(im_input)
+
+    # Compute maximal LoG filter response across the scale space
+    sigma_start = np.floor(sigma_min)
+    sigma_end = np.ceil(sigma_max)
+
+    sigma_list = np.linspace(sigma_start, sigma_end,
+                             sigma_end - sigma_start + 1)
+
+    for sigma in sigma_list:
 
         # generate normalized filter response
-        Response = Sigma ** 2 * \
-            sp.ndimage.filters.gaussian_laplace(im_input, Sigma, mode='mirror')
+        im_log_cur = sigma ** 2 * \
+                     sp.ndimage.filters.gaussian_laplace(im_input, sigma,
+                                                         mode='mirror')
 
-        # constrain response
-        Map = Sigma < Constraint
-        Response[~Map] = np.finfo(Distance.dtype).min
+        # constrain LoG response
+        im_log_cur[im_sigma_ubound < sigma] = MIN_FLOAT
 
-        # replace with maxima
-        im_log_max = np.maximum(im_log_max, Response)
+        # update maxima
+        max_update_pixels = np.where(im_log_cur > im_log_max)
 
-    # translate filtered image
+        if len(max_update_pixels[0]) > 0:
+
+            im_log_max[max_update_pixels] = im_log_cur[max_update_pixels]
+            im_sigma_max[max_update_pixels] = sigma
 
     # replace min floats
-    im_log_max[im_log_max == np.finfo(Distance.dtype).min] = 0
+    im_log_max[im_log_max == MIN_FLOAT] = 0
 
-    return im_log_max
+    return im_log_max, im_sigma_max
