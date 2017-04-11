@@ -1,17 +1,30 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
+import json
+import os
+import sys
+
 try:
-    from setuptools import setup, find_packages, Extension
+    from setuptools import find_packages, Extension
 except ImportError:
     from distutils.core import setup, find_packages
     from distutils.extension import Extension
 
-import os
-import json
-import numpy
-import sys
-from Cython.Build import cythonize
+try:
+    from skbuild import setup
+except ImportError:
+    print('scikit-build is required to build from source.', file=sys.stderr)
+    print('Please run:', file=sys.stderr)
+    print('', file=sys.stderr)
+    print('  python -m pip install scikit-build')
+    sys.exit(1)
+
+
+# import numpy
+# from Cython.Build import cythonize
 from pkg_resources import parse_requirements, RequirementParseError
 
 with open('README.rst') as readme_file:
@@ -54,25 +67,9 @@ test_requirements = [
     # TODO: Should we list Girder here?
 ]
 
-if sys.platform == "darwin":  # osx
-    ext_compiler_args.append("-mmacosx-version-min=10.9")
+# if sys.platform == "darwin":  # osx
+#     ext_compiler_args.append("-mmacosx-version-min=10.9")
 
-ext_list = [
-    Extension(
-        "histomicstk.segmentation.label._trace_object_boundaries_cython",
-        sources=[
-            "histomicstk/segmentation/label/_trace_object_boundaries_cython.pyx",
-        ],
-        include_dirs=[numpy.get_include()],
-        language="c++",
-    ),
-
-    Extension(
-        "histomicstk.segmentation.nuclear._max_clustering_cython",
-        sources=["histomicstk/segmentation/nuclear/_max_clustering_cython.pyx"],
-        include_dirs=[numpy.get_include()]
-    )
-]
 
 setup(name='histomicstk',
       version=pkginfo['version'],
@@ -100,5 +97,5 @@ setup(name='histomicstk',
       ],
       test_suite='plugin_tests',
       tests_require=test_requirements,
-      ext_modules = cythonize(ext_list)
+      # ext_modules = cythonize(ext_list)
 )

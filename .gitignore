@@ -5,6 +5,7 @@ __pycache__/
 .#*
 *.bak
 docs/_build
+dist/
 build
 .coverage
 *.egg
@@ -15,4 +16,8 @@ node_modules/
 .*.swp
 /.vagrant/
 .lprof
+
+# scikit-build
+_skbuild
+MANIFEST
 
