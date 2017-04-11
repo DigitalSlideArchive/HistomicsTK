@@ -10,6 +10,7 @@ import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 
 import AnnotationSelector from '../../panels/AnnotationSelector';
 import ZoomWidget from '../../panels/ZoomWidget';
+import DrawWidget from '../../panels/DrawWidget';
 import router from '../../router';
 import events from '../../events';
 import View from '../View';
@@ -37,6 +38,9 @@ var ImageView = View.extend({
             parentView: this
         });
         this.zoomWidget = new ZoomWidget({
+            parentView: this
+        });
+        this.drawWidget = new DrawWidget({
             parentView: this
         });
 
@@ -83,11 +87,16 @@ var ImageView = View.extend({
 
                     // remove the hidden class from the coordinates display
                     this.$('.h-image-coordinates-container').removeClass('hidden');
+
+                    // show the right side control container
+                    this.$('#h-annotation-selector-container').removeClass('hidden');
                 }
 
                 this.zoomWidget
                     .setViewer(this.viewer)
                     .setElement('.h-zoom-widget').render();
+
+                this.drawWidget.setElement('.h-draw-widget').render();
             });
             this.annotationSelector.setItem(this.model);
             this.annotationSelector.setElement('.h-annotation-selector').render();
