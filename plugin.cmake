@@ -48,10 +48,20 @@ add_python_test(color_normalization
     "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
 )
 
-add_python_test(glcm
-    SUBMODULE GLCMMatrixGenerationTest
-    DBNAME core_glcm_gen
-    PLUGIN HistomicsTK
+add_python_test(blob_detection
+    SUBMODULE BlobDetectionFilterTest
+    DBNAME core_blob_detection
+    PLUGIN HistomicsTK EXTERNAL_DATA
+    "plugins/HistomicsTK/L1.png"
+    "plugins/HistomicsTK/Easy1.png"
+    "plugins/HistomicsTK/Easy1_nuclei_stain.npy"
+    "plugins/HistomicsTK/Easy1_nuclei_fgnd_mask.npy"
+
+    "plugins/HistomicsTK/Easy1_clog_max.npy"
+    "plugins/HistomicsTK/Easy1_clog_sigma_max.npy"
+
+    "plugins/HistomicsTK/Easy1_cdog_max.npy"
+    "plugins/HistomicsTK/Easy1_cdog_sigma_max.npy"
 )
 
 add_python_test(segmentation_label
@@ -62,12 +72,19 @@ add_python_test(segmentation_label
 
 add_python_test(nuclei_segmentation
     SUBMODULE NucleiSegmentationTest
-    DBNAME core_nuclei_seg_kofahi
+    DBNAME core_nuclei_seg
     PLUGIN HistomicsTK EXTERNAL_DATA
     "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
     "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
     "plugins/HistomicsTK/Easy1_nuclei_seg_kofahi.npy" # put Easy1_nuclei_seg_kofahi.npy.sha512 in plugin_tests/data
 )
+
+add_python_test(glcm
+    SUBMODULE GLCMMatrixGenerationTest
+    DBNAME core_glcm_gen
+    PLUGIN HistomicsTK
+)
+
 
 # front-end tests
 #add_web_client_test(
