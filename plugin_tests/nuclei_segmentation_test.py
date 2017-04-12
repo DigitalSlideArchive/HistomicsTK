@@ -97,7 +97,7 @@ class NucleiSegmentationTest(base.TestCase):
 
         # filter out small objects
         im_nuclei_seg_mask = htk_seg.label.area_open(
-            im_nuclei_seg_mask, 80).astype(np.int)
+            im_nuclei_seg_mask, 80).astype(np.uint8)
 
         # perform connected component analysis
         obj_props = skimage.measure.regionprops(im_nuclei_seg_mask)
