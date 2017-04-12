@@ -25,6 +25,7 @@ import numpy as np
 
 from histomicstk.filters.shape import clog, cdog
 
+
 # boiler plate to start and stop the server if needed
 def setUpModule():
 
@@ -60,14 +61,14 @@ class BlobDetectionFiltersTest(base.TestCase):
         im_log_max_gtruth = np.load(
             os.path.join(TEST_DATA_DIR, 'Easy1_clog_max.npy'))
 
-        np.testing.assert_array_almost_equal(im_log_max.astype('float16'),
-                                       im_log_max_gtruth, decimal=4)
+        np.testing.assert_array_almost_equal(
+            im_log_max.astype('float16'), im_log_max_gtruth, decimal=4)
 
         im_sigma_max_gtruth = np.load(
             os.path.join(TEST_DATA_DIR, 'Easy1_clog_sigma_max.npy'))
 
-        np.testing.assert_array_almost_equal(im_sigma_max.astype(np.float16),
-                                       im_sigma_max_gtruth, decimal=4)
+        np.testing.assert_array_almost_equal(
+            im_sigma_max.astype(np.float16), im_sigma_max_gtruth, decimal=4)
 
     def test_cdog(self):
 
@@ -87,12 +88,11 @@ class BlobDetectionFiltersTest(base.TestCase):
         im_dog_max_gtruth = np.load(
             os.path.join(TEST_DATA_DIR, 'Easy1_cdog_max.npy'))
 
-        np.testing.assert_array_almost_equal(im_dog_max.astype(np.float16),
-                                       im_dog_max_gtruth, decimal=4)
+        np.testing.assert_array_almost_equal(
+            im_dog_max.astype(np.float16), im_dog_max_gtruth, decimal=4)
 
         im_sigma_max_gtruth = np.load(
             os.path.join(TEST_DATA_DIR, 'Easy1_cdog_sigma_max.npy'))
 
-        np.testing.assert_array_almost_equal(im_sigma_max.astype(np.float16),
-                                       im_sigma_max_gtruth, decimal=4)
-
+        np.testing.assert_array_almost_equal(
+            im_sigma_max.astype(np.float16), im_sigma_max_gtruth, decimal=4)
