@@ -1,3 +1,4 @@
+import dask
 import large_image
 import numpy as np
 import scipy
@@ -41,6 +42,10 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
     Pixels : array_like
         A Nx3 matrix of RGB pixel values sampled from the whole-slide.
 
+    Notes
+    -----
+    If Dask is configured, it is used to distribute the computation.
+
     See Also
     --------
     histomicstk.preprocessing.color_normalization.reinhard
@@ -75,15 +80,36 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
     # generate sample pixels
     sample_pixels = []
 
-    scale_hres = {'magnification': magnification}
+    iter_args = dict(scale=dict(magnification=magnification),
+                     format=large_image.tilesource.TILE_FORMAT_NUMPY)
 
-    # Accumulator for probabilistic rounding
-    frac_accum = 0.
+    im_fgnd_mask_lres = dask.delayed(im_fgnd_mask_lres)
 
-    for tile in ts.tileIterator(
-            scale=scale_hres,
-            format=large_image.tilesource.TILE_FORMAT_NUMPY):
+    grouping = 256
+    total_tiles = ts.getSingleTile(**iter_args)['iterator_range']['position']
+    for position in range(0, total_tiles, grouping):
+        sample_pixels.append(dask.delayed(_sample_pixels_tile)(
+            slide_path, iter_args,
+            (position, min(grouping, total_tiles - position)), sample_percent,
+            tissue_seg_mag, min_coverage, im_fgnd_mask_lres))
 
+    # concatenate pixel values in list
+    if sample_pixels:
+        sample_pixels = (dask.delayed(np.concatenate)(sample_pixels, 0)
+                         .compute())
+    else:
+        print "Sampling could not identify any foreground regions."
+
+    return sample_pixels
+
+
+def _sample_pixels_tile(slide_path, iter_args, positions, sample_percent,
+                        tissue_seg_mag, min_coverage, im_fgnd_mask_lres):
+    start_position, position_count = positions
+    sample_pixels = [np.empty((0, 3))]
+    ts = large_image.getTileSource(slide_path)
+    for position in range(start_position, start_position + position_count):
+        tile = ts.getSingleTile(tile_position=position, **iter_args)
         # get current region in base_pixels
         rgn_hres = {'left': tile['gx'], 'top': tile['gy'],
                     'right': tile['gx'] + tile['gwidth'],
@@ -92,7 +118,8 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
 
         # get foreground mask for current tile at low resolution
         rgn_lres = ts.convertRegionScale(rgn_hres,
-                                         targetScale=scale_lres,
+                                         targetScale={'magnification':
+                                                      tissue_seg_mag},
                                          targetUnits='mag_pixels')
 
         top = np.int(rgn_lres['top'])
@@ -122,29 +149,17 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
         nz_ind = np.nonzero(tile_fgnd_mask.flatten())[0]
 
         # Handle fractions in the desired sample size by rounding up
-        # or down, weighted by the fractional amount.  To reduce
-        # variance, the fraction is adjusted by a running counter that
-        # factors in previous random decisions.
+        # or down, weighted by the fractional amount.
         float_samples = sample_percent * nz_ind.size
         num_samples = int(np.floor(float_samples))
-        frac_accum += float_samples - num_samples
-        r = np.random.binomial(1, np.clip(frac_accum, 0, 1))
-        num_samples += r
-        frac_accum -= r
+        num_samples += np.random.binomial(1, float_samples - num_samples)
 
         sample_ind = np.random.choice(nz_ind, num_samples)
 
         # convert rgb tile image to Nx3 array
-        tile_pix_rgb = np.reshape(im_tile,
-                                  (im_tile.shape[0] * im_tile.shape[1], 3))
+        tile_pix_rgb = np.reshape(im_tile, (-1, 3))
 
         # add rgb triplet of sample pixels
         sample_pixels.append(tile_pix_rgb[sample_ind, :])
 
-    # concatenate pixel values in list
-    try:
-        sample_pixels = np.concatenate(sample_pixels, 0)
-    except ValueError:
-        print "Sampling could not identify any foreground regions."
-
-    return sample_pixels
+    return np.concatenate(sample_pixels, 0)
