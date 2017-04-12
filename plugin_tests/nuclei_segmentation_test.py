@@ -99,10 +99,21 @@ class NucleiSegmentationTest(base.TestCase):
         im_nuclei_seg_mask = htk_seg.label.area_open(
             im_nuclei_seg_mask, 80).astype(np.int)
 
+        # perform connected component analysis
+        obj_props = skimage.measure.regionprops(im_nuclei_seg_mask)
+
+        num_nuclei = len(obj_props)
+
         # check if segmentation mask matches ground truth
         gtruth_mask_file = os.path.join(TEST_DATA_DIR,
                                         'Easy1_nuclei_seg_kofahi.npy')
 
         im_gtruth_mask = np.load(gtruth_mask_file)
+
+        obj_props_gtruth = skimage.measure.regionprops(im_gtruth_mask)
+
+        num_nuclei_gtruth = len(obj_props_gtruth)
+
+        assert(num_nuclei == num_nuclei_gtruth)
 
         np.testing.assert_allclose(im_nuclei_seg_mask, im_gtruth_mask)
