@@ -87,12 +87,12 @@ class NucleiSegmentationTest(base.TestCase):
             im_nuclei_stain < 160)
 
         # run adaptive multi-scale LoG filter
-        im_log = htk_shape_filters.clog(im_nuclei_stain, im_nuclei_fgnd_mask,
-                                        sigma_min=20 / np.sqrt(2),
-                                        sigma_max=30 / np.sqrt(2))
+        im_log, im_sigma_max = htk_shape_filters.clog(
+            im_nuclei_stain, im_nuclei_fgnd_mask,
+            sigma_min=20 / np.sqrt(2), sigma_max=30 / np.sqrt(2))
 
         # apply local maximum clustering
-        im_nuclei_seg_mask, seeds, max = htk_seg.nuclear.max_clustering(
+        im_nuclei_seg_mask, seeds, maxima = htk_seg.nuclear.max_clustering(
             im_log, im_nuclei_fgnd_mask, 10)
 
         # filter out small objects
