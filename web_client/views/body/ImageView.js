@@ -93,13 +93,26 @@ var ImageView = View.extend({
                 }
 
                 this.zoomWidget
-                    .setViewer(this.viewer)
+                    .setViewer(this.viewerWidget)
                     .setElement('.h-zoom-widget').render();
 
-                this.drawWidget.setElement('.h-draw-widget').render();
+                this.annotationSelector
+                    .setViewer(this.viewerWidget)
+                    .setElement('.h-annotation-selector').render();
+
+                this.drawWidget
+                    .setViewer(this.viewerWidget)
+                    .setElement('.h-draw-widget').render();
             });
             this.annotationSelector.setItem(this.model);
-            this.annotationSelector.setElement('.h-annotation-selector').render();
+
+            this.annotationSelector
+                .setViewer(null)
+                .setElement('.h-annotation-selector').render();
+
+            this.drawWidget
+                .setViewer(null)
+                .setElement('.h-draw-widget').render();
         }
         this.controlPanel.setElement('.h-control-panel-container').render();
     },

@@ -88,7 +88,7 @@ var ZoomWidget = Panel.extend({
     setViewer(viewer) {
         var geo = window.geo;
         var range;
-        this.viewer = viewer;
+        this.viewer = viewer.viewer;
         if (this.viewer) {
             this.viewer.geoOn(geo.event.zoom, this._zoomChanged);
             range = this.viewer.zoomRange();

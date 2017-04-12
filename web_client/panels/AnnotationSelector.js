@@ -34,7 +34,15 @@ var AnnotationSelector = Panel.extend({
         this.collection.fetch({itemId: item.id})
             .then(() => this.render());
     },
+    setViewer(viewer) {
+        this.viewer = viewer;
+        return this;
+    },
     render() {
+        if (!this.viewer) {
+            this.$el.empty();
+            return;
+        }
         this.$el.html(annotationSelectorWidget({
             annotations: this.collection.toArray(),
             id: 'annotation-panel-container',

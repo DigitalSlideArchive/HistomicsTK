@@ -6,24 +6,22 @@ block title
 block content
   .btn-group.btn-justified.btn-group-sm
     .btn-group.btn-group-sm
-      button.h-draw-point.btn.btn-default(type='button')
+      button.h-draw.btn.btn-default(type='button', data-type='point')
         | #[span.icon-circle-empty] Point
     .btn-group.btn-group-sm
-      button.h-draw-rectangle.btn.btn-default(type='button')
+      button.h-draw.btn.btn-default(type='button', data-type='rectangle')
         | #[span.icon-check-empty] Rectangle
     .btn-group.btn-group-sm
-      button.h-draw-polygon.btn.btn-default(type='button')
+      button.h-draw.btn.btn-default(type='button', data-type='polygon')
         | #[span.icon-star-empty] Polygon
 
-  - var elements = [{id: 'a', type: 'point'}, {id: 'b', type: 'rectangle'}];
   if elements.length
     .h-elements-container
       each element in elements
-        .h-element
-          span(data-id=element.id)
-            span.icon-cog.h-edit-element
-            span.icon-cancel.h-delete-element
-            span.h-element-label #{element.type}
+        .h-element(data-id=element.id)
+          span.icon-cog.h-edit-element(data-toggle='tooltip', title='Change style')
+          span.icon-cancel.h-delete-element(data-toggle='tooltip', title='Remove')
+          span.h-element-label #{element.type}
 
     button.btn.btn-primary.h-save-annotation(type='button') Save
 
