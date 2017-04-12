@@ -52,14 +52,14 @@ add_python_test(blob_detection
     SUBMODULE BlobDetectionFilterTest
     DBNAME core_blob_detection
     PLUGIN HistomicsTK EXTERNAL_DATA
-    "plugins/HistomicsTK/L1.png"
-    "plugins/HistomicsTK/Easy1.png"
+    # There is a bug in cmake that fails when external data files are added to
+    # multiple tests, so add it in one of the tests for now
+    # "plugins/HistomicsTK/L1.png"
+    # "plugins/HistomicsTK/Easy1.png"
     "plugins/HistomicsTK/Easy1_nuclei_stain.npy"
     "plugins/HistomicsTK/Easy1_nuclei_fgnd_mask.npy"
-
     "plugins/HistomicsTK/Easy1_clog_max.npy"
     "plugins/HistomicsTK/Easy1_clog_sigma_max.npy"
-
     "plugins/HistomicsTK/Easy1_cdog_max.npy"
     "plugins/HistomicsTK/Easy1_cdog_sigma_max.npy"
 )
@@ -74,8 +74,10 @@ add_python_test(nuclei_segmentation
     SUBMODULE NucleiSegmentationTest
     DBNAME core_nuclei_seg
     PLUGIN HistomicsTK EXTERNAL_DATA
-    "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
-    "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
+    # There is a bug in cmake that fails when external data files are added to
+    # multiple tests, so add it in one of the tests for now
+    # "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
+    # "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
     "plugins/HistomicsTK/Easy1_nuclei_seg_kofahi.npy" # put Easy1_nuclei_seg_kofahi.npy.sha512 in plugin_tests/data
 )
 
