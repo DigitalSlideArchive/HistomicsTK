@@ -54,19 +54,16 @@ test_requirements = [
     # TODO: Should we list Girder here?
 ]
 
-# cython extensions
-ext_compiler_args = ["-std=c++11", "-O2"]
-
 if sys.platform == "darwin":  # osx
     ext_compiler_args.append("-mmacosx-version-min=10.9")
 
 ext_list = [
     Extension(
-        "histomicstk.segmentation.label.trace_boundaries_cython",
-        sources=["histomicstk/segmentation/label/trace_boundaries_cython.pyx",
-                 "histomicstk/segmentation/label/trace_boundaries_opt.cpp"],
+        "histomicstk.segmentation.label._trace_object_boundaries_cython",
+        sources=[
+            "histomicstk/segmentation/label/_trace_object_boundaries_cython.pyx",
+        ],
         include_dirs=[numpy.get_include()],
-        extra_compile_args=ext_compiler_args,
         language="c++",
     ),
 

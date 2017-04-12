@@ -36,9 +36,9 @@ def rgb_to_lab(im_rgb):
 
     References
     ----------
-    .. D. Ruderman, T. Cronin, and C. Chiao, "Statistics of cone responses
-       to natural images: implications for visual coding," J. Opt. Soc. Am. A
-       vol.15, pp.2036-2045, 1998.
+    .. [#] D. Ruderman, T. Cronin, and C. Chiao, "Statistics of cone
+       responses to natural images: implications for visual coding,"
+       J. Opt. Soc. Am. A vol.15, pp.2036-2045, 1998.
     """
 
     # get input image dimensions

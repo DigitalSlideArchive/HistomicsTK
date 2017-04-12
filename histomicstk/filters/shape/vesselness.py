@@ -30,7 +30,7 @@ def vesselness(im_input, sigma):
 
     References
     ----------
-    .. Frangi, Alejandro F., et al. "Multiscale vessel enhancement
+    .. [#] Frangi, Alejandro F., et al. "Multiscale vessel enhancement
        filtering." Medical Image Computing and Computer-Assisted
        Interventation. MICCAI98. Springer Berlin Heidelberg,1998. 130-137.
 
