@@ -1,8 +1,10 @@
 import numpy as np
-import scipy as sp
+
+from scipy.ndimage.filters import gaussian_laplace
+from scipy.ndimage.morphology import distance_transform_edt
 
 
-def clog(im_input, mask, sigma_min, sigma_max):
+def clog(im_input, im_mask, sigma_min, sigma_max):
     """Constrainted Laplacian of Gaussian filter.
 
     Takes as input a grayscale nuclear image and binary mask of cell nuclei,
@@ -15,7 +17,7 @@ def clog(im_input, mask, sigma_min, sigma_max):
     im_input : array_like
         A hematoxylin intensity image obtained from ColorDeconvolution. Objects
         are assumed to be dark with a light background.
-    mask : array_like
+    im_mask : array_like
         A binary image where nuclei pixels have value 1/True, and non-nuclear
         pixels have value 0/False.
     sigma_min : double
@@ -46,7 +48,7 @@ def clog(im_input, mask, sigma_min, sigma_max):
     im_input = im_input.astype(np.float)
 
     # generate distance map
-    im_dmap = sp.ndimage.morphology.distance_transform_edt(mask)
+    im_dmap = distance_transform_edt(im_mask)
 
     # compute max sigma at each pixel as 2 times the distance to background
     im_sigma_ubound = 2.0 * im_dmap
@@ -72,9 +74,7 @@ def clog(im_input, mask, sigma_min, sigma_max):
     for sigma in sigma_list:
 
         # generate normalized filter response
-        im_log_cur = sigma ** 2 * \
-                     sp.ndimage.filters.gaussian_laplace(im_input, sigma,
-                                                         mode='mirror')
+        im_log_cur = sigma**2 * gaussian_laplace(im_input, sigma, mode='mirror')
 
         # constrain LoG response
         im_log_cur[im_sigma_ubound < sigma] = MIN_FLOAT

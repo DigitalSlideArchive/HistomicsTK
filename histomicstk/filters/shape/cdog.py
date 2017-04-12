@@ -1,8 +1,8 @@
 import math
 
 import numpy as np
-import scipy as sp
 
+from scipy.ndimage.morphology import distance_transform_edt
 from scipy.ndimage.filters import gaussian_filter
 from skimage.transform import resize
 
@@ -58,7 +58,7 @@ def cdog(im_input, im_mask, sigma_min, sigma_max, num_octave_levels=3):
     im_input = im_input.astype(np.float)
 
     # generate distance map
-    im_dmap = sp.ndimage.morphology.distance_transform_edt(im_mask)
+    im_dmap = distance_transform_edt(im_mask)
 
     # compute max sigma at each pixel as 2 times the distance to background
     im_sigma_ubound = 2.0 * im_dmap
@@ -110,6 +110,7 @@ def cdog(im_input, im_mask, sigma_min, sigma_max, num_octave_levels=3):
         max_update_pixels = np.where(im_dog_cur > im_dog_octave_max)
 
         if len(max_update_pixels[0]) > 0:
+
             im_dog_octave_max[max_update_pixels] = im_dog_cur[max_update_pixels]
             im_sigma_octave_max[max_update_pixels] = sigma_cur
 
