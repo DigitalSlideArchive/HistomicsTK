@@ -1,13 +1,14 @@
 - name: Install package dependencies
-  apt: name={{ item }} state=present
-  sudo: yes
-  with_items:
-    - build-essential
-    - cmake
-    - git
-    - python-pip
-    - python-software-properties
-    - python2.7-dev
+  apt:
+    name:
+      - build-essential
+      - cmake
+      - git
+      - python-pip
+      - python-software-properties
+      - python2.7-dev
+    state: present
+  become: true
 
 - name: Clone ITK
   git:
@@ -33,4 +34,4 @@
   command: make install
   args:
     chdir: "{{ root_dir }}/ITK-build"
-  sudo: yes
+  become: true

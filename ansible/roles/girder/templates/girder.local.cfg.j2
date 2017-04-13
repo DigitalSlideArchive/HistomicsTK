@@ -12,18 +12,20 @@ hash_alg: "bcrypt"
 bcrypt_rounds: 12
 
 [database]
-uri: "mongodb://{{ mongo_private_ip }}:27017/girder"
+uri: "mongodb://{{ mongo_private_ip }}:27017/{{ mongo_girder_database }}"
 replica_set: None
 
 [server]
 # Set to "production" or "development"
 mode: "development"
+# api_root: "api/v1"
 api_root: "api/v1"
 static_root: "static"
 # The api_static_root is the route from the 'api' path to the 'static' path
 api_static_root: "../static"
 
-# [logging]
+[logging]
+log_root="{{ root_dir }}/logs"
 # log_root="/path/to/log/root"
 # If log_root is set error and info will be set to error.log and info.log within
 # log root respectively. The paths below will override that setting and are
@@ -55,6 +57,6 @@ cache_python_memory_portion: 8
 #  cache_memcached_url is one or a list of memcached servers, such as
 #  ["127.0.0.1", "192.168.10.5"].  Default is "127.0.0.1".  You may want to
 #  edit options in /etc/memcached.conf as well.
-cache_memcached_url: "127.0.0.1"
+cache_memcached_url: "{{ memcached_url }}"
 cache_memcached_username: None
 cache_memcached_password: None

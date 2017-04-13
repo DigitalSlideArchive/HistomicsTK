@@ -3,11 +3,11 @@
   roles:
     - common
     - mongodb
-    - openslide
     - mq
+    - openslide
     - worker
     - girder
-    - dev
+    - provision
     #- itk
   vars:
     vagrant: true
@@ -15,8 +15,8 @@
     girder_admin_user: admin
     girder_admin_email: histomicstk.admin@kitware.com
     girder_admin_password: password
-    girder_socket_host: localhost
-    girder_socket_port: 8009
+    girder_socket_port: 8080
+    girder_socket_scheme: http
     girder_exec_user: vagrant
     girder_exec_group: vagrant
     girder_plugins:
@@ -31,3 +31,6 @@
     worker_exec_group: vagrant
     mongo_private_ip: localhost
     mq_private_ip: localhost
+    girder_api_url: http://localhost:8080/api/v1
+    mongo_girder_database: girder
+    memcached_url: 127.0.0.1

@@ -12,6 +12,6 @@ respawn limit 20 5
 script
 
     cd {{ girder_root }}
-    exec sudo -u {{ girder_exec_user }} LANG=en_US.UTF-8 /usr/bin/python -m girder > /dev/null 2>&1
+    exec sudo -u {{ girder_exec_user }} bash -c "LANG=en_US.UTF-8 /usr/bin/python -m girder >{{ root_dir }}/girder.log 2>&1"
 
 end script

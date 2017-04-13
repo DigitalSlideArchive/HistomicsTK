@@ -1,68 +1,70 @@
+---
 - name: Install package dependencies
-  apt: name={{ item }} state=present
-  sudo: yes
-  with_items:
-    - libssl-dev
-    - python-pip
-    - python2.7-dev
-    - python-software-properties
+  apt:
+    state: present
+    name:
+      - libssl-dev
+      - python-pip
+      - python2.7-dev
+      - python-software-properties
 
-    - build-essential
-    - cmake
-    - cmake-curses-gui
-    - libtiff5-dev
-    - libjpeg8-dev
-    - zlib1g-dev
-    - libfreetype6-dev
-    - liblcms2-dev
-    - libwebp-dev
-    - tcl8.6-dev
-    - tk8.6-dev
-    - python-tk
-    - libvips-tools
-    - libglib2.0-dev
-    - libjpeg-dev
-    - libxml2-dev
-    - libpng12-dev
-    - autoconf
-    - automake
-    - libtool
-    - pkg-config
-    - libcairo2-dev
-    - libgdk-pixbuf2.0-dev
-    - libxml2-dev
-    - libsqlite3-dev
-    # To update vips
-    - build-essential
-    - gobject-introspection
-    - libcfitsio3-dev
-    - libexif-dev
-    - libfftw3-dev
-    - libgif-dev
-    - libgirepository1.0-dev
-    - libglib2.0-dev
-    - libgsf-1-dev
-    - libjpeg-turbo8-dev
-    - libmagick++-dev
-    - libmatio-dev
-    - liborc-0.4-dev
-    - libpango1.0-dev
-    - libxml2-dev
-    - pkg-config
-    - python-gi-dev
-    # Don't install libpoppler; it needs an older version of libtif
-    # - libpoppler-glib-dev
+      - build-essential
+      - cmake
+      - cmake-curses-gui
+      - libtiff5-dev
+      - libjpeg8-dev
+      - zlib1g-dev
+      - libfreetype6-dev
+      - liblcms2-dev
+      - libwebp-dev
+      - tcl8.6-dev
+      - tk8.6-dev
+      - python-tk
+      - libvips-tools
+      - libglib2.0-dev
+      - libjpeg-dev
+      - libxml2-dev
+      - libpng12-dev
+      - autoconf
+      - automake
+      - libtool
+      - pkg-config
+      - libcairo2-dev
+      - libgdk-pixbuf2.0-dev
+      - libsqlite3-dev
+      # To update vips
+      - build-essential
+      - gobject-introspection
+      - libcfitsio3-dev
+      - libexif-dev
+      - libfftw3-dev
+      - libgif-dev
+      - libgirepository1.0-dev
+      - libglib2.0-dev
+      - libgsf-1-dev
+      - libjpeg-turbo8-dev
+      - libmagick++-dev
+      - libmatio-dev
+      - liborc-0.4-dev
+      - libpango1.0-dev
+      - libxml2-dev
+      - pkg-config
+      - python-gi-dev
+      # Don't install libpoppler; it needs an older version of libtif
+      # - libpoppler-glib-dev
+    install_recommends: no
+  become: true
 
 # openjpeg
 - name: Download openjpeg
-  command: wget -O openjpeg-2.1.2.tar.gz https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  get_url:
+    url: https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz
+    dest: "{{ root_dir }}/openjpeg-2.1.2.tar.gz"
 
 - name: Extract openjpeg
-  command: tar -zxf openjpeg-2.1.2.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  unarchive:
+    src: "{{ root_dir }}/openjpeg-2.1.2.tar.gz"
+    dest: "{{ root_dir }}"
 
 - name: Configure openjpeg
   command: cmake .
@@ -78,22 +80,22 @@
   command: make install
   args:
     chdir: "{{ root_dir }}/openjpeg-2.1.2"
-  sudo: yes
+  become: true
 
 - name: Run ldconfig
   command: ldconfig
-  sudo: yes
+  become: true
 
 # libtiff
 - name: Download libtiff
-  command: wget http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  get_url:
+    url: http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz
+    dest: "{{ root_dir }}"
 
 - name: Extract libtiff
-  command: tar -zxf tiff-4.0.6.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  unarchive:
+    src: "{{ root_dir }}/tiff-4.0.6.tar.gz"
+    dest: "{{ root_dir }}"
 
 - name: Configure libtiff
   command: ./configure
@@ -109,22 +111,22 @@
   command: make install
   args:
     chdir: "{{ root_dir }}/tiff-4.0.6"
-  sudo: yes
+  become: true
 
 - name: Run ldconfig
   command: ldconfig
-  sudo: yes
+  become: true
 
 # Openslide
 - name: Download openslide
-  command: wget -O openslide-3.4.1.tar.gz https://github.com/openslide/openslide/archive/v3.4.1.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  get_url:
+    url: https://github.com/openslide/openslide/archive/v3.4.1.tar.gz
+    dest: "{{ root_dir }}/openslide-3.4.1.tar.gz"
 
 - name: Extract openslide
-  command: tar -zxf openslide-3.4.1.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  unarchive:
+    src: "{{ root_dir }}/openslide-3.4.1.tar.gz"
+    dest: "{{ root_dir }}"
 
 - name: Configure openslide
   shell: autoreconf -i && ./configure
@@ -140,22 +142,22 @@
   command: make install
   args:
     chdir: "{{ root_dir }}/openslide-3.4.1"
-  sudo: yes
+  become: true
 
 - name: Run ldconfig
   command: ldconfig
-  sudo: yes
+  become: true
 
 # vips
 - name: Download vips
-  command: wget -O vips-8.4.5.tar.gz http://www.vips.ecs.soton.ac.uk/supported/current/vips-8.4.5.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  get_url:
+    url: http://www.vips.ecs.soton.ac.uk/supported/current/vips-8.4.5.tar.gz
+    dest: "{{ root_dir }}/vips-8.4.5.tar.gz"
 
 - name: Extract vips
-  command: tar -zxf vips-8.4.5.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
+  unarchive:
+    src: "{{ root_dir }}/vips-8.4.5.tar.gz"
+    dest: "{{ root_dir }}"
 
 - name: Configure vips
   shell: ./configure
@@ -171,16 +173,29 @@
   command: make install
   args:
     chdir: "{{ root_dir }}/vips-8.4.5"
-  sudo: yes
+  become: true
 
 - name: Run ldconfig
   command: ldconfig
-  sudo: yes
+  become: true
+
+- name: Install Vips python connector
+  copy:
+    src: "{{ root_dir }}/vips-8.4.5/python/packages/gi/overrides/Vips.py"
+    dest: /usr/lib/python2.7/dist-packages/gi/overrides/
+  become: true
+
+- name: Enable Vips python connector
+  lineinfile:
+    dest: $HOME/.bashrc
+    line: 'export GI_TYPELIB_PATH=/usr/local/lib/girepository-1.0'
+    insertafter: 'EOF'
+    state: present
 
 # Update python packages
 - name: Get the most recent version of pip
   pip: name=pip extra_args="-U"
-  sudo: yes
+  become: true
 
 - name: Purge pip cache
   command: |
@@ -188,7 +203,7 @@
     import pip.locations, shutil
     shutil.rmtree(pip.locations.USER_CACHE_DIR, True)
     '
-  sudo: yes
+  become: true
 
 - name: Reinstall python modules that depend on OpenJPEG and libtiff if they are installed.
   command: |
@@ -199,4 +214,4 @@
     ''  pip.main(["install", "--force-reinstall", "--ignore-installed",
     ''           "%s==%s" % (package["name"], package["version"])])
     '
-  sudo: yes
+  become: true
