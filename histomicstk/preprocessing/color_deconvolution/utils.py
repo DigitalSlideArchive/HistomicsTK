@@ -22,13 +22,13 @@ def get_stain_vector(args, index):
         raise ValueError('Unless "custom" is chosen for a stain, '
                          'no stain vector may be provided.')
 
-def get_stain_matrix(args):
+def get_stain_matrix(args, count=3):
     """Get the stain matrix corresponding to the args.stain_$index and
-    args.stain_$index_vector arguments for values of index 1, 2, 3.
+    args.stain_$index_vector arguments for values of index 1 to count.
     Return a numpy array of column vectors.
 
     """
-    return numpy.array([get_stain_vector(args, i) for i in 1, 2, 3]).T
+    return numpy.array([get_stain_vector(args, i+1) for i in range(count)]).T
 
 __all__ = (
     'get_stain_vector',
