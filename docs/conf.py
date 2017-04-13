@@ -60,7 +60,7 @@ autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
                         'scipy.optimize', 'scipy.signal', 'scipy.stats',
                         'skimage', 'skimage.feature', 'skimage.measure',
                         'skimage.segmentation', 'skimage.morphology',
-                        'skimage.draw',
+                        'skimage.draw', 'skimage.transform',
                         'sklearn.cluster', 'sklearn.neighbors.kde',
                         'segmentation.label.trace_boundaries_cython']
 
