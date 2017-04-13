@@ -8,9 +8,10 @@ block content
     - annotation = annotation.attributes;
     - var name = annotation.annotation.name;
     - var displayed = annotation.displayed;
-    .h-annotation
-      span(data-id=annotation._id) #{name}
-        if displayed
-          i.icon-eye.h-toggle-annotation
-        else
-          i.icon-eye-off.h-toggle-annotation
+    .h-annotation(data-id=annotation._id)
+      if displayed
+        span.icon-eye.h-toggle-annotation
+      else
+        span.icon-eye-off.h-toggle-annotation
+      span.h-annotation-name #{name}
+      span.icon-cancel.h-delete-annotation

@@ -8,7 +8,8 @@ import '../stylesheets/panels/annotationSelector.styl';
 
 var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
-        'click .h-annotation > span': 'toggleAnnotation'
+        'click .h-toggle-annotation': 'toggleAnnotation',
+        'click .h-delete-annotation': 'deleteAnnotation'
     }),
     initialize(settings) {
         this.listenTo(this.collection, 'all', this.render);
@@ -50,10 +51,17 @@ var AnnotationSelector = Panel.extend({
         return this;
     },
     toggleAnnotation(evt) {
-        var id = $(evt.currentTarget).data('id');
+        var id = $(evt.currentTarget).parent('.h-annotation').data('id');
         var model = this.collection.get(id);
         model.set('displayed', !model.get('displayed'));
-        this.render();
+    },
+    deleteAnnotation(evt) {
+        var id = $(evt.currentTarget).parent('.h-annotation').data('id');
+        var model = this.collection.get(id);
+        if (model) {
+            model.unset('displayed');
+            model.destroy();
+        }
     }
 });
 
