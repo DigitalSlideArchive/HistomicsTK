@@ -15,6 +15,8 @@ from .color_deconvolution import color_deconvolution
 stain_color_map = _stain_color_map.stain_color_map
 __doc__ += _stain_color_map.__doc__
 
+from . import utils
+
 # list out things that are available for public use
 __all__ = (
 
@@ -24,4 +26,7 @@ __all__ = (
     'complement_stain_matrix',
     'sparse_color_deconvolution',
     'stain_color_map',
+
+    # submodules of this package
+    'utils',
 )
