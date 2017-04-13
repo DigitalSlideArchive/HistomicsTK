@@ -5,6 +5,7 @@ shapes (e.g. blobs, vessels)
 
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
+from .cdog import cdog
 from .clog import clog
 from .glog import glog
 from .vesselness import vesselness
@@ -13,6 +14,7 @@ from .vesselness import vesselness
 __all__ = (
 
     # functions and classes of this package
+    'cdog',
     'clog',
     'glog',
     'vesselness',
