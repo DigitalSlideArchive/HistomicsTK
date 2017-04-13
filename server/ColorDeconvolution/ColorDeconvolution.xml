@@ -18,47 +18,78 @@
       <index>0</index>
       <description>Input image to be deconvolved</description>
     </image>
-    <double-vector>
-      <name>stainColor_1</name>
-      <label>Color of stain-1</label>
-      <channel>input</channel>
-      <index>1</index>
-      <description>RGB Color of stain-1</description>
-    </double-vector>
-    <double-vector>
-      <name>stainColor_2</name>
-      <label>Color of stain-2</label>
-      <channel>input</channel>
-      <index>2</index>
-      <description>RGB Color of stain-2</description>
-    </double-vector>
     <image>
       <name>outputStainImageFile_1</name>
       <label>Output Image of Stain 1</label>
       <channel>output</channel>
-      <index>3</index>
+      <index>1</index>
       <description>Output Image of Stain 1</description>
     </image>
     <image>
       <name>outputStainImageFile_2</name>
       <label>Output Image of Stain 2</label>
       <channel>output</channel>
-      <index>4</index>
+      <index>2</index>
       <description>Output Image of Stain 2</description>
     </image>
     <image>
       <name>outputStainImageFile_3</name>
       <label>Output Image of Stain 3</label>
       <channel>output</channel>
-      <index>5</index>
+      <index>3</index>
       <description>Output Image of Stain 3</description>
     </image>
+    <string-enumeration>
+      <name>stain_1</name>
+      <label>stain-1</label>
+      <description>Name of stain-1</description>
+      <channel>input</channel>
+      <longflag>stain_1</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>custom</element>
+      <default>hematoxylin</default>
+    </string-enumeration>
     <double-vector>
-      <name>stainColor_3</name>
-      <label>Color of stain-3</label>
-      <description>RGB Color of stain-3</description>
-      <longflag>stainColor_3</longflag>
-      <default>0,0,0</default>
+      <longflag>stain_1_vector</longflag>
+      <label>stain-1 custom vector</label>
+      <description>Custom value for stain-1</description>
+    </double-vector>
+    <string-enumeration>
+      <name>stain_2</name>
+      <label>stain-2</label>
+      <description>Name of stain-2</description>
+      <channel>input</channel>
+      <longflag>stain_2</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>custom</element>
+      <default>eosin</default>
+    </string-enumeration>
+    <double-vector>
+      <longflag>stain_2_vector</longflag>
+      <label>stain-2 custom vector</label>
+      <description>Custom value for stain-2</description>
+    </double-vector>
+    <string-enumeration>
+      <name>stain_3</name>
+      <label>stain-3</label>
+      <description>Name of stain-3</description>
+      <channel>input</channel>
+      <longflag>stain_3</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>null</element>
+      <element>custom</element>
+      <default>null</default>
+    </string-enumeration>
+    <double-vector>
+      <longflag>stain_3_vector</longflag>
+      <label>stain-3 custom vector</label>
+      <description>Custom value for stain-3</description>
     </double-vector>
     <region>
       <name>region</name>
