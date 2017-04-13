@@ -19,18 +19,6 @@
   become: yes
   become_user: root
 
-- name: Fetch GPG key for MongoDB
-  apt_key:
-    keyserver: hkp://keyserver.ubuntu.com:80
-    id: EA312927
-  become: true
-
-- name: Add MongoDB PPA
-  become: true
-  shell: echo "deb http://repo.mongodb.org/apt/ubuntu `lsb_release -c -s`/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
-  args:
-    creates: /etc/apt/sources.list.d/mongodb-org-3.2.list
-
 - name: Install system package dependencies
   apt:
     state: present
@@ -47,7 +35,6 @@
       - postfix
       - apt-transport-https
       - ca-certificates
-      - mongodb-org
       - vim
       - python-dev
       - memcached
