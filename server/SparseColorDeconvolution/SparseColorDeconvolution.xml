@@ -6,7 +6,7 @@
   <version>0.1.0</version>
   <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
   <license>Apache 2.0</license>
-  <contributor>Deepak Roy Chittajallu (Kitware)</contributor>
+  <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
   <parameters>
     <label>IO</label>
@@ -18,41 +18,61 @@
       <index>0</index>
       <description>Input image to be deconvolved</description>
     </image>
-    <double-vector>
-      <name>stainColor_1</name>
-      <label>Initial estimate of color of stain-1</label>
-      <description>RGB Color of stain-1</description>
-      <channel>input</channel>
-      <index>1</index>
-    </double-vector>
-    <double-vector>
-      <name>stainColor_2</name>
-      <label>Initial estimate of color of stain-2</label>
-      <description>RGB Color of stain-2</description>
-      <channel>input</channel>
-      <index>2</index>
-    </double-vector>
     <image>
       <name>outputStainImageFile_1</name>
       <label>Output Image of Stain 1</label>
       <description>Output Image of Stain 1</description>
       <channel>output</channel>
-      <index>3</index>
+      <index>1</index>
     </image>
     <image>
       <name>outputStainImageFile_2</name>
       <label>Output Image of Stain 2</label>
       <description>Output Image of Stain 2</description>
       <channel>output</channel>
-      <index>4</index>
+      <index>2</index>
     </image>
     <image>
       <name>outputStainImageFile_3</name>
       <label>Output Image of Stain 3</label>
       <description>Output Image of Stain 3</description>
       <channel>output</channel>
-      <index>5</index>
+      <index>3</index>
     </image>
+    <string-enumeration>
+      <name>stain_1</name>
+      <label>stain-1</label>
+      <description>Name for initial estimate of color of stain-1</description>
+      <channel>input</channel>
+      <longflag>stain_1</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>custom</element>
+      <default>hematoxylin</default>
+    </string-enumeration>
+    <double-vector>
+      <longflag>stain_1_vector</longflag>
+      <label>stain-1 custom vector</label>
+      <description>Custom value for initial estimate of stain-1</description>
+    </double-vector>
+    <string-enumeration>
+      <name>stain_2</name>
+      <label>stain-2</label>
+      <description>Name for initial estimate of color of stain-2</description>
+      <channel>input</channel>
+      <longflag>stain_2</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>custom</element>
+      <default>eosin</default>
+    </string-enumeration>
+    <double-vector>
+      <longflag>stain_2_vector</longflag>
+      <label>stain-2 custom vector</label>
+      <description>Custom value for initial estimate of stain-2</description>
+    </double-vector>
     <double>
       <name>beta</name>
       <label>Beta</label>

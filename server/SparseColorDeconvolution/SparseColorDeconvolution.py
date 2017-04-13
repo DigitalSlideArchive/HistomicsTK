@@ -18,7 +18,7 @@ def main(args):
     # Create stain matrix
     print('>> Creating stain matrix')
 
-    w_init = np.array([args.stainColor_1, args.stainColor_2]).T
+    w_init = htk_cdeconv.utils.get_stain_matrix(args, 2)
 
     print w_init
 
