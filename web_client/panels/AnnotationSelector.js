@@ -38,6 +38,7 @@ var AnnotationSelector = Panel.extend({
         return this;
     },
     render() {
+        this.$('[data-toggle="tooltip"]').tooltip('destroy');
         if (!this.viewer) {
             this.$el.empty();
             return;
@@ -48,6 +49,7 @@ var AnnotationSelector = Panel.extend({
             title: 'Annotations'
         }));
         this.$('.s-panel-content').collapse({toggle: false});
+        this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         return this;
     },
     toggleAnnotation(evt) {

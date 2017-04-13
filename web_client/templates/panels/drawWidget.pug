@@ -6,13 +6,16 @@ block title
 block content
   .btn-group.btn-justified.btn-group-sm
     .btn-group.btn-group-sm
-      button.h-draw.btn.btn-default(type='button', data-type='point')
+      button.h-draw.btn.btn-default(
+        type='button', data-type='point', data-toggle='tooltip', title='Draw a new point')
         | #[span.icon-circle-empty] Point
     .btn-group.btn-group-sm
-      button.h-draw.btn.btn-default(type='button', data-type='rectangle')
+      button.h-draw.btn.btn-default(
+        type='button', data-type='rectangle', data-toggle='tooltip', title='Draw a new rectangle')
         | #[span.icon-check-empty] Rectangle
     .btn-group.btn-group-sm
-      button.h-draw.btn.btn-default(type='button', data-type='polygon')
+      button.h-draw.btn.btn-default(
+        type='button', data-type='polygon', data-toggle='tooltip', title='Draw a new polygon')
         | #[span.icon-star-empty] Polygon
 
   if elements.length
