@@ -1,8 +1,11 @@
 import _ from 'underscore';
 
+import events from 'girder/events';
+
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 import editAnnotation from '../dialogs/editAnnotation';
+import saveAnnotation from '../dialogs/saveAnnotation';
 
 import drawWidget from '../templates/panels/drawWidget.pug';
 import '../stylesheets/panels/drawWidget.styl';
@@ -15,11 +18,10 @@ var DrawWidget = Panel.extend({
         'click .h-draw': 'drawElement'
     }),
     initialize() {
-        this.annotation = new AnnotationModel({
-            '_id': 'draw'
-        });
+        this.annotation = new AnnotationModel();
+        this.listenTo(this.annotation, 'g:save', this._onSaveAnnotation);
         this.collection = this.annotation.elements();
-        this.listenTo(this.collection, 'add remove change', this._onCollectionChange);
+        this.listenTo(this.collection, 'add remove change reset', this._onCollectionChange);
     },
     render() {
         this.$('[data-toggle="tooltip"]').tooltip('destroy');
@@ -40,7 +42,7 @@ var DrawWidget = Panel.extend({
         return this;
     },
     saveAnnotation(evt) {
-        console.log(evt);
+        saveAnnotation(this.annotation);
     },
     editElement(evt) {
         editAnnotation(this.collection.get(this._getId(evt)));
@@ -54,6 +56,9 @@ var DrawWidget = Panel.extend({
         return this.viewer.startDrawMode(type)
             .then((element) => this._onCreate(element));
     },
+    reset() {
+        this.collection.reset();
+    },
     _onCreate(element) {
         this.collection.add(element);
     },
@@ -63,6 +68,10 @@ var DrawWidget = Panel.extend({
     },
     _getId(evt) {
         return this.$(evt.target).parent('.h-element').data('id');
+    },
+    _onSaveAnnotation() {
+        events.trigger('h:createAnnotation', this.annotation);
+        this.reset();
     }
 });
 
