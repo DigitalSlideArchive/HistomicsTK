@@ -1,5 +1,7 @@
-import OpenImage from './openImage';
+import openImage from './openImage';
+import editAnnotation from './editAnnotation';
 
 export {
-    OpenImage
+    openImage,
+    editAnnotation
 };

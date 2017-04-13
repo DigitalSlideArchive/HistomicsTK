@@ -18,10 +18,11 @@ block content
   if elements.length
     .h-elements-container
       each element in elements
+        - var label = (element.label || {}).value || element.type;
         .h-element(data-id=element.id)
           span.icon-cog.h-edit-element(data-toggle='tooltip', title='Change style')
           span.icon-cancel.h-delete-element(data-toggle='tooltip', title='Remove')
-          span.h-element-label #{element.type}
+          span.h-element-label #{label}
 
     button.btn.btn-primary.h-save-annotation(type='button') Save
 
