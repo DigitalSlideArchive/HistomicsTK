@@ -1,6 +1,6 @@
 import _ from 'underscore';
 
-import events from 'girder/events';
+import { restRequest } from 'girder/rest';
 
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
@@ -17,7 +17,9 @@ var DrawWidget = Panel.extend({
         'click .h-delete-element': 'deleteElement',
         'click .h-draw': 'drawElement'
     }),
-    initialize() {
+    initialize(settings) {
+        this.annotations = settings.annotations;
+        this.image = settings.image;
         this.annotation = new AnnotationModel();
         this.listenTo(this.annotation, 'g:save', this._onSaveAnnotation);
         this.collection = this.annotation.elements();
@@ -70,8 +72,19 @@ var DrawWidget = Panel.extend({
         return this.$(evt.target).parent('.h-element').data('id');
     },
     _onSaveAnnotation() {
-        events.trigger('h:createAnnotation', this.annotation);
-        this.reset();
+        var data = this.annotation.toJSON();
+        data.elements = data.annotation.elements;
+        delete data.annotation;
+        restRequest({
+            path: 'annotation?itemId=' + this.image.id,
+            contentType: 'application/json',
+            processData: false,
+            data: JSON.stringify(data),
+            type: 'POST'
+        }).then((data) => {
+            this.annotations.add(data);
+            this.reset();
+        });
     }
 });
 

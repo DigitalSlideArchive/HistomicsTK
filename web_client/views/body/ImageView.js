@@ -7,6 +7,7 @@ import FileModel from 'girder/models/FileModel';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
 import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
+import AnnotationCollection from 'girder_plugins/large_image/collections/AnnotationCollection';
 
 import AnnotationSelector from '../../panels/AnnotationSelector';
 import ZoomWidget from '../../panels/ZoomWidget';
@@ -30,18 +31,23 @@ var ImageView = View.extend({
         this.listenTo(events, 'h:analysis', this._setImageInput);
         events.trigger('h:imageOpened', null);
         this.listenTo(events, 'query:image', this.openImage);
+        this.annotations = new AnnotationCollection();
 
         this.controlPanel = new SlicerPanelGroup({
             parentView: this
         });
         this.annotationSelector = new AnnotationSelector({
-            parentView: this
+            parentView: this,
+            collection: this.annotations,
+            image: this.model
         });
         this.zoomWidget = new ZoomWidget({
             parentView: this
         });
         this.drawWidget = new DrawWidget({
-            parentView: this
+            parentView: this,
+            annotations: this.annotations,
+            image: this.model
         });
 
         this.listenTo(events, 'h:select-region', this.showRegion);

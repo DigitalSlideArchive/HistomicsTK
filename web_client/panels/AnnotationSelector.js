@@ -2,7 +2,6 @@ import _ from 'underscore';
 
 import eventStream from 'girder/utilities/EventStream';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
-import AnnotationCollection from 'girder_plugins/large_image/collections/AnnotationCollection';
 
 import annotationSelectorWidget from '../templates/panels/annotationSelector.pug';
 import '../stylesheets/panels/annotationSelector.styl';
@@ -12,7 +11,6 @@ var AnnotationSelector = Panel.extend({
         'click .h-annotation > span': 'toggleAnnotation'
     }),
     initialize(settings) {
-        this.collection = new AnnotationCollection();
         this.listenTo(this.collection, 'all', this.render);
         this.listenTo(eventStream, 'g:event.job_status', function (evt) {
             if (this.parentItem && evt.data.status > 2) {
