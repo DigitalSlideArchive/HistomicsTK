@@ -7,7 +7,8 @@ import 'girder/utilities/jquery/girderModal';
 
 var EditAnnotation = View.extend({
     events: {
-        'click .h-submit': 'getData'
+        'click .h-submit': 'getData',
+        'submit form': 'getData'
     },
     render() {
         this.$el.html(

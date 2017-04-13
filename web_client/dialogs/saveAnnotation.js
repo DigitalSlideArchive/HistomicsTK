@@ -4,7 +4,8 @@ import saveAnnotation from '../templates/dialogs/saveAnnotation.pug';
 
 var SaveAnnotation = View.extend({
     events: {
-        'click .h-submit': 'save'
+        'click .h-submit': 'save',
+        'submit form': 'save'
     },
     render() {
         this.$el.html(
