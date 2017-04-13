@@ -24,15 +24,6 @@ from ctk_cli import CLIArgumentParser
 import logging
 logging.basicConfig()
 
-
-stain_color_map = {
-    'hematoxylin': [0.65, 0.70, 0.29],
-    'eosin':       [0.07, 0.99, 0.11],
-    'dab':         [0.27, 0.57, 0.78],
-    'null':        [0.0, 0.0, 0.0]
-}
-
-
 def detect_nuclei_kofahi(im_input, args):
 
     # perform color normalization
@@ -40,6 +31,7 @@ def detect_nuclei_kofahi(im_input, args):
                                  args.reference_mu_lab,
                                  args.reference_std_lab)
 
+    stain_color_map = htk_cdeconv.stain_color_map
     # perform color decovolution
     w = np.array([stain_color_map[args.stain_1],
                   stain_color_map[args.stain_2],
