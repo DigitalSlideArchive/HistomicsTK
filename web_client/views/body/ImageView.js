@@ -232,7 +232,7 @@ var ImageView = View.extend({
             bottom = bounds.bottom.toFixed();
             router.setQuery('bounds', [
                 left, top, right, bottom, rotation
-            ].join(','));
+            ].join(','), {replace: true});
         }
     },
 
