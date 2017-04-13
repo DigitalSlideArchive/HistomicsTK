@@ -32,7 +32,7 @@ def detect_nuclei_kofahi(im_input, args):
                                  args.reference_std_lab)
 
     # perform color decovolution
-    w = np.array([htk_cdeconv.utils.get_stain_vector(args, i) for i in 1, 2, 3]).T
+    w = htk_cdeconv.utils.get_stain_matrix(args)
 
     im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
 

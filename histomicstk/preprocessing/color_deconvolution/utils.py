@@ -1,3 +1,5 @@
+import numpy
+
 from .stain_color_map import stain_color_map
 
 def get_stain_vector(args, index):
@@ -19,6 +21,14 @@ def get_stain_vector(args, index):
             return stain_color_map[stain]
         raise ValueError('Unless "custom" is chosen for a stain, '
                          'no stain vector may be provided.')
+
+def get_stain_matrix(args):
+    """Get the stain matrix corresponding to the args.stain_$index and
+    args.stain_$index_vector arguments for values of index 1, 2, 3.
+    Return a numpy array of column vectors.
+
+    """
+    return numpy.array([get_stain_vector(args, i) for i in 1, 2, 3]).T
 
 __all__ = (
     'get_stain_vector',

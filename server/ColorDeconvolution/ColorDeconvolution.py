@@ -40,7 +40,7 @@ def main(args):
     # Create stain matrix
     print('>> Creating stain matrix')
 
-    w = np.array([htk_cd.utils.get_stain_vector(args, i) for i in 1, 2, 3]).T
+    w = htk_cd.utils.get_stain_matrix(args)
     print w
 
     # Perform color deconvolution
