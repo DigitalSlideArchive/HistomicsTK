@@ -49,7 +49,7 @@ def sparse_color_deconvolution(im_rgb, w_init, beta):
 
     References
     ----------
-    .. [1] J. Xu, L. Xiang, G. Wang, S. Ganesan, M. Feldman, N.N. Shih,
+    .. [#] J. Xu, L. Xiang, G. Wang, S. Ganesan, M. Feldman, N.N. Shih,
            H. Gilmore, A. Madabhushi, "Sparse Non-negative Matrix
            Factorization (SNMF) based color unmixing for breast
            histopathological image analysis," in IEEE Computer Graphics

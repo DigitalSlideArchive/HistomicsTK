@@ -6,7 +6,7 @@
   <version>0.1.0</version>
   <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
   <license>Apache 2.0</license>
-  <contributor>Deepak Roy Chittajallu (Kitware)</contributor>
+  <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
   <parameters>
     <label>IO</label>
@@ -60,5 +60,18 @@
       <longflag>stainColor_3</longflag>
       <default>0,0,0</default>
     </double-vector>
+    <region>
+      <name>region</name>
+      <label>Region</label>
+      <longflag>region</longflag>
+      <description>left,top,width,height of the region of interest.  All -1 means the whole image is used.</description>
+      <default>-1,-1,-1,-1</default>
+    </region>
+    <integer>
+      <longflag>maxRegionSize</longflag>
+      <label>Maximum region size</label>
+      <description>Maximum width and height allowed when processing an image, in order to prevent accidentally running on too large a region.  Use -1 for no limit</description>
+      <default>5000</default>
+    </integer>
   </parameters>
 </executable>

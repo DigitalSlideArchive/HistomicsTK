@@ -1,36 +1,41 @@
 ---
 - name: Fetch GPG key for docker package
-  sudo: yes
-  command: apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    id: 0EBFCD88
+  become: true
 
 - name: Add docker PPA
-  sudo: yes
-  shell: echo "deb https://apt.dockerproject.org/repo ubuntu-`lsb_release -c -s` main"  | sudo tee /etc/apt/sources.list.d/docker.list
-  args:
-    creates: /etc/apt/sources.list.d/docker.list
-
+  become: true
+  apt_repository:
+    repo: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
 
 - name: Install worker dependencies
-  sudo: yes
-  apt: update-cache=yes name={{ item }} state=present
-  with_items:
-    - libffi-dev
-    - libssl-dev
-    - python-pip
-    - python-dev
-    - git
-    - libjpeg-dev
-    - libfreetype6-dev
-    - zlib1g-dev
-    - libpng-dev
-    - docker-engine
+  apt: 
+    update_cache: yes
+    name:
+      - libffi-dev
+      - libssl-dev
+      - python-pip
+      - python-dev
+      - git
+      - libjpeg-dev
+      - libfreetype6-dev
+      - zlib1g-dev
+      - libpng-dev
+      - docker-ce
+    state: present
+    install_recommends: no
+  become: true
 
 - name: Start docker daemon
   service: name=docker state=started enabled=yes
-  sudo: yes
+  become: true
+  when: docker is undefined
 
 - name: Clone girder_worker
-  sudo: yes
+  become: true
   git:
       repo: git://github.com/girder/girder_worker.git
       dest: /opt/girder_worker
@@ -39,7 +44,7 @@
       version: "{{ girder_worker_version }}"
 
 - name: Create local worker config file
-  sudo: yes
+  become: true
   template:
     src: worker.local.cfg.j2
     dest: /opt/girder_worker/girder_worker/worker.local.cfg
@@ -48,15 +53,14 @@
     group: "{{ worker_exec_group }}"
 
 - name: Install girder_worker
-  sudo: yes
+  become: true
   pip:
     name: ""
     extra_args: "-e /opt/girder_worker[docker,girder_io]"
     state: present
 
-
 - name: Change ownership of worker to correct user
-  sudo: yes
+  become: true
   file:
     dest: /opt/girder_worker
     owner: "{{worker_exec_user}}"
@@ -66,26 +70,54 @@
 
 - name: Create docker group
   group: name=docker state=present
+  when: docker is undefined
 
 - name: Add worker user to docker group
   user: shell=/bin/bash
         name={{ worker_exec_user }}
         groups=docker
         append=yes
-  sudo: yes
+  become: true
+  when: docker is undefined
 
 - name: Restart docker daemon
   service: name=docker state=restarted enabled=yes
-  sudo: yes
+  become: true
+  when: docker is undefined
 
 - name: Install girder worker as a service
   template:
       src: girder_worker.conf
       dest: /etc/init/girder_worker.conf
-      mode: 644
+      mode: 0644
       owner: root
-  sudo: yes
+  become: true
+  when: docker is undefined
 
 - name: Restart worker as a service
   service: name=girder_worker state=restarted enabled=yes
-  sudo: yes
+  become: true
+  when: docker is undefined
+
+- name: Create tmp directory
+  file: state=directory path="/tmp/girder_worker"
+  become: true
+  when: docker is defined
+
+- name: Ensure tmp directory is owned by the right user and is public
+  file:
+    path: "/tmp/girder_worker"
+    owner: "{{ girder_exec_user }}"
+    group: "{{ girder_exec_group }}"
+    mode: u=rwx,g=rwx,o=rwx
+  become: true
+  when: docker is defined
+
+- name: Add a script to set hosts if necessary
+  template:
+      src: set_hosts.py
+      dest: /opt/girder_worker/set_hosts.py
+      mode: 0744
+      owner: root
+  become: true
+  when: docker is defined
