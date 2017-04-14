@@ -12,10 +12,10 @@ from .sparse_color_deconvolution import sparse_color_deconvolution
 # must be imported after ComplementStainMatrix
 from .color_deconvolution import color_deconvolution
 
+from . import utils
+
 stain_color_map = _stain_color_map.stain_color_map
 __doc__ += _stain_color_map.__doc__
-
-from . import utils
 
 # list out things that are available for public use
 __all__ = (

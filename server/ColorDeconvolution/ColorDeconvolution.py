@@ -1,4 +1,3 @@
-import numpy as np
 import skimage.io
 
 from ctk_cli import CLIArgumentParser
@@ -58,6 +57,7 @@ def main(args):
 
     print args.outputStainImageFile_3
     skimage.io.imsave(args.outputStainImageFile_3, im_stains[:, :, 2])
+
 
 if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())

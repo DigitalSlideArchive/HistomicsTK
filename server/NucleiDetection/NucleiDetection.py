@@ -24,6 +24,7 @@ from ctk_cli import CLIArgumentParser
 import logging
 logging.basicConfig()
 
+
 def detect_nuclei_kofahi(im_input, args):
 
     # perform color normalization
@@ -350,6 +351,6 @@ def main(args):
 
     print 'Total analysis time = %s' % disp_time(total_time_taken)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())
