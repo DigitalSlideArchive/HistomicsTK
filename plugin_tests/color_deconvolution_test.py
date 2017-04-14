@@ -46,15 +46,14 @@ class MacenkoTest(base.TestCase):
         im_path = os.path.join(TEST_DATA_DIR, 'Easy1.png')
         im = skimage.io.imread(im_path)[..., :3]
 
-        #np.random.seed(1)
-
         w = htk_dcv.rgb_separate_stains_macenko_pca(im, 255)
 
-        w_expected = [[ 0.089411,  0.558021, -0.130574],
-                      [ 0.837138,  0.729935,  0.546981],
-                      [ 0.539635,  0.394725, -0.826899]]
+        w_expected = [[0.089411,  0.558021, -0.130574],
+                      [0.837138,  0.729935,  0.546981],
+                      [0.539635,  0.394725, -0.826899]]
 
         np.testing.assert_allclose(w, w_expected, atol=1e-6)
+
 
 class ColorDeconvolutionTest(base.TestCase):
 

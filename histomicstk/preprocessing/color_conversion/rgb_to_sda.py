@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def rgb_to_sda(im_rgb, I_0, allow_negatives=False):
     """Transform input RGB image or matrix `im_rgb` into SDA (stain
     darkness) space for color deconvolution.
@@ -36,7 +37,7 @@ def rgb_to_sda(im_rgb, I_0, allow_negatives=False):
     if is_matrix:
         im_rgb = im_rgb.T
 
-    if I_0 is None: # rgb_to_od compatibility
+    if I_0 is None:  # rgb_to_od compatibility
         im_rgb = im_rgb.astype(float) + 1
         I_0 = 256
 

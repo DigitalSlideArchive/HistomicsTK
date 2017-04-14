@@ -1,5 +1,3 @@
-import numpy as np
-
 def sda_to_rgb(im_sda, I_0):
     """Transform input SDA image or matrix `im_sda` into RGB space.  This
     is the inverse of `rgb_to_sda` with respect to the first parameter
@@ -30,7 +28,7 @@ def sda_to_rgb(im_sda, I_0):
         im_sda = im_sda.T
 
     od = I_0 is None
-    if od: # od_to_rgb compatibility
+    if od:  # od_to_rgb compatibility
         I_0 = 256
 
     im_rgb = I_0 ** (1 - im_sda / 255.)

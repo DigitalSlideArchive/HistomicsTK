@@ -1,5 +1,6 @@
 import numpy
 
+
 def exclude_nonfinite(m):
     """Exclude columns from m that have infinities or nans.  In the
     context of color deconvolution, these occur in conversion from RGB

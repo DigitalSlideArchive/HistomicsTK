@@ -1,6 +1,7 @@
 from histomicstk.utils import sample_pixels
 import numpy
 
+
 def background_intensity(*args, **kwargs):
     """Sample the background of the slide identified by slide_path to
     compute the background intensities in the RGB channels.  Arguments

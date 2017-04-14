@@ -4,6 +4,7 @@ from .complement_stain_matrix import complement_stain_matrix
 
 import numpy
 
+
 def separate_stains_macenko_pca(im_sda, minimum_magnitude=16,
                                 min_angle_percentile=0.01,
                                 max_angle_percentile=0.99):
@@ -70,14 +71,19 @@ def separate_stains_macenko_pca(im_sda, minimum_magnitude=16,
     filt = proj[:, linalg.magnitude(proj) > minimum_magnitude]
     # The "angles"
     angles = _get_angles(filt)
+
     # The stain vectors
-    get_percentile_vector = lambda p: \
-        pcs[:,:-1].dot(filt[:, argpercentile(angles, p)])
+
+    def get_percentile_vector(p):
+        return pcs[:, :-1].dot(filt[:, argpercentile(angles, p)])
+
     min_v = get_percentile_vector(min_angle_percentile)
     max_v = get_percentile_vector(max_angle_percentile)
+
     # The stain matrix
     w = complement_stain_matrix(linalg.normalize(numpy.array([min_v, max_v]).T))
     return w
+
 
 def _get_angles(m):
     """Take a 2xN matrix of vectors and return a length-N array of an
@@ -92,6 +98,7 @@ def _get_angles(m):
     m = linalg.normalize(m)
     # "Angle" towards +x from the +y axis
     return (1 - m[1]) * numpy.sign(m[0])
+
 
 def argpercentile(arr, p):
     """Calculate the index in arr of the element nearest the pth

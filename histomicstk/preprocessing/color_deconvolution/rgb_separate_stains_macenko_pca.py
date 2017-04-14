@@ -1,6 +1,7 @@
 from .separate_stains_macenko_pca import separate_stains_macenko_pca
 from ..color_conversion import rgb_to_sda
 
+
 def rgb_separate_stains_macenko_pca(im_rgb, I_0, *args, **kwargs):
     """Compute the stain matrix for color deconvolution with the "Macenko"
     method from an RGB image or matrix.

@@ -1,5 +1,6 @@
 from .rgb_to_sda import rgb_to_sda
 
+
 def rgb_to_od(im_rgb):
     """Transforms input RGB image `im_rgb` into optical density space
     for color deconvolution.
@@ -23,4 +24,4 @@ def rgb_to_od(im_rgb):
     histomicstk.preprocessing.color_deconvolution.color_convolution
     """
 
-    return rgb_to_sda(im_rgb, None) # Compatibility mode
+    return rgb_to_sda(im_rgb, None)  # Compatibility mode
