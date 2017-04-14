@@ -1,7 +1,4 @@
-"""
-stain_color_map provides names for reference stain vectors
-"""
-
+# Please see __init__.py in this folder for documentation
 stain_color_map = {
     'hematoxylin': [0.65, 0.70, 0.29],
     'eosin':       [0.07, 0.99, 0.11],

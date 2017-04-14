@@ -14,8 +14,8 @@ from .color_deconvolution import color_deconvolution
 
 from . import utils
 
+#: A dictionary of names for reference stain vectors
 stain_color_map = _stain_color_map.stain_color_map
-__doc__ += _stain_color_map.__doc__
 
 # list out things that are available for public use
 __all__ = (
