@@ -6,7 +6,13 @@
     - mq
     - openslide
     - worker
-    - girder
+    - role: girder.girder
+      girder_path: "{{ root_dir }}/girder"
+      girder_version: "master"
+      girder_web_extra_args: "--dev --all-plugins"
+      become: yes
+      become_user: "{{ girder_exec_user }}"
+    - girder-histomicstk
     - provision
     #- itk
   vars:
