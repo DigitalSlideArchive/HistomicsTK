@@ -46,7 +46,8 @@ add_python_test(color_deconvolution PLUGIN HistomicsTK
 )
 
 add_python_test(color_deconvolution PLUGIN HistomicsTK
-    EXTERNAL_DATA "plugins/HistomicsTK/Easy1.png"
+    # Work around CMake bug when using the same image multiple times
+    # EXTERNAL_DATA "plugins/HistomicsTK/Easy1.png"
 )
 
 add_python_test(color_normalization
@@ -54,7 +55,8 @@ add_python_test(color_normalization
     DBNAME core_color_normalization_reinhard
     PLUGIN HistomicsTK EXTERNAL_DATA
     "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
-    "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
+    # Work around CMake bug when using the same image multiple times
+    # "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
     "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
 )
 
