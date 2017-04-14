@@ -1,48 +1,22 @@
 ---
-- name: NodeJS | Add PPA key
-  command: "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68576280"
-  become: true
-
-- name: NodeJS | Add PPA
-  apt_repository:
-    repo: "deb https://deb.nodesource.com/node_6.x {{ ansible_distribution_release }} main"
-  become: true
-
-- name: NodeJS | Install package
-  apt:
-    name: nodejs
-    install_recommends: no
-  become: true
-
-- name: NodeJS | Update npm
-  command: "npm install -g npm@3"
-  become: yes
-  become_user: root
 
 - name: Install system package dependencies
   apt:
     state: present
     update_cache: yes
     name:
-      - build-essential
-      - git
-      - python2.7-dev
-      - libffi-dev
-      - libjpeg-dev
-      - zlib1g-dev
-      - python-pip
-      - nodejs
-      - postfix
+      - apparmor
       - apt-transport-https
       - ca-certificates
-      - vim
-      - python-dev
-      - memcached
+      - libjpeg-dev
       - libmemcached-dev
       - libxslt1-dev
-      - apparmor
+      - memcached
+      - nodejs
       - pandoc
       - pandoc-citeproc
+      - postfix
+      - vim
     install_recommends: no
   become: true
 
@@ -56,11 +30,6 @@
     dest: "{{ root_dir }}/ctk-cli"
     accept_hostkey: yes
 
-- name: Clone girder
-  git:
-    repo: git://github.com/girder/girder.git
-    dest: "{{ girder_root }}"
-    accept_hostkey: yes
     version: "{{ girder_version }}"
 
 - name: Clone slicer_cli_web plugin
@@ -109,12 +78,6 @@
 - name: Create directory for build
   file: state=directory path="{{ root_dir }}/girder/clients/web/static/built"
 
-- name: Install girder using pip
-  pip:
-    name: "{{ girder_root }}[worker]"
-    extra_args: "-e"
-    state: present
-  become: true
 
 - name: Install numpy (must be installed before large_image plugin)
   pip: name=numpy version=1.11.3
@@ -226,23 +189,6 @@
     recurse: no
   become: true
 
-- name: Make sure all plugin requirements are installed
-  pip:
-    name: "{{ girder_root }}[plugins]"
-    extra_args: "-e"
-    state: present
-  become: true
-
-# Install all plugins so that girder-install doesn't try to access Mongo
-- name: Install girder dev and plugin requirements for the web client
-  command: girder-install web --dev --all-plugins
-  become: true
-
-- name: Install girder as a service
-  template: src=girder.conf.j2 dest=/etc/init/girder.conf mode=644 owner=root
-  become: true
-  when: docker is undefined
-
 - name: Ensure files are owned by the right user and are public
   file:
     path: "{{ root_dir }}"
@@ -251,11 +197,6 @@
     mode: u=rwX,g=rX,o=rX
     recurse: yes
   become: true
-
-- name: Start girder as a service
-  service: name=girder state=restarted enabled=yes
-  become: true
-  when: docker is undefined
 
 - name: Add a script to set hosts if necessary
   template:
