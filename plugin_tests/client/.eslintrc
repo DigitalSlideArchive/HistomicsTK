@@ -3,8 +3,7 @@
     "no-console": 0
   },
   "globals": {
-    "girderTest": true,
-    "sinon": true
+    "girderTest": true
   },
   "env": {
     "jasmine": true
