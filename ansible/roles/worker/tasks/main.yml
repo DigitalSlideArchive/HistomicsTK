@@ -1,8 +1,10 @@
 ---
+# Note: Some configuration (likely SNI) on download.docker.com is causing
+# trouble with the ansible apt_key module. For now just use the shell command
+# to curl/use the system apt-key package.
 - name: Fetch GPG key for docker package
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    id: 0EBFCD88
+  shell: >-
+    curl https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   become: true
 
 - name: Add docker PPA
