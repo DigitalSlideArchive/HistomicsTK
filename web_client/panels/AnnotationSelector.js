@@ -13,8 +13,7 @@ import '../stylesheets/panels/annotationSelector.styl';
 var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
         'click .h-toggle-annotation': 'toggleAnnotation',
-        'click .h-delete-annotation': 'deleteAnnotation',
-        'change #h-toggle-labels': 'toggleLabels'
+        'click .h-delete-annotation': 'deleteAnnotation'
     }),
 
     /**
@@ -44,8 +43,7 @@ var AnnotationSelector = Panel.extend({
         this.$el.html(annotationSelectorWidget({
             annotations: this.collection.sortBy('created'),
             id: 'annotation-panel-container',
-            title: 'Annotations',
-            showLabels: this._showLabels
+            title: 'Annotations'
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
