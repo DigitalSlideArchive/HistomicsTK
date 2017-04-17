@@ -15,4 +15,4 @@ node_modules/
 .*.swp
 /.vagrant/
 .lprof
-
+ansible/roles/girder.girder
