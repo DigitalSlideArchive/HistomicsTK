@@ -92,13 +92,6 @@ $(function () {
             });
         });
 
-        describe('Annotation panel', function () {
-            it('panel is rendered', function () {
-                expect($('.h-annotation-selector .s-panel-title').text()).toMatch(/Annotations/);
-                expect($('.h-annotation-selector .h-annotation').length).toBe(0);
-            });
-        });
-
         describe('Draw panel', function () {
             it('draw a point', function () {
                 runs(function () {
@@ -179,6 +172,7 @@ $(function () {
             });
 
             it('save the point annotation', function () {
+                var annotations = null;
                 runs(function () {
                     $('.h-draw-widget .h-save-annotation').click();
                 });
@@ -193,6 +187,65 @@ $(function () {
                 runs(function () {
                     expect($('.h-annotation-selector .h-annotation-name').text()).toBe('single point');
                     expect($('.h-draw-widget .h-save-widget').length).toBe(0);
+
+                    girder.rest.restRequest({
+                        path: 'annotation',
+                        data: {
+                            itemId: girder.plugins.HistomicsTK.router.getQuery('image')
+                        }
+                    }).then(function (a) { annotations = a; });
+                });
+
+                waitsFor(function () {
+                    return annotations !== null;
+                }, 'get annotations from server');
+                runs(function () {
+                    expect(annotations.length).toBe(1);
+                    expect(annotations[0].annotation.name).toBe('single point');
+                });
+            });
+        });
+
+        describe('Annotation panel', function () {
+            it('panel is rendered', function () {
+                expect($('.h-annotation-selector .s-panel-title').text()).toMatch(/Annotations/);
+            });
+
+            it('toggle visibility of an annotation', function () {
+                runs(function () {
+                    var $el = $('.h-annotation-selector .h-annotation:contains("single point")');
+                    expect($el.length).toBe(1);
+                    expect($el.find('.icon-eye-off.h-toggle-annotation').length).toBe(1);
+                    $el.find('.h-toggle-annotation').click();
+                });
+                waitsFor(function () {
+                    var $el = $('.h-annotation-selector .h-annotation:contains("single point")');
+                    return $el.find('.icon-eye.h-toggle-annotation').length === 1;
+                }, 'annotation to toggle');
+            });
+
+            it('delete an annotation', function () {
+                var annotations = null;
+                runs(function () {
+                    $('.h-annotation-selector .h-annotation:contains("single point") .h-delete-annotation').click();
+                });
+
+                girderTest.waitForLoad();
+                runs(function () {
+                    expect($('.h-annotation-selector .h-annotation:contains("single point")').length).toBe(0);
+                    girder.rest.restRequest({
+                        path: 'annotation',
+                        data: {
+                            itemId: girder.plugins.HistomicsTK.router.getQuery('image')
+                        }
+                    }).then(function (a) { annotations = a; });
+                });
+
+                waitsFor(function () {
+                    return annotations !== null;
+                }, 'get annotations from server');
+                runs(function () {
+                    expect(annotations.length).toBe(0);
                 });
             });
         });
