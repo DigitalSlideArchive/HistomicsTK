@@ -1,0 +1,14 @@
+.h-annotation-popover
+    each annotation in annotations
+        - var a = annotation.get('annotation');
+        - var user = users[annotation.get('creatorId')];
+        h4.h-annotation-name
+            = a.name
+        .h-annotation-created 
+            = formatDate(annotation.get('created'))
+        if user
+            span.h-annotation-creator
+                = user.firstName + ' ' + user.lastName + ' (' + user.login + ')'
+        if a.description
+            p.h-annotation-description 
+                = a.description

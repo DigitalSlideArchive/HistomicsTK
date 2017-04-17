@@ -13,7 +13,8 @@ import '../stylesheets/panels/annotationSelector.styl';
 var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
         'click .h-toggle-annotation': 'toggleAnnotation',
-        'click .h-delete-annotation': 'deleteAnnotation'
+        'click .h-delete-annotation': 'deleteAnnotation',
+        'change #h-toggle-labels': 'toggleLabels'
     }),
 
     /**
@@ -127,6 +128,12 @@ var AnnotationSelector = Panel.extend({
                 return null;
             });
         }
+    },
+
+    toggleLabels(evt) {
+        this.trigger('h:toggleLabels', {
+            show: this.$(evt.target).is(':checked')
+        });
     }
 });
 

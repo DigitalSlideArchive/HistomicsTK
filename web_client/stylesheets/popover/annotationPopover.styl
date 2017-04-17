@@ -1,0 +1,52 @@
+#h-annotation-popover-container
+    position absolute
+    pointer-events none
+    margin-left 15px
+
+    .h-annotation-popover
+        position absolute
+        max-width 400px
+        background-color #fff
+        z-index 101
+        padding 5px
+        border-radius 3px
+        border 1px solid #000
+        box-shadow 0 5px 10px rgba(0,0,0,.5)
+
+        &:before
+            content ''
+            border-color transparent #000 transparent transparent
+            border-style solid
+            border-width 13px
+            height 0
+            width 0
+            position absolute
+            left -26px
+            top calc(50% - 13px)
+
+        &:after
+            content ''
+            border-color transparent #fff transparent transparent
+            border-style solid
+            border-width 13px
+            height 0
+            width 0
+            position absolute
+            left -25px
+            top calc(50% - 13px)
+
+        > :not(.h-annotation-name)
+            padding 0 20px
+
+        > :not(.h-annotation-description)
+            white-space nowrap
+
+        .h-annotation-description
+            padding-top 10px
+            width 400px
+
+        .h-annotation-name
+            font-weight bold
+
+        .h-annotation-creator,.h-annotation-created
+            font-family italic
