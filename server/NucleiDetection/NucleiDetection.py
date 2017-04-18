@@ -11,6 +11,7 @@ from dask.distributed import Client, LocalCluster
 import multiprocessing
 
 import os
+import sys
 import numpy as np
 import json
 import scipy as sp
@@ -24,6 +25,9 @@ from ctk_cli import CLIArgumentParser
 import logging
 logging.basicConfig()
 
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
+from cli_common import utils  # noqa
+
 
 def detect_nuclei_kofahi(im_input, args):
 
@@ -33,7 +37,7 @@ def detect_nuclei_kofahi(im_input, args):
                                  args.reference_std_lab)
 
     # perform color decovolution
-    w = htk_cdeconv.utils.get_stain_matrix(args)
+    w = utils.get_stain_matrix(args)
 
     im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
 

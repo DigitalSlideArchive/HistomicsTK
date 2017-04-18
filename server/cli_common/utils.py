@@ -1,6 +1,6 @@
 import numpy
 
-from .stain_color_map import stain_color_map
+from histomicstk.preprocessing.color_deconvolution import stain_color_map
 
 
 def get_stain_vector(args, index):

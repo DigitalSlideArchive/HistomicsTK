@@ -1,3 +1,6 @@
+import os
+import sys
+
 import skimage.io
 
 from ctk_cli import CLIArgumentParser
@@ -7,6 +10,9 @@ import histomicstk.preprocessing.color_deconvolution as htk_cd
 
 import logging
 logging.basicConfig()
+
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
+from cli_common import utils  # noqa
 
 
 def main(args):
@@ -39,7 +45,7 @@ def main(args):
     # Create stain matrix
     print('>> Creating stain matrix')
 
-    w = htk_cd.utils.get_stain_matrix(args)
+    w = utils.get_stain_matrix(args)
     print w
 
     # Perform color deconvolution

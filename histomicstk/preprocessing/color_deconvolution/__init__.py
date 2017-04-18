@@ -12,8 +12,6 @@ from .sparse_color_deconvolution import sparse_color_deconvolution
 # must be imported after ComplementStainMatrix
 from .color_deconvolution import color_deconvolution
 
-from . import utils
-
 #: A dictionary of names for reference stain vectors
 stain_color_map = _stain_color_map.stain_color_map
 
@@ -26,7 +24,4 @@ __all__ = (
     'complement_stain_matrix',
     'sparse_color_deconvolution',
     'stain_color_map',
-
-    # submodules of this package
-    'utils',
 )
