@@ -105,8 +105,8 @@ before_install:
 
 install:
     - cd $main_path
+    - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
     - pip install -r requirements.txt
-    - pip install git+https://github.com/cdeepakroy/ctk-cli
     - python setup.py build_ext --inplace
     - cd $girder_path
     - python setup.py develop
