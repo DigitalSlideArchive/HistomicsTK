@@ -88,7 +88,7 @@ add_python_test(nuclei_segmentation
     # multiple tests, so add it in one of the tests for now
     # "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
     # "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
-    "plugins/HistomicsTK/Easy1_nuclei_seg_kofahi.npy" # put Easy1_nuclei_seg_kofahi.npy.sha512 in plugin_tests/data
+    "plugins/HistomicsTK/Easy1_nuclei_seg_kofahi_adaptive.npy" # put Easy1_nuclei_seg_kofahi_adaptive.npy.sha512 in plugin_tests/data
 )
 
 add_python_test(blob_detection_filters
