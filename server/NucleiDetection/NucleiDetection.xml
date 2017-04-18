@@ -90,7 +90,7 @@
       <label>Foreground Intensity Threshold</label>
       <description>Intensity value to use as threshold to segment foreground in nuclear stain image</description>
       <longflag>foreground_threshold</longflag>
-      <default>160</default>
+      <default>60</default>
     </double>
     <double>
       <name>min_radius</name>
