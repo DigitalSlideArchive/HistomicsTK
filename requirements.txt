@@ -19,6 +19,6 @@ distributed>=1.16.0
 # Slicer CLI
 #
 lxml>=3.4.4
--e git+https://github.com/cdeepakroy/ctk-cli#egg=ctk-cli
+docker-py==1.9.0
 
 
