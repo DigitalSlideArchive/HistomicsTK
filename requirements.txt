@@ -20,6 +20,5 @@ distributed>=1.16.0
 #
 lxml>=3.4.4
 docker-py==1.9.0
--e 'git+https://github.com/cdeepakroy/ctk-cli#egg=ctk_cli'
-
+-e git+https://github.com/cdeepakroy/ctk-cli@b5b04daeea6cd5f5abb41689e5a1d9e6eb210d03#egg=ctk_cli
 
