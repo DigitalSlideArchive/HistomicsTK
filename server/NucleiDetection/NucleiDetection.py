@@ -198,7 +198,7 @@ def main(args):
     #
     print('\n>> Creating Dask client ...\n')
 
-    scheduler_address = json.loads(args.scheduler_address)
+    scheduler_address = args.scheduler_address
 
     if scheduler_address is None:
 
