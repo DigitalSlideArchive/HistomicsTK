@@ -120,7 +120,7 @@ install:
     - npm-install-retry
     - cd $large_image_path
     - python setup.py install
-    - BABEL_ENV=cover girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
+    - BABEL_ENV=cover NYC_CWD="$main_path" girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
     - conda install --yes jupyter sphinx sphinx_rtd_theme
     - pip install nbsphinx travis-sphinx
 
