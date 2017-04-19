@@ -2,7 +2,7 @@
 # scientific packages
 #
 Cython>=0.24
-nimfa==1.2.3
+nimfa>=1.2.3
 numpy>=1.10.2
 pandas>=0.18.1
 scikit-image>=0.12.3
