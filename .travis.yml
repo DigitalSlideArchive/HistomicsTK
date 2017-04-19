@@ -106,19 +106,19 @@ before_install:
 install:
     - cd $girder_path
     - python setup.py develop
+    - cd $large_image_path
+    - pip install -U -r requirements.txt
+    - python setup.py install
     - cd $main_path
     - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
     - pip install -r requirements.txt
     - python setup.py install
     - cd $girder_path
     - pip install -U -r requirements.txt -r requirements-dev.txt
-    - pip install -U -r $large_image_path/requirements.txt
-    - pip install -U -r $slicer_cli_web_path/requirements.txt 
+    - pip install -U -r $slicer_cli_web_path/requirements.txt
     - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
     - pip install "git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5" --force-reinstall --ignore-installed --upgrade --no-cache-dir
     - npm-install-retry
-    - cd $large_image_path
-    - python setup.py install
     - BABEL_ENV=cover girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
     - conda install --yes jupyter sphinx sphinx_rtd_theme
     - pip install nbsphinx travis-sphinx
