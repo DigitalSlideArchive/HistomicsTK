@@ -32,13 +32,13 @@
       <name>magnification</name>
       <label>Magnification</label>
       <longflag>magnification</longflag>
-      <description>Desired magnification for sampling.  Leave unspecified for native scan magnification.</description>
+      <description>Desired magnification for sampling.  Leave unspecified for 1.25x magnification.</description>
     </float>
     <float>
       <name>tissue_seg_mag</name>
       <label>Segmentation Magnification</label>
       <longflag>segmentationMag</longflag>
-      <description>Low resolution magnification at which foreground and background will be segmented.</description>
+      <description>Low resolution magnification at which foreground and background will be segmented.  Default 1.25x.</description>
     </float>
     <float>
       <name>min_coverage</name>
