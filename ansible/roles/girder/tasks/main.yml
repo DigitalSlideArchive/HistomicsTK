@@ -177,7 +177,7 @@
 # When we are making a docker container, don't bother installing many of the
 # HistomicsTK components; they will be in the actual CLI containers
 - name: Install HistomicsTK pypi C requirements
-  pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements_c.txt"
+  pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements.txt"
   become: true
   when: docker is undefined
 
@@ -201,7 +201,7 @@
   when: docker is undefined
 
 - name: Install required conda packages
-  shell: . miniconda/bin/activate ./miniconda && conda install --yes anaconda-client libgfortran==1.0 setuptools==19.4 --file "{{ girder_root }}/plugins/HistomicsTK/requirements_c_conda.txt"
+  shell: . miniconda/bin/activate ./miniconda && conda install --yes anaconda-client libgfortran==1.0 setuptools==19.4
   args:
     chdir: "{{ root_dir }}"
     executable: /bin/bash

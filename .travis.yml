@@ -107,9 +107,8 @@ install:
     - cd $girder_path
     - python setup.py develop
     - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
-    - pip install -r $main_path/requirements_c_conda.txt 
-    - pip install -r $main_path/requirements.txt -r $main_path/requirements_c.txt
-    - cd $main_path 
+    - pip install -r $main_path/requirements.txt
+    - cd $main_path
     - python setup.py build_ext --inplace
     - cd $girder_path
     - pip install -U -r requirements.txt -r requirements-dev.txt
