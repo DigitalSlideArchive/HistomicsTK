@@ -14,8 +14,8 @@ COPY . $htk_path/
 WORKDIR $htk_path
 
 # Install HistomicsTK and its dependencies
-RUN conda config --add channels https://conda.binstar.org/cdeepakroy && \
-    conda install --yes pip ctk-cli==1.4.1 && \
+RUN pip install --upgrade pip && \
+    pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli' && \
     # Install requirements_c_conda.txt via pip; isntalling via conda causes
     # version issues with our home-built libtif.
     pip install -r requirements_c_conda.txt && \
