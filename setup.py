@@ -46,30 +46,14 @@ except RequirementParseError:
     raise
 requirements = [str(req) for req in ireqs]
 
-# if not on ReadTheDocs then add requirements depending on C libraries
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-if not on_rtd:
-
-    requirements_c_files = ['requirements_c_conda.txt',
-                            'requirements_c.txt']
-
-    for reqfile in requirements_c_files:
-        try:
-            with open(reqfile) as f:
-                ireqs_c = parse_requirements(f.read())
-        except RequirementParseError:
-            raise
-        cur_requirements = [str(req) for req in ireqs_c]
-        requirements += cur_requirements
-
 test_requirements = [
     # TODO: Should we list Girder here?
 ]
 
-# if sys.platform == "darwin":  # osx
-#     ext_compiler_args.append("-mmacosx-version-min=10.9")
+# ext_compiler_args = ["-std=c++11", "-O2"]
 
+# if sys.platform == "darwin":  # osx
+#    ext_compiler_args.append("-mmacosx-version-min=10.9")
 
 setup(name='histomicstk',
       version=pkginfo['version'],
@@ -97,5 +81,4 @@ setup(name='histomicstk',
       ],
       test_suite='plugin_tests',
       tests_require=test_requirements,
-      # ext_modules = cythonize(ext_list)
 )

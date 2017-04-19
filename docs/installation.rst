@@ -31,8 +31,7 @@ installed as follows::
     $ git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
     $ cd HistomicsTK
     # pip install git+https://github.com/cdeepakroy/ctk-cli
-    $ pip install --no-cache-dir -r requirements_c_conda.txt
-    $ pip install --no-cache-dir -r requirements.txt -r requirements_c.txt
+    $ pip install --no-cache-dir -r requirements.txt
     $ python setup.py build_ext --inplace
     $ pip install .
 
