@@ -74,17 +74,17 @@ class NucleiSegmentationTest(base.TestCase):
             'null': [0.0, 0.0, 0.0]
         }
 
-        w = np.array([stain_color_map['hematoxylin'],
-                      stain_color_map['eosin'],
-                      stain_color_map['null']]).T
+        w = htk_cdeconv.rgb_separate_stains_macenko_pca(im_nmzd, im_nmzd.max())
 
         im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
 
-        im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
+        nuclei_channel = htk_cdeconv.find_stain_index(stain_color_map['hematoxylin'], w)
+
+        im_nuclei_stain = im_stains[:, :, nuclei_channel].astype(np.float)
 
         # segment foreground (assumes nuclei are darker on a bright background)
         im_nuclei_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
-            im_nuclei_stain < 160)
+            im_nuclei_stain < 60)
 
         # run adaptive multi-scale LoG filter
         im_log, im_sigma_max = htk_shape_filters.clog(
@@ -106,7 +106,7 @@ class NucleiSegmentationTest(base.TestCase):
 
         # check if segmentation mask matches ground truth
         gtruth_mask_file = os.path.join(TEST_DATA_DIR,
-                                        'Easy1_nuclei_seg_kofahi.npy')
+                                        'Easy1_nuclei_seg_kofahi_adaptive.npy')
 
         im_gtruth_mask = np.load(gtruth_mask_file)
 

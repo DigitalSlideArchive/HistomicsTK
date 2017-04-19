@@ -5,8 +5,9 @@ import scipy
 from .simple_mask import simple_mask
 
 
-def sample_pixels(slide_path, sample_percent, magnification=None,
-                  tissue_seg_mag=1.25, min_coverage=0.1):
+def sample_pixels(slide_path, sample_percent=None, magnification=None,
+                  tissue_seg_mag=1.25, min_coverage=0.1, background=False,
+                  sample_approximate_total=None):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -28,6 +29,12 @@ def sample_pixels(slide_path, sample_percent, magnification=None,
     min_coverage: double, optional
         minimum fraction of tile covered by tissue for it to be included
         in sampling. Ranges between [0,1). Default value = 0.1.
+    background: bool, optional
+        sample the background instead of the foreground if True. min_coverage
+        then refers to the amount of background. Default value = False
+    sample_approximate_total: int, optional
+        use instead of sample_percent to specify roughly how many pixels to
+        sample. The fewer tiles are excluded, the more accurate this will be.
 
     Returns
     -------
@@ -39,9 +46,16 @@ def sample_pixels(slide_path, sample_percent, magnification=None,
     histomicstk.preprocessing.color_normalization.reinhard
     """
 
+    if (sample_percent is None) == (sample_approximate_total is None):
+        raise ValueError('Exactly one of sample_percent and ' +
+                         'sample_approximate_total must have a value.')
+
     ts = large_image.getTileSource(slide_path)
 
-    # get enitre whole-silde image at low resolution
+    if magnification is None:
+        magnification = ts.getMetadata()['magnification']
+
+    # get entire whole-slide image at low resolution
     scale_lres = {'magnification': tissue_seg_mag}
     im_lres, _ = ts.getRegion(
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
@@ -49,13 +63,22 @@ def sample_pixels(slide_path, sample_percent, magnification=None,
     )
     im_lres = im_lres[:, :, :3]
 
-    # compute foreground mask of whole-slide image at low-res
-    im_fgnd_mask_lres = simple_mask(im_lres)
+    # compute foreground mask of whole-slide image at low-res.
+    # it will actually be a background mask if background is set.
+    im_fgnd_mask_lres = bool(background) ^ simple_mask(im_lres)
+
+    if sample_approximate_total is not None:
+        scale_ratio = float(magnification) / tissue_seg_mag
+        total_fgnd_pixels = np.count_nonzero(im_fgnd_mask_lres) * scale_ratio ** 2
+        sample_percent = sample_approximate_total / total_fgnd_pixels
 
     # generate sample pixels
     sample_pixels = []
 
-    scale_hres = {'magnfication': magnification}
+    scale_hres = {'magnification': magnification}
+
+    # Accumulator for probabilistic rounding
+    frac_accum = 0.
 
     for tile in ts.tileIterator(
             scale=scale_hres,
@@ -97,7 +120,18 @@ def sample_pixels(slide_path, sample_percent, magnification=None,
 
         # generate linear indices of sample pixels in fgnd mask
         nz_ind = np.nonzero(tile_fgnd_mask.flatten())[0]
-        num_samples = np.int(sample_percent * nz_ind.size)
+
+        # Handle fractions in the desired sample size by rounding up
+        # or down, weighted by the fractional amount.  To reduce
+        # variance, the fraction is adjusted by a running counter that
+        # factors in previous random decisions.
+        float_samples = sample_percent * nz_ind.size
+        num_samples = int(np.floor(float_samples))
+        frac_accum += float_samples - num_samples
+        r = np.random.binomial(1, np.clip(frac_accum, 0, 1))
+        num_samples += r
+        frac_accum -= r
+
         sample_ind = np.random.choice(nz_ind, num_samples)
 
         # convert rgb tile image to Nx3 array

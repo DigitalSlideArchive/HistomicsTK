@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Compute Background Intensity</title>
+  <description>Sample the background of a slide to compute the median background intensity.</description>
+  <version>0.1.0</version>
+  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Neal Siekierski (Kitware)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters.</description>
+    <file>
+      <name>slide_path</name>
+      <label>Input Slide</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description>Path to input slide image to be deconvolved</description>
+    </file>
+    <float>
+      <name>sample_percent</name>
+      <label>Sample Percent</label>
+      <longflag>samplePercent</longflag>
+      <description>Percentage of pixels to sample.  Specify either this or --sampleApproximateTotal</description>
+      <constraints>
+	<minimum>0</minimum>
+	<maximum>1</maximum>
+      </constraints>
+    </float>
+    <float>
+      <name>magnification</name>
+      <label>Magnification</label>
+      <longflag>magnification</longflag>
+      <description>Desired magnification for sampling.  Leave unspecified for native scan magnification.</description>
+    </float>
+    <float>
+      <name>tissue_seg_mag</name>
+      <label>Segmentation Magnification</label>
+      <longflag>segmentationMag</longflag>
+      <description>Low resolution magnification at which foreground and background will be segmented.</description>
+    </float>
+    <float>
+      <name>min_coverage</name>
+      <label>Minimum Coverage</label>
+      <longflag>minCoverage</longflag>
+      <description>Minimum background coverage required for a tile to
+      be sampled from.</description>
+      <constraints>
+	<minimum>0</minimum>
+	<maximum>1</maximum>
+      </constraints>
+    </float>
+    <integer>
+      <name>sample_approximate_total</name>
+      <label>Approximate sample total</label>
+      <longflag>sampleApproximateTotal</longflag>
+      <description>Use instead of sample_percent to specify roughly how many pixels to sample.  The fewer tiles are excluded, the more accurate this will be.</description>
+    </integer>
+    <double-vector>
+      <name>BackgroundIntensity</name>
+      <label>Background Intensity</label>
+      <channel>output</channel>
+      <description>Output intensity in SDA space</description>
+    </double-vector>
+  </parameters>
+</executable>
