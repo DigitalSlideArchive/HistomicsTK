@@ -88,7 +88,7 @@ before_install:
     - mongod --dbpath=/tmp/db >/dev/null 2>/dev/null &
     - mongod --version
 
-    - CACHE=$HOME/.cache CMAKE_VERSION=3.1.0 CMAKE_SHORT_VERSION=3.1 source $girder_path/scripts/install_cmake.sh
+    - CACHE=$HOME/.cache CMAKE_VERSION=3.8.0 CMAKE_SHORT_VERSION=3.1 source $girder_path/scripts/install_cmake.sh
     - cmake --version
 
     - mkdir -p $HOME/.cache/node_modules || true
@@ -112,7 +112,7 @@ install:
     - cd $main_path
     - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
     - pip install -r requirements.txt
-    - python setup.py install
+    - pip install -e .
     - cd $girder_path
     - pip install -U -r requirements.txt -r requirements-dev.txt
     - pip install -U -r $slicer_cli_web_path/requirements.txt
