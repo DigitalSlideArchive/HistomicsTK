@@ -8,7 +8,7 @@ from .simple_mask import simple_mask
 
 def sample_pixels(slide_path, sample_percent=None, magnification=None,
                   tissue_seg_mag=1.25, min_coverage=0.1, background=False,
-                  sample_approximate_total=None):
+                  sample_approximate_total=None, tile_grouping=256):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -36,6 +36,8 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
     sample_approximate_total: int, optional
         use instead of sample_percent to specify roughly how many pixels to
         sample. The fewer tiles are excluded, the more accurate this will be.
+    tile_grouping: int, optional
+        Number of tiles to process as part of a single task.
 
     Returns
     -------
@@ -85,13 +87,12 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
 
     im_fgnd_mask_lres = dask.delayed(im_fgnd_mask_lres)
 
-    grouping = 256
     total_tiles = ts.getSingleTile(**iter_args)['iterator_range']['position']
-    for position in range(0, total_tiles, grouping):
+    for position in range(0, total_tiles, tile_grouping):
         sample_pixels.append(dask.delayed(_sample_pixels_tile)(
             slide_path, iter_args,
-            (position, min(grouping, total_tiles - position)), sample_percent,
-            tissue_seg_mag, min_coverage, im_fgnd_mask_lres))
+            (position, min(tile_grouping, total_tiles - position)),
+            sample_percent, tissue_seg_mag, min_coverage, im_fgnd_mask_lres))
 
     # concatenate pixel values in list
     if sample_pixels:
