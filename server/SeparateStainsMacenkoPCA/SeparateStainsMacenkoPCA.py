@@ -1,4 +1,5 @@
 from ctk_cli import CLIArgumentParser
+from dask.distributed import Client
 import numpy
 
 from histomicstk.utils import sample_pixels
@@ -9,6 +10,7 @@ def main(args):
     returnParameterFile, args = splitArgs(args)
     args['macenko']['I_0'] = numpy.array(args['macenko']['I_0'])
 
+    Client(args['dask'].get('scheduler_address'))
     sample = sample_pixels(**args['sample'])
     stain_matrix = rgb_separate_stains_macenko_pca(sample.T, **args['macenko'])
     with open(returnParameterFile, 'w') as f:
