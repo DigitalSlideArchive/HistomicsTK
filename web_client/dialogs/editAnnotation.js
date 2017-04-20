@@ -33,6 +33,8 @@ var EditAnnotation = View.extend({
 
         var data = {};
         var label = this.$('#h-element-label').val();
+        var validation = '';
+
         if (label) {
             data.label = {
                 value: label
@@ -42,6 +44,10 @@ var EditAnnotation = View.extend({
         var lineWidth = this.$('#h-element-line-width').val();
         if (lineWidth) {
             data.lineWidth = parseFloat(lineWidth);
+            if (data.lineWidth < 0 || !Number.isFinite(data.lineWidth)) {
+                validation += 'Invalid line width. ';
+                this.$('#h-element-line-width').parent().addClass('has-error');
+            }
         }
 
         var lineColor = this.$('#h-element-line-color').val();
@@ -52,6 +58,12 @@ var EditAnnotation = View.extend({
         var fillColor = this.$('#h-element-fill-color').val();
         if (fillColor) {
             data.fillColor = this.convertColor(fillColor);
+        }
+
+        if (validation) {
+            this.$('.g-validation-failed-message').text(validation)
+                .removeClass('hidden');
+            return;
         }
 
         this.annotationElement.set(data);

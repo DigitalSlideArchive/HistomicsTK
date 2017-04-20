@@ -26,6 +26,15 @@ var SaveAnnotation = View.extend({
      */
     save(evt) {
         evt.preventDefault();
+        if (!this.$('#h-annotation-name').val()) {
+            this.$('#h-annotation-name').parent()
+                .addClass('has-error');
+            this.$('.g-validation-failed-message')
+                .text('Please enter a name.')
+                .removeClass('hidden');
+            return;
+        }
+
         this.annotation.set({
             name: this.$('#h-annotation-name').val(),
             description: this.$('#h-annotation-description').val()
