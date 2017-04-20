@@ -161,6 +161,7 @@
       <label>Scheduler Address</label>
       <description>Address of the dask scheduler in the format '127.0.0.1:8786'.  Not passing this parameter sets up a cluster on the local machine</description>
       <longflag>scheduler_address</longflag>
+      <default></default>
     </string>
   </parameters>
 </executable>
