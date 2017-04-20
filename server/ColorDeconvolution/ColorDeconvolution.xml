@@ -4,7 +4,7 @@
   <title>Performs Color Deconvolution</title>
   <description>Unmixes the stains of a composite image given the stain colors</description>
   <version>0.1.0</version>
-  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
   <license>Apache 2.0</license>
   <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
