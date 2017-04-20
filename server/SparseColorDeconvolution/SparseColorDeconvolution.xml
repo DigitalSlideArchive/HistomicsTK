@@ -4,7 +4,7 @@
   <title>Performs Adaptive Color Deconvolution</title>
   <description>Uses sparse non-negative matrix factorization to adaptively deconvolve a given RGB image into intensity images representing distinct stains.</description>
   <version>0.1.0</version>
-  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
   <license>Apache 2.0</license>
   <contributor>Deepak Roy Chittajallu (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
