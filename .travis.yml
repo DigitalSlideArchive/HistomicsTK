@@ -108,7 +108,7 @@ install:
     - python setup.py develop
     - cd $large_image_path
     - pip install -U -r requirements.txt
-    - python setup.py install
+    - pip install -e .
     - cd $main_path
     - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
     - pip install -r requirements.txt
