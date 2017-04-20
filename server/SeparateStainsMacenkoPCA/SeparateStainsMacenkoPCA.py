@@ -9,8 +9,11 @@ from histomicstk.preprocessing.color_deconvolution import rgb_separate_stains_ma
 def main(args):
     returnParameterFile, args = splitArgs(args)
     args['macenko']['I_0'] = numpy.array(args['macenko']['I_0'])
+    for k in 'magnification', 'sample_percent', 'sample_approximate_total':
+        if args['sample'][k] == -1:
+            del args['sample'][k]
 
-    Client(args['dask'].get('scheduler_address'))
+    Client(args['dask']['scheduler_address'] or None)
     sample = sample_pixels(**args['sample'])
     stain_matrix = rgb_separate_stains_macenko_pca(sample.T, **args['macenko'])
     with open(returnParameterFile, 'w') as f:
@@ -23,8 +26,7 @@ def splitArgs(args):
     name before the first underscore.  Returns a dict of dicts, where
     the first key is the part of the name before the split and the
     second is the part after.  returnParameterFile is handled
-    separately, and must be given.  Other keys with value None are
-    removed to permit default parameters to work.
+    separately, and must be given.
 
     """
     def splitKey(k):
@@ -36,8 +38,6 @@ def splitArgs(args):
     firstKeys = {splitKey(k)[0] for k in args}
     a = {k: {} for k in firstKeys}
     for k, v in args.items():
-        if v is None:
-            continue
         f, s = splitKey(k)
         a[f][s] = v
     return rpf, a
