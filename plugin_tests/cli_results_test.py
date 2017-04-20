@@ -57,9 +57,13 @@ class CliResultsTest(unittest.TestCase):
         :param cli_args: a tuple or list of args to format and pass to the cli.
         :param cli_kwargs: keyword arguments to format and pass to the cli.
             Each entry is passed as '--<key>=<value>'.
-        :param outputs: a dictionary of expected output files and their hashes.
-            The keys are the paths and the hash is the sha256 lowercase
-            hexdigest.
+        :param outputs: a dictionary of expected output files and checks to
+            perform on them.  The keys are the file paths.  The values are
+            dictionaries that may contain:
+                'hash': a sha256 lowercase hexdigest that must match the entire
+                    file.
+                'contains': a list of phrases that must be present in the first
+                    256 kb of the file.
         :param contains: a list of phrases that must be present in the stdout
             output of the cli.
         :param excludes: a list of phrases that must be not present in the
@@ -82,22 +86,27 @@ class CliResultsTest(unittest.TestCase):
                 cmd, shell=False, stdout=subprocess.PIPE, cwd=cwd)
             stdout, stderr = process.communicate()
             self.assertEqual(process.returncode, 0)
-            for outpath, outhash in six.iteritems(outputs):
+            for outpath, options in six.iteritems(outputs):
                 if outpath.startswith('tmp_'):
                     outpath = os.path.join(tmppath, outpath)
                 self.assertTrue(os.path.isfile(outpath))
-                sha = hashlib.sha256()
-                with open(outpath, 'rb') as fptr:
-                    while True:
-                        data = fptr.read(chunkSize)
-                        if not data:
-                            break
-                        sha.update(data)
-                try:
-                    self.assertEqual(outhash, sha.hexdigest())
-                except Exception:
-                    sys.stderr.write('File hash mismatch: %s\n' % outpath)
-                    raise
+                if 'hash' in options:
+                    sha = hashlib.sha256()
+                    with open(outpath, 'rb') as fptr:
+                        while True:
+                            data = fptr.read(chunkSize)
+                            if not data:
+                                break
+                            sha.update(data)
+                    try:
+                        self.assertEqual(options['hash'], sha.hexdigest())
+                    except Exception:
+                        sys.stderr.write('File hash mismatch: %s\n' % outpath)
+                        raise
+                if 'contains' in options:
+                    data = open(outpath, 'rb').read(chunkSize)
+                    for entry in contains:
+                        self.assertIn(entry, data)
             for entry in contains:
                 self.assertIn(entry, stdout)
             for entry in excludes:
@@ -151,5 +160,8 @@ class CliResultsTest(unittest.TestCase):
             'analysis_roi': '-1.0, -1.0, -1.0, -1.0',
         }
         self._runTest(cli_args, cli_kwargs, outputs={
-            'tmp_1.anot': '02b240586412c87ad5cbf349b7c22f80f1df31eef54ed8ee4ad1fd3624a89fa2'
+            'tmp_1.anot': {
+                'contains': ['elements'],
+                # 'hash': '02b240586412c87ad5cbf349b7c22f80f1df31eef54ed8ee4ad1fd3624a89fa2',
+            },
         })
