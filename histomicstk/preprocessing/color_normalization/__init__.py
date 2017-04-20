@@ -5,6 +5,7 @@ histopathology images.
 
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
+from .background_intensity import background_intensity
 from .reinhard import reinhard
 from .reinhard_stats import reinhard_stats
 
@@ -12,6 +13,7 @@ from .reinhard_stats import reinhard_stats
 __all__ = (
 
     # functions and classes of this package
+    'background_intensity',
     'reinhard',
     'reinhard_stats',
 )

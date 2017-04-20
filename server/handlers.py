@@ -16,7 +16,7 @@ def process_annotations(event):
         except (ValueError, TypeError):
             logger.error(
                 'Warning: Could not get reference from the annotation param. '
-                'Make sure you have at ctk-cli>=1.3.1 installed.'
+                'Make sure you have at least ctk-cli>=1.4.1 installed.'
             )
             raise
 

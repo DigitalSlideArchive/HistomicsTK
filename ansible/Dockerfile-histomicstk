@@ -4,7 +4,7 @@ MAINTAINER David Manthey <david.manthey@kitware.com>
 RUN apt-get update
 # For a dist upgrade
 RUN DEBIAN_FRONTEND=noninteractive apt-get --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
-RUN apt-get install -y git python2.7-dev python-pip libssl-dev sudo net-tools vim
+RUN apt-get install -y git python2.7-dev python-pip libssl-dev sudo net-tools vim locales apt-utils
 # Install some additional packages for convenience when testing with bash
 RUN apt-get install -y iputils-ping telnet-ssl tmux
 RUN pip install -U pip

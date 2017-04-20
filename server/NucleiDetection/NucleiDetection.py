@@ -48,13 +48,15 @@ def detect_nuclei_kofahi(im_input, args):
         im_nuclei_stain < args.foreground_threshold)
 
     # run adaptive multi-scale LoG filter
-    im_log = htk_shape_filters.clog(im_nuclei_stain, im_nuclei_fgnd_mask,
-                                    sigma_min=args.min_radius / np.sqrt(2),
-                                    sigma_max=args.max_radius / np.sqrt(2))
+    im_log_max, im_sigma_max = htk_shape_filters.cdog(
+        im_nuclei_stain, im_nuclei_fgnd_mask,
+        sigma_min=args.min_radius / np.sqrt(2),
+        sigma_max=args.max_radius / np.sqrt(2)
+    )
 
     # apply local maximum clustering
     im_nuclei_seg_mask, seeds, max = htk_seg.nuclear.max_clustering(
-        im_log, im_nuclei_fgnd_mask, args.local_max_search_radius)
+        im_log_max, im_nuclei_fgnd_mask, args.local_max_search_radius)
 
     # filter out small objects
     im_nuclei_seg_mask = htk_seg.label.area_open(
@@ -192,7 +194,7 @@ def main(args):
     #
     print('\n>> Creating Dask client ...\n')
 
-    scheduler_address = json.loads(args.scheduler_address)
+    scheduler_address = args.scheduler_address
 
     if scheduler_address is None:
 

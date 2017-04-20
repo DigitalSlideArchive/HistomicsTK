@@ -7,7 +7,11 @@ the stains of histopathology images.
 from . import stain_color_map as _stain_color_map
 from .color_convolution import color_convolution
 from .complement_stain_matrix import complement_stain_matrix
+from .find_stain_index import find_stain_index
 from .sparse_color_deconvolution import sparse_color_deconvolution
+from .separate_stains_macenko_pca import separate_stains_macenko_pca
+from .separate_stains_xu_snmf import separate_stains_xu_snmf
+from .rgb_separate_stains_macenko_pca import rgb_separate_stains_macenko_pca
 
 # must be imported after ComplementStainMatrix
 from .color_deconvolution import color_deconvolution
@@ -22,6 +26,10 @@ __all__ = (
     'color_convolution',
     'color_deconvolution',
     'complement_stain_matrix',
+    'find_stain_index',
     'sparse_color_deconvolution',
+    'separate_stains_macenko_pca',
+    'separate_stains_xu_snmf',
+    'rgb_separate_stains_macenko_pca',
     'stain_color_map',
 )

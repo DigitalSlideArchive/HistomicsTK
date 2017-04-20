@@ -14,6 +14,13 @@
 #  limitations under the License.
 ###############################################################################
 
+function(add_histomicstk_python_test case)
+  add_python_test("${case}" PLUGIN HistomicsTK
+    COVERAGE_PATHS "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/histomicstk"
+    ${ARGN}
+  )
+endfunction()
+
 # style tests
 add_python_style_test(
   python_static_analysis_HistomicsTK_plugins
@@ -31,51 +38,67 @@ add_python_style_test(
 )
 
 # API tests
-add_python_test(docker PLUGIN HistomicsTK)
+add_histomicstk_python_test(docker)
 
-add_python_test(example PLUGIN HistomicsTK)
+add_histomicstk_python_test(example)
 
-add_python_test(import_package PLUGIN HistomicsTK)
+add_histomicstk_python_test(import_package)
 
-add_python_test(color_conversion PLUGIN HistomicsTK)
+add_histomicstk_python_test(color_conversion)
 
-add_python_test(color_normalization
+add_histomicstk_python_test(color_deconvolution
+    SUBMODULE MacenkoTest
+    DBNAME core_color_deconvolution_macenko
+    EXTERNAL_DATA "plugins/HistomicsTK/Easy1.png"
+)
+
+add_histomicstk_python_test(color_deconvolution
+    # Work around CMake bug when using the same image multiple times
+    # EXTERNAL_DATA "plugins/HistomicsTK/Easy1.png"
+)
+
+add_histomicstk_python_test(color_normalization
     SUBMODULE ReinhardNormalizationTest
     DBNAME core_color_normalization_reinhard
-    PLUGIN HistomicsTK EXTERNAL_DATA
+    EXTERNAL_DATA
     "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
-    "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
+    # Work around CMake bug when using the same image multiple times
+    # "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
     "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
 )
 
-add_python_test(glcm
+add_histomicstk_python_test(color_normalization
+    SUBMODULE BackgroundIntensityTest
+    DBNAME core_color_normalization_background_intensity
+    EXTERNAL_DATA "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
+)
+
+add_histomicstk_python_test(glcm
     SUBMODULE GLCMMatrixGenerationTest
     DBNAME core_glcm_gen
-    PLUGIN HistomicsTK
 )
 
-add_python_test(segmentation_label
+add_histomicstk_python_test(segmentation_label
     SUBMODULE TraceBoundaryTest
     DBNAME core_trace_boundary
-    PLUGIN HistomicsTK
 )
 
 
-add_python_test(nuclei_segmentation
+add_histomicstk_python_test(nuclei_segmentation
     SUBMODULE NucleiSegmentationTest
     DBNAME core_nuclei_seg
-    PLUGIN HistomicsTK EXTERNAL_DATA
+    EXTERNAL_DATA
     # There is a bug in cmake that fails when external data files are added to
     # multiple tests, so add it in one of the tests for now
     # "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
     # "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
-    "plugins/HistomicsTK/Easy1_nuclei_seg_kofahi.npy" # put Easy1_nuclei_seg_kofahi.npy.sha512 in plugin_tests/data
+    "plugins/HistomicsTK/Easy1_nuclei_seg_kofahi_adaptive.npy" # put Easy1_nuclei_seg_kofahi_adaptive.npy.sha512 in plugin_tests/data
 )
 
-add_python_test(blob_detection_filters
+add_histomicstk_python_test(blob_detection_filters
     SUBMODULE BlobDetectionFiltersTest
     DBNAME core_blob_detection_filters
-    PLUGIN HistomicsTK EXTERNAL_DATA
+    EXTERNAL_DATA
     # There is a bug in cmake that fails when external data files are added to
     # multiple tests, so add it in one of the tests for now
     # "plugins/HistomicsTK/L1.png"

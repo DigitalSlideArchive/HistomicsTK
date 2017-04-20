@@ -102,15 +102,13 @@ before_install:
     - bash $build_path/install_miniconda.sh -b -p $build_path/miniconda
     - source $build_path/miniconda/bin/activate $build_path/miniconda
     - conda update --yes --quiet --all
-    - conda config --add channels https://conda.binstar.org/cdeepakroy
 
 install:
     - cd $girder_path
     - python setup.py develop
-    - conda install --yes ctk-cli==1.4.1
-    - pip install -r $main_path/requirements_c_conda.txt 
-    - pip install -r $main_path/requirements.txt -r $main_path/requirements_c.txt
-    - cd $main_path 
+    - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
+    - pip install -r $main_path/requirements.txt
+    - cd $main_path
     - python setup.py build_ext --inplace
     - cd $girder_path
     - pip install -U -r requirements.txt -r requirements-dev.txt
