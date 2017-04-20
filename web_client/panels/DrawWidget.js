@@ -136,6 +136,7 @@ var DrawWidget = Panel.extend({
             data: JSON.stringify(data),
             type: 'POST'
         }).then((data) => {
+            data.displayed = true;
             this.annotations.add(data);
             this.reset();
         });

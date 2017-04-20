@@ -51,7 +51,7 @@ var ImageView = View.extend({
         });
 
         this.listenTo(events, 'h:select-region', this.showRegion);
-        this.listenTo(this.annotationSelector.collection, 'change:displayed', this.toggleAnnotation);
+        this.listenTo(this.annotationSelector.collection, 'add change:displayed', this.toggleAnnotation);
 
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
         this.render();
