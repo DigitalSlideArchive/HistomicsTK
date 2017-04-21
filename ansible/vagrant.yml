@@ -5,7 +5,6 @@
     - mongodb
     - mq
     - openslide
-    - worker
     - role: girder.girder
       girder_path: "{{ root_dir }}/girder"
       girder_version: "master"
@@ -13,6 +12,7 @@
       become: yes
       become_user: "{{ girder_exec_user }}"
     - girder-histomicstk
+    - worker
     - provision
     #- itk
   vars:
