@@ -44,7 +44,7 @@ var EditAnnotation = View.extend({
         var lineWidth = this.$('#h-element-line-width').val();
         if (lineWidth) {
             data.lineWidth = parseFloat(lineWidth);
-            if (data.lineWidth < 0 || !Number.isFinite(data.lineWidth)) {
+            if (data.lineWidth < 0 || !isFinite(data.lineWidth)) {
                 validation += 'Invalid line width. ';
                 this.$('#h-element-line-width').parent().addClass('has-error');
             }
