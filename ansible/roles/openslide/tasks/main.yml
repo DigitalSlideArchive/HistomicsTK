@@ -90,10 +90,11 @@
 
 # libtiff
 - name: Download libtiff
-  get_url:
-    url: http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz
-    dest: "{{ root_dir }}"
-    checksum: "sha1:280e27704eaca5f592b82e71ac0c78b87395e2de"
+  command: >-
+    wget --retry-connrefused --waitretry=1 --read-timeout=20 http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+    creates: tiff-4.0.6.tar.gz
 
 - name: Extract libtiff
   unarchive:
