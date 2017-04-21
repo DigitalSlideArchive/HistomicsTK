@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Separate Stains (PCA-based Macenko method)</title>
+  <description>Sample the foreground of a slide to compute the stain vectors using the Macenko method.</description>
+  <version>0.1.0</version>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Neal Siekierski (Kitware)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters.</description>
+    <file>
+      <name>sample_slide_path</name>
+      <label>Input Slide</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description>Path to input slide image to be deconvolved</description>
+    </file>
+    <double-vector>
+      <name>macenko_I_0</name>
+      <label>Background Intensity</label>
+      <index>1</index>
+      <description>Background intensity in each channel</description>
+    </double-vector>
+    <float>
+      <name>sample_sample_percent</name>
+      <label>Sample Percent</label>
+      <longflag>samplePercent</longflag>
+      <description>Percentage of pixels to sample.  Specify either this or --sampleApproximateTotal</description>
+      <constraints>
+	<minimum>0</minimum>
+	<maximum>1</maximum>
+      </constraints>
+      <default>-1</default>
+    </float>
+    <float>
+      <name>sample_magnification</name>
+      <label>Magnification</label>
+      <longflag>magnification</longflag>
+      <description>Desired magnification for sampling.  The default value indicates native scan magnification.</description>
+      <default>-1</default>
+    </float>
+    <float>
+      <name>sample_tissue_seg_mag</name>
+      <label>Segmentation Magnification</label>
+      <longflag>segmentationMag</longflag>
+      <description>Low resolution magnification at which foreground and background will be segmented.</description>
+      <default>1.25</default>
+    </float>
+    <float>
+      <name>sample_min_coverage</name>
+      <label>Minimum Coverage</label>
+      <longflag>minCoverage</longflag>
+      <description>Minimum background coverage required for a tile to
+      be sampled from.</description>
+      <constraints>
+	<minimum>0</minimum>
+	<maximum>1</maximum>
+      </constraints>
+      <default>0.1</default>
+    </float>
+    <integer>
+      <name>sample_sample_approximate_total</name>
+      <label>Approximate sample total</label>
+      <longflag>sampleApproximateTotal</longflag>
+      <description>Use instead of sample_percent to specify roughly how many pixels to sample.  The fewer tiles are excluded, the more accurate this will be.</description>
+      <default>-1</default>
+    </integer>
+    <double>
+      <name>macenko_minimum_magnitude</name>
+      <label>Minimum magnitude</label>
+      <longflag>minimumMagnitude</longflag>
+      <description>The magnitude below which vectors will be excluded from the computation of the angle distribution</description>
+      <default>16</default>
+    </double>
+    <double>
+      <name>macenko_min_angle_percentile</name>
+      <label>Minimum angle percentile</label>
+      <longflag>minAnglePercentile</longflag>
+      <description>The smaller percentile of one of the vectors to pick from the angle distribution</description>
+      <constraints>
+	<minimum>0</minimum>
+	<maximum>1</maximum>
+      </constraints>
+      <default>0.01</default>
+    </double>
+    <double>
+      <name>macenko_max_angle_percentile</name>
+      <label>Maximum angle percentile</label>
+      <longflag>maxAnglePercentile</longflag>
+      <description>The larger percentile of one of the vectors to pick from the angle distribution</description>
+      <constraints>
+	<minimum>0</minimum>
+	<maximum>1</maximum>
+      </constraints>
+      <default>0.99</default>
+    </double>
+    <double-vector>
+      <name>stainColor_1</name>
+      <label>Color of stain 1</label>
+      <channel>output</channel>
+      <description>SDA color of stain 1</description>
+    </double-vector>
+    <double-vector>
+      <name>stainColor_2</name>
+      <label>Color of stain 2</label>
+      <channel>output</channel>
+      <description>SDA color of stain 2</description>
+    </double-vector>
+    <double-vector>
+      <name>stainColor_3</name>
+      <label>Color of stain 3</label>
+      <channel>output</channel>
+      <description>SDA color of stain 3</description>
+    </double-vector>
+  </parameters>
+  <parameters advanced="true">
+    <label>Dask</label>
+    <description>Dask parameters</description>
+    <string>
+      <name>dask_scheduler_address</name>
+      <label>Scheduler Address</label>
+      <description>Address of the dask scheduler in the format '127.0.0.1:8786'.  Not passing this parameter sets up a cluster on the local machine</description>
+      <longflag>scheduler_address</longflag>
+      <default></default>
+    </string>
+    <integer>
+      <name>sample_tile_grouping</name>
+      <label>Tile grouping</label>
+      <longflag>tileGrouping</longflag>
+      <description>Number of tiles to process as part of a single task</description>
+      <default>256</default>
+    </integer>
+  </parameters>
+</executable>

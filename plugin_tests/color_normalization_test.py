@@ -85,3 +85,19 @@ class ReinhardNormalizationTest(base.TestCase):
 
         np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-2)
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)
+
+
+class BackgroundIntensityTest(base.TestCase):
+
+    def test_background_intensity(self):
+        wsi_path = os.path.join(
+            TEST_DATA_DIR,
+            'sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs'  # noqa
+        )
+
+        np.random.seed(1)
+
+        I_0 = htk_cn.background_intensity(wsi_path,
+                                          sample_approximate_total=5000)
+
+        np.testing.assert_allclose(I_0, [242, 244, 241], atol=1)
