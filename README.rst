@@ -2,6 +2,10 @@
 HistomicsTK |build-status| |codecov-io| |code-health| |gitter|
 ==============================================================
 
+.. image:: https://badges.gitter.im/DigitalSlideArchive/HistomicsTK.svg
+   :alt: Join the chat at https://gitter.im/DigitalSlideArchive/HistomicsTK
+   :target: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 .. |build-status| image:: https://travis-ci.org/DigitalSlideArchive/HistomicsTK.svg?branch=master
     :target: https://travis-ci.org/DigitalSlideArchive/HistomicsTK
     :alt: Build Status
