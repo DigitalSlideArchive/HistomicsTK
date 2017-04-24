@@ -88,7 +88,7 @@ before_install:
     - mongod --dbpath=/tmp/db >/dev/null 2>/dev/null &
     - mongod --version
 
-    - CACHE=$HOME/.cache CMAKE_VERSION=3.1.0 CMAKE_SHORT_VERSION=3.1 source $girder_path/scripts/install_cmake.sh
+    - CACHE=$HOME/.cache CMAKE_VERSION=3.8.0 CMAKE_SHORT_VERSION=3.8 source $girder_path/scripts/install_cmake.sh
     - cmake --version
 
     - mkdir -p $HOME/.cache/node_modules || true
@@ -106,19 +106,20 @@ before_install:
 install:
     - cd $girder_path
     - python setup.py develop
-    - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
-    - pip install -r $main_path/requirements.txt
+    - cd $large_image_path
+    - pip install -U -r requirements.txt
+    - python setup.py install
     - cd $main_path
-    - python setup.py build_ext --inplace
+    - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
+    - pip install -r requirements.txt
+    # needs to be installed in dev mode for it to place binaries of cython/c extensions in place
+    - pip install -e .
     - cd $girder_path
     - pip install -U -r requirements.txt -r requirements-dev.txt
-    - pip install -U -r $large_image_path/requirements.txt
-    - pip install -U -r $slicer_cli_web_path/requirements.txt 
+    - pip install -U -r $slicer_cli_web_path/requirements.txt
     - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
     - pip install "git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5" --force-reinstall --ignore-installed --upgrade --no-cache-dir
     - npm-install-retry
-    - cd $large_image_path
-    - python setup.py install
     - BABEL_ENV=cover NYC_CWD="$main_path" girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
     - conda install --yes jupyter sphinx sphinx_rtd_theme
     - pip install nbsphinx travis-sphinx
@@ -126,7 +127,7 @@ install:
 script:
     - mkdir -p $build_path/girder_testing_build
     - cd $build_path/girder_testing_build
-    - PYTHONPATH="$main_path" cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} -DPYTHON_COVERAGE_CONFIG="$main_path/plugin_tests/pycoverage.cfg" -DCOVERAGE_MINIMUM_PASS=19 -DJS_COVERAGE_MINIMUM_PASS=19 -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" $girder_path
+    - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} -DPYTHON_COVERAGE_CONFIG="$main_path/plugin_tests/pycoverage.cfg" -DCOVERAGE_MINIMUM_PASS=19 -DJS_COVERAGE_MINIMUM_PASS=19 -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" $girder_path
     - make
     - JASMINE_TIMEOUT=15000 ctest -VV -R '(coverage_reset|coverage_combine|HistomicsTK|histomicstk|coverage$|coverage_xml)'
     - travis-sphinx --source=$main_path/docs build

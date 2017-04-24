@@ -32,7 +32,6 @@ installed as follows::
     $ cd HistomicsTK
     # pip install git+https://github.com/cdeepakroy/ctk-cli
     $ pip install --no-cache-dir -r requirements.txt
-    $ python setup.py build_ext --inplace
     $ pip install .
 
 If you build libtiff or openjpeg locally, ensure that the appropriate pip files
