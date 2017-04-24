@@ -16,11 +16,24 @@
       when:
         - docker is defined
         - docker == "girder_worker"
-    - role: girder
+    - role: girder.girder
+      girder_path: "{{ root_dir }}/girder"
+      girder_version: "master"
+      girder_web_extra_args: "--dev --all-plugins"
+      girder_daemonize: no
+      become: yes
+      become_user: "{{ girder_exec_user }}"
       tags: girder
       when:
         - docker is defined
         - docker == "histomicstk"
+
+    - role: girder-histomicstk
+      tags: girder
+      when:
+        - docker  is defined
+        - docker == "histomicstk"
+
     - role: provision
       tags: provision
       when:
