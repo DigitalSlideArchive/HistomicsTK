@@ -14,3 +14,9 @@ scipy>=0.16.0
 #
 dask>=0.14.0
 distributed>=1.16.0
+
+#
+# Other packages
+#
+scikit-build>=0.6.0
+cmake>=0.6.0
