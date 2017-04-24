@@ -88,7 +88,7 @@ before_install:
     - mongod --dbpath=/tmp/db >/dev/null 2>/dev/null &
     - mongod --version
 
-    - CACHE=$HOME/.cache CMAKE_VERSION=3.8.0 CMAKE_SHORT_VERSION=3.1 source $girder_path/scripts/install_cmake.sh
+    - CACHE=$HOME/.cache CMAKE_VERSION=3.8.0 CMAKE_SHORT_VERSION=3.8 source $girder_path/scripts/install_cmake.sh
     - cmake --version
 
     - mkdir -p $HOME/.cache/node_modules || true
@@ -108,10 +108,11 @@ install:
     - python setup.py develop
     - cd $large_image_path
     - pip install -U -r requirements.txt
-    - pip install -e .
+    - python setup.py install
     - cd $main_path
     - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
     - pip install -r requirements.txt
+    # needs to be installed in dev mode for it to place binaries of cython/c extensions in place
     - pip install -e .
     - cd $girder_path
     - pip install -U -r requirements.txt -r requirements-dev.txt
