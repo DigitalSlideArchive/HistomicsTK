@@ -240,11 +240,11 @@ $(function () {
                 var annotations = null;
                 runs(function () {
                     $('.h-annotation-selector .h-annotation:contains("single point") .h-delete-annotation').click();
+                    expect($('.h-annotation-selector .h-annotation:contains("single point")').length).toBe(0);
                 });
 
                 girderTest.waitForLoad();
                 runs(function () {
-                    expect($('.h-annotation-selector .h-annotation:contains("single point")').length).toBe(0);
                     girder.rest.restRequest({
                         path: 'annotation',
                         data: {

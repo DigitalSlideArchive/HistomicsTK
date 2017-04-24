@@ -102,6 +102,7 @@ var AnnotationSelector = Panel.extend({
         var model = this.collection.get(id);
         if (model) {
             model.unset('displayed');
+            this.collection.remove(model);
             model.destroy();
         }
     },
