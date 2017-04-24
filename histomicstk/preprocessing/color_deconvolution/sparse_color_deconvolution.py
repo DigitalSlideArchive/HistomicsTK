@@ -45,7 +45,7 @@ def sparse_color_deconvolution(im_rgb, w_init, beta):
 
     See Also
     --------
-    histomicstk.preprocessing.color_deconvolution.ColorDeconvolution
+    histomicstk.preprocessing.color_deconvolution.color_deconvolution
 
     References
     ----------
@@ -58,14 +58,14 @@ def sparse_color_deconvolution(im_rgb, w_init, beta):
 
     # determine if input is RGB or pixel-matrix format
     if len(im_rgb.shape) == 3:  # RBG image provided
+        if im_rgb.shape[2] == 4:  # remove alpha channel if needed
+            im_rgb = im_rgb[:, :, (0, 1, 2)]
         m = im_rgb.shape[0]
         n = im_rgb.shape[1]
         im_rgb = np.reshape(im_rgb, (m * n, 3)).transpose()
     elif len(im_rgb.shape) == 2:  # pixel matrix provided
         m = -1
         n = -1
-        if im_rgb.shape[2] == 4:  # remove alpha channel if needed
-            im_rgb = im_rgb[:, :, (0, 1, 2)]
 
     # transform input RGB to optical density values
     im_rgb = im_rgb.astype(dtype=np.float32)

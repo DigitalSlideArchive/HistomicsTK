@@ -4,7 +4,7 @@
   <title>Detects Nuclei</title>
   <description>Detects nuclei in a whole-slide image</description>
   <version>0.1.0</version>
-  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
   <license>Apache 2.0</license>
   <contributor>Deepak Roy Chittajallu (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
@@ -90,7 +90,7 @@
       <label>Foreground Intensity Threshold</label>
       <description>Intensity value to use as threshold to segment foreground in nuclear stain image</description>
       <longflag>foreground_threshold</longflag>
-      <default>160</default>
+      <default>60</default>
     </double>
     <double>
       <name>min_radius</name>
@@ -159,9 +159,9 @@
     <string>
       <name>scheduler_address</name>
       <label>Scheduler Address</label>
-      <description>Address of the dask scheduler in the format '127.0.0.1:8786', Default value = 'null' sets up a cluster on the local machine</description>
+      <description>Address of the dask scheduler in the format '127.0.0.1:8786'.  Not passing this parameter sets up a cluster on the local machine</description>
       <longflag>scheduler_address</longflag>
-      <default>null</default>
+      <default></default>
     </string>
   </parameters>
 </executable>
