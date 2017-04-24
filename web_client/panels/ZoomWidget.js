@@ -48,8 +48,8 @@ var ZoomWidget = Panel.extend({
         var buttons;
 
         if (this.viewer) {
-            // get current magnification from the viewer
-            value = this.zoomToMagnification(this.viewer.zoom());
+            // get current magnification from the renderer
+            value = this.zoomToMagnification(this.renderer.zoom());
         }
 
         // get the minimum value of the slider on a logarithmic scale
@@ -70,7 +70,7 @@ var ZoomWidget = Panel.extend({
             max: max,
             step: 0.01,
             value: Math.log2(value),
-            disabled: !this.viewer,
+            disabled: !this.renderer,
             buttons: buttons
         }));
 
@@ -88,10 +88,11 @@ var ZoomWidget = Panel.extend({
     setViewer(viewer) {
         var geo = window.geo;
         var range;
-        this.viewer = viewer.viewer;
-        if (this.viewer) {
-            this.viewer.geoOn(geo.event.zoom, this._zoomChanged);
-            range = this.viewer.zoomRange();
+        this.viewer = viewer;
+        this.renderer = viewer.viewer;
+        if (this.renderer) {
+            this.renderer.geoOn(geo.event.zoom, this._zoomChanged);
+            range = this.renderer.zoomRange();
             this._maxZoom = range.max;
             this._minZoom = range.min;
         }
@@ -151,10 +152,10 @@ var ZoomWidget = Panel.extend({
      * A handler called when the viewer's zoom level changes.
      */
     _zoomChanged() {
-        if (!this.viewer) {
+        if (!this.renderer) {
             return;
         }
-        this.setMagnification(this.zoomToMagnification(this.viewer.zoom()));
+        this.setMagnification(this.zoomToMagnification(this.renderer.zoom()));
     },
 
     /**
@@ -177,8 +178,8 @@ var ZoomWidget = Panel.extend({
      * A handler that is called *after* the slider is moved.
      */
     _zoomSliderChange() {
-        if (this.viewer) {
-            this.viewer.zoom(
+        if (this.renderer) {
+            this.renderer.zoom(
                 this.magnificationToZoom(this._getSliderValue())
             );
         }

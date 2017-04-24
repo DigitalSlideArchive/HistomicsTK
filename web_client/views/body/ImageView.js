@@ -96,19 +96,19 @@ var ImageView = View.extend({
 
                     // show the right side control container
                     this.$('#h-annotation-selector-container').removeClass('hidden');
+
+                    this.zoomWidget
+                        .setViewer(this.viewerWidget)
+                        .setElement('.h-zoom-widget').render();
+
+                    this.annotationSelector
+                        .setViewer(this.viewerWidget)
+                        .setElement('.h-annotation-selector').render();
+
+                    this.drawWidget
+                        .setViewer(this.viewerWidget)
+                        .setElement('.h-draw-widget').render();
                 }
-
-                this.zoomWidget
-                    .setViewer(this.viewerWidget)
-                    .setElement('.h-zoom-widget').render();
-
-                this.annotationSelector
-                    .setViewer(this.viewerWidget)
-                    .setElement('.h-annotation-selector').render();
-
-                this.drawWidget
-                    .setViewer(this.viewerWidget)
-                    .setElement('.h-draw-widget').render();
             });
             this.annotationSelector.setItem(this.model);
 
