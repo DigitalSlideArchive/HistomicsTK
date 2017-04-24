@@ -1,10 +1,12 @@
 from histomicstk.preprocessing import color_conversion
+import histomicstk.utils as utils
+from ._linalg import normalize
 from .complement_stain_matrix import complement_stain_matrix
 import collections
 import numpy
 
 
-def color_deconvolution(im_rgb, w):
+def color_deconvolution(im_rgb, w, I_0=None):
     """Performs color deconvolution.
     The given RGB Image `I` is first first transformed into optical density
     space, and then projected onto the stain vectors in the columns of the
@@ -23,6 +25,9 @@ def color_deconvolution(im_rgb, w):
         For two stain images the third column is zero and will be
         complemented using cross-product. Atleast two of the three
         columns must be non-zero.
+    I_0 : float or array_like, optional
+        A float a 3-vector containing background RGB intensities.
+        If unspecified, use the old OD conversion.
 
     Returns
     -------
@@ -35,7 +40,7 @@ def color_deconvolution(im_rgb, w):
         An intensity image of deconvolved stains that is unbounded,
         suitable for reconstructing color images of deconvolved stains
         with color_convolution.
-    wc : array_like
+    Wc : array_like
         A 3x3 complemented stain matrix. Useful for color image
         reconstruction with color_convolution.
 
@@ -45,45 +50,37 @@ def color_deconvolution(im_rgb, w):
     histomicstk.preprocessing.color_deconvolution.color_convolution
     histomicstk.preprocessing.color_conversion.rgb_to_od
     histomicstk.preprocessing.color_conversion.od_to_rgb
+    histomicstk.preprocessing.color_conversion.rgb_to_sda
+    histomicstk.preprocessing.color_conversion.sda_to_rgb
     """
 
     # complement stain matrix if needed
     if numpy.linalg.norm(w[:, 2]) <= 1e-16:
         wc = complement_stain_matrix(w)
     else:
-        wc = w.copy()
+        wc = w
 
     # normalize stains to unit-norm
-    for i in range(wc.shape[1]):
-        Norm = numpy.linalg.norm(wc[:, i])
-        if Norm >= 1e-16:
-            wc[:, i] /= Norm
+    wc = normalize(wc)
 
     # invert stain matrix
     Q = numpy.linalg.inv(wc)
 
     # transform 3D input image to 2D RGB matrix format
-    m = im_rgb.shape[0]
-    n = im_rgb.shape[1]
-    if im_rgb.shape[2] == 4:
-        im_rgb = im_rgb[:, :, (0, 1, 2)]
-    im_rgb = numpy.reshape(im_rgb, (m * n, 3))
+    m = utils.convert_image_to_matrix(im_rgb)[:3]
 
     # transform input RGB to optical density values and deconvolve,
     # tfm back to RGB
-    im_rgb = im_rgb.astype(dtype=numpy.float32)
-    im_rgb[im_rgb == 0] = 1e-16
-    ODfwd = color_conversion.rgb_to_od(im_rgb)
-    ODdeconv = numpy.dot(ODfwd, numpy.transpose(Q))
-    ODinv = color_conversion.od_to_rgb(ODdeconv)
+    sda_fwd = color_conversion.rgb_to_sda(m, I_0)
+    sda_deconv = numpy.dot(Q, sda_fwd)
+    sda_inv = color_conversion.sda_to_rgb(sda_deconv,
+                                          255 if I_0 is not None else None)
 
     # reshape output
-    StainsFloat = numpy.reshape(ODinv, (m, n, 3))
+    StainsFloat = utils.convert_matrix_to_image(sda_inv, im_rgb.shape)
 
     # transform type
-    Stains = numpy.copy(StainsFloat)
-    Stains[Stains > 255] = 255
-    Stains = Stains.astype(numpy.uint8)
+    Stains = StainsFloat.clip(0, 255).astype(numpy.uint8)
 
     # return
     Unmixed = collections.namedtuple('Unmixed',
