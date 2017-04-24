@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Positive Pixel Count</title>
+  <description>Counts different types of positive pixels based on values in the HSI color space</description>
+  <version>0.1.0</version>
+  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Neal Siekierski (Kitware)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>I/O</label>
+    <description>Input/output parameters.</description>
+    <image>
+      <name>inputImageFile</name>
+      <label>Input Image</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description>Input image in which to count and classify positive pixels</description>
+    </image>
+    <float>
+      <name>hueValue</name>
+      <label>Hue Value</label>
+      <index>1</index>
+      <description>Center of the hue range in HSI space for the positive color, in the range [0, 1]</description>
+    </float>
+    <float>
+      <name>hueWidth</name>
+      <label>Hue Width</label>
+      <index>2</index>
+      <description>Width of the hue range in HSI space</description>
+    </float>
+    <float>
+      <name>saturationMinimum</name>
+      <label>Minimum Saturation</label>
+      <index>3</index>
+      <description>Minimum saturation of positive pixels in HSI space, in the range [0, 1]</description>
+    </float>
+    <float>
+      <name>intensityUpperLimit</name>
+      <label>Upper Intensity Limit</label>
+      <index>4</index>
+      <description>Intensity threshold in HSI space above which a pixel is considered negative, in the range [0, 1]</description>
+    </float>
+    <float>
+      <name>intensityWeakThreshold</name>
+      <label>Intensity Threshold for Weak Pixels</label>
+      <index>5</index>
+      <description>Intensity threshold in HSI space that separates weak-positive pixels (above) from plain positive pixels (below)</description>
+    </float>
+    <float>
+      <name>intensityStrongThreshold</name>
+      <label>Intensity Threshold for Strong Pixels</label>
+      <index>6</index>
+      <description>Intensity threshold in HSI space that separates plain positive pixels (above) from strong positive pixels (below)</description>
+    </float>
+    <float>
+      <name>intensityLowerLimit</name>
+      <label>Lower Intensity Limit</label>
+      <index>7</index>
+      <description>Intensity threshold in HSI space below which a pixel is considered negative</description>
+    </float>
+    <region>
+      <name>region</name>
+      <label>Region</label>
+      <longflag>region</longflag>
+      <description>left,top,width,height of the region of interest.  All -1 means the whole image is used.</description>
+      <default>-1,-1,-1,-1</default>
+    </region>
+  </parameters>
+  <parameters>
+    <label>Output parameters</label>
+    <description>Parameters for output</description>
+    <float>
+      <name>NumberWeakPositive</name>
+      <label>Number of Weak Positive Pixels</label>
+      <channel>output</channel>
+      <description>Number of pixels classified as weak positive</description>
+    </float>
+    <float>
+      <name>NumberPositive</name>
+      <label>Number of Positive Pixels</label>
+      <channel>output</channel>
+      <description>Number of pixels classified as simply positive</description>
+    </float>
+    <float>
+      <name>NumberStrongPositive</name>
+      <label>Number of Strong Positive Pixels</label>
+      <channel>output</channel>
+      <description>Number of pixels classified as strong positive</description>
+    </float>
+    <float>
+      <name>IntensitySumWeakPositive</name>
+      <label>Sum of Intensities of Weak Positive Pixels</label>
+      <channel>output</channel>
+      <description>Number of pixels classified as weak positive</description>
+    </float>
+    <float>
+      <name>IntensitySumPositive</name>
+      <label>Sum of Intensities of Positive Pixels</label>
+      <channel>output</channel>
+      <description>Number of pixels classified as simply positive</description>
+    </float>
+    <float>
+      <name>IntensitySumStrongPositive</name>
+      <label>Sum of Intensities of Strong Positive Pixels</label>
+      <channel>output</channel>
+      <description>Number of pixels classified as strong positive</description>
+    </float>
+    <float>
+      <name>IntensityAverage</name>
+      <label>Average Intensity</label>
+      <channel>output</channel>
+      <description>Average intensity of across all positive pixels</description>
+    </float>
+    <float>
+      <name>RatioStrongToTotal</name>
+      <label>Ratio of Strong Pixels to Total Pixels</label>
+      <channel>output</channel>
+      <description>The fraction of positive pixels that are strong</description>
+    </float>
+    <float>
+      <name>IntensityAverageWeakAndPositive</name>
+      <label>Average Intensity of Weak and Plain Positive Pixels</label>
+      <channel>output</channel>
+      <description>Average intensity of positive pixels excluding strong positive pixels</description>
+    </float>
+  </parameters>
+  <parameters advanced="true">
+    <label>Dask parameters</label>
+    <description>Dask parameters</description>
+    <string>
+      <name>scheduler_address</name>
+      <label>Scheduler Address</label>
+      <description>Address of the dask scheduler in the format '127.0.0.1:8786'.  Not passing this parameter sets up a cluster on the local machine</description>
+      <longflag>scheduler_address</longflag>
+      <default></default>
+    </string>
+    <integer>
+      <name>tile_grouping</name>
+      <label>Tile grouping</label>
+      <longflag>tileGrouping</longflag>
+      <description>Number of tiles to process as part of a single task</description>
+      <default>256</default>
+    </integer>
+  </parameters>
+</executable>

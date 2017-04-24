@@ -21,5 +21,9 @@
 
   "SeparateStainsMacenkoPCA": {
     "type"    : "python"
+  },
+
+  "PositivePixelCount": {
+    "type"    : "python"
   }
 }
