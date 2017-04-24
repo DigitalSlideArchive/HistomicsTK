@@ -67,6 +67,18 @@
       <description>left,top,width,height of the region of interest.  All -1 means the whole image is used.</description>
       <default>-1,-1,-1,-1</default>
     </region>
+    <image>
+      <longflag>outputLabelImage</longflag>
+      <label>Output Label Image</label>
+      <description>Color-coded image of the region, showing the various classes of pixel</description>
+      <channel>output</channel>
+    </image>
+    <integer>
+      <longflag>maxRegionSize</longflag>
+      <label>Maximum region size</label>
+      <description>Maximum width and height allowed when processing an image, in order to prevent accidentally running on too large a region.  Use -1 for no limit</description>
+      <default>5000</default>
+    </integer>
   </parameters>
   <parameters>
     <label>Output parameters</label>
