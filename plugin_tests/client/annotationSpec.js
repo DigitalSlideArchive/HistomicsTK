@@ -203,6 +203,11 @@ $(function () {
                     expect(annotations.length).toBe(1);
                     expect(annotations[0].annotation.name).toBe('single point');
                 });
+
+                waitsFor(function () {
+                    var $el = $('.h-annotation-selector .h-annotation:contains("single point")');
+                    return $el.find('.icon-eye.h-toggle-annotation').length === 1;
+                }, 'saved annotation to draw');
             });
         });
 
@@ -214,14 +219,21 @@ $(function () {
             it('toggle visibility of an annotation', function () {
                 runs(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("single point")');
-                    expect($el.length).toBe(1);
-                    expect($el.find('.icon-eye-off.h-toggle-annotation').length).toBe(1);
+                    $el.find('.h-toggle-annotation').click();
+                });
+                waitsFor(function () {
+                    var $el = $('.h-annotation-selector .h-annotation:contains("single point")');
+                    return $el.find('.icon-eye-off.h-toggle-annotation').length === 1;
+                }, 'annotation to toggle off');
+
+                runs(function () {
+                    var $el = $('.h-annotation-selector .h-annotation:contains("single point")');
                     $el.find('.h-toggle-annotation').click();
                 });
                 waitsFor(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("single point")');
                     return $el.find('.icon-eye.h-toggle-annotation').length === 1;
-                }, 'annotation to toggle');
+                }, 'annotation to toggle on');
             });
 
             it('delete an annotation', function () {
@@ -246,6 +258,56 @@ $(function () {
                 }, 'get annotations from server');
                 runs(function () {
                     expect(annotations.length).toBe(0);
+                });
+            });
+
+            it('show new annotations during job events', function () {
+                var uploaded = false;
+
+                runs(function () {
+                    var rect = {
+                        'name': 'rectangle',
+                        'elements': [
+                            {
+                                'center': [
+                                    200,
+                                    200,
+                                    0
+                                ],
+                                'height': 100,
+                                'rotation': 0,
+                                'type': 'rectangle',
+                                'width': 100
+                            }
+                        ]
+                    };
+
+                    girder.rest.restRequest({
+                        path: 'annotation?itemId=' + girder.plugins.HistomicsTK.router.getQuery('image'),
+                        contentType: 'application/json',
+                        processData: false,
+                        data: JSON.stringify(rect),
+                        type: 'POST'
+                    }).then(function () {
+                        uploaded = true;
+                    });
+                });
+
+                waitsFor(function () {
+                    return uploaded;
+                }, 'annotation to be uploaded');
+                runs(function () {
+                    girder.utilities.eventStream.trigger('g:event.job_status', {
+                        data: {status: 3}
+                    });
+                });
+
+                waitsFor(function () {
+                    return $('.h-annotation-selector .h-annotation:contains("rectangle")').length === 1;
+                }, 'new annotation to appear');
+                runs(function () {
+                    var $el = $('.h-annotation-selector .h-annotation:contains("rectangle")');
+                    expect($el.find('.icon-eye.h-toggle-annotation').length).toBe(1);
                 });
             });
         });
