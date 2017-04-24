@@ -28,11 +28,7 @@ var AnnotationSelector = Panel.extend({
      */
     initialize(settings) {
         this.listenTo(this.collection, 'all', this.render);
-        this.listenTo(eventStream, 'g:event.job_status', function (evt) {
-            if (this.parentItem && evt.data.status > 2) {
-                this.setItem(this.parentItem);
-            }
-        });
+        this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
         if (settings.parentItem) {
             this.setItem(settings.parentItem);
         }
@@ -45,7 +41,7 @@ var AnnotationSelector = Panel.extend({
             return;
         }
         this.$el.html(annotationSelectorWidget({
-            annotations: this.collection.toArray(),
+            annotations: this.collection.sortBy('created'),
             id: 'annotation-panel-container',
             title: 'Annotations'
         }));
@@ -63,6 +59,10 @@ var AnnotationSelector = Panel.extend({
      * @param {ItemModel} item
      */
     setItem(item) {
+        if (this.parentItem === item) {
+            return;
+        }
+
         this.parentItem = item;
         if (!this.parentItem || !this.parentItem.id) {
             this.collection.reset();
@@ -70,8 +70,7 @@ var AnnotationSelector = Panel.extend({
             return;
         }
         this.collection.offset = 0;
-        this.collection.fetch({itemId: item.id})
-            .then(() => this.render());
+        this.collection.fetch({itemId: item.id});
         return this;
     },
 
@@ -104,6 +103,23 @@ var AnnotationSelector = Panel.extend({
         if (model) {
             model.unset('displayed');
             model.destroy();
+        }
+    },
+
+    _onJobUpdate(evt) {
+        var models = this.collection.indexBy(_.property('id'));
+        if (this.parentItem && evt.data.status > 2) {
+            this.collection.offset = 0;
+            this.collection.fetch({itemId: this.parentItem.id}).then(() => {
+                this.collection.each((model) => {
+                    if (!_.has(models, model.id)) {
+                        model.set('displayed', true);
+                    } else {
+                        model.set('displayed', models[model.id].get('displayed'));
+                    }
+                });
+                this.render();
+            });
         }
     }
 });
