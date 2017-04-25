@@ -5,12 +5,16 @@ from histomicstk.preprocessing.color_normalization import background_intensity
 
 
 def main(args):
-    # Allow default parameters to work.  Assume None is only
-    # meaningful as a default value
     other_args = set(['returnParameterFile', 'scheduler_address'])
     kwargs = {k: v for k, v in vars(args).items()
-              if k not in other_args and v is not None}
-    Client(args.scheduler_address)
+              if k not in other_args}
+    # Allow (some) default parameters to work.  Assume certain values
+    # are not valid.
+    for k in 'sample_percent', 'sample_approximate_total':
+        if kwargs[k] == -1:
+            del kwargs[k]
+
+    Client(args.scheduler_address or None)
     I_0 = background_intensity(**kwargs)
     with open(args.returnParameterFile, 'w') as f:
         f.write('BackgroundIntensity = ' + ','.join(map(str, I_0)) + '\n')

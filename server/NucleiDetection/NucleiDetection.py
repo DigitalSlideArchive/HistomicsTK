@@ -196,7 +196,7 @@ def main(args):
 
     scheduler_address = args.scheduler_address
 
-    if scheduler_address is None:
+    if not scheduler_address:
 
         scheduler_address = LocalCluster(
             n_workers=multiprocessing.cpu_count()-1,

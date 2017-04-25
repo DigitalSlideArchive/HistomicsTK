@@ -4,7 +4,7 @@
   <title>Compute Background Intensity</title>
   <description>Sample the background of a slide to compute the median background intensity.</description>
   <version>0.1.0</version>
-  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
   <license>Apache 2.0</license>
   <contributor>Neal Siekierski (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
@@ -27,35 +27,39 @@
 	<minimum>0</minimum>
 	<maximum>1</maximum>
       </constraints>
+      <default>-1</default>
     </float>
     <float>
       <name>magnification</name>
       <label>Magnification</label>
       <longflag>magnification</longflag>
-      <description>Desired magnification for sampling.  Leave unspecified for 1.25x magnification.</description>
+      <description>Desired magnification for sampling.</description>
+      <default>1.25</default>
     </float>
     <float>
       <name>tissue_seg_mag</name>
       <label>Segmentation Magnification</label>
       <longflag>segmentationMag</longflag>
-      <description>Low resolution magnification at which foreground and background will be segmented.  Default 1.25x.</description>
+      <description>Low resolution magnification at which foreground and background will be segmented.</description>
+      <default>1.25</default>
     </float>
     <float>
       <name>min_coverage</name>
       <label>Minimum Coverage</label>
       <longflag>minCoverage</longflag>
-      <description>Minimum background coverage required for a tile to
-      be sampled from.</description>
+      <description>Minimum background coverage required for a tile to be sampled from.</description>
       <constraints>
 	<minimum>0</minimum>
 	<maximum>1</maximum>
       </constraints>
+      <default>0.1</default>
     </float>
     <integer>
       <name>sample_approximate_total</name>
       <label>Approximate sample total</label>
       <longflag>sampleApproximateTotal</longflag>
       <description>Use instead of sample_percent to specify roughly how many pixels to sample.  The fewer tiles are excluded, the more accurate this will be.</description>
+      <default>-1</default>
     </integer>
     <double-vector>
       <name>BackgroundIntensity</name>
@@ -72,12 +76,14 @@
       <label>Scheduler Address</label>
       <description>Address of the dask scheduler in the format '127.0.0.1:8786'.  Not passing this parameter sets up a cluster on the local machine</description>
       <longflag>scheduler_address</longflag>
+      <default></default>
     </string>
     <integer>
       <name>tile_grouping</name>
       <label>Tile grouping</label>
       <longflag>tileGrouping</longflag>
       <description>Number of tiles to process as part of a single task</description>
+      <default>256</default>
     </integer>
   </parameters>
 </executable>
