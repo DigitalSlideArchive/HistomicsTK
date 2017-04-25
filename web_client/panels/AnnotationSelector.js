@@ -43,7 +43,8 @@ var AnnotationSelector = Panel.extend({
         this.$el.html(annotationSelectorWidget({
             annotations: this.collection.sortBy('created'),
             id: 'annotation-panel-container',
-            title: 'Annotations'
+            title: 'Annotations',
+            showLabels: this._showLabels
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
