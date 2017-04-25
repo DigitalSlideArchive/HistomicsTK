@@ -1,4 +1,25 @@
 ---
+- name: NodeJS | Add PPA key
+  command: "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68576280"
+  become: yes
+  become_user: root
+
+- name: NodeJS | Add PPA
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_4.x {{ ansible_distribution_release }} main"
+  become: yes
+  become_user: root
+
+- name: NodeJS | Install package
+  apt:
+    name: nodejs
+  become: yes
+  become_user: root
+
+- name: NodeJS | Update npm
+  command: "npm install -g npm@3"
+  become: yes
+  become_user: root
 
 - name: Install system package dependencies
   apt:
