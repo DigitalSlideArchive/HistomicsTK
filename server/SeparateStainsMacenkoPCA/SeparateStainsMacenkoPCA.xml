@@ -11,13 +11,13 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters.</description>
-    <file>
+    <image>
       <name>sample_slide_path</name>
       <label>Input Slide</label>
       <channel>input</channel>
       <index>0</index>
       <description>Path to input slide image to be deconvolved</description>
-    </file>
+    </image>
     <double-vector>
       <name>macenko_I_0</name>
       <label>Background Intensity</label>
