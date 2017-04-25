@@ -37,3 +37,5 @@ class WebClientTestCase(web_client_test.WebClientTestCase):
         self.model('image_item', 'large_image').createImageItem(
             item, file, user=user, createJob=False
         )
+        self.model('image_item', 'large_image').copyItem(
+            item, user, name='copy')
