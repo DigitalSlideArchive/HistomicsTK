@@ -16,7 +16,7 @@ def tiling_schedule(slide_path, magnification, tile_size, tol=0.002):
     tile_size : int
        tilesize at desired magnification.
     tol: double
-       acceptable mismatch percentage for desired magnification
+       acceptable mismatch fraction for desired magnification
 
     Returns
     -------

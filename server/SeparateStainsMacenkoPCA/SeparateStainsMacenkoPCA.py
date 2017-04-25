@@ -9,7 +9,7 @@ from histomicstk.preprocessing.color_deconvolution import rgb_separate_stains_ma
 def main(args):
     returnParameterFile, args = splitArgs(args)
     args['macenko']['I_0'] = numpy.array(args['macenko']['I_0'])
-    for k in 'magnification', 'sample_percent', 'sample_approximate_total':
+    for k in 'magnification', 'sample_fraction', 'sample_approximate_total':
         if args['sample'][k] == -1:
             del args['sample'][k]
 

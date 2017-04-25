@@ -6,7 +6,7 @@ import scipy
 from .simple_mask import simple_mask
 
 
-def sample_pixels(slide_path, sample_percent=None, magnification=None,
+def sample_pixels(slide_path, sample_fraction=None, magnification=None,
                   tissue_seg_mag=1.25, min_coverage=0.1, background=False,
                   sample_approximate_total=None, tile_grouping=256):
     """Generates a sampling of pixels from a whole-slide image.
@@ -19,8 +19,8 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
     ----------
     slide_path : str
         path and filename of slide.
-    sample_percent : double
-        Percentage of pixels to sample. Must be in the range [0, 1].
+    sample_fraction : double
+        Fraction of pixels to sample. Must be in the range [0, 1].
     magnification : double
         Desired magnification for sampling.
         Default value : None (for native scan magnification).
@@ -34,7 +34,7 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
         sample the background instead of the foreground if True. min_coverage
         then refers to the amount of background. Default value = False
     sample_approximate_total: int, optional
-        use instead of sample_percent to specify roughly how many pixels to
+        use instead of sample_fraction to specify roughly how many pixels to
         sample. The fewer tiles are excluded, the more accurate this will be.
     tile_grouping: int, optional
         Number of tiles to process as part of a single task.
@@ -53,8 +53,8 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
     histomicstk.preprocessing.color_normalization.reinhard
     """
 
-    if (sample_percent is None) == (sample_approximate_total is None):
-        raise ValueError('Exactly one of sample_percent and ' +
+    if (sample_fraction is None) == (sample_approximate_total is None):
+        raise ValueError('Exactly one of sample_fraction and ' +
                          'sample_approximate_total must have a value.')
 
     ts = large_image.getTileSource(slide_path)
@@ -77,7 +77,7 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
     if sample_approximate_total is not None:
         scale_ratio = float(magnification) / tissue_seg_mag
         total_fgnd_pixels = np.count_nonzero(im_fgnd_mask_lres) * scale_ratio ** 2
-        sample_percent = sample_approximate_total / total_fgnd_pixels
+        sample_fraction = sample_approximate_total / total_fgnd_pixels
 
     # generate sample pixels
     sample_pixels = []
@@ -92,7 +92,7 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
         sample_pixels.append(dask.delayed(_sample_pixels_tile)(
             slide_path, iter_args,
             (position, min(tile_grouping, total_tiles - position)),
-            sample_percent, tissue_seg_mag, min_coverage, im_fgnd_mask_lres))
+            sample_fraction, tissue_seg_mag, min_coverage, im_fgnd_mask_lres))
 
     # concatenate pixel values in list
     if sample_pixels:
@@ -104,7 +104,7 @@ def sample_pixels(slide_path, sample_percent=None, magnification=None,
     return sample_pixels
 
 
-def _sample_pixels_tile(slide_path, iter_args, positions, sample_percent,
+def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
                         tissue_seg_mag, min_coverage, im_fgnd_mask_lres):
     start_position, position_count = positions
     sample_pixels = [np.empty((0, 3))]
@@ -151,7 +151,7 @@ def _sample_pixels_tile(slide_path, iter_args, positions, sample_percent,
 
         # Handle fractions in the desired sample size by rounding up
         # or down, weighted by the fractional amount.
-        float_samples = sample_percent * nz_ind.size
+        float_samples = sample_fraction * nz_ind.size
         num_samples = int(np.floor(float_samples))
         num_samples += np.random.binomial(1, float_samples - num_samples)
 
