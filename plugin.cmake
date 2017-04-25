@@ -122,13 +122,17 @@ set_property(TEST server_HistomicsTK.cli_results APPEND PROPERTY ENVIRONMENT
 )
 
 # front-end tests
-#add_web_client_test(
-#    HistomicsTK_visualization "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/visualization.js"
-#    ENABLEDPLUGINS "HistomicsTK" "large_image")
-#add_web_client_test(
-#    HistomicsTK_body "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/body.js"
-#    ENABLEDPLUGINS "HistomicsTK" "large_image")
-
+add_web_client_test(
+  HistomicsTK_annotations "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/annotationSpec.js"
+  ENABLEDPLUGINS "jobs" "worker" "large_image" "slicer_cli_web" "HistomicsTK"
+  TEST_MODULE "plugin_tests.web_client_test"
+)
+# Ideally, client tests would support the EXTERNAL_DATA keyword, but for now
+# we just use a data file used for one of the server tests.
+set_property(
+  TEST web_client_HistomicsTK_annotations APPEND PROPERTY
+  ENVIRONMENT "GIRDER_TEST_DATA_PREFIX=${GIRDER_EXTERNAL_DATA_ROOT}"
+)
 
 add_eslint_test(
   js_static_analysis_HistomicsTK "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/web_client"
@@ -136,8 +140,8 @@ add_eslint_test(
   ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintignore"
 )
 
-#add_eslint_test(
-#  js_static_analysis_HistomicsTK_tests "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client"
-#  ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/.eslintrc"
-#  ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintignore"
-#)
+add_eslint_test(
+  js_static_analysis_HistomicsTK_tests "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client"
+  ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/.eslintrc"
+  ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintignore"
+)

@@ -7,9 +7,11 @@ import FileModel from 'girder/models/FileModel';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
 import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
+import AnnotationCollection from 'girder_plugins/large_image/collections/AnnotationCollection';
 
 import AnnotationSelector from '../../panels/AnnotationSelector';
 import ZoomWidget from '../../panels/ZoomWidget';
+import DrawWidget from '../../panels/DrawWidget';
 import router from '../../router';
 import events from '../../events';
 import View from '../View';
@@ -29,19 +31,27 @@ var ImageView = View.extend({
         this.listenTo(events, 'h:analysis', this._setImageInput);
         events.trigger('h:imageOpened', null);
         this.listenTo(events, 'query:image', this.openImage);
+        this.annotations = new AnnotationCollection();
 
         this.controlPanel = new SlicerPanelGroup({
             parentView: this
         });
         this.annotationSelector = new AnnotationSelector({
-            parentView: this
+            parentView: this,
+            collection: this.annotations,
+            image: this.model
         });
         this.zoomWidget = new ZoomWidget({
             parentView: this
         });
+        this.drawWidget = new DrawWidget({
+            parentView: this,
+            annotations: this.annotations,
+            image: this.model
+        });
 
         this.listenTo(events, 'h:select-region', this.showRegion);
-        this.listenTo(this.annotationSelector.collection, 'change:displayed', this.toggleAnnotation);
+        this.listenTo(this.annotationSelector.collection, 'add change:displayed', this.toggleAnnotation);
 
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
         this.render();
@@ -83,14 +93,32 @@ var ImageView = View.extend({
 
                     // remove the hidden class from the coordinates display
                     this.$('.h-image-coordinates-container').removeClass('hidden');
-                }
 
-                this.zoomWidget
-                    .setViewer(this.viewer)
-                    .setElement('.h-zoom-widget').render();
+                    // show the right side control container
+                    this.$('#h-annotation-selector-container').removeClass('hidden');
+
+                    this.zoomWidget
+                        .setViewer(this.viewerWidget)
+                        .setElement('.h-zoom-widget').render();
+
+                    this.annotationSelector
+                        .setViewer(this.viewerWidget)
+                        .setElement('.h-annotation-selector').render();
+
+                    this.drawWidget
+                        .setViewer(this.viewerWidget)
+                        .setElement('.h-draw-widget').render();
+                }
             });
             this.annotationSelector.setItem(this.model);
-            this.annotationSelector.setElement('.h-annotation-selector').render();
+
+            this.annotationSelector
+                .setViewer(null)
+                .setElement('.h-annotation-selector').render();
+
+            this.drawWidget
+                .setViewer(null)
+                .setElement('.h-draw-widget').render();
         }
         this.controlPanel.setElement('.h-control-panel-container').render();
     },
@@ -204,7 +232,7 @@ var ImageView = View.extend({
             bottom = bounds.bottom.toFixed();
             router.setQuery('bounds', [
                 left, top, right, bottom, rotation
-            ].join(','));
+            ].join(','), {replace: true});
         }
     },
 
