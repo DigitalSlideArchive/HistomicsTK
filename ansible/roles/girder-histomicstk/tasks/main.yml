@@ -1,4 +1,25 @@
 ---
+- name: NodeJS | Add PPA key
+  command: "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68576280"
+  become: yes
+  become_user: root
+
+- name: NodeJS | Add PPA
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_4.x {{ ansible_distribution_release }} main"
+  become: yes
+  become_user: root
+
+- name: NodeJS | Install package
+  apt:
+    name: nodejs
+  become: yes
+  become_user: root
+
+- name: NodeJS | Update npm
+  command: "npm install -g npm@3"
+  become: yes
+  become_user: root
 
 - name: Install system package dependencies
   apt:
@@ -121,62 +142,18 @@
   template: src=girder.local.cfg.j2 dest={{ girder_root }}/girder/conf/girder.local.cfg
 
 - name: Install girder server dev requirements
-  pip: requirements="{{ girder_root }}/requirements-dev.txt"
+  pip:
+    requirements: "{{ girder_root }}/requirements-dev.txt"
   become: true
-
-# When we are making a docker container, don't bother installing many of the
-# HistomicsTK components; they will be in the actual CLI containers
-- name: Install HistomicsTK pypi C requirements
-  pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements.txt"
-  become: true
-  when: docker is undefined
-
-- name: Download miniconda install script
-  get_url:
-    url: https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
-    dest: "{{ root_dir }}/install_miniconda.sh"
-  when: docker is undefined
-
-- name: Run miniconda install script
-  command: bash install_miniconda.sh -f -b -p ./miniconda
-  args:
-    chdir: "{{ root_dir }}"
-  when: docker is undefined
-
-- name: Update conda packages and add custom channel
-  shell: . miniconda/bin/activate ./miniconda && conda update --yes --all && conda config --add channels https://conda.binstar.org/cdeepakroy
-  args:
-    chdir: "{{ root_dir }}"
-    executable: /bin/bash
-  when: docker is undefined
-
-- name: Install required conda packages
-  shell: . miniconda/bin/activate ./miniconda && conda install --yes anaconda-client libgfortran==1.0 setuptools==19.4
-  args:
-    chdir: "{{ root_dir }}"
-    executable: /bin/bash
-  when: docker is undefined
-
-- name: Ensure we have a locally built Pillow in conda's environment
-  shell: . miniconda/bin/activate ./miniconda && pip install --upgrade --no-cache-dir --force-reinstall Pillow
-  args:
-    chdir: "{{ root_dir }}"
-    executable: /bin/bash
-  when: docker is undefined
-
-- name: Ensure setuptools 19.4 in the local pip environment, too.
-  pip: name="setuptools>=19.4"
-  become: true
-  when: docker is undefined
-
-- name: Work around Cryptography version
-  shell: perl -pi -e 's/cryptography==/cryptography>=/g' "{{ girder_root }}/plugins/HistomicsTK/requirements_dev.txt"
-  when: docker is undefined
 
 - name: Install HistomicsTK dev requirements
-  pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements_dev.txt"
+  pip:
+    requirements: "{{ girder_root }}/plugins/HistomicsTK/{{ item }}"
   become: true
   when: docker is undefined
+  with_items:
+    - requirements.txt
+    - requirements_dev.txt
 
 # Always have a build directory
 - name: Ensure build directory exists

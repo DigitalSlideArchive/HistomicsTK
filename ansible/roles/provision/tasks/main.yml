@@ -76,10 +76,9 @@
     plugins: "{{ girder_plugins }}"
     state: present
 
-# Girder web was already installed with all pluigins, so this shouldn't be
-# necessary.
-# - name: Install girder web if necessary
-#   command: girder-install web
+
+- name: Build all frontend assets
+  command: girder-install web --dev --all-plugins
 
 - name: Restart girder as a service to make sure our plugins are running
   service: name=girder state=restarted enabled=yes
@@ -233,4 +232,3 @@
 - name: Create test running helper script
   template: src=run_tests.sh.j2 dest=/home/ubuntu/run_tests.sh mode=0755
   when: docker is defined
-
