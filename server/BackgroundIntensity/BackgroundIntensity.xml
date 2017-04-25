@@ -24,7 +24,6 @@
       <longflag>samplePercent</longflag>
       <description>Percentage of pixels to sample.  Specify either this or --sampleApproximateTotal</description>
       <constraints>
-	<minimum>0</minimum>
 	<maximum>1</maximum>
       </constraints>
       <default>-1</default>
