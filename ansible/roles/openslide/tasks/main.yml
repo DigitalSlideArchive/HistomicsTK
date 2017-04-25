@@ -60,6 +60,7 @@
   get_url:
     url: https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz
     dest: "{{ root_dir }}/openjpeg-2.1.2.tar.gz"
+    timeout: 300
 
 - name: Extract openjpeg
   unarchive:
@@ -91,6 +92,7 @@
   get_url:
     url: http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz
     dest: "{{ root_dir }}"
+    timeout: 300
 
 - name: Extract libtiff
   unarchive:
@@ -122,6 +124,7 @@
   get_url:
     url: https://github.com/openslide/openslide/archive/v3.4.1.tar.gz
     dest: "{{ root_dir }}/openslide-3.4.1.tar.gz"
+    timeout: 300
 
 - name: Extract openslide
   unarchive:
@@ -153,6 +156,7 @@
   get_url:
     url: http://www.vips.ecs.soton.ac.uk/supported/current/vips-8.4.5.tar.gz
     dest: "{{ root_dir }}/vips-8.4.5.tar.gz"
+    timeout: 300
 
 - name: Extract vips
   unarchive:
