@@ -19,6 +19,7 @@ girderTest.addCoveredScripts([
 
 var app;
 var geojsMap;
+var imageId;
 
 girderTest.promise.then(function () {
     $('body').css('overflow', 'hidden');
@@ -33,6 +34,47 @@ girderTest.promise.then(function () {
 });
 
 $(function () {
+    function openImage(name) {
+        runs(function () {
+            $('.h-open-image').click();
+        });
+
+        girderTest.waitForDialog();
+
+        runs(function () {
+            $('#g-root-selector').val(
+                girder.auth.getCurrentUser().id
+            ).trigger('change');
+        });
+
+        waitsFor(function () {
+            return $('#g-dialog-container .g-folder-list-link').length > 0;
+        }, 'Hierarchy widget to render');
+
+        runs(function () {
+            $('.g-folder-list-link:contains("Public")').click();
+        });
+
+        waitsFor(function () {
+            return $('.g-item-list-link').length > 0;
+        }, 'item list to load');
+
+        runs(function () {
+            var $item = $('.g-item-list-link:contains("' + name + '")');
+            imageId = $item.next().attr('href').match(/\/item\/([a-f0-9]+)\/download/)[1];
+            $item.click();
+            $('.g-submit-button').click();
+        });
+
+        girderTest.waitForLoad();
+        waitsFor(function () {
+            return $('.geojs-layer.active').length > 0;
+        }, 'image to load');
+        runs(function () {
+            expect(girder.plugins.HistomicsTK.router.getQuery('image')).toBe(imageId);
+        });
+    }
+
     describe('Annotation tests', function () {
         describe('setup', function () {
             it('login', function () {
@@ -55,36 +97,7 @@ $(function () {
             });
 
             it('open image', function () {
-                $('.h-open-image').click();
-                girderTest.waitForDialog();
-
-                runs(function () {
-                    $('#g-root-selector').val(
-                        girder.auth.getCurrentUser().id
-                    ).trigger('change');
-                });
-
-                waitsFor(function () {
-                    return $('#g-dialog-container .g-folder-list-link').length > 0;
-                }, 'Hierarchy widget to render');
-
-                runs(function () {
-                    $('.g-folder-list-link:contains("Public")').click();
-                });
-
-                waitsFor(function () {
-                    return $('.g-item-list-link').length > 0;
-                }, 'item list to load');
-
-                runs(function () {
-                    $('.g-item-list-link').click();
-                    $('.g-submit-button').click();
-                });
-
-                waitsFor(function () {
-                    return $('.geojs-layer.active').length > 0;
-                }, 'image to load');
-
+                openImage('image');
                 runs(function () {
                     geojsMap = app.bodyView.viewer;
                     window.mockVGLRenderer(true);
@@ -191,7 +204,7 @@ $(function () {
                     girder.rest.restRequest({
                         path: 'annotation',
                         data: {
-                            itemId: girder.plugins.HistomicsTK.router.getQuery('image')
+                            itemId: imageId
                         }
                     }).then(function (a) { annotations = a; });
                 });
@@ -248,7 +261,7 @@ $(function () {
                     girder.rest.restRequest({
                         path: 'annotation',
                         data: {
-                            itemId: girder.plugins.HistomicsTK.router.getQuery('image')
+                            itemId: imageId
                         }
                     }).then(function (a) { annotations = a; });
                 });
@@ -283,7 +296,7 @@ $(function () {
                     };
 
                     girder.rest.restRequest({
-                        path: 'annotation?itemId=' + girder.plugins.HistomicsTK.router.getQuery('image'),
+                        path: 'annotation?itemId=' + imageId,
                         contentType: 'application/json',
                         processData: false,
                         data: JSON.stringify(rect),
@@ -308,6 +321,20 @@ $(function () {
                 runs(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("rectangle")');
                     expect($el.find('.icon-eye.h-toggle-annotation').length).toBe(1);
+                });
+            });
+
+            it('open a different image', function () {
+                openImage('copy');
+                runs(function () {
+                    expect($('.h-annotation-selector .h-annotation').length).toBe(0);
+                });
+            });
+
+            it('open the original image', function () {
+                openImage('image');
+                runs(function () {
+                    expect($('.h-annotation-selector .h-annotation').length).toBe(1);
                 });
             });
         });

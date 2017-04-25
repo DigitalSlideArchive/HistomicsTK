@@ -59,18 +59,22 @@ var AnnotationSelector = Panel.extend({
      * @param {ItemModel} item
      */
     setItem(item) {
-        if (this.parentItem === item) {
+        if (this._parentId === item.id) {
             return;
         }
 
         this.parentItem = item;
-        if (!this.parentItem || !this.parentItem.id) {
+        this._parentId = item.id;
+
+        if (!this._parentId) {
             this.collection.reset();
             this.render();
             return;
         }
         this.collection.offset = 0;
-        this.collection.fetch({itemId: item.id});
+        this.collection.reset();
+        this.collection.fetch({itemId: this._parentId});
+
         return this;
     },
 
