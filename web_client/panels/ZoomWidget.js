@@ -162,7 +162,7 @@ var ZoomWidget = Panel.extend({
      * A handler called when one of the magnification buttons is clicked.
      */
     _zoomButton(evt) {
-        this.setMagnification(this.$(evt.target).data('value'));
+        this.setMagnification(this.$(evt.currentTarget).data('value'));
         this._zoomSliderChange();
     },
 

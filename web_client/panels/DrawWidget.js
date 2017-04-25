@@ -92,7 +92,7 @@ var DrawWidget = Panel.extend({
      * viewer into "draw" mode.
      */
     drawElement(evt) {
-        var $el = this.$(evt.target);
+        var $el = this.$(evt.currentTarget);
         var type = $el.data('type');
         return this.viewer.startDrawMode(type)
             .then((element) => this.collection.add(element));
@@ -118,7 +118,7 @@ var DrawWidget = Panel.extend({
      * Get the element id from a click event.
      */
     _getId(evt) {
-        return this.$(evt.target).parent('.h-element').data('id');
+        return this.$(evt.currentTarget).parent('.h-element').data('id');
     },
 
     /**
