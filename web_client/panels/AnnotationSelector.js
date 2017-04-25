@@ -44,7 +44,8 @@ var AnnotationSelector = Panel.extend({
         this.$el.html(annotationSelectorWidget({
             annotations: this.collection.sortBy('created'),
             id: 'annotation-panel-container',
-            title: 'Annotations'
+            title: 'Annotations',
+            showLabels: this._showLabels
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
@@ -131,8 +132,9 @@ var AnnotationSelector = Panel.extend({
     },
 
     toggleLabels(evt) {
+        this._showLabels = !this._showLabels;
         this.trigger('h:toggleLabels', {
-            show: this.$(evt.target).is(':checked')
+            show: this._showLabels
         });
     }
 });
