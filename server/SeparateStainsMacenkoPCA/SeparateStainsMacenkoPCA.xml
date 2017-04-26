@@ -25,10 +25,10 @@
       <description>Background intensity in each channel</description>
     </double-vector>
     <float>
-      <name>sample_sample_percent</name>
-      <label>Sample Percent</label>
-      <longflag>samplePercent</longflag>
-      <description>Percentage of pixels to sample.  Specify either this or --sampleApproximateTotal</description>
+      <name>sample_sample_fraction</name>
+      <label>Sample Fraction</label>
+      <longflag>sampleFraction</longflag>
+      <description>Fraction of pixels to sample.  Specify either this or --sampleApproximateTotal</description>
       <constraints>
 	<maximum>1</maximum>
       </constraints>
@@ -64,7 +64,7 @@
       <name>sample_sample_approximate_total</name>
       <label>Approximate sample total</label>
       <longflag>sampleApproximateTotal</longflag>
-      <description>Use instead of sample_percent to specify roughly how many pixels to sample.  The fewer tiles are excluded, the more accurate this will be.</description>
+      <description>Use instead of sample_fraction to specify roughly how many pixels to sample.  The fewer tiles are excluded, the more accurate this will be.</description>
       <default>-1</default>
     </integer>
     <double>
