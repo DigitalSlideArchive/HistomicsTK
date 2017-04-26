@@ -35,4 +35,5 @@ def get_stain_matrix(args, count=3):
 
 __all__ = (
     'get_stain_vector',
+    'get_stain_matrix',
 )
