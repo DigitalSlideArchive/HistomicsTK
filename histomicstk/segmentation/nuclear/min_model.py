@@ -18,10 +18,10 @@ def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
         An intensity image used for analyzing local minima/maxima and
         gradients. Dimensions M x N.
     Delta : float
-        Percent difference threshold between minima/maxima pairs to be included
-        in seed point detection. Percentage difference ([0, 1]) in total image
-        range e.g. Delta = 0.3 with a uint8 input would translate to 0.3 * 255.
-        Default value = 0.3.
+        Fractional difference threshold between minima/maxima pairs to
+        be included in seed point detection. Fractional difference
+        ([0, 1]) in total image range e.g. Delta = 0.3 with a uint8
+        input would translate to 0.3 * 255. Default value = 0.3.
     MaxLength : int
         Maximum allowable contour length. Default value = 255.
     Compaction : int
@@ -107,10 +107,10 @@ def seed_contours(I, Delta=0.3):
         An intensity image used for analyzing local minima/maxima and
         gradients. Dimensions M x N.
     Delta : float
-        Percent difference threshold between minima/maxima pairs to be included
-        in seed point detection. Percentage difference ([0, 1]) in total image
-        range e.g. Delta = 0.3 with a uint8 input would translate to 0.3 * 255.
-        Default value = 0.3.
+        Fractional difference threshold between minima/maxima pairs to
+        be included in seed point detection. Fractional difference
+        ([0, 1]) in total image range e.g. Delta = 0.3 with a uint8
+        input would translate to 0.3 * 255.  Default value = 0.3.
 
     Notes
     -----
