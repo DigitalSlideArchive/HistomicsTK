@@ -286,17 +286,18 @@ $(function () {
                 runs(function () {
                     var rect = {
                         'name': 'rectangle',
+                        'description': 'the description',
                         'elements': [
                             {
                                 'center': [
-                                    200,
-                                    200,
+                                    2000,
+                                    2000,
                                     0
                                 ],
-                                'height': 100,
+                                'height': 4000,
                                 'rotation': 0,
                                 'type': 'rectangle',
-                                'width': 100
+                                'width': 4000
                             }
                         ]
                     };
@@ -328,6 +329,36 @@ $(function () {
                 runs(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("rectangle")');
                     expect($el.find('.icon-eye.h-toggle-annotation').length).toBe(1);
+                });
+            });
+
+            it('hover over annotation with labels off', function () {
+                girderTest.waitForLoad();
+                runs(function () {
+                    var interactor = geojsMap.interactor();
+                    interactor.simulateEvent('mousemove', {
+                        map: {x: 50, y: 50}
+                    });
+                    expect($('#h-annotation-popover-container').hasClass('hidden')).toBe(true);
+                });
+            });
+
+            it('hover over annotation with labels on', function () {
+                runs(function () {
+                    $('#h-toggle-labels').click();
+                });
+
+                girderTest.waitForLoad();
+                runs(function () {
+                    var interactor = geojsMap.interactor();
+                    interactor.simulateEvent('mousemove', {
+                        map: {x: 50, y: 50}
+                    });
+
+                    var $el = $('#h-annotation-popover-container');
+                    expect($('#h-annotation-popover-container').hasClass('hidden')).toBe(false);
+                    expect($el.find('.h-annotation-name').text()).toBe('rectangle');
+                    expect($el.find('.h-annotation-description').text()).toMatch(/the description/);
                 });
             });
 
