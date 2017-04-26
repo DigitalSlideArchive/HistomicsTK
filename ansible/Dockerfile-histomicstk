@@ -20,11 +20,14 @@ RUN git clone https://github.com/DigitalSlideArchive/HistomicsTK
 WORKDIR /home/ubuntu/HistomicsTK
 ENV GIRDER_EXEC_USER ubuntu
 COPY . /home/ubuntu/HistomicsTK/ansible/.
+RUN sudo chown -R ubuntu:ubuntu /home/ubuntu/HistomicsTK/ansible
 WORKDIR /home/ubuntu/HistomicsTK/ansible
+
 # RUN ansible-playbook -i inventory/local docker_ansible.yml --tags common
 
 # RUN ansible-playbook -i inventory/local docker_ansible.yml --tags openslide
 # RUN ansible-playbook -i inventory/local docker_ansible.yml --tags girder --extra-vars=docker=true
+RUN ansible-galaxy install -r requirements.yml -p /home/ubuntu/HistomicsTK/ansible/roles/
 RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=histomicstk
 
 WORKDIR /opt/histomicstk/girder
