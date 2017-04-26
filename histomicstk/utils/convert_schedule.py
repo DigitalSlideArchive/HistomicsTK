@@ -12,7 +12,7 @@ def convert_schedule(schedule, magnification, tol=0.002):
     magnification : scalar
         Desired magnification to convert schedule to.
     tol : double, optional
-        Acceptable mismatch percentage for desired magnification.
+        Acceptable mismatch fraction for desired magnification.
         Default value is 0.002.
 
     Returns

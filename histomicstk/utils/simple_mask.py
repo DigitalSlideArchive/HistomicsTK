@@ -8,7 +8,7 @@ from scipy import signal
 
 def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
                 min_peak_width=10, max_peak_width=25,
-                percent=0.10, min_tissue_prob=0.05):
+                fraction=0.10, min_tissue_prob=0.05):
     """Performs segmentation of the foreground (tissue)
     Uses a simple two-component Gaussian mixture model to mask tissue areas
     from background in brightfield H&E images. Kernel-density estimation is
@@ -39,8 +39,8 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
     max_peak_width: double, optional
         Maximum peak width for finding peaks in KDE histogram. Used to
         initialize curve fitting process. Default value = 25.
-    percent: double, optional
-        Percentage of pixels to sample for building foreground/background
+    fraction: double, optional
+        Fraction of pixels to sample for building foreground/background
         model. Default value = 0.10.
     min_tissue_prob : double, optional
         Minimum probability to qualify as tissue pixel. Default value = 0.05.
@@ -58,7 +58,7 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
     # convert image to grayscale, flatten and sample
     im_rgb = 255 * color.rgb2gray(im_rgb)
     im_rgb = im_rgb.astype(np.uint8)
-    num_samples = np.int(percent * im_rgb.size)
+    num_samples = np.int(fraction * im_rgb.size)
     sI = np.random.choice(im_rgb.flatten(), num_samples)[:, np.newaxis]
 
     # kernel-density smoothed histogram
