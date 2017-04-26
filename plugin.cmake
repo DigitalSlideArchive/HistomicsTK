@@ -111,6 +111,8 @@ add_histomicstk_python_test(blob_detection_filters
     "plugins/HistomicsTK/Easy1_cdog_sigma_max.npy"
 )
 
+add_histomicstk_python_test(cli_common)
+
 add_histomicstk_python_test(cli_results PLUGIN HistomicsTK
     # There is a bug in cmake that fails when external data files are added to
     # multiple tests, so add it in one of the tests for now
