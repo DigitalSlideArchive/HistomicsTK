@@ -212,3 +212,5 @@ target/
 
 web_main
 
+# Scikit-build
+_skbuild/
