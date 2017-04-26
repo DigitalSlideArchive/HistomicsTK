@@ -179,12 +179,24 @@
   command: make
   args:
     chdir: "{{ root_dir }}/vips-8.4.5"
+    creates: "{{ root_dir }}/.built-vips-8.4.5"
+
+- name: Leave creation artifact for vips build
+  file:
+    path: "{{ root_dir }}/.built-vips-8.4.5"
+    state: touch
 
 - name: Install vips
   command: make install
   args:
     chdir: "{{ root_dir }}/vips-8.4.5"
+    creates: "{{ root_dir }}/.installed-vips-8.4.5"
   become: true
+
+- name: Leave creation artifact for vips install
+  file:
+    path: "{{ root_dir }}/.installed-vips-8.4.5"
+    state: touch
 
 - name: Run ldconfig
   command: ldconfig
