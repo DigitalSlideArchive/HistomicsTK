@@ -12,14 +12,14 @@ def get_stain_vector(args, index):
     args = vars(args)
     stain = args['stain_' + str(index)]
     stain_vector = args['stain_' + str(index) + '_vector']
-    if stain == 'custom':
-        if stain_vector is None:
+    if stain_vector is None:
+        if stain == 'custom':
             raise ValueError('If "custom" is chosen for a stain, '
                              'a stain vector must be provided.')
-        return stain_vector
+        return stain_color_map[stain]
     else:
-        if stain_vector is None:
-            return stain_color_map[stain]
+        if stain == 'custom':
+            return stain_vector
         raise ValueError('Unless "custom" is chosen for a stain, '
                          'no stain vector may be provided.')
 
