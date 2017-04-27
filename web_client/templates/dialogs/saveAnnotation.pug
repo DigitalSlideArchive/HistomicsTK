@@ -1,0 +1,20 @@
+.modal-dialog(role='document')
+  .modal-content
+    form.modal-form(role='form')
+      .modal-header
+        button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') &times;
+        h4.modal-title Save annotation
+      .modal-body
+        .form-group
+          label(for='h-annotation-name') Name
+          input#h-annotation-name.input-sm.form-control(
+            type='text', placeholder='Enter a name for the annotation')
+        .form-group
+          label(for='h-annotation-description') Description
+          textarea#h-annotation-description.form-control.input-sm(
+            rows='6', placeholder='Enter an optional description')
+        .g-validation-failed-message.hidden
+      .modal-footer
+        button.btn.btn-small.btn-default(data-dismiss='modal') Cancel
+        button.btn.btn-small.btn-primary.h-submit(type='submit') Save

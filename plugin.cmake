@@ -14,6 +14,11 @@
 #  limitations under the License.
 ###############################################################################
 
+# support the "if(TEST ...)" command
+if(POLICY CMP0064)
+  cmake_policy(SET CMP0064 NEW)
+endif()
+
 function(add_histomicstk_python_test case)
   add_python_test("${case}" PLUGIN HistomicsTK
     COVERAGE_PATHS "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/histomicstk"
@@ -111,16 +116,32 @@ add_histomicstk_python_test(blob_detection_filters
     "plugins/HistomicsTK/Easy1_cdog_sigma_max.npy"
 )
 
-
+add_histomicstk_python_test(cli_results PLUGIN HistomicsTK
+    # There is a bug in cmake that fails when external data files are added to
+    # multiple tests, so add it in one of the tests for now
+    # "plugins/HistomicsTK/Easy1.png"
+)
+if(TEST "server_HistomicsTK.cli_results")
+  set_property(TEST server_HistomicsTK.cli_results APPEND PROPERTY ENVIRONMENT
+      "CLI_LIST_ENTRYPOINT=${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/server/cli_list_entrypoint.py"
+      "CLI_CWD=${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/server"
+  )
+endif()
 
 # front-end tests
-#add_web_client_test(
-#    HistomicsTK_visualization "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/visualization.js"
-#    ENABLEDPLUGINS "HistomicsTK" "large_image")
-#add_web_client_test(
-#    HistomicsTK_body "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/body.js"
-#    ENABLEDPLUGINS "HistomicsTK" "large_image")
-
+add_web_client_test(
+  HistomicsTK_annotations "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/annotationSpec.js"
+  ENABLEDPLUGINS "jobs" "worker" "large_image" "slicer_cli_web" "HistomicsTK"
+  TEST_MODULE "plugin_tests.web_client_test"
+)
+# Ideally, client tests would support the EXTERNAL_DATA keyword, but for now
+# we just use a data file used for one of the server tests.
+if(TEST "web_client_HistomicsTK_annotations")
+  set_property(
+    TEST web_client_HistomicsTK_annotations APPEND PROPERTY
+    ENVIRONMENT "GIRDER_TEST_DATA_PREFIX=${GIRDER_EXTERNAL_DATA_ROOT}"
+  )
+endif()
 
 add_eslint_test(
   js_static_analysis_HistomicsTK "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/web_client"
@@ -128,8 +149,8 @@ add_eslint_test(
   ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintignore"
 )
 
-#add_eslint_test(
-#  js_static_analysis_HistomicsTK_tests "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client"
-#  ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/.eslintrc"
-#  ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintignore"
-#)
+add_eslint_test(
+  js_static_analysis_HistomicsTK_tests "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client"
+  ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/.eslintrc"
+  ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintignore"
+)

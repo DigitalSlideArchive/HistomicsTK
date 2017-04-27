@@ -5,6 +5,7 @@ __pycache__/
 .#*
 *.bak
 docs/_build
+dist/
 build
 .coverage
 *.egg
@@ -16,3 +17,6 @@ node_modules/
 /.vagrant/
 .lprof
 ansible/roles/girder.girder
+# scikit-build
+_skbuild
+MANIFEST
