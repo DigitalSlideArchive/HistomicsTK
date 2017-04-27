@@ -180,3 +180,6 @@
       owner: root
   become: true
   when: docker is defined
+
+- name: Build all frontend assets
+  command: girder-install web --dev --all-plugins

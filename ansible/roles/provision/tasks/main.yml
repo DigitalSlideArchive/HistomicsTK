@@ -76,10 +76,6 @@
     plugins: "{{ girder_plugins }}"
     state: present
 
-
-- name: Build all frontend assets
-  command: girder-install web --dev --all-plugins
-
 - name: Restart girder as a service to make sure our plugins are running
   service: name=girder state=restarted enabled=yes
   become: true
