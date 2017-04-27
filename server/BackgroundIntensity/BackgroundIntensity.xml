@@ -11,20 +11,19 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters.</description>
-    <file>
+    <image>
       <name>slide_path</name>
       <label>Input Slide</label>
       <channel>input</channel>
       <index>0</index>
       <description>Path to input slide image to be deconvolved</description>
-    </file>
+    </image>
     <float>
-      <name>sample_percent</name>
-      <label>Sample Percent</label>
-      <longflag>samplePercent</longflag>
-      <description>Percentage of pixels to sample.  Specify either this or --sampleApproximateTotal</description>
+      <name>sample_fraction</name>
+      <label>Sample Fraction</label>
+      <longflag>sampleFraction</longflag>
+      <description>Fraction of pixels to sample.  Specify either this or --sampleApproximateTotal</description>
       <constraints>
-	<minimum>0</minimum>
 	<maximum>1</maximum>
       </constraints>
       <default>-1</default>
@@ -58,7 +57,7 @@
       <name>sample_approximate_total</name>
       <label>Approximate sample total</label>
       <longflag>sampleApproximateTotal</longflag>
-      <description>Use instead of sample_percent to specify roughly how many pixels to sample.  The fewer tiles are excluded, the more accurate this will be.</description>
+      <description>Use instead of sample_fraction to specify roughly how many pixels to sample.  The fewer tiles are excluded, the more accurate this will be.</description>
       <default>-1</default>
     </integer>
     <double-vector>

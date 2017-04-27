@@ -10,7 +10,7 @@ def main(args):
               if k not in other_args}
     # Allow (some) default parameters to work.  Assume certain values
     # are not valid.
-    for k in 'sample_percent', 'sample_approximate_total':
+    for k in 'sample_fraction', 'sample_approximate_total':
         if kwargs[k] == -1:
             del kwargs[k]
 
