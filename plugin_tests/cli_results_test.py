@@ -165,3 +165,16 @@ class CliResultsTest(unittest.TestCase):
                 # 'hash': '02b240586412c87ad5cbf349b7c22f80f1df31eef54ed8ee4ad1fd3624a89fa2',
             },
         })
+
+    def testColorDeconvolutionDefaults(self):
+        self._runTest(
+            cli_args=[
+                'ColorDeconvolution',
+                os.path.join(TEST_DATA_DIR, 'Easy1.png'),
+            ] + ['tmp_out_{}.png'.format(i) for i in 1, 2, 3],
+            outputs={
+                'tmp_out_1.png': dict(
+                    hash='ea11f89a7e6752f1d831113472bf78e10d2eff50454ecd76474d7d5ba02e495c',
+                ),
+            },
+        )

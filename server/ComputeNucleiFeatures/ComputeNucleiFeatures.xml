@@ -78,8 +78,15 @@
       <element>hematoxylin</element>
       <element>eosin</element>
       <element>dab</element>
+      <element>custom</element>
       <default>hematoxylin</default>
     </string-enumeration>
+    <double-vector>
+      <longflag>stain_1_vector</longflag>
+      <label>stain-1 custom vector</label>
+      <default>-1,-1,-1</default>
+      <description>Custom value for stain-1</description>
+    </double-vector>
     <string-enumeration>
       <name>stain_2</name>
       <label>stain-2</label>
@@ -89,8 +96,15 @@
       <element>hematoxylin</element>
       <element>eosin</element>
       <element>dab</element>
+      <element>custom</element>
       <default>eosin</default>
     </string-enumeration>
+    <double-vector>
+      <longflag>stain_2_vector</longflag>
+      <label>stain-2 custom vector</label>
+      <default>-1,-1,-1</default>
+      <description>Custom value for stain-2</description>
+    </double-vector>
     <string-enumeration>
       <name>stain_3</name>
       <label>stain-3</label>
@@ -101,8 +115,15 @@
       <element>eosin</element>
       <element>dab</element>
       <element>null</element>
+      <element>custom</element>
       <default>null</default>
     </string-enumeration>
+    <double-vector>
+      <longflag>stain_3_vector</longflag>
+      <label>stain-3 custom vector</label>
+      <default>-1,-1,-1</default>
+      <description>Custom value for stain-3</description>
+    </double-vector>
   </parameters>
   <parameters>
     <label>Nuclei segmentation parameters</label>

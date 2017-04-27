@@ -11,6 +11,7 @@ from dask.distributed import Client, LocalCluster
 import multiprocessing
 
 import os
+import sys
 import numpy as np
 import json
 import scipy as sp
@@ -24,13 +25,8 @@ from ctk_cli import CLIArgumentParser
 import logging
 logging.basicConfig()
 
-
-stain_color_map = {
-    'hematoxylin': [0.65, 0.70, 0.29],
-    'eosin':       [0.07, 0.99, 0.11],
-    'dab':         [0.27, 0.57, 0.78],
-    'null':        [0.0, 0.0, 0.0]
-}
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
+from cli_common import utils  # noqa
 
 
 def detect_nuclei_kofahi(im_input, args):
@@ -41,9 +37,7 @@ def detect_nuclei_kofahi(im_input, args):
                                  args.reference_std_lab)
 
     # perform color decovolution
-    w = np.array([stain_color_map[args.stain_1],
-                  stain_color_map[args.stain_2],
-                  stain_color_map[args.stain_3]]).T
+    w = utils.get_stain_matrix(args)
 
     im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
 
@@ -363,6 +357,6 @@ def main(args):
 
     print 'Total analysis time = %s' % disp_time(total_time_taken)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())
