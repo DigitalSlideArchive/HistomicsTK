@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ $(lsb_release -cs) != "trusty" ]; then
-  echo "This script will only work on Ubuntu 14.04"
+if [ $(lsb_release -cs) != "xenial" ]; then
+  echo "This script will only work on Ubuntu 16.04"
   return 1
 fi
 
