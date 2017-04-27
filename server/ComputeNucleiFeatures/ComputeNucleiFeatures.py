@@ -1,3 +1,6 @@
+import os
+import sys
+
 import numpy as np
 import pandas as pd
 import scipy as sp
@@ -16,12 +19,8 @@ import histomicstk.features as htk_features
 import logging
 logging.basicConfig()
 
-stain_color_map = {
-    'hematoxylin': [0.65, 0.70, 0.29],
-    'eosin':       [0.07, 0.99, 0.11],
-    'dab':         [0.27, 0.57, 0.78],
-    'null':        [0.0, 0.0, 0.0]
-}
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
+from cli_common import utils  # noqa
 
 
 def main(args):
@@ -49,11 +48,7 @@ def main(args):
     #
     print('>> Performing color deconvolution')
 
-    stain_color_1 = stain_color_map[args.stain_1]
-    stain_color_2 = stain_color_map[args.stain_2]
-    stain_color_3 = stain_color_map[args.stain_3]
-
-    w = np.array([stain_color_1, stain_color_2, stain_color_3]).T
+    w = utils.get_stain_matrix(args)
 
     im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
 
