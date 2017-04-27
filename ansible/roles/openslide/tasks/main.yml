@@ -58,10 +58,10 @@
 # openjpeg
 - name: Download openjpeg
   command: >-
-    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz -O openjpeg-v2.1.2.tar.gz
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz -O openjpeg-2.1.2.tar.gz
   args:
     chdir: "{{ root_dir }}"
-    creates: openjpeg-v2.1.2.tar.gz
+    creates: openjpeg-2.1.2.tar.gz
 
 - name: Extract openjpeg
   unarchive:
@@ -127,10 +127,10 @@
 # Openslide
 - name: Download openslide
   command: >-
-    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/openslide/openslide/archive/v3.4.1.tar.gz -O openslide-v3.4.1.tar.gz
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/openslide/openslide/archive/v3.4.1.tar.gz -O openslide-3.4.1.tar.gz
   args:
     chdir: "{{ root_dir }}"
-    creates: openslide-v3.4.1.tar.gz
+    creates: openslide-3.4.1.tar.gz
 
 - name: Extract openslide
   unarchive:
