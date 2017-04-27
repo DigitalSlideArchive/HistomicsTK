@@ -54,6 +54,7 @@
     <double-vector>
       <longflag>stain_1_vector</longflag>
       <label>stain-1 custom vector</label>
+      <default>-1,-1,-1</default>
       <description>Custom value for initial estimate of stain-1</description>
     </double-vector>
     <string-enumeration>
@@ -71,6 +72,7 @@
     <double-vector>
       <longflag>stain_2_vector</longflag>
       <label>stain-2 custom vector</label>
+      <default>-1,-1,-1</default>
       <description>Custom value for initial estimate of stain-2</description>
     </double-vector>
     <double>

@@ -5,14 +5,14 @@ from histomicstk.preprocessing.color_deconvolution import stain_color_map
 
 def get_stain_vector(args, index):
     """Get the stain corresponding to args.stain_$index and
-    args.stain_$index_vector.  If the former is not "custom", the
-    latter must be None.
+    args.stain_$index_vector.  If the former is not "custom", all the
+    latter's elements must be -1.
 
     """
     args = vars(args)
     stain = args['stain_' + str(index)]
     stain_vector = args['stain_' + str(index) + '_vector']
-    if stain_vector is None:
+    if all(x == -1 for x in stain_vector):  # Magic default value
         if stain == 'custom':
             raise ValueError('If "custom" is chosen for a stain, '
                              'a stain vector must be provided.')

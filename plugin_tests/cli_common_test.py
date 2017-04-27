@@ -53,7 +53,7 @@ class CliCommonTest(base.TestCase):
         args = Namespace()
         args.__dict__ = dict(
             stain_1='hematoxylin',
-            stain_1_vector=None,
+            stain_1_vector=[-1, -1, -1],
             stain_2='custom',
             stain_2_vector=[0.1, 0.2, 0.3],
         )
