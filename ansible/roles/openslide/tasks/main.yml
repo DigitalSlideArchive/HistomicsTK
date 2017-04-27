@@ -160,10 +160,11 @@
 
 # vips
 - name: Download vips
-  get_url:
-    url: http://www.vips.ecs.soton.ac.uk/supported/current/vips-8.4.5.tar.gz
-    dest: "{{ root_dir }}/vips-8.4.5.tar.gz"
-    checksum: "sha1:c14cedb175836f6f877689d1cbf9689d54aa9b1e"
+  command: >-
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 http://www.vips.ecs.soton.ac.uk/supported/current/vips-8.4.5.tar.gz -O vips-8.4.5.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+    creates: vips-8.4.5.tar.gz
 
 - name: Extract vips
   unarchive:
