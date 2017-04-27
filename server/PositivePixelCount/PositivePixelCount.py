@@ -1,3 +1,6 @@
+import os
+import sys
+
 from ctk_cli import CLIArgumentParser
 from dask import delayed
 from dask.distributed import Client
@@ -5,25 +8,20 @@ import large_image
 import numpy as np
 import skimage.io
 
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
+from cli_common import utils  # noqa
+
 
 def main(args):
     Client(args.scheduler_address or None)
     ts = large_image.getTileSource(args.inputImageFile)
     kwargs = dict(format=large_image.tilesource.TILE_FORMAT_NUMPY)
-    useWholeImage = args.region == [-1] * 4
-    if not useWholeImage:
-        kwargs['region'] = dict(zip(['left', 'top', 'width', 'height'],
-                                    args.region))
-
     makeLabelImage = args.outputLabelImage is not None
+    kwargs.update(utils.get_region_dict(
+        args.region,
+        *(args.maxRegionSize, ts) if makeLabelImage else ()
+    ))
     if makeLabelImage:
-        if args.maxRegionSize != -1:
-            if useWholeImage:
-                size = max(ts.sizeX, ts.sizeY)
-            else:
-                size = max(args.region[-2:])
-            if size > args.maxRegionSize:
-                raise ValueError('Requested region is too large!  Please see --maxRegionSize')
         tile = ts.getRegion(**kwargs)[0]
         results, labelImage = positive_pixel_count_single_tile(args, tile, makeLabelImage=True)
         skimage.io.imsave(args.outputLabelImage, labelImage)
