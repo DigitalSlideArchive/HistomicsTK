@@ -57,10 +57,11 @@
 
 # openjpeg
 - name: Download openjpeg
-  get_url:
-    url: https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz
-    dest: "{{ root_dir }}/openjpeg-2.1.2.tar.gz"
-    checksum: "sha1:c8671e7f577fdc58abde1e1f32b10d372e6f9b07"
+  command: >-
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz -O openjpeg-v2.1.2.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+    creates: openjpeg-v2.1.2.tar.gz
 
 - name: Extract openjpeg
   unarchive:
@@ -90,7 +91,6 @@
 
 # libtiff
 - name: Download libtiff
-
   command: >-
     wget --retry-connrefused --waitretry=1 --read-timeout=300 http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz -O tiff-4.0.6.tar.gz
   args:
@@ -126,10 +126,11 @@
 
 # Openslide
 - name: Download openslide
-  get_url:
-    url: https://github.com/openslide/openslide/archive/v3.4.1.tar.gz
-    dest: "{{ root_dir }}/openslide-3.4.1.tar.gz"
-    checksum: "sha1:bd891d20434c9d99d71c3125f990f42755b0ebec"
+  command: >-
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/openslide/openslide/archive/v3.4.1.tar.gz -O openslide-v3.4.1.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+    creates: openslide-v3.4.1.tar.gz
 
 - name: Extract openslide
   unarchive:
