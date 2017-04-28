@@ -14,11 +14,6 @@
 #  limitations under the License.
 ###############################################################################
 
-# support the "if(TEST ...)" command
-if(POLICY CMP0064)
-  cmake_policy(SET CMP0064 NEW)
-endif()
-
 function(add_histomicstk_python_test case)
   add_python_test("${case}" PLUGIN HistomicsTK
     COVERAGE_PATHS "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/histomicstk"
@@ -118,32 +113,22 @@ add_histomicstk_python_test(blob_detection_filters
 
 add_histomicstk_python_test(cli_common)
 
-add_histomicstk_python_test(cli_results PLUGIN HistomicsTK
+add_histomicstk_python_test(cli_results
     # There is a bug in cmake that fails when external data files are added to
     # multiple tests, so add it in one of the tests for now
     # "plugins/HistomicsTK/Easy1.png"
+    ENVIRONMENT
+    "CLI_LIST_ENTRYPOINT=${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/server/cli_list_entrypoint.py"
+    "CLI_CWD=${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/server"
 )
-if(TEST "server_HistomicsTK.cli_results")
-  set_property(TEST server_HistomicsTK.cli_results APPEND PROPERTY ENVIRONMENT
-      "CLI_LIST_ENTRYPOINT=${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/server/cli_list_entrypoint.py"
-      "CLI_CWD=${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/server"
-  )
-endif()
 
 # front-end tests
 add_web_client_test(
   HistomicsTK_annotations "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/annotationSpec.js"
   ENABLEDPLUGINS "jobs" "worker" "large_image" "slicer_cli_web" "HistomicsTK"
   TEST_MODULE "plugin_tests.web_client_test"
+  # EXTERNAL_DATA "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
 )
-# Ideally, client tests would support the EXTERNAL_DATA keyword, but for now
-# we just use a data file used for one of the server tests.
-if(TEST "web_client_HistomicsTK_annotations")
-  set_property(
-    TEST web_client_HistomicsTK_annotations APPEND PROPERTY
-    ENVIRONMENT "GIRDER_TEST_DATA_PREFIX=${GIRDER_EXTERNAL_DATA_ROOT}"
-  )
-endif()
 
 add_eslint_test(
   js_static_analysis_HistomicsTK "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/web_client"
