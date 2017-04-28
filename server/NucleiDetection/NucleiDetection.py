@@ -71,8 +71,10 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
     ts = large_image.getTileSource(slide_path)
 
     # get requested tile
-    tile_info = ts.getSingleTile(tile_position=tile_position,
-                                 **it_kwargs)
+    tile_info = ts.getSingleTile(
+        tile_position=tile_position,
+        format=large_image.tilesource.TILE_FORMAT_NUMPY,
+        **it_kwargs)
 
     # get tile image
     im_tile = tile_info['tile'][:, :, :3]
@@ -116,49 +118,6 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
         nuclei_bbox_list.append(cur_bbox)
 
     return nuclei_bbox_list
-
-
-def compute_tile_foreground_fraction(slide_path, tile_position,
-                                     im_fgnd_mask_lres, fgnd_seg_scale,
-                                     **it_kwargs):
-
-    # get slide tile source
-    ts = large_image.getTileSource(slide_path)
-
-    # get requested tile
-    tile = ts.getSingleTile(tile_position=tile_position,
-                            **it_kwargs)
-
-    # get current region in base_pixels
-    rgn_hres = {'left': tile['gx'], 'top': tile['gy'],
-                'right': tile['gx'] + tile['gwidth'],
-                'bottom': tile['gy'] + tile['gheight'],
-                'units': 'base_pixels'}
-
-    # get foreground mask for current tile at low resolution
-    rgn_lres = ts.convertRegionScale(rgn_hres,
-                                     targetScale=fgnd_seg_scale,
-                                     targetUnits='mag_pixels')
-
-    top = np.int(rgn_lres['top'])
-    bottom = np.int(rgn_lres['bottom'])
-    left = np.int(rgn_lres['left'])
-    right = np.int(rgn_lres['right'])
-
-    im_tile_fgnd_mask_lres = im_fgnd_mask_lres[top:bottom, left:right]
-
-    # compute foreground fraction
-    cur_fgnd_frac = im_tile_fgnd_mask_lres.mean()
-
-    if np.isnan(cur_fgnd_frac):
-        cur_fgnd_frac = 0
-
-    return cur_fgnd_frac
-
-
-def collect(x):
-    return x
-
 
 def disp_time(seconds):
     return time.strftime("%H:%M:%S", time.gmtime(seconds))
@@ -252,7 +211,6 @@ def main(args):
     tile_fgnd_frac_list = [1.0]
 
     it_kwargs = {
-        'format': large_image.tilesource.TILE_FORMAT_NUMPY,
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
     }
@@ -277,19 +235,10 @@ def main(args):
 
         print 'Number of tiles = %d' % num_tiles
 
-        tile_fgnd_frac_list = [None] * num_tiles
-
-        for tile_position in range(num_tiles):
-
-            tile_fgnd_frac_list[tile_position] = dask.delayed(compute_tile_foreground_fraction)(
-                args.inputImageFile, tile_position,
-                im_fgnd_mask_lres,
-                fgnd_seg_scale,
-                **it_kwargs
-            )
-
-        tile_fgnd_frac_cgraph = dask.delayed(collect)(tile_fgnd_frac_list)
-        tile_fgnd_frac_list = np.array(tile_fgnd_frac_cgraph.compute())
+        tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
+            args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
+            **it_kwargs
+        )
 
         num_fgnd_tiles = np.count_nonzero(
             tile_fgnd_frac_list >= args.min_fgnd_frac)
@@ -330,7 +279,7 @@ def main(args):
 
     nuclei_detection_time = time.time() - start_time
 
-    tile_nuclei_list = dask.delayed(collect)(tile_nuclei_list).compute()
+    tile_nuclei_list = dask.delayed(tile_nuclei_list).compute()
 
     nuclei_list = list(itertools.chain.from_iterable(tile_nuclei_list))
 
