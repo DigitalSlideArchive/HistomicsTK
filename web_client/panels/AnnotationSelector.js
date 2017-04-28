@@ -13,8 +13,7 @@ import '../stylesheets/panels/annotationSelector.styl';
 var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
         'click .h-toggle-annotation': 'toggleAnnotation',
-        'click .h-delete-annotation': 'deleteAnnotation',
-        'click .h-download-annotation': 'downloadAnnotation'
+        'click .h-delete-annotation': 'deleteAnnotation'
     }),
 
     /**
