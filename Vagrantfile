@@ -1,11 +1,19 @@
 Vagrant.configure("2") do |config|
-  config.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
-  config.vm.box = "ubuntu/trusty_64"
+  config.vm.box = "bento/ubuntu-16.04"
+
+
+  if Vagrant.has_plugin?("vagrant-cachier")
+    config.cache.scope = :box
+    config.cache.enable :apt
+    config.cache.enable :yum
+    config.cache.enable :npm
+  end
+
   # The exposed ports can be changed here; the ssh port is never necessary.
   config.vm.network "forwarded_port", guest: 22, host: 2209
   config.vm.network "forwarded_port", guest: 8080, host: 8009
   config.vm.provider "virtualbox" do |v|
-    v.name = "HistomicsTK Ubuntu 14.04"
+    v.name = "HistomicsTK Ubuntu 16.04"
     # You may need to configure this to run benignly on your host machine
     v.memory = 4096
     v.cpus = 4
@@ -24,6 +32,8 @@ Vagrant.configure("2") do |config|
     end
   config.vm.provision provisioner_type do |ansible|
     ansible.playbook = "ansible/vagrant.yml"
+    ansible.galaxy_role_file = "ansible/requirements.yml"
+
     if provisioner_type == "ansible_local"
       ansible.provisioning_path = "/vagrant"
     end

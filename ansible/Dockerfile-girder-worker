@@ -19,11 +19,15 @@ RUN git clone https://github.com/DigitalSlideArchive/HistomicsTK
 WORKDIR /home/ubuntu/HistomicsTK
 ENV GIRDER_EXEC_USER ubuntu
 COPY . /home/ubuntu/HistomicsTK/ansible/.
+RUN sudo chown -R ubuntu:ubuntu /home/ubuntu/HistomicsTK/ansible
 WORKDIR /home/ubuntu/HistomicsTK/ansible
 # RUN ansible-playbook -i inventory/local docker_ansible.yml --tags common
 
 ARG MONGO_WORKER_DATABASE
+
 # RUN ansible-playbook -i inventory/local docker_ansible.yml --tags worker --extra-vars="docker=true mongo_worker_database=${MONGO_WORKER_DATABASE:-girder_worker}"
+
+RUN ansible-galaxy install -r requirements.yml -p /home/ubuntu/HistomicsTK/ansible/roles/
 RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars="docker=girder_worker mongo_worker_database=${MONGO_WORKER_DATABASE:-girder_worker}"
 
 WORKDIR /opt/girder_worker

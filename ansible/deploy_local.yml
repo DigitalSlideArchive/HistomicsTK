@@ -3,9 +3,17 @@
   roles:
     - common
     - mongodb
+    - mq
     - openslide
     - worker
-    - girder
+    - role: girder.girder
+      girder_path: "{{ root_dir }}/girder"
+      girder_version: "master"
+      # We build the girder web assets in girder-histomicstk
+      girder_web: no
+      become: yes
+      become_user: "{{ girder_exec_user }}"
+    - girder-histomicstk
     - provision
     #- itk
   vars:
@@ -28,6 +36,7 @@
     worker_exec_user: "{{ lookup('env', 'GIRDER_EXEC_USER') }}"
     worker_exec_group: girder
     mongo_private_ip: localhost
+    mq_private_ip: localhost
     girder_api_url: http://localhost:8080/api/v1
     mongo_girder_database: girder
     mongo_worker_database: girder_worker
