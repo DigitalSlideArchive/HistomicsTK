@@ -5,10 +5,9 @@ block title
 
 block content
   each annotation in annotations
-    - annotation = annotation.attributes;
-    - var name = annotation.annotation.name;
-    - var displayed = annotation.displayed;
-    .h-annotation(data-id=annotation._id)
+    - var name = annotation.get('annotation').name;
+    - var displayed = annotation.get('displayed');
+    .h-annotation(data-id=annotation.id)
       if displayed
         span.icon-eye.h-toggle-annotation(
           data-toggle='tooltip', title='Hide annotation')
@@ -16,5 +15,11 @@ block content
         span.icon-eye-off.h-toggle-annotation(
           data-toggle='tooltip', title='Show annotation')
       span.h-annotation-name #{name}
-      span.icon-cancel.h-delete-annotation(
-        data-toggle='tooltip', title='Remove annotation')
+
+      span.h-annotation-right
+        a(href=annotation.downloadUrl().replace(/\/download$/, ''),
+          download=name + '.json')
+          span.icon-download.h-download-annotation(
+            data-toggle='tooltip', title='Download annotation')
+        span.icon-cancel.h-delete-annotation(
+          data-toggle='tooltip', title='Remove annotation')

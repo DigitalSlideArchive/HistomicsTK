@@ -13,7 +13,8 @@ import '../stylesheets/panels/annotationSelector.styl';
 var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
         'click .h-toggle-annotation': 'toggleAnnotation',
-        'click .h-delete-annotation': 'deleteAnnotation'
+        'click .h-delete-annotation': 'deleteAnnotation',
+        'click .h-download-annotation': 'downloadAnnotation'
     }),
 
     /**
@@ -93,7 +94,7 @@ var AnnotationSelector = Panel.extend({
      * `displayed` attribute of the `AnnotationModel`.
      */
     toggleAnnotation(evt) {
-        var id = $(evt.currentTarget).parent('.h-annotation').data('id');
+        var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
         model.set('displayed', !model.get('displayed'));
     },
@@ -102,7 +103,7 @@ var AnnotationSelector = Panel.extend({
      * Delete an annotation from the server.
      */
     deleteAnnotation(evt) {
-        var id = $(evt.currentTarget).parent('.h-annotation').data('id');
+        var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
         if (model) {
             model.unset('displayed');
