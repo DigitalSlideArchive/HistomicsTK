@@ -16,8 +16,7 @@ node_modules/
 .*.swp
 /.vagrant/
 .lprof
-
+ansible/roles/girder.girder
 # scikit-build
 _skbuild
 MANIFEST
-

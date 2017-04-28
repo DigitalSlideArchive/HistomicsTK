@@ -7,7 +7,7 @@
       - python-pip
       - python2.7-dev
       - python-software-properties
-
+      - wget
       - build-essential
       - cmake
       - cmake-curses-gui
@@ -57,14 +57,17 @@
 
 # openjpeg
 - name: Download openjpeg
-  get_url:
-    url: https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz
-    dest: "{{ root_dir }}/openjpeg-2.1.2.tar.gz"
+  command: >-
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz -O openjpeg-2.1.2.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+    creates: openjpeg-2.1.2.tar.gz
 
 - name: Extract openjpeg
   unarchive:
     src: "{{ root_dir }}/openjpeg-2.1.2.tar.gz"
     dest: "{{ root_dir }}"
+    creates: "{{ root_dir }}/openjpeg-2.1.2"
 
 - name: Configure openjpeg
   command: cmake .
@@ -88,14 +91,18 @@
 
 # libtiff
 - name: Download libtiff
-  get_url:
-    url: http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz
-    dest: "{{ root_dir }}"
+  command: >-
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz -O tiff-4.0.6.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+    creates: tiff-4.0.6.tar.gz
+
 
 - name: Extract libtiff
   unarchive:
     src: "{{ root_dir }}/tiff-4.0.6.tar.gz"
     dest: "{{ root_dir }}"
+    creates: "{{ root_dir }}/tiff-4.0.6"
 
 - name: Configure libtiff
   command: ./configure
@@ -119,14 +126,17 @@
 
 # Openslide
 - name: Download openslide
-  get_url:
-    url: https://github.com/openslide/openslide/archive/v3.4.1.tar.gz
-    dest: "{{ root_dir }}/openslide-3.4.1.tar.gz"
+  command: >-
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/openslide/openslide/archive/v3.4.1.tar.gz -O openslide-3.4.1.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+    creates: openslide-3.4.1.tar.gz
 
 - name: Extract openslide
   unarchive:
     src: "{{ root_dir }}/openslide-3.4.1.tar.gz"
     dest: "{{ root_dir }}"
+    creates: "{{ root_dir }}/openslide-3.4.1"
 
 - name: Configure openslide
   shell: autoreconf -i && ./configure
@@ -150,14 +160,17 @@
 
 # vips
 - name: Download vips
-  get_url:
-    url: http://www.vips.ecs.soton.ac.uk/supported/current/vips-8.4.5.tar.gz
-    dest: "{{ root_dir }}/vips-8.4.5.tar.gz"
+  command: >-
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 http://www.vips.ecs.soton.ac.uk/supported/current/vips-8.4.5.tar.gz -O vips-8.4.5.tar.gz
+  args:
+    chdir: "{{ root_dir }}"
+    creates: vips-8.4.5.tar.gz
 
 - name: Extract vips
   unarchive:
     src: "{{ root_dir }}/vips-8.4.5.tar.gz"
     dest: "{{ root_dir }}"
+    creates: "{{ root_dir }}/vips-8.4.5"
 
 - name: Configure vips
   shell: ./configure
@@ -168,12 +181,24 @@
   command: make
   args:
     chdir: "{{ root_dir }}/vips-8.4.5"
+    creates: "{{ root_dir }}/.built-vips-8.4.5"
+
+- name: Leave creation artifact for vips build
+  file:
+    path: "{{ root_dir }}/.built-vips-8.4.5"
+    state: touch
 
 - name: Install vips
   command: make install
   args:
     chdir: "{{ root_dir }}/vips-8.4.5"
+    creates: "{{ root_dir }}/.installed-vips-8.4.5"
   become: true
+
+- name: Leave creation artifact for vips install
+  file:
+    path: "{{ root_dir }}/.installed-vips-8.4.5"
+    state: touch
 
 - name: Run ldconfig
   command: ldconfig

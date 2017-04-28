@@ -16,46 +16,25 @@
 
 - name: NodeJS | Update npm
   command: "npm install -g npm@3"
-  become: yes
-  become_user: root
-
-- name: Fetch GPG key for MongoDB
-  apt_key:
-    keyserver: hkp://keyserver.ubuntu.com:80
-    id: EA312927
   become: true
-
-- name: Add MongoDB PPA
-  become: true
-  shell: echo "deb http://repo.mongodb.org/apt/ubuntu `lsb_release -c -s`/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
-  args:
-    creates: /etc/apt/sources.list.d/mongodb-org-3.2.list
 
 - name: Install system package dependencies
   apt:
     state: present
     update_cache: yes
     name:
-      - build-essential
-      - git
-      - python2.7-dev
-      - libffi-dev
-      - libjpeg-dev
-      - zlib1g-dev
-      - python-pip
-      - nodejs
-      - postfix
+      - apparmor
       - apt-transport-https
       - ca-certificates
-      - mongodb-org
-      - vim
-      - python-dev
-      - memcached
+      - libjpeg-dev
       - libmemcached-dev
       - libxslt1-dev
-      - apparmor
+      - memcached
+      - nodejs
       - pandoc
       - pandoc-citeproc
+      - postfix
+      - vim
     install_recommends: no
   become: true
 
@@ -69,11 +48,6 @@
     dest: "{{ root_dir }}/ctk-cli"
     accept_hostkey: yes
 
-- name: Clone girder
-  git:
-    repo: git://github.com/girder/girder.git
-    dest: "{{ girder_root }}"
-    accept_hostkey: yes
     version: "{{ girder_version }}"
 
 - name: Clone slicer_cli_web plugin
@@ -122,12 +96,6 @@
 - name: Create directory for build
   file: state=directory path="{{ root_dir }}/girder/clients/web/static/built"
 
-- name: Install girder using pip
-  pip:
-    name: "{{ girder_root }}[worker]"
-    extra_args: "-e"
-    state: present
-  become: true
 
 - name: Install numpy (must be installed before large_image plugin)
   pip: name=numpy version=1.11.3
@@ -171,62 +139,18 @@
   template: src=girder.local.cfg.j2 dest={{ girder_root }}/girder/conf/girder.local.cfg
 
 - name: Install girder server dev requirements
-  pip: requirements="{{ girder_root }}/requirements-dev.txt"
+  pip:
+    requirements: "{{ girder_root }}/requirements-dev.txt"
   become: true
-
-# When we are making a docker container, don't bother installing many of the
-# HistomicsTK components; they will be in the actual CLI containers
-- name: Install HistomicsTK pypi C requirements
-  pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements.txt"
-  become: true
-  when: docker is undefined
-
-- name: Download miniconda install script
-  get_url:
-    url: https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
-    dest: "{{ root_dir }}/install_miniconda.sh"
-  when: docker is undefined
-
-- name: Run miniconda install script
-  command: bash install_miniconda.sh -f -b -p ./miniconda
-  args:
-    chdir: "{{ root_dir }}"
-  when: docker is undefined
-
-- name: Update conda packages and add custom channel
-  shell: . miniconda/bin/activate ./miniconda && conda update --yes --all && conda config --add channels https://conda.binstar.org/cdeepakroy
-  args:
-    chdir: "{{ root_dir }}"
-    executable: /bin/bash
-  when: docker is undefined
-
-- name: Install required conda packages
-  shell: . miniconda/bin/activate ./miniconda && conda install --yes anaconda-client libgfortran==1.0 setuptools==19.4
-  args:
-    chdir: "{{ root_dir }}"
-    executable: /bin/bash
-  when: docker is undefined
-
-- name: Ensure we have a locally built Pillow in conda's environment
-  shell: . miniconda/bin/activate ./miniconda && pip install --upgrade --no-cache-dir --force-reinstall Pillow
-  args:
-    chdir: "{{ root_dir }}"
-    executable: /bin/bash
-  when: docker is undefined
-
-- name: Ensure setuptools 19.4 in the local pip environment, too.
-  pip: name="setuptools>=19.4"
-  become: true
-  when: docker is undefined
-
-- name: Work around Cryptography version
-  shell: perl -pi -e 's/cryptography==/cryptography>=/g' "{{ girder_root }}/plugins/HistomicsTK/requirements_dev.txt"
-  when: docker is undefined
 
 - name: Install HistomicsTK dev requirements
-  pip: requirements="{{ girder_root }}/plugins/HistomicsTK/requirements_dev.txt"
+  pip:
+    requirements: "{{ girder_root }}/plugins/HistomicsTK/{{ item }}"
   become: true
   when: docker is undefined
+  with_items:
+    - requirements.txt
+    - requirements_dev.txt
 
 # Always have a build directory
 - name: Ensure build directory exists
@@ -239,23 +163,6 @@
     recurse: no
   become: true
 
-- name: Make sure all plugin requirements are installed
-  pip:
-    name: "{{ girder_root }}[plugins]"
-    extra_args: "-e"
-    state: present
-  become: true
-
-# Install all plugins so that girder-install doesn't try to access Mongo
-- name: Install girder dev and plugin requirements for the web client
-  command: girder-install web --dev --all-plugins
-  become: true
-
-- name: Install girder as a service
-  template: src=girder.conf.j2 dest=/etc/init/girder.conf mode=644 owner=root
-  become: true
-  when: docker is undefined
-
 - name: Ensure files are owned by the right user and are public
   file:
     path: "{{ root_dir }}"
@@ -265,11 +172,6 @@
     recurse: yes
   become: true
 
-- name: Start girder as a service
-  service: name=girder state=restarted enabled=yes
-  become: true
-  when: docker is undefined
-
 - name: Add a script to set hosts if necessary
   template:
       src: set_hosts.py
@@ -278,3 +180,6 @@
       owner: root
   become: true
   when: docker is defined
+
+- name: Build all frontend assets
+  command: girder-install web --dev --all-plugins

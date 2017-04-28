@@ -54,7 +54,7 @@
 
 - name: Run mongo daemon
   become: true
-  service: name=mongod state=restarted
+  systemd: name=mongod state=restarted daemon_reload=yes
 
 - name: Wait for Mongo startup
   wait_for:
