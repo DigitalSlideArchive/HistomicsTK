@@ -317,7 +317,7 @@ var ImageView = View.extend({
                 }]
             }
         });
-        this.viewerWidget.drawAnnotation(annotation);
+        this.viewerWidget.drawAnnotation(annotation, {fetch: false});
     },
 
     showCoordinates(evt) {
