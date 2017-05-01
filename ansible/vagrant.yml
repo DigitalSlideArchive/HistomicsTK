@@ -51,7 +51,7 @@
 
     - name: Set up build environment (1/2)
       command: >-
-        cmake -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" {{root_dir }}/girder
+        cmake -DCOVERAGE_MINIMUM_PASS=30 -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" {{root_dir }}/girder
       args:
         chdir: "{{ root_dir }}/build"
 
