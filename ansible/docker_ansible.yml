@@ -19,7 +19,7 @@
     - role: girder.girder
       girder_path: "{{ root_dir }}/girder"
       girder_version: "master"
-      girder_web_extra_args: "--dev --all-plugins"
+      girder_web: no
       girder_daemonize: no
       become: yes
       become_user: "{{ girder_exec_user }}"
