@@ -3,7 +3,7 @@
     "type"    : "python"
   },
 
-  "SparseColorDeconvolution": {
+  "SeparateStainsXuSnmf": {
     "type"    : "python"
   },
 
