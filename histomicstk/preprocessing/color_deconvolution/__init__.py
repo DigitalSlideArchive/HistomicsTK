@@ -12,6 +12,7 @@ from .sparse_color_deconvolution import sparse_color_deconvolution
 from .separate_stains_macenko_pca import separate_stains_macenko_pca
 from .separate_stains_xu_snmf import separate_stains_xu_snmf
 from .rgb_separate_stains_macenko_pca import rgb_separate_stains_macenko_pca
+from .rgb_separate_stains_xu_snmf import rgb_separate_stains_xu_snmf
 
 # must be imported after ComplementStainMatrix
 from .color_deconvolution import color_deconvolution
@@ -31,5 +32,6 @@ __all__ = (
     'separate_stains_macenko_pca',
     'separate_stains_xu_snmf',
     'rgb_separate_stains_macenko_pca',
+    'rgb_separate_stains_xu_snmf',
     'stain_color_map',
 )
