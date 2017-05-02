@@ -18,27 +18,6 @@
       <index>0</index>
       <description>Input image to be deconvolved</description>
     </image>
-    <image>
-      <name>outputStainImageFile_1</name>
-      <label>Output Image of Stain 1</label>
-      <description>Output Image of Stain 1</description>
-      <channel>output</channel>
-      <index>1</index>
-    </image>
-    <image>
-      <name>outputStainImageFile_2</name>
-      <label>Output Image of Stain 2</label>
-      <description>Output Image of Stain 2</description>
-      <channel>output</channel>
-      <index>2</index>
-    </image>
-    <image>
-      <name>outputStainImageFile_3</name>
-      <label>Output Image of Stain 3</label>
-      <description>Output Image of Stain 3</description>
-      <channel>output</channel>
-      <index>3</index>
-    </image>
     <string-enumeration>
       <name>stain_1</name>
       <label>stain-1</label>
@@ -82,5 +61,23 @@
       <longflag>beta</longflag>
       <default>0.5</default>
     </double>
+    <double-vector>
+      <name>stainColor_1</name>
+      <label>Color of stain 1</label>
+      <channel>output</channel>
+      <description>SDA color of stain 1</description>
+    </double-vector>
+    <double-vector>
+      <name>stainColor_2</name>
+      <label>Color of stain 2</label>
+      <channel>output</channel>
+      <description>SDA color of stain 2</description>
+    </double-vector>
+    <double-vector>
+      <name>stainColor_3</name>
+      <label>Color of stain 3</label>
+      <channel>output</channel>
+      <description>SDA color of stain 3</description>
+    </double-vector>
   </parameters>
 </executable>

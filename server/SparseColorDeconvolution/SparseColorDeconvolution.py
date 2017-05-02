@@ -1,7 +1,6 @@
 import os
 import sys
 
-import numpy as np
 import skimage.io
 
 from ctk_cli import CLIArgumentParser
@@ -31,22 +30,12 @@ def main(args):
     # Perform color deconvolution
     print('>> Performing color deconvolution')
 
-    res = htk_cdeconv.sparse_color_deconvolution(
-        im_input, w_init, args.beta)
-    w_est = np.concatenate((res.Wc, np.zeros((3, 1))), 1)
-    res = htk_cdeconv.color_deconvolution(im_input, w_est)
+    res = htk_cdeconv.separate_stains_xu_snmf(im_input, w_init, args.beta)
+    w_est = htk_cdeconv.complement_stain_matrix(res.Wc)
 
-    # write stain images to output
-    print('>> Outputting individual stain images')
-
-    print args.outputStainImageFile_1
-    skimage.io.imsave(args.outputStainImageFile_1, res.Stains[:, :, 0])
-
-    print args.outputStainImageFile_2
-    skimage.io.imsave(args.outputStainImageFile_2, res.Stains[:, :, 1])
-
-    print args.outputStainImageFile_3
-    skimage.io.imsave(args.outputStainImageFile_3, res.Stains[:, :, 2])
+    with open(args.returnParameterFile, 'w') as f:
+        for i, stain in enumerate(w_est):
+            f.write('stainColor_{} = {}\n'.format(i+1, ','.join(map(str, stain))))
 
 
 if __name__ == "__main__":
