@@ -43,6 +43,7 @@ def reinhard_stats(slide_path, sample_fraction, magnification=None):
     --------
     histomicstk.preprocessing.color_conversion.lab_mean_std
     histomicstk.preprocessing.color_normalization.reinhard
+
     """
 
     # generate a sampling of sample_pixels_rgb pixels from whole-slide image

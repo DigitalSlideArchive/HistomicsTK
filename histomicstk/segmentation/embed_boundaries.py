@@ -33,6 +33,7 @@ def embed_boundaries(im_input, im_perim, color=[255, 0, 0]):
     See Also
     --------
     histomicstk.segmentation.label.perimeter
+
     """
 
     # check for consistent shapes between 'im_input' and 'im_perim'

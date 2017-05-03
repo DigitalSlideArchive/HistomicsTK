@@ -31,6 +31,7 @@ def area_open(im_label, min_area):
     histomicstk.segmentation.label.shuffle,
     histomicstk.segmentation.label.split,
     histomicstk.segmentation.label.width_open
+
     """
 
     # copy input image

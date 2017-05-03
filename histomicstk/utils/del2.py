@@ -21,6 +21,7 @@ def del2(im_input):
     See Also
     --------
     histomicstk.segmentation.level_set.reg_edge
+
     """
 
     # initialize output

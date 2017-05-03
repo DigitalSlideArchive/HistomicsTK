@@ -28,6 +28,7 @@ def delete(im_label, indices):
     See Also
     --------
     histomicstk.segmentation.label.condense
+
     """
 
     # initialize output

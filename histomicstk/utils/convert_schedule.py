@@ -48,6 +48,7 @@ def convert_schedule(schedule, magnification, tol=0.002):
     See Also
     --------
     histomicstk.utils.tiling_schedule
+
     """
 
     # check if slide can be opened
