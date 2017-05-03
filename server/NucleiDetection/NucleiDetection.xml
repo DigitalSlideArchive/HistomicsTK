@@ -141,6 +141,15 @@
       <longflag>min_nucleus_area</longflag>
       <default>80</default>
     </double>
+    <string-enumeration>
+      <name>nuclei_annotation_format</name>
+      <label>Nuclei annotation format</label>
+      <description>Format of the output nuclei annotations</description>
+      <longflag>nuclei_annotation_format</longflag>
+      <element>bbox</element>
+      <element>boundary</element>
+      <default>boundary</default>
+    </string-enumeration>
   </parameters>
   <parameters advanced="true">
     <label>General</label>
