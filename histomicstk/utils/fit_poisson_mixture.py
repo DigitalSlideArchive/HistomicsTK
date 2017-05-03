@@ -37,6 +37,7 @@ def fit_poisson_mixture(im_input, mu=None, tol=0.1):
     .. [#] Y. Al-Kofahi et al "Improved Automatic Detection and Segmentation
        of Cell Nuclei in Histopathology Images" in IEEE Transactions on
        Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.
+
     """
 
     # check if intensity values in 'I' are integer type

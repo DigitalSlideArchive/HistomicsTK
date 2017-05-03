@@ -204,7 +204,7 @@ class DockerImageManagementTest(base.TestCase):
     def deleteImage(self, name,  responseCodeOK, deleteDockerImage=False,
                     status=4):
         """
-        delete docker image data and test whether a docker
+        Delete docker image data and test whether a docker
         image can be deleted off the local machine
         """
         if deleteDockerImage:
@@ -249,7 +249,7 @@ class DockerImageManagementTest(base.TestCase):
             del self.delHandler
 
     def addImage(self, name, status):
-        """test the put endpoint, name can be a string or a list of strings"""
+        """Test the put endpoint, name can be a string or a list of strings"""
 
         event = threading.Event()
 

@@ -21,6 +21,7 @@ def complement_stain_matrix(w):
     See Also
     --------
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
+
     """
 
     stain0 = w[:, 0]

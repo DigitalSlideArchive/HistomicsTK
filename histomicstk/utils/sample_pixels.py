@@ -41,7 +41,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
 
     Returns
     -------
-    Pixels : array_like
+    pixels : array_like
         A Nx3 matrix of RGB pixel values sampled from the whole-slide.
 
     Notes
@@ -51,6 +51,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
     See Also
     --------
     histomicstk.preprocessing.color_normalization.reinhard
+
     """
 
     if (sample_fraction is None) == (sample_approximate_total is None):

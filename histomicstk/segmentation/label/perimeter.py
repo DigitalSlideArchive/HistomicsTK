@@ -24,6 +24,7 @@ def perimeter(im_label, conn=4):
     See Also
     --------
     histomicstk.segmentation.embed_boundaries
+
     """
 
     # initialize temporary variable

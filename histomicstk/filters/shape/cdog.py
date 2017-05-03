@@ -53,6 +53,7 @@ def cdog(im_input, im_mask, sigma_min, sigma_max, num_octave_levels=3):
     .. [*] D.G. Lowe "Distinctive image features from scale-invariant
            keypoints." International journal of computer vision, vol. 60,
            no. 2, 91-110, 2004.
+
     """
 
     im_input = im_input.astype(np.float)

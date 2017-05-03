@@ -42,6 +42,7 @@ def clog(im_input, im_mask, sigma_min, sigma_max):
     .. [#] Y. Al-Kofahi et al "Improved Automatic Detection and Segmentation
            of Cell Nuclei in Histopathology Images" in IEEE Transactions on
            Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.
+
     """
 
     # convert intensity image type to float

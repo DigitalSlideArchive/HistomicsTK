@@ -16,8 +16,9 @@ def merge_colinear(x, y):
     -------
     xout : array_like
         X with colinear boundary points removed.
-    YOUt : array_like
+    yout : array_like
         Y with colinear boundary points removed.
+
     """
 
     # compute boundary differences
