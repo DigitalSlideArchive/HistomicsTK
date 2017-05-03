@@ -52,6 +52,7 @@ def color_deconvolution(im_rgb, w, I_0=None):
     histomicstk.preprocessing.color_conversion.od_to_rgb
     histomicstk.preprocessing.color_conversion.rgb_to_sda
     histomicstk.preprocessing.color_conversion.sda_to_rgb
+
     """
 
     # complement stain matrix if needed

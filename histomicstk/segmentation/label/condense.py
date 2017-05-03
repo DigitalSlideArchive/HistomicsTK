@@ -20,6 +20,7 @@ def condense(im_label):
     See Also
     --------
     histomicstk.segmentation.label.shuffle
+
     """
 
     # initialize output

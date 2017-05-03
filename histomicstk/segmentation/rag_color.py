@@ -27,6 +27,7 @@ def rag_color(adj_mat):
     --------
     histomicstk.segmentation.rag,
     histomicstk.segmentation.rag_add_layer
+
     """
 
     # initialize colors and color count

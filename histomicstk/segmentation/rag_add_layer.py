@@ -20,6 +20,7 @@ def rag_add_layer(adj_mat):
     See Also
     --------
     histomicstk.segmentation.rag
+
     """
 
     # initialize output

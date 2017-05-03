@@ -119,6 +119,7 @@ def ComputeNucleiFeatures(im_label, im_nuclei, im_cytoplasm=None,
     histomicstk.features.ComputeIntensityFeatures,
     histomicstk.features.ComputeGradientFeatures,
     histomicstk.features.ComputeHaralickFeatures
+
     """
 
     feature_list = []

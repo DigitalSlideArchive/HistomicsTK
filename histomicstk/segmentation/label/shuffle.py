@@ -20,6 +20,7 @@ def shuffle(im_label):
     See Also
     --------
     histomicstk.segmentation.label.CondenseLabel
+
     """
 
     # get list of unique object labels

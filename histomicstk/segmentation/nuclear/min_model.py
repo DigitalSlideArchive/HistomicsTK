@@ -69,6 +69,7 @@ def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
     .. [#] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
        Virtual Microscopy Images: A Minimum-Model Approach" in Nature
        Scientific Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
+
     """
 
     # identify contour seed points
@@ -143,6 +144,7 @@ def seed_contours(I, Delta=0.3):
     .. [#] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
     Virtual Microscopy Images: A Minimum-Model Approach" in Nature Scientific
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
+
     """
 
     # initialize outputs
@@ -294,6 +296,7 @@ def trace_contours(I, X, Y, Min, Max, MaxLength=255):
     .. [#] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
     Virtual Microscopy Images: A Minimum-Model Approach" in Nature Scientific
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
+
     """
 
     # initialize list of lists containing contours
@@ -378,6 +381,7 @@ def score_contours(I, cXs, cYs):
     .. [#] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
     Virtual Microscopy Images: A Minimum-Model Approach" in Nature Scientific
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
+
     """
 
     # initialize output
@@ -447,6 +451,7 @@ def label_contour(Shape, cXs, cYs, Scores):
     .. [#] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
     Virtual Microscopy Images: A Minimum-Model Approach" in Nature Scientific
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
+
     """
 
     # initialize label image
@@ -512,6 +517,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
     .. [#] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
     Virtual Microscopy Images: A Minimum-Model Approach" in Nature Scientific
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
+
     """
 
     # use shape profiles to split objects with concavities
@@ -720,6 +726,7 @@ def angle_score(ax1, ay1, bx1, by1, ax2, ay2, bx2, by2, cx1, cy1, cx2, cy2):
     .. [#] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
     Virtual Microscopy Images: A Minimum-Model Approach" in Nature Scientific
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
+
     """
 
     # calculate angle of hull at first concavity - y is inverted
@@ -759,6 +766,7 @@ def length_score(x1, y1, x2, y2, d1, d2):
     .. [#] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
     Virtual Microscopy Images: A Minimum-Model Approach" in Nature Scientific
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
+
     """
 
     # calculate length of cut
@@ -788,6 +796,7 @@ def cut(Mask, x1, y1, x2, y2):
     .. [#] S. Weinert et al "Detection and Segmentation of Cell Nuclei in
     Virtual Microscopy Images: A Minimum-Model Approach" in Nature Scientific
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
+
     """
 
     # copy input

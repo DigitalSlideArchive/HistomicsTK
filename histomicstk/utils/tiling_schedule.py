@@ -53,6 +53,7 @@ def tiling_schedule(slide_path, magnification, tile_size, tol=0.002):
     See Also
     --------
     histomicstk.utils.convert_schedule
+
     """
 
     # check if slide can be opened
