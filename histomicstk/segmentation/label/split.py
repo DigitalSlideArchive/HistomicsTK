@@ -30,6 +30,7 @@ def split(im_label, conn=8):
     histomicstk.segmentation.label.area_open,
     histomicstk.segmentation.label.condense,
     histomicstk.segmentation.label.shuffle
+
     """
 
     # copy input image

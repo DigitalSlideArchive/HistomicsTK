@@ -20,6 +20,7 @@ def eigen(im_hess):
         M x N x 2 eigenvector for lamda(:,:,0)
     v2 :
         M x N x 2 eigenvector for lamda(:,:,1)
+
     """
 
     # get size of H

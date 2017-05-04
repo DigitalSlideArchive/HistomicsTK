@@ -21,6 +21,7 @@ def rag(im_label, neigh_conn=4):
         A binary matrix of size N x N, where N is the number of objects in
         im_label. A value of 'True' at adj_mat(i,j) indicates that objects 'i'
         and 'j' are neigh_conn.
+
     """
 
     # initialize adjacency matrix for im_label.max() total regions

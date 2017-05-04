@@ -16,9 +16,10 @@ def hessian(im_input, sigma):
 
     Returns
     -------
-    im_hess - array_like
+    im_hess : array_like
         M x N x 4 hessian matrix - im_hess[:,:,0] = dxx,
         im_hess[:,:,1] = im_hess[:,:,2] = dxy, im_hess[:,:,3] = dyy.
+
     """
 
     # generate kernel domain
@@ -42,5 +43,4 @@ def hessian(im_input, sigma):
         (dxx[:, :, None], dxy[:, :, None], dxy[:, :, None], dyy[:, :, None]),
         axis=2
     )
-
     return im_hess

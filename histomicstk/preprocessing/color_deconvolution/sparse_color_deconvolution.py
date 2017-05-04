@@ -54,6 +54,7 @@ def sparse_color_deconvolution(im_rgb, w_init, beta):
            Factorization (SNMF) based color unmixing for breast
            histopathological image analysis," in IEEE Computer Graphics
            and Applications, vol.46,no.1,pp.20-9, 2015.
+
     """
 
     # determine if input is RGB or pixel-matrix format
