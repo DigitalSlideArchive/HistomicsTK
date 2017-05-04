@@ -82,42 +82,70 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
     # segment nuclei
     im_nuclei_seg_mask = detect_nuclei_kofahi(im_tile, args)
 
-    # generate nuclei bounding boxes annotations
     obj_props = skimage.measure.regionprops(im_nuclei_seg_mask)
 
-    nuclei_bbox_list = []
+    # generate nuclei annotations
+    nuclei_annot_list = []
 
     gx = tile_info['gx']
     gy = tile_info['gy']
     wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
     hfrac = tile_info['gheight'] / np.double(tile_info['height'])
 
-    for i in range(len(obj_props)):
+    if args.nuclei_annotation_format == 'bbox':
 
-        cx = obj_props[i].centroid[1]
-        cy = obj_props[i].centroid[0]
-        width = obj_props[i].bbox[3] - obj_props[i].bbox[1] + 1
-        height = obj_props[i].bbox[2] - obj_props[i].bbox[0] + 1
+        for i in range(len(obj_props)):
 
-        # convert to base pixel coords
-        cx = np.round(gx + cx * wfrac, 2)
-        cy = np.round(gy + cy * hfrac, 2)
-        width = np.round(width * wfrac, 2)
-        height = np.round(height * hfrac, 2)
+            cx = obj_props[i].centroid[1]
+            cy = obj_props[i].centroid[0]
+            width = obj_props[i].bbox[3] - obj_props[i].bbox[1] + 1
+            height = obj_props[i].bbox[2] - obj_props[i].bbox[0] + 1
 
-        # create annotation json
-        cur_bbox = {
-            "type":        "rectangle",
-            "center":      [cx, cy, 0],
-            "width":       width,
-            "height":      height,
-            "rotation":    0,
-            "fillColor":   "rgba(0,0,0,0)"
-        }
+            # convert to base pixel coords
+            cx = np.round(gx + cx * wfrac, 2)
+            cy = np.round(gy + cy * hfrac, 2)
+            width = np.round(width * wfrac, 2)
+            height = np.round(height * hfrac, 2)
 
-        nuclei_bbox_list.append(cur_bbox)
+            # create annotation json
+            cur_bbox = {
+                "type":        "rectangle",
+                "center":      [cx, cy, 0],
+                "width":       width,
+                "height":      height,
+                "rotation":    0,
+                "fillColor":   "rgba(0,0,0,0)"
+            }
 
-    return nuclei_bbox_list
+            nuclei_annot_list.append(cur_bbox)
+
+    elif args.nuclei_annotation_format == 'boundary':
+
+        bx, by = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
+                                                       trace_all=True)
+
+        nuclei_annot_list = []
+
+        for i in range(len(bx)):
+
+            # get boundary points and convert to base pixel space
+            num_points = len(bx[i])
+
+            cur_points = np.zeros((num_points, 3))
+            cur_points[:, 0] = np.round(gx + bx[i] * wfrac, 2)
+            cur_points[:, 1] = np.round(gy + by[i] * hfrac, 2)
+
+            # create annotation json
+            cur_annot = {
+                "type":        "polyline",
+                "points":      cur_points.tolist(),
+                "closed":      True,
+                "fillColor":   "rgba(0,0,0,0)"
+            }
+
+            nuclei_annot_list.append(cur_annot)
+
+    return nuclei_annot_list
 
 def disp_time(seconds):
     return time.strftime("%H:%M:%S", time.gmtime(seconds))
@@ -295,7 +323,7 @@ def main(args):
         os.path.basename(args.outputNucleiAnnotationFile))[0]
 
     annotation = {
-        "name":     annot_fname,
+        "name":     annot_fname + '-nuclei-' + args.nuclei_annotation_format,
         "elements": nuclei_list
     }
 
