@@ -34,11 +34,11 @@ def main(args):
     # Perform color deconvolution
     print('>> Performing color deconvolution')
 
-    res = htk_cdeconv.rgb_separate_stains_xu_snmf(sample.T, **vars(args.snmf))
-    w_est = htk_cdeconv.complement_stain_matrix(res.Wc)
+    w_est = htk_cdeconv.rgb_separate_stains_xu_snmf(sample.T, **vars(args.snmf))
+    w_est = htk_cdeconv.complement_stain_matrix(w_est)
 
     with open(args.returnParameterFile, 'w') as f:
-        for i, stain in enumerate(w_est):
+        for i, stain in enumerate(w_est.T):
             f.write('stainColor_{} = {}\n'.format(i+1, ','.join(map(str, stain))))
 
 
