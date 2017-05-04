@@ -100,7 +100,9 @@ def positive_pixel_count_single_tile(args, tile, makeLabelImage):
 
 def rgb_to_hsi(im):
     """Convert to HSI the RGB pixels in im.  Adapted from
-    https://en.wikipedia.org/wiki/HSL_and_HSV#Hue_and_chroma."""
+    https://en.wikipedia.org/wiki/HSL_and_HSV#Hue_and_chroma.
+
+    """
     im = np.moveaxis(im, -1, 0)
     hues = (np.arctan2(3**0.5 * (im[1] - im[2]),
                        2 * im[0] - im[1] - im[2]) / (2 * np.pi)) % 1
