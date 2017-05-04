@@ -81,6 +81,7 @@ var ImageView = View.extend({
             this.listenTo(this.viewerWidget, 'g:mouseOverAnnotation', this.mouseOverAnnotation);
             this.listenTo(this.viewerWidget, 'g:mouseOutAnnotation', this.mouseOutAnnotation);
             this.listenTo(this.viewerWidget, 'g:mouseClickAnnotation', this.mouseClickAnnotation);
+            this.listenTo(this.viewerWidget, 'g:mouseResetAnnotation', this.mouseResetAnnotation);
 
             this.viewerWidget.on('g:imageRendered', () => {
                 events.trigger('h:imageOpened', this.model);
@@ -355,6 +356,10 @@ var ImageView = View.extend({
     mouseOutAnnotation(element, annotationId) {
         element.annotation = this.annotations.get(annotationId);
         this.popover.collection.remove(element);
+    },
+
+    mouseResetAnnotation() {
+        this.popover.collection.reset();
     },
 
     mouseClickAnnotation(/* element, annotationId */) {
