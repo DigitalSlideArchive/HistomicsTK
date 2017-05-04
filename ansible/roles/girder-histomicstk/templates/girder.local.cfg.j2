@@ -26,12 +26,12 @@ api_static_root: "../static"
 
 [logging]
 log_root="{{ root_dir }}/logs"
-# log_root="/path/to/log/root"
-# If log_root is set error and info will be set to error.log and info.log within
-# log root respectively. The paths below will override that setting and are
-# ABSOLUTE paths.
-# error_log_file="/path/to/error.log"
-# info_log_file="/path/to/info.log"
+# Log web accesses to the info log
+log_access = ["info"]
+# Log everything to the info log (errors also go to the error log)
+log_max_info_level = "CRITICAL"
+# Increase maximum size of log file
+log_max_size = "10 Mb"
 
 [users]
 # Regular expression used to validate user emails
