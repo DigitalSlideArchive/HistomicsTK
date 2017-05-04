@@ -1,36 +1,40 @@
 import os
 import sys
 
-import skimage.io
+from dask.distributed import Client
+import numpy
 
 from ctk_cli import CLIArgumentParser
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+from histomicstk.utils import sample_pixels
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils  # noqa
 
 
 def main(args):
+    args = utils.splitArgs(args)
+    args.snmf.I_0 = numpy.array(args.snmf.I_0)
+    for k in 'magnification', 'sample_fraction', 'sample_approximate_total':
+        if getattr(args.sample, k) == -1:
+            delattr(args.sample, k)
 
-    # Read Input Image
-    print('>> Reading input image')
-
-    print(args.inputImageFile)
-
-    im_input = skimage.io.imread(args.inputImageFile)[:, :, :3]
+    print(">> Starting Dask cluster and sampling pixels")
+    Client(args.dask.scheduler_address or None)
+    sample = sample_pixels(**vars(args.sample))
 
     # Create stain matrix
     print('>> Creating stain matrix')
 
-    w_init = utils.get_stain_matrix(args, 2)
+    args.snmf.w_init = utils.get_stain_matrix(args.stains, 2)
 
-    print w_init
+    print args.snmf.w_init
 
     # Perform color deconvolution
     print('>> Performing color deconvolution')
 
-    res = htk_cdeconv.separate_stains_xu_snmf(im_input, w_init, args.beta)
+    res = htk_cdeconv.rgb_separate_stains_xu_snmf(sample.T, **vars(args.snmf))
     w_est = htk_cdeconv.complement_stain_matrix(res.Wc)
 
     with open(args.returnParameterFile, 'w') as f:
