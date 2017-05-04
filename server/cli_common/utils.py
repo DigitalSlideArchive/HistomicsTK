@@ -82,8 +82,35 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
                         region)))
 
 
+def splitArgs(args, split='_'):
+    """Split a Namespace into a Namespace of Namespaces based on shared
+    prefixes.  The string separating the prefix from the rest of the
+    argument is determined by the optional "split" parameter.
+    Parameters not containing the splitting string are kept as-is.
+
+    """
+    def splitKey(k):
+        s = k.split(split, 1)
+        return (None, s[0]) if len(s) == 1 else s
+
+    Namespace = type(args)
+    args = vars(args)
+    firstKeys = {splitKey(k)[0] for k in args}
+    result = Namespace()
+    for k in firstKeys - {None}:
+        setattr(result, k, Namespace())
+    for k, v in args.items():
+        f, s = splitKey(k)
+        if f is None:
+            setattr(result, s, v)
+        else:
+            setattr(getattr(result, f), s, v)
+    return result
+
+
 __all__ = (
     'get_stain_vector',
     'get_stain_matrix',
     'get_region_dict',
+    'splitArgs',
 )
