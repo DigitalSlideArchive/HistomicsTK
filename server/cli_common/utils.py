@@ -197,13 +197,14 @@ def create_dask_client(args):
 
 
 __all__ = (
+    'create_dask_client',
     'create_tile_nuclei_annotations',
     'create_tile_nuclei_bbox_annotations',
     'create_tile_nuclei_boundary_annotations',
     'detect_nuclei_kofahi',
-    'get_stain_vector',
     'get_stain_matrix',
-    'segment_wsi_foreground_at_low_res'
+    'get_stain_vector',
+    'segment_wsi_foreground_at_low_res',
 )
 
 

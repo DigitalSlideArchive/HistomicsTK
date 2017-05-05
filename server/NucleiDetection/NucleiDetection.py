@@ -3,8 +3,6 @@ import sys
 import json
 import itertools
 import time
-import logging
-logging.basicConfig()
 
 import numpy as np
 import dask
@@ -16,6 +14,9 @@ import histomicstk.utils as htk_utils
 import large_image
 
 from ctk_cli import CLIArgumentParser
+
+import logging
+logging.basicConfig(level=logging.CRITICAL)
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils # noqa
