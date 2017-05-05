@@ -1,11 +1,11 @@
 import pandas as pd
 from skimage.measure import regionprops
 
-from .ComputeFSDFeatures import ComputeFSDFeatures
-from .ComputeGradientFeatures import ComputeGradientFeatures
-from .ComputeHaralickFeatures import ComputeHaralickFeatures
-from .ComputeIntensityFeatures import ComputeIntensityFeatures
-from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
+from .compute_fsd_features import compute_fsd_features
+from .compute_gradient_features import compute_gradient_features
+from .compute_haralick_features import compute_haralick_features
+from .compute_intensity_features import compute_intensity_features
+from .compute_morphometry_features import compute_morphometry_features
 
 from histomicstk.segmentation import label as htk_label
 
@@ -57,27 +57,27 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     morphometry_features_flag : bool, optional
         A flag that can be used to specify whether or not to compute
         morphometry (size and shape) features.
-        See histomicstk.features.ComputeMorphometryFeatures for more details.
+        See histomicstk.features.compute_morphometry_features for more details.
 
     fsd_features_flag : bool, optional
         A flag that can be used to specify whether or not to compute
         Fouried shape descriptor (FSD) features.
-        See `histomicstk.features.ComputeFSDFeatures` for more details.
+        See `histomicstk.features.compute_fsd_features` for more details.
 
     intensity_features_flag : bool, optional
         A flag that can be used to specify whether or not to compute
         intensity features from the nucleus and cytoplasm channels.
-        See `histomicstk.features.ComputeFSDFeatures` for more details.
+        See `histomicstk.features.compute_fsd_features` for more details.
 
     gradient_features_flag : bool, optional
         A flag that can be used to specify whether or not to compute
         gradient/edge features from intensity and cytoplasm channels.
-        See `histomicstk.features.ComputeGradientFeatures` for more details.
+        See `histomicstk.features.compute_gradient_features` for more details.
 
     haralick_features_flag : bool, optional
         A flag that can be used to specify whether or not to compute
         haralick features from intensity and cytoplasm channels.
-        See `histomicstk.features.ComputeHaralickFeatures` for more details.
+        See `histomicstk.features.compute_haralick_features` for more details.
 
     Returns
     -------
@@ -90,35 +90,35 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     List of features computed by this function
 
     Morphometry (size and shape) features of the nuclei
-        See histomicstk.features.ComputeMorphometryFeatures for more details.
+        See histomicstk.features.compute_morphometry_features for more details.
         Feature names prefixed by *Size.* or *Shape.*.
 
     Fourier shape descriptor features
-        See `histomicstk.features.ComputeFSDFeatures` for more details.
+        See `histomicstk.features.compute_fsd_features` for more details.
         Feature names are prefixed by *FSD*.
 
     Intensity features for the nucleus and cytoplasm channels
-        See `histomicstk.features.ComputeFSDFeatures` for more details.
+        See `histomicstk.features.compute_fsd_features` for more details.
         Feature names are prefixed by *Nucleus.Intensity.* for nucleus features
         and *Cytoplasm.Intensity.* for cytoplasm features.
 
     Gradient/edge features for the nucleus and cytoplasm channels
-        See `histomicstk.features.ComputeGradientFeatures` for more details.
+        See `histomicstk.features.compute_gradient_features` for more details.
         Feature names are prefixed by *Nucleus.Gradient.* for nucleus features
         and *Cytoplasm.Gradient.* for cytoplasm features.
 
     Haralick features for the nucleus and cytoplasm channels
-        See `histomicstk.features.ComputeHaralickFeatures` for more details.
+        See `histomicstk.features.compute_haralick_features` for more details.
         Feature names are prefixed by *Nucleus.Haralick.* for nucleus features
         and *Cytoplasm.Haralick.* for cytoplasm features.
 
     See Also
     --------
-    histomicstk.features.ComputeMorphometryFeatures,
-    histomicstk.features.ComputeFSDFeatures,
-    histomicstk.features.ComputeIntensityFeatures,
-    histomicstk.features.ComputeGradientFeatures,
-    histomicstk.features.ComputeHaralickFeatures
+    histomicstk.features.compute_morphometry_features,
+    histomicstk.features.compute_fsd_features,
+    histomicstk.features.compute_intensity_features,
+    histomicstk.features.compute_gradient_features,
+    histomicstk.features.compute_haralick_features
     """
 
     feature_list = []
@@ -136,23 +136,23 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     # compute morphometry features
     if morphometry_features_flag:
 
-        fmorph = ComputeMorphometryFeatures(im_label, rprops=nuclei_props)
+        fmorph = compute_morphometry_features(im_label, rprops=nuclei_props)
 
         feature_list.append(fmorph)
 
     # compute FSD features
     if fsd_features_flag:
 
-        ffsd = ComputeFSDFeatures(im_label, fsd_bnd_pts, fsd_freq_bins,
-                                  cyto_width, rprops=nuclei_props)
+        ffsd = compute_fsd_features(im_label, fsd_bnd_pts, fsd_freq_bins,
+                                    cyto_width, rprops=nuclei_props)
 
         feature_list.append(ffsd)
 
     # compute nuclei intensity features
     if intensity_features_flag:
 
-        fint_nuclei = ComputeIntensityFeatures(im_label, im_nuclei,
-                                               rprops=nuclei_props)
+        fint_nuclei = compute_intensity_features(im_label, im_nuclei,
+                                                 rprops=nuclei_props)
         fint_nuclei.columns = ['Nucleus.' + col
                                for col in fint_nuclei.columns]
 
@@ -161,8 +161,8 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     # compute cytoplasm intensity features
     if intensity_features_flag and im_cytoplasm is not None:
 
-        fint_cytoplasm = ComputeIntensityFeatures(cyto_mask, im_cytoplasm,
-                                                  rprops=cytoplasm_props)
+        fint_cytoplasm = compute_intensity_features(cyto_mask, im_cytoplasm,
+                                                    rprops=cytoplasm_props)
         fint_cytoplasm.columns = ['Cytoplasm.' + col
                                   for col in fint_cytoplasm.columns]
 
@@ -171,8 +171,8 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     # compute nuclei gradient features
     if gradient_features_flag:
 
-        fgrad_nuclei = ComputeGradientFeatures(im_label, im_nuclei,
-                                               rprops=nuclei_props)
+        fgrad_nuclei = compute_gradient_features(im_label, im_nuclei,
+                                                 rprops=nuclei_props)
         fgrad_nuclei.columns = ['Nucleus.' + col
                                 for col in fgrad_nuclei.columns]
 
@@ -181,8 +181,8 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     # compute cytoplasm gradient features
     if gradient_features_flag and im_cytoplasm is not None:
 
-        fgrad_cytoplasm = ComputeGradientFeatures(cyto_mask, im_cytoplasm,
-                                                  rprops=cytoplasm_props)
+        fgrad_cytoplasm = compute_gradient_features(cyto_mask, im_cytoplasm,
+                                                    rprops=cytoplasm_props)
         fgrad_cytoplasm.columns = ['Cytoplasm.' + col
                                    for col in fgrad_cytoplasm.columns]
 
@@ -191,7 +191,7 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     # compute nuclei haralick features
     if haralick_features_flag:
 
-        fharalick_nuclei = ComputeHaralickFeatures(
+        fharalick_nuclei = compute_haralick_features(
             im_label, im_nuclei,
             num_levels=num_glcm_levels,
             rprops=nuclei_props
@@ -205,7 +205,7 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     # compute cytoplasm haralick features
     if haralick_features_flag and im_cytoplasm is not None:
 
-        fharalick_cytoplasm = ComputeHaralickFeatures(
+        fharalick_cytoplasm = compute_haralick_features(
             cyto_mask, im_cytoplasm,
             num_levels=num_glcm_levels,
             rprops=cytoplasm_props
