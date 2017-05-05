@@ -1,7 +1,10 @@
-import numpy
+import numpy as np
+import scipy as sp
+import skimage.measure
 
-from histomicstk.preprocessing.color_deconvolution import stain_color_map
-
+import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk.filters.shape as htk_shape_filters
+import histomicstk.segmentation as htk_seg
 
 def get_stain_vector(args, index):
     """Get the stain corresponding to args.stain_$index and
@@ -16,7 +19,7 @@ def get_stain_vector(args, index):
         if stain == 'custom':
             raise ValueError('If "custom" is chosen for a stain, '
                              'a stain vector must be provided.')
-        return stain_color_map[stain]
+        return htk_cdeconv.stain_color_map[stain]
     else:
         if stain == 'custom':
             return stain_vector
@@ -30,10 +33,127 @@ def get_stain_matrix(args, count=3):
     Return a numpy array of column vectors.
 
     """
-    return numpy.array([get_stain_vector(args, i+1) for i in range(count)]).T
+    return np.array([get_stain_vector(args, i+1) for i in range(count)]).T
+
+
+def detect_nuclei_kofahi(im_nuclei_stain, args):
+
+    # segment foreground (assumes nuclei are darker on a bright background)
+    im_nuclei_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
+        im_nuclei_stain < args.foreground_threshold)
+
+    # run adaptive multi-scale LoG filter
+    im_log_max, im_sigma_max = htk_shape_filters.cdog(
+        im_nuclei_stain, im_nuclei_fgnd_mask,
+        sigma_min=args.min_radius / np.sqrt(2),
+        sigma_max=args.max_radius / np.sqrt(2)
+    )
+
+    # apply local maximum clustering
+    im_nuclei_seg_mask, seeds, maxima = htk_seg.nuclear.max_clustering(
+        im_log_max, im_nuclei_fgnd_mask, args.local_max_search_radius)
+
+    # filter out small objects
+    im_nuclei_seg_mask = htk_seg.label.area_open(
+        im_nuclei_seg_mask, args.min_nucleus_area).astype(np.int)
+
+    return im_nuclei_seg_mask
+
+
+def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
+
+    nuclei_annot_list = []
+
+    gx = tile_info['gx']
+    gy = tile_info['gy']
+    wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
+    hfrac = tile_info['gheight'] / np.double(tile_info['height'])
+
+    nuclei_obj_props = skimage.measure.regionprops(im_nuclei_seg_mask)
+
+    for i in range(len(nuclei_obj_props)):
+        cx = nuclei_obj_props[i].centroid[1]
+        cy = nuclei_obj_props[i].centroid[0]
+        width = nuclei_obj_props[i].bbox[3] - nuclei_obj_props[i].bbox[1] + 1
+        height = nuclei_obj_props[i].bbox[2] - nuclei_obj_props[i].bbox[0] + 1
+
+        # convert to base pixel coords
+        cx = np.round(gx + cx * wfrac, 2)
+        cy = np.round(gy + cy * hfrac, 2)
+        width = np.round(width * wfrac, 2)
+        height = np.round(height * hfrac, 2)
+
+        # create annotation json
+        cur_bbox = {
+            "type": "rectangle",
+            "center": [cx, cy, 0],
+            "width": width,
+            "height": height,
+            "rotation": 0,
+            "fillColor": "rgba(0,0,0,0)"
+        }
+
+        nuclei_annot_list.append(cur_bbox)
+
+    return nuclei_annot_list
+
+
+def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
+
+    nuclei_annot_list = []
+
+    gx = tile_info['gx']
+    gy = tile_info['gy']
+    wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
+    hfrac = tile_info['gheight'] / np.double(tile_info['height'])
+
+    bx, by = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
+                                                   trace_all=True)
+
+    for i in range(len(bx)):
+
+        # get boundary points and convert to base pixel space
+        num_points = len(bx[i])
+
+        cur_points = np.zeros((num_points, 3))
+        cur_points[:, 0] = np.round(gx + bx[i] * wfrac, 2)
+        cur_points[:, 1] = np.round(gy + by[i] * hfrac, 2)
+
+        # create annotation json
+        cur_annot = {
+            "type": "polyline",
+            "points": cur_points.tolist(),
+            "closed": True,
+            "fillColor": "rgba(0,0,0,0)"
+        }
+
+        nuclei_annot_list.append(cur_annot)
+
+    return nuclei_annot_list
+
+
+def create_tile_nuclei_annotations(im_nuclei_seg_mask, tile_info, args):
+
+    if args.nuclei_annotation_format == 'bbox':
+
+        return create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask,
+                                                   tile_info)
+
+    elif args.nuclei_annotation_format == 'boundary':
+
+        return create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask,
+                                                       tile_info)
+    else:
+
+        raise ValueError('Invalid value passed for nuclei_annotation_format')
 
 
 __all__ = (
+    'create_tile_nuclei_annotations',
+    'create_tile_nuclei_bbox_annotations',
+    'create_tile_nuclei_boundary_annotations',
     'get_stain_vector',
     'get_stain_matrix',
 )
+
+

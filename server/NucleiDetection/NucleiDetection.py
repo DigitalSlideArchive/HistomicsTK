@@ -1,68 +1,27 @@
-import histomicstk.preprocessing.color_normalization as htk_cnorm
-import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
-import histomicstk.filters.shape as htk_shape_filters
-import histomicstk.segmentation as htk_seg
-import histomicstk.utils as htk_utils
+import os
+import sys
+import json
+import itertools
+import time
+import logging
+logging.basicConfig()
 
-import large_image
+import numpy as np
 
 import dask
 from dask.distributed import Client, LocalCluster
 import multiprocessing
 
-import os
-import sys
-import numpy as np
-import json
-import scipy as sp
-import skimage.io
-import skimage.measure
-import itertools
-import time
+import histomicstk.preprocessing.color_normalization as htk_cnorm
+import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk.utils as htk_utils
+
+import large_image
 
 from ctk_cli import CLIArgumentParser
 
-import logging
-logging.basicConfig()
-
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils  # noqa
-
-
-def detect_nuclei_kofahi(im_input, args):
-
-    # perform color normalization
-    im_nmzd = htk_cnorm.reinhard(im_input,
-                                 args.reference_mu_lab,
-                                 args.reference_std_lab)
-
-    # perform color decovolution
-    w = utils.get_stain_matrix(args)
-
-    im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
-
-    im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
-
-    # segment foreground (assumes nuclei are darker on a bright background)
-    im_nuclei_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
-        im_nuclei_stain < args.foreground_threshold)
-
-    # run adaptive multi-scale LoG filter
-    im_log_max, im_sigma_max = htk_shape_filters.cdog(
-        im_nuclei_stain, im_nuclei_fgnd_mask,
-        sigma_min=args.min_radius / np.sqrt(2),
-        sigma_max=args.max_radius / np.sqrt(2)
-    )
-
-    # apply local maximum clustering
-    im_nuclei_seg_mask, seeds, max = htk_seg.nuclear.max_clustering(
-        im_log_max, im_nuclei_fgnd_mask, args.local_max_search_radius)
-
-    # filter out small objects
-    im_nuclei_seg_mask = htk_seg.label.area_open(
-        im_nuclei_seg_mask, args.min_nucleus_area).astype(np.int)
-
-    return im_nuclei_seg_mask
+from cli_common import utils as cli_utils # noqa
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
@@ -79,71 +38,24 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
     # get tile image
     im_tile = tile_info['tile'][:, :, :3]
 
-    # segment nuclei
-    im_nuclei_seg_mask = detect_nuclei_kofahi(im_tile, args)
+    # perform color normalization
+    im_nmzd = htk_cnorm.reinhard(im_tile,
+                                 args.reference_mu_lab,
+                                 args.reference_std_lab)
 
-    obj_props = skimage.measure.regionprops(im_nuclei_seg_mask)
+    # perform color decovolution
+    w = cli_utils.get_stain_matrix(args)
+
+    im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
+
+    im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
+
+    # segment nuclei
+    im_nuclei_seg_mask = cli_utils.detect_nuclei_kofahi(im_nuclei_stain, args)
 
     # generate nuclei annotations
-    nuclei_annot_list = []
-
-    gx = tile_info['gx']
-    gy = tile_info['gy']
-    wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
-    hfrac = tile_info['gheight'] / np.double(tile_info['height'])
-
-    if args.nuclei_annotation_format == 'bbox':
-
-        for i in range(len(obj_props)):
-
-            cx = obj_props[i].centroid[1]
-            cy = obj_props[i].centroid[0]
-            width = obj_props[i].bbox[3] - obj_props[i].bbox[1] + 1
-            height = obj_props[i].bbox[2] - obj_props[i].bbox[0] + 1
-
-            # convert to base pixel coords
-            cx = np.round(gx + cx * wfrac, 2)
-            cy = np.round(gy + cy * hfrac, 2)
-            width = np.round(width * wfrac, 2)
-            height = np.round(height * hfrac, 2)
-
-            # create annotation json
-            cur_bbox = {
-                "type":        "rectangle",
-                "center":      [cx, cy, 0],
-                "width":       width,
-                "height":      height,
-                "rotation":    0,
-                "fillColor":   "rgba(0,0,0,0)"
-            }
-
-            nuclei_annot_list.append(cur_bbox)
-
-    elif args.nuclei_annotation_format == 'boundary':
-
-        bx, by = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
-                                                       trace_all=True)
-
-        nuclei_annot_list = []
-
-        for i in range(len(bx)):
-
-            # get boundary points and convert to base pixel space
-            num_points = len(bx[i])
-
-            cur_points = np.zeros((num_points, 3))
-            cur_points[:, 0] = np.round(gx + bx[i] * wfrac, 2)
-            cur_points[:, 1] = np.round(gy + by[i] * hfrac, 2)
-
-            # create annotation json
-            cur_annot = {
-                "type":        "polyline",
-                "points":      cur_points.tolist(),
-                "closed":      True,
-                "fillColor":   "rgba(0,0,0,0)"
-            }
-
-            nuclei_annot_list.append(cur_annot)
+    nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
+        im_nuclei_seg_mask, tile_info, args)
 
     return nuclei_annot_list
 
