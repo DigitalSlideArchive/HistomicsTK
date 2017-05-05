@@ -1,10 +1,15 @@
 import numpy as np
 import scipy as sp
 import skimage.measure
+import multiprocessing
+import dask.distributed
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.filters.shape as htk_shape_filters
 import histomicstk.segmentation as htk_seg
+import histomicstk.utils as htk_utils
+
+import large_image
 
 def get_stain_vector(args, index):
     """Get the stain corresponding to args.stain_$index and
@@ -34,6 +39,32 @@ def get_stain_matrix(args, count=3):
 
     """
     return np.array([get_stain_vector(args, i+1) for i in range(count)]).T
+
+
+def segment_wsi_foreground_at_low_res(ts):
+
+    ts_metadata = ts.getMetadata()
+
+    # get image at low-res
+    maxSize = max(ts_metadata['sizeX'], ts_metadata['sizeY'])
+
+    downsample_factor = 2 ** np.floor(np.log2(maxSize / 2048))
+
+    fgnd_seg_mag = ts_metadata['magnification'] / downsample_factor
+
+    fgnd_seg_scale = {'magnification': fgnd_seg_mag}
+
+    im_lres, _ = ts.getRegion(
+        scale=fgnd_seg_scale,
+        format=large_image.tilesource.TILE_FORMAT_NUMPY
+    )
+
+    im_lres = im_lres[:, :, :3]
+
+    # compute foreground mask at low-res
+    im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)
+
+    return im_fgnd_mask_lres, fgnd_seg_scale
 
 
 def detect_nuclei_kofahi(im_nuclei_stain, args):
@@ -148,12 +179,31 @@ def create_tile_nuclei_annotations(im_nuclei_seg_mask, tile_info, args):
         raise ValueError('Invalid value passed for nuclei_annotation_format')
 
 
+def create_dask_client(args):
+
+    scheduler_address = args.scheduler_address
+
+    if not scheduler_address:
+
+        scheduler_address = dask.distributed.LocalCluster(
+            n_workers=multiprocessing.cpu_count()-1,
+            scheduler_port=0,
+            silence_logs=False
+        )
+
+    c = dask.distributed.Client(scheduler_address)
+
+    return c
+
+
 __all__ = (
     'create_tile_nuclei_annotations',
     'create_tile_nuclei_bbox_annotations',
     'create_tile_nuclei_boundary_annotations',
+    'detect_nuclei_kofahi',
     'get_stain_vector',
     'get_stain_matrix',
+    'segment_wsi_foreground_at_low_res'
 )
 
 

@@ -7,10 +7,7 @@ import logging
 logging.basicConfig()
 
 import numpy as np
-
 import dask
-from dask.distributed import Client, LocalCluster
-import multiprocessing
 
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
@@ -93,17 +90,8 @@ def main(args):
     #
     print('\n>> Creating Dask client ...\n')
 
-    scheduler_address = args.scheduler_address
+    c = cli_utils.create_dask_client(args)
 
-    if not scheduler_address:
-
-        scheduler_address = LocalCluster(
-            n_workers=multiprocessing.cpu_count()-1,
-            scheduler_port=0,
-            silence_logs=False
-        )
-
-    c = Client(scheduler_address)
     print c
 
     #
@@ -126,24 +114,8 @@ def main(args):
 
         print('\n>> Computing tissue/foreground mask at low-res ...\n')
 
-        # get image at low-res
-        maxSize = max(ts_metadata['sizeX'], ts_metadata['sizeY'])
-
-        downsample_factor = 2**np.floor(np.log2(maxSize / 2048))
-
-        fgnd_seg_mag = ts_metadata['magnification'] / downsample_factor
-
-        fgnd_seg_scale = {'magnification': fgnd_seg_mag}
-
-        im_lres, _ = ts.getRegion(
-            scale=fgnd_seg_scale,
-            format=large_image.tilesource.TILE_FORMAT_NUMPY
-        )
-
-        im_lres = im_lres[:, :, :3]
-
-        # compute foreground mask at low-res
-        im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)
+        im_fgnd_mask_lres, fgnd_seg_scale = \
+            cli_utils.segment_wsi_foreground_at_low_res(ts)
 
     #
     # Compute foreground fraction of tiles in parallel using Dask
