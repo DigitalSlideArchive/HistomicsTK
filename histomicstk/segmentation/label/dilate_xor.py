@@ -24,6 +24,7 @@ def dilate_xor(im_label, neigh_width=8):
         The intensity of each pixel in the ring-like neighborhood is set
         equal to the label of the closest object in the given label mask.
         other pixels (including the ones inside objects) are set to zero.
+
     """
 
     # For each background pixel compute the distance to the nearest object and

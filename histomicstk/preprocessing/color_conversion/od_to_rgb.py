@@ -22,6 +22,7 @@ def od_to_rgb(im_od):
     histomicstk.preprocessing.color_conversion.sda_to_rgb,
     histomicstk.preprocessing.color_deconvolution.color_deconvolution,
     histomicstk.preprocessing.color_deconvolution.color_convolution
+
     """
 
     return sda_to_rgb(im_od, None)  # compatibility mode

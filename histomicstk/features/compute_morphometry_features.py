@@ -67,6 +67,7 @@ def compute_morphometry_features(im_label, rprops=None):
     Shape.Solidity : float
         A measure of convexity computed as the ratio of the number of pixels
         in the object to that of its convex hull.
+
     """
 
     # List of feature names in alphabetical order

@@ -93,7 +93,7 @@ var AnnotationSelector = Panel.extend({
      * `displayed` attribute of the `AnnotationModel`.
      */
     toggleAnnotation(evt) {
-        var id = $(evt.currentTarget).parent('.h-annotation').data('id');
+        var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
         model.set('displayed', !model.get('displayed'));
     },
@@ -102,7 +102,7 @@ var AnnotationSelector = Panel.extend({
      * Delete an annotation from the server.
      */
     deleteAnnotation(evt) {
-        var id = $(evt.currentTarget).parent('.h-annotation').data('id');
+        var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
         if (model) {
             model.unset('displayed');

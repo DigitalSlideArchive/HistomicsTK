@@ -13,8 +13,7 @@ girderTest.importStylesheet(
     '/static/built/plugins/HistomicsTK/plugin.min.css'
 );
 girderTest.addCoveredScripts([
-    '/clients/web/static/built/plugins/HistomicsTK/plugin.min.js',
-    '/plugins/HistomicsTK/plugin_tests/client/mockVGL.js'
+    '/clients/web/static/built/plugins/HistomicsTK/plugin.min.js'
 ]);
 
 var app;
@@ -36,6 +35,11 @@ girderTest.promise.then(function () {
 $(function () {
     function openImage(name) {
         runs(function () {
+            app.bodyView.once('h:viewerWidgetCreated', function (viewerWidget) {
+                viewerWidget.once('g:beforeFirstRender', function () {
+                    window.geo.util.mockVGLRenderer();
+                });
+            });
             $('.h-open-image').click();
         });
 
@@ -100,7 +104,6 @@ $(function () {
                 openImage('image');
                 runs(function () {
                     geojsMap = app.bodyView.viewer;
-                    window.mockVGLRenderer(true);
                 });
             });
         });

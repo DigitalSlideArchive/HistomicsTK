@@ -32,6 +32,7 @@ def rgb_to_sda(im_rgb, I_0, allow_negatives=False):
     histomicstk.preprocessing.color_conversion.rgb_to_od,
     histomicstk.preprocessing.color_deconvolution.color_deconvolution,
     histomicstk.preprocessing.color_deconvolution.color_convolution
+
     """
     is_matrix = im_rgb.ndim == 2
     if is_matrix:

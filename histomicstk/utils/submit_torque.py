@@ -19,6 +19,7 @@ def submit_torque(job_string, job_id, mem=512):
         String to assign name to job in PBS scheduler (-N option).
     mem : int, optional
         Free memory parameter for 'mem_free', in MB, as defined by qsub.
+
     """
 
     # create job file in working directory

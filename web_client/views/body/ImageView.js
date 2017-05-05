@@ -69,6 +69,7 @@ var ImageView = View.extend({
                 el: this.$('.h-image-view-container'),
                 itemId: this.model.id
             });
+            this.trigger('h:viewerWidgetCreated', this.viewerWidget);
             this.viewerWidget.on('g:imageRendered', () => {
                 events.trigger('h:imageOpened', this.model);
                 // store a reference to the underlying viewer
@@ -317,7 +318,7 @@ var ImageView = View.extend({
                 }]
             }
         });
-        this.viewerWidget.drawAnnotation(annotation);
+        this.viewerWidget.drawAnnotation(annotation, {fetch: false});
     },
 
     showCoordinates(evt) {

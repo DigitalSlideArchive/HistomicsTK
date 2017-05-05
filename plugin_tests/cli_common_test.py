@@ -25,12 +25,15 @@ from tests import base
 import os
 import sys
 
+import large_image
 import numpy as np
 
 from histomicstk.preprocessing.color_deconvolution import stain_color_map
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../server')))
 from cli_common import utils  # noqa
+
+TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')
 
 
 # boiler plate to start and stop the server
@@ -60,3 +63,13 @@ class CliCommonTest(base.TestCase):
         expected = np.array([stain_color_map['hematoxylin'],
                              [0.1, 0.2, 0.3]]).T
         np.testing.assert_allclose(utils.get_stain_matrix(args, 2), expected)
+
+    def test_get_region_dict(self):
+        ts = large_image.getTileSource(os.path.join(TEST_DATA_DIR, 'Easy1.png'))
+        result = utils.get_region_dict([-1, -1, -1, -1], 2000, ts)
+        expected = {}
+        assert result == expected, "Expected {}, got {}".format(expected, result)
+
+        result = utils.get_region_dict([100, 110, 250, 240], 500, ts)
+        expected = dict(region=dict(left=100, top=110, width=250, height=240))
+        assert result == expected, "Expected {}, got {}".format(expected, result)

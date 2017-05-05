@@ -209,6 +209,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
        pp: 610-621, 1973.
     .. [#] Luis Pedro Coelho. "Mahotas: Open source software for scriptable
        computer vision," Journal of Open Research Software, vol 1, 2013.
+
     """
 
     # List of feature names

@@ -109,6 +109,7 @@ def _InterpolateArcLength(X, Y, K):
     iY : array_like
         L-length vector of vertical interpolated coordinates with equal
         arc-length spacing.
+
     """
 
     # generate spaced points 0, 1/k, 1
@@ -159,6 +160,7 @@ def _FSDs(X, Y, K, Intervals):
     F : array_like
         length(Intervals) vector containing spectral energy of
         cumulative angular function, summed over defined 'Intervals'.
+
     """
 
     # check input 'Intervals'
@@ -221,6 +223,7 @@ def _GetBounds(bbox, delta, M, N):
         Minum column of the region bounds.
     max_col : int
         Maximum column of the region bounds.
+
     """
 
     min_row, min_col, max_row, max_col = bbox

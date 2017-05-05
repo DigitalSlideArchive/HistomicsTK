@@ -97,7 +97,7 @@
   when: docker is undefined
 
 - name: Restart worker as a service
-  systemd: name=girder_worker state=restarted daemon_reload=yes
+  systemd: name=girder_worker enabled=yes state=restarted daemon_reload=yes
   become: true
   when: docker is undefined
 
