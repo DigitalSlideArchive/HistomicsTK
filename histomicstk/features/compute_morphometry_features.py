@@ -3,7 +3,7 @@ import pandas as pd
 from skimage.measure import regionprops
 
 
-def ComputeMorphometryFeatures(im_label, rprops=None):
+def compute_morphometry_features(im_label, rprops=None):
     """
     Calculates morphometry features for each object
 
