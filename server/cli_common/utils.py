@@ -11,6 +11,7 @@ import histomicstk.utils as htk_utils
 
 import large_image
 
+
 def get_stain_vector(args, index):
     """Get the stain corresponding to args.stain_$index and
     args.stain_$index_vector.  If the former is not "custom", all the
@@ -257,5 +258,3 @@ __all__ = (
     'get_stain_vector',
     'segment_wsi_foreground_at_low_res',
 )
-
-
