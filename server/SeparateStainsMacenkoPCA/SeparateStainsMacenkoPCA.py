@@ -5,7 +5,6 @@ from ctk_cli import CLIArgumentParser
 from dask.distributed import Client
 import numpy
 
-from histomicstk.utils import sample_pixels
 from histomicstk.preprocessing.color_deconvolution import rgb_separate_stains_macenko_pca
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
@@ -15,12 +14,9 @@ from cli_common import utils  # noqa
 def main(args):
     args = utils.splitArgs(args)
     args.macenko.I_0 = numpy.array(args.macenko.I_0)
-    for k in 'magnification', 'sample_fraction', 'sample_approximate_total':
-        if getattr(args.sample, k) == -1:
-            delattr(args.sample, k)
 
     Client(args.dask.scheduler_address or None)
-    sample = sample_pixels(**vars(args.sample))
+    sample = utils.sample_pixels(args.sample)
     stain_matrix = rgb_separate_stains_macenko_pca(sample.T, **vars(args.macenko))
     with open(args.returnParameterFile, 'w') as f:
         for i, stain in enumerate(stain_matrix.T):

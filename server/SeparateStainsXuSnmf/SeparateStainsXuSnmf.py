@@ -7,7 +7,6 @@ import numpy
 from ctk_cli import CLIArgumentParser
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
-from histomicstk.utils import sample_pixels
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils  # noqa
@@ -16,13 +15,10 @@ from cli_common import utils  # noqa
 def main(args):
     args = utils.splitArgs(args)
     args.snmf.I_0 = numpy.array(args.snmf.I_0)
-    for k in 'magnification', 'sample_fraction', 'sample_approximate_total':
-        if getattr(args.sample, k) == -1:
-            delattr(args.sample, k)
 
     print(">> Starting Dask cluster and sampling pixels")
     Client(args.dask.scheduler_address or None)
-    sample = sample_pixels(**vars(args.sample))
+    sample = utils.sample_pixels(args.sample)
 
     # Create stain matrix
     print('>> Creating stain matrix')

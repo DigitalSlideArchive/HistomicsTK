@@ -1,6 +1,7 @@
 import numpy
 
 from histomicstk.preprocessing.color_deconvolution import stain_color_map
+from histomicstk import utils
 
 
 def get_stain_vector(args, index):
@@ -108,9 +109,22 @@ def splitArgs(args, split='_'):
     return result
 
 
+def sample_pixels(args):
+    """Version of histomicstk.utils.sample_pixels that takes a Namespace
+    and handles the special default values.
+
+    """
+    args = vars(args).copy()
+    for k in 'magnification', 'sample_fraction', 'sample_approximate_total':
+        if args[k] == -1:
+            del args[k]
+    return utils.sample_pixels(**args)
+
+
 __all__ = (
     'get_stain_vector',
     'get_stain_matrix',
     'get_region_dict',
     'splitArgs',
+    'sample_pixels',
 )
