@@ -57,6 +57,7 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
 
     return nuclei_annot_list
 
+
 def disp_time(seconds):
     return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
