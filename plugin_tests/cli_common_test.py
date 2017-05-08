@@ -24,13 +24,17 @@ from tests import base
 
 import os
 import sys
+import json
+import collections
 
 import numpy as np
 import skimage.io
 
 import large_image
 
-from histomicstk.preprocessing.color_deconvolution import stain_color_map
+import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk.preprocessing.color_normalization as htk_cnorm
+import histomicstk.utils as htk_utils
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../server')))
 from cli_common import cli_utils  # noqa
@@ -63,7 +67,7 @@ class CliCommonTest(base.TestCase):
             stain_2='custom',
             stain_2_vector=[0.1, 0.2, 0.3],
         )
-        expected = np.array([stain_color_map['hematoxylin'],
+        expected = np.array([htk_cdeconv.stain_color_map['hematoxylin'],
                              [0.1, 0.2, 0.3]]).T
         np.testing.assert_allclose(cli_utils.get_stain_matrix(args, 2),
                                    expected)
@@ -99,7 +103,7 @@ class CliCommonTest(base.TestCase):
 
         fgnd_mask_gtruth_file = os.path.join(
             TEST_DATA_DIR,
-            'TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7_fgnd_mask_lres.png'  # noqa
+            'TCGA-02-0010-01Z-00-DX4fgnd_mask_lres.png'
         )
 
         im_fgnd_mask_lres_gtruth = skimage.io.imread(
@@ -107,3 +111,137 @@ class CliCommonTest(base.TestCase):
 
         np.testing.assert_array_equal(im_fgnd_mask_lres,
                                       im_fgnd_mask_lres_gtruth)
+
+    def test_create_tile_nuclei_annotations(self):
+
+        wsi_path = os.path.join(
+            TEST_DATA_DIR,
+            'TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs'
+        )
+
+        # define parameters
+        args = {
+
+            'reference_mu_lab': [8.63234435, -0.11501964, 0.03868433],
+            'reference_std_lab': [0.57506023, 0.10403329, 0.01364062],
+
+            'stain_1': 'hematoxylin',
+            'stain_2': 'eosin',
+            'stain_3': 'null',
+
+            'min_fgnd_frac': 0.50,
+            'analysis_mag': 20,
+            'analysis_tile_size': 1200,
+
+            'min_radius': 12,
+            'max_radius': 30,
+            'foreground_threshold': 60,
+            'min_nucleus_area': 80,
+            'local_max_search_radius': 10,
+
+            'scheduler_address': None
+        }
+
+        args = collections.namedtuple('Parameters', args.keys())(**args)
+
+        # read WSI
+        ts = large_image.getTileSource(wsi_path)
+
+        ts_metadata = ts.getMetadata()
+
+        analysis_tile_size = {
+            'width': int(ts_metadata['tileWidth'] * np.floor(
+                1.0 * args.analysis_tile_size / ts_metadata['tileWidth'])),
+            'height': int(ts_metadata['tileHeight'] * np.floor(
+                1.0 * args.analysis_tile_size / ts_metadata['tileHeight']))
+        }
+
+        # define ROI
+        roi = {'left': ts_metadata['sizeX'] / 2,
+               'top': ts_metadata['sizeY'] / 2,
+               'width': analysis_tile_size['width'],
+               'height': analysis_tile_size['height'],
+               'units': 'base_pixels'}
+
+        # define tile iterator parameters
+        it_kwargs = {
+            'tile_size': {'width', analysis_tile_size},
+            'scale': {'magnification': args.analysis_mag},
+            'region': roi
+        }
+
+        # create dask client
+        cli_utils.create_dask_client(args)
+
+        # get tile foregreoung at low res
+        im_fgnd_mask_lres, fgnd_seg_scale = \
+            cli_utils.segment_wsi_foreground_at_low_res(ts)
+
+        # compute tile foreground fraction
+        tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
+            wsi_path, im_fgnd_mask_lres, fgnd_seg_scale,
+            **it_kwargs
+        )
+
+        num_fgnd_tiles = np.count_nonzero(
+            tile_fgnd_frac_list >= args.min_fgnd_frac)
+
+        np.testing.assert_equal(num_fgnd_tiles, 4)
+
+        # create nuclei annotations
+        nuclei_bbox_annot_list = []
+        nuclei_bndry_annot_list = []
+
+        for tile_info in ts.tileIterator(**it_kwargs):
+
+            im_tile = tile_info['tile'][:, :, :3]
+
+            # perform color normalization
+            im_nmzd = htk_cnorm.reinhard(im_tile,
+                                         args.reference_mu_lab,
+                                         args.reference_std_lab)
+
+            # perform color deconvolution
+            w = cli_utils.get_stain_matrix(args)
+
+            im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
+
+            im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
+
+            # segment nuclei
+            im_nuclei_seg_mask = cli_utils.detect_nuclei_kofahi(
+                im_nuclei_stain, args)
+
+            # generate nuclei annotations as bboxes
+            cur_bbox_annot_list = cli_utils.create_tile_nuclei_annotations(
+                im_nuclei_seg_mask, tile_info, 'bbox')
+
+            nuclei_bbox_annot_list.extend(cur_bbox_annot_list)
+
+            # generate nuclei annotations as boundaries
+            cur_bndry_annot_list = cli_utils.create_tile_nuclei_annotations(
+                im_nuclei_seg_mask, tile_info, 'boundary')
+
+            nuclei_bndry_annot_list.extend(cur_bndry_annot_list)
+
+        # compare nuclei bbox annotations with gtruth
+        nuclei_bbox_annot_gtruth_file = os.path.join(
+            TEST_DATA_DIR,
+            'TCGA-02-0010-01Z-00-DX4_roi_nuclei_bbox.anot'  # noqa
+        )
+
+        with open(nuclei_bbox_annot_gtruth_file, 'r') as fbbox_annot:
+            nuclei_bbox_annot_list_gtruth = json.load(fbbox_annot)['elements']
+
+        assert nuclei_bbox_annot_list == nuclei_bbox_annot_list_gtruth
+
+        # compare nuclei boundary annotations with gtruth
+        nuclei_bndry_annot_gtruth_file = os.path.join(
+            TEST_DATA_DIR,
+            'TCGA-02-0010-01Z-00-DX4_roi_nuclei_boundary.anot'  # noqa
+        )
+
+        with open(nuclei_bndry_annot_gtruth_file, 'r') as fbndry_annot:
+            nuclei_bndry_annot_list_gtruth = json.load(fbndry_annot)['elements']
+
+        assert nuclei_bndry_annot_list == nuclei_bndry_annot_list_gtruth

@@ -116,7 +116,9 @@ add_histomicstk_python_test(cli_common
   # EXTERNAL_DATA
   # "plugins/HistomicsTK/Easy1.png"
   "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs"
-  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7_fgnd_mask_lres.png"
+  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4_fgnd_mask_lres.png"
+  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4_roi_nuclei_bbox.anot"
+  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4_roi_nuclei_boundary.anot"
 )
 
 add_histomicstk_python_test(cli_results

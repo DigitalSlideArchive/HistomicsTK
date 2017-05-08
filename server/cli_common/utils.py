@@ -164,14 +164,14 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
     return nuclei_annot_list
 
 
-def create_tile_nuclei_annotations(im_nuclei_seg_mask, tile_info, args):
+def create_tile_nuclei_annotations(im_nuclei_seg_mask, tile_info, format):
 
-    if args.nuclei_annotation_format == 'bbox':
+    if format == 'bbox':
 
         return create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask,
                                                    tile_info)
 
-    elif args.nuclei_annotation_format == 'boundary':
+    elif format == 'boundary':
 
         return create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask,
                                                        tile_info)

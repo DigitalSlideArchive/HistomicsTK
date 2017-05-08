@@ -53,7 +53,7 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
 
     # generate nuclei annotations
     nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
-        im_nuclei_seg_mask, tile_info, args)
+        im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
 
     return nuclei_annot_list
 
