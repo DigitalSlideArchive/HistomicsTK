@@ -37,6 +37,7 @@ def compute_tile_foreground_fraction(slide_path, im_fgnd_mask_lres,
         present in the tile indicated by `tile_position`. If `tile_position`
         is set to None, then a 1D array containing the foreground fraction of
         all tiles will be returned.
+
     """
 
     # get slide tile source
