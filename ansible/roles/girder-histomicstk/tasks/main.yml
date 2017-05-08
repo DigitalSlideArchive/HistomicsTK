@@ -174,12 +174,21 @@
 
 - name: Add a script to set hosts if necessary
   template:
-      src: set_hosts.py
-      dest: "{{ root_dir }}/set_hosts.py"
-      mode: 0744
-      owner: root
+    src: set_hosts.py
+    dest: "{{ root_dir }}/set_hosts.py"
+    mode: 0744
+    owner: root
   become: true
   when: docker is defined
+
+- name: Add a script to get CLIs and add them to HistomicsTK
+  copy:
+    src: utils/cli_test.py
+    dest: "{{ root_dir }}/cli_test.py"
+    mode: 0744
+    owner: "{{ girder_exec_user }}"
+    group: "{{ girder_exec_group }}"
+  become: true
 
 - name: Build all frontend assets
   command: girder-install web --dev --all-plugins
