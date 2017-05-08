@@ -1,7 +1,6 @@
 import os
 import sys
 
-from dask.distributed import Client
 import numpy
 
 from ctk_cli import CLIArgumentParser
@@ -17,7 +16,7 @@ def main(args):
     args.snmf.I_0 = numpy.array(args.snmf.I_0)
 
     print(">> Starting Dask cluster and sampling pixels")
-    Client(args.dask.scheduler_address or None)
+    utils.start_dask(args.dask)
     sample = utils.sample_pixels(args.sample)
 
     # Create stain matrix

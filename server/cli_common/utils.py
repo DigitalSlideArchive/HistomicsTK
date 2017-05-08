@@ -1,5 +1,6 @@
 import numpy
 
+from dask.distributed import Client
 from histomicstk.preprocessing.color_deconvolution import stain_color_map
 from histomicstk import utils
 
@@ -121,10 +122,22 @@ def sample_pixels(args):
     return utils.sample_pixels(**args)
 
 
+def start_dask(args):
+    """Start Dask using args from a Namespace, supporting the following
+    attributes:
+
+    - .scheduler_address: Address of the distributed scheduler, or the
+      empty string to start one locally
+
+    """
+    return Client(args.scheduler_address or None)
+
+
 __all__ = (
     'get_stain_vector',
     'get_stain_matrix',
     'get_region_dict',
     'splitArgs',
     'sample_pixels',
+    'start_dask',
 )
