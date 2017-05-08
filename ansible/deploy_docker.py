@@ -31,11 +31,18 @@ ImageList = collections.OrderedDict([
         'tag': 'dsarchive/girder_worker',
         'name': 'histomicstk_girder_worker',
         'dockerfile': 'Dockerfile-girder-worker',
+        'pinned': 'v0.1.3',
     }),
     ('histomicstk', {
         'tag': 'dsarchive/histomicstk_main',
         'name': 'histomicstk_histomicstk',
         'dockerfile': 'Dockerfile-histomicstk',
+        'pinned': 'v0.1.3',
+    }),
+    ('cli', {
+        'tag': 'dsarchive/histomicstk',
+        'pull': True,
+        'pinned': 'v0.1.5',
     }),
 ])
 
@@ -67,7 +74,8 @@ def containers_provision(**kwargs):
     Provision or reprovision the containers.
     """
     client = docker.from_env()
-    ctn = get_docker_image_and_container(client, 'histomicstk')
+    ctn = get_docker_image_and_container(
+        client, 'histomicstk', version=kwargs.get('pinned'))
 
     username = kwargs.get('username')
     password = kwargs.get('password')
@@ -88,6 +96,10 @@ def containers_provision(**kwargs):
     if password:
         extra_vars['girder_admin_password'] = password
         extra_vars['girder_no_create_admin'] = True
+    if kwargs.get('cli'):
+        extra_vars['cli_image'] = tag_with_version('cli', **kwargs)
+        if kwargs['cli'] == 'test':
+            extra_vars['cli_image_test'] = 'true'
     ansible_command = (
         'ansible-playbook -i inventory/local docker_ansible.yml '
         '--extra-vars=' + six.moves.shlex_quote(json.dumps(extra_vars)))
@@ -169,9 +181,10 @@ def container_start_histomicstk(client, env, key='histomicstk', port=8080,
         provision if the histomictk container is created.
     :returns: True if the container should be provisioned.
     """
-    image = ImageList[key]['tag']
+    image = tag_with_version(key, **kwargs)
     name = ImageList[key]['name']
-    ctn = get_docker_image_and_container(client, key)
+    ctn = get_docker_image_and_container(
+        client, key, version=kwargs.get('pinned'))
     if ctn is None:
         provision = True
         config = {
@@ -229,9 +242,10 @@ def container_start_mongodb(client, env, key='mongodb', mongo='docker',
         'docker', use an internal data directory.
     """
     if mongo == 'docker':
-        image = ImageList[key]['tag']
+        image = tag_with_version(key, **kwargs)
         name = ImageList[key]['name']
-        ctn = get_docker_image_and_container(client, key)
+        ctn = get_docker_image_and_container(
+            client, key, version=kwargs.get('pinned'))
         if ctn is None:
             config = {
                 'restart_policy': {'name': 'always'},
@@ -277,9 +291,10 @@ def container_start_rmq(client, env, key='rmq', rmq='docker', **kwargs):
         maps to the docker host and anything else is passed through.
     """
     if rmq == 'docker':
-        image = ImageList[key]['tag']
+        image = tag_with_version(key, **kwargs)
         name = ImageList[key]['name']
-        ctn = get_docker_image_and_container(client, key)
+        ctn = get_docker_image_and_container(
+            client, key, version=kwargs.get('pinned'))
         if ctn is None:
             config = {
                 'restart_policy': {'name': 'always'},
@@ -319,9 +334,10 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
         host, otherwise the IP for the rabbitmq instance, where DOCKER_HOST
         maps to the docker host and anything else is passed through.
     """
-    image = ImageList[key]['tag']
+    image = tag_with_version(key, **kwargs)
     name = ImageList[key]['name']
-    ctn = get_docker_image_and_container(client, key)
+    ctn = get_docker_image_and_container(
+        client, key, version=kwargs.get('pinned'))
     if ctn is None:
         config = {
             'restart_policy': {'name': 'always'},
@@ -365,6 +381,8 @@ def containers_status(**kwargs):
     keys = ImageList.keys()
     results = []
     for key in keys:
+        if 'name' not in ImageList:
+            continue
         ctn = get_docker_image_and_container(client, key, False)
         entry = {
             'key': key,
@@ -417,7 +435,7 @@ def docker_mounts():
     return mounts
 
 
-def get_docker_image_and_container(client, key, pullOrBuild=True):
+def get_docker_image_and_container(client, key, pullOrBuild=True, version=None):
     """
     Given a key from the docker ImageList, check if an image is present.  If
     not, pull it.  Check if an associated container exists and return
@@ -428,12 +446,14 @@ def get_docker_image_and_container(client, key, pullOrBuild=True):
     :param pullOrBuild: if True, try to pull or build the image if it isn't
         present.  If 'pull', try to pull the image (not build), even if we
         already have it.
+    :param version: if True, use the pinned version when pulling.  If a string,
+        use that version.  Otherwise, don't specify a version (which defaults
+        to latest).
     :returns: docker container or None.
     """
-    name = ImageList[key]['name']
     if pullOrBuild:
         pull = False
-        image = ImageList[key]['tag']
+        image = tag_with_version(key, version)
         try:
             client.inspect_image(image)
         except docker.errors.NotFound:
@@ -447,11 +467,13 @@ def get_docker_image_and_container(client, key, pullOrBuild=True):
                     raise
                 if not ImageList[key].get('pull'):
                     images_build(True, key)
-    containers = client.containers(all=True)
-    ctn = [entry for entry in containers if name in
-           [val.strip('/') for val in entry.get('Names', [])]]
-    if len(ctn):
-        return ctn[0]
+    name = ImageList[key].get('name')
+    if name:
+        containers = client.containers(all=True)
+        ctn = [entry for entry in containers if name in
+               [val.strip('/') for val in entry.get('Names', [])]]
+        if len(ctn):
+            return ctn[0]
     return None
 
 
@@ -526,9 +548,11 @@ def images_repull(**kwargs):
     Repull all docker images.
     """
     client = docker.from_env()
-    keys = ImageList.keys()
-    for key in keys:
-        get_docker_image_and_container(client, key, 'pull')
+    for key, image in six.iteritems(ImageList):
+        if 'name' not in image and not kwargs.get('cli'):
+            continue
+        get_docker_image_and_container(
+            client, key, 'pull',  version=kwargs.get('pinned'))
 
 
 def network_create(client, name):
@@ -557,6 +581,19 @@ def network_remove(client, name):
     if not len(net):
         return
     client.remove_network(net[0].get('Id'))
+
+
+def pinned_versions():
+    """
+    Get a list of images that have pinned versions.
+
+    :return: a list of image names with versions.
+    """
+    pinned = []
+    for image in six.itervalues(ImageList):
+        if 'pinned' in image:
+            pinned.append('%s:%s' % (image['tag'], image['pinned']))
+    return pinned
 
 
 def print_table(table, headers):
@@ -593,6 +630,28 @@ addresses via -l 0.0.0.0).
 """)
 
 
+def tag_with_version(key, version=None, **kwargs):
+    """
+    Get an image tag with a version appended to it.  If the pinned parameter is
+    specified, use the specified or pinned version.
+
+    :param key: the key in the image list.
+    :param version: the version to use, True to use the pinned value, or None
+        to use latest.  If None, use kwargs.get('pinned') as the version.
+    :return: the image tag with a version.
+    """
+    image = ImageList[key]['tag']
+    if version is None:
+        version = kwargs.get('pinned')
+    if version is True:
+        version = ImageList[key].get('pinned')
+    if isinstance(version, six.string_types):
+        image = image.split(':', 1)[0] + ':' + version
+    if ':' not in image:
+        image += ':latest'
+    return image
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Provision and run HistomicsTK in docker containers.')
@@ -608,6 +667,15 @@ if __name__ == '__main__':
     parser.add_argument(
         '--build', '-b', dest='build', action='store_true',
         help='Build gider_worker and histomicstk docker images.')
+    parser.add_argument(
+        '--cli', '-c', dest='cli', action='store_true', default=True,
+        help='Pull and install the HistomicsTK cli docker image.')
+    parser.add_argument(
+        '--cli-test', dest='cli', action='store_const', const='test',
+        help='Pull and install the HistomicsTK cli docker image; test the CLI.')
+    parser.add_argument(
+        '--no-cli', dest='cli', action='store_false',
+        help='Pull and install the HistomicsTK cli docker image.')
     parser.add_argument(
         '--db', '-d', dest='mongodb_path', default='~/.histomicstk/db',
         help='Database path (if a Mongo docker container is used).  Use '
@@ -637,6 +705,13 @@ if __name__ == '__main__':
         const='', default=None, nargs='?',
         help='Override the Girder admin password used in provisioning.  Set '
         'to an empty string to be prompted for username and password.')
+    parser.add_argument(
+        '--pinned', dest='pinned', action='store_true', default=True,
+        help='When pulling images, use the pinned versions (%s).' % (
+            ', '.join(pinned_versions())))
+    parser.add_argument(
+        '--latest', dest='pinned', action='store_false',
+        help='When pulling images, use the latest images.')
     parser.add_argument(
         '--provision', action='store_true',
         help='Reprovision the Girder the docker containers are started.')
@@ -690,7 +765,7 @@ if __name__ == '__main__':
         args.provision = True
 
     if args.pull or args.command == 'pull':
-        images_repull()
+        images_repull(**vars(args))
     if args.build or args.command == 'build':
         images_build(args.retry)
     if args.command in ('stop', 'restart', 'rm', 'remove'):
