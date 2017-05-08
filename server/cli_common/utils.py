@@ -33,7 +33,57 @@ def get_stain_matrix(args, count=3):
     return numpy.array([get_stain_vector(args, i+1) for i in range(count)]).T
 
 
+def get_region_dict(region, maxRegionSize=None, tilesource=None):
+    """Return a dict corresponding to region, checking the region size if
+    maxRegionSize is provided.
+
+    The intended use is to be passed via **kwargs, and so either {} is
+    returned (for the special region -1,-1,-1,-1) or {'region':
+    region_dict}.
+
+    Params
+    ------
+    region: list
+        4 elements -- left, top, width, height -- or all -1, meaning the whole
+        slide.
+    maxRegionSize: int, optional
+        Maximum size permitted of any single dimension
+    tilesource: tilesource, optional
+        A `large_image` tilesource (or anything with `.sizeX` and `.sizeY`
+        properties) that is used to determine the size of the whole slide if
+        necessary.  Must be provided if `maxRegionSize` is.
+
+    Returns
+    -------
+    region_dict: dict
+        Either {} (for the special region -1,-1,-1,-1) or
+        {'region': region_subdict}
+
+    """
+    if len(region) != 4:
+        raise ValueError('Exactly four values required for --region')
+
+    useWholeImage = region == [-1] * 4
+
+    if maxRegionSize is not None:
+        if tilesource is None:
+            raise ValueError('tilesource must be provided if maxRegionSize is')
+        if maxRegionSize != -1:
+            if useWholeImage:
+                size = max(tilesource.sizeX, tilesource.sizeY)
+            else:
+                size = max(region[-2:])
+            if size > maxRegionSize:
+                raise ValueError('Requested region is too large!  '
+                                 'Please see --maxRegionSize')
+
+    return {} if useWholeImage else dict(
+        region=dict(zip(['left', 'top', 'width', 'height'],
+                        region)))
+
+
 __all__ = (
     'get_stain_vector',
     'get_stain_matrix',
+    'get_region_dict',
 )

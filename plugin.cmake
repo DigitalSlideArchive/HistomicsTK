@@ -111,7 +111,10 @@ add_histomicstk_python_test(blob_detection_filters
     "plugins/HistomicsTK/Easy1_cdog_sigma_max.npy"
 )
 
-add_histomicstk_python_test(cli_common)
+add_histomicstk_python_test(cli_common
+  # Work around CMake bug when using the same image multiple times
+  # EXTERNAL_DATA "plugins/HistomicsTK/Easy1.png"
+)
 
 add_histomicstk_python_test(cli_results
     # There is a bug in cmake that fails when external data files are added to
