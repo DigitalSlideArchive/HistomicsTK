@@ -221,10 +221,26 @@
   when: vagrant is defined
   tags: data_import
 
-- name: Create test running helper script
-  template: src=run_tests.sh.j2 dest=/home/vagrant/run_tests.sh mode=0755
-  when: vagrant is defined
+- name: Install CLI
+  command: >-
+    python cli_test.py --username "{{ girder_admin_user|quote }}" --password "{{ girder_admin_password|quote }}" --apiurl "{{ girder_socket_scheme|quote }}://127.0.0.1:{{ girder_socket_port }}/api/v1" "{{ cli_image|quote }}"
+  args:
+    chdir: "{{ root_dir }}"
+  when: docker is defined and cli_image is defined and cli_image_test is undefined
 
-- name: Create test running helper script
-  template: src=run_tests.sh.j2 dest=/home/ubuntu/run_tests.sh mode=0755
-  when: docker is defined
+- name: Install and test CLI
+  command: >-
+    python cli_test.py --username "{{ girder_admin_user|quote }}" --password "{{ girder_admin_password|quote }}" --apiurl "{{ girder_socket_scheme|quote }}://127.0.0.1:{{ girder_socket_port }}/api/v1" --test "{{ cli_image|quote }}"
+  args:
+    chdir: "{{ root_dir }}"
+  register: test_output
+  when: docker is defined and cli_image is defined and cli_image_test is defined
+
+- name: Show test CLI results
+  debug: var=test_output.stdout_lines
+  when: docker is defined and cli_image is defined and cli_image_test is defined
+
+- name: Show test CLI results
+  debug: var=test_output.stderr_lines
+  when: docker is defined and cli_image is defined and cli_image_test is defined
+

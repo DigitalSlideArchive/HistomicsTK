@@ -43,8 +43,8 @@ have also been installed locally so that they use the correct libraries::
 We are working on releasing HistomicsTK on PyPI so it can easily be pip
 installed from there.
 
-Installing HistomicsTK as a server-side Girder plugin using Vagrant
--------------------------------------------------------------------
+Installing HistomicsTK as a server-side Girder plugin
+-----------------------------------------------------
 
 When HistomicsTK is used as a server-side Girder_ plugin for web-based
 analysis, the following three Girder plugins need to be installed:
@@ -57,26 +57,10 @@ analysis, the following three Girder plugins need to be installed:
   to image analysis pipelines developed as slicer execution model
   CLIs and containerized using Docker.
 
-We used Vagrant and Ansible to ease the installation of these plugins in
-addition to HistomicsTK as follows:
+There are several methods that can be used to install HistomicsTK.  Each of these results in a fully deployed system.  Docker is often the easiest deployment.  Vagrant is the easiest development environment.
 
-- Download and install virtual box - https://www.virtualbox.org/wiki/Downloads
-- Download and install vagrant - https://www.vagrantup.com/downloads.html
-- ``pip install ansible``
-- ``git clone https://github.com/DigitalSlideArchive/HistomicsTK.git``
-- ``cd HistomicsTK && vagrant up``
-
-The Girder instance can then be accessed at http://localhost:8009. Any image
-placed in the sample_images subdirectory of the directory where HistomicsTK
-is cloned directory will be seen in the TCGA collection of Girder.
-
-The front-end UI that allows you to apply analysis modules in HistomicsTK's
-docker plugins on data stored in Girder can be accessed at
-http://localhost:8009/histomicstk.
-
-You can also ssh into the vagrant virtual box using the command ``vagrant ssh``.
-HistomicsTK and its dependencies are installed at the location
-``/opt/histomicstk``.
+.. include:: ../ansible/README.rst
+   :start-after: __methods
 
 .. _Girder: http://girder.readthedocs.io/en/latest/
 .. _girder_worker: http://girder-worker.readthedocs.io/en/latest/
