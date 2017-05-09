@@ -107,7 +107,7 @@ class CliCommonTest(base.TestCase):
         )
 
         im_fgnd_mask_lres_gtruth = skimage.io.imread(
-            fgnd_mask_gtruth_file) / 255
+            fgnd_mask_gtruth_file) > 0
 
         np.testing.assert_array_equal(im_fgnd_mask_lres,
                                       im_fgnd_mask_lres_gtruth)
