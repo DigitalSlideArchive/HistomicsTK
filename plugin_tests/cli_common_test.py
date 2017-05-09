@@ -129,6 +129,10 @@ class CliCommonTest(base.TestCase):
             'stain_2': 'eosin',
             'stain_3': 'null',
 
+            'stain_1_vector': [-1, -1, -1],
+            'stain_2_vector': [-1, -1, -1],
+            'stain_3_vector': [-1, -1, -1],
+
             'min_fgnd_frac': 0.50,
             'analysis_mag': 20,
             'analysis_tile_size': 1200,
@@ -165,7 +169,7 @@ class CliCommonTest(base.TestCase):
 
         # define tile iterator parameters
         it_kwargs = {
-            'tile_size': {'width': analysis_tile_size},
+            'tile_size': {'width': args.analysis_tile_size},
             'scale': {'magnification': args.analysis_mag},
             'region': roi
         }
@@ -192,7 +196,9 @@ class CliCommonTest(base.TestCase):
         nuclei_bbox_annot_list = []
         nuclei_bndry_annot_list = []
 
-        for tile_info in ts.tileIterator(**it_kwargs):
+        for tile_info in ts.tileIterator(
+                format=large_image.tilesource.TILE_FORMAT_NUMPY,
+                **it_kwargs):
 
             im_tile = tile_info['tile'][:, :, :3]
 
