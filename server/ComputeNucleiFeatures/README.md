@@ -1,4 +1,4 @@
-HistomicsTK compute_nuclei_features Application
+HistomicsTK ComputeNucleiFeatures Application
 =============================================
 
 #### Overview:
@@ -15,7 +15,8 @@ classification:
 Each of the aforementioned groups of features can be toggled on/off
 as needed.
 
-The output of this application is an HDF5 file containing the features.
+The output of this application is a csv file wherein each row contains
+the features of one of the nuclei.
 
 #### Usage:
 
