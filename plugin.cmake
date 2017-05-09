@@ -113,7 +113,7 @@ add_histomicstk_python_test(blob_detection_filters
 
 add_histomicstk_python_test(cli_common
   # Work around CMake bug when using the same image multiple times
-  # EXTERNAL_DATA
+  EXTERNAL_DATA
   # "plugins/HistomicsTK/Easy1.png"
   "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs"
   "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4_fgnd_mask_lres.png"
