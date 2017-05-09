@@ -37,7 +37,7 @@ import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.utils as htk_utils
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../server')))
-from cli_common import cli_utils  # noqa
+from cli_common import utils as cli_utils  # noqa
 
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')
 
@@ -103,7 +103,7 @@ class CliCommonTest(base.TestCase):
 
         fgnd_mask_gtruth_file = os.path.join(
             TEST_DATA_DIR,
-            'TCGA-02-0010-01Z-00-DX4fgnd_mask_lres.png'
+            'TCGA-02-0010-01Z-00-DX4_fgnd_mask_lres.png'
         )
 
         im_fgnd_mask_lres_gtruth = skimage.io.imread(
@@ -165,7 +165,7 @@ class CliCommonTest(base.TestCase):
 
         # define tile iterator parameters
         it_kwargs = {
-            'tile_size': {'width', analysis_tile_size},
+            'tile_size': {'width': analysis_tile_size},
             'scale': {'magnification': args.analysis_mag},
             'region': roi
         }
