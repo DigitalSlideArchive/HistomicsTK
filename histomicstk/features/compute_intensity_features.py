@@ -4,8 +4,8 @@ import scipy.stats
 from skimage.measure import regionprops
 
 
-def ComputeIntensityFeatures(im_label, im_intensity,
-                             num_hist_bins=10, rprops=None):
+def compute_intensity_features(im_label, im_intensity,
+                               num_hist_bins=10, rprops=None):
     """
     Calculates intensity features from an intensity image.
 

@@ -4,7 +4,7 @@ from skimage.measure import regionprops
 from skimage.segmentation import find_boundaries
 
 
-def ComputeFSDFeatures(im_label, K=128, Fs=6, Delta=8, rprops=None):
+def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
     """
     Calculates `Fourier shape descriptors` for each objects.
 

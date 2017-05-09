@@ -7,24 +7,24 @@ regions (e.g. tissues) found in histopathology images.
 
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
-from .ComputeFSDFeatures import ComputeFSDFeatures
-from .ComputeGradientFeatures import ComputeGradientFeatures
-from .ComputeHaralickFeatures import ComputeHaralickFeatures
-from .ComputeIntensityFeatures import ComputeIntensityFeatures
-from .ComputeMorphometryFeatures import ComputeMorphometryFeatures
+from .compute_fsd_features import compute_fsd_features
+from .compute_gradient_features import compute_gradient_features
+from .compute_haralick_features import compute_haralick_features
+from .compute_intensity_features import compute_intensity_features
+from .compute_morphometry_features import compute_morphometry_features
 from .graycomatrixext import graycomatrixext
 
-from .ComputeNucleiFeatures import ComputeNucleiFeatures
+from .compute_nuclei_features import compute_nuclei_features
 
 # list out things that are available for public use
 __all__ = (
 
     # functions and classes of this package
-    'ComputeFSDFeatures',
-    'ComputeGradientFeatures',
-    'ComputeHaralickFeatures',
-    'ComputeIntensityFeatures',
-    'ComputeMorphometryFeatures',
-    'ComputeNucleiFeatures',
+    'compute_fsd_features',
+    'compute_gradient_features',
+    'compute_haralick_features',
+    'compute_intensity_features',
+    'compute_morphometry_features',
+    'compute_nuclei_features',
     'graycomatrixext',
 )

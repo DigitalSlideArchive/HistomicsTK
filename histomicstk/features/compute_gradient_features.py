@@ -5,8 +5,8 @@ from skimage.feature import canny
 from skimage.measure import regionprops
 
 
-def ComputeGradientFeatures(im_label, im_intensity,
-                            num_hist_bins=10, rprops=None):
+def compute_gradient_features(im_label, im_intensity,
+                              num_hist_bins=10, rprops=None):
     """Calculates gradient features from an intensity image.
 
     Parameters

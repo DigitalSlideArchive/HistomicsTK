@@ -14,10 +14,26 @@
     <image>
       <name>inputImageFile</name>
       <label>Input Image</label>
-      <description>Input image to be deconvolved</description>
+      <description>Input image</description>
       <channel>input</channel>
       <index>0</index>
     </image>
+    <region>
+      <name>analysis_roi</name>
+      <label>Analysis ROI</label>
+      <description>Region of interest within which the analysis should be done. Must be a four element vector in the format "left, top, width, height" in the space of the base layer. Default value of "-1, -1, -1, -1" indicates that the whole image should be processed.</description>
+      <longflag>analysis_roi</longflag>
+      <default>-1,-1,-1,-1</default>
+    </region>
+    <string-enumeration>
+      <name>nuclei_annotation_format</name>
+      <label>Nuclei annotation format</label>
+      <description>Format of the output nuclei annotations</description>
+      <longflag>nuclei_annotation_format</longflag>
+      <element>bbox</element>
+      <element>boundary</element>
+      <default>boundary</default>
+    </string-enumeration>
     <file fileExtensions=".anot" reference="inputImageFile">
       <name>outputNucleiAnnotationFile</name>
       <label>Output Nuclei Annotation File</label>
@@ -60,6 +76,7 @@
       <default>hematoxylin</default>
     </string-enumeration>
     <double-vector>
+      <name>stain_1_vector</name>
       <longflag>stain_1_vector</longflag>
       <label>stain-1 custom vector</label>
       <default>-1,-1,-1</default>
@@ -78,6 +95,7 @@
       <default>eosin</default>
     </string-enumeration>
     <double-vector>
+      <name>stain_2_vector</name>
       <longflag>stain_2_vector</longflag>
       <label>stain-2 custom vector</label>
       <default>-1,-1,-1</default>
@@ -97,6 +115,7 @@
       <default>null</default>
     </string-enumeration>
     <double-vector>
+      <name>stain_3_vector</name>
       <longflag>stain_3_vector</longflag>
       <label>stain-3 custom vector</label>
       <default>-1,-1,-1</default>
@@ -143,15 +162,8 @@
     </double>
   </parameters>
   <parameters advanced="true">
-    <label>General</label>
-    <description>General parameters</description>
-    <region>
-      <name>analysis_roi</name>
-      <label>Analysis ROI</label>
-      <description>Region of interest within which the analysis should be done. Must be a four element vector in the format "left, top, width, height" in the space of the base layer. Default value of "-1, -1, -1, -1" indicates that the whole image should be processed.</description>
-      <longflag>analysis_roi</longflag>
-      <default>-1,-1,-1,-1</default>
-    </region>
+    <label>WSI Analysis</label>
+    <description>Whole-slide image analysis (WSI) parameters</description>
     <double>
       <name>analysis_tile_size</name>
       <label>Analysis Tile Size</label>
@@ -174,7 +186,7 @@
       <default>0.5</default>
     </double>
   </parameters>
-  <parameters  advanced="true">
+  <parameters advanced="true">
     <label>Dask</label>
     <description>Dask parameters</description>
     <string>
