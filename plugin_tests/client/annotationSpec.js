@@ -145,6 +145,7 @@ $(function () {
                     $('#g-dialog-container #h-element-label').val('test');
                     $('#g-dialog-container .h-submit').click();
                 });
+
                 girderTest.waitForLoad();
                 runs(function () {
                     expect($('.h-elements-container .h-element .h-element-label').text()).toBe('test');
