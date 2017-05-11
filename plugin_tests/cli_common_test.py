@@ -109,7 +109,7 @@ class CliCommonTest(base.TestCase):
         im_fgnd_mask_lres_gtruth = skimage.io.imread(
             fgnd_mask_gtruth_file) > 0
 
-        np.testing.assert_array_equal(im_fgnd_mask_lres,
+        np.testing.assert_array_equal(im_fgnd_mask_lres > 0,
                                       im_fgnd_mask_lres_gtruth)
 
     def test_create_tile_nuclei_annotations(self):
