@@ -148,10 +148,10 @@ $(function () {
                     $('#g-dialog-container #h-element-label').val('test');
                     $('#g-dialog-container .h-submit').click();
                 });
-
-                waitsFor(function () {
-                    return $('.h-elements-container .h-element .h-element-label').text() === 'test';
-                }, 'label to change');
+                girderTest.waitForLoad();
+                runs(function () {
+                    expect($('.h-elements-container .h-element .h-element-label').text()).toBe('test');
+                });
             });
 
             it('draw another point', function () {
