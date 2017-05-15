@@ -8,7 +8,7 @@
         max-width 400px
         background-color #fff
         z-index 101
-        padding 5px
+        padding 5px 5px 10px 5px
         border-radius 3px
         border 1px solid #000
         box-shadow 0 5px 10px rgba(0,0,0,.5)
@@ -50,3 +50,22 @@
 
         .h-annotation-creator,.h-annotation-created
             font-family italic
+
+        .h-annotation-elements
+            font-size 90%
+
+            > table
+                padding-left 10px
+                display inline-block
+
+                td:first-child
+                    font-family monospace
+                    padding-right 10px
+
+                td:nth-child(2)
+                    text-overflow ellipsis
+                    overflow hidden
+                    max-width 300px
+
+            .h-element-type
+                font-weight bold

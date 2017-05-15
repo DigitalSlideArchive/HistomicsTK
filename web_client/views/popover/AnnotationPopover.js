@@ -8,6 +8,27 @@ import annotationPopover from '../../templates/popover/annotationPopover.pug';
 import '../../stylesheets/popover/annotationPopover.styl';
 
 /**
+ * Format a point as a string for the user.
+ */
+function point(p) {
+    return `(${parseInt(p[0])}, ${parseInt(p[1])})`;
+}
+
+/**
+ * Format a distance as a string for the user.
+ */
+function length(p) {
+    return `${Math.ceil(p)} px`;
+}
+
+/**
+ * Format a rotation as a string for the user.
+ */
+function rotation(r) {
+    return `${parseInt(r * 180 / Math.PI)}°`;
+}
+
+/**
  * This view behaves like a bootstrap "popover" that follows the mouse pointer
  * over the image canvas and dynamically updates according to the features
  * under the pointer.
@@ -39,8 +60,10 @@ var AnnotationPopover = View.extend({
                 annotations: _.uniq(
                     this.collection.pluck('annotation'),
                     _.property('id')),
+                elements: this.collection.groupBy((element) => element.get('annotation').id),
                 formatDate: this._formatDate,
-                users: this._users
+                users: this._users,
+                elementProperties: this._elementProperties
             })
         );
         this._show();
@@ -94,6 +117,40 @@ var AnnotationPopover = View.extend({
     _formatDate(s) {
         var d = new Date(s);
         return d.toLocaleString();
+    },
+
+    /**
+     * Get an object containing elements that are to be
+     * displayed to the user in a popover.  This object is
+     * cached on the model to avoid recomputing these properties
+     * every time they are displayed.
+     */
+    _elementProperties(element) {
+        // cache the popover properties to reduce
+        // computations on mouse move
+        if (element._popover) {
+            return element._popover;
+        }
+
+        function setIf(key, func = (v) => v) {
+            const value = element.get(key);
+            if (value) {
+                props[key] = func(value);
+            }
+        }
+
+        const props = {};
+        element._popover = props;
+
+        if (element.get('label')) {
+            props.label = element.get('label').value;
+        }
+        setIf('center', point);
+        setIf('width', length);
+        setIf('height', length);
+        setIf('rotation', rotation);
+
+        return props;
     },
 
     /**
