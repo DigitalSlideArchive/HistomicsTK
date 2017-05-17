@@ -10,4 +10,3 @@ Sphinx==1.4.2
 sphinx-rtd-theme==0.1.9
 watchdog==0.8.3
 wheel==0.23.0
-docker-py>=1.9.0,<2
