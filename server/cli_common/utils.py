@@ -247,6 +247,55 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
                         region)))
 
 
+def splitArgs(args, split='_'):
+    """Split a Namespace into a Namespace of Namespaces based on shared
+    prefixes.  The string separating the prefix from the rest of the
+    argument is determined by the optional "split" parameter.
+    Parameters not containing the splitting string are kept as-is.
+
+    """
+    def splitKey(k):
+        s = k.split(split, 1)
+        return (None, s[0]) if len(s) == 1 else s
+
+    Namespace = type(args)
+    args = vars(args)
+    firstKeys = {splitKey(k)[0] for k in args}
+    result = Namespace()
+    for k in firstKeys - {None}:
+        setattr(result, k, Namespace())
+    for k, v in args.items():
+        f, s = splitKey(k)
+        if f is None:
+            setattr(result, s, v)
+        else:
+            setattr(getattr(result, f), s, v)
+    return result
+
+
+def sample_pixels(args):
+    """Version of histomicstk.utils.sample_pixels that takes a Namespace
+    and handles the special default values.
+
+    """
+    args = vars(args).copy()
+    for k in 'magnification', 'sample_fraction', 'sample_approximate_total':
+        if args[k] == -1:
+            del args[k]
+    return htk_utils.sample_pixels(**args)
+
+
+def start_dask(args):
+    """Start Dask using args from a Namespace, supporting the following
+    attributes:
+
+    - .scheduler_address: Address of the distributed scheduler, or the
+      empty string to start one locally
+
+    """
+    return dask.distributed.Client(args.scheduler_address or None)
+
+
 __all__ = (
     'create_dask_client',
     'create_tile_nuclei_annotations',
@@ -256,5 +305,8 @@ __all__ = (
     'get_region_dict',
     'get_stain_matrix',
     'get_stain_vector',
+    'sample_pixels',
     'segment_wsi_foreground_at_low_res',
+    'splitArgs',
+    'start_dask',
 )
