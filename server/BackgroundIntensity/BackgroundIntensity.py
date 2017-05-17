@@ -19,7 +19,7 @@ def main(args):
         if kwargs[k] == -1:
             del kwargs[k]
 
-    utils.start_dask(args)
+    utils.create_dask_client(args)
     I_0 = background_intensity(**kwargs)
     with open(args.returnParameterFile, 'w') as f:
         f.write('BackgroundIntensity = ' + ','.join(map(str, I_0)) + '\n')

@@ -289,17 +289,6 @@ def sample_pixels(args):
     return htk_utils.sample_pixels(**args)
 
 
-def start_dask(args):
-    """Start Dask using args from a Namespace, supporting the following
-    attributes:
-
-    - .scheduler_address: Address of the distributed scheduler, or the
-      empty string to start one locally
-
-    """
-    return dask.distributed.Client(args.scheduler_address or None)
-
-
 __all__ = (
     'create_dask_client',
     'create_tile_nuclei_annotations',
@@ -312,5 +301,4 @@ __all__ = (
     'sample_pixels',
     'segment_wsi_foreground_at_low_res',
     'splitArgs',
-    'start_dask',
 )

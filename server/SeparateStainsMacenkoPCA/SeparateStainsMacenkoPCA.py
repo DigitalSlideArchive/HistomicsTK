@@ -14,7 +14,7 @@ def main(args):
     args = utils.splitArgs(args)
     args.macenko.I_0 = numpy.array(args.macenko.I_0)
 
-    utils.start_dask(args.dask)
+    utils.create_dask_client(args.dask)
     sample = utils.sample_pixels(args.sample)
     stain_matrix = rgb_separate_stains_macenko_pca(sample.T, **vars(args.macenko))
     with open(args.returnParameterFile, 'w') as f:

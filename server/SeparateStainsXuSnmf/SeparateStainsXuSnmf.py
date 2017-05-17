@@ -16,7 +16,7 @@ def main(args):
     args.snmf.I_0 = numpy.array(args.snmf.I_0)
 
     print(">> Starting Dask cluster and sampling pixels")
-    utils.start_dask(args.dask)
+    utils.create_dask_client(args.dask)
     sample = utils.sample_pixels(args.sample)
 
     # Create stain matrix

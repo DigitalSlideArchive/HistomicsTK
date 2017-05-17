@@ -12,7 +12,7 @@ from cli_common import utils  # noqa
 
 
 def main(args):
-    utils.start_dask(args)
+    utils.create_dask_client(args)
     ts = large_image.getTileSource(args.inputImageFile)
     kwargs = dict(format=large_image.tilesource.TILE_FORMAT_NUMPY)
     makeLabelImage = args.outputLabelImage is not None
