@@ -181,7 +181,13 @@ def create_tile_nuclei_annotations(im_nuclei_seg_mask, tile_info, format):
 
 
 def create_dask_client(args):
+    """Create and install a Dask distributed client using args from a
+    Namespace, supporting the following attributes:
 
+    - .scheduler_address: Address of the distributed scheduler, or the
+      empty string to start one locally
+
+    """
     scheduler_address = args.scheduler_address
 
     if not scheduler_address:
@@ -192,9 +198,7 @@ def create_dask_client(args):
             silence_logs=False
         )
 
-    c = dask.distributed.Client(scheduler_address)
-
-    return c
+    return dask.distributed.Client(scheduler_address)
 
 
 def get_region_dict(region, maxRegionSize=None, tilesource=None):
