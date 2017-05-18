@@ -339,13 +339,15 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
     ctn = get_docker_image_and_container(
         client, key, version=kwargs.get('pinned'))
     if ctn is None:
+        worker_tmp_root = (
+            kwargs['worker_tmp_root'] if kwargs['worker_tmp_root'] else '/tmp/girder_worker')
         config = {
             'restart_policy': {'name': 'always'},
             'privileged': True,  # so we can run docker
             'links': {},
             'binds': [
                 get_path(kwargs['logs']) + ':/opt/logs:rw',
-                '/tmp/girder_worker:/tmp/girder_worker',
+                '%s:%s' % (worker_tmp_root, worker_tmp_root),
                 get_path(kwargs['assetstore']) + ':/opt/histomicstk/assetstore:rw',
             ]
         }
@@ -353,6 +355,7 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
         config_mounts(kwargs.get('mount'), config)
         if rmq == 'docker':
             config['links'][ImageList['rmq']['name']] = 'rmq'
+        env['GIRDER_WORKER_TMP_ROOT'] = worker_tmp_root
         params = {
             'image': image,
             'detach': True,
@@ -738,6 +741,11 @@ if __name__ == '__main__':
         '--username', '--user', const='', default=None, nargs='?',
         help='Override the Girder admin username used in provisioning.  Set '
         'to an empty string to be prompted for username and password.')
+    parser.add_argument(
+        '--worker-tmp-root', '--tmp', default='/tmp/girder_worker',
+        help='The path to use for the girder_worker tmp_root.  This must be '
+        'reachable by the HistomicsTK and the girder_worker docker '
+        'containers.  It cannot be a top-level directory.')
     parser.add_argument('--verbose', '-v', action='count', default=0)
 
     # Should we add an optional url or host value for rmq and mongo?
