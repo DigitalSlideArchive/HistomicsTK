@@ -239,7 +239,20 @@ class CliCommonTest(base.TestCase):
         with open(nuclei_bbox_annot_gtruth_file, 'r') as fbbox_annot:
             nuclei_bbox_annot_list_gtruth = json.load(fbbox_annot)['elements']
 
-        assert nuclei_bbox_annot_list == nuclei_bbox_annot_list_gtruth
+        # Check that nuclei_bbox_annot_list is nearly equal to
+        # nuclei_bbox_annot_list_gtruth
+        self.assertEqual(len(nuclei_bbox_annot_list),
+                         len(nuclei_bbox_annot_list_gtruth))
+        for pos in range(len(nuclei_bbox_annot_list)):
+            np.testing.assert_array_almost_equal(
+                nuclei_bbox_annot_list[pos]['center'],
+                nuclei_bbox_annot_list_gtruth[pos]['center'], 0)
+            np.testing.assert_almost_equal(
+                nuclei_bbox_annot_list[pos]['width'],
+                nuclei_bbox_annot_list_gtruth[pos]['width'], 1)
+            np.testing.assert_almost_equal(
+                nuclei_bbox_annot_list[pos]['height'],
+                nuclei_bbox_annot_list_gtruth[pos]['height'], 1)
 
         # compare nuclei boundary annotations with gtruth
         nuclei_bndry_annot_gtruth_file = os.path.join(
