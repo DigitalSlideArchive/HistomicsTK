@@ -79,10 +79,6 @@ def compute_tile_nuclei_features(slide_path, tile_position, args, **it_kwargs):
     return nuclei_annot_list, fdata
 
 
-def disp_time(seconds):
-    return time.strftime("%H:%M:%S", time.gmtime(seconds))
-
-
 def main(args):
 
     total_start_time = time.time()
@@ -102,6 +98,10 @@ def main(args):
 
     if len(args.analysis_roi) != 4:
         raise ValueError('Analysis ROI must be a vector of 4 elements.')
+
+    fname, feature_file_format = os.path.splitext(args.outputFeatureFile)
+    if feature_file_format not in ['.csv', '.h5']:
+        raise ValueError('Extension of output feature file must be .csv or .h5')
 
     if np.all(np.array(args.analysis_roi) == -1):
         process_whole_image = True
@@ -185,7 +185,7 @@ def main(args):
         print 'Number of foreground tiles = %d (%.2f%%)' % (
             num_fgnd_tiles, percent_fgnd_tiles)
 
-        print 'Time taken = %s' % disp_time(fgnd_frac_comp_time)
+        print 'Time taken = %s' % cli_utils.disp_time_hms(fgnd_frac_comp_time)
 
     #
     # Detect and compute nuclei features in parallel using Dask
@@ -224,7 +224,7 @@ def main(args):
     nuclei_detection_time = time.time() - start_time
 
     print 'Number of nuclei = ', len(nuclei_annot_list)
-    print "Time taken = %s" % disp_time(nuclei_detection_time)
+    print "Time taken = %s" % cli_utils.disp_time_hms(nuclei_detection_time)
 
     #
     # Write annotation file
@@ -249,11 +249,22 @@ def main(args):
     #
     print('>> Writing CSV feature file')
 
-    nuclei_fdata.to_csv(args.outputFile)
+    if feature_file_format == '.csv':
+
+        nuclei_fdata.to_csv(args.outputFeatureFile)
+
+    elif feature_file_format == '.h5':
+
+        nuclei_fdata.to_hdf(args.outputFeatureFile, 'Features',
+                            format='table', mode='w')
+
+    else:
+
+        raise ValueError('Extension of output feature file must be .csv or .h5')
 
     total_time_taken = time.time() - total_start_time
 
-    print 'Total analysis time = %s' % disp_time(total_time_taken)
+    print 'Total analysis time = %s' % cli_utils.disp_time_hms(total_time_taken)
 
 
 if __name__ == "__main__":
