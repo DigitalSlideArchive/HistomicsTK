@@ -1,7 +1,6 @@
 import os
 import sys
 import json
-import time
 import colorsys
 
 import numpy as np
@@ -9,13 +8,6 @@ import pandas as pd
 from sklearn.externals import joblib
 import dask
 import dask.dataframe as dd
-
-import histomicstk.preprocessing.color_normalization as htk_cnorm
-import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
-import histomicstk.features as htk_features
-import histomicstk.utils as htk_utils
-
-import large_image
 
 from ctk_cli import CLIArgumentParser
 
@@ -173,6 +165,7 @@ def main(args):
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, indent=2, sort_keys=False)
+
 
 if __name__ == "__main__":
     main(CLIArgumentParser().parse_args())

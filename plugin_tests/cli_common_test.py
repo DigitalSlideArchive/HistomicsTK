@@ -190,7 +190,7 @@ class CliCommonTest(base.TestCase):
         num_fgnd_tiles = np.count_nonzero(
             tile_fgnd_frac_list >= args.min_fgnd_frac)
 
-        np.testing.assert_equal(num_fgnd_tiles, 4)
+        np.testing.assert_equal(num_fgnd_tiles, 2)
 
         # create nuclei annotations
         nuclei_bbox_annot_list = []

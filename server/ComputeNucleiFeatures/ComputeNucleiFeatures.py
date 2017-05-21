@@ -79,13 +79,7 @@ def compute_tile_nuclei_features(slide_path, tile_position, args, **it_kwargs):
     return nuclei_annot_list, fdata
 
 
-def main(args):
-
-    total_start_time = time.time()
-
-    print('\n>> CLI Parameters ...\n')
-
-    print args
+def check_args(args):
 
     if not os.path.isfile(args.inputImageFile):
         raise IOError('Input image file does not exist.')
@@ -99,9 +93,21 @@ def main(args):
     if len(args.analysis_roi) != 4:
         raise ValueError('Analysis ROI must be a vector of 4 elements.')
 
-    fname, feature_file_format = os.path.splitext(args.outputFeatureFile)
-    if feature_file_format not in ['.csv', '.h5']:
+    if os.path.splitext(args.outputFeatureFile)[1] not in ['.csv', '.h5']:
         raise ValueError('Extension of output feature file must be .csv or .h5')
+
+
+def main(args):
+
+    total_start_time = time.time()
+
+    print('\n>> CLI Parameters ...\n')
+
+    print args
+
+    check_args(args)
+
+    feature_file_format = os.path.splitext(args.outputFeatureFile)[1]
 
     if np.all(np.array(args.analysis_roi) == -1):
         process_whole_image = True
