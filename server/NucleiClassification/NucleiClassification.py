@@ -6,7 +6,6 @@ import colorsys
 import numpy as np
 import pandas as pd
 from sklearn.externals import joblib
-import dask
 import dask.dataframe as dd
 
 from ctk_cli import CLIArgumentParser
@@ -35,6 +34,7 @@ def gen_distinct_rgb_colors(n, seed=None):
     -------
     colors_list : list
         A list of n RGB colors
+
     """
 
     np.random.seed(seed)
