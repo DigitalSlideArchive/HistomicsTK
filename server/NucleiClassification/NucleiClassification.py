@@ -56,17 +56,38 @@ def gen_distinct_rgb_colors(n, seed=None):
     return color_list
 
 
-def main(args):
+def read_feature_file(args):
 
-    print('\n>> CLI Parameters ...\n')
+    fname, feature_file_format = os.path.splitext(args.inputFeatureFile)
 
-    print args
+    if feature_file_format == '.csv':
+
+        ddf = dd.read_csv(args.inputFeatureFile)
+
+    elif feature_file_format == '.h5':
+
+        ddf = dd.read_hdf(args.inputModelFile, 'Features')
+
+    else:
+        raise ValueError('Extension of output feature file must be .csv or .h5')
+
+    return ddf
+
+
+def check_args(args):
 
     if not os.path.isfile(args.inputImageFile):
         raise IOError('Input image file does not exist.')
 
     if not os.path.isfile(args.inputModelFile):
         raise IOError('Input model file does not exist.')
+
+
+def main(args):
+
+    print('\n>> CLI Parameters ...\n')
+
+    print args
 
     #
     # Initiate Dask client
@@ -85,18 +106,7 @@ def main(args):
     #
     # read feature file
     #
-    fname, feature_file_format = os.path.splitext(args.outputFeatureFile)
-
-    if feature_file_format == '.csv':
-
-        ddf = dd.read_csv(args.inputFeatureFile)
-
-    elif feature_file_format == '.h5':
-
-        ddf = dd.read_hdf(args.inputModelFile, 'Features')
-
-    else:
-        raise ValueError('Extension of output feature file must be .csv or .h5')
+    ddf = read_feature_file(args)
 
     if len(ddf.columns) != clf_model.n_features_:
 
