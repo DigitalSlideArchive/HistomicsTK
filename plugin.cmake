@@ -115,10 +115,10 @@ add_histomicstk_python_test(cli_common
   EXTERNAL_DATA
   # Work around CMake bug when using the same image multiple times
   # "plugins/HistomicsTK/Easy1.png"
-  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs"
-  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4_fgnd_mask_lres.png"
-  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4_roi_nuclei_bbox.anot"
-  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4_roi_nuclei_boundary.anot"
+  "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs"
+  "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png"
+  "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot"
+  "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot"
 )
 
 add_histomicstk_python_test(cli_results
@@ -132,8 +132,9 @@ add_histomicstk_python_test(cli_results
 
 # front-end tests
 add_web_client_test(
-  HistomicsTK_annotations "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/annotationSpec.js"
-  ENABLEDPLUGINS "jobs" "worker" "large_image" "slicer_cli_web" "HistomicsTK"
+  annotations
+  "${CMAKE_CURRENT_LIST_DIR}/plugin_tests/client/annotationSpec.js"
+  PLUGIN HistomicsTK
   TEST_MODULE "plugin_tests.web_client_test"
   # EXTERNAL_DATA "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
 )

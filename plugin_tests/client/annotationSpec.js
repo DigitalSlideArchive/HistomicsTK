@@ -13,6 +13,10 @@ girderTest.importStylesheet(
     '/static/built/plugins/HistomicsTK/plugin.min.css'
 );
 girderTest.addCoveredScripts([
+    '/clients/web/static/built/plugins/jobs/plugin.min.js',
+    '/clients/web/static/built/plugins/worker/plugin.min.js',
+    '/clients/web/static/built/plugins/large_image/plugin.min.js',
+    '/clients/web/static/built/plugins/slicer_cli_web/plugin.min.js',
     '/clients/web/static/built/plugins/HistomicsTK/plugin.min.js'
 ]);
 
