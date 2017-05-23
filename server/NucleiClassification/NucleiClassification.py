@@ -153,9 +153,8 @@ def main(args):
         cur_class = pred_class.iloc[i]
 
         cur_anot = nuclei_annot_list[i]
-        cur_anot['lineColor'] = 'rgb({})'.format(
-            ', '.join(str(int(round(255 * class_color_map[cur_class])))))
-
+        cur_anot['lineColor'] = 'rgb(%s)' % ','.join(
+            [str(int(round(c*255))) for c in class_color_map[cur_class]])
         nuclei_annot_by_class[cur_class].append(cur_anot)
 
     #
