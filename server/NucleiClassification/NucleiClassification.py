@@ -35,23 +35,21 @@ def gen_distinct_rgb_colors(n, seed=None):
     colors_list : list
         A list of n RGB colors
 
+    References
+    ----------
+    .. [#] http://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/  # noqa
+
     """
 
     np.random.seed(seed)
-
-    color_list = []
-
-    h = np.random.random(n)
-    golden_ratio_conjugate = 0.618033988749895
-
-    for i in range(n):
-
-        h += golden_ratio_conjugate
-        h %= 1
-
-        color_list.append(colorsys.hsv_to_rgb(h, 1.0, 1.0))
-
+    h = np.random.random()
     np.random.seed(None)
+
+    golden_ratio_conjugate = (np.sqrt(5) - 1) / 2.0
+
+    color_list = [colorsys.hsv_to_rgb((h + i * golden_ratio_conjugate) % 1,
+                                      1.0, 1.0)
+                  for i in range(n)]
 
     return color_list
 
@@ -66,7 +64,7 @@ def read_feature_file(args):
 
     elif feature_file_format == '.h5':
 
-        ddf = dd.read_hdf(args.inputModelFile, 'Features')
+        ddf = dd.read_hdf(args.inputFeatureFile, 'Features')
 
     else:
         raise ValueError('Extension of output feature file must be .csv or .h5')
@@ -155,7 +153,8 @@ def main(args):
         cur_class = pred_class.iloc[i]
 
         cur_anot = nuclei_annot_list[i]
-        cur_anot['line_color'] = class_color_map[cur_class]
+        cur_anot['lineColor'] = 'rgb({})'.format(
+            ', '.join(str(int(round(255 * class_color_map[cur_class])))))
 
         nuclei_annot_by_class[cur_class].append(cur_anot)
 
