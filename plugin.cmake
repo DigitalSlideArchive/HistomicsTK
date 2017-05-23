@@ -132,8 +132,9 @@ add_histomicstk_python_test(cli_results
 
 # front-end tests
 add_web_client_test(
-  HistomicsTK_annotations "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/annotationSpec.js"
-  ENABLEDPLUGINS "jobs" "worker" "large_image" "slicer_cli_web" "HistomicsTK"
+  annotations
+  "${CMAKE_CURRENT_LIST_DIR}/plugin_tests/client/annotationSpec.js"
+  PLUGIN HistomicsTK
   TEST_MODULE "plugin_tests.web_client_test"
   # EXTERNAL_DATA "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
 )
