@@ -115,10 +115,10 @@ add_histomicstk_python_test(cli_common
   EXTERNAL_DATA
   # Work around CMake bug when using the same image multiple times
   # "plugins/HistomicsTK/Easy1.png"
-  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs"
-  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4_fgnd_mask_lres.png"
-  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4_roi_nuclei_bbox.anot"
-  "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4_roi_nuclei_boundary.anot"
+  "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs"
+  "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png"
+  "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot"
+  "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot"
 )
 
 add_histomicstk_python_test(cli_results
