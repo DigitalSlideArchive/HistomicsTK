@@ -154,7 +154,7 @@ def main(args):
 
         cur_anot = nuclei_annot_list[i]
         cur_anot['lineColor'] = 'rgb(%s)' % ','.join(
-            [str(int(round(c*255))) for c in class_color_map[cur_class]])
+            [str(int(round(col*255))) for col in class_color_map[cur_class]])
         nuclei_annot_by_class[cur_class].append(cur_anot)
 
     #
