@@ -36,7 +36,8 @@
       <name>outputNucleiAnnotationFile</name>
       <label>Output Nuclei Annotation File</label>
       <description>Output nuclei annotation file</description>
-      <longflag>outputNucleiAnnotationFile</longflag>
+      <channel>output</channel>
+      <index>2</index>
     </file>
     <boolean>
       <name>morphometry_features</name>

@@ -237,18 +237,16 @@ def main(args):
     #
     print('\n>> Writing annotation file ...\n')
 
-    if args.outputNucleiAnnotationFile:
+    annot_fname = os.path.splitext(
+        os.path.basename(args.outputNucleiAnnotationFile))[0]
 
-        annot_fname = os.path.splitext(
-            os.path.basename(args.outputNucleiAnnotationFile))[0]
+    annotation = {
+        "name": annot_fname + '-nuclei-' + args.nuclei_annotation_format,
+        "elements": nuclei_annot_list
+    }
 
-        annotation = {
-            "name": annot_fname + '-nuclei-' + args.nuclei_annotation_format,
-            "elements": nuclei_annot_list
-        }
-
-        with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
-            json.dump(annotation, annotation_file, indent=2, sort_keys=False)
+    with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
+        json.dump(annotation, annotation_file, indent=2, sort_keys=False)
 
     #
     # Create CSV Feature file
@@ -257,7 +255,7 @@ def main(args):
 
     if feature_file_format == '.csv':
 
-        nuclei_fdata.to_csv(args.outputFeatureFile)
+        nuclei_fdata.to_csv(args.outputFeatureFile, index=False)
 
     elif feature_file_format == '.h5':
 
