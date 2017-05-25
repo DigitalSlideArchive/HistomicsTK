@@ -13,25 +13,28 @@
     <description>Input/output parameters</description>
     <image>
       <name>inputImageFile</name>
-      <label>Input Image</label>
+      <label>Input Image File</label>
       <channel>input</channel>
       <index>0</index>
-      <description>Input image</description>
+      <description>Input image file</description>
     </image>
     <file>
       <name>inputModelFile</name>
+      <label>Input Model File</label>
       <channel>input</channel>
       <index>1</index>
-      <description>Pickled file of the scikit-learn model for classifying nuclei</description>
+      <description>Pickled file (*.pkl) of the scikit-learn model for classifying nuclei</description>
     </file>
     <file fileExtensions=".csv|.h5">
       <name>inputNucleiFeatureFile</name>
+      <label>Input Nuclei Feature File</label>
       <channel>input</channel>
       <index>2</index>
       <description>Input nuclei feature file (*.csv, *.h5) containing the features of all nuclei to be classified</description>
     </file>
     <file fileExtensions=".anot">
       <name>inputNucleiAnnotationFile</name>
+      <label>Input Nuclei Annotation File</label>
       <channel>input</channel>
       <index>3</index>
       <description>Input nuclei annotation file (*.anot) containing nuclei annotations in the same order as their features in the feature file</description>
