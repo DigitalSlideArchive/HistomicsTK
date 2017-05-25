@@ -38,7 +38,7 @@ If you build libtiff or openjpeg locally, ensure that the appropriate pip files
 have also been installed locally so that they use the correct libraries::
 
     $ pip install --upgrade --force-reinstall --ignore-installed --no-cache-dir openslide-python Pillow
-    $ pip install --upgrade --force-reinstall --ignore-installed 'git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5'
+    $ pip install --upgrade --force-reinstall --ignore-installed 'git+https://github.com/pearu/pylibtiff@33735eb7197eb33ed1a50bbc4bc5a47ce4305e92'
 
 We are working on releasing HistomicsTK on PyPI so it can easily be pip
 installed from there.
