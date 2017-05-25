@@ -14,7 +14,7 @@ import logging
 logging.basicConfig(level=logging.CRITICAL)
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils as cli_utils # noqa
+from cli_common import utils as cli_utils  # noqa
 
 
 def gen_distinct_rgb_colors(n, seed=None):

@@ -20,7 +20,7 @@ import logging
 logging.basicConfig(level=logging.CRITICAL)
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils as cli_utils # noqa
+from cli_common import utils as cli_utils  # noqa
 
 
 def compute_tile_nuclei_features(slide_path, tile_position, args, **it_kwargs):
