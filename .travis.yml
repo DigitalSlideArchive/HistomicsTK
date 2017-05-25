@@ -120,7 +120,7 @@ install:
     - pip install -U -r requirements.txt -r requirements-dev.txt
     - pip install -U -r $slicer_cli_web_path/requirements.txt
     - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
-    - pip install "git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5" --force-reinstall --ignore-installed --upgrade --no-cache-dir
+    - pip install "git+https://github.com/pearu/pylibtiff@33735eb7197eb33ed1a50bbc4bc5a47ce4305e92" --force-reinstall --ignore-installed --upgrade --no-cache-dir
     - npm-install-retry
     - BABEL_ENV=cover NYC_CWD="$main_path" girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
     - conda install --yes jupyter sphinx sphinx_rtd_theme
