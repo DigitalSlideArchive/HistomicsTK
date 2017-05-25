@@ -20,7 +20,7 @@ import logging
 logging.basicConfig(level=logging.CRITICAL)
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils as cli_utils # noqa
+from cli_common import utils as cli_utils  # noqa
 
 
 def compute_tile_nuclei_features(slide_path, tile_position, args, **it_kwargs):
@@ -93,7 +93,7 @@ def check_args(args):
     if len(args.analysis_roi) != 4:
         raise ValueError('Analysis ROI must be a vector of 4 elements.')
 
-    if os.path.splitext(args.outputFeatureFile)[1] not in ['.csv', '.h5']:
+    if os.path.splitext(args.outputNucleiFeatureFile)[1] not in ['.csv', '.h5']:
         raise ValueError('Extension of output feature file must be .csv or .h5')
 
 
@@ -107,7 +107,7 @@ def main(args):
 
     check_args(args)
 
-    feature_file_format = os.path.splitext(args.outputFeatureFile)[1]
+    feature_file_format = os.path.splitext(args.outputNucleiFeatureFile)[1]
 
     if np.all(np.array(args.analysis_roi) == -1):
         process_whole_image = True
@@ -237,18 +237,16 @@ def main(args):
     #
     print('\n>> Writing annotation file ...\n')
 
-    if args.outputNucleiAnnotationFile:
+    annot_fname = os.path.splitext(
+        os.path.basename(args.outputNucleiAnnotationFile))[0]
 
-        annot_fname = os.path.splitext(
-            os.path.basename(args.outputNucleiAnnotationFile))[0]
+    annotation = {
+        "name": annot_fname + '-nuclei-' + args.nuclei_annotation_format,
+        "elements": nuclei_annot_list
+    }
 
-        annotation = {
-            "name": annot_fname + '-nuclei-' + args.nuclei_annotation_format,
-            "elements": nuclei_annot_list
-        }
-
-        with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
-            json.dump(annotation, annotation_file, indent=2, sort_keys=False)
+    with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
+        json.dump(annotation, annotation_file, indent=2, sort_keys=False)
 
     #
     # Create CSV Feature file
@@ -257,11 +255,11 @@ def main(args):
 
     if feature_file_format == '.csv':
 
-        nuclei_fdata.to_csv(args.outputFeatureFile)
+        nuclei_fdata.to_csv(args.outputNucleiFeatureFile, index=False)
 
     elif feature_file_format == '.h5':
 
-        nuclei_fdata.to_hdf(args.outputFeatureFile, 'Features',
+        nuclei_fdata.to_hdf(args.outputNucleiFeatureFile, 'Features',
                             format='table', mode='w')
 
     else:
