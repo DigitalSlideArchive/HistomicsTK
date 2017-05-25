@@ -15,6 +15,10 @@
     "type"    : "python"
   },
 
+  "NucleiClassification": {
+    "type"    : "python"
+  },
+
   "BackgroundIntensity": {
     "type"    : "python"
   },
