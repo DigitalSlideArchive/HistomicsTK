@@ -109,7 +109,7 @@ install:
     - cd $girder_path
     - python setup.py develop
     - cd $large_image_path
-    - pip install --no-cache-dir numpy>=1.10.2
+    - pip install --no-cache-dir numpy>=1.12.1
     - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
     - pip install "git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5" --force-reinstall --ignore-installed --upgrade --no-cache-dir
     - pip install -U -r requirements.txt
