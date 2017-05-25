@@ -37,7 +37,7 @@
     <file fileExtensions=".anot" reference="inputImageFile">
       <name>outputNucleiAnnotationFile</name>
       <label>Output Nuclei Annotation File</label>
-      <description>Output nuclei annotation file</description>
+      <description>Output nuclei annotation file (*.anot)</description>
       <channel>output</channel>
       <index>1</index>
     </file>

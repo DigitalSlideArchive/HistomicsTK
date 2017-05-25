@@ -56,15 +56,15 @@ def gen_distinct_rgb_colors(n, seed=None):
 
 def read_feature_file(args):
 
-    fname, feature_file_format = os.path.splitext(args.inputFeatureFile)
+    fname, feature_file_format = os.path.splitext(args.inputNucleiFeatureFile)
 
     if feature_file_format == '.csv':
 
-        ddf = dd.read_csv(args.inputFeatureFile)
+        ddf = dd.read_csv(args.inputNucleiFeatureFile)
 
     elif feature_file_format == '.h5':
 
-        ddf = dd.read_hdf(args.inputFeatureFile, 'Features')
+        ddf = dd.read_hdf(args.inputNucleiFeatureFile, 'Features')
 
     else:
         raise ValueError('Extension of output feature file must be .csv or .h5')

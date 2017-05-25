@@ -93,7 +93,7 @@ def check_args(args):
     if len(args.analysis_roi) != 4:
         raise ValueError('Analysis ROI must be a vector of 4 elements.')
 
-    if os.path.splitext(args.outputFeatureFile)[1] not in ['.csv', '.h5']:
+    if os.path.splitext(args.outputNucleiFeatureFile)[1] not in ['.csv', '.h5']:
         raise ValueError('Extension of output feature file must be .csv or .h5')
 
 
@@ -107,7 +107,7 @@ def main(args):
 
     check_args(args)
 
-    feature_file_format = os.path.splitext(args.outputFeatureFile)[1]
+    feature_file_format = os.path.splitext(args.outputNucleiFeatureFile)[1]
 
     if np.all(np.array(args.analysis_roi) == -1):
         process_whole_image = True
@@ -255,11 +255,11 @@ def main(args):
 
     if feature_file_format == '.csv':
 
-        nuclei_fdata.to_csv(args.outputFeatureFile, index=False)
+        nuclei_fdata.to_csv(args.outputNucleiFeatureFile, index=False)
 
     elif feature_file_format == '.h5':
 
-        nuclei_fdata.to_hdf(args.outputFeatureFile, 'Features',
+        nuclei_fdata.to_hdf(args.outputNucleiFeatureFile, 'Features',
                             format='table', mode='w')
 
     else:
