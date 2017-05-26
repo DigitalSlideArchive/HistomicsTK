@@ -25,7 +25,7 @@
       <longflag>analysis_roi</longflag>
       <default>-1,-1,-1,-1</default>
     </region>
-    <file fileExtensions=".csv|.h5">
+    <file fileExtensions=".csv,.h5">
       <name>outputNucleiFeatureFile</name>
       <label>Output Nuclei Feature file</label>
       <channel>output</channel>

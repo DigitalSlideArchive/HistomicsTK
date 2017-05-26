@@ -25,7 +25,7 @@
       <index>1</index>
       <description>Pickled file (*.pkl) of the scikit-learn model for classifying nuclei</description>
     </file>
-    <file fileExtensions=".csv|.h5">
+    <file fileExtensions=".csv,.h5">
       <name>inputNucleiFeatureFile</name>
       <label>Input Nuclei Feature File</label>
       <channel>input</channel>
