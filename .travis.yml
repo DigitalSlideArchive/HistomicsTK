@@ -111,7 +111,7 @@ install:
     - cd $large_image_path
     - pip install --no-cache-dir numpy>=1.12.1
     - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
-    - pip install "git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5" --force-reinstall --ignore-installed --upgrade --no-cache-dir
+    - pip install "git+https://github.com/pearu/pylibtiff@33735eb7197eb33ed1a50bbc4bc5a47ce4305e92" --force-reinstall --ignore-installed --upgrade --no-cache-dir
     - pip install -U -r requirements.txt
     - python setup.py install
     - cd $main_path

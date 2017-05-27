@@ -99,11 +99,15 @@ def main(args):
     #
     # read model file
     #
+    print('\n>> Loading classification model ...\n')
+
     clf_model = joblib.load(args.inputModelFile)
 
     #
     # read feature file
     #
+    print('\n>> Loading nuclei feature file ...\n')
+
     ddf = read_feature_file(args)
 
     if len(ddf.columns) != clf_model.n_features_:
@@ -114,6 +118,8 @@ def main(args):
     #
     # read nuclei annotation file
     #
+    print('\n>> Loading nuclei annotation file ...\n')
+
     with open(args.inputNucleiAnnotationFile) as f:
 
         nuclei_annot_list = json.load(f)['elements']
@@ -126,9 +132,11 @@ def main(args):
     #
     # Perform nuclei classification
     #
+    print('\n>> Performing nuclei classification using Dask ...\n')
+
     def predict_nuclei_class_prob(df, clf_model):
 
-        return pd.Dataframe(data=clf_model.predict_proba(df.as_matrix()),
+        return pd.DataFrame(data=clf_model.predict_proba(df.as_matrix()),
                             columns=clf_model.classes_)
 
     outfmt = pd.DataFrame(columns=clf_model.classes_, dtype=np.float64)
@@ -141,6 +149,8 @@ def main(args):
     #
     # Group nuclei annotations by class
     #
+    print('\n>> Grouping nuclei annotations by class ...\n')
+
     num_classes = len(clf_model.classes_)
 
     nuclei_annot_by_class = {c: [] for c in clf_model.classes_}
@@ -160,6 +170,8 @@ def main(args):
     #
     # Write annotation file
     #
+    print('\n>> Writing classified nuclei annotation file ...\n')
+
     annot_fname = os.path.splitext(
         os.path.basename(args.outputNucleiAnnotationFile))[0]
 
