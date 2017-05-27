@@ -261,6 +261,14 @@ class CliCommonTest(base.TestCase):
         )
 
         with open(nuclei_bndry_annot_gtruth_file, 'r') as fbndry_annot:
-            nuclei_bndry_annot_list_gtruth = json.load(fbndry_annot)['elements']
+            nuclei_bndry_annot_list_gtruth = json.load(
+                fbndry_annot)['elements']
 
-        assert nuclei_bndry_annot_list == nuclei_bndry_annot_list_gtruth
+        self.assertEqual(len(nuclei_bndry_annot_list),
+                         len(nuclei_bndry_annot_list_gtruth))
+
+        for pos in range(len(nuclei_bndry_annot_list)):
+
+            np.testing.assert_array_almost_equal(
+                nuclei_bndry_annot_list[pos]['points'],
+                nuclei_bndry_annot_list_gtruth[pos]['points'], 0)

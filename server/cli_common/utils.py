@@ -123,7 +123,8 @@ def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
             "width": width,
             "height": height,
             "rotation": 0,
-            "fillColor": "rgba(0,0,0,0)"
+            "fillColor": "rgba(0,0,0,0)",
+            "lineColor": "rgb(0,255,0)"
         }
 
         nuclei_annot_list.append(cur_bbox)
@@ -157,7 +158,8 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
             "type": "polyline",
             "points": cur_points.tolist(),
             "closed": True,
-            "fillColor": "rgba(0,0,0,0)"
+            "fillColor": "rgba(0,0,0,0)",
+            "lineColor": "rgb(0,255,0)"
         }
 
         nuclei_annot_list.append(cur_annot)
