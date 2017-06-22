@@ -11,6 +11,12 @@ import skimage.io
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils  # noqa
 
+results_num_keys = ('NumberWeakPositive', 'NumberPositive',
+                    'NumberStrongPositive')
+results_i_keys = ('IntensitySumWeakPositive', 'IntensitySumPositive',
+                  'IntensitySumStrongPositive')
+results_keys = results_num_keys + results_i_keys
+
 
 def main(args):
     Client(args.scheduler_address or None)
@@ -23,24 +29,30 @@ def main(args):
     ))
     if makeLabelImage:
         tile = ts.getRegion(**kwargs)[0]
-        results, labelImage = positive_pixel_count_single_tile(args, tile, makeLabelImage=True)
+        results, labelImage = positive_pixel_count_single_tile(
+            args, tile, makeLabelImage=True)
         skimage.io.imsave(args.outputLabelImage, labelImage)
     else:
         results = []
         total_tiles = ts.getSingleTile(**kwargs)['iterator_range']['position']
         for position in range(0, total_tiles, args.tile_grouping):
             results.append(delayed(positive_pixel_count_tiles)(
-                args, kwargs, position, min(args.tile_grouping, total_tiles - position)))
+                args, kwargs, position,
+                min(args.tile_grouping, total_tiles - position)))
         results = delayed(combine)(results).compute()
 
     r = results
     total_all_positive = sum(r[k] for k in results_num_keys)
-    output = ([(k, r[k]) for k in results_keys]
-              + [('IntensityAverage', sum(r[k] for k in results_i_keys) / total_all_positive),
-                 ('RatioStrongToTotal', float(r['NumberStrongPositive']) / total_all_positive),
-                 ('IntensityAverageWeakAndPositive',
-                  (r['IntensitySumWeakPositive'] + r['IntensitySumPositive'])
-                  / (r['NumberWeakPositive'] + r['NumberPositive']))])
+    output = (
+        [(k, r[k]) for k in results_keys] +
+        [('IntensityAverage',
+          sum(r[k] for k in results_i_keys) / total_all_positive),
+         ('RatioStrongToTotal',
+          float(r['NumberStrongPositive']) / total_all_positive),
+         ('IntensityAverageWeakAndPositive',
+          (r['IntensitySumWeakPositive'] + r['IntensitySumPositive']) /
+          (r['NumberWeakPositive'] + r['NumberPositive']))]
+    )
     with open(args.returnParameterFile, 'w') as f:
         for k, v in output:
             f.write('{} = {}\n'.format(k, v))
@@ -65,10 +77,11 @@ def positive_pixel_count_single_tile(args, tile, makeLabelImage):
     tile = tile[..., :3]
     tile_hsi = rgb_to_hsi(tile / 255.)
     mask_all_positive = (
-        (np.abs((tile_hsi[..., 0] - args.hueValue + 0.5 % 1) - 0.5) <= args.hueWidth / 2.)
-        & (tile_hsi[..., 1] >= args.saturationMinimum)
-        & (tile_hsi[..., 2] < args.intensityUpperLimit)
-        & (tile_hsi[..., 2] >= args.intensityLowerLimit)
+        (np.abs((tile_hsi[..., 0] - args.hueValue + 0.5 % 1) - 0.5) <=
+         args.hueWidth / 2.) &
+        (tile_hsi[..., 1] >= args.saturationMinimum) &
+        (tile_hsi[..., 2] < args.intensityUpperLimit) &
+        (tile_hsi[..., 2] >= args.intensityLowerLimit)
     )
     all_positive_i = tile_hsi[mask_all_positive, 2]
     mask_weak = all_positive_i >= args.intensityWeakThreshold
@@ -89,9 +102,9 @@ def positive_pixel_count_single_tile(args, tile, makeLabelImage):
         labelImage = np.full_like(tile, 255)
         # Colors from the "coolwarm" color map
         labelImage[mask_all_positive] = (
-            mask_weak[..., np.newaxis] * [60, 78, 194]
-            + mask_pos[..., np.newaxis] * [221, 220, 220]
-            + mask_strong[..., np.newaxis] * [180, 4, 38]
+            mask_weak[..., np.newaxis] * [60, 78, 194] +
+            mask_pos[..., np.newaxis] * [221, 220, 220] +
+            mask_strong[..., np.newaxis] * [180, 4, 38]
         )
         return total, labelImage
     else:
@@ -110,10 +123,6 @@ def rgb_to_hsi(im):
     saturations = np.where(intensities, 1 - im.min(0) / intensities, 0)
     return np.stack([hues, saturations, intensities], -1)
 
-
-results_num_keys = 'NumberWeakPositive', 'NumberPositive', 'NumberStrongPositive'
-results_i_keys = 'IntensitySumWeakPositive', 'IntensitySumPositive', 'IntensitySumStrongPositive'
-results_keys = results_num_keys + results_i_keys
 
 if __name__ == '__main__':
     main(CLIArgumentParser().parse_args())

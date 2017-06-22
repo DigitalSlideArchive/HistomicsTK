@@ -102,7 +102,7 @@
   become: true
 
 - name: Install pylibtiff from github
-  pip: name='git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5' extra_args='--force-reinstall --ignore-installed --upgrade --no-cache-dir' editable=False
+  pip: name='git+https://github.com/pearu/pylibtiff@33735eb7197eb33ed1a50bbc4bc5a47ce4305e92' extra_args='--force-reinstall --ignore-installed --upgrade --no-cache-dir' editable=False
   become: true
 
 - name: Install our external girder plugins - slicer_cli_web

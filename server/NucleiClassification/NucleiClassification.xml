@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Classify Nuclei</title>
+  <description>Classify nuclei in an image based on pre-computed features</description>
+  <version>0.1.0</version>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>inputImageFile</name>
+      <label>Input Image File</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description>Input image file</description>
+    </image>
+    <file>
+      <name>inputModelFile</name>
+      <label>Input Model File</label>
+      <channel>input</channel>
+      <index>1</index>
+      <description>Pickled file (*.pkl) of the scikit-learn model for classifying nuclei</description>
+    </file>
+    <file fileExtensions=".csv,.h5">
+      <name>inputNucleiFeatureFile</name>
+      <label>Input Nuclei Feature File</label>
+      <channel>input</channel>
+      <index>2</index>
+      <description>Input nuclei feature file (*.csv, *.h5) containing the features of all nuclei to be classified</description>
+    </file>
+    <file fileExtensions=".anot">
+      <name>inputNucleiAnnotationFile</name>
+      <label>Input Nuclei Annotation File</label>
+      <channel>input</channel>
+      <index>3</index>
+      <description>Input nuclei annotation file (*.anot) containing nuclei annotations in the same order as their features in the feature file</description>
+    </file>
+    <file fileExtensions=".anot" reference="inputImageFile">
+      <name>outputNucleiAnnotationFile</name>
+      <label>Output Nuclei Annotation File</label>
+      <channel>output</channel>
+      <index>4</index>
+      <description>Output nuclei annotation file (*.anot) with the same nuclei in input nuclei annotation file if provided) with nuclei sorted into groups based on class and accompanied by heatmaps of the classification probabilities</description>
+    </file>
+  </parameters>
+  <parameters advanced="true">
+    <label>Dask</label>
+    <description>Dask parameters</description>
+    <string>
+      <name>scheduler_address</name>
+      <label>Scheduler Address</label>
+      <description>Address of the dask scheduler in the format '127.0.0.1:8786'.  Not passing this parameter sets up a cluster on the local machine</description>
+      <longflag>scheduler_address</longflag>
+      <default></default>
+    </string>
+  </parameters>
+</executable>

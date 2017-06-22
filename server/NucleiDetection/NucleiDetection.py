@@ -19,7 +19,7 @@ import logging
 logging.basicConfig(level=logging.CRITICAL)
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils as cli_utils # noqa
+from cli_common import utils as cli_utils  # noqa
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
@@ -56,10 +56,6 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
         im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
 
     return nuclei_annot_list
-
-
-def disp_time(seconds):
-    return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
 
 def main(args):
@@ -164,7 +160,7 @@ def main(args):
         print 'Number of foreground tiles = %d (%.2f%%)' % (
             num_fgnd_tiles, percent_fgnd_tiles)
 
-        print 'Time taken = %s' % disp_time(fgnd_frac_comp_time)
+        print 'Time taken = %s' % cli_utils.disp_time_hms(fgnd_frac_comp_time)
 
     #
     # Detect nuclei in parallel using Dask
@@ -198,7 +194,7 @@ def main(args):
     nuclei_list = list(itertools.chain.from_iterable(tile_nuclei_list))
 
     print 'Number of nuclei = ', len(nuclei_list)
-    print "Time taken = %s" % disp_time(nuclei_detection_time)
+    print "Time taken = %s" % cli_utils.disp_time_hms(nuclei_detection_time)
 
     #
     # Write annotation file
@@ -218,7 +214,7 @@ def main(args):
 
     total_time_taken = time.time() - total_start_time
 
-    print 'Total analysis time = %s' % disp_time(total_time_taken)
+    print 'Total analysis time = %s' % cli_utils.disp_time_hms(total_time_taken)
 
 
 if __name__ == "__main__":

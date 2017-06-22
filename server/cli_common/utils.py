@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import scipy as sp
 import skimage.measure
@@ -122,7 +123,8 @@ def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
             "width": width,
             "height": height,
             "rotation": 0,
-            "fillColor": "rgba(0,0,0,0)"
+            "fillColor": "rgba(0,0,0,0)",
+            "lineColor": "rgb(0,255,0)"
         }
 
         nuclei_annot_list.append(cur_bbox)
@@ -139,7 +141,7 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
     wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
     hfrac = tile_info['gheight'] / np.double(tile_info['height'])
 
-    bx, by = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
+    by, bx = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
                                                    trace_all=True)
 
     for i in range(len(bx)):
@@ -156,7 +158,8 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
             "type": "polyline",
             "points": cur_points.tolist(),
             "closed": True,
-            "fillColor": "rgba(0,0,0,0)"
+            "fillColor": "rgba(0,0,0,0)",
+            "lineColor": "rgb(0,255,0)"
         }
 
         nuclei_annot_list.append(cur_annot)
@@ -247,12 +250,20 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
                         region)))
 
 
+def disp_time_hms(seconds):
+    """Converts time from seconds to a string of the form hours:minutes:seconds
+    """
+
+    return time.strftime("%H:%M:%S", time.gmtime(seconds))
+
+
 __all__ = (
     'create_dask_client',
     'create_tile_nuclei_annotations',
     'create_tile_nuclei_bbox_annotations',
     'create_tile_nuclei_boundary_annotations',
     'detect_nuclei_kofahi',
+    'disp_time_hms',
     'get_region_dict',
     'get_stain_matrix',
     'get_stain_vector',

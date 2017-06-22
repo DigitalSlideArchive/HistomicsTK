@@ -13,6 +13,10 @@ girderTest.importStylesheet(
     '/static/built/plugins/HistomicsTK/plugin.min.css'
 );
 girderTest.addCoveredScripts([
+    '/clients/web/static/built/plugins/jobs/plugin.min.js',
+    '/clients/web/static/built/plugins/worker/plugin.min.js',
+    '/clients/web/static/built/plugins/large_image/plugin.min.js',
+    '/clients/web/static/built/plugins/slicer_cli_web/plugin.min.js',
     '/clients/web/static/built/plugins/HistomicsTK/plugin.min.js'
 ]);
 
@@ -66,8 +70,17 @@ $(function () {
         runs(function () {
             var $item = $('.g-item-list-link:contains("' + name + '")');
             imageId = $item.next().attr('href').match(/\/item\/([a-f0-9]+)\/download/)[1];
+            expect($item.length).toBe(1);
             $item.click();
-            $('.g-submit-button').click();
+        });
+
+        girderTest.waitForDialog();
+        // Sometimes clicking submit fires the `g:saved` event, but doesn't actually
+        // close the dialog.  Delaying the click seems to help.
+        runs(function () {
+            window.setTimeout(function () {
+                $('.g-submit-button').click();
+            }, 100);
         });
 
         girderTest.waitForLoad();

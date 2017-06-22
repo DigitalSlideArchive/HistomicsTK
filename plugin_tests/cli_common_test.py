@@ -91,7 +91,7 @@ class CliCommonTest(base.TestCase):
 
         wsi_path = os.path.join(
             TEST_DATA_DIR,
-            'TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs'
+            'TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs'
         )
 
         ts = large_image.getTileSource(wsi_path)
@@ -99,11 +99,11 @@ class CliCommonTest(base.TestCase):
         im_fgnd_mask_lres, fgnd_seg_scale = \
             cli_utils.segment_wsi_foreground_at_low_res(ts)
 
-        np.testing.assert_equal(fgnd_seg_scale['magnification'], 1.25)
+        np.testing.assert_equal(fgnd_seg_scale['magnification'], 2.5)
 
         fgnd_mask_gtruth_file = os.path.join(
             TEST_DATA_DIR,
-            'TCGA-02-0010-01Z-00-DX4_fgnd_mask_lres.png'
+            'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png'
         )
 
         im_fgnd_mask_lres_gtruth = skimage.io.imread(
@@ -116,7 +116,7 @@ class CliCommonTest(base.TestCase):
 
         wsi_path = os.path.join(
             TEST_DATA_DIR,
-            'TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs'
+            'TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs'
         )
 
         # define parameters
@@ -162,7 +162,7 @@ class CliCommonTest(base.TestCase):
 
         # define ROI
         roi = {'left': ts_metadata['sizeX'] / 2,
-               'top': ts_metadata['sizeY'] / 2,
+               'top': ts_metadata['sizeY'] * 3 / 4,
                'width': analysis_tile_size['width'],
                'height': analysis_tile_size['height'],
                'units': 'base_pixels'}
@@ -190,7 +190,7 @@ class CliCommonTest(base.TestCase):
         num_fgnd_tiles = np.count_nonzero(
             tile_fgnd_frac_list >= args.min_fgnd_frac)
 
-        np.testing.assert_equal(num_fgnd_tiles, 4)
+        np.testing.assert_equal(num_fgnd_tiles, 2)
 
         # create nuclei annotations
         nuclei_bbox_annot_list = []
@@ -233,7 +233,7 @@ class CliCommonTest(base.TestCase):
         # compare nuclei bbox annotations with gtruth
         nuclei_bbox_annot_gtruth_file = os.path.join(
             TEST_DATA_DIR,
-            'TCGA-02-0010-01Z-00-DX4_roi_nuclei_bbox.anot'  # noqa
+            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot'  # noqa
         )
 
         with open(nuclei_bbox_annot_gtruth_file, 'r') as fbbox_annot:
@@ -257,10 +257,18 @@ class CliCommonTest(base.TestCase):
         # compare nuclei boundary annotations with gtruth
         nuclei_bndry_annot_gtruth_file = os.path.join(
             TEST_DATA_DIR,
-            'TCGA-02-0010-01Z-00-DX4_roi_nuclei_boundary.anot'  # noqa
+            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot'  # noqa
         )
 
         with open(nuclei_bndry_annot_gtruth_file, 'r') as fbndry_annot:
-            nuclei_bndry_annot_list_gtruth = json.load(fbndry_annot)['elements']
+            nuclei_bndry_annot_list_gtruth = json.load(
+                fbndry_annot)['elements']
 
-        assert nuclei_bndry_annot_list == nuclei_bndry_annot_list_gtruth
+        self.assertEqual(len(nuclei_bndry_annot_list),
+                         len(nuclei_bndry_annot_list_gtruth))
+
+        for pos in range(len(nuclei_bndry_annot_list)):
+
+            np.testing.assert_array_almost_equal(
+                nuclei_bndry_annot_list[pos]['points'],
+                nuclei_bndry_annot_list_gtruth[pos]['points'], 0)

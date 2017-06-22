@@ -30,7 +30,7 @@ RUN pip install --upgrade --ignore-installed pip setuptools && \
       openslide-python \
       Pillow && \
     # Ensure we have the latest libtif
-    pip install --force-reinstall --ignore-installed --upgrade 'git+https://github.com/pearu/pylibtiff@848785a6a9a4e2c6eb6f56ca9f7e8f6b32e523d5' && \
+    pip install --force-reinstall --ignore-installed --upgrade 'git+https://github.com/pearu/pylibtiff@33735eb7197eb33ed1a50bbc4bc5a47ce4305e92' && \
     # Install HistomicsTK
     python setup.py install && \
     # clean up

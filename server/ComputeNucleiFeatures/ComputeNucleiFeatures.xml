@@ -25,18 +25,19 @@
       <longflag>analysis_roi</longflag>
       <default>-1,-1,-1,-1</default>
     </region>
-    <file fileExtensions=".csv">
-      <name>outputFile</name>
-      <label>Output CSV file</label>
+    <file fileExtensions=".csv,.h5">
+      <name>outputNucleiFeatureFile</name>
+      <label>Output Nuclei Feature file</label>
       <channel>output</channel>
       <index>1</index>
-      <description>Output CSV file</description>
+      <description>Output nuclei feature file (*.csv or *.h5)</description>
     </file>
     <file fileExtensions=".anot" reference="inputImageFile">
       <name>outputNucleiAnnotationFile</name>
       <label>Output Nuclei Annotation File</label>
-      <description>Output nuclei annotation file</description>
-      <longflag>output_annotation_file</longflag>
+      <description>Output nuclei annotation file (*.anot)</description>
+      <channel>output</channel>
+      <index>2</index>
     </file>
     <boolean>
       <name>morphometry_features</name>

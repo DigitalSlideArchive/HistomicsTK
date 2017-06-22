@@ -20,7 +20,7 @@ import logging
 logging.basicConfig(level=logging.CRITICAL)
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils as cli_utils # noqa
+from cli_common import utils as cli_utils  # noqa
 
 
 def compute_tile_nuclei_features(slide_path, tile_position, args, **it_kwargs):
@@ -79,17 +79,7 @@ def compute_tile_nuclei_features(slide_path, tile_position, args, **it_kwargs):
     return nuclei_annot_list, fdata
 
 
-def disp_time(seconds):
-    return time.strftime("%H:%M:%S", time.gmtime(seconds))
-
-
-def main(args):
-
-    total_start_time = time.time()
-
-    print('\n>> CLI Parameters ...\n')
-
-    print args
+def check_args(args):
 
     if not os.path.isfile(args.inputImageFile):
         raise IOError('Input image file does not exist.')
@@ -102,6 +92,22 @@ def main(args):
 
     if len(args.analysis_roi) != 4:
         raise ValueError('Analysis ROI must be a vector of 4 elements.')
+
+    if os.path.splitext(args.outputNucleiFeatureFile)[1] not in ['.csv', '.h5']:
+        raise ValueError('Extension of output feature file must be .csv or .h5')
+
+
+def main(args):
+
+    total_start_time = time.time()
+
+    print('\n>> CLI Parameters ...\n')
+
+    print args
+
+    check_args(args)
+
+    feature_file_format = os.path.splitext(args.outputNucleiFeatureFile)[1]
 
     if np.all(np.array(args.analysis_roi) == -1):
         process_whole_image = True
@@ -185,7 +191,7 @@ def main(args):
         print 'Number of foreground tiles = %d (%.2f%%)' % (
             num_fgnd_tiles, percent_fgnd_tiles)
 
-        print 'Time taken = %s' % disp_time(fgnd_frac_comp_time)
+        print 'Time taken = %s' % cli_utils.disp_time_hms(fgnd_frac_comp_time)
 
     #
     # Detect and compute nuclei features in parallel using Dask
@@ -224,36 +230,45 @@ def main(args):
     nuclei_detection_time = time.time() - start_time
 
     print 'Number of nuclei = ', len(nuclei_annot_list)
-    print "Time taken = %s" % disp_time(nuclei_detection_time)
+    print "Time taken = %s" % cli_utils.disp_time_hms(nuclei_detection_time)
 
     #
     # Write annotation file
     #
     print('\n>> Writing annotation file ...\n')
 
-    if args.outputNucleiAnnotationFile:
+    annot_fname = os.path.splitext(
+        os.path.basename(args.outputNucleiAnnotationFile))[0]
 
-        annot_fname = os.path.splitext(
-            os.path.basename(args.outputNucleiAnnotationFile))[0]
+    annotation = {
+        "name": annot_fname + '-nuclei-' + args.nuclei_annotation_format,
+        "elements": nuclei_annot_list
+    }
 
-        annotation = {
-            "name": annot_fname + '-nuclei-' + args.nuclei_annotation_format,
-            "elements": nuclei_annot_list
-        }
-
-        with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
-            json.dump(annotation, annotation_file, indent=2, sort_keys=False)
+    with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
+        json.dump(annotation, annotation_file, indent=2, sort_keys=False)
 
     #
     # Create CSV Feature file
     #
     print('>> Writing CSV feature file')
 
-    nuclei_fdata.to_csv(args.outputFile)
+    if feature_file_format == '.csv':
+
+        nuclei_fdata.to_csv(args.outputNucleiFeatureFile, index=False)
+
+    elif feature_file_format == '.h5':
+
+        nuclei_fdata.to_hdf(args.outputNucleiFeatureFile, 'Features',
+                            format='table', mode='w')
+
+    else:
+
+        raise ValueError('Extension of output feature file must be .csv or .h5')
 
     total_time_taken = time.time() - total_start_time
 
-    print 'Total analysis time = %s' % disp_time(total_time_taken)
+    print 'Total analysis time = %s' % cli_utils.disp_time_hms(total_time_taken)
 
 
 if __name__ == "__main__":
