@@ -45,29 +45,20 @@ def process_annotations(event):
         )
 
         if not (item and user and file):
-            logger.error(
-                'Could not load models from the database'
-            )
+            logger.error('Could not load models from the database')
             return
 
         try:
-            data = json.loads(
-                ''.join(File.download(file)())
-            )
+            data = json.loads(''.join(File.download(file)()))
         except Exception:
-            logger.error(
-                'Could not parse annotation file'
-            )
+            logger.error('Could not parse annotation file')
             raise
 
-        try:
-            Annotation.createAnnotation(
-                item,
-                user,
-                data
-            )
-        except Exception:
-            logger.error(
-                'Could not create annotation object from data'
-            )
-            raise
+        if not isinstance(data, list):
+            data = [data]
+        for annotation in data:
+            try:
+                Annotation.createAnnotation(item, user, annotation)
+            except Exception:
+                logger.error('Could not create annotation object from data')
+                raise
