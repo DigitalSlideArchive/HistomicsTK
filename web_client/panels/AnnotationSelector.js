@@ -124,6 +124,7 @@ var AnnotationSelector = Panel.extend({
                     }
                 });
                 this.render();
+                return null;
             });
         }
     }

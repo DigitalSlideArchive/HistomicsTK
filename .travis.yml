@@ -56,6 +56,10 @@ addons:
       - libgif-dev
 
 before_install:
+    # Fix a travis/boto issue.  See
+    # https://github.com/travis-ci/travis-ci/issues/7940
+    - sudo rm -f /etc/boto.cfg
+
     - CACHE="$HOME/.cache" OPENJPEG_VERSION=2.1.2 OPENJPEG_FILE=v2.1.2.tar.gz OPENJPEG_DIR=openjpeg-2.1.2 LIBTIFF_VERSION=4.0.6 OPENSLIDE_VERSION=3.4.1 source .install-openslide.sh
 
     - GIRDER_VERSION=master

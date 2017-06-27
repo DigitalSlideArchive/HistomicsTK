@@ -1,24 +1,7 @@
-/* eslint-disable camelcase */
-
-girderTest.importStylesheet(
-    '/static/built/plugins/jobs/plugin.min.css'
-);
-girderTest.importStylesheet(
-    '/static/built/plugins/slicer_cli_web/plugin.min.css'
-);
-girderTest.importStylesheet(
-    '/static/built/plugins/large_image/plugin.min.css'
-);
-girderTest.importStylesheet(
-    '/static/built/plugins/HistomicsTK/plugin.min.css'
-);
-girderTest.addCoveredScripts([
-    '/clients/web/static/built/plugins/jobs/plugin.min.js',
-    '/clients/web/static/built/plugins/worker/plugin.min.js',
-    '/clients/web/static/built/plugins/large_image/plugin.min.js',
-    '/clients/web/static/built/plugins/slicer_cli_web/plugin.min.js',
-    '/clients/web/static/built/plugins/HistomicsTK/plugin.min.js'
-]);
+girderTest.importPlugin('jobs');
+girderTest.importPlugin('large_image');
+girderTest.importPlugin('slicer_cli_web');
+girderTest.importPlugin('HistomicsTK');
 
 var app;
 var geojsMap;
@@ -34,6 +17,7 @@ girderTest.promise.then(function () {
     });
     app.bindRoutes();
     girder.events.trigger('g:appload.after');
+    return null;
 });
 
 $(function () {
@@ -222,7 +206,10 @@ $(function () {
                         data: {
                             itemId: imageId
                         }
-                    }).then(function (a) { annotations = a; });
+                    }).then(function (a) {
+                        annotations = a;
+                        return null;
+                    });
                 });
 
                 waitsFor(function () {
@@ -279,7 +266,10 @@ $(function () {
                         data: {
                             itemId: imageId
                         }
-                    }).then(function (a) { annotations = a; });
+                    }).then(function (a) {
+                        annotations = a;
+                        return null;
+                    });
                 });
 
                 waitsFor(function () {
@@ -319,6 +309,7 @@ $(function () {
                         type: 'POST'
                     }).then(function () {
                         uploaded = true;
+                        return null;
                     });
                 });
 

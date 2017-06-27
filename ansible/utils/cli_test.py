@@ -44,31 +44,32 @@ def get_test_data(client, opts):
     folder = client.resourceLookup('/collection/%s/%s' % (collName, folderName), True)
     if not folder:
         folder = client.createFolder(collection['_id'], folderName, parentType='collection')
-    remote = girder_client.GirderClient(apiUrl='https://data.kitware.com/api/v1')
-    remoteFolder = remote.resourceLookup('/collection/HistomicsTK/Deployment test images')
-    for item in remote.listItem(remoteFolder['_id']):
-        localPath = '/collection/%s/%s/%s' % (collName, folderName, item['name'])
-        localItem = client.resourceLookup(localPath, True)
-        if localItem:
-            client.delete('item/%s' % localItem['_id'])
-        localItem = client.createItem(folder['_id'], item['name'])
-        for remoteFile in remote.listFile(item['_id']):
-            with tempfile.NamedTemporaryFile() as tf:
-                fileName = tf.name
-                tf.close()
-                sys.stdout.write('Downloading %s' % remoteFile['name'])
-                sys.stdout.flush()
-                remote.downloadFile(remoteFile['_id'], fileName)
-                sys.stdout.write(' .')
-                sys.stdout.flush()
-                client.uploadFileToItem(
-                    localItem['_id'], fileName, filename=remoteFile['name'],
-                    mimeType=remoteFile['mimeType'])
-                sys.stdout.write('.\n')
-                sys.stdout.flush()
+    if opts.get('test') != 'local':
+        remote = girder_client.GirderClient(apiUrl='https://data.kitware.com/api/v1')
+        remoteFolder = remote.resourceLookup('/collection/HistomicsTK/Deployment test images')
+        for item in remote.listItem(remoteFolder['_id']):
+            localPath = '/collection/%s/%s/%s' % (collName, folderName, item['name'])
+            localItem = client.resourceLookup(localPath, True)
+            if localItem:
+                client.delete('item/%s' % localItem['_id'])
+            localItem = client.createItem(folder['_id'], item['name'])
+            for remoteFile in remote.listFile(item['_id']):
+                with tempfile.NamedTemporaryFile() as tf:
+                    fileName = tf.name
+                    tf.close()
+                    sys.stdout.write('Downloading %s' % remoteFile['name'])
+                    sys.stdout.flush()
+                    remote.downloadFile(remoteFile['_id'], fileName)
+                    sys.stdout.write(' .')
+                    sys.stdout.flush()
+                    client.uploadFileToItem(
+                        localItem['_id'], fileName, filename=remoteFile['name'],
+                        mimeType=remoteFile['mimeType'])
+                    sys.stdout.write('.\n')
+                    sys.stdout.flush()
     for item in list(client.listItem(folder['_id'])):
         if item['name'].endswith('.anot'):
-            sys.stdout.write('Deleting %s ' % item['name'])
+            sys.stdout.write('Deleting %s\n' % item['name'])
             sys.stdout.flush()
             client.delete('item/%s' % item['_id'])
             continue
@@ -210,6 +211,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--test', action='store_true', default=False,
         help='Download test data and check that basic functions work.')
+    parser.add_argument(
+        '--test-local', '--local-test', action='store_const', dest='test',
+        const='local',
+        help='Use local test data and check that basic functions work.')
     parser.add_argument(
         '--no-test', action='store_false', dest='test',
         help='Don\'t download test data and don\'t run checks.')
