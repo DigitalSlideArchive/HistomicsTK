@@ -33,6 +33,7 @@ var HeaderUserView = View.extend({
                     }));
                     this.$('.h-analyses-dropdown-link').submenupicker();
                 }
+                return null;
             });
         } else {
             this.$el.addClass('hidden');
