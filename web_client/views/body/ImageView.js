@@ -135,6 +135,7 @@ var ImageView = View.extend({
         if (id) {
             this.model.set({_id: id}).fetch().then(() => {
                 this._setImageInput();
+                return null;
             });
         } else {
             this.model.set({_id: null});
@@ -185,6 +186,7 @@ var ImageView = View.extend({
                 path: 'item/' + itemId + '/tiles'
             }).then((tiles) => {
                 this.zoomWidget.setMaxMagnification(tiles.magnification || 20);
+                return null;
             });
         };
 
@@ -215,6 +217,7 @@ var ImageView = View.extend({
                     model.set('value', file, {trigger: true});
                 }
             });
+            return null;
         });
     },
 
@@ -266,6 +269,7 @@ var ImageView = View.extend({
         if (annotation.get('displayed')) {
             annotation.fetch().then(() => {
                 this.viewerWidget.drawAnnotation(annotation);
+                return null;
             });
         } else {
             this.viewerWidget.removeAnnotation(annotation);
