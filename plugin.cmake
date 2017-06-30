@@ -14,6 +14,9 @@
 #  limitations under the License.
 ###############################################################################
 
+# This gets us basic linting tests
+add_standard_plugin_tests(NO_CLIENT_TESTS NO_SERVER_TESTS)
+
 function(add_histomicstk_python_test case)
   add_python_test("${case}" PLUGIN HistomicsTK
     COVERAGE_PATHS "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/histomicstk"
@@ -22,11 +25,9 @@ function(add_histomicstk_python_test case)
 endfunction()
 
 # style tests
-add_python_style_test(
-  python_static_analysis_HistomicsTK_plugins
-  "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/server"
-)
 
+# We have to add the python tests and static analysis of them manually, since
+# the standard plugin tests don't handle external data
 add_python_style_test(
   python_static_analysis_HistomicsTK_tests
   "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests"
@@ -40,7 +41,7 @@ add_python_style_test(
 # API tests
 add_histomicstk_python_test(docker)
 
-add_histomicstk_python_test(example)
+add_histomicstk_python_test(annotation_handler)
 
 add_histomicstk_python_test(import_package)
 
@@ -137,12 +138,6 @@ add_web_client_test(
   PLUGIN HistomicsTK
   TEST_MODULE "plugin_tests.web_client_test"
   # EXTERNAL_DATA "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
-)
-
-add_eslint_test(
-  js_static_analysis_HistomicsTK "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/web_client"
-  ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintrc"
-  ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintignore"
 )
 
 add_eslint_test(
