@@ -84,6 +84,7 @@ class CliCommonTest(base.TestCase):
                                                                 result)
 
     def test_segment_wsi_foreground_at_low_res(self):
+        np.random.seed(0)
 
         wsi_path = os.path.join(
             TEST_DATA_DIR,
