@@ -33,18 +33,28 @@ def compute_global_graph_features(centroids, scale=10.):
     -------
     props : collections.namedtuple
         Nested namedtuples with the structure:
+
         - .voronoi: Voronoi diagram features
+
           - .area: Polygon area features
           - .peri: Polygon perimeter features
+
         - .delaunay: Delaunay triangulation features
+
           - .sides: Triangle side length features
           - .area: Triangle area features
+
         - .mst_branches: Minimum spanning tree branch features
         - .density: Density features
+
           - .neighbors_in_distance
+
             - [radius]: Neighbor count within given radius features
+
           - .distance_for_neighbors
+
             - [count]: Minimum distance to enclose count neighbors features
+
         Each leaf node is itself a namedtuple with fields 'mean',
         'stddev', 'minmaxr', and 'disorder'.  'minmaxr' is the
         minimum-to-maximum ratio, and disorder is stddev / (mean +
