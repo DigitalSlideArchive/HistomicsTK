@@ -22,6 +22,7 @@
 
 from tests import base
 
+from argparse import Namespace
 import os
 import sys
 import json
@@ -52,16 +53,11 @@ def tearDownModule():
     base.stopServer()
 
 
-class Namespace(object):
-    pass
-
-
 class CliCommonTest(base.TestCase):
 
     def test_get_stain_matrix(self):
 
-        args = Namespace()
-        args.__dict__ = dict(
+        args = Namespace(
             stain_1='hematoxylin',
             stain_1_vector=[-1, -1, -1],
             stain_2='custom',
