@@ -269,3 +269,24 @@ class CliCommonTest(base.TestCase):
             np.testing.assert_array_almost_equal(
                 nuclei_bndry_annot_list[pos]['points'],
                 nuclei_bndry_annot_list_gtruth[pos]['points'], 0)
+
+    def test_splitArgs(self):
+        args = Namespace(
+            a=1,
+            b_a=2,
+            b_b=3,
+            b_c_a=4,
+            c_a=5,
+        )
+        split = cli_utils.splitArgs(args)
+        self.assertEqual(split, Namespace(
+            a=1,
+            b=Namespace(
+                a=2,
+                b=3,
+                c_a=4,
+            ),
+            c=Namespace(
+                a=5,
+            ),
+        ))
