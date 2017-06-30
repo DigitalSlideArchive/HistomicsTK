@@ -1,12 +1,11 @@
 import _ from 'underscore';
 
 import { restRequest } from 'girder/rest';
-
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+
 import editAnnotation from '../dialogs/editAnnotation';
 import saveAnnotation from '../dialogs/saveAnnotation';
-
 import drawWidget from '../templates/panels/drawWidget.pug';
 import '../stylesheets/panels/drawWidget.styl';
 
@@ -139,6 +138,7 @@ var DrawWidget = Panel.extend({
             data.displayed = true;
             this.annotations.add(data);
             this.reset();
+            return null;
         });
     }
 });
