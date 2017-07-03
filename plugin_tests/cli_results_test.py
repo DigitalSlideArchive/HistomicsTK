@@ -20,6 +20,7 @@
 import hashlib
 import json
 import os
+import runpy
 import shutil
 import six
 import sys
@@ -44,8 +45,8 @@ def tearDownModule():
 
 
 class CliResultsTest(unittest.TestCase):
-    def _runTest(self, cli_args=(), cli_kwargs={}, outputs={}, contains=[],
-                 excludes=[]):
+    def _runTest(self, cli_args=(), cli_kwargs={}, outputs={},
+                 in_process=True, contains=[], excludes=[]):
         """
         Test a cli by calling subprocess.  Ensure that output files match a
         sha256 and stdout contains certain phrases and excludes other phrases.
@@ -64,28 +65,52 @@ class CliResultsTest(unittest.TestCase):
                     file.
                 'contains': a list of phrases that must be present in the first
                     256 kb of the file.
+        :param in_process: a flag indicating whether to run the cli in-process
         :param contains: a list of phrases that must be present in the stdout
-            output of the cli.
+            output of the cli.  Only valid if in_process is False.
         :param excludes: a list of phrases that must be not present in the
-            stdout output of the cli.
+            stdout output of the cli.  Only valid if in_process is False.
         :returns: stdout from the test.
         """
         chunkSize = 256 * 1024
 
-        stdout = ''
+        if in_process and (contains or excludes):
+            raise ValueError("contains and excludes parameters may only be used"
+                             " if in_process is False.")
+
         cwd = os.environ.get('CLI_CWD')
-        cmd = ['python', os.environ['CLI_LIST_ENTRYPOINT']]
         tmppath = tempfile.mkdtemp()
         try:
-            cmd += [arg if not arg.startswith('tmp_') else
-                    os.path.join(tmppath, arg) for arg in cli_args]
+            cmd = [arg if not arg.startswith('tmp_') else
+                   os.path.join(tmppath, arg) for arg in cli_args]
             cmd += ['--%s=%s' % (
                 k, v if not v.startswith('tmp_') else os.path.join(tmppath, v))
                 for k, v in six.iteritems(cli_kwargs)]
-            process = subprocess.Popen(
-                cmd, shell=False, stdout=subprocess.PIPE, cwd=cwd)
-            stdout, stderr = process.communicate()
-            self.assertEqual(process.returncode, 0)
+            if in_process:
+                stdout = None
+                try:
+                    old_sys_argv = sys.argv[:]
+                    sys.argv[:] = cmd
+                    runpy.run_path(
+                        os.path.join(cwd, cli_args[0], cli_args[0] + '.py'),
+                        run_name='__main__',
+                    )
+                except SystemExit as e:
+                    self.assertIn(e.code, {0, None})
+                finally:
+                    sys.argv[:] = old_sys_argv
+            else:
+                stdout = ''
+                process = subprocess.Popen(
+                    ['python', os.environ['CLI_LIST_ENTRYPOINT']] + cmd,
+                    shell=False, stdout=subprocess.PIPE, cwd=cwd,
+                )
+                stdout, stderr = process.communicate()
+                self.assertEqual(process.returncode, 0)
+                for entry in contains:
+                    self.assertIn(entry, stdout)
+                for entry in excludes:
+                    self.assertNotIn(entry, stdout)
             for outpath, options in six.iteritems(outputs):
                 if outpath.startswith('tmp_'):
                     outpath = os.path.join(tmppath, outpath)
@@ -107,13 +132,10 @@ class CliResultsTest(unittest.TestCase):
                     data = open(outpath, 'rb').read(chunkSize)
                     for entry in contains:
                         self.assertIn(entry, data)
-            for entry in contains:
-                self.assertIn(entry, stdout)
-            for entry in excludes:
-                self.assertNotIn(entry, stdout)
         except Exception:
             sys.stderr.write('CMD (cwd %s):\n%r\n' % (cwd, cmd))
-            sys.stderr.write('STDOUT:\n%s\n' % stdout.rstrip())
+            if not in_process:
+                sys.stderr.write('STDOUT:\n%s\n' % stdout.rstrip())
             raise
         finally:
             shutil.rmtree(tmppath)
@@ -129,17 +151,17 @@ class CliResultsTest(unittest.TestCase):
 
         restResource = Resource()
         cli_args = ('--list_cli', )
-        cli_list = self._runTest(cli_args, contains=['"NucleiDetection"'])
+        cli_list = self._runTest(cli_args, in_process=False, contains=['"NucleiDetection"'])
         cli_list = json.loads(cli_list)
         self.assertIn('NucleiDetection', cli_list)
         for cli in cli_list:
             cli_args = (cli, '--help')
             # Each cli's help must mention usage, its own name, and that you
             # can output xml
-            self._runTest(cli_args, contains=['usage:', cli, '--xml'])
+            self._runTest(cli_args, in_process=False, contains=['usage:', cli, '--xml'])
             cli_args = (cli, '--xml')
             # The xml output needs to have a tile and an executable tag
-            xml = self._runTest(cli_args, contains=[
+            xml = self._runTest(cli_args, in_process=False, contains=[
                 '<executable>', '<title>', '</executable>', '</title>'])
             if '<' in xml:
                 xml = xml[xml.index('<'):]
