@@ -130,7 +130,7 @@ class CliResultsTest(unittest.TestCase):
                         raise
                 if 'contains' in options:
                     data = open(outpath, 'rb').read(chunkSize)
-                    for entry in contains:
+                    for entry in options['contains']:
                         self.assertIn(entry, data)
         except Exception:
             sys.stderr.write('CMD (cwd %s):\n%r\n' % (cwd, cmd))
