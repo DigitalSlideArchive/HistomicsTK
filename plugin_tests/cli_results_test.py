@@ -47,13 +47,13 @@ def tearDownModule():
 class CliResultsTest(unittest.TestCase):
     def _runTest(self, cli_args=(), cli_kwargs={}, outputs={},
                  in_process=True, contains=[], excludes=[]):
-        """
-        Test a cli by calling subprocess.  Ensure that output files match a
-        sha256 and stdout contains certain phrases and excludes other phrases.
-        A value in the cli_args or cli_kwargs of 'tmp_<value>' will create a
-        temporary file and use that instead.  The same value in the output
-        list can be used to test the existence and contents of that file at the
-        end of the process.
+        """Test a cli by calling runpy or subprocess.  Ensure that output
+        files match a sha256 and stdout contains certain phrases and
+        excludes other phrases.  A value in the cli_args or cli_kwargs
+        of 'tmp_<value>' will create a temporary file and use that
+        instead.  The same value in the output list can be used to
+        test the existence and contents of that file at the end of the
+        process.
 
         :param cli_args: a tuple or list of args to format and pass to the cli.
         :param cli_kwargs: keyword arguments to format and pass to the cli.
@@ -65,12 +65,16 @@ class CliResultsTest(unittest.TestCase):
                     file.
                 'contains': a list of phrases that must be present in the first
                     256 kb of the file.
-        :param in_process: a flag indicating whether to run the cli in-process
+        :param in_process: a flag indicating whether to run the cli in-process.
+            Defaults to True, and when True enables coverage testing to reach
+            the CLIs.  When False, subprocess is used, which enables capturing
+            stdout and stderr.
         :param contains: a list of phrases that must be present in the stdout
             output of the cli.  Only valid if in_process is False.
         :param excludes: a list of phrases that must be not present in the
             stdout output of the cli.  Only valid if in_process is False.
         :returns: stdout from the test.
+
         """
         chunkSize = 256 * 1024
 
