@@ -41,6 +41,8 @@ add_python_style_test(
 # API tests
 add_histomicstk_python_test(docker)
 
+add_histomicstk_python_test(example)
+
 add_histomicstk_python_test(annotation_handler)
 
 add_histomicstk_python_test(import_package)
