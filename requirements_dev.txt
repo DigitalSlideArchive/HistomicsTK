@@ -6,7 +6,7 @@ jupyter>=1.0.0
 nbsphinx>=0.2.8
 pprintpp==0.2.3
 PyYAML==3.11
-Sphinx==1.4.2
+Sphinx==1.6.2
 sphinx-rtd-theme==0.1.9
 watchdog==0.8.3
 wheel==0.23.0
