@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+import Panel from 'girder_plugins/item_tasks/views/Panel';
 
 import zoomWidget from '../templates/panels/zoomWidget.pug';
 import '../stylesheets/panels/zoomWidget.styl';
@@ -75,7 +75,7 @@ var ZoomWidget = Panel.extend({
         }));
 
         // make the panel collapsible
-        this.$('.s-panel-content').collapse({toggle: false});
+        this.$('.g-panel-content').collapse({toggle: false});
 
         // set the text value on the readonly input box
         this._zoomSliderInput();
