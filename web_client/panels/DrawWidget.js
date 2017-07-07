@@ -3,7 +3,7 @@ import _ from 'underscore';
 import { restRequest } from 'girder/rest';
 import events from 'girder/events';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
-import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+import Panel from 'girder_plugins/item_tasks/views/Panel';
 
 import StyleCollection from '../collections/StyleCollection';
 import StyleModel from '../models/StyleModel';
@@ -70,7 +70,7 @@ var DrawWidget = Panel.extend({
             groups: this._groups,
             style: this._style.id
         }));
-        this.$('.s-panel-content').collapse({toggle: false});
+        this.$('.g-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         if (this.viewer.annotationLayer && !this.viewer.annotationLayer._boundHistomicsTKModeChange) {
             this.viewer.annotationLayer._boundHistomicsTKModeChange = true;

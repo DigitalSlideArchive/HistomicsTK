@@ -5,7 +5,7 @@ import { restRequest } from 'girder/rest';
 import ItemModel from 'girder/models/ItemModel';
 import FileModel from 'girder/models/FileModel';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
-import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
+import TaskPanelGroup from 'girder_plugins/item_tasks/views/TaskRunView';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import AnnotationCollection from 'girder_plugins/large_image/collections/AnnotationCollection';
 
@@ -34,7 +34,7 @@ var ImageView = View.extend({
         this.listenTo(events, 'query:image', this.openImage);
         this.annotations = new AnnotationCollection();
 
-        this.controlPanel = new SlicerPanelGroup({
+        this.controlPanel = new TaskPanelGroup({
             parentView: this
         });
         this.annotationSelector = new AnnotationSelector({
