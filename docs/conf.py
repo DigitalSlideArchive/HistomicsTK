@@ -32,9 +32,11 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # -- General configuration ---------------------------------------------
+# We use footnotes to collect references without actually referencing them
+suppress_warnings = ['ref.footnote']
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.6'  # Allow specifying top-level packages only
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -51,17 +53,8 @@ extensions = ['sphinx.ext.autodoc',
               'IPython.sphinxext.ipython_console_highlighting',
               'nbsphinx']
 
-autodoc_mock_imports = ['matplotlib', 'matplotlib.pyplot',
-                        'nimfa',
-                        'openslide', 'pandas', 'large_image',
-                        'scipy',
-                        'scipy.ndimage.morphology','scipy.ndimage.filters',
-                        'scipy.ndimage.measurements',
-                        'scipy.optimize', 'scipy.signal', 'scipy.stats',
-                        'skimage', 'skimage.feature', 'skimage.measure',
-                        'skimage.segmentation', 'skimage.morphology',
-                        'skimage.draw', 'skimage.transform',
-                        'sklearn.cluster', 'sklearn.neighbors.kde',
+autodoc_mock_imports = ['matplotlib', 'nimfa', 'openslide', 'pandas',
+                        'large_image', 'scipy', 'skimage', 'sklearn',
                         'segmentation.label.trace_boundaries_cython']
 
 # Add any paths that contain templates here, relative to this directory.
