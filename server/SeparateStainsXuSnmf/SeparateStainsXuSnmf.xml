@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Performs Adaptive Color Deconvolution</title>
+  <description>Uses sparse non-negative matrix factorization to adaptively deconvolve a given RGB image into intensity images representing distinct stains.</description>
+  <version>0.1.0</version>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters.</description>
+    <image>
+      <name>sample_slide_path</name>
+      <label>Input Image</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description>Input image to be deconvolved</description>
+    </image>
+    <double-vector>
+      <name>snmf_I_0</name>
+      <label>Background Intensity</label>
+      <index>1</index>
+      <description>Background intensity in each channel</description>
+    </double-vector>
+    <float>
+      <name>sample_sample_fraction</name>
+      <label>Sample Fraction</label>
+      <longflag>sampleFraction</longflag>
+      <description>Fraction of pixels to sample.  Specify either this or --sampleApproximateTotal</description>
+      <constraints>
+	<maximum>1</maximum>
+      </constraints>
+      <default>-1</default>
+    </float>
+    <float>
+      <name>sample_magnification</name>
+      <label>Magnification</label>
+      <longflag>magnification</longflag>
+      <description>Desired magnification for sampling.  The default value indicates native scan magnification.</description>
+      <default>-1</default>
+    </float>
+    <float>
+      <name>sample_tissue_seg_mag</name>
+      <label>Segmentation Magnification</label>
+      <longflag>segmentationMag</longflag>
+      <description>Low resolution magnification at which foreground and background will be segmented.</description>
+      <default>1.25</default>
+    </float>
+    <float>
+      <name>sample_min_coverage</name>
+      <label>Minimum Coverage</label>
+      <longflag>minCoverage</longflag>
+      <description>Minimum background coverage required for a tile to
+      be sampled from.</description>
+      <constraints>
+	<minimum>0</minimum>
+	<maximum>1</maximum>
+      </constraints>
+      <default>0.1</default>
+    </float>
+    <integer>
+      <name>sample_sample_approximate_total</name>
+      <label>Approximate sample total</label>
+      <longflag>sampleApproximateTotal</longflag>
+      <description>Use instead of sample_fraction to specify roughly how many pixels to sample.  The fewer tiles are excluded, the more accurate this will be.</description>
+      <default>-1</default>
+    </integer>
+    <string-enumeration>
+      <name>stains_stain_1</name>
+      <label>stain-1</label>
+      <description>Name for initial estimate of color of stain-1</description>
+      <channel>input</channel>
+      <longflag>stain_1</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>custom</element>
+      <default>hematoxylin</default>
+    </string-enumeration>
+    <double-vector>
+      <name>stains_stain_1_vector</name>
+      <longflag>stain_1_vector</longflag>
+      <label>stain-1 custom vector</label>
+      <default>-1,-1,-1</default>
+      <description>Custom value for initial estimate of stain-1</description>
+    </double-vector>
+    <string-enumeration>
+      <name>stains_stain_2</name>
+      <label>stain-2</label>
+      <description>Name for initial estimate of color of stain-2</description>
+      <channel>input</channel>
+      <longflag>stain_2</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>custom</element>
+      <default>eosin</default>
+    </string-enumeration>
+    <double-vector>
+      <name>stains_stain_2_vector</name>
+      <longflag>stain_2_vector</longflag>
+      <label>stain-2 custom vector</label>
+      <default>-1,-1,-1</default>
+      <description>Custom value for initial estimate of stain-2</description>
+    </double-vector>
+    <double>
+      <name>snmf_beta</name>
+      <label>Beta</label>
+      <description>A parameter to control sparsity of stain concentrations</description>
+      <longflag>beta</longflag>
+      <default>0.5</default>
+    </double>
+    <double-vector>
+      <name>stainColor_1</name>
+      <label>Color of stain 1</label>
+      <channel>output</channel>
+      <description>SDA color of stain 1</description>
+    </double-vector>
+    <double-vector>
+      <name>stainColor_2</name>
+      <label>Color of stain 2</label>
+      <channel>output</channel>
+      <description>SDA color of stain 2</description>
+    </double-vector>
+    <double-vector>
+      <name>stainColor_3</name>
+      <label>Color of stain 3</label>
+      <channel>output</channel>
+      <description>SDA color of stain 3</description>
+    </double-vector>
+  </parameters>
+  <parameters advanced="true">
+    <label>Dask</label>
+    <description>Dask parameters</description>
+    <string>
+      <name>dask_scheduler_address</name>
+      <label>Scheduler Address</label>
+      <description>Address of the dask scheduler in the format '127.0.0.1:8786'.  Not passing this parameter sets up a cluster on the local machine</description>
+      <longflag>scheduler_address</longflag>
+      <default></default>
+    </string>
+    <integer>
+      <name>sample_tile_grouping</name>
+      <label>Tile grouping</label>
+      <longflag>tileGrouping</longflag>
+      <description>Number of tiles to process as part of a single task</description>
+      <default>256</default>
+    </integer>
+  </parameters>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters.</description>
+  </parameters>
+</executable>
