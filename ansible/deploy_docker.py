@@ -8,6 +8,7 @@ import json
 import os
 import six
 import sys
+import tarfile
 import time
 from distutils.version import LooseVersion
 
@@ -76,6 +77,9 @@ def containers_provision(**kwargs):
     client = docker.from_env()
     ctn = get_docker_image_and_container(
         client, 'histomicstk', version=kwargs.get('pinned'))
+
+    if kwargs.get('conf'):
+        merge_configuration(client, ctn, **kwargs)
 
     username = kwargs.get('username')
     password = kwargs.get('password')
@@ -558,6 +562,41 @@ def images_repull(**kwargs):
             client, key, 'pull',  version=kwargs.get('pinned'))
 
 
+def merge_configuration(client, ctn, conf, **kwargs):
+    """
+    Merge a Girder configuration file with the one in a running container.
+
+    :param client: the docker client.
+    :param ctn: a running docker container that contains
+        /opt/histomicstk/girder/girder/conf/girder.local.cfg
+    :param conf: a path to a configuration file fragment to merge with the
+        extant file.
+    """
+    cfgPath = '/opt/histomicstk/girder/girder/conf'
+    cfgName = 'girder.local.cfg'
+    tarStream, stat = client.get_archive(ctn, cfgPath + '/' + cfgName)
+    tarStream = six.BytesIO(tarStream.read())
+    tar = tarfile.TarFile(mode='r', fileobj=tarStream)
+    parser = six.moves.configparser.SafeConfigParser()
+    parser.readfp(tar.extractfile(cfgName))
+    parser.read(conf)
+    output = six.BytesIO()
+    parser.write(output)
+    if kwargs.get('verbose') >= 1:
+        output.seek(0)
+        print(output.read())
+    output.seek(0)
+    tarOutput = six.BytesIO()
+    tar = tarfile.TarFile(fileobj=tarOutput, mode='w')
+    tarinfo = tarfile.TarInfo(name=cfgName)
+    tarinfo.size = output.len
+    tarinfo.mtime = time.time()
+    tar.addfile(tarinfo, output)
+    tar.close()
+    tarOutput.seek(0)
+    client.put_archive(ctn, cfgPath, data=tarOutput)
+
+
 def network_create(client, name):
     """
     Ensure a network exists with a specified name.
@@ -679,6 +718,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--no-cli', dest='cli', action='store_false',
         help='Pull and install the HistomicsTK cli docker image.')
+    parser.add_argument(
+        '--conf', '--cfg', '--girder-cfg',
+        help='Merge a Girder configuration file with the default '
+        'configuration in the docker container during provisioning.')
     parser.add_argument(
         '--db', '-d', dest='mongodb_path', default='~/.histomicstk/db',
         help='Database path (if a Mongo docker container is used).  Use '
