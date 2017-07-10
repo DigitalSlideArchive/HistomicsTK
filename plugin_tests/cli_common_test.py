@@ -22,6 +22,7 @@
 
 from tests import base
 
+from argparse import Namespace
 import os
 import sys
 import json
@@ -52,16 +53,11 @@ def tearDownModule():
     base.stopServer()
 
 
-class Namespace(object):
-    pass
-
-
 class CliCommonTest(base.TestCase):
 
     def test_get_stain_matrix(self):
 
-        args = Namespace()
-        args.__dict__ = dict(
+        args = Namespace(
             stain_1='hematoxylin',
             stain_1_vector=[-1, -1, -1],
             stain_2='custom',
@@ -88,6 +84,7 @@ class CliCommonTest(base.TestCase):
                                                                 result)
 
     def test_segment_wsi_foreground_at_low_res(self):
+        np.random.seed(0)
 
         wsi_path = os.path.join(
             TEST_DATA_DIR,
@@ -272,3 +269,24 @@ class CliCommonTest(base.TestCase):
             np.testing.assert_array_almost_equal(
                 nuclei_bndry_annot_list[pos]['points'],
                 nuclei_bndry_annot_list_gtruth[pos]['points'], 0)
+
+    def test_splitArgs(self):
+        args = Namespace(
+            a=1,
+            b_a=2,
+            b_b=3,
+            b_c_a=4,
+            c_a=5,
+        )
+        split = cli_utils.splitArgs(args)
+        self.assertEqual(split, Namespace(
+            a=1,
+            b=Namespace(
+                a=2,
+                b=3,
+                c_a=4,
+            ),
+            c=Namespace(
+                a=5,
+            ),
+        ))

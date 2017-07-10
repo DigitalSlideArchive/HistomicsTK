@@ -3,7 +3,6 @@ import sys
 
 from ctk_cli import CLIArgumentParser
 from dask import delayed
-from dask.distributed import Client
 import large_image
 import numpy as np
 import skimage.io
@@ -19,7 +18,7 @@ results_keys = results_num_keys + results_i_keys
 
 
 def main(args):
-    Client(args.scheduler_address or None)
+    utils.create_dask_client(args)
     ts = large_image.getTileSource(args.inputImageFile)
     kwargs = dict(format=large_image.tilesource.TILE_FORMAT_NUMPY)
     makeLabelImage = args.outputLabelImage is not None
