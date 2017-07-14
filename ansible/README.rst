@@ -18,9 +18,9 @@ Install git, python-pip, and docker.io.  On Ubuntu, this can be done via::
 
     sudo apt-get install git docker.io python-pip
 
-Install docker-py::
+Install the pythom docker module::
 
-    sudo pip install docker-py
+    sudo pip install docker
 
 Get the HistomicsTK repository::
 
