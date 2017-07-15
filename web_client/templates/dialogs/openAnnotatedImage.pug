@@ -1,0 +1,19 @@
+.modal-dialog(role='document')
+  .modal-content.h-open-annotated-image-dialog
+    .modal-header
+      button.close(type='button', data-dismiss='modal', aria-label='Close')
+        span(aria-hidden='true') &times;
+      h4.modal-title Select a recently annotated image to open
+    .modal-body
+      if !items.length
+        p Sorry, no annotated images were found.
+      else
+        .list-group
+          each item in items
+            a.list-group-item.h-annotated-image(data-id=item._id)
+              .media
+                .media-left.media-middle
+                  img(src=`/api/v1/item/${item._id}/tiles/thumbnail?height=64&width=64`)
+                .media-body
+                  h4.media-heading #{item.name}
+                  p #{item.description}
