@@ -30,7 +30,10 @@ const OpenAnnotatedImage = View.extend({
 
     fetch() {
         return restRequest({
-            path: 'annotation/images'
+            path: 'annotation/images',
+            data: {
+                limit: 10
+            }
         }).done((items) => {
             this.collection.reset(items);
         });
