@@ -1,9 +1,9 @@
 import _ from 'underscore';
 
-import View from '../View';
 import { restRequest } from 'girder/rest';
-
 import ElementCollection from 'girder_plugins/large_image/collections/ElementCollection';
+
+import View from '../View';
 import annotationPopover from '../../templates/popover/annotationPopover.pug';
 import '../../stylesheets/popover/annotationPopover.styl';
 
@@ -104,7 +104,7 @@ var AnnotationPopover = View.extend({
         if (!_.has(this._users, id)) {
             restRequest({
                 path: 'user/' + id
-            }).then((user) => {
+            }).done((user) => {
                 this._users[id] = user;
                 this.render();
             });
