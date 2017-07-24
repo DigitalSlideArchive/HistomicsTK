@@ -1,3 +1,6 @@
+import $ from 'jquery';
+import _ from 'underscore';
+
 import { restRequest } from 'girder/rest';
 import ItemCollection from 'girder/collections/ItemCollection';
 import View from 'girder/views/View';
@@ -10,6 +13,7 @@ import template from '../templates/dialogs/openAnnotatedImage.pug';
 import '../stylesheets/dialogs/openAnnotatedImage.styl';
 
 let dialog;
+let paths = {};
 
 const OpenAnnotatedImage = View.extend({
     events: {
@@ -23,19 +27,29 @@ const OpenAnnotatedImage = View.extend({
 
     render() {
         this.$el.html(template({
-            items: this.collection.toJSON()
+            items: this.collection.toJSON(),
+            paths
         })).girderModal(this);
+        this.$el.tooltip();
         return this;
     },
 
     fetch() {
+        var items;
         return restRequest({
             path: 'annotation/images',
             data: {
                 limit: 10
             }
-        }).done((items) => {
+        }).then((_items) => {
+            items = _items;
+            const promises = _.map(items, (item) => {
+                return this._getResourcePath(item);
+            });
+            return $.when(...promises);
+        }).then(() => {
             this.collection.reset(items);
+            return items;
         });
     },
 
@@ -44,6 +58,21 @@ const OpenAnnotatedImage = View.extend({
         router.setQuery('bounds', null, {trigger: false});
         router.setQuery('image', id, {trigger: true});
         this.$el.modal('hide');
+    },
+
+    _getResourcePath(item) {
+        if (_.has(paths, item._id)) {
+            return $.Deferred().resolve(paths[item._id]).promise();
+        }
+
+        return restRequest({
+            path: `resource/${item._id}/path`,
+            data: {
+                type: 'item'
+            }
+        }).done((path) => {
+            paths[item._id] = path;
+        });
     }
 });
 
