@@ -1,5 +1,5 @@
 /* global geo */
-import _ from 'underscore';
+// import _ from 'underscore';
 
 import { restRequest } from 'girder/rest';
 import ItemModel from 'girder/models/ItemModel';
@@ -10,7 +10,7 @@ import AnnotationCollection from 'girder_plugins/large_image/collections/Annotat
 
 import AnnotationPopover from '../popover/AnnotationPopover';
 import AnnotationSelector from '../../panels/AnnotationSelector';
-import PanelGroup from '../layout/PanelGroup';
+import TaskPanelGroup from '../layout/TaskPanelGroup';
 import ZoomWidget from '../../panels/ZoomWidget';
 import DrawWidget from '../../panels/DrawWidget';
 import router from '../../router';
@@ -35,9 +35,10 @@ var ImageView = View.extend({
         this.listenTo(events, 'query:image', this.openImage);
         this.annotations = new AnnotationCollection();
 
-        this.controlPanel = new PanelGroup({
+        this.taskPanelGroup = new TaskPanelGroup({
             parentView: this
         });
+
         this.annotationSelector = new AnnotationSelector({
             parentView: this,
             collection: this.annotations,
@@ -69,7 +70,7 @@ var ImageView = View.extend({
         this.mouseResetAnnotation();
 
         if (this.model.id === this._openId) {
-            this.controlPanel.setElement('.h-control-panel-container').render();
+            this.taskPanelGroup.setElement('.h-control-panel-container').render();
             return;
         }
         this.$el.html(imageTemplate());
@@ -140,7 +141,7 @@ var ImageView = View.extend({
                 .setViewer(null)
                 .setElement('.h-draw-widget').render();
         }
-        this.controlPanel.setElement('.h-control-panel-container').render();
+        this.taskPanelGroup.setElement('.h-control-panel-container').render();
         this.popover.setElement('#h-annotation-popover-container').render();
         return this;
     },
@@ -233,12 +234,14 @@ var ImageView = View.extend({
         }
 
         return promise.then((file) => {
+            /*
             _.each(this.controlPanel.models(), (model) => {
                 if (model.get('type') === 'image') {
                     model.set('value', file, {trigger: true});
                 }
             });
-            return null;
+            */
+            return file;
         });
     },
 
