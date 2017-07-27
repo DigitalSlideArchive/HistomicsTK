@@ -2,9 +2,9 @@ import _ from 'underscore';
 
 import { getCurrentUser } from 'girder/auth';
 import JobListWidget from 'girder_plugins/jobs/views/JobListWidget';
+import Panel from 'girder_plugins/item_tasks/views/Panel';
 
 import events from '../events';
-import Panel from './Panel';
 
 var JobsPanel = Panel.extend({
     events: _.extend(Panel.prototype.events, {
@@ -42,7 +42,7 @@ var JobsPanel = Panel.extend({
                     );
                 });
             }
-            this._jobsListWidget.setElement(this.$('.s-panel-content')).render();
+            this._jobsListWidget.setElement(this.$('.g-panel-content')).render();
         }
     }
 });

@@ -46,7 +46,7 @@ var AnnotationSelector = Panel.extend({
             title: 'Annotations',
             showLabels: this._showLabels
         }));
-        this.$('.h-panel-content').collapse({toggle: false});
+        this.$('.g-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         return this;
     },
