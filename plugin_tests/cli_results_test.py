@@ -85,8 +85,10 @@ class CliResultsTest(unittest.TestCase):
             try:
                 old_sys_argv = sys.argv[:]
                 old_stdout, old_stderr = sys.stdout, sys.stderr
+                old_cwd = os.getcwd()
                 sys.argv[:] = cmd
                 sys.stdout, sys.stderr = six.StringIO(), six.StringIO()
+                os.chdir(cwd)
                 runpy.run_path(
                     # If passed a Python file, run it directly
                     cli_args[0] if cli_args[0].endswith('.py') else
@@ -99,6 +101,7 @@ class CliResultsTest(unittest.TestCase):
                 stdout, stderr = sys.stdout.getvalue(), sys.stderr.getvalue()
                 sys.argv[:] = old_sys_argv
                 sys.stdout, sys.stderr = old_stdout, old_stderr
+                os.chdir(old_cwd)
             for entry in contains:
                 self.assertIn(entry, stdout)
             for entry in excludes:
