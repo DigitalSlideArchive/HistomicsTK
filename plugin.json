@@ -8,7 +8,6 @@
     },
     "npm": {
         "dependencies": {
-            "bootstrap-submenu": "^2.0.4",
             "backbone.localstorage": "^2.0.2"
         }
     }
