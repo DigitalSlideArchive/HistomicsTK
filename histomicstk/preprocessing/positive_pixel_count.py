@@ -18,16 +18,20 @@ class Labels(object):
     STRONG = 3
 
 
-PPCParameters = namedtuple('PPCParameters', [
-    'hue_value',
-    'hue_width',
-    'saturation_minimum',
-    'intensity_upper_limit',
-    'intensity_weak_threshold',
-    'intensity_strong_threshold',
-    'intensity_lower_limit',
-])
-PPCParameters.__doc__ += """
+class PPCParameters(
+        namedtuple('PPCParameters', [
+            'hue_value',
+            'hue_width',
+            'saturation_minimum',
+            'intensity_upper_limit',
+            'intensity_weak_threshold',
+            'intensity_strong_threshold',
+            'intensity_lower_limit',
+        ]),
+):
+    """PPCParameters(hue_value, hue_width, saturation_minimum,
+    intensity_upper_limit, intensity_weak_threshold,
+    intensity_strong_threshold, intensity_lower_limit)
 
 Attributes:
 
@@ -48,6 +52,7 @@ Attributes:
   a pixel is considered negative
 
 """
+
 
 PPCOutputTotals = namedtuple('PPCOutputTotals', [
     'NumberWeakPositive',
