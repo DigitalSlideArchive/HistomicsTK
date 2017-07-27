@@ -24,7 +24,6 @@ import runpy
 import shutil
 import six
 import sys
-import subprocess
 import tempfile
 import unittest
 
@@ -46,8 +45,8 @@ def tearDownModule():
 
 class CliResultsTest(unittest.TestCase):
     def _runTest(self, cli_args=(), cli_kwargs={}, outputs={},
-                 in_process=True, contains=[], excludes=[]):
-        """Test a cli by calling runpy or subprocess.  Ensure that output
+                 contains=[], excludes=[]):
+        """Test a cli by calling runpy.  Ensure that output
         files match a sha256 and stdout contains certain phrases and
         excludes other phrases.  A value in the cli_args or cli_kwargs
         of 'tmp_<value>' will create a temporary file and use that
@@ -65,10 +64,6 @@ class CliResultsTest(unittest.TestCase):
                     file.
                 'contains': a list of phrases that must be present in the first
                     256 kb of the file.
-        :param in_process: a flag indicating whether to run the cli in-process.
-            Defaults to True, and when True enables coverage testing to reach
-            the CLIs.  When False, subprocess is used, which enables capturing
-            stdout and stderr.
         :param contains: a list of phrases that must be present in the stdout
             output of the cli.  Only valid if in_process is False.
         :param excludes: a list of phrases that must be not present in the
@@ -87,29 +82,23 @@ class CliResultsTest(unittest.TestCase):
                 k, v if not v.startswith('tmp_') else os.path.join(tmppath, v))
                 for k, v in six.iteritems(cli_kwargs)]
             stdout = stderr = ''
-            if in_process:
-                try:
-                    old_sys_argv = sys.argv[:]
-                    old_stdout, old_stderr = sys.stdout, sys.stderr
-                    sys.argv[:] = cmd
-                    sys.stdout, sys.stderr = six.StringIO(), six.StringIO()
-                    runpy.run_path(
-                        os.path.join(cwd, cli_args[0], cli_args[0] + '.py'),
-                        run_name='__main__',
-                    )
-                except SystemExit as e:
-                    self.assertIn(e.code, {0, None})
-                finally:
-                    stdout, stderr = sys.stdout.getvalue(), sys.stderr.getvalue()
-                    sys.argv[:] = old_sys_argv
-                    sys.stdout, sys.stderr = old_stdout, old_stderr
-            else:
-                process = subprocess.Popen(
-                    ['python', os.environ['CLI_LIST_ENTRYPOINT']] + cmd,
-                    shell=False, stdout=subprocess.PIPE, cwd=cwd,
+            try:
+                old_sys_argv = sys.argv[:]
+                old_stdout, old_stderr = sys.stdout, sys.stderr
+                sys.argv[:] = cmd
+                sys.stdout, sys.stderr = six.StringIO(), six.StringIO()
+                runpy.run_path(
+                    # If passed a Python file, run it directly
+                    cli_args[0] if cli_args[0].endswith('.py') else
+                    os.path.join(cwd, cli_args[0], cli_args[0] + '.py'),
+                    run_name='__main__',
                 )
-                stdout, stderr = process.communicate()
-                self.assertEqual(process.returncode, 0)
+            except SystemExit as e:
+                self.assertIn(e.code, {0, None})
+            finally:
+                stdout, stderr = sys.stdout.getvalue(), sys.stderr.getvalue()
+                sys.argv[:] = old_sys_argv
+                sys.stdout, sys.stderr = old_stdout, old_stderr
             for entry in contains:
                 self.assertIn(entry, stdout)
             for entry in excludes:
@@ -137,8 +126,7 @@ class CliResultsTest(unittest.TestCase):
                         self.assertIn(entry, data)
         except Exception:
             sys.stderr.write('CMD (cwd %s):\n%r\n' % (cwd, cmd))
-            if not in_process:
-                sys.stderr.write('STDOUT:\n%s\n' % stdout.rstrip())
+            sys.stderr.write('STDOUT:\n%s\n' % stdout.rstrip())
             raise
         finally:
             shutil.rmtree(tmppath)
@@ -153,8 +141,8 @@ class CliResultsTest(unittest.TestCase):
         from girder.api.rest import Resource
 
         restResource = Resource()
-        cli_args = ('--list_cli', )
-        cli_list = self._runTest(cli_args, in_process=False, contains=['"NucleiDetection"'])
+        cli_args = (os.environ['CLI_LIST_ENTRYPOINT'], '--list_cli',)
+        cli_list = self._runTest(cli_args, contains=['"NucleiDetection"'])
         cli_list = json.loads(cli_list)
         self.assertIn('NucleiDetection', cli_list)
         for cli in cli_list:
