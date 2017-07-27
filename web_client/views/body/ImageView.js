@@ -5,12 +5,12 @@ import { restRequest } from 'girder/rest';
 import ItemModel from 'girder/models/ItemModel';
 import FileModel from 'girder/models/FileModel';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
-import TaskPanelGroup from 'girder_plugins/item_tasks/views/TaskRunView';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import AnnotationCollection from 'girder_plugins/large_image/collections/AnnotationCollection';
 
 import AnnotationPopover from '../popover/AnnotationPopover';
 import AnnotationSelector from '../../panels/AnnotationSelector';
+import PanelGroup from '../layout/PanelGroup';
 import ZoomWidget from '../../panels/ZoomWidget';
 import DrawWidget from '../../panels/DrawWidget';
 import router from '../../router';
@@ -28,13 +28,14 @@ var ImageView = View.extend({
         if (!this.model) {
             this.model = new ItemModel();
         }
+
         this.listenTo(this.model, 'g:fetched', this.render);
         this.listenTo(events, 'h:analysis', this._setImageInput);
         events.trigger('h:imageOpened', null);
         this.listenTo(events, 'query:image', this.openImage);
         this.annotations = new AnnotationCollection();
 
-        this.controlPanel = new TaskPanelGroup({
+        this.controlPanel = new PanelGroup({
             parentView: this
         });
         this.annotationSelector = new AnnotationSelector({
@@ -58,7 +59,7 @@ var ImageView = View.extend({
         this.listenTo(this.annotationSelector.collection, 'add change:displayed', this.toggleAnnotation);
         this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
 
-        this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
+        this.listenTo(events, 'g:widgetChanged:region', this.widgetRegion);
         this.render();
     },
     render() {

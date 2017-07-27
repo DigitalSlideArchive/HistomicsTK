@@ -1,0 +1,16 @@
+if info
+  .g-panel
+    .g-panel-title-container
+      | #{info.title}
+    .g-panel-content
+      .h-info-panel-description.well
+        | #{info.description}
+      .h-info-panel-buttons
+        button.btn.btn-default.s-info-panel-reload Reload
+        button.btn.btn-primary.s-info-panel-submit Submit
+      .clearfix
+
+  .h-jobs-panel.g-panel
+
+each panel in panels
+  .g-panel(class=panel.type, id=panel.id)
