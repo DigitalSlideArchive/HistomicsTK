@@ -7,6 +7,7 @@ __pycache__/
 docs/_build
 dist/
 build
+_build
 .coverage
 *.egg
 *.egg-info
@@ -20,3 +21,5 @@ ansible/roles/girder.girder
 # scikit-build
 _skbuild
 MANIFEST
+# cython output
+*.so
