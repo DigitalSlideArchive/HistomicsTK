@@ -5,10 +5,5 @@
     "dependencies": ["jobs", "worker", "large_image", "item_tasks"],
     "grunt": {
         "file": "Gruntfile.js"
-    },
-    "npm": {
-        "dependencies": {
-            "bootstrap-submenu": "^2.0.4"
-        }
     }
 }
