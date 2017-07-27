@@ -145,9 +145,11 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
         provision if the histomictk container is created.
     """
     client = docker_client()
-    env = {}
-    started = False
-
+    env = {
+        'HOST_UID': os.popen('id -u').read().strip(),
+        'HOST_GID': os.popen('id -g').read().strip(),
+        'HOST_DOCKER_GID': os.popen('getent group docker').read().split(':')[2],
+    }
     network_create(client, BaseName)
 
     for key in ImageList:
@@ -156,10 +158,6 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
             if globals()[func](client, env, key, port=port, rmq=rmq,
                                mongo=mongo, provision=provision, **kwargs):
                 provision = True
-                started = True
-    if started:
-        time.sleep(5)
-
     if provision:
         containers_provision(**kwargs)
 

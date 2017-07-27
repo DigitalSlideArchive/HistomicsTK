@@ -115,11 +115,11 @@
   become: true
   when: docker is defined
 
-- name: Add a script to set hosts if necessary
-  template:
-      src: set_hosts.py
-      dest: /opt/girder_worker/set_hosts.py
-      mode: 0744
-      owner: root
+- name: Add a script to set hosts, ids, and other properties if necessary
+  copy:
+    src: ../../common/set_environment.py
+    dest: /opt/girder_worker/set_environment.py
+    mode: 0744
+    owner: root
   become: true
   when: docker is defined
