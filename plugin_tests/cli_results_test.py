@@ -53,7 +53,9 @@ class CliResultsTest(unittest.TestCase):
         'tmp_<value>' will create a temporary file and use that
         instead.  The same value in the output list can be used to
         test the existence and contents of that file at the end of the
-        process.
+        process.  Note that stdout capturing has limitations -- only
+        output written respecting the current value of sys.stdout is
+        captured.
 
         :param cli_args: a tuple or list of args to format and pass to the cli.
         :param cli_kwargs: keyword arguments to format and pass to the cli.
@@ -66,9 +68,9 @@ class CliResultsTest(unittest.TestCase):
                 'contains': a list of phrases that must be present in the first
                     256 kb of the file.
         :param contains: a list of phrases that must be present in the stdout
-            output of the cli.  Only valid if in_process is False.
+            output of the cli.
         :param excludes: a list of phrases that must be not present in the
-            stdout output of the cli.  Only valid if in_process is False.
+            stdout output of the cli.
         :returns: stdout from the test.
 
         """
