@@ -82,7 +82,7 @@ class CliResultsTest(unittest.TestCase):
             cmd += ['--%s=%s' % (
                 k, v if not v.startswith('tmp_') else os.path.join(tmppath, v))
                 for k, v in six.iteritems(cli_kwargs)]
-            stdout = stderr = ''
+            stdout = ''
             try:
                 old_sys_argv = sys.argv[:]
                 old_stdout, old_stderr = sys.stdout, sys.stderr
@@ -99,7 +99,7 @@ class CliResultsTest(unittest.TestCase):
             except SystemExit as e:
                 self.assertIn(e.code, {0, None})
             finally:
-                stdout, stderr = sys.stdout.getvalue(), sys.stderr.getvalue()
+                stdout = sys.stdout.getvalue()
                 sys.argv[:] = old_sys_argv
                 sys.stdout, sys.stderr = old_stdout, old_stderr
                 os.chdir(old_cwd)
