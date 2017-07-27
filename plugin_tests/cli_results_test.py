@@ -46,10 +46,11 @@ def tearDownModule():
 class CliResultsTest(unittest.TestCase):
     def _runTest(self, cli_args=(), cli_kwargs={}, outputs={},
                  contains=[], excludes=[]):
-        """Test a cli by calling runpy.  Ensure that output
-        files match a sha256 and stdout contains certain phrases and
-        excludes other phrases.  A value in the cli_args or cli_kwargs
-        of 'tmp_<value>' will create a temporary file and use that
+        """
+        Test a cli by calling runpy.  Ensure that output files match a
+        sha256 and stdout contains certain phrases and excludes other
+        phrases.  A value in the cli_args or cli_kwargs of
+        'tmp_<value>' will create a temporary file and use that
         instead.  The same value in the output list can be used to
         test the existence and contents of that file at the end of the
         process.
