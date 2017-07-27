@@ -78,10 +78,6 @@ class CliResultsTest(unittest.TestCase):
         """
         chunkSize = 256 * 1024
 
-        if in_process and (contains or excludes):
-            raise ValueError("contains and excludes parameters may only be used"
-                             " if in_process is False.")
-
         cwd = os.environ.get('CLI_CWD')
         tmppath = tempfile.mkdtemp()
         try:
@@ -90,11 +86,13 @@ class CliResultsTest(unittest.TestCase):
             cmd += ['--%s=%s' % (
                 k, v if not v.startswith('tmp_') else os.path.join(tmppath, v))
                 for k, v in six.iteritems(cli_kwargs)]
+            stdout = stderr = ''
             if in_process:
-                stdout = None
                 try:
                     old_sys_argv = sys.argv[:]
+                    old_stdout, old_stderr = sys.stdout, sys.stderr
                     sys.argv[:] = cmd
+                    sys.stdout, sys.stderr = six.StringIO(), six.StringIO()
                     runpy.run_path(
                         os.path.join(cwd, cli_args[0], cli_args[0] + '.py'),
                         run_name='__main__',
@@ -102,19 +100,20 @@ class CliResultsTest(unittest.TestCase):
                 except SystemExit as e:
                     self.assertIn(e.code, {0, None})
                 finally:
+                    stdout, stderr = sys.stdout.getvalue(), sys.stderr.getvalue()
                     sys.argv[:] = old_sys_argv
+                    sys.stdout, sys.stderr = old_stdout, old_stderr
             else:
-                stdout = ''
                 process = subprocess.Popen(
                     ['python', os.environ['CLI_LIST_ENTRYPOINT']] + cmd,
                     shell=False, stdout=subprocess.PIPE, cwd=cwd,
                 )
                 stdout, stderr = process.communicate()
                 self.assertEqual(process.returncode, 0)
-                for entry in contains:
-                    self.assertIn(entry, stdout)
-                for entry in excludes:
-                    self.assertNotIn(entry, stdout)
+            for entry in contains:
+                self.assertIn(entry, stdout)
+            for entry in excludes:
+                self.assertNotIn(entry, stdout)
             for outpath, options in six.iteritems(outputs):
                 if outpath.startswith('tmp_'):
                     outpath = os.path.join(tmppath, outpath)
