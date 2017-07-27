@@ -29,6 +29,14 @@ function rotation(r) {
 }
 
 /**
+ * Format a Date object as a localized string.
+ */
+function formatDate(s) {
+    var d = new Date(s);
+    return d.toLocaleString();
+}
+
+/**
  * This view behaves like a bootstrap "popover" that follows the mouse pointer
  * over the image canvas and dynamically updates according to the features
  * under the pointer.
@@ -61,7 +69,7 @@ var AnnotationPopover = View.extend({
                     this.collection.pluck('annotation'),
                     _.property('id')),
                 elements: this.collection.groupBy((element) => element.get('annotation').id),
-                formatDate: this._formatDate,
+                formatDate,
                 users: this._users,
                 elementProperties: this._elementProperties
             })
@@ -109,14 +117,6 @@ var AnnotationPopover = View.extend({
                 this.render();
             });
         }
-    },
-
-    /**
-     * Format a Date object as a localized string.
-     */
-    _formatDate(s) {
-        var d = new Date(s);
-        return d.toLocaleString();
     },
 
     /**
