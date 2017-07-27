@@ -1,6 +1,8 @@
 import View from 'girder/views/View';
 import PaginateTasksWidget from 'girder_plugins/item_tasks/views/PaginateTasksWidget';
 
+import router from '../router';
+
 import openAnalysis from '../templates/dialogs/openAnalysis.pug';
 import 'girder/utilities/jquery/girderModal';
 
@@ -13,6 +15,7 @@ var OpenAnalysis = View.extend({
             parentView: this
         });
         this.paginateTasksWidget.collection.pageLimit = 5;
+        this.listenTo(this.paginateTasksWidget, 'g:selected', this.selectTask);
     },
 
     render() {
@@ -21,6 +24,13 @@ var OpenAnalysis = View.extend({
         ).girderModal(this);
 
         this.paginateTasksWidget.setElement(this.$('.h-task-list-container')).render();
+    },
+
+    selectTask({task}) {
+        if (task && task.id) {
+            router.setQuery('analysis', task.id, {trigger: true});
+        }
+        $('.modal').girderModal('close');
     }
 });
 
