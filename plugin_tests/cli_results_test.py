@@ -161,10 +161,10 @@ class CliResultsTest(unittest.TestCase):
             cli_args = (cli, '--help')
             # Each cli's help must mention usage, its own name, and that you
             # can output xml
-            self._runTest(cli_args, in_process=False, contains=['usage:', cli, '--xml'])
+            self._runTest(cli_args, contains=['usage:', cli, '--xml'])
             cli_args = (cli, '--xml')
             # The xml output needs to have a tile and an executable tag
-            xml = self._runTest(cli_args, in_process=False, contains=[
+            xml = self._runTest(cli_args, contains=[
                 '<executable>', '<title>', '</executable>', '</title>'])
             if '<' in xml:
                 xml = xml[xml.index('<'):]
