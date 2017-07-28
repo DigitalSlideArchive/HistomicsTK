@@ -20,10 +20,10 @@
 import hashlib
 import json
 import os
+import runpy
 import shutil
 import six
 import sys
-import subprocess
 import tempfile
 import unittest
 
@@ -44,15 +44,18 @@ def tearDownModule():
 
 
 class CliResultsTest(unittest.TestCase):
-    def _runTest(self, cli_args=(), cli_kwargs={}, outputs={}, contains=[],
-                 excludes=[]):
+    def _runTest(self, cli_args=(), cli_kwargs={}, outputs={},
+                 contains=[], excludes=[]):
         """
-        Test a cli by calling subprocess.  Ensure that output files match a
-        sha256 and stdout contains certain phrases and excludes other phrases.
-        A value in the cli_args or cli_kwargs of 'tmp_<value>' will create a
-        temporary file and use that instead.  The same value in the output
-        list can be used to test the existence and contents of that file at the
-        end of the process.
+        Test a cli by calling runpy.  Ensure that output files match a
+        sha256 and stdout contains certain phrases and excludes other
+        phrases.  A value in the cli_args or cli_kwargs of
+        'tmp_<value>' will create a temporary file and use that
+        instead.  The same value in the output list can be used to
+        test the existence and contents of that file at the end of the
+        process.  Note that stdout capturing has limitations -- only
+        output written respecting the current value of sys.stdout is
+        captured.
 
         :param cli_args: a tuple or list of args to format and pass to the cli.
         :param cli_kwargs: keyword arguments to format and pass to the cli.
@@ -69,23 +72,43 @@ class CliResultsTest(unittest.TestCase):
         :param excludes: a list of phrases that must be not present in the
             stdout output of the cli.
         :returns: stdout from the test.
+
         """
         chunkSize = 256 * 1024
 
-        stdout = ''
         cwd = os.environ.get('CLI_CWD')
-        cmd = ['python', os.environ['CLI_LIST_ENTRYPOINT']]
         tmppath = tempfile.mkdtemp()
         try:
-            cmd += [arg if not arg.startswith('tmp_') else
-                    os.path.join(tmppath, arg) for arg in cli_args]
+            cmd = [arg if not arg.startswith('tmp_') else
+                   os.path.join(tmppath, arg) for arg in cli_args]
             cmd += ['--%s=%s' % (
                 k, v if not v.startswith('tmp_') else os.path.join(tmppath, v))
                 for k, v in six.iteritems(cli_kwargs)]
-            process = subprocess.Popen(
-                cmd, shell=False, stdout=subprocess.PIPE, cwd=cwd)
-            stdout, stderr = process.communicate()
-            self.assertEqual(process.returncode, 0)
+            stdout = ''
+            try:
+                old_sys_argv = sys.argv[:]
+                old_stdout, old_stderr = sys.stdout, sys.stderr
+                old_cwd = os.getcwd()
+                sys.argv[:] = cmd
+                sys.stdout, sys.stderr = six.StringIO(), six.StringIO()
+                os.chdir(cwd)
+                runpy.run_path(
+                    # If passed a Python file, run it directly
+                    cli_args[0] if cli_args[0].endswith('.py') else
+                    os.path.join(cwd, cli_args[0], cli_args[0] + '.py'),
+                    run_name='__main__',
+                )
+            except SystemExit as e:
+                self.assertIn(e.code, {0, None})
+            finally:
+                stdout = sys.stdout.getvalue()
+                sys.argv[:] = old_sys_argv
+                sys.stdout, sys.stderr = old_stdout, old_stderr
+                os.chdir(old_cwd)
+            for entry in contains:
+                self.assertIn(entry, stdout)
+            for entry in excludes:
+                self.assertNotIn(entry, stdout)
             for outpath, options in six.iteritems(outputs):
                 if outpath.startswith('tmp_'):
                     outpath = os.path.join(tmppath, outpath)
@@ -105,12 +128,8 @@ class CliResultsTest(unittest.TestCase):
                         raise
                 if 'contains' in options:
                     data = open(outpath, 'rb').read(chunkSize)
-                    for entry in contains:
+                    for entry in options['contains']:
                         self.assertIn(entry, data)
-            for entry in contains:
-                self.assertIn(entry, stdout)
-            for entry in excludes:
-                self.assertNotIn(entry, stdout)
         except Exception:
             sys.stderr.write('CMD (cwd %s):\n%r\n' % (cwd, cmd))
             sys.stderr.write('STDOUT:\n%s\n' % stdout.rstrip())
@@ -128,7 +147,7 @@ class CliResultsTest(unittest.TestCase):
         from girder.api.rest import Resource
 
         restResource = Resource()
-        cli_args = ('--list_cli', )
+        cli_args = (os.environ['CLI_LIST_ENTRYPOINT'], '--list_cli',)
         cli_list = self._runTest(cli_args, contains=['"NucleiDetection"'])
         cli_list = json.loads(cli_list)
         self.assertIn('NucleiDetection', cli_list)
