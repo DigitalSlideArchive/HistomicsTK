@@ -50,7 +50,7 @@ class PPCParameters(
     - intensity_lower_limit: intensity threshold in HSI space below which
       a pixel is considered negative
 
-"""
+    """
 
 
 PPCOutputTotals = namedtuple('PPCOutputTotals', [
