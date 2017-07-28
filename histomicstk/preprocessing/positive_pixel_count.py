@@ -33,22 +33,28 @@ class PPCParameters(
     intensity_upper_limit, intensity_weak_threshold,
     intensity_strong_threshold, intensity_lower_limit)
 
-    Attributes:
-    - hue_value: center of the hue range in HSI space for the positive
-      color, in the range [0, 1]
-    - hue_width: width of the hue range in HSI space
-    - saturation_minimum: minimum saturation of positive pixels in HSI
-      space, in the range [0, 1]
-    - intensity_upper_limit: intensity threshold in HSI space above which
-      a pixel is considered negative, in the range [0, 1]
-    - intensity_weak_threshold: intensity threshold in HSI space that
-      separates weak-positive pixels (above) from plain positive pixels
-      (below)
-    - intensity_strong_threshold: intensity threshold in HSI space that
-      separates plain positive pixels (above) from strong positive pixels
-      (below)
-    - intensity_lower_limit: intensity threshold in HSI space below which
-      a pixel is considered negative
+    Attributes
+    ----------
+    hue_value:
+      Center of the hue range in HSI space for the positive color, in
+      the range [0, 1]
+    hue_width:
+      Width of the hue range in HSI space
+    saturation_minimum:
+      Minimum saturation of positive pixels in HSI space, in the range
+      [0, 1]
+    intensity_upper_limit:
+      Intensity threshold in HSI space above which a pixel is
+      considered negative, in the range [0, 1]
+    intensity_weak_threshold:
+      Intensity threshold in HSI space that separates weak-positive
+      pixels (above) from plain positive pixels (below)
+    intensity_strong_threshold:
+      Intensity threshold in HSI space that separates plain positive
+      pixels (above) from strong positive pixels (below)
+    intensity_lower_limit:
+      Intensity threshold in HSI space below which a pixel is
+      considered negative
 
     """
 
