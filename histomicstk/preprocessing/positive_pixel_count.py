@@ -201,7 +201,7 @@ def _positive_pixel_count_simple(image, parameters):
 
 
 def _totals_to_stats(total):
-    "Do the extra computations to convert a PPCOutputTotals to a PPCOutput"
+    """Do the extra computations to convert a PPCOutputTotals to a PPCOutput"""
     t = total
     all_positive = t.NumberWeakPositive + t.NumberPositive + t.NumberStrongPositive
     return PPCOutput(
