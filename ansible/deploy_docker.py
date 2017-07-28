@@ -74,7 +74,7 @@ def containers_provision(**kwargs):
     """
     Provision or reprovision the containers.
     """
-    client = docker.from_env()
+    client = docker.from_env(version='auto')
     client = client if not hasattr(client, 'api') else client.api
     ctn = get_docker_image_and_container(
         client, 'histomicstk', version=kwargs.get('pinned'))
@@ -145,7 +145,7 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
     :param provision: if True, reprovision after starting.  Otherwise, only
         provision if the histomictk container is created.
     """
-    client = docker.from_env()
+    client = docker.from_env(version='auto')
     client = client if not hasattr(client, 'api') else client.api
     env = {}
     started = False
@@ -385,7 +385,7 @@ def containers_status(**kwargs):
     """"
     Report the status of any containers we are responsible for.
     """
-    client = docker.from_env()
+    client = docker.from_env(version='auto')
     client = client if not hasattr(client, 'api') else client.api
 
     keys = ImageList.keys()
@@ -415,7 +415,7 @@ def containers_stop(remove=False, **kwargs):
 
     :param remove: True to remove the containers.  False to just stop them.
     """
-    client = docker.from_env()
+    client = docker.from_env(version='auto')
     client = client if not hasattr(client, 'api') else client.api
     keys = ImageList.keys()
     keys.reverse()
@@ -517,7 +517,7 @@ def images_build(retry=False, names=None):
         names to build.
     """
     basepath = os.path.dirname(os.path.realpath(__file__))
-    client = docker.from_env()
+    client = docker.from_env(version='auto')
     client = client if not hasattr(client, 'api') else client.api
 
     if names is None:
@@ -559,7 +559,7 @@ def images_repull(**kwargs):
     """"
     Repull all docker images.
     """
-    client = docker.from_env()
+    client = docker.from_env(version='auto')
     client = client if not hasattr(client, 'api') else client.api
     for key, image in six.iteritems(ImageList):
         if 'name' not in image and not kwargs.get('cli'):
