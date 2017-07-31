@@ -1,6 +1,7 @@
 from __future__ import division
 
 from collections import namedtuple
+from itertools import combinations
 
 import numpy as np
 from numpy import linalg
@@ -9,8 +10,7 @@ from scipy import sparse
 from scipy.sparse.csgraph import minimum_spanning_tree
 
 PopStats = namedtuple('PopStats', ['mean', 'stddev', 'minmaxr', 'disorder'])
-# TODO it's not clear what 'chord length' refers to in the paper
-PolyProps = namedtuple('PolyProps', ['area', 'peri'])  # , 'chord'])
+PolyProps = namedtuple('PolyProps', ['area', 'peri', 'max_dist'])
 TriProps = namedtuple('TriProps', ['sides', 'area'])
 DensityProps = namedtuple('DensityProps', ['neighbors_in_distance',
                                            'distance_for_neighbors'])
@@ -38,6 +38,7 @@ def compute_global_graph_features(centroids, scale=10.):
 
           - .area: Polygon area features
           - .peri: Polygon perimeter features
+          - .max_dist: Maximum distance in polygon features
 
         - .delaunay: Delaunay triangulation features
 
@@ -76,8 +77,9 @@ def compute_global_graph_features(centroids, scale=10.):
     regions = [r for r in vor.regions if r and -1 not in r]
     areas = np.stack(poly_area(vertices[r]) for r in regions)
     peris = np.stack(poly_peri(vertices[r]) for r in regions)
-    # TODO chords
-    poly_props = PolyProps._make(map(pop_stats, (areas, peris)))
+    # TODO Consider using more numpy
+    max_dists = np.stack(max(dist(x, y) for x, y in combinations(vertices[r], 2)) for r in regions)
+    poly_props = PolyProps._make(map(pop_stats, (areas, peris, max_dists)))
 
     # Assume that each Voronoi vertex is on exactly three ridges.
     ridge_points = vor.ridge_points
