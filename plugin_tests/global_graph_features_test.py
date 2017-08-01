@@ -46,7 +46,7 @@ class GlobalGraphFeaturesTest(base.TestCase):
                 assert (actual == expected
                         or np.isnan(actual) and np.isnan(actual)
                         or abs(actual / expected - 1) <= rtol), \
-                        "Expected {} but got {}!".format(expected, actual)
+                    "Expected {} but got {}!".format(expected, actual)
             elif isinstance(expected, tuple):
                 self.assertEqual(len(actual), len(expected))
                 for a, e in zip(actual, expected):
@@ -63,7 +63,7 @@ class GlobalGraphFeaturesTest(base.TestCase):
         recur(actual, expected)
 
     def testSimple(self):
-        data = np.array([[-1,-1],[-1,1],[1,-1],[1,1],[-.5,-.5],[.5,.5]])
+        data = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1], [-.5, -.5], [.5, .5]])
         actual = cggf(data, scale=0.7, neighbor_counts=(3, 5))
         expected = Props(
             voronoi=PolyProps(
