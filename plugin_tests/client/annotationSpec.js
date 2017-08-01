@@ -349,15 +349,14 @@ $(function () {
                     $('#h-toggle-labels').click();
                 });
 
-                girderTest.waitForLoad();
                 runs(function () {
                     var interactor = geojsMap.interactor();
                     interactor.simulateEvent('mousemove', {
-                        map: {x: 50, y: 50}
+                        map: {x: 45, y: 45}
                     });
 
                     var $el = $('#h-annotation-popover-container');
-                    expect($('#h-annotation-popover-container').hasClass('hidden')).toBe(false);
+                    expect($el.hasClass('hidden')).toBe(false);
                     expect($el.find('.h-annotation-name').text()).toBe('rectangle');
                     expect($el.find('.h-annotation-description').text()).toMatch(/the description/);
                 });
