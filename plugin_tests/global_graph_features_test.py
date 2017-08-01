@@ -64,7 +64,7 @@ class GlobalGraphFeaturesTest(base.TestCase):
 
     def testSimple(self):
         data = np.array([[-1,-1],[-1,1],[1,-1],[1,1],[-.5,-.5],[.5,.5]])
-        actual = cggf(data, scale=0.7)
+        actual = cggf(data, scale=0.7, neighbor_counts=(3, 5))
         expected = Props(
             voronoi=PolyProps(
                 area=PopStats(
@@ -75,6 +75,12 @@ class GlobalGraphFeaturesTest(base.TestCase):
                 ),
                 peri=PopStats(
                     mean=5.5536887604657483,
+                    stddev=0.0,
+                    minmaxr=1.0,
+                    disorder=0.0,
+                ),
+                max_dist=PopStats(
+                    mean=2.1213203435596424,
                     stddev=0.0,
                     minmaxr=1.0,
                     disorder=0.0,
@@ -145,12 +151,6 @@ class GlobalGraphFeaturesTest(base.TestCase):
                         stddev=0.33333333333333354,
                         minmaxr=0.74999999999999989,
                         disorder=0.11391890072356348,
-                    ),
-                    7: PopStats(
-                        mean=np.inf,
-                        stddev=np.nan,
-                        minmaxr=np.nan,
-                        disorder=np.nan,
                     ),
                 },
             ),
