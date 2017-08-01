@@ -151,8 +151,15 @@ def dist(x, y):
 
 
 def pop_stats(pop):
-    mean = pop.mean()
-    stddev = pop.std()
+    # Filter out outliers (here defined as points more than three
+    # standard deviations away from the mean)
+    while True:
+        mean = pop.mean()
+        stddev = pop.std()
+        mask = abs(pop - mean) <= 3 * stddev
+        if mask.all():
+            break
+        pop = pop[mask]
     minmaxr = pop.min() / pop.max()
     disorder = stddev / (mean + stddev)
     return PopStats(mean, stddev, minmaxr, disorder)
