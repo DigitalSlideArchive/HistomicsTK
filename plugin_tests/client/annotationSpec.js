@@ -345,9 +345,21 @@ $(function () {
             });
 
             it('hover over annotation with labels on', function () {
+                var done = false;
                 runs(function () {
                     $('#h-toggle-labels').click();
+
+                    // Ensure the next mouse move event happens asynchronously.
+                    // Without doing this, the hover event occasionally fails to
+                    // fire.
+                    window.setTimeout(function () {
+                        done = true;
+                    }, 0);
                 });
+
+                waitsFor(function () {
+                    return done;
+                }, 'next event loop');
 
                 runs(function () {
                     var interactor = geojsMap.interactor();
