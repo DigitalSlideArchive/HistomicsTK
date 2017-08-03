@@ -44,7 +44,7 @@
 
 - name: Clone ctk-cli
   git:
-    repo: git://github.com/cdeepakroy/ctk-cli.git
+    repo: https://github.com/cdeepakroy/ctk-cli.git
     dest: "{{ root_dir }}/ctk-cli"
     accept_hostkey: yes
 
@@ -52,31 +52,38 @@
 
 - name: Clone slicer_cli_web plugin
   git:
-    repo: git://github.com/girder/slicer_cli_web.git
+    repo: https://github.com/girder/slicer_cli_web.git
     dest: "{{ root_dir }}/slicer_cli_web"
     accept_hostkey: yes
     version: "{{ slicer_cli_web_version }}"
 
 - name: Clone HistomicsTK
   git:
-    repo: git://github.com/DigitalSlideArchive/HistomicsTK.git
+    repo: https://github.com/DigitalSlideArchive/HistomicsTK.git
     dest: "{{ root_dir }}/HistomicsTK"
     accept_hostkey: yes
     version: "{{ histomicstk_version }}"
 
 - name: Clone large_image plugin
   git:
-    repo: git://github.com/girder/large_image.git
+    repo: https://github.com/girder/large_image.git
     dest: "{{ root_dir }}/large_image"
     accept_hostkey: yes
     version: "{{ large_image_version }}"
 
 - name: Clone DSA plugin
   git:
-    repo: git://github.com/DigitalSlideArchive/digital_slide_archive.git
+    repo: https://github.com/DigitalSlideArchive/digital_slide_archive.git
     dest: "{{ root_dir }}/digital_slide_archive"
     accept_hostkey: yes
     version: "{{ dsa_version }}"
+
+- name: Clone xtk_demo plugin
+  git:
+    repo: https://github.com/zachmullen/xtk_demo.git
+    dest: "{{ root_dir }}/xtk_demo"
+    accept_hostkey: yes
+    version: "master"
 
 - name: Get the most recent version of pip
   pip: name=pip extra_args="-U"
@@ -103,6 +110,10 @@
 
 - name: Install pylibtiff from github
   pip: name='git+https://github.com/pearu/pylibtiff@33735eb7197eb33ed1a50bbc4bc5a47ce4305e92' extra_args='--force-reinstall --ignore-installed --upgrade --no-cache-dir' editable=False
+  become: true
+
+- name: Install our external girder plugins - xtk_demo
+  command: girder-install plugin -s {{ root_dir }}/xtk_demo
   become: true
 
 - name: Install our external girder plugins - slicer_cli_web
