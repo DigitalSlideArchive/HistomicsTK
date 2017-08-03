@@ -14,5 +14,6 @@ histomicstk.segmentation
     label mask processing <histomicstk.segmentation.label>
     level-set segmentation <histomicstk.segmentation.level_set>
     nuclei segmentation <histomicstk.segmentation.nuclear>
+    positive pixel counting <histomicstk.segmentation.positive_pixel_count>
 
 

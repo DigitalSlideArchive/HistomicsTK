@@ -6,7 +6,7 @@ from dask import delayed
 import large_image
 import numpy as np
 
-from .color_conversion import rgb_to_hsi
+from ..preprocessing.color_conversion import rgb_to_hsi
 
 
 # This can be an enum in Python >= 3.4

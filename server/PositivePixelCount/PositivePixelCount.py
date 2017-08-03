@@ -6,7 +6,7 @@ import large_image
 import numpy as np
 import skimage.io
 
-import histomicstk.preprocessing.positive_pixel_count as ppc
+import histomicstk.segmentation.positive_pixel_count as ppc
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils  # noqa
