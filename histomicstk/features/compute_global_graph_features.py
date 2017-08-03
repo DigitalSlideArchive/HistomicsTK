@@ -78,17 +78,17 @@ def compute_global_graph_features(centroids, neighbor_distances=10. * np.arange(
     vertices = vor.vertices
 
     regions = [r for r in vor.regions if r and -1 not in r]
-    areas = np.stack(poly_area(vertices[r]) for r in regions)
-    peris = np.stack(poly_peri(vertices[r]) for r in regions)
+    areas = np.stack(_poly_area(vertices[r]) for r in regions)
+    peris = np.stack(_poly_peri(vertices[r]) for r in regions)
     max_dists = np.stack(pdist(vertices[r]).max() for r in regions)
-    poly_props = PolyProps._make(map(pop_stats, (areas, peris, max_dists)))
+    poly_props = PolyProps._make(map(_pop_stats, (areas, peris, max_dists)))
 
     # Assume that each Voronoi vertex is on exactly three ridges.
     ridge_points = vor.ridge_points
     # This isn't exactly the collection of sides, since if they should
     # be counted per-triangle then we weight border ridges wrong
     # relative to ridges that are part of two triangles.
-    ridge_lengths = dist(*np.swapaxes(centroids[ridge_points], 0, 1))
+    ridge_lengths = _dist(*np.swapaxes(centroids[ridge_points], 0, 1))
     sides = ridge_lengths
     # Point indices of each triangle
     tris = [[] for _ in vertices]
@@ -102,8 +102,8 @@ def compute_global_graph_features(centroids, neighbor_distances=10. * np.arange(
     # beyond throwing an AssertionError
     assert all(len(t) == 3 for t in tris)
     tris = np.asarray(tris)
-    areas = np.stack(poly_area(centroids[t]) for t in tris)
-    tri_props = TriProps._make(map(pop_stats, (sides, areas)))
+    areas = np.stack(_poly_area(centroids[t]) for t in tris)
+    tri_props = TriProps._make(map(_pop_stats, (sides, areas)))
 
     graph = sparse.coo_matrix((ridge_lengths, np.sort(ridge_points).T),
                               (len(centroids), len(centroids)))
@@ -111,38 +111,38 @@ def compute_global_graph_features(centroids, neighbor_distances=10. * np.arange(
     # Without looking into exactly how minimum_spanning_tree
     # constructs its output, elimate any explicit zeros to be on the
     # safe side.
-    mst_branches = pop_stats(mst.data[mst.data != 0])
+    mst_branches = _pop_stats(mst.data[mst.data != 0])
 
     tree = KDTree(centroids)
     neigbors_in_distance = {
         # Yes, we just throw away the actual points
-        r: pop_stats(np.stack(map(len, tree.query_ball_tree(tree, r))) - 1)
+        r: _pop_stats(np.stack(map(len, tree.query_ball_tree(tree, r))) - 1)
         for r in neighbor_distances
     }
     distance_for_neighbors = dict(zip(
         neighbor_counts,
-        map(pop_stats, tree.query(centroids, [c + 1 for c in neighbor_counts])[0].T),
+        map(_pop_stats, tree.query(centroids, [c + 1 for c in neighbor_counts])[0].T),
     ))
     density_props = DensityProps(neigbors_in_distance, distance_for_neighbors)
 
     return Props(poly_props, tri_props, mst_branches, density_props)
 
 
-def poly_area(vertices):
-    return abs(poly_signed_area(vertices))
+def _poly_area(vertices):
+    return abs(_poly_signed_area(vertices))
 
 
-def poly_signed_area(vertices):
+def _poly_signed_area(vertices):
     return .5 * linalg.det(
         np.stack((vertices, np.roll(vertices, -1, axis=-2)), -1)
     ).sum(-1)
 
 
-def poly_peri(vertices):
-    return dist(vertices, np.roll(vertices, -1, axis=-2)).sum(-1)
+def _poly_peri(vertices):
+    return _dist(vertices, np.roll(vertices, -1, axis=-2)).sum(-1)
 
 
-def dist(x, y):
+def _dist(x, y):
     """Compute the distance between two sets of points.  Has signature
     (i),(i)->().
 
@@ -150,7 +150,7 @@ def dist(x, y):
     return (np.subtract(x, y) ** 2).sum(-1) ** .5
 
 
-def pop_stats(pop):
+def _pop_stats(pop):
     # Filter out outliers (here defined as points more than three
     # standard deviations away from the mean)
     while True:
