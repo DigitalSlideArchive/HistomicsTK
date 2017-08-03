@@ -20,10 +20,10 @@ def main(args):
         args.region,
         *(args.maxRegionSize, ts) if make_label_image else ()
     ).get('region')
-    ppc_params = ppc.PPCParameters(
-        **{k: getattr(args, k) for k in ppc.PPCParameters._fields}
+    ppc_params = ppc.Parameters(
+        **{k: getattr(args, k) for k in ppc.Parameters._fields}
     )
-    results = ppc.positive_pixel_count(
+    results = ppc.count_slide(
         args.inputImageFile, ppc_params, region,
         args.tile_grouping, make_label_image,
     )

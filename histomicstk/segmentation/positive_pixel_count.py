@@ -18,8 +18,8 @@ class Labels(object):
     STRONG = 3
 
 
-class PPCParameters(
-        namedtuple('PPCParameters', [
+class Parameters(
+        namedtuple('Parameters', [
             'hue_value',
             'hue_width',
             'saturation_minimum',
@@ -29,7 +29,7 @@ class PPCParameters(
             'intensity_lower_limit',
         ]),
 ):
-    """PPCParameters(hue_value, hue_width, saturation_minimum,
+    """Parameters(hue_value, hue_width, saturation_minimum,
     intensity_upper_limit, intensity_weak_threshold,
     intensity_strong_threshold, intensity_lower_limit)
 
@@ -59,7 +59,7 @@ class PPCParameters(
     """
 
 
-PPCOutputTotals = namedtuple('PPCOutputTotals', [
+OutputTotals = namedtuple('OutputTotals', [
     'NumberWeakPositive',
     'NumberPositive',
     'NumberStrongPositive',
@@ -68,15 +68,15 @@ PPCOutputTotals = namedtuple('PPCOutputTotals', [
     'IntensitySumStrongPositive',
 ])
 
-PPCOutput = namedtuple('PPCOutput', PPCOutputTotals._fields + (
+Output = namedtuple('Output', OutputTotals._fields + (
     'IntensityAverage',
     'RatioStrongToTotal',
     'IntensityAverageWeakAndPositive',
 ))
 
 
-def positive_pixel_count(slide_path, ppc_params, region=None,
-                         tile_grouping=256, make_label_image=False):
+def count_slide(slide_path, params, region=None,
+                tile_grouping=256, make_label_image=False):
     """Compute a count of positive pixels in the slide at slide_path.
     This routine can also create a label image.
 
@@ -84,8 +84,8 @@ def positive_pixel_count(slide_path, ppc_params, region=None,
     ---------
     slide_path : string (path)
         Path to the slide to analyze.
-    ppc_params : PPCParameters
-        An instance of PPCParameters, which see for further documentation
+    params : Parameters
+        An instance of Parameters, which see for further documentation
     region : dict, optional
         A valid region dict (per a large_image
         TileSource.tileIterator's region argument)
@@ -96,8 +96,8 @@ def positive_pixel_count(slide_path, ppc_params, region=None,
 
     Returns
     -------
-    stats : PPCOutput
-        Various statistics on the input image.  See PPCOutput.
+    stats : Output
+        Various statistics on the input image.  See Output.
     label_image : array-like, only if make_label_image is set
 
     Notes
@@ -115,36 +115,36 @@ def positive_pixel_count(slide_path, ppc_params, region=None,
         kwargs['region'] = region
     if make_label_image:
         tile = ts.getRegion(**kwargs)[0]
-        return positive_pixel_count_simple(tile, ppc_params)
+        return count_simple(tile, params)
     else:
         results = []
         total_tiles = ts.getSingleTile(**kwargs)['iterator_range']['position']
         for position in range(0, total_tiles, tile_grouping):
-            results.append(delayed(positive_pixel_count_tiles)(
-                slide_path, ppc_params, kwargs, position,
+            results.append(delayed(count_tiles)(
+                slide_path, params, kwargs, position,
                 min(tile_grouping, total_tiles - position)))
         results = delayed(_combine)(results).compute()
     return _totals_to_stats(results),
 
 
 def _combine(results):
-    return PPCOutputTotals._make(sum(r[i] for r in results)
-                                 for i in range(len(PPCOutputTotals._fields)))
+    return OutputTotals._make(sum(r[i] for r in results)
+                              for i in range(len(OutputTotals._fields)))
 
 
-def positive_pixel_count_tiles(slide_path, ppc_params, kwargs, position, count):
+def count_tiles(slide_path, params, kwargs, position, count):
     ts = large_image.getTileSource(slide_path)
-    lpotf = len(PPCOutputTotals._fields)
+    lpotf = len(OutputTotals._fields)
     total = [0] * lpotf
     for pos in range(position, position + count):
         tile = ts.getSingleTile(tile_position=pos, **kwargs)['tile']
-        subtotal = _positive_pixel_count_simple(tile, ppc_params)[0]
+        subtotal = _count_simple(tile, params)[0]
         for k in range(lpotf):
             total[k] += subtotal[k]
-    return PPCOutputTotals._make(total)
+    return OutputTotals._make(total)
 
 
-def positive_pixel_count_simple(image, parameters):
+def count_simple(image, params):
     """Count positive pixels, computing a label mask and summary
     statistics.
 
@@ -152,18 +152,18 @@ def positive_pixel_count_simple(image, parameters):
     ----------
     image : array-like
         NxMx3 array of RGB data
-    parameters : PPCParameters
-        An instance of PPCParameters, which see for further documentation
+    params : Parameters
+        An instance of Parameters, which see for further documentation
 
     Returns
     -------
-    stats : PPCOutput
-        Various statistics on the input image.  See PPCOutput.
+    stats : Output
+        Various statistics on the input image.  See Output.
     label_image : array-like
         NxM array of pixel types.  See Labels for the different values.
 
     """
-    total, masks = _positive_pixel_count_simple(image, parameters)
+    total, masks = _count_simple(image, params)
     mask_all_positive, mask_weak, mask_pos, mask_strong = masks
     label_image = np.full(image.shape[:-1], Labels.NEGATIVE, dtype=np.uint8)
     label_image[mask_all_positive] = (
@@ -174,12 +174,12 @@ def positive_pixel_count_simple(image, parameters):
     return _totals_to_stats(total), label_image
 
 
-def _positive_pixel_count_simple(image, parameters):
-    """A version of positive_pixel_count_simple that doesn't compute the
-    label image and only computes the sums.
+def _count_simple(image, params):
+    """A version of count_simple that doesn't compute the label image and
+    only computes the sums.
 
     """
-    p = parameters
+    p = params
     image_hsi = rgb_to_hsi(image / 255)
     mask_all_positive = (
         (np.abs((image_hsi[..., 0] - p.hue_value + 0.5 % 1) - 0.5) <=
@@ -195,7 +195,7 @@ def _positive_pixel_count_simple(image, parameters):
     ns, is_ = np.count_nonzero(mask_strong), np.sum(all_positive_i[mask_strong])
     mask_pos = ~(mask_weak | mask_strong)
     np_, ip = np.count_nonzero(mask_pos), np.sum(all_positive_i[mask_pos])
-    total = PPCOutputTotals(
+    total = OutputTotals(
         NumberWeakPositive=nw,
         NumberPositive=np_,
         NumberStrongPositive=ns,
@@ -207,10 +207,10 @@ def _positive_pixel_count_simple(image, parameters):
 
 
 def _totals_to_stats(total):
-    """Do the extra computations to convert a PPCOutputTotals to a PPCOutput"""
+    """Do the extra computations to convert an OutputTotals to an Output"""
     t = total
     all_positive = t.NumberWeakPositive + t.NumberPositive + t.NumberStrongPositive
-    return PPCOutput(
+    return Output(
         IntensityAverage=((t.IntensitySumWeakPositive
                            + t.IntensitySumPositive
                            + t.IntensitySumStrongPositive)
@@ -225,8 +225,8 @@ def _totals_to_stats(total):
 
 
 __all__ = (
-    'PPCParameters',
-    'PPCOutput',
-    'positive_pixel_count',
-    'positive_pixel_count_simple',
+    'Parameters',
+    'Output',
+    'count_slide',
+    'count_simple',
 )
