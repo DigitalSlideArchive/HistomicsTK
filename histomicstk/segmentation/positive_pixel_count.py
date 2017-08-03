@@ -120,7 +120,7 @@ def count_slide(slide_path, params, region=None,
         results = []
         total_tiles = ts.getSingleTile(**kwargs)['iterator_range']['position']
         for position in range(0, total_tiles, tile_grouping):
-            results.append(delayed(count_tiles)(
+            results.append(delayed(_count_tiles)(
                 slide_path, params, kwargs, position,
                 min(tile_grouping, total_tiles - position)))
         results = delayed(_combine)(results).compute()
@@ -132,7 +132,7 @@ def _combine(results):
                               for i in range(len(OutputTotals._fields)))
 
 
-def count_tiles(slide_path, params, kwargs, position, count):
+def _count_tiles(slide_path, params, kwargs, position, count):
     ts = large_image.getTileSource(slide_path)
     lpotf = len(OutputTotals._fields)
     total = [0] * lpotf
