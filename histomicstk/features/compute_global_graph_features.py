@@ -17,7 +17,7 @@ DensityProps = namedtuple('DensityProps', ['neighbors_in_distance',
 Props = namedtuple('Props', ['voronoi', 'delaunay', 'mst_branches', 'density'])
 
 
-def compute_global_graph_features(centroids, scale=10., neighbor_counts=(3, 5, 7)):
+def compute_global_graph_features(centroids, neighbor_distances=10. * np.arange(1, 6), neighbor_counts=(3, 5, 7)):
     """Compute global (i.e., not per-pixel) graph-based features of the
     nuclei with the given centroids.
 
@@ -25,9 +25,8 @@ def compute_global_graph_features(centroids, scale=10., neighbor_counts=(3, 5, 7
     ----------
     centroids : array_like
         Nx2 numpy array of nuclear centroids
-    scale : float
-        Multiplier for distances.  Used for determining the radii to
-        count neighbors in.
+    neighbor_distances : array_like
+        Radii to count neighbors in
     neighbor_counts : sequence
         Sequence of numbers of neighbors, each of which is used to
         compute statistics relating to the distance required to reach
@@ -118,9 +117,8 @@ def compute_global_graph_features(centroids, scale=10., neighbor_counts=(3, 5, 7
     tree = KDTree(centroids)
     neigbors_in_distance = {
         # Yes, we just throw away the actual points
-        r * scale:
-        pop_stats(np.stack(map(len, tree.query_ball_tree(tree, r * scale))) - 1)
-        for r in range(1, 6)
+        r: pop_stats(np.stack(map(len, tree.query_ball_tree(tree, r))) - 1)
+        for r in neighbor_distances
     }
     distance_for_neighbors = dict(zip(
         neighbor_counts,

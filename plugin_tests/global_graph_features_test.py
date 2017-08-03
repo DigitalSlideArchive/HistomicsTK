@@ -64,7 +64,7 @@ class GlobalGraphFeaturesTest(base.TestCase):
 
     def testSimple(self):
         data = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1], [-.5, -.5], [.5, .5]])
-        actual = cggf(data, scale=0.7, neighbor_counts=(3, 5))
+        actual = cggf(data, neighbor_distances=0.7 * np.arange(1, 6), neighbor_counts=(3, 5))
         expected = Props(
             voronoi=PolyProps(
                 area=PopStats(
