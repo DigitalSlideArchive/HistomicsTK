@@ -115,7 +115,7 @@ def count_slide(slide_path, params, region=None,
         kwargs['region'] = region
     if make_label_image:
         tile = ts.getRegion(**kwargs)[0]
-        return count_simple(tile, params)
+        return count_image(tile, params)
     else:
         results = []
         total_tiles = ts.getSingleTile(**kwargs)['iterator_range']['position']
@@ -138,13 +138,13 @@ def _count_tiles(slide_path, params, kwargs, position, count):
     total = [0] * lpotf
     for pos in range(position, position + count):
         tile = ts.getSingleTile(tile_position=pos, **kwargs)['tile']
-        subtotal = _count_simple(tile, params)[0]
+        subtotal = _count_image(tile, params)[0]
         for k in range(lpotf):
             total[k] += subtotal[k]
     return OutputTotals._make(total)
 
 
-def count_simple(image, params):
+def count_image(image, params):
     """Count positive pixels, computing a label mask and summary
     statistics.
 
@@ -163,7 +163,7 @@ def count_simple(image, params):
         NxM array of pixel types.  See Labels for the different values.
 
     """
-    total, masks = _count_simple(image, params)
+    total, masks = _count_image(image, params)
     mask_all_positive, mask_weak, mask_pos, mask_strong = masks
     label_image = np.full(image.shape[:-1], Labels.NEGATIVE, dtype=np.uint8)
     label_image[mask_all_positive] = (
@@ -174,8 +174,8 @@ def count_simple(image, params):
     return _totals_to_stats(total), label_image
 
 
-def _count_simple(image, params):
-    """A version of count_simple that doesn't compute the label image and
+def _count_image(image, params):
+    """A version of count_image that doesn't compute the label image and
     only computes the sums.
 
     """
@@ -228,5 +228,5 @@ __all__ = (
     'Parameters',
     'Output',
     'count_slide',
-    'count_simple',
+    'count_image',
 )
