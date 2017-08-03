@@ -55,6 +55,7 @@
       - digital_slide_archive
       - HistomicsTK
       - homepage
+      - xtk_demo
     girder_celery_user: worker-robot
     girder_celery_email: histomicstk.celery@kitware.com
     girder_celery_password: celery
