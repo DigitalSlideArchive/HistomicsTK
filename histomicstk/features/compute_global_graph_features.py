@@ -1,13 +1,13 @@
 from __future__ import division
 
 from collections import namedtuple
-from itertools import combinations
 
 import numpy as np
 from numpy import linalg
 from scipy.spatial import cKDTree as KDTree, Voronoi
 from scipy import sparse
 from scipy.sparse.csgraph import minimum_spanning_tree
+from scipy.spatial.distance import pdist
 
 PopStats = namedtuple('PopStats', ['mean', 'stddev', 'minmaxr', 'disorder'])
 PolyProps = namedtuple('PolyProps', ['area', 'peri', 'max_dist'])
@@ -80,8 +80,7 @@ def compute_global_graph_features(centroids, neighbor_distances=10. * np.arange(
     regions = [r for r in vor.regions if r and -1 not in r]
     areas = np.stack(poly_area(vertices[r]) for r in regions)
     peris = np.stack(poly_peri(vertices[r]) for r in regions)
-    # TODO Consider using more numpy
-    max_dists = np.stack(max(dist(x, y) for x, y in combinations(vertices[r], 2)) for r in regions)
+    max_dists = np.stack(pdist(vertices[r]).max() for r in regions)
     poly_props = PolyProps._make(map(pop_stats, (areas, peris, max_dists)))
 
     # Assume that each Voronoi vertex is on exactly three ridges.
