@@ -17,9 +17,14 @@ DensityProps = namedtuple('DensityProps', ['neighbors_in_distance',
 Props = namedtuple('Props', ['voronoi', 'delaunay', 'mst_branches', 'density'])
 
 
-def compute_global_graph_features(centroids, neighbor_distances=10. * np.arange(1, 6), neighbor_counts=(3, 5, 7)):
-    """Compute global (i.e., not per-pixel) graph-based features of the
-    nuclei with the given centroids.
+def compute_global_cell_graph_features(
+        centroids,
+        neighbor_distances=10. * np.arange(1, 6),
+        neighbor_counts=(3, 5, 7),
+):
+    """Compute global (i.e., not per-nucleus) features of the nuclei with
+    the given centroids based on the partitioning of the space into
+    Voronoi cells and on the induced graph structure.
 
     Parameters
     ----------

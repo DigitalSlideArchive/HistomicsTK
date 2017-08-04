@@ -21,8 +21,8 @@ import numpy as np
 
 from tests import base
 
-from histomicstk.features import compute_global_graph_features as cggf
-from histomicstk.features.compute_global_graph_features import (
+from histomicstk.features import compute_global_cell_graph_features as cgcgf
+from histomicstk.features.compute_global_cell_graph_features import (
     Props, PolyProps, TriProps, DensityProps, PopStats
 )
 
@@ -37,7 +37,7 @@ def tearDownModule():
     base.stopServer()
 
 
-class GlobalGraphFeaturesTest(base.TestCase):
+class GlobalCellGraphFeaturesTest(base.TestCase):
     def _assert_equal_nested(self, actual, expected, rtol=1e-6):
         def recur(actual, expected):
             if isinstance(expected, int):
@@ -64,7 +64,7 @@ class GlobalGraphFeaturesTest(base.TestCase):
 
     def testSimple(self):
         data = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1], [-.5, -.5], [.5, .5]])
-        actual = cggf(data, neighbor_distances=0.7 * np.arange(1, 6), neighbor_counts=(3, 5))
+        actual = cgcgf(data, neighbor_distances=0.7 * np.arange(1, 6), neighbor_counts=(3, 5))
         expected = Props(
             voronoi=PolyProps(
                 area=PopStats(
