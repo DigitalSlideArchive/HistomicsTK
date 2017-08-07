@@ -9,7 +9,7 @@ from scipy import sparse
 from scipy.sparse.csgraph import minimum_spanning_tree
 from scipy.spatial.distance import pdist
 
-PopStats = namedtuple('PopStats', ['mean', 'stddev', 'minmaxr', 'disorder'])
+PopStats = namedtuple('PopStats', ['mean', 'stddev', 'min_max_ratio', 'disorder'])
 PolyProps = namedtuple('PolyProps', ['area', 'peri', 'max_dist'])
 TriProps = namedtuple('TriProps', ['sides', 'area'])
 DensityProps = namedtuple('DensityProps', ['neighbors_in_distance',
@@ -65,8 +65,8 @@ def compute_global_cell_graph_features(
             - [count]: Minimum distance to enclose count neighbors features
 
         Each leaf node is itself a namedtuple with fields 'mean',
-        'stddev', 'minmaxr', and 'disorder'.  'minmaxr' is the
-        minimum-to-maximum ratio, and disorder is stddev / (mean +
+        'stddev', 'min_max_ratio', and 'disorder'.  'min_max_ratio' is
+        the minimum-to-maximum ratio, and disorder is stddev / (mean +
         stddev).
 
     References
