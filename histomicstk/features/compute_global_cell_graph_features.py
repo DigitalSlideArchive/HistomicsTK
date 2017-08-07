@@ -4,6 +4,7 @@ from collections import namedtuple
 
 import numpy as np
 from numpy import linalg
+from pandas import DataFrame
 from scipy.spatial import cKDTree as KDTree, Voronoi
 from scipy import sparse
 from scipy.sparse.csgraph import minimum_spanning_tree
@@ -22,7 +23,7 @@ def compute_global_cell_graph_features(
         neighbor_distances=10. * np.arange(1, 6),
         neighbor_counts=(3, 5, 7),
 ):
-    """Compute global (i.e., not per-nucleus) features of the nuclei with
+    r"""Compute global (i.e., not per-nucleus) features of the nuclei with
     the given centroids based on the partitioning of the space into
     Voronoi cells and on the induced graph structure.
 
@@ -39,35 +40,43 @@ def compute_global_cell_graph_features(
 
     Returns
     -------
-    props : collections.namedtuple
-        Nested namedtuples with the structure:
+    props : pandas.DataFrame
+        A single-row DataFrame with the following columns:
 
-        - .voronoi: Voronoi diagram features
+        - voronoi\_...: Voronoi diagram features
 
-          - .area: Polygon area features
-          - .peri: Polygon perimeter features
-          - .max_dist: Maximum distance in polygon features
+          - area\_...: Polygon area features
+          - peri\_...: Polygon perimeter features
+          - max_dist\_...: Maximum distance in polygon features
 
-        - .delaunay: Delaunay triangulation features
+        - delaunay\_...: Delaunay triangulation features
 
-          - .sides: Triangle side length features
-          - .area: Triangle area features
+          - sides\_...: Triangle side length features
+          - area\_...: Triangle area features
 
-        - .mst_branches: Minimum spanning tree branch features
-        - .density: Density features
+        - mst_branches\_...: Minimum spanning tree branch features
+        - density\_...: Density features
 
-          - .neighbors_in_distance
+          - neighbors_in_distance\_...
 
-            - [radius]: Neighbor count within given radius features
+            - 0, 1, ..., len(neighbor_distances) - 1: Neighbor count
+              within given radius features.
 
-          - .distance_for_neighbors
+          - distance_for_neighbors\_...
 
-            - [count]: Minimum distance to enclose count neighbors features
+            - 0, 1, ..., len(neighbor_counts) - 1: Minimum distance to
+              enclose count neighbors features
 
-        Each leaf node is itself a namedtuple with fields 'mean',
-        'stddev', 'min_max_ratio', and 'disorder'.  'min_max_ratio' is
-        the minimum-to-maximum ratio, and disorder is stddev / (mean +
-        stddev).
+        The "..."s are meant to signify that what precedes is the
+        start of a column name.  At the end of each column name is one
+        of 'mean', 'stddev', 'min_max_ratio', and 'disorder'.
+        'min_max_ratio' is the minimum-to-maximum ratio, and disorder
+        is stddev / (mean + stddev).
+
+    Note
+    ----
+    The indices for the density features are with respect to the
+    *sorted* values of the corresponding argument sequence.
 
     References
     ----------
@@ -76,6 +85,23 @@ def compute_global_cell_graph_features(
        spectral clustering with textural and architectural image features.
        In Biomedical Imaging: From Nano to Macro, 2008.  ISBI 2008.
        5th IEEE International Symposium on (pp. 496-499).  IEEE.
+
+    """
+    return _flatten_to_dataframe(_compute_global_cell_graph_features(
+        centroids,
+        neighbor_distances,
+        neighbor_counts,
+    ))
+
+
+def _compute_global_cell_graph_features(
+        centroids,
+        neighbor_distances,
+        neighbor_counts,
+):
+    """Internal support for compute_global_cell_graph_features that
+    returns its result in a nested nametuple structure instead of a
+    pandas DataFrame.
 
     """
     vor = Voronoi(centroids)
@@ -168,3 +194,30 @@ def _pop_stats(pop):
     minmaxr = pop.min() / pop.max()
     disorder = stddev / (mean + stddev)
     return PopStats(mean, stddev, minmaxr, disorder)
+
+
+def _flatten_to_dataframe(nt):
+    """Flatten the result of _compute_global_cell_graph_features to the
+    DataFrame returned by compute_global_cell_graph_features.
+
+    """
+    return DataFrame(_flatten_to_dict(nt), index=[0])
+
+
+def _flatten_to_dict(nt, prefix=''):
+    result = {}
+    assert isinstance(nt, (tuple, dict))
+    if isinstance(nt, tuple):
+        d = nt._asdict()
+    else:  # nt is a dict
+        # We only have numeric keys, and they may be non-nice floats,
+        # so just number them by sort order instead of doing something
+        # else for names
+        d = {str(i): kv[1] for i, kv in enumerate(sorted(nt.items()))}
+    for k, v in d.items():
+        if not isinstance(v, (tuple, dict)):
+            # Terminate
+            result[prefix + k] = v
+        else:
+            result.update(_flatten_to_dict(v, prefix + k + '_'))
+    return result
