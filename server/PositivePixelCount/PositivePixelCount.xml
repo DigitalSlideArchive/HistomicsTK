@@ -19,43 +19,43 @@
       <description>Input image in which to count and classify positive pixels</description>
     </image>
     <float>
-      <name>hueValue</name>
+      <name>hue_value</name>
       <label>Hue Value</label>
       <index>1</index>
       <description>Center of the hue range in HSI space for the positive color, in the range [0, 1]</description>
     </float>
     <float>
-      <name>hueWidth</name>
+      <name>hue_width</name>
       <label>Hue Width</label>
       <index>2</index>
       <description>Width of the hue range in HSI space</description>
     </float>
     <float>
-      <name>saturationMinimum</name>
+      <name>saturation_minimum</name>
       <label>Minimum Saturation</label>
       <index>3</index>
       <description>Minimum saturation of positive pixels in HSI space, in the range [0, 1]</description>
     </float>
     <float>
-      <name>intensityUpperLimit</name>
+      <name>intensity_upper_limit</name>
       <label>Upper Intensity Limit</label>
       <index>4</index>
       <description>Intensity threshold in HSI space above which a pixel is considered negative, in the range [0, 1]</description>
     </float>
     <float>
-      <name>intensityWeakThreshold</name>
+      <name>intensity_weak_threshold</name>
       <label>Intensity Threshold for Weak Pixels</label>
       <index>5</index>
       <description>Intensity threshold in HSI space that separates weak-positive pixels (above) from plain positive pixels (below)</description>
     </float>
     <float>
-      <name>intensityStrongThreshold</name>
+      <name>intensity_strong_threshold</name>
       <label>Intensity Threshold for Strong Pixels</label>
       <index>6</index>
       <description>Intensity threshold in HSI space that separates plain positive pixels (above) from strong positive pixels (below)</description>
     </float>
     <float>
-      <name>intensityLowerLimit</name>
+      <name>intensity_lower_limit</name>
       <label>Lower Intensity Limit</label>
       <index>7</index>
       <description>Intensity threshold in HSI space below which a pixel is considered negative</description>

@@ -8,11 +8,12 @@ import json
 import os
 import six
 import sys
+import tarfile
 import time
 from distutils.version import LooseVersion
 
-if not (LooseVersion('1.9') <= LooseVersion(docker.version) < LooseVersion('2')):
-    raise Exception('docker-py must be >= version 1.9 and < version 2')
+if not (LooseVersion('1.9') <= LooseVersion(docker.version)):
+    raise Exception('docker or docker-py must be >= version 1.9')
 
 
 BaseName = 'histomicstk'
@@ -73,9 +74,12 @@ def containers_provision(**kwargs):
     """
     Provision or reprovision the containers.
     """
-    client = docker.from_env()
+    client = docker_client()
     ctn = get_docker_image_and_container(
         client, 'histomicstk', version=kwargs.get('pinned'))
+
+    if kwargs.get('conf'):
+        merge_configuration(client, ctn, **kwargs)
 
     username = kwargs.get('username')
     password = kwargs.get('password')
@@ -140,7 +144,7 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
     :param provision: if True, reprovision after starting.  Otherwise, only
         provision if the histomictk container is created.
     """
-    client = docker.from_env()
+    client = docker_client()
     env = {}
     started = False
 
@@ -339,13 +343,15 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
     ctn = get_docker_image_and_container(
         client, key, version=kwargs.get('pinned'))
     if ctn is None:
+        worker_tmp_root = (
+            kwargs['worker_tmp_root'] if kwargs['worker_tmp_root'] else '/tmp/girder_worker')
         config = {
             'restart_policy': {'name': 'always'},
             'privileged': True,  # so we can run docker
             'links': {},
             'binds': [
                 get_path(kwargs['logs']) + ':/opt/logs:rw',
-                '/tmp/girder_worker:/tmp/girder_worker',
+                '%s:%s' % (worker_tmp_root, worker_tmp_root),
                 get_path(kwargs['assetstore']) + ':/opt/histomicstk/assetstore:rw',
             ]
         }
@@ -353,6 +359,7 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
         config_mounts(kwargs.get('mount'), config)
         if rmq == 'docker':
             config['links'][ImageList['rmq']['name']] = 'rmq'
+        env['GIRDER_WORKER_TMP_ROOT'] = worker_tmp_root
         params = {
             'image': image,
             'detach': True,
@@ -376,7 +383,7 @@ def containers_status(**kwargs):
     """"
     Report the status of any containers we are responsible for.
     """
-    client = docker.from_env()
+    client = docker_client()
 
     keys = ImageList.keys()
     results = []
@@ -405,7 +412,7 @@ def containers_stop(remove=False, **kwargs):
 
     :param remove: True to remove the containers.  False to just stop them.
     """
-    client = docker.from_env()
+    client = docker_client()
     keys = ImageList.keys()
     keys.reverse()
     for key in keys:
@@ -420,6 +427,16 @@ def containers_stop(remove=False, **kwargs):
 
     if remove:
         network_remove(client, BaseName)
+
+
+def docker_client():
+    """
+    Return the current docker client in a manner that works with both the
+    docker-py and docker modules.
+    """
+    client = docker.from_env(version='auto')
+    client = client if not hasattr(client, 'api') else client.api
+    return client
 
 
 def docker_mounts():
@@ -506,7 +523,7 @@ def images_build(retry=False, names=None):
         names to build.
     """
     basepath = os.path.dirname(os.path.realpath(__file__))
-    client = docker.from_env()
+    client = docker_client()
 
     if names is None:
         names = ImageList.keys()
@@ -547,12 +564,47 @@ def images_repull(**kwargs):
     """"
     Repull all docker images.
     """
-    client = docker.from_env()
+    client = docker_client()
     for key, image in six.iteritems(ImageList):
         if 'name' not in image and not kwargs.get('cli'):
             continue
         get_docker_image_and_container(
             client, key, 'pull',  version=kwargs.get('pinned'))
+
+
+def merge_configuration(client, ctn, conf, **kwargs):
+    """
+    Merge a Girder configuration file with the one in a running container.
+
+    :param client: the docker client.
+    :param ctn: a running docker container that contains
+        /opt/histomicstk/girder/girder/conf/girder.local.cfg
+    :param conf: a path to a configuration file fragment to merge with the
+        extant file.
+    """
+    cfgPath = '/opt/histomicstk/girder/girder/conf'
+    cfgName = 'girder.local.cfg'
+    tarStream, stat = client.get_archive(ctn, cfgPath + '/' + cfgName)
+    tarStream = six.BytesIO(tarStream.read())
+    tar = tarfile.TarFile(mode='r', fileobj=tarStream)
+    parser = six.moves.configparser.SafeConfigParser()
+    parser.readfp(tar.extractfile(cfgName))
+    parser.read(conf)
+    output = six.BytesIO()
+    parser.write(output)
+    if kwargs.get('verbose') >= 1:
+        output.seek(0)
+        print(output.read())
+    output.seek(0)
+    tarOutput = six.BytesIO()
+    tar = tarfile.TarFile(fileobj=tarOutput, mode='w')
+    tarinfo = tarfile.TarInfo(name=cfgName)
+    tarinfo.size = output.len
+    tarinfo.mtime = time.time()
+    tar.addfile(tarinfo, output)
+    tar.close()
+    tarOutput.seek(0)
+    client.put_archive(ctn, cfgPath, data=tarOutput)
 
 
 def network_create(client, name):
@@ -677,6 +729,10 @@ if __name__ == '__main__':
         '--no-cli', dest='cli', action='store_false',
         help='Pull and install the HistomicsTK cli docker image.')
     parser.add_argument(
+        '--conf', '--cfg', '--girder-cfg',
+        help='Merge a Girder configuration file with the default '
+        'configuration in the docker container during provisioning.')
+    parser.add_argument(
         '--db', '-d', dest='mongodb_path', default='~/.histomicstk/db',
         help='Database path (if a Mongo docker container is used).  Use '
              '"docker" for the default docker storage location.')
@@ -738,6 +794,11 @@ if __name__ == '__main__':
         '--username', '--user', const='', default=None, nargs='?',
         help='Override the Girder admin username used in provisioning.  Set '
         'to an empty string to be prompted for username and password.')
+    parser.add_argument(
+        '--worker-tmp-root', '--tmp', default='/tmp/girder_worker',
+        help='The path to use for the girder_worker tmp_root.  This must be '
+        'reachable by the HistomicsTK and the girder_worker docker '
+        'containers.  It cannot be a top-level directory.')
     parser.add_argument('--verbose', '-v', action='count', default=0)
 
     # Should we add an optional url or host value for rmq and mongo?
