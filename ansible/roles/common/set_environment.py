@@ -91,14 +91,16 @@ def adjust_ids(user_name):  # noqa
         ':'.join(entry['parts']) for entry in grouplist]))
     os.rename('/etc/group.tmp', '/etc/group')
     os.system('grpconv')
-    if host_uid != user_uid:
-        os.system('find / -xdev -uid %s -exec chown %s {} \;' % (
-            user_uid, host_uid or user_uid))
-    if host_gid != user_gid:
-        os.system('find / -xdev -uid %s -exec chgrp %s {} \;' % (
-            user_gid, host_gid or user_gid))
     if host_uid != user_uid or host_gid != user_gid:
         os.system('rm -r /home/%s/.ansible' % user_name)
+    if host_uid != user_uid:
+        os.system('find / -xdev -uid %s -gid %s -exec chown -h %s:%s {} \+' % (
+            user_uid, user_gid, host_uid or user_uid, host_gid or user_gid))
+        os.system('find / -xdev -uid %s -exec chown -h %s {} \+' % (
+            user_uid, host_uid or user_uid))
+    if host_gid != user_gid:
+        os.system('find / -xdev -gid %s -exec chgrp -h %s {} \+' % (
+            user_gid, host_gid or user_gid))
 
 
 def set_hosts():
