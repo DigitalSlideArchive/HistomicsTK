@@ -389,4 +389,27 @@ $(function () {
             });
         });
     });
+
+    describe('Open recently annotated image', function () {
+        it('open the dialog', function () {
+            $('.h-open-annotated-image').click();
+            girderTest.waitForDialog();
+            runs(function () {
+                var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
+                expect($el.length).toBe(1);
+                expect($el.find('.media-left img').prop('src'))
+                    .toMatch(/item\/[0-9a-f]*\/tiles\/thumbnail/);
+                expect($el.find('.media-heading').text()).toBe('image');
+            });
+        });
+
+        it('click on the image', function () {
+            var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
+            $el.click();
+            girderTest.waitForLoad();
+            runs(function () {
+                expect(girder.plugins.HistomicsTK.router.getQuery('image')).toBe(imageId);
+            });
+        });
+    });
 });

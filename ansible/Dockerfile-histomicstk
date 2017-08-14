@@ -37,5 +37,5 @@ EXPOSE 8080
 #   HOST_MONGO=true
 # is set, mongodb is added to the /etc/hosts as mapping to the docker host ip
 # address
-CMD sudo python /opt/histomicstk/set_hosts.py && \
+CMD sudo -E python /opt/histomicstk/set_hosts.py && \
     python -m girder >/opt/logs/girder.log 2>&1

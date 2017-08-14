@@ -81,6 +81,8 @@ add_histomicstk_python_test(glcm
     DBNAME core_glcm_gen
 )
 
+add_histomicstk_python_test(global_cell_graph_features)
+
 add_histomicstk_python_test(segmentation_label
     SUBMODULE TraceBoundaryTest
     DBNAME core_trace_boundary
