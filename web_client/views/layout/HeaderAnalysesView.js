@@ -25,7 +25,7 @@ var HeaderUserView = View.extend({
         if (this.image) {
             this.$el.removeClass('hidden');
             restRequest({
-                path: 'HistomicsTK/HistomicsTK/docker_image'
+                url: 'HistomicsTK/HistomicsTK/docker_image'
             }).then((analyses) => {
                 if (_.keys(analyses || {}).length > 0) {
                     this.$el.html(headerAnalysesTemplate({

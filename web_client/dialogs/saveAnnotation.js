@@ -18,6 +18,7 @@ var SaveAnnotation = View.extend({
                 annotation: this.annotation.toJSON()
             })
         ).girderModal(this);
+        return this;
     },
 
     /**
