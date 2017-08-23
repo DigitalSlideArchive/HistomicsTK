@@ -125,11 +125,13 @@ var DrawWidget = Panel.extend({
      * annotation to the server and resetting the panel.
      */
     _onSaveAnnotation() {
+        console.log('_onSave'); // DWM::
         var data = this.annotation.toJSON();
         data.elements = data.annotation.elements;
         delete data.annotation;
+        console.log(['_onSave - ', data, this.image]); // DWM::
         restRequest({
-            path: 'annotation?itemId=' + this.image.id,
+            url: 'annotation?itemId=' + this.image.id,
             contentType: 'application/json',
             processData: false,
             data: JSON.stringify(data),
