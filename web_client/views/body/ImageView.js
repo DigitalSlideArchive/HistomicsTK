@@ -62,6 +62,11 @@ var ImageView = View.extend({
         this.render();
     },
     render() {
+        // Ensure annotations are removed from the popover widget on rerender.
+        // This can happen when opening a new image while an annotation is
+        // being hovered.
+        this.mouseResetAnnotation();
+
         if (this.model.id === this._openId) {
             this.controlPanel.setElement('.h-control-panel-container').render();
             return;
