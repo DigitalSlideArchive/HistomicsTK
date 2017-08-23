@@ -37,7 +37,7 @@ const OpenAnnotatedImage = View.extend({
     fetch() {
         var items;
         return restRequest({
-            path: 'annotation/images',
+            url: 'annotation/images',
             data: {
                 limit: 10
             }
@@ -66,7 +66,7 @@ const OpenAnnotatedImage = View.extend({
         }
 
         return restRequest({
-            path: `resource/${item._id}/path`,
+            url: `resource/${item._id}/path`,
             data: {
                 type: 'item'
             }
