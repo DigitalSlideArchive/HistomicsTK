@@ -22,6 +22,7 @@ var EditAnnotation = View.extend({
             })
         ).girderModal(this);
         this.$('.h-colorpicker').colorpicker();
+        return this;
     },
 
     /**

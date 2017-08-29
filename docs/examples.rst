@@ -8,3 +8,4 @@ Examples
 
    examples/color-deconvolution.ipynb
    examples/nuclei-segmentation.ipynb
+   examples/positive-pixel-count.ipynb
