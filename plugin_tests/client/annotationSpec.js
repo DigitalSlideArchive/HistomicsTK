@@ -1,6 +1,7 @@
 girderTest.importPlugin('jobs');
+girderTest.importPlugin('worker');
 girderTest.importPlugin('large_image');
-girderTest.importPlugin('slicer_cli_web');
+girderTest.importPlugin('item_tasks');
 girderTest.importPlugin('HistomicsTK');
 
 var app;
