@@ -65,7 +65,6 @@ before_install:
     - GIRDER_VERSION=master
     - GIRDER_WORKER_VERSION=master
     - LARGE_IMAGE_VERSION=master
-    - SLICER_CLI_WEB_VERSION=master
     - main_path=$PWD
     - build_path=$PWD/build
     - mkdir -p $build_path
@@ -79,14 +78,11 @@ before_install:
     - girder_worker_path=$girder_path/plugins/girder_worker
     - git clone https://github.com/girder/girder_worker.git $girder_worker_path && git -C $girder_worker_path checkout $GIRDER_WORKER_VERSION
     - cp $PWD/plugin_tests/data/girder_worker.cfg $girder_worker_path/girder_worker/worker.local.cfg
-    - pip install -U -r $girder_worker_path/requirements.txt 
+    - pip install -U -r $girder_worker_path/requirements.txt
     - pip install -U -r $girder_worker_path/girder_worker/plugins/girder_io/requirements.txt
 
     - large_image_path=$girder_path/plugins/large_image
     - git clone https://github.com/girder/large_image.git $large_image_path && git -C $large_image_path checkout $LARGE_IMAGE_VERSION
-
-    - slicer_cli_web_path=$girder_path/plugins/slicer_cli_web
-    - git clone https://github.com/girder/slicer_cli_web.git $slicer_cli_web_path && git -C $slicer_cli_web_path checkout $SLICER_CLI_WEB_VERSION
 
     - export MONGO_VERSION=2.6.11
     - export PY_COVG="ON"
@@ -126,9 +122,8 @@ install:
     - pip install -e .
     - cd $girder_path
     - pip install -U -r requirements.txt -r requirements-dev.txt
-    - pip install -U -r $slicer_cli_web_path/requirements.txt
     - npm-install-retry
-    - BABEL_ENV=cover NYC_CWD="$main_path" girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
+    - BABEL_ENV=cover NYC_CWD="$main_path" girder-install web --plugins=jobs,worker,large_image,item_tasks,HistomicsTK --dev
     - pip uninstall --yes Sphinx  # Interferes with sphinx from conda
     - conda install --yes jupyter sphinx sphinx_rtd_theme
     - pip install nbsphinx travis-sphinx
