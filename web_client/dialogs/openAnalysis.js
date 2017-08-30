@@ -24,6 +24,7 @@ var OpenAnalysis = View.extend({
         ).girderModal(this);
 
         this.paginateTasksWidget.setElement(this.$('.h-task-list-container')).render();
+        return this;
     },
 
     selectTask({task}) {
