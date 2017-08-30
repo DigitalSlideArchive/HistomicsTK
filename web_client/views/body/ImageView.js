@@ -141,6 +141,7 @@ var ImageView = View.extend({
         }
         this.controlPanel.setElement('.h-control-panel-container').render();
         this.popover.setElement('#h-annotation-popover-container').render();
+        return this;
     },
     destroy() {
         if (this.viewerWidget) {
@@ -187,7 +188,7 @@ var ImageView = View.extend({
         // helper functions passed through promises
         var getItemFile = (itemId) => {
             return restRequest({
-                path: 'item/' + itemId + '/files',
+                url: 'item/' + itemId + '/files',
                 data: {
                     limit: 1,
                     offset: 0
@@ -202,7 +203,7 @@ var ImageView = View.extend({
 
         var getTilesDef = (itemId) => {
             return restRequest({
-                path: 'item/' + itemId + '/tiles'
+                url: 'item/' + itemId + '/tiles'
             }).then((tiles) => {
                 this.zoomWidget.setMaxMagnification(tiles.magnification || 20);
                 return null;
@@ -211,7 +212,7 @@ var ImageView = View.extend({
 
         var getFileModel = (fileId) => {
             return restRequest({
-                path: 'file/' + fileId
+                url: 'file/' + fileId
             }).then((file) => {
                 return new FileModel(file);
             });
