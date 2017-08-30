@@ -79,6 +79,7 @@ var AnnotationPopover = View.extend({
             this._hide();
         }
         this._height = this.$('.h-annotation-popover').height();
+        return this;
     },
 
     /**
