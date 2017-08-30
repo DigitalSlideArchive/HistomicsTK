@@ -231,7 +231,7 @@ $(function () {
 
         describe('Annotation panel', function () {
             it('panel is rendered', function () {
-                expect($('.h-annotation-selector .s-panel-title').text()).toMatch(/Annotations/);
+                expect($('.h-annotation-selector .g-panel-title').text()).toMatch(/Annotations/);
             });
 
             it('toggle visibility of an annotation', function () {
