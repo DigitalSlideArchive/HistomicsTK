@@ -204,7 +204,7 @@ $(function () {
                     expect($('.h-draw-widget .h-save-widget').length).toBe(0);
 
                     girder.rest.restRequest({
-                        path: 'annotation',
+                        url: 'annotation',
                         data: {
                             itemId: imageId
                         }
@@ -264,7 +264,7 @@ $(function () {
                 girderTest.waitForLoad();
                 runs(function () {
                     girder.rest.restRequest({
-                        path: 'annotation',
+                        url: 'annotation',
                         data: {
                             itemId: imageId
                         }
@@ -305,7 +305,7 @@ $(function () {
                     };
 
                     girder.rest.restRequest({
-                        path: 'annotation?itemId=' + imageId,
+                        url: 'annotation?itemId=' + imageId,
                         contentType: 'application/json',
                         processData: false,
                         data: JSON.stringify(rect),
