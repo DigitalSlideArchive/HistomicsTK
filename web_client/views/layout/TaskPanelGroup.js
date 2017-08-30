@@ -61,6 +61,7 @@ const TaskPanelGroup = View.extend({
         this.$('.h-task-title').append(title);
         this.$('.h-info-panel-description').append(description);
         this.$('.h-info-panel-buttons').append(execute);
+        return this;
     },
 
     setAnalysis(taskId) {
