@@ -9,6 +9,7 @@ import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import AnnotationCollection from 'girder_plugins/large_image/collections/AnnotationCollection';
 
+import AnnotationPopover from '../popover/AnnotationPopover';
 import AnnotationSelector from '../../panels/AnnotationSelector';
 import ZoomWidget from '../../panels/ZoomWidget';
 import DrawWidget from '../../panels/DrawWidget';
@@ -49,14 +50,23 @@ var ImageView = View.extend({
             annotations: this.annotations,
             image: this.model
         });
+        this.popover = new AnnotationPopover({
+            parentView: this
+        });
 
         this.listenTo(events, 'h:select-region', this.showRegion);
         this.listenTo(this.annotationSelector.collection, 'add change:displayed', this.toggleAnnotation);
+        this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
 
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
         this.render();
     },
     render() {
+        // Ensure annotations are removed from the popover widget on rerender.
+        // This can happen when opening a new image while an annotation is
+        // being hovered.
+        this.mouseResetAnnotation();
+
         if (this.model.id === this._openId) {
             this.controlPanel.setElement('.h-control-panel-container').render();
             return;
@@ -67,9 +77,17 @@ var ImageView = View.extend({
             this.viewerWidget = new GeojsViewer({
                 parentView: this,
                 el: this.$('.h-image-view-container'),
-                itemId: this.model.id
+                itemId: this.model.id,
+                hoverEvents: true
             });
             this.trigger('h:viewerWidgetCreated', this.viewerWidget);
+
+            // handle annotation mouse events
+            this.listenTo(this.viewerWidget, 'g:mouseOverAnnotation', this.mouseOverAnnotation);
+            this.listenTo(this.viewerWidget, 'g:mouseOutAnnotation', this.mouseOutAnnotation);
+            this.listenTo(this.viewerWidget, 'g:mouseClickAnnotation', this.mouseClickAnnotation);
+            this.listenTo(this.viewerWidget, 'g:mouseResetAnnotation', this.mouseResetAnnotation);
+
             this.viewerWidget.on('g:imageRendered', () => {
                 events.trigger('h:imageOpened', this.model);
                 // store a reference to the underlying viewer
@@ -122,6 +140,7 @@ var ImageView = View.extend({
                 .setElement('.h-draw-widget').render();
         }
         this.controlPanel.setElement('.h-control-panel-container').render();
+        this.popover.setElement('#h-annotation-popover-container').render();
         return this;
     },
     destroy() {
@@ -333,6 +352,27 @@ var ImageView = View.extend({
                 pt.x.toFixed() + ', ' + pt.y.toFixed()
             );
         }
+    },
+
+    mouseOverAnnotation(element, annotationId) {
+        element.annotation = this.annotations.get(annotationId);
+        this.popover.collection.add(element);
+    },
+
+    mouseOutAnnotation(element, annotationId) {
+        element.annotation = this.annotations.get(annotationId);
+        this.popover.collection.remove(element);
+    },
+
+    mouseResetAnnotation() {
+        this.popover.collection.reset();
+    },
+
+    mouseClickAnnotation(/* element, annotationId */) {
+    },
+
+    toggleLabels(options) {
+        this.popover.toggle(options.show);
     }
 
 });

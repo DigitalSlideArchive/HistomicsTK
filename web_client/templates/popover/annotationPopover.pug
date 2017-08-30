@@ -1,0 +1,37 @@
+.h-annotation-popover
+  - var annotationCount = 0;
+    each annotation in annotations
+
+      // show at most 4 annotations
+      if annotationCount < 4
+        - annotationCount += 1;
+          - var id = annotation.id;
+          - var a = annotation.get('annotation');
+          - var user = users[annotation.get('creatorId')];
+          h4.h-annotation-name
+            = a.name
+          .h-annotation-created
+            = formatDate(annotation.get('created'))
+          if user
+            span.h-annotation-creator
+              = `${user.firstName} ${user.lastName} (${user.login})`
+          if a.description
+            p.h-annotation-description
+              = a.description
+
+          .h-annotation-elements
+            - var elementCount = 0;
+              each element in elements[id]
+
+                // show at most 10 elements per annotation
+                if elementCount < 10
+                  - elementCount += 1;
+                    - var type = element.get('type');
+                    - var props = elementProperties(element);
+                    .h-element-type
+                      = type
+                    table
+                      for value, key in props
+                        tr
+                          td #{key}
+                            td #{value}
