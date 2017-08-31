@@ -1,7 +1,7 @@
 import _ from 'underscore';
 
 import eventStream from 'girder/utilities/EventStream';
-import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+import Panel from 'girder_plugins/item_tasks/views/Panel';
 
 import annotationSelectorWidget from '../templates/panels/annotationSelector.pug';
 import '../stylesheets/panels/annotationSelector.styl';
@@ -13,8 +13,7 @@ import '../stylesheets/panels/annotationSelector.styl';
 var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
         'click .h-toggle-annotation': 'toggleAnnotation',
-        'click .h-delete-annotation': 'deleteAnnotation',
-        'change #h-toggle-labels': 'toggleLabels'
+        'click .h-delete-annotation': 'deleteAnnotation'
     }),
 
     /**
@@ -47,7 +46,7 @@ var AnnotationSelector = Panel.extend({
             title: 'Annotations',
             showLabels: this._showLabels
         }));
-        this.$('.s-panel-content').collapse({toggle: false});
+        this.$('.g-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         return this;
     },

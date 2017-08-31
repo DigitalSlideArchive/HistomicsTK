@@ -1,6 +1,7 @@
 girderTest.importPlugin('jobs');
+girderTest.importPlugin('worker');
 girderTest.importPlugin('large_image');
-girderTest.importPlugin('slicer_cli_web');
+girderTest.importPlugin('item_tasks');
 girderTest.importPlugin('HistomicsTK');
 
 var app;
@@ -203,7 +204,7 @@ $(function () {
                     expect($('.h-draw-widget .h-save-widget').length).toBe(0);
 
                     girder.rest.restRequest({
-                        path: 'annotation',
+                        url: 'annotation',
                         data: {
                             itemId: imageId
                         }
@@ -230,7 +231,7 @@ $(function () {
 
         describe('Annotation panel', function () {
             it('panel is rendered', function () {
-                expect($('.h-annotation-selector .s-panel-title').text()).toMatch(/Annotations/);
+                expect($('.h-annotation-selector .g-panel-title').text()).toMatch(/Annotations/);
             });
 
             it('toggle visibility of an annotation', function () {
@@ -263,7 +264,7 @@ $(function () {
                 girderTest.waitForLoad();
                 runs(function () {
                     girder.rest.restRequest({
-                        path: 'annotation',
+                        url: 'annotation',
                         data: {
                             itemId: imageId
                         }
@@ -304,7 +305,7 @@ $(function () {
                     };
 
                     girder.rest.restRequest({
-                        path: 'annotation?itemId=' + imageId,
+                        url: 'annotation?itemId=' + imageId,
                         contentType: 'application/json',
                         processData: false,
                         data: JSON.stringify(rect),

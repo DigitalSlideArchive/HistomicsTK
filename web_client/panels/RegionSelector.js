@@ -1,4 +1,4 @@
-import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+import Panel from 'girder_plugins/item_tasks/views/Panel';
 
 import router from '../router';
 import events from '../events';

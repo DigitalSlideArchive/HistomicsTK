@@ -1,18 +1,17 @@
-import _ from 'underscore';
-import { restRequest } from 'girder/rest';
+// import _ from 'underscore';
+// import { restRequest } from 'girder/rest';
 
 import events from '../../events';
-import router from '../../router';
+// import router from '../../router';
 import View from '../View';
+import openAnalysis from '../../dialogs/openAnalysis';
+
 import headerAnalysesTemplate from '../../templates/layout/headerAnalyses.pug';
-import '../../stylesheets/layout/headerAnalyses.styl';
+// import '../../stylesheets/layout/headerAnalyses.styl';
 
-import 'bootstrap-submenu/dist/js/bootstrap-submenu';
-import 'bootstrap-submenu/dist/css/bootstrap-submenu.css';
-
-var HeaderUserView = View.extend({
+var HeaderAnalysisView = View.extend({
     events: {
-        'click .h-analysis-item': '_setAnalysis'
+        'click .h-open-task': '_openDialog'
     },
     initialize() {
         this.image = null;
@@ -22,30 +21,20 @@ var HeaderUserView = View.extend({
         });
     },
     render() {
+        this.$el.html(
+            headerAnalysesTemplate()
+        );
         if (this.image) {
             this.$el.removeClass('hidden');
-            restRequest({
-                url: 'HistomicsTK/HistomicsTK/docker_image'
-            }).then((analyses) => {
-                if (_.keys(analyses || {}).length > 0) {
-                    this.$el.html(headerAnalysesTemplate({
-                        analyses: analyses || {}
-                    }));
-                    this.$('.h-analyses-dropdown-link').submenupicker();
-                }
-                return null;
-            });
         } else {
             this.$el.addClass('hidden');
         }
         return this;
     },
-    _setAnalysis(evt) {
+    _openDialog(evt) {
         evt.preventDefault();
-        var target = $(evt.currentTarget).data();
-
-        router.setQuery('analysis', target.api, {trigger: true});
+        openAnalysis();
     }
 });
 
-export default HeaderUserView;
+export default HeaderAnalysisView;

@@ -2,7 +2,7 @@ import _ from 'underscore';
 
 import { restRequest } from 'girder/rest';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
-import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+import Panel from 'girder_plugins/item_tasks/views/Panel';
 
 import editAnnotation from '../dialogs/editAnnotation';
 import saveAnnotation from '../dialogs/saveAnnotation';
@@ -47,7 +47,7 @@ var DrawWidget = Panel.extend({
             title: 'Draw',
             elements: this.collection.toJSON()
         }));
-        this.$('.s-panel-content').collapse({toggle: false});
+        this.$('.g-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         return this;
     },
