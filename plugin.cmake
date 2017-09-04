@@ -129,7 +129,7 @@ add_histomicstk_python_test(cli_results
     # multiple tests, so add it in one of the tests for now
     # "plugins/HistomicsTK/Easy1.png"
     ENVIRONMENT
-    "CLI_LIST_ENTRYPOINT=${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/server/cli_list_entrypoint.py"
+    "CLI_LIST_ENTRYPOINT=${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/server/cli_list_entrypoint.py"
     "CLI_CWD=${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/server"
 )
 

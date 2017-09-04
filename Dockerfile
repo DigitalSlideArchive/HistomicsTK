@@ -35,10 +35,6 @@ RUN pip install --upgrade --ignore-installed pip setuptools && \
     conda clean -i -l -t -y && \
     rm -rf /root/.cache/pip/*
 
-# git clone install slicer_cli_web
-RUN cd /build && \
-    git clone https://github.com/girder/slicer_cli_web.git
-
 # Show what was installed
 RUN conda list
 
@@ -53,7 +49,7 @@ WORKDIR $htk_path/server
 
 # Test our entrypoint.  If we have incompatible versions of numpy and
 # openslide, one of these will fail
-RUN python /build/slicer_cli_web/server/cli_list_entrypoint.py --list_cli
-RUN python /build/slicer_cli_web/server/cli_list_entrypoint.py ColorDeconvolution --help
+RUN python $htk_path/server/cli_list_entrypoint.py --list_cli
+RUN python $htk_path/server/cli_list_entrypoint.py ColorDeconvolution --help
 
-ENTRYPOINT ["/build/miniconda/bin/python", "/build/slicer_cli_web/server/cli_list_entrypoint.py"]
+ENTRYPOINT ["/build/miniconda/bin/python", "cli_list_entrypoint.py"]
