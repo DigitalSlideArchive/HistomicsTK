@@ -143,10 +143,6 @@ class CliResultsTest(unittest.TestCase):
         Test that we can list clis, get help for each, and get the xml spec for
         each.
         """
-        from girder.plugins.slicer_cli_web import rest_slicer_cli
-        from girder.api.rest import Resource
-
-        restResource = Resource()
         cli_args = (os.environ['CLI_LIST_ENTRYPOINT'], '--list_cli',)
         cli_list = self._runTest(cli_args, contains=['"NucleiDetection"'])
         cli_list = json.loads(cli_list)
@@ -162,12 +158,6 @@ class CliResultsTest(unittest.TestCase):
                 '<executable>', '<title>', '</executable>', '</title>'])
             if '<' in xml:
                 xml = xml[xml.index('<'):]
-            try:
-                rest_slicer_cli.genHandlerToRunDockerCLI(
-                    'dockerimage', os.environ.get('CLI_CWD'), xml, restResource)
-            except Exception:
-                sys.stderr.write('Failed in generating endpoints for %s' % cli)
-                raise
 
     def testNucleiDetectionDefaults(self):
         cli_args = (
