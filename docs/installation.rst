@@ -52,7 +52,7 @@ analysis, the following three Girder plugins need to be installed:
 - large_image_: A Girder plugin to create/serve/display large
   multi-resolution images produced by whole-slide imaging systems and a
   stand-alone Python package to read/write these images.
-- slicer_cli_web_: A Girder plugin for providing web-based RESTFul access
+- item_tasks_: A Girder plugin for providing web-based RESTFul access
   to image analysis pipelines developed as slicer execution model
   CLIs and containerized using Docker.
 
@@ -70,7 +70,7 @@ There are several methods that can be used to install HistomicsTK.  Each of thes
 .. _scikit-image: http://scikit-image.org/
 .. _scikit-learn: http://scikit-learn.org/stable/
 .. _scipy: https://www.scipy.org/
-.. _slicer_cli_web: https://github.com/girder/slicer_cli_web
+.. _item_tasks: http://girder.readthedocs.io/en/latest/plugins.html#item-tasks
 .. _anaconda: https://www.continuum.io/downloads
 
 

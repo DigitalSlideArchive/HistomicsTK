@@ -51,7 +51,7 @@ HistomicsTK can be used in two ways:
   - large_image_: A Girder plugin to create/serve/display large
     multi-resolution images produced by whole-slide imaging systems and a
     stand-alone Python package for reading these images.
-  - slicer_cli_web_: A Girder plugin for providing web-based RESTFul access
+  - item_tasks_: A Girder plugin for providing web-based RESTFul access
     to image analysis pipelines developed as `slicer execution model`_
     CLIs and containerized using Docker.
 
@@ -83,5 +83,5 @@ Indices and tables
 .. _Girder: http://girder.readthedocs.io/en/latest/
 .. _girder_worker: http://girder-worker.readthedocs.io/en/latest/
 .. _large_image: https://github.com/girder/large_image
-.. _slicer_cli_web: https://github.com/girder/slicer_cli_web
+.. _item_tasks: http://girder.readthedocs.io/en/latest/plugins.html#item-tasks
 .. _slicer execution model: https://www.slicer.org/slicerWiki/index.php/Slicer3:Execution_Model_Documentation
