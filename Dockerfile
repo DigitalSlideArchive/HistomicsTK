@@ -23,14 +23,14 @@ RUN pip install --upgrade --ignore-installed pip setuptools && \
     # Try twice; conda sometimes causes pip to fail the first time, but if it
     # fails twice then there is a real issue.
     pip install -r requirements.txt && \
+    # Ensure we have the latest libtif
+    pip install --force-reinstall --ignore-installed --upgrade 'git+https://github.com/pearu/pylibtiff@33735eb7197eb33ed1a50bbc4bc5a47ce4305e92' && \
     # Install large_image
     pip install 'git+https://github.com/girder/large_image#egg=large_image' && \
     # Ensure we have a locally built Pillow and openslide in conda's environment
     pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed \
       openslide-python \
       Pillow && \
-    # Ensure we have the latest libtif
-    pip install --force-reinstall --ignore-installed --upgrade 'git+https://github.com/pearu/pylibtiff@33735eb7197eb33ed1a50bbc4bc5a47ce4305e92' && \
     # Install HistomicsTK
     python setup.py install && \
     # clean up
