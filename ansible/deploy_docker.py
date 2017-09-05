@@ -104,6 +104,9 @@ def containers_provision(**kwargs):
         extra_vars['cli_image'] = tag_with_version('cli', **kwargs)
         if kwargs['cli'] == 'test':
             extra_vars['cli_image_test'] = 'true'
+
+    wait_for_girder(client, ctn)
+
     ansible_command = (
         'ansible-playbook -i inventory/local docker_ansible.yml '
         '--extra-vars=' + six.moves.shlex_quote(json.dumps(extra_vars)))
@@ -145,9 +148,11 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
         provision if the histomictk container is created.
     """
     client = docker_client()
-    env = {}
-    started = False
-
+    env = {
+        'HOST_UID': os.popen('id -u').read().strip(),
+        'HOST_GID': os.popen('id -g').read().strip(),
+        'HOST_DOCKER_GID': os.popen('getent group docker').read().split(':')[2],
+    }
     network_create(client, BaseName)
 
     for key in ImageList:
@@ -156,10 +161,6 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
             if globals()[func](client, env, key, port=port, rmq=rmq,
                                mongo=mongo, provision=provision, **kwargs):
                 provision = True
-                started = True
-    if started:
-        time.sleep(5)
-
     if provision:
         containers_provision(**kwargs)
 
@@ -702,6 +703,41 @@ def tag_with_version(key, version=None, **kwargs):
     if ':' not in image:
         image += ':latest'
     return image
+
+
+def wait_for_girder(client, ctn, maxWait=300):
+    """
+    Wait for Girder in a specific container to respond with its current
+    version.
+
+    :param client: docker client.
+    :param ctn: docker container with Girder.
+    :param maxWait: maximum time to wait for Girder to respond.
+    """
+    starttime = time.time()
+    sys.stdout.write('Waiting for Girder to report version: ')
+    sys.stdout.flush()
+    # This really should be the girder_api_url from the current settings
+    girder_api_url = 'http://histomicstk:8080/api/v1'
+    exec_command = 'bash -c ' + six.moves.shlex_quote(
+        'curl "%s/system/version"' % girder_api_url)
+    while time.time() - starttime < maxWait:
+        cmd = client.exec_create(
+            container=ctn.get('Id'), cmd=exec_command, tty=True)
+        output = client.exec_start(cmd.get('Id'), stream=False)
+        try:
+            output = json.loads(output.strip())
+            if 'apiVersion' in output:
+                break
+        except Exception:
+            pass
+        output = None
+        time.sleep(1)
+        sys.stdout.write('.')
+        sys.stdout.flush()
+    if not output:
+        raise Exception('Girder never responded')
+    sys.stdout.write(' %s\n' % output['apiVersion'])
 
 
 if __name__ == '__main__':

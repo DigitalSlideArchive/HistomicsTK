@@ -183,10 +183,10 @@
     recurse: yes
   become: true
 
-- name: Add a script to set hosts if necessary
-  template:
-    src: set_hosts.py
-    dest: "{{ root_dir }}/set_hosts.py"
+- name: Add a script to set hosts, ids, and other properties if necessary
+  copy:
+    src: ../../common/set_environment.py
+    dest: "{{ root_dir }}/set_environment.py"
     mode: 0744
     owner: root
   become: true

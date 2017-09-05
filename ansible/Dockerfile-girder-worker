@@ -36,7 +36,8 @@ WORKDIR /opt/girder_worker
 #   HOST_MONGO=true
 # is set, mongodb is added to the /etc/hosts as mapping to the docker host ip
 # address
-CMD sudo -E python /opt/girder_worker/set_hosts.py && \
+CMD sudo -E python /opt/girder_worker/set_environment.py ubuntu tmp_root && \
     sudo mkdir -p /tmp/girder_worker && \
     sudo chmod a+rwx /tmp/girder_worker && \
-    python -m girder_worker --concurrency=2 >/opt/logs/worker.log 2>&1
+    sudo -E su ubuntu -c \
+    'python -m girder_worker --concurrency=2 >/opt/logs/worker.log 2>&1'

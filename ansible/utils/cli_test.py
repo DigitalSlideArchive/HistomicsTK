@@ -78,7 +78,7 @@ def get_test_data(client, opts):
             sys.stdout.flush()
             job = client.post('item/%s/tiles' % item['_id'])
             if job is not None:
-                job = wait_for_job(client, job)
+                job, peak_memory = wait_for_job(client, job)
             else:
                 print('done')
     return folder
@@ -100,6 +100,16 @@ def install_cli(client, imageName):
     wait_for_job(client, job)
 
 
+def get_memory_use(client):
+    """
+    Get the memory use as reported by the system.
+
+    :return: the system/check virtualMemory['used'] information.
+    """
+    info = client.get('system/check?mode=quick')
+    return info['virtualMemory']['used']
+
+
 def test_cli(client, folder, opts):
     """
     Run the CLI on an image and make sure we get an annotation out of it.
@@ -118,12 +128,14 @@ def test_cli(client, folder, opts):
         opts['cli'].replace('/', '_').replace(':', '_'), )
     sys.stdout.write('Running %s ' % opts['cli'])
     sys.stdout.flush()
+    memory_use = get_memory_use(client)
+    starttime = time.time()
     job = client.post(path, data={
         'inputImageFile_girderFileId': localFile['_id'],
         'outputNucleiAnnotationFile_girderFolderId': folder['_id'],
         'outputNucleiAnnotationFile_name': 'cli_test.anot',
         'analysis_mag': '20',
-        'analysis_roi': '[15000,15000,1000,1000]',
+        'analysis_roi': '[-1,-1,-1,-1]' if opts.get('noregion') else '[15000,15000,1000,1000]',
         'analysis_tile_size': '4096',
         'foreground_threshold': '60',
         'local_max_search_radius': '10',
@@ -142,11 +154,14 @@ def test_cli(client, folder, opts):
         'stain_3': '"null"',
         'stain_3_vector': '[-1,-1,-1]',
     })
-    job = wait_for_job(client, job)
+    job, peak_memory = wait_for_job(client, job)
     anList = client.get('annotation', parameters={'itemId': testItem['_id']})
     annot = client.get('annotation/%s' % anList[0]['_id'])
     if len(annot['annotation']['elements']) < 100:
         raise Exception('Got less than 100 annotation elements')
+    runtime = time.time() - starttime
+    sys.stdout.write('Total time: %5.3f, Max memory delta: %d bytes\n' % (
+        runtime, peak_memory - memory_use))
 
 
 def test_tiles(client, folder, opts):
@@ -177,17 +192,22 @@ def wait_for_job(client, job):
     :param job: a girder job.
     :return: the updated girder job.
     """
+    peak_memory_use = get_memory_use(client)
+    lastdot = 0
     jobId = job['_id']
     while job['status'] not in (3, 4, 5):
-        sys.stdout.write('.')
-        sys.stdout.flush()
-        time.sleep(3)
+        if time.time() - lastdot >= 3:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+            lastdot = time.time()
+        time.sleep(0.25)
+        peak_memory_use = max(peak_memory_use, get_memory_use(client))
         job = client.get('job/%s' % jobId)
     if job['status'] == 3:
         print(' ready')
     else:
         print(' failed')
-    return job
+    return job, peak_memory_use
 
 
 if __name__ == '__main__':
@@ -208,6 +228,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--no-cli', '--nocli', action='store_true', dest='nocli',
         help='Don\'t pull and upload the cli; assume it is already present.')
+    parser.add_argument(
+        '--no-region', '--noregion', '--whole', action='store_true',
+        dest='noregion',
+        help='Run the cli against the whole image (this is slow).')
     parser.add_argument(
         '--test', action='store_true', default=False,
         help='Download test data and check that basic functions work.')
