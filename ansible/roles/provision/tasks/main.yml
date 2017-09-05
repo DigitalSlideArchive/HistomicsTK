@@ -1,4 +1,16 @@
 ---
+- name: Wait for girder to report version
+  girder:
+    port: "{{ girder_socket_port }}"
+    scheme: "{{ girder_socket_scheme }}"
+    get:
+      path: "system/version"
+    token: None
+  register: ret
+  until: "ret and ret.get('gc_return') and ret.get('gc_return', {}).get('apiVersion')"
+  delay: 1
+  retries: 300
+
 - name: Create directory for logs
   file: state=directory path="{{ root_dir }}/logs"
 
