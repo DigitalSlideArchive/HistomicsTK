@@ -145,6 +145,7 @@ $(function () {
                     $('#g-dialog-container #h-element-label').val('test');
                     $('#g-dialog-container .h-submit').click();
                 });
+
                 girderTest.waitForLoad();
                 runs(function () {
                     expect($('.h-elements-container .h-element .h-element-label').text()).toBe('test');
@@ -286,17 +287,18 @@ $(function () {
                 runs(function () {
                     var rect = {
                         'name': 'rectangle',
+                        'description': 'the description',
                         'elements': [
                             {
                                 'center': [
-                                    200,
-                                    200,
+                                    2000,
+                                    2000,
                                     0
                                 ],
-                                'height': 100,
+                                'height': 4000,
                                 'rotation': 0,
                                 'type': 'rectangle',
-                                'width': 100
+                                'width': 4000
                             }
                         ]
                     };
@@ -328,6 +330,47 @@ $(function () {
                 runs(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("rectangle")');
                     expect($el.find('.icon-eye.h-toggle-annotation').length).toBe(1);
+                });
+            });
+
+            it('hover over annotation with labels off', function () {
+                girderTest.waitForLoad();
+                runs(function () {
+                    var interactor = geojsMap.interactor();
+                    interactor.simulateEvent('mousemove', {
+                        map: {x: 50, y: 50}
+                    });
+                    expect($('#h-annotation-popover-container').hasClass('hidden')).toBe(true);
+                });
+            });
+
+            it('hover over annotation with labels on', function () {
+                var done = false;
+                runs(function () {
+                    $('#h-toggle-labels').click();
+
+                    // Ensure the next mouse move event happens asynchronously.
+                    // Without doing this, the hover event occasionally fails to
+                    // fire.
+                    window.setTimeout(function () {
+                        done = true;
+                    }, 0);
+                });
+
+                waitsFor(function () {
+                    return done;
+                }, 'next event loop');
+
+                runs(function () {
+                    var interactor = geojsMap.interactor();
+                    interactor.simulateEvent('mousemove', {
+                        map: {x: 45, y: 45}
+                    });
+
+                    var $el = $('#h-annotation-popover-container');
+                    expect($el.hasClass('hidden')).toBe(false);
+                    expect($el.find('.h-annotation-name').text()).toBe('rectangle');
+                    expect($el.find('.h-annotation-description').text()).toMatch(/the description/);
                 });
             });
 
