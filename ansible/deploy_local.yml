@@ -25,7 +25,7 @@
     girder_socket_scheme: http
     girder_exec_user: "{{ lookup('env', 'GIRDER_EXEC_USER') }}"
     girder_exec_group: girder
-    girder_plugins:
+    enabled_girder_plugins:
       - digital_slide_archive
       - HistomicsTK
       - homepage

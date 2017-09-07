@@ -26,7 +26,7 @@
     girder_socket_scheme: http
     girder_exec_user: vagrant
     girder_exec_group: vagrant
-    girder_plugins:
+    enabled_girder_plugins:
       - digital_slide_archive
       - HistomicsTK
       - homepage
