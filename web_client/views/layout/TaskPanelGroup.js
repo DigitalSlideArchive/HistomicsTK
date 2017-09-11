@@ -17,10 +17,6 @@ const TaskPanelGroup = View.extend({
     },
 
     render() {
-        if (this.taskRunView) {
-            this.taskRunView.remove();
-        }
-
         this.$el.empty();
         if (this.model.isNew() || !this.model.has('meta')) {
             return;
