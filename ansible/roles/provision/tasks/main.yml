@@ -85,7 +85,7 @@
     scheme: "{{ girder_socket_scheme }}"
     username: "{{ girder_admin_user }}"
     password: "{{ girder_admin_password }}"
-    plugins: "{{ girder_plugins }}"
+    plugins: "{{ enabled_girder_plugins }}"
     state: present
 
 - name: Restart girder as a service to make sure our plugins are running
