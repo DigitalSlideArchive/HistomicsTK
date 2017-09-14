@@ -1,9 +1,7 @@
 /* global geo */
 // import _ from 'underscore';
 
-import { restRequest } from 'girder/rest';
 import ItemModel from 'girder/models/ItemModel';
-import FileModel from 'girder/models/FileModel';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import AnnotationCollection from 'girder_plugins/large_image/collections/AnnotationCollection';
@@ -185,60 +183,10 @@ var ImageView = View.extend({
             return;
         }
 
-        // helper functions passed through promises
-        var getItemFile = (itemId) => {
-            return restRequest({
-                url: 'item/' + itemId + '/files',
-                data: {
-                    limit: 1,
-                    offset: 0
-                }
-            }).then((files) => {
-                if (!files.length) {
-                    throw new Error('Item does not contain a file.');
-                }
-                return new FileModel(files[0]);
-            });
-        };
-
-        var getTilesDef = (itemId) => {
-            return restRequest({
-                url: 'item/' + itemId + '/tiles'
-            }).then((tiles) => {
-                this.zoomWidget.setMaxMagnification(tiles.magnification || 20);
-                return null;
-            });
-        };
-
-        var getFileModel = (fileId) => {
-            return restRequest({
-                url: 'file/' + fileId
-            }).then((file) => {
-                return new FileModel(file);
-            });
-        };
-        var largeImage = this.model.get('largeImage');
-        var promise;
-
-        if (largeImage) {
-            // Prefer the fileId, expecting that jobs can handle tiled input
-            promise = $.when(
-                getTilesDef(this.model.id),
-                getFileModel(largeImage.fileId || largeImage.originalId)
-            ).then((a, b) => b); // resolve with the file model
-        } else {
-            promise = getItemFile(this.model.id);
-        }
-
-        return promise.then((file) => {
-            /*
-            _.each(this.controlPanel.models(), (model) => {
-                if (model.get('type') === 'image') {
-                    model.set('value', file, {trigger: true});
-                }
-            });
-            */
-            return file;
+        this.taskPanelGroup.taskRunView.inputWidgets.each((model) => {
+            if (model.get('type') === 'image') {
+                model.set('value', this.model, {trigger: true});
+            }
         });
     },
 
