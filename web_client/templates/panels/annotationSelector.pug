@@ -14,7 +14,7 @@ block content
       else
         span.icon-eye-off.h-toggle-annotation(
           data-toggle='tooltip', title='Show annotation')
-      span.h-annotation-name #{name}
+      span.h-annotation-name(title=name) #{name}
 
       span.h-annotation-right
         a(href=annotation.downloadUrl().replace(/\/download$/, ''),
