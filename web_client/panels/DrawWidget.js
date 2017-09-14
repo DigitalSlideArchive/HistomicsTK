@@ -49,6 +49,15 @@ var DrawWidget = Panel.extend({
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
+        if (this.viewer.annotationLayer && !this.viewer.annotationLayer._boundHistomicsTKModeChange) {
+            this.viewer.annotationLayer._boundHistomicsTKModeChange = true;
+            this.viewer.annotationLayer.geoOn(window.geo.event.annotation.mode, (event) => {
+                this.$('button.h-draw').removeClass('active');
+                if (event.mode) {
+                    this.$('button.h-draw[data-type="' + event.mode + '"]').addClass('active');
+                }
+            });
+        }
         return this;
     },
 
@@ -93,6 +102,12 @@ var DrawWidget = Panel.extend({
     drawElement(evt) {
         var $el = this.$(evt.currentTarget);
         var type = $el.data('type');
+        if ($el.hasClass('active')) {
+            this.viewer.annotationLayer.mode(null);
+            this.viewer.annotationLayer.geoOff(window.geo.event.annotation.state);
+            this.viewer.annotationLayer.removeAllAnnotations();
+            return;
+        }
         return this.viewer.startDrawMode(type)
             .then((element) => this.collection.add(element));
     },
@@ -125,11 +140,9 @@ var DrawWidget = Panel.extend({
      * annotation to the server and resetting the panel.
      */
     _onSaveAnnotation() {
-        console.log('_onSave'); // DWM::
         var data = this.annotation.toJSON();
         data.elements = data.annotation.elements;
         delete data.annotation;
-        console.log(['_onSave - ', data, this.image]); // DWM::
         restRequest({
             url: 'annotation?itemId=' + this.image.id,
             contentType: 'application/json',
