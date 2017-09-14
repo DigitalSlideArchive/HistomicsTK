@@ -58,7 +58,7 @@ var ImageView = View.extend({
         this.listenTo(this.annotationSelector.collection, 'add change:displayed', this.toggleAnnotation);
         this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
 
-        this.listenTo(events, 'g:widgetChanged:region', this.widgetRegion);
+        this.listenTo(events, 'g:itemTaskWidgetChanged:region', this.widgetRegion);
         this.render();
     },
     render() {
