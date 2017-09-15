@@ -4,24 +4,28 @@ block title
   | #[span.icon-pencil] #{title}
 
 block content
-  .btn-group.btn-justified.btn-group-sm
+  .btn-group.btn-justified.btn-group-sm.h-draw-tools
     .btn-group.btn-group-sm
       button.h-draw.btn.btn-default(
         type='button', data-type='point', data-toggle='tooltip', title='Draw a new point')
-        | #[span.icon-circle-empty] Point
+        | #[span.icon-circle-empty]Point
     .btn-group.btn-group-sm
       button.h-draw.btn.btn-default(
         type='button', data-type='rectangle', data-toggle='tooltip', title='Draw a new rectangle')
-        | #[span.icon-check-empty] Rectangle
+        | #[span.icon-check-empty]Rectangle
     .btn-group.btn-group-sm
       button.h-draw.btn.btn-default(
         type='button', data-type='polygon', data-toggle='tooltip', title='Draw a new polygon')
-        | #[span.icon-star-empty] Polygon
+        | #[span.icon-star-empty]Polygon
+    .btn-group.btn-group-sm
+      button.h-draw.btn.btn-default(
+        type='button', data-type='line', data-toggle='tooltip', title='Draw a new line')
+        | #[span.icon-pencil]Line
 
   if elements.length
     .h-elements-container
       each element in elements
-        - var label = (element.label || {}).value || element.type;
+        - var label = (element.label || {}).value || (element.type === 'polyline' ? (element.closed ? 'polygon' : 'line') : element.type);
         .h-element(data-id=element.id)
           span.icon-cog.h-edit-element(data-toggle='tooltip', title='Change style')
           span.h-element-label #{label}
