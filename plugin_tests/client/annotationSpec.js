@@ -131,7 +131,13 @@ $(function () {
                 }, 'point to be created');
                 runs(function () {
                     expect($('.h-elements-container .h-element .h-element-label').text()).toBe('point');
+                    expect($('.h-draw[data-type="point"]').hasClass('active')).toBe(true);
+                    // turn off point drawing.
+                    $('.h-draw[data-type="point"]').click();
                 });
+                waitsFor(function () {
+                    return !$('.h-draw[data-type="point"]').hasClass('active');
+                }, 'point drawing to be off');
             });
 
             it('edit a point element', function () {
