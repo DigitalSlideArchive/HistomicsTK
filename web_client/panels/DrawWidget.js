@@ -1,6 +1,7 @@
 import _ from 'underscore';
 
 import { restRequest } from 'girder/rest';
+import events from 'girder/events';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 
@@ -55,10 +56,10 @@ var DrawWidget = Panel.extend({
             this.viewer.annotationLayer._boundHistomicsTKModeChange = true;
             this.viewer.annotationLayer.geoOn(window.geo.event.annotation.mode, (event) => {
                 this.$('button.h-draw').removeClass('active');
-                if (event.mode) {
-                    this.$('button.h-draw[data-type="' + event.mode + '"]').addClass('active');
+                if (this._drawingType) {
+                    this.$('button.h-draw[data-type="' + this._drawingType + '"]').addClass('active');
                 }
-                if (event.mode !== this._drawingType) {
+                if (event.mode !== this._drawingType && this._drawingType) {
                     /* This makes the draw modes stay on until toggled off.
                      * To turn off drawing after each annotation, add
                      *  this._drawingType = null;
@@ -71,12 +72,30 @@ var DrawWidget = Panel.extend({
     },
 
     /**
+     * When a region should be drawn that isn't caused by a drawing button,
+     * toggle off the drawing mode.
+     *
+     * @param {event} Girder event that triggered drawing a region.
+     */
+    _widgetDrawRegion(evt) {
+        this._drawingType = null;
+        this.$('button.h-draw').removeClass('active');
+    },
+
+    /**
      * Set the image "viewer" instance.  This should be a subclass
      * of `large_image/imageViewerWidget` that is capable of rendering
      * annotations.
      */
     setViewer(viewer) {
         this.viewer = viewer;
+        // make sure our listeners are in the correct order.
+        this.stopListening(events, 's:widgetDrawRegion', this._widgetDrawRegion);
+        if (viewer) {
+            this.listenTo(events, 's:widgetDrawRegion', this._widgetDrawRegion);
+            viewer.stopListening(events, 's:widgetDrawRegion', viewer.drawRegion);
+            viewer.listenTo(events, 's:widgetDrawRegion', viewer.drawRegion);
+        }
         return this;
     },
 
