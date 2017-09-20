@@ -117,6 +117,7 @@ var DrawWidget = Panel.extend({
         var $el;
         if (evt) {
             $el = this.$(evt.currentTarget);
+            $el.tooltip('hide');
             type = $el.hasClass('active') ? null : $el.data('type');
         } else {
             $el = this.$('button.h-draw[data-type="' + type + '"]');
