@@ -21,7 +21,7 @@
       girder_version: "master"
       girder_web: no
       girder_daemonize: no
-      become: yes
+      become: true
       become_user: "{{ girder_exec_user }}"
       tags: girder
       when:
