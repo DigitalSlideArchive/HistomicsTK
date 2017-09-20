@@ -35,6 +35,7 @@ var DrawWidget = Panel.extend({
         this.listenTo(this.annotation, 'g:save', this._onSaveAnnotation);
         this.collection = this.annotation.elements();
         this.listenTo(this.collection, 'add remove change reset', this._onCollectionChange);
+        this._drawingType = null;
     },
 
     render() {
@@ -45,7 +46,8 @@ var DrawWidget = Panel.extend({
         }
         this.$el.html(drawWidget({
             title: 'Draw',
-            elements: this.collection.toJSON()
+            elements: this.collection.toJSON(),
+            drawingType: this._drawingType
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
@@ -55,6 +57,13 @@ var DrawWidget = Panel.extend({
                 this.$('button.h-draw').removeClass('active');
                 if (event.mode) {
                     this.$('button.h-draw[data-type="' + event.mode + '"]').addClass('active');
+                }
+                if (event.mode !== this._drawingType) {
+                    /* This makes the draw modes stay on until toggled off.
+                     * To turn off drawing after each annotation, add
+                     *  this._drawingType = null;
+                     */
+                    this.drawElement(undefined, this._drawingType);
                 }
             });
         }
@@ -98,18 +107,34 @@ var DrawWidget = Panel.extend({
     /**
      * Respond to clicking an element type by putting the image
      * viewer into "draw" mode.
+     *
+     * @param {jQuery.Event} [evt] The button click that triggered this event.
+     *      `undefined` to use a passed-in type.
+     * @param {string|null} [type] If `evt` is `undefined`, switch to this draw
+     *      mode.
      */
-    drawElement(evt) {
-        var $el = this.$(evt.currentTarget);
-        var type = $el.data('type');
-        if ($el.hasClass('active')) {
+    drawElement(evt, type) {
+        var $el;
+        if (evt) {
+            $el = this.$(evt.currentTarget);
+            type = $el.hasClass('active') ? null : $el.data('type');
+        } else {
+            $el = this.$('button.h-draw[data-type="' + type + '"]');
+        }
+        if (this.viewer.annotationLayer.mode() === type && this._drawingType === type) {
+            return;
+        }
+        if (this.viewer.annotationLayer.mode()) {
+            this._drawingType = null;
             this.viewer.annotationLayer.mode(null);
             this.viewer.annotationLayer.geoOff(window.geo.event.annotation.state);
             this.viewer.annotationLayer.removeAllAnnotations();
-            return;
         }
-        return this.viewer.startDrawMode(type)
-            .then((element) => this.collection.add(element));
+        if (type) {
+            this._drawingType = type;
+            this.viewer.startDrawMode(type)
+                .then((element) => this.collection.add(element));
+        }
     },
 
     /**

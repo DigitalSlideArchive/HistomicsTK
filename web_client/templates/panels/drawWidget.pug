@@ -7,19 +7,19 @@ block content
   .btn-group.btn-justified.btn-group-sm.h-draw-tools
     .btn-group.btn-group-sm
       button.h-draw.btn.btn-default(
-        type='button', data-type='point', data-toggle='tooltip', title='Draw a new point')
+        type='button', data-type='point', data-toggle='tooltip', title='Draw a new point', class=drawingType === 'point' ? 'active' : null)
         | #[span.icon-circle-empty]Point
     .btn-group.btn-group-sm
       button.h-draw.btn.btn-default(
-        type='button', data-type='rectangle', data-toggle='tooltip', title='Draw a new rectangle')
+        type='button', data-type='rectangle', data-toggle='tooltip', title='Draw a new rectangle', class=drawingType === 'rectangle' ? 'active' : null)
         | #[span.icon-check-empty]Rectangle
     .btn-group.btn-group-sm
       button.h-draw.btn.btn-default(
-        type='button', data-type='polygon', data-toggle='tooltip', title='Draw a new polygon')
+        type='button', data-type='polygon', data-toggle='tooltip', title='Draw a new polygon', class=drawingType === 'polygon' ? 'active' : null)
         | #[span.icon-star-empty]Polygon
     .btn-group.btn-group-sm
       button.h-draw.btn.btn-default(
-        type='button', data-type='line', data-toggle='tooltip', title='Draw a new line')
+        type='button', data-type='line', data-toggle='tooltip', title='Draw a new line', class=drawingType === 'line' ? 'active' : null)
         | #[span.icon-pencil]Line
 
   if elements.length
