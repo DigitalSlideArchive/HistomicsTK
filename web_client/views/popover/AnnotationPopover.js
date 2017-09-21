@@ -112,7 +112,7 @@ var AnnotationPopover = View.extend({
         var id = model.get('annotation').get('creatorId');
         if (!_.has(this._users, id)) {
             restRequest({
-                path: 'user/' + id
+                url: 'user/' + id
             }).done((user) => {
                 this._users[id] = user;
                 this.render();
