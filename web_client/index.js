@@ -1,15 +1,20 @@
 import App from './app.js';
-import * as views from './views';
-import * as dialogs from './dialogs';
-import * as panels from './panels';
 import router from './router';
 import events from './events';
 
+import * as collections from './collections';
+import * as dialogs from './dialogs';
+import * as models from './models';
+import * as panels from './panels';
+import * as views from './views';
+
 export {
     App,
-    views,
-    dialogs,
     router,
     events,
-    panels
+    collections,
+    dialogs,
+    models,
+    panels,
+    views
 };
