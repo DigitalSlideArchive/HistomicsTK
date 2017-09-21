@@ -123,7 +123,7 @@ def test_cli(client, folder, opts):
         if item['name'].startswith('TCGA-02'):
             testItem = item
             break
-    localFile = client.listFile(testItem['_id']).next()
+    localFile = next(client.listFile(testItem['_id']))
     path = 'HistomicsTK/%s/NucleiDetection/run' % (
         opts['cli'].replace('/', '_').replace(':', '_'), )
     sys.stdout.write('Running %s ' % opts['cli'])
