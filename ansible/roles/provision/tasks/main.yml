@@ -132,7 +132,7 @@
         key: worker.backend
         value: "amqp://guest@{{ mq_private_ip }}//"
 
-- name: Set worker backend setting
+- name: Set worker api url setting
   girder:
     port: "{{ girder_socket_port }}"
     scheme: "{{ girder_socket_scheme }}"
