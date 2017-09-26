@@ -1,3 +1,8 @@
+from skimage.measure import regionprops
+from skimage.segmentation import slic
+from sklearn.model_selection import train_test_split
+from keras.models import Model, load_model
+
 import os
 import sys
 import json
@@ -20,13 +25,6 @@ logging.basicConfig(level=logging.CRITICAL)
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils  # noqa
-
-from skimage.measure import regionprops
-from skimage.segmentation import slic
-
-from sklearn.model_selection import train_test_split
-
-from keras.models import Model, load_model
 
 
 def compute_input_tensors(slide_path, tile_position, args, **it_kwargs):
@@ -110,7 +108,8 @@ def get_encoded_features(input_tensors, input_model, args):
     autoencoder.fit(x_train, x_train, epochs=args.epochs, batch_size=args.batchSize, shuffle=True,
                     validation_data=(x_test, x_test))
 
-    # extract encoded features - the size of encoded features is equal to the size of x_test at this time
+    # extract encoded features
+    # the size of encoded features is equal to the size of x_test at this time
     # but, later this should be changed to the size of total features (input_tensors)
     features = encoder.predict(x_test)
 
@@ -299,8 +298,8 @@ def main(args):
                          for centers in cdata]
 
     patch_pixel_array = np.asarray([features
-                         for cdata, fdata in tile_result_list
-                         for features in fdata])
+                                    for cdata, fdata in tile_result_list
+                                    for features in fdata])
 
     patch_detection_time = time.time() - start_time
 
