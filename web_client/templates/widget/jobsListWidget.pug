@@ -1,0 +1,12 @@
+table.g-jobs-list-table
+  tbody
+    each job in jobs
+      - var title = job.get('title');
+      - var created = new Date(job.get('created'));
+      - var status = job.get('status');
+      tr(data-job-id=job.id)
+        td.g-status-icon-container(status=status, style='color:' + JobStatus.color(status))
+          i(class=JobStatus.icon(status))
+        td
+          a(href=`/#job/${job.id}`, target='_blank', data-toggle='tooltip', title=created.toLocaleString())
+            = title

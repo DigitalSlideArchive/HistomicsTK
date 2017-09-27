@@ -5,6 +5,7 @@ import TaskRunView from 'girder_plugins/item_tasks/views/TaskRunView';
 
 import events from '../../events';
 import router from '../../router';
+import JobsPanel from '../../panels/JobsPanel';
 
 import taskInfoPanel from '../../templates/panels/taskInfoPanel.pug';
 import '../../stylesheets/layout/taskPanelGroup.styl';
@@ -41,6 +42,11 @@ const TaskPanelGroup = View.extend({
         }).render();
 
         this.$('.g-panel-group').prepend(taskInfoPanel());
+        this.jobsPanel = new JobsPanel({
+            parentView: this,
+            el: this.$('.h-jobs-panel')
+        }).render();
+
         const title = this.$('.g-body-title').remove();
         const description = this.$('.g-task-description-container').remove();
         const execute = this.$('.g-run-container').remove();
