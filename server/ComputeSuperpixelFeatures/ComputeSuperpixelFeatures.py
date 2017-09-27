@@ -110,8 +110,8 @@ def get_encoded_features(input_tensors, input_model, args):
     encoder = Model(inputs=autoencoder.layers[0].input, outputs=autoencoder.layers[6].output)
 
     # fit to autoencoder with the number of epochs and the batch size
-    autoencoder.fit(input_tensors, input_tensors, epochs=args.epochs, batch_size=args.batchSize, shuffle=True,
-                    validation_data=(input_tensors, input_tensors))
+    autoencoder.fit(input_tensors, input_tensors, epochs=args.epochs, batch_size=args.batchSize,
+                    shuffle=True, validation_data=(input_tensors, input_tensors))
 
     # extract encoded features
     features = encoder.predict(input_tensors)
