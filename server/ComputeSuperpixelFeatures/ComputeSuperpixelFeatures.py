@@ -32,6 +32,9 @@ def compute_input_tensors(slide_path, tile_position, args, **it_kwargs):
     # get slide tile source
     ts = large_image.getTileSource(slide_path)
 
+    # get current magnification
+    magnification = ts.getMetadata()['magnification']
+
     # get requested tile
     tile_info = ts.getSingleTile(
         tile_position=tile_position,
@@ -40,6 +43,10 @@ def compute_input_tensors(slide_path, tile_position, args, **it_kwargs):
 
     # get tile image
     im_tile = tile_info['tile'][:, :, :3]
+
+    # get current left and top positions
+    tile_left_position = tile_info['gx']
+    tile_top_position = tile_info['gy']
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
@@ -76,15 +83,17 @@ def compute_input_tensors(slide_path, tile_position, args, **it_kwargs):
     cdata = np.zeros((n_labels, 2))
 
     for i in range(n_labels):
-        cenX, cenY = region_props[i].centroid
+        cen_x, cen_y = region_props[i].centroid
 
         # get bounds of region
         min_row, max_row, min_col, max_col = \
-            get_patch_bounds(cenX, cenY, args.patchSize, im_width, im_height)
+            get_patch_bounds(cen_x, cen_y, args.patchSize, im_width, im_height)
 
-        # get image centers - these should be coordinated later
-        cdata[i, 0] = cenX
-        cdata[i, 1] = cenY
+        # get image centers at low-res
+        cdata[i, 0] = cen_x * (magnification / args.analysis_mag) + \
+            tile_left_position
+        cdata[i, 1] = cen_y * (magnification / args.analysis_mag) + \
+            tile_top_position
 
         # get image patches
         fdata[i, :, :, 0] = im_hematoxylin_stain[min_row:max_row, min_col:max_col]
@@ -211,7 +220,6 @@ def main(args):
         im_fgnd_mask_lres, fgnd_seg_scale = \
             cli_utils.segment_wsi_foreground_at_low_res(ts)
 
-        print im_fgnd_mask_lres.shape, fgnd_seg_scale
     #
     # Compute foreground fraction of tiles in parallel using Dask
     #
@@ -293,9 +301,12 @@ def main(args):
     print 'Number of tiles = %d' % n_tiles
     print('\n>> tile_result_list to centers and features ...\n')
 
-    patch_center_list = [centers
-                         for cdata, fdata in tile_result_list
-                         for centers in cdata]
+    patch_centers = np.asarray([centers
+                                for cdata, fdata in tile_result_list
+                                for centers in cdata])
+
+    patch_center_x_list = patch_centers[:, 0]
+    patch_center_y_list = patch_centers[:, 1]
 
     patch_pixel_array = np.asarray([features
                                     for cdata, fdata in tile_result_list
@@ -303,13 +314,13 @@ def main(args):
 
     patch_detection_time = time.time() - start_time
 
-    print 'Number of superpixel = ', len(patch_center_list)
+    print 'Number of superpixel = ', len(patch_centers)
     print "Patch detection time taken = %s" % cli_utils.disp_time_hms(patch_detection_time)
 
     #
-    # Fit to autoencoder to extract the encoded features
+    # Fit to autoencoder model to extract the encoded features
     #
-    print('\n>> Training Autoencoder to extract encoded reatures ...\n')
+    print('\n>> Training Autoencoder to extract encoded features ...\n')
 
     start_time = time.time()
 
@@ -327,7 +338,9 @@ def main(args):
     if feature_file_format == '.h5':
 
         output = h5py.File(args.outputSuperpixelFeatureFile, 'w')
-        output.create_dataset('Features', data=encoded_features)
+        output.create_dataset('features', data=encoded_features)
+        output.create_dataset('x_centroid', data=patch_center_x_list)
+        output.create_dataset('y_centroid', data=patch_center_y_list)
         output.close()
 
     else:
