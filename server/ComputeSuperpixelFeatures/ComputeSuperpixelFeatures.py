@@ -1,6 +1,5 @@
 from skimage.measure import regionprops
 from skimage.segmentation import slic
-from sklearn.model_selection import train_test_split
 from keras.models import Model, load_model
 
 import os
@@ -104,9 +103,6 @@ def compute_input_tensors(slide_path, tile_position, args, **it_kwargs):
 
 def get_encoded_features(input_tensors, input_model, args):
 
-    # split into 67% for train and 33% for test
-    x_train, x_test = train_test_split(input_tensors, test_size=0.33)
-
     # load input model
     autoencoder = load_model(input_model)
 
@@ -114,13 +110,11 @@ def get_encoded_features(input_tensors, input_model, args):
     encoder = Model(inputs=autoencoder.layers[0].input, outputs=autoencoder.layers[6].output)
 
     # fit to autoencoder with the number of epochs and the batch size
-    autoencoder.fit(x_train, x_train, epochs=args.epochs, batch_size=args.batchSize, shuffle=True,
-                    validation_data=(x_test, x_test))
+    autoencoder.fit(input_tensors, input_tensors, epochs=args.epochs, batch_size=args.batchSize, shuffle=True,
+                    validation_data=(input_tensors, input_tensors))
 
     # extract encoded features
-    # the size of encoded features is equal to the size of x_test at this time
-    # but, later this should be changed to the size of total features (input_tensors)
-    features = encoder.predict(x_test)
+    features = encoder.predict(input_tensors)
 
     return features
 
@@ -287,7 +281,7 @@ def main(args):
 
         n_tiles = n_tiles + 1
 
-        # detect nuclei
+        # detect image patches
         cur_result = dask.delayed(compute_input_tensors)(
             args.inputImageFile,
             tile_position,
@@ -298,37 +292,69 @@ def main(args):
 
     tile_result_list = dask.delayed(tile_result_list).compute()
 
-    print 'Number of tiles = %d' % n_tiles
+    print 'Number of tiles processed = %d' % n_tiles
     print('\n>> tile_result_list to centers and features ...\n')
 
-    patch_centers = np.asarray([centers
+    slide_centers = np.asarray([centers
                                 for cdata, fdata in tile_result_list
                                 for centers in cdata])
 
-    patch_center_x_list = patch_centers[:, 0]
-    patch_center_y_list = patch_centers[:, 1]
-
-    patch_pixel_array = np.asarray([features
+    slide_pixel_array = np.asarray([features
                                     for cdata, fdata in tile_result_list
                                     for features in fdata])
 
     patch_detection_time = time.time() - start_time
 
-    print 'Number of superpixel = ', len(patch_centers)
+    print 'Number of image patches = ', len(slide_centers)
     print "Patch detection time taken = %s" % cli_utils.disp_time_hms(patch_detection_time)
 
     #
     # Fit to autoencoder model to extract the encoded features
     #
-    print('\n>> Training Autoencoder to extract encoded features ...\n')
+    print('\n>> Training model to extract low dimensional features ...\n')
 
     start_time = time.time()
 
-    encoded_features = get_encoded_features(patch_pixel_array, args.inputModelFile, args)
+    encoded_features = get_encoded_features(slide_pixel_array, args.inputModelFile, args)
 
     encoding_time = time.time() - start_time
 
     print 'Encoding time = %s' % cli_utils.disp_time_hms(encoding_time)
+
+    #
+    # Get slide index, slide patch index, slide name, mean, standard deviation, and x, y centers
+    #
+    slide_patch_num = len(slide_centers)
+    slide_num = 1
+
+    # get slide names
+    slide_names = []
+    base = os.path.basename(args.inputImageFile)
+    slide_name = os.path.splitext(base)[0]
+    slide_names = np.append(slide_names, slide_name)
+
+    # get slide index for each image patch
+    slide_index = np.zeros((slide_patch_num, 1), dtype=np.int)
+    for i in range(slide_patch_num):
+        slide_index[i, 0] = i
+
+    # get index of the first patch for each slide
+    slide_patch_index = np.zeros((slide_num, 1), dtype=np.int)
+    for i in range(slide_num):
+        slide_patch_index[i, 0] = 0
+
+    # get mean and standard deviation for each feature
+    slide_feature_num = encoded_features.shape[1]
+    slide_feature_mean = np.zeros((slide_feature_num, 1), dtype=np.float32)
+    slide_feature_stddev = np.zeros((slide_feature_num, 1), dtype=np.float32)
+    slide_feature_mean[:, 0] = np.mean(encoded_features, axis=0)
+    slide_feature_stddev[:, 0] = np.std(encoded_features, axis=0)
+
+    # get x, y centers for each image patch
+    slide_center_x_list = np.zeros((slide_patch_num, 1), dtype=np.float32)
+    slide_center_y_list = np.zeros((slide_patch_num, 1), dtype=np.float32)
+    slide_center_x_list[:, 0] = slide_centers[:, 0]
+    slide_center_y_list[:, 0] = slide_centers[:, 1]
 
     #
     # Create Feature file
@@ -338,9 +364,14 @@ def main(args):
     if feature_file_format == '.h5':
 
         output = h5py.File(args.outputSuperpixelFeatureFile, 'w')
+        output.create_dataset('slides', data=slide_names)
+        output.create_dataset('slideIdx', data=slide_index)
+        output.create_dataset('dataIdx', data=slide_patch_index)
+        output.create_dataset('mean', data=slide_feature_mean)
+        output.create_dataset('std_dev', data=slide_feature_stddev)
         output.create_dataset('features', data=encoded_features)
-        output.create_dataset('x_centroid', data=patch_center_x_list)
-        output.create_dataset('y_centroid', data=patch_center_y_list)
+        output.create_dataset('x_centroid', data=slide_center_x_list)
+        output.create_dataset('y_centroid', data=slide_center_y_list)
         output.close()
 
     else:
