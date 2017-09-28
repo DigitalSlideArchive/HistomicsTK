@@ -356,12 +356,16 @@ var ImageView = View.extend({
 
     mouseOverAnnotation(element, annotationId) {
         element.annotation = this.annotations.get(annotationId);
-        this.popover.collection.add(element);
+        if (element.annotation) {
+            this.popover.collection.add(element);
+        }
     },
 
     mouseOutAnnotation(element, annotationId) {
         element.annotation = this.annotations.get(annotationId);
-        this.popover.collection.remove(element);
+        if (element.annotation) {
+            this.popover.collection.remove(element);
+        }
     },
 
     mouseResetAnnotation() {

@@ -132,6 +132,8 @@ install:
     - pip uninstall --yes Sphinx  # Interferes with sphinx from conda
     - conda install --yes jupyter sphinx sphinx_rtd_theme
     - pip install nbsphinx travis-sphinx
+    - pip install numpy==1.13.1  # pin numpy for now
+    - pip freeze  # report what we have installed
 
 script:
     - mkdir -p $build_path/girder_testing_build
