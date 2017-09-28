@@ -58,6 +58,8 @@ const EditStyleGroups = View.extend({
             data.label = {
                 value: label
             };
+        } else {
+            data.label = {};
         }
 
         const lineWidth = this.$('#h-element-line-width').val();
