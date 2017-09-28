@@ -20,11 +20,6 @@ const EditStyleGroups = View.extend({
         'change select': '_setStyle'
     },
 
-    initialize() {
-        this.listenTo(this.model, 'change', this.render);
-        this.listenTo(this.collection, 'update', this.render);
-    },
-
     render() {
         this.$('.h-colorpicker').colorpicker('destroy');
         this.$el.html(
