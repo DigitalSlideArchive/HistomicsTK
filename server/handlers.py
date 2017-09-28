@@ -6,6 +6,54 @@ from girder.utility.model_importer import ModelImporter
 from girder import logger
 
 
+def _getImageIdFromReference(identifier, reference):
+    if not reference.get('taskId') or not reference.get('jobId'):
+        logger.error('Event info did not contain the task or job id.')
+        return
+
+    # load the task definition from the task item
+    taskId = reference['taskId']
+    jobId = reference['jobId']
+    task = ModelImporter.model('item').load(taskId, force=True)
+    spec = task.get('meta', {}).get('itemTaskSpec')
+    if not spec:
+        logger.error('Could not get the task definition from the job.')
+        return
+
+    inputs = spec.get('inputs', [])
+    outputs = spec.get('outputs', [])
+
+    # get the definition of the current output parameter
+    for output in outputs:
+        if output.get('id') == identifier:
+            break
+    else:
+        logger.error('Could not find an output associated with %s' % identifier)
+        return
+
+    # get the reference id associated with the output
+    reference = output.get('extra', {}).get('reference')
+    if not reference:
+        # if no reference is provided, we fall back to an image input
+        logger.warning('Annotation output did not provide a reference image')
+
+    # find the definition of the referenced image
+    for input in inputs:
+        if reference and input.get('id') == reference:
+            break
+        elif not reference and input.get('type') == 'image':
+            break
+    else:
+        logger.error('Could not determine an image to post the annotation to.')
+
+    # get the input bindings to resolve the input image id
+    job = ModelImporter.model('job', 'jobs').load(jobId, force=True)
+    if not job:
+        logger.error('Could not load the source job')
+        return
+    return job.get('itemTaskBindings', {}).get('inputs', {}).get(reference, {}).get('id')
+
+
 def process_annotations(event):
     """Add annotations to an image on a ``data.process`` event"""
     info = event.info
@@ -15,17 +63,17 @@ def process_annotations(event):
         try:
             reference = json.loads(reference)
             if (isinstance(reference, dict) and
-                    isinstance(reference.get('identifier'), six.string_types)):
-                identifier = reference['identifier']
+                    isinstance(reference.get('id'), six.string_types)):
+                identifier = reference['id']
         except (ValueError, TypeError):
             logger.warning('Failed to parse data.process reference: %r', reference)
+
     if identifier is not None and identifier.endswith('AnnotationFile'):
-        if 'userId' not in reference or 'itemId' not in reference:
+        imageId = _getImageIdFromReference(identifier, reference)
+        userId = str(info.get('currentUser', {}).get('_id'))
+        if not imageId or not userId:
             logger.error('Annotation reference does not contain required information.')
             return
-
-        userId = reference['userId']
-        imageId = reference['itemId']
 
         # load model classes
         Item = ModelImporter.model('item')
@@ -35,8 +83,7 @@ def process_annotations(event):
 
         # load models from the database
         user = User.load(userId, force=True)
-        image = File.load(imageId, level=AccessType.READ, user=user)
-        item = Item.load(image['itemId'], level=AccessType.READ, user=user)
+        item = Item.load(imageId, level=AccessType.READ, user=user)
         file = File.load(
             info.get('file', {}).get('_id'),
             level=AccessType.READ, user=user
