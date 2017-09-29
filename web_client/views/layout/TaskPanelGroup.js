@@ -1,5 +1,6 @@
 import ItemModel from 'girder/models/ItemModel';
 import View from 'girder/views/View';
+import { wrap } from 'girder/utilities/PluginUtils';
 
 import TaskRunView from 'girder_plugins/item_tasks/views/TaskRunView';
 
@@ -9,6 +10,13 @@ import JobsPanel from '../../panels/JobsPanel';
 
 import taskInfoPanel from '../../templates/panels/taskInfoPanel.pug';
 import '../../stylesheets/layout/taskPanelGroup.styl';
+
+// Wrap the task run view to reenable the execute button after job submission.
+wrap(TaskRunView, 'execute', function (execute, ...args) {
+    const returnVal = execute.apply(this, args);
+    this.$('.g-run-task').girderEnable(true);
+    return returnVal;
+});
 
 const TaskPanelGroup = View.extend({
     initialize() {
