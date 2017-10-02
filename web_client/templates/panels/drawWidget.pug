@@ -4,6 +4,14 @@ block title
   | #[span.icon-pencil] #{title}
 
 block content
+  .input-group.input-group-sm.h-style-group-row
+    select.form-control.h-style-group
+      each group in groups.sortBy('id')
+        option(value=group.id, selected=group.id === style)
+          = group.id
+    .input-group-btn
+      button.btn.btn-default.h-configure-style-group(type='button')
+        span.icon-cog(data-toggle='tooltip', title='Configure style group')
   .btn-group.btn-justified.btn-group-sm.h-draw-tools
     .btn-group.btn-group-sm
       button.h-draw.btn.btn-default(
