@@ -92,32 +92,32 @@
 # libtiff
 - name: Download libtiff
   command: >-
-    wget --retry-connrefused --waitretry=1 --read-timeout=300 http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz -O tiff-4.0.6.tar.gz
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 http://download.osgeo.org/libtiff/tiff-4.0.8.tar.gz -O tiff-4.0.8.tar.gz
   args:
     chdir: "{{ root_dir }}"
-    creates: tiff-4.0.6.tar.gz
+    creates: tiff-4.0.8.tar.gz
 
 
 - name: Extract libtiff
   unarchive:
-    src: "{{ root_dir }}/tiff-4.0.6.tar.gz"
+    src: "{{ root_dir }}/tiff-4.0.8.tar.gz"
     dest: "{{ root_dir }}"
-    creates: "{{ root_dir }}/tiff-4.0.6"
+    creates: "{{ root_dir }}/tiff-4.0.8"
 
 - name: Configure libtiff
   command: ./configure
   args:
-    chdir: "{{ root_dir }}/tiff-4.0.6"
+    chdir: "{{ root_dir }}/tiff-4.0.8"
 
 - name: Build libtiff
   command: make -j2
   args:
-    chdir: "{{ root_dir }}/tiff-4.0.6"
+    chdir: "{{ root_dir }}/tiff-4.0.8"
 
 - name: Install libtiff
   command: make install
   args:
-    chdir: "{{ root_dir }}/tiff-4.0.6"
+    chdir: "{{ root_dir }}/tiff-4.0.8"
   become: true
 
 - name: Run ldconfig

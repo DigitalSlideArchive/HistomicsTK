@@ -108,10 +108,6 @@
   pip: name=numpy version=1.11.3
   become: true
 
-- name: Install pylibtiff from github
-  pip: name='git+https://github.com/pearu/pylibtiff@33735eb7197eb33ed1a50bbc4bc5a47ce4305e92' extra_args='--force-reinstall --ignore-installed --upgrade --no-cache-dir' editable=False
-  become: true
-
 - name: Install our external girder plugins - xtk_demo
   command: girder-install plugin -s {{ root_dir }}/xtk_demo
   become: true
