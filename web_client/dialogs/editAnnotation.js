@@ -40,6 +40,8 @@ var EditAnnotation = View.extend({
             data.label = {
                 value: label
             };
+        } else {
+            data.label = {};
         }
 
         var lineWidth = this.$('#h-element-line-width').val();
