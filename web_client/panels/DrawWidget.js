@@ -5,7 +5,10 @@ import events from 'girder/events';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 
+import StyleCollection from '../collections/StyleCollection';
+import StyleModel from '../models/StyleModel';
 import editAnnotation from '../dialogs/editAnnotation';
+import editStyleGroups from '../dialogs/editStyleGroups';
 import saveAnnotation from '../dialogs/saveAnnotation';
 import drawWidget from '../templates/panels/drawWidget.pug';
 import '../stylesheets/panels/drawWidget.styl';
@@ -19,7 +22,9 @@ var DrawWidget = Panel.extend({
         'click .h-save-annotation': 'saveAnnotation',
         'click .h-edit-element': 'editElement',
         'click .h-delete-element': 'deleteElement',
-        'click .h-draw': 'drawElement'
+        'click .h-draw': 'drawElement',
+        'change .h-style-group': '_setStyleGroup',
+        'click .h-configure-style-group': '_styleGroupEditor'
     }),
 
     /**
@@ -37,6 +42,19 @@ var DrawWidget = Panel.extend({
         this.collection = this.annotation.elements();
         this.listenTo(this.collection, 'add remove change reset', this._onCollectionChange);
         this._drawingType = null;
+
+        this._groups = new StyleCollection();
+        this._style = new StyleModel({id: 'default'});
+        this.listenTo(this._groups, 'update', this.render);
+        this._groups.fetch().done(() => {
+            // ensure the default style exists
+            if (this._groups.has('default')) {
+                this._style.set(this._groups.get('default').toJSON());
+            } else {
+                this._groups.add(this._style.toJSON());
+                this._groups.get(this._style.id).save();
+            }
+        });
     },
 
     render() {
@@ -48,7 +66,9 @@ var DrawWidget = Panel.extend({
         this.$el.html(drawWidget({
             title: 'Draw',
             elements: this.collection.toJSON(),
-            drawingType: this._drawingType
+            drawingType: this._drawingType,
+            groups: this._groups,
+            style: this._style.id
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
@@ -153,7 +173,12 @@ var DrawWidget = Panel.extend({
         if (type) {
             this._drawingType = type;
             this.viewer.startDrawMode(type)
-                .then((element) => this.collection.add(element));
+                .then((element) => {
+                    this.collection.add(
+                        _.map(element, (el) => _.extend(el, _.omit(this._style.toJSON(), 'id')))
+                    );
+                    return undefined;
+                });
         }
     },
 
@@ -186,7 +211,15 @@ var DrawWidget = Panel.extend({
      */
     _onSaveAnnotation() {
         var data = this.annotation.toJSON();
-        data.elements = data.annotation.elements;
+
+        // Process elements to remove empty labels which don't validate according
+        // to the annotation schema.
+        data.elements = _.map(data.annotation.elements, (element) => {
+            if (element.label && !element.label.value) {
+                delete element.label;
+            }
+            return element;
+        });
         delete data.annotation;
         restRequest({
             url: 'annotation?itemId=' + this.image.id,
@@ -200,6 +233,16 @@ var DrawWidget = Panel.extend({
             this.reset();
             return null;
         });
+    },
+
+    _setStyleGroup() {
+        this._style.set(
+            this._groups.get(this.$('.h-style-group').val()).toJSON()
+        );
+    },
+
+    _styleGroupEditor() {
+        editStyleGroups(this._style, this._groups);
     }
 });
 

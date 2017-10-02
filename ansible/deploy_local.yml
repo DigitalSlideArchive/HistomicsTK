@@ -11,7 +11,7 @@
       girder_version: "master"
       # We build the girder web assets in girder-histomicstk
       girder_web: no
-      become: yes
+      become: true
       become_user: "{{ girder_exec_user }}"
     - girder-histomicstk
     - provision
