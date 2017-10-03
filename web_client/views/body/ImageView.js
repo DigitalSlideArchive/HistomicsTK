@@ -172,9 +172,7 @@ var ImageView = View.extend({
      *    to make another rest call to get the files contained
      *    in the item.
      *
-     *  * A large image item: choose originalId over fileId
-     *    because slicer endpoints can't yet handle tiled image
-     *    formats.
+     *  * A large image item: choose fileId over originalId.
      *
      *  After getting the file id we have to make another rest
      *  call to fetch the full file model from the server.  Once
@@ -221,11 +219,10 @@ var ImageView = View.extend({
         var promise;
 
         if (largeImage) {
-            // Until slicer jobs can handle tiled input formats use
-            // the original file if available.
+            // Prefer the fileId, expecting that jobs can handle tiled input
             promise = $.when(
                 getTilesDef(this.model.id),
-                getFileModel(largeImage.originalId || largeImage.fileId)
+                getFileModel(largeImage.fileId || largeImage.originalId)
             ).then((a, b) => b); // resolve with the file model
         } else {
             promise = getItemFile(this.model.id);
