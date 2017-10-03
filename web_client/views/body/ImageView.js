@@ -219,8 +219,7 @@ var ImageView = View.extend({
         var promise;
 
         if (largeImage) {
-            // Until slicer jobs can handle tiled input formats use
-            // the original file if available.
+            // Prefer the fileId, expecting that jobs can handle tiled input
             promise = $.when(
                 getTilesDef(this.model.id),
                 getFileModel(largeImage.fileId || largeImage.originalId)
