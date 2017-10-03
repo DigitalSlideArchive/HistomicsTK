@@ -211,7 +211,15 @@ var DrawWidget = Panel.extend({
      */
     _onSaveAnnotation() {
         var data = this.annotation.toJSON();
-        data.elements = data.annotation.elements;
+
+        // Process elements to remove empty labels which don't validate according
+        // to the annotation schema.
+        data.elements = _.map(data.annotation.elements, (element) => {
+            if (element.label && !element.label.value) {
+                delete element.label;
+            }
+            return element;
+        });
         delete data.annotation;
         restRequest({
             url: 'annotation?itemId=' + this.image.id,
