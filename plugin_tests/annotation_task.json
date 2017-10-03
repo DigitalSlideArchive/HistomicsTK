@@ -1,0 +1,33 @@
+{
+    "name": "NucleiDetection",
+    "container_args": [
+        "NucleiDetection",
+        "$input{inputImageFile}",
+        "$output{outputNucleiAnnotationFile}"
+    ],
+    "docker_image": "",
+    "inputs": [
+        {
+            "description": "Input image",
+            "format": "image",
+            "id": "inputImageFile",
+            "name": "Input Image",
+            "target": "filepath",
+            "type": "image"
+        }
+    ],
+    "mode": "docker",
+    "outputs": [
+        {
+            "description": "Output nuclei annotation file (*.anot)",
+            "extra": {
+                "reference": "inputImageFile"
+            },
+            "format": "new-file",
+            "id": "outputNucleiAnnotationFile",
+            "name": "Output Nuclei Annotation File",
+            "target": "filepath",
+            "type": "new-file"
+        }
+    ]
+}
