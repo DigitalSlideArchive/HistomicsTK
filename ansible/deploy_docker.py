@@ -783,7 +783,7 @@ if __name__ == '__main__':
         help='Pull and install the HistomicsTK cli docker image; test the CLI.')
     parser.add_argument(
         '--no-cli', dest='cli', action='store_false',
-        help='Pull and install the HistomicsTK cli docker image.')
+        help='Do not pull or install the HistomicsTK cli docker image.')
     parser.add_argument(
         '--conf', '--cfg', '--girder-cfg',
         help='Merge a Girder configuration file with the default '
