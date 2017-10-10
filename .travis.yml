@@ -62,7 +62,7 @@ before_install:
 
     - CACHE="$HOME/.cache" OPENJPEG_VERSION=2.1.2 OPENJPEG_FILE=v2.1.2.tar.gz OPENJPEG_DIR=openjpeg-2.1.2 LIBTIFF_VERSION=4.0.8 OPENSLIDE_VERSION=3.4.1 source .install-openslide.sh
 
-    - GIRDER_VERSION=master
+    - GIRDER_VERSION=2.x-maintenance
     - GIRDER_WORKER_VERSION=master
     - LARGE_IMAGE_VERSION=master
     - SLICER_CLI_WEB_VERSION=master
@@ -79,7 +79,7 @@ before_install:
     - girder_worker_path=$girder_path/plugins/girder_worker
     - git clone https://github.com/girder/girder_worker.git $girder_worker_path && git -C $girder_worker_path checkout $GIRDER_WORKER_VERSION
     - cp $PWD/plugin_tests/data/girder_worker.cfg $girder_worker_path/girder_worker/worker.local.cfg
-    - pip install -U -r $girder_worker_path/requirements.txt 
+    - pip install -U -r $girder_worker_path/requirements.txt
     - pip install -U -r $girder_worker_path/girder_worker/plugins/girder_io/requirements.txt
 
     - large_image_path=$girder_path/plugins/large_image
