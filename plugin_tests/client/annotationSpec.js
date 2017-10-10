@@ -1,4 +1,5 @@
 girderTest.importPlugin('jobs');
+girderTest.importPlugin('worker');
 girderTest.importPlugin('large_image');
 girderTest.importPlugin('slicer_cli_web');
 girderTest.importPlugin('HistomicsTK');
@@ -209,7 +210,7 @@ $(function () {
                     expect($('.h-draw-widget .h-save-widget').length).toBe(0);
 
                     girder.rest.restRequest({
-                        path: 'annotation',
+                        url: 'annotation',
                         data: {
                             itemId: imageId
                         }
@@ -269,7 +270,7 @@ $(function () {
                 girderTest.waitForLoad();
                 runs(function () {
                     girder.rest.restRequest({
-                        path: 'annotation',
+                        url: 'annotation',
                         data: {
                             itemId: imageId
                         }
@@ -310,7 +311,7 @@ $(function () {
                     };
 
                     girder.rest.restRequest({
-                        path: 'annotation?itemId=' + imageId,
+                        url: 'annotation?itemId=' + imageId,
                         contentType: 'application/json',
                         processData: false,
                         data: JSON.stringify(rect),
@@ -415,6 +416,72 @@ $(function () {
             girderTest.waitForLoad();
             runs(function () {
                 expect(girder.plugins.HistomicsTK.router.getQuery('image')).toBe(imageId);
+            });
+        });
+    });
+
+    describe('Annotation styles', function () {
+        it('open the syle group dialog', function () {
+            openImage('copy');
+            runs(function () {
+                $('.h-configure-style-group').click();
+            });
+            waitsFor(function () {
+                return $('body.modal-open').length > 0;
+            }, 'dialog to open');
+            runs(function () {
+                // ensure the default style is created on load
+                expect($('.h-style-selector :selected').val()).toBe('default');
+            });
+        });
+
+        it('create a new style group', function () {
+            $('.h-create-new-style').click();
+            $('.h-new-style-name').val('new');
+            $('.h-save-new-style').click();
+            expect($('.h-style-selector :selected').val()).toBe('new');
+
+            $('#h-element-line-width').val(1).trigger('change');
+            $('#h-element-line-color').val('rgb(255,0,0)').trigger('change');
+            $('#h-element-fill-color').val('rgb(0,0,255)').trigger('change');
+            $('.h-submit').click();
+
+            waitsFor(function () {
+                return $('body.modal-open').length === 0;
+            }, 'dialog to close');
+        });
+
+        it('draw a point', function () {
+            runs(function () {
+                $('.h-draw[data-type="point"]').removeClass('active').click();
+            });
+
+            waitsFor(function () {
+                return $('.geojs-map.annotation-input').length > 0;
+            }, 'draw mode to activate');
+            runs(function () {
+                var interactor = geojsMap.interactor();
+
+                interactor.simulateEvent('mousedown', {
+                    map: {x: 200, y: 200},
+                    button: 'left'
+                });
+                interactor.simulateEvent('mouseup', {
+                    map: {x: 200, y: 200},
+                    button: 'left'
+                });
+            });
+            waitsFor(function () {
+                return app.bodyView.drawWidget.collection.length > 0;
+            });
+            runs(function () {
+                var elements = app.bodyView.drawWidget.collection;
+                expect(elements.length).toBe(1);
+
+                var point = elements.at(0);
+                expect(point.get('lineWidth')).toBe(1);
+                expect(point.get('lineColor')).toBe('rgb(255, 0, 0)');
+                expect(point.get('fillColor')).toBe('rgb(0, 0, 255)');
             });
         });
     });

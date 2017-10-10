@@ -4,11 +4,11 @@ if user
     | #[span.icon-user] #{login} #[span.icon-down-open]
   ul.dropdown-menu(role='menu')
     li
-      a.g-my-folders(href=`/girder#jobs/user/${user.id}`, target='girder')
+      a.g-my-folders(href=`../girder#jobs/user/${user.id}`, target='girder')
         i.icon-tasks
         | My jobs
     li
-      a.g-my-settings(href=`/girder#useraccount/${user.id}/info`, target='girder')
+      a.g-my-settings(href=`../girder#useraccount/${user.id}/info`, target='girder')
         i.icon-cog
         | My account
     li.divider

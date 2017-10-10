@@ -3,6 +3,7 @@
 import argparse
 import getpass
 import girder_client
+import random
 import six
 import sys
 import tempfile
@@ -68,7 +69,7 @@ def get_test_data(client, opts):
                     sys.stdout.write('.\n')
                     sys.stdout.flush()
     for item in list(client.listItem(folder['_id'])):
-        if item['name'].endswith('.anot'):
+        if '.anot' in item['name']:
             sys.stdout.write('Deleting %s\n' % item['name'])
             sys.stdout.flush()
             client.delete('item/%s' % item['_id'])
@@ -123,24 +124,33 @@ def test_cli(client, folder, opts):
         if item['name'].startswith('TCGA-02'):
             testItem = item
             break
-    localFile = client.listFile(testItem['_id']).next()
+    localFile = next(client.listFile(testItem['_id']))
     path = 'HistomicsTK/%s/NucleiDetection/run' % (
         opts['cli'].replace('/', '_').replace(':', '_'), )
     sys.stdout.write('Running %s ' % opts['cli'])
     sys.stdout.flush()
     memory_use = get_memory_use(client)
     starttime = time.time()
+    region = '[15000,15000,1000,1000]'
+    if opts.get('randomregion'):
+        w = 32001  # specific to our test image
+        h = 38747
+        rw = random.randint(500, 5000)
+        rh = random.randint(500, 5000)
+        region = '[%d,%d,%d,%d]' % (random.randint(0, w - rw), random.randint(0, h - rh), rw, rh)
+    if opts.get('noregion'):
+        region = '[-1,-1,-1,-1]'
     job = client.post(path, data={
         'inputImageFile_girderFileId': localFile['_id'],
         'outputNucleiAnnotationFile_girderFolderId': folder['_id'],
         'outputNucleiAnnotationFile_name': 'cli_test.anot',
         'analysis_mag': '20',
-        'analysis_roi': '[-1,-1,-1,-1]' if opts.get('noregion') else '[15000,15000,1000,1000]',
+        'analysis_roi': region,
         'analysis_tile_size': '4096',
         'foreground_threshold': '60',
         'local_max_search_radius': '10',
         'max_radius': '30',
-        'min_fgnd_frac': '0.5',
+        'min_fgnd_frac': '0.05',
         'min_nucleus_area': '80',
         'min_radius': '20',
         'nuclei_annotation_format': '"bbox"',
@@ -232,6 +242,10 @@ if __name__ == '__main__':
         '--no-region', '--noregion', '--whole', action='store_true',
         dest='noregion',
         help='Run the cli against the whole image (this is slow).')
+    parser.add_argument(
+        '--random-region', '--randomregion', '--random', action='store_true',
+        dest='randomregion',
+        help='Run the cli against a random region on the image (this may be slow).')
     parser.add_argument(
         '--test', action='store_true', default=False,
         help='Download test data and check that basic functions work.')

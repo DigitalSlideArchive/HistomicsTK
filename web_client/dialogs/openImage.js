@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 import BrowserWidget from 'girder/views/widgets/BrowserWidget';
 
 import events from '../events';
@@ -18,8 +20,9 @@ function createDialog() {
         },
         validate: function (item) {
             if (!item.has('largeImage')) {
-                return 'Please select a "large image" item.';
+                return $.Deferred().reject('Please select a "large image" item.').promise();
             }
+            return $.Deferred().resolve().promise();
         }
     });
     widget.on('g:saved', (model) => {

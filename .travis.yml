@@ -60,7 +60,7 @@ before_install:
     # https://github.com/travis-ci/travis-ci/issues/7940
     - sudo rm -f /etc/boto.cfg
 
-    - CACHE="$HOME/.cache" OPENJPEG_VERSION=2.1.2 OPENJPEG_FILE=v2.1.2.tar.gz OPENJPEG_DIR=openjpeg-2.1.2 LIBTIFF_VERSION=4.0.6 OPENSLIDE_VERSION=3.4.1 source .install-openslide.sh
+    - CACHE="$HOME/.cache" OPENJPEG_VERSION=2.1.2 OPENJPEG_FILE=v2.1.2.tar.gz OPENJPEG_DIR=openjpeg-2.1.2 LIBTIFF_VERSION=4.0.8 OPENSLIDE_VERSION=3.4.1 source .install-openslide.sh
 
     - GIRDER_VERSION=master
     - GIRDER_WORKER_VERSION=master
@@ -116,7 +116,7 @@ install:
     - cd $large_image_path
     - pip install --no-cache-dir numpy>=1.12.1
     - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
-    - pip install "git+https://github.com/pearu/pylibtiff@33735eb7197eb33ed1a50bbc4bc5a47ce4305e92" --force-reinstall --ignore-installed --upgrade --no-cache-dir
+
     - pip install -U -r requirements.txt
     - python setup.py install
     - cd $main_path
@@ -132,6 +132,8 @@ install:
     - pip uninstall --yes Sphinx  # Interferes with sphinx from conda
     - conda install --yes jupyter sphinx sphinx_rtd_theme
     - pip install nbsphinx travis-sphinx
+    - pip install numpy==1.13.1  # pin numpy for now
+    - pip freeze  # report what we have installed
 
 script:
     - mkdir -p $build_path/girder_testing_build

@@ -32,18 +32,18 @@ ImageList = collections.OrderedDict([
         'tag': 'dsarchive/girder_worker',
         'name': 'histomicstk_girder_worker',
         'dockerfile': 'Dockerfile-girder-worker',
-        'pinned': 'v0.1.3',
+        'pinned': 'v0.1.5',
     }),
     ('histomicstk', {
         'tag': 'dsarchive/histomicstk_main',
         'name': 'histomicstk_histomicstk',
         'dockerfile': 'Dockerfile-histomicstk',
-        'pinned': 'v0.1.3',
+        'pinned': 'v0.1.5',
     }),
     ('cli', {
         'tag': 'dsarchive/histomicstk',
         'pull': True,
-        'pinned': 'v0.1.5',
+        'pinned': 'v0.1.6',
     }),
 ])
 
@@ -118,7 +118,7 @@ def containers_provision(**kwargs):
             cmd = client.exec_create(
                 container=ctn.get('Id'), cmd=exec_command, tty=True)
             for output in client.exec_start(cmd.get('Id'), stream=True):
-                print(output.strip())
+                print(convert_to_text(output).strip())
             cmd = client.exec_inspect(cmd.get('Id'))
             if not cmd['ExitCode']:
                 break
@@ -414,7 +414,7 @@ def containers_stop(remove=False, **kwargs):
     :param remove: True to remove the containers.  False to just stop them.
     """
     client = docker_client()
-    keys = ImageList.keys()
+    keys = list(ImageList.keys())
     keys.reverse()
     for key in keys:
         ctn = get_docker_image_and_container(client, key, False)
@@ -428,6 +428,20 @@ def containers_stop(remove=False, **kwargs):
 
     if remove:
         network_remove(client, BaseName)
+
+
+def convert_to_text(value):
+    """
+    Make sure a value is a text type in a Python version generic manner.
+
+    :param value: a value that is either a text or binary string.
+    :returns value: a text value.
+    """
+    if isinstance(value, six.binary_type):
+        value = value.decode('utf8')
+    if not isinstance(value, six.text_type):
+        value = str(value)
+    return value
 
 
 def docker_client():
@@ -589,18 +603,24 @@ def merge_configuration(client, ctn, conf, **kwargs):
     tarStream = six.BytesIO(tarStream.read())
     tar = tarfile.TarFile(mode='r', fileobj=tarStream)
     parser = six.moves.configparser.SafeConfigParser()
-    parser.readfp(tar.extractfile(cfgName))
+    cfgFile = six.StringIO(convert_to_text(tar.extractfile(cfgName).read()))
+    parser.readfp(cfgFile)
     parser.read(conf)
-    output = six.BytesIO()
+    output = six.StringIO()
     parser.write(output)
+    output = output.getvalue()
     if kwargs.get('verbose') >= 1:
-        output.seek(0)
-        print(output.read())
+        print(output)
+    if isinstance(output, six.text_type):
+        output = output.encode('utf8')
+    output = six.BytesIO(output)
+    output.seek(0, os.SEEK_END)
+    outputlen = output.tell()
     output.seek(0)
     tarOutput = six.BytesIO()
     tar = tarfile.TarFile(fileobj=tarOutput, mode='w')
     tarinfo = tarfile.TarInfo(name=cfgName)
-    tarinfo.size = output.len
+    tarinfo.size = outputlen
     tarinfo.mtime = time.time()
     tar.addfile(tarinfo, output)
     tar.close()
@@ -726,7 +746,7 @@ def wait_for_girder(client, ctn, maxWait=300):
             container=ctn.get('Id'), cmd=exec_command, tty=True)
         output = client.exec_start(cmd.get('Id'), stream=False)
         try:
-            output = json.loads(output.strip())
+            output = json.loads(convert_to_text(output).strip())
             if 'apiVersion' in output:
                 break
         except Exception:
@@ -763,7 +783,7 @@ if __name__ == '__main__':
         help='Pull and install the HistomicsTK cli docker image; test the CLI.')
     parser.add_argument(
         '--no-cli', dest='cli', action='store_false',
-        help='Pull and install the HistomicsTK cli docker image.')
+        help='Do not pull or install the HistomicsTK cli docker image.')
     parser.add_argument(
         '--conf', '--cfg', '--girder-cfg',
         help='Merge a Girder configuration file with the default '
