@@ -12,6 +12,7 @@ girderTest.promise.then(function () {
     $('body').css('overflow', 'hidden');
     girder.router.enabled(false);
     girder.events.trigger('g:appload.before');
+    girder.plugins.HistomicsTK.panels.DrawWidget.throttleAutosave = false;
     app = new girder.plugins.HistomicsTK.App({
         el: 'body',
         parentView: null
@@ -141,6 +142,49 @@ $(function () {
                 }, 'point drawing to be off');
             });
 
+            it('ensure point was autosaved', function () {
+                var annotations;
+                var annotation;
+
+                girderTest.waitForLoad();
+
+                // If the next rest request happens too quickly after saving the
+                // annotation, the database might not be synced.  Ref:
+                // https://travis-ci.org/DigitalSlideArchive/HistomicsTK/builds/283691041
+                waits(100);
+                runs(function () {
+                    girder.rest.restRequest({
+                        url: 'annotation',
+                        data: {
+                            itemId: imageId
+                        }
+                    }).then(function (a) {
+                        annotations = a;
+                        return null;
+                    });
+                });
+
+                waitsFor(function () {
+                    return annotations !== undefined;
+                }, 'saved annotations to load');
+                runs(function () {
+                    expect(annotations.length).toBe(1);
+                    expect(annotations[0].annotation.name).toMatch(/admin/);
+                    girder.rest.restRequest({
+                        url: 'annotation/' + annotations[0]._id
+                    }).done(function (a) {
+                        annotation = a;
+                    });
+                });
+
+                waitsFor(function () {
+                    return annotation !== undefined;
+                }, 'annotation to load');
+                runs(function () {
+                    expect(annotation.annotation.elements.length).toBe(1);
+                });
+            });
+
             it('edit a point element', function () {
                 runs(function () {
                     $('.h-elements-container .h-edit-element').click();
@@ -184,6 +228,49 @@ $(function () {
                 }, 'rectangle to be created');
                 runs(function () {
                     expect($('.h-elements-container .h-element:last .h-element-label').text()).toBe('point');
+                });
+            });
+
+            it('ensure the second point was autosaved', function () {
+                var annotations;
+                var annotation;
+
+                girderTest.waitForLoad();
+
+                // If the next rest request happens too quickly after saving the
+                // annotation, the database might not be synced.  Ref:
+                // https://travis-ci.org/DigitalSlideArchive/HistomicsTK/builds/283691041
+                waits(100);
+                runs(function () {
+                    girder.rest.restRequest({
+                        url: 'annotation',
+                        data: {
+                            itemId: imageId
+                        }
+                    }).then(function (a) {
+                        annotations = a;
+                        return null;
+                    });
+                });
+
+                waitsFor(function () {
+                    return annotations !== undefined;
+                }, 'saved annotations to load');
+                runs(function () {
+                    expect(annotations.length).toBe(1);
+                    expect(annotations[0].annotation.name).toMatch(/admin/);
+                    girder.rest.restRequest({
+                        url: 'annotation/' + annotations[0]._id
+                    }).done(function (a) {
+                        annotation = a;
+                    });
+                });
+
+                waitsFor(function () {
+                    return annotation !== undefined;
+                }, 'annotation to load');
+                runs(function () {
+                    expect(annotation.annotation.elements.length).toBe(2);
                 });
             });
 
