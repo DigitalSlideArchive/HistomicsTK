@@ -48,8 +48,6 @@
     dest: "{{ root_dir }}/ctk-cli"
     accept_hostkey: yes
 
-    version: "{{ girder_version }}"
-
 - name: Clone slicer_cli_web plugin
   git:
     repo: https://github.com/girder/slicer_cli_web.git
