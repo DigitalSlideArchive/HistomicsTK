@@ -1,5 +1,6 @@
 import _ from 'underscore';
 
+import { getCurrentUser } from 'girder/auth';
 import { restRequest } from 'girder/rest';
 import events from 'girder/events';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
@@ -35,6 +36,11 @@ var DrawWidget = Panel.extend({
      *     The associate large_image "item"
      */
     initialize(settings) {
+        // autosave at most once every second
+        if (DrawWidget.throttleAutosave) {
+            this._autoSaveAnnotation = _.throttle(this._autoSaveAnnotation, 1000);
+        }
+
         this.annotations = settings.annotations;
         this.image = settings.image;
         this.annotation = new AnnotationModel();
@@ -55,6 +61,7 @@ var DrawWidget = Panel.extend({
                 this._groups.get(this._style.id).save();
             }
         });
+        this._savePromise = $.Deferred().resolve().promise();
     },
 
     render() {
@@ -194,6 +201,7 @@ var DrawWidget = Panel.extend({
      * the image viewer and rerendering the panel.
      */
     _onCollectionChange() {
+        this._autoSaveAnnotation();
         this.viewer.drawAnnotation(this.collection.annotation);
         this.render();
     },
@@ -210,7 +218,33 @@ var DrawWidget = Panel.extend({
      * annotation to the server and resetting the panel.
      */
     _onSaveAnnotation() {
-        var data = this.annotation.toJSON();
+        this._autoSaveAnnotation().done((data) => {
+            this._activeAnnotationId = null;
+            data.displayed = true;
+            this.annotations.add(data);
+            this.reset();
+        });
+    },
+
+    /**
+     * Generate a default name for an annotation if none was set by the user.
+     * This will be constructed from the user name and a date time string.
+     */
+    _getDefaultAnnotationName() {
+        const date = new Date();
+        const user = getCurrentUser().get('login');
+        return `${user} ${date.toLocaleString()}`;
+    },
+
+    /**
+     * Get a JSON serializaton of the element collection attached to this
+     * view.
+     */
+    _getAnnotationData() {
+        var data = _.defaults(
+            this.annotation.toJSON(),
+            {name: this._getDefaultAnnotationName()}
+        );
 
         // Process elements to remove empty labels which don't validate according
         // to the annotation schema.
@@ -221,18 +255,7 @@ var DrawWidget = Panel.extend({
             return element;
         });
         delete data.annotation;
-        restRequest({
-            url: 'annotation?itemId=' + this.image.id,
-            contentType: 'application/json',
-            processData: false,
-            data: JSON.stringify(data),
-            type: 'POST'
-        }).then((data) => {
-            data.displayed = true;
-            this.annotations.add(data);
-            this.reset();
-            return null;
-        });
+        return data;
     },
 
     _setStyleGroup() {
@@ -243,7 +266,56 @@ var DrawWidget = Panel.extend({
 
     _styleGroupEditor() {
         editStyleGroups(this._style, this._groups);
+    },
+
+    /**
+     * This method gets called on all changes to the attached collection.
+     * The rest calls are prevented from occuring in parallel by using
+     * an internal promise.  In addition when not in a testing environment
+     * this function is throttled to occur at most once every second to
+     * prevent overloading the server.
+     */
+    _autoSaveAnnotation() {
+        this._savePromise = this._savePromise.then(() => {
+            const data = this._getAnnotationData();
+            let url;
+            let type;
+
+            // On the first call to this method `this._activeAnnotationId` will
+            // be unset and a new annotation will be generated.  Otherwise,
+            // the old annotation will be updated.  In addition, if all
+            // elements were deleted, then the autosaved annotation will instead
+            // be deleted from the server.
+            if (this._activeAnnotationId) {
+                url = `annotation/${this._activeAnnotationId}`;
+                type = data.elements.length ? 'PUT' : 'DELETE';
+            } else if (data.elements.length) {
+                url = `annotation?itemId=${this.image.id}`;
+                type = 'POST';
+            }
+
+            if (url) {
+                return restRequest({
+                    contentType: 'application/json',
+                    processData: false,
+                    data: JSON.stringify(data),
+                    url,
+                    type
+                }).done((annotation) => {
+                    // Set or delete the current annotation id on return.
+                    if (annotation) {
+                        this._activeAnnotationId = annotation._id;
+                    } else {
+                        delete this._activeAnnotationId;
+                    }
+                });
+            }
+            return null;
+        });
+        return this._savePromise;
     }
 });
+
+DrawWidget.throttleAutosave = true;
 
 export default DrawWidget;
