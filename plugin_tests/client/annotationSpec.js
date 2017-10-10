@@ -147,6 +147,11 @@ $(function () {
                 var annotation;
 
                 girderTest.waitForLoad();
+
+                // If the next rest request happens too quickly after saving the
+                // annotation, the database might not be synced.  Ref:
+                // https://travis-ci.org/DigitalSlideArchive/HistomicsTK/builds/283691041
+                waits(100);
                 runs(function () {
                     girder.rest.restRequest({
                         url: 'annotation',
@@ -231,6 +236,11 @@ $(function () {
                 var annotation;
 
                 girderTest.waitForLoad();
+
+                // If the next rest request happens too quickly after saving the
+                // annotation, the database might not be synced.  Ref:
+                // https://travis-ci.org/DigitalSlideArchive/HistomicsTK/builds/283691041
+                waits(100);
                 runs(function () {
                     girder.rest.restRequest({
                         url: 'annotation',
