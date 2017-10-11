@@ -68,7 +68,7 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
     for i in range(w.shape[0]):
         for j in htk_cdeconv.stain_color_map:
-            if len(set(w[i])&set(htk_cdeconv.stain_color_map[j])) == 3:
+            if len(set(w[i]) & set(htk_cdeconv.stain_color_map[j])) == 3:
                 dict_stains[j] = i
 
     # compute number of super-pixels
