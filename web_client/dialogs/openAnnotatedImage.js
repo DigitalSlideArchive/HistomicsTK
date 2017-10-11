@@ -22,6 +22,8 @@ const OpenAnnotatedImage = View.extend({
 
     initialize() {
         this.collection = new ItemCollection();
+        // disable automatic sorting of this collection
+        this.collection.comparator = null;
         this.listenTo(this.collection, 'reset', this.render);
     },
 
