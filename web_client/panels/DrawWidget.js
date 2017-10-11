@@ -308,6 +308,17 @@ var DrawWidget = Panel.extend({
                     } else {
                         delete this._activeAnnotationId;
                     }
+                }).fail((resp) => {
+                    // if we fail for any reason, create a new save promise
+                    // so we can try again
+                    this._savePromise = $.Deferred().resolve().promise();
+                    // if the active annotation was deleted by another window,
+                    // mark that it is gone so we can create a new one, and
+                    // recall the auto save function.
+                    if (this._activeAnnotationId && ((resp.responseJSON || {}).message || '').indexOf('Invalid annotation id') === 0) {
+                        delete this._activeAnnotationId;
+                        this._autoSaveAnnotation();
+                    }
                 });
             }
             return null;
