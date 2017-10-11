@@ -18,7 +18,7 @@
         - docker == "girder_worker"
     - role: girder.girder
       girder_path: "{{ root_dir }}/girder"
-      girder_version: "master"
+      girder_version: "2.x-maintenance"
       girder_web: no
       girder_daemonize: no
       become: true

@@ -8,7 +8,7 @@
     - worker
     - role: girder.girder
       girder_path: "{{ root_dir }}/girder"
-      girder_version: "master"
+      girder_version: "2.x-maintenance"
       # We build the girder web assets in girder-histomicstk
       girder_web: no
       become: true
