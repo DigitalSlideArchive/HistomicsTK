@@ -11,13 +11,13 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <image>
-      <name>inputImageFile</name>
-      <label>Input Image</label>
+    <string>
+      <name>inputSlidePath</name>
+      <label>Input Slide Path</label>
       <channel>input</channel>
       <index>0</index>
-      <description>Input image</description>
-    </image>
+      <description>Input slide path</description>
+    </string>
     <region>
       <name>analysis_roi</name>
       <label>Analysis ROI</label>
@@ -38,6 +38,13 @@
       <channel>output</channel>
       <index>2</index>
       <description>Output superpixel feature file (*.h5)</description>
+    </file>
+    <file fileExtensions=".txt">
+      <name>outputBoundariesFile</name>
+      <label>Output Boundary file</label>
+      <channel>output</channel>
+      <index>3</index>
+      <description>Output boundary file (*.txt)</description>
     </file>
   </parameters>
   <parameters advanced="true">
@@ -128,14 +135,14 @@
       <label>Analysis Tile Size</label>
       <description>Tile size for blockwise analysis</description>
       <longflag>analysis_tile_size</longflag>
-      <default>4096</default>
+      <default>2048</default>
     </double>
     <double>
       <name>analysis_mag</name>
       <label>Analysis Magnification</label>
       <description>The magnification at which the analysis should be performed.</description>
       <longflag>analysis_mag</longflag>
-      <default>20</default>
+      <default>5</default>
     </double>
     <double>
       <name>min_fgnd_frac</name>
@@ -157,6 +164,10 @@
       <description>Maximum width and height allowed when processing an image, in order to prevent accidentally running on too large a region.  Use -1 for no limit</description>
       <default>5000</default>
     </integer>
+  </parameters>
+<parameters advanced="true">
+    <label>Autoencoder Testing</label>
+    <description>Autoencoder test parameters</description>
     <integer>
       <longflag>patchSize</longflag>
       <label>Patch size</label>
@@ -167,7 +178,7 @@
       <longflag>epochs</longflag>
       <label>Number of epochs</label>
       <description>Number of epochs for autoencoder training</description>
-      <default>5</default>
+      <default>50</default>
     </integer>
     <integer>
       <longflag>batchSize</longflag>
@@ -175,6 +186,30 @@
       <description>Batch size for autoencoder trainnig</description>
       <default>16</default>
     </integer>
+    <integer>
+      <longflag>compactness</longflag>
+      <label>Compactness</label>
+      <description>Compactness of SLIC algorithm</description>
+      <default>30</default>
+    </integer>
+    <integer>
+      <longflag>min_fgnd_superpixel</longflag>
+      <label>Minimum foreground pixels in a superpixel</label>
+      <description>Minimum number of foreground pixels in a superpixel </description>
+      <default>30</default>
+    </integer>
+    <double>
+      <longflag>rg_ratio_superpixel</longflag>
+      <label>Red and green ratio for superpixel</label>
+      <description>Red and green ratio for superpixel</description>
+      <default>1.3</default>
+    </double>
+    <double>
+      <longflag>min_var_superpixel</longflag>
+      <label>Minumum variance of superpixel</label>
+      <description>Minumum variance of superpixel</description>
+      <default>0.002</default>
+    </double>
   </parameters>
   <parameters advanced="true">
     <label>Dask</label>
