@@ -5,24 +5,25 @@ block title
 
 block content
   each annotation in annotations
-    - var name = annotation.get('annotation').name;
-    - var displayed = annotation.get('displayed');
-    .h-annotation(data-id=annotation.id)
-      if displayed
-        span.icon-eye.h-toggle-annotation(
-          data-toggle='tooltip', title='Hide annotation')
-      else
-        span.icon-eye-off.h-toggle-annotation(
-          data-toggle='tooltip', title='Show annotation')
-      span.h-annotation-name(title=name) #{name}
+    if annotation.id !== activeAnnotation
+      - var name = annotation.get('annotation').name;
+      - var displayed = annotation.get('displayed');
+      .h-annotation(data-id=annotation.id)
+        if displayed
+          span.icon-eye.h-toggle-annotation(
+            data-toggle='tooltip', title='Hide annotation')
+        else
+          span.icon-eye-off.h-toggle-annotation(
+            data-toggle='tooltip', title='Show annotation')
+        span.h-annotation-name(title=name) #{name}
 
-      span.h-annotation-right
-        a(href=annotation.downloadUrl().replace(/\/download$/, ''),
-            download=name + '.json')
-          span.icon-download.h-download-annotation(
-              data-toggle='tooltip', title='Download annotation')
-        span.icon-cancel.h-delete-annotation(
-            data-toggle='tooltip', title='Remove annotation')
+        span.h-annotation-right
+          a(href=annotation.downloadUrl().replace(/\/download$/, ''),
+              download=name + '.json')
+            span.icon-download.h-download-annotation(
+                data-toggle='tooltip', title='Download annotation')
+          span.icon-cancel.h-delete-annotation(
+              data-toggle='tooltip', title='Remove annotation')
 
   .checkbox.h-annotation-toggle
     label
