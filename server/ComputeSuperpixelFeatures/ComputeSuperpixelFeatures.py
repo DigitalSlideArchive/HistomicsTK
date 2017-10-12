@@ -256,7 +256,7 @@ def main(args):
     slide_name_list = []
     superpixel_index = 0
     first_superpixel_index = np.zeros((n_images, 1), dtype=np.int32)
-    slide_superpixel_index =[]
+    slide_superpixel_index = []
 
     slide_superpixel_data = []
     slide_x_centroids = []
