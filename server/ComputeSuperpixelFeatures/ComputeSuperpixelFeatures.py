@@ -209,7 +209,7 @@ def check_args(args):
         raise ValueError('Extension of output feature file must be .h5')
 
 
-def main(args):
+def main(args):  # noqa: C901
 
     total_start_time = time.time()
 
