@@ -78,6 +78,50 @@ $(function () {
         });
     }
 
+    function checkAutoSave(imageId, numberOfAnnotations, annotationInfo) {
+        var annotations;
+        var annotation;
+
+        girderTest.waitForLoad();
+
+        // If the next rest request happens too quickly after saving the
+        // annotation, the database might not be synced.  Ref:
+        // https://travis-ci.org/DigitalSlideArchive/HistomicsTK/builds/283691041
+        waits(100);
+        runs(function () {
+            girder.rest.restRequest({
+                url: 'annotation',
+                data: {
+                    itemId: imageId
+                }
+            }).then(function (a) {
+                annotations = a;
+                return null;
+            });
+        });
+
+        waitsFor(function () {
+            return annotations !== undefined;
+        }, 'saved annotations to load');
+        runs(function () {
+            expect(annotations.length).toBe(1);
+            expect(annotations[0].annotation.name).toMatch(/admin/);
+            annotationInfo.annotations = annotations;
+            girder.rest.restRequest({
+                url: 'annotation/' + annotations[0]._id
+            }).done(function (a) {
+                annotation = a;
+            });
+        });
+
+        waitsFor(function () {
+            return annotation !== undefined;
+        }, 'annotation to load');
+        runs(function () {
+            expect(annotation.annotation.elements.length).toBe(numberOfAnnotations);
+        });
+    }
+
     describe('Annotation tests', function () {
         describe('setup', function () {
             it('login', function () {
@@ -108,6 +152,8 @@ $(function () {
         });
 
         describe('Draw panel', function () {
+            var annotationInfo = {};
+
             it('draw a point', function () {
                 runs(function () {
                     $('.h-draw[data-type="point"]').click();
@@ -140,49 +186,8 @@ $(function () {
                 waitsFor(function () {
                     return !$('.h-draw[data-type="point"]').hasClass('active');
                 }, 'point drawing to be off');
-            });
 
-            it('ensure point was autosaved', function () {
-                var annotations;
-                var annotation;
-
-                girderTest.waitForLoad();
-
-                // If the next rest request happens too quickly after saving the
-                // annotation, the database might not be synced.  Ref:
-                // https://travis-ci.org/DigitalSlideArchive/HistomicsTK/builds/283691041
-                waits(100);
-                runs(function () {
-                    girder.rest.restRequest({
-                        url: 'annotation',
-                        data: {
-                            itemId: imageId
-                        }
-                    }).then(function (a) {
-                        annotations = a;
-                        return null;
-                    });
-                });
-
-                waitsFor(function () {
-                    return annotations !== undefined;
-                }, 'saved annotations to load');
-                runs(function () {
-                    expect(annotations.length).toBe(1);
-                    expect(annotations[0].annotation.name).toMatch(/admin/);
-                    girder.rest.restRequest({
-                        url: 'annotation/' + annotations[0]._id
-                    }).done(function (a) {
-                        annotation = a;
-                    });
-                });
-
-                waitsFor(function () {
-                    return annotation !== undefined;
-                }, 'annotation to load');
-                runs(function () {
-                    expect(annotation.annotation.elements.length).toBe(1);
-                });
+                checkAutoSave(imageId, 1, annotationInfo);
             });
 
             it('edit a point element', function () {
@@ -229,54 +234,39 @@ $(function () {
                 runs(function () {
                     expect($('.h-elements-container .h-element:last .h-element-label').text()).toBe('point');
                 });
+                checkAutoSave(imageId, 2, annotationInfo);
             });
 
-            it('ensure the second point was autosaved', function () {
-                var annotations;
-                var annotation;
+            it('delete the autosaved annotation, edit the second point, and make sure it was autosaved', function () {
+                runs(function () {
+                    girder.rest.restRequest({
+                        url: 'annotation/' + annotationInfo.annotations[0]._id,
+                        method: 'DELETE'
+                    });
+                });
+                runs(function () {
+                    $('.h-elements-container .h-edit-element:eq(1)').click();
+                });
+
+                girderTest.waitForDialog();
+                runs(function () {
+                    expect($('#g-dialog-container .modal-title').text()).toBe('Edit annotation');
+                    $('#g-dialog-container #h-element-label').val('test2');
+                    $('#g-dialog-container .h-submit').click();
+                });
 
                 girderTest.waitForLoad();
-
-                // If the next rest request happens too quickly after saving the
-                // annotation, the database might not be synced.  Ref:
-                // https://travis-ci.org/DigitalSlideArchive/HistomicsTK/builds/283691041
-                waits(100);
                 runs(function () {
-                    girder.rest.restRequest({
-                        url: 'annotation',
-                        data: {
-                            itemId: imageId
-                        }
-                    }).then(function (a) {
-                        annotations = a;
-                        return null;
-                    });
+                    expect($('.h-elements-container .h-element:eq(1) .h-element-label').text()).toBe('test2');
                 });
 
-                waitsFor(function () {
-                    return annotations !== undefined;
-                }, 'saved annotations to load');
-                runs(function () {
-                    expect(annotations.length).toBe(1);
-                    expect(annotations[0].annotation.name).toMatch(/admin/);
-                    girder.rest.restRequest({
-                        url: 'annotation/' + annotations[0]._id
-                    }).done(function (a) {
-                        annotation = a;
-                    });
-                });
-
-                waitsFor(function () {
-                    return annotation !== undefined;
-                }, 'annotation to load');
-                runs(function () {
-                    expect(annotation.annotation.elements.length).toBe(2);
-                });
+                checkAutoSave(imageId, 2, annotationInfo);
             });
 
             it('delete the second point', function () {
                 $('.h-elements-container .h-element:last .h-delete-element').click();
                 expect($('.h-elements-container .h-element').length).toBe(1);
+                checkAutoSave(imageId, 1, annotationInfo);
             });
 
             it('save the point annotation', function () {
