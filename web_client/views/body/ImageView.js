@@ -37,17 +37,18 @@ var ImageView = View.extend({
         this.controlPanel = new SlicerPanelGroup({
             parentView: this
         });
-        this.annotationSelector = new AnnotationSelector({
-            parentView: this,
-            collection: this.annotations,
-            image: this.model
-        });
         this.zoomWidget = new ZoomWidget({
             parentView: this
         });
         this.drawWidget = new DrawWidget({
             parentView: this,
             annotations: this.annotations,
+            image: this.model
+        });
+        this.annotationSelector = new AnnotationSelector({
+            parentView: this,
+            collection: this.annotations,
+            getActiveAnnotation: () => { return this.drawWidget.getActiveAnnotation(); },
             image: this.model
         });
         this.popover = new AnnotationPopover({

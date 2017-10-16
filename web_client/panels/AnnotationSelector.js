@@ -30,9 +30,11 @@ var AnnotationSelector = Panel.extend({
     initialize(settings) {
         this.listenTo(this.collection, 'all', this.render);
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
+        this.listenTo(eventStream, 'g:eventStream.start', this._refreshAnnotations);
         if (settings.parentItem) {
             this.setItem(settings.parentItem);
         }
+        this._getActiveAnnotation = settings.getActiveAnnotation;
     },
 
     render() {
@@ -45,6 +47,7 @@ var AnnotationSelector = Panel.extend({
             annotations: this.collection.sortBy('created'),
             id: 'annotation-panel-container',
             title: 'Annotations',
+            activeAnnotation: this._getActiveAnnotation ? this._getActiveAnnotation() : null,
             showLabels: this._showLabels
         }));
         this.$('.s-panel-content').collapse({toggle: false});
@@ -114,21 +117,33 @@ var AnnotationSelector = Panel.extend({
     },
 
     _onJobUpdate(evt) {
-        var models = this.collection.indexBy(_.property('id'));
         if (this.parentItem && evt.data.status > 2) {
-            this.collection.offset = 0;
-            this.collection.fetch({itemId: this.parentItem.id}).then(() => {
-                this.collection.each((model) => {
-                    if (!_.has(models, model.id)) {
-                        model.set('displayed', true);
-                    } else {
-                        model.set('displayed', models[model.id].get('displayed'));
-                    }
-                });
-                this.render();
-                return null;
-            });
+            this._refreshAnnotations();
         }
+    },
+
+    _refreshAnnotations() {
+        if (!this.parentItem) {
+            return;
+        }
+        var models = this.collection.indexBy(_.property('id'));
+        this.collection.offset = 0;
+        this.collection.fetch({itemId: this.parentItem.id}).then(() => {
+            // don't add the active annotation to the list
+            var activeAnnotation = this._getActiveAnnotation ? this._getActiveAnnotation() : null;
+            if (activeAnnotation) {
+                this.collection.remove(activeAnnotation, {silent: true});
+            }
+            this.collection.each((model) => {
+                if (!_.has(models, model.id)) {
+                    model.set('displayed', true);
+                } else {
+                    model.set('displayed', models[model.id].get('displayed'));
+                }
+            });
+            this.render();
+            return null;
+        });
     },
 
     toggleLabels(evt) {
