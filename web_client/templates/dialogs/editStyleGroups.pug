@@ -23,6 +23,9 @@
                   option(value=style.get('id'), selected=selected)
                     = style.get('id')
               .input-group-btn
+                if collection.length > 1
+                  button.btn.btn-default.h-delete-style
+                    span.icon-minus(data-toggle='tooltip', title='Delete the listed style')
                 button.btn.btn-default.h-create-new-style
                   span.icon-plus(data-toggle='tooltip', title='Create a new style')
         .form-group
