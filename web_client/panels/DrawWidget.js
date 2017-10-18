@@ -110,6 +110,16 @@ var DrawWidget = Panel.extend({
     },
 
     /**
+     * Return the active annotation ID.  Other widgets can query this to treat
+     * this annotation in a special manner.
+     *
+     * @return {string} The annotation id, or falsy if no current id.
+     */
+    getActiveAnnotation() {
+        return this._activeAnnotationId;
+    },
+
+    /**
      * Set the image "viewer" instance.  This should be a subclass
      * of `large_image/imageViewerWidget` that is capable of rendering
      * annotations.
