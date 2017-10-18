@@ -1,3 +1,5 @@
+import _ from 'underscore';
+
 import View from 'girder/views/View';
 
 import saveAnnotation from '../templates/dialogs/saveAnnotation.pug';
@@ -36,7 +38,7 @@ var SaveAnnotation = View.extend({
             return;
         }
 
-        this.annotation.set({
+        _.extend(this.annotation.get('annotation'), {
             name: this.$('#h-annotation-name').val(),
             description: this.$('#h-annotation-description').val()
         });

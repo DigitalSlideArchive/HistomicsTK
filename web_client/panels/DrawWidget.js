@@ -1,7 +1,6 @@
 import _ from 'underscore';
 
 import { getCurrentUser } from 'girder/auth';
-import { restRequest } from 'girder/rest';
 import events from 'girder/events';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
@@ -43,10 +42,11 @@ var DrawWidget = Panel.extend({
 
         this.annotations = settings.annotations;
         this.image = settings.image;
-        this.annotation = new AnnotationModel();
-        this.listenTo(this.annotation, 'g:save', this._onSaveAnnotation);
+        this.annotation = new AnnotationModel({itemId: this.image.id});
         this.collection = this.annotation.elements();
-        this.listenTo(this.collection, 'add remove change reset', this._onCollectionChange);
+        this.listenTo(this.annotation, 'g:save', this._onSaveAnnotation);
+        this.listenTo(this.annotation, 'g:delete', this._onDeleteAnnotation);
+        this.listenTo(this.collection, 'change update', this._onCollectionChange);
         this._drawingType = null;
 
         this._groups = new StyleCollection();
@@ -107,16 +107,6 @@ var DrawWidget = Panel.extend({
     _widgetDrawRegion(evt) {
         this._drawingType = null;
         this.$('button.h-draw').removeClass('active');
-    },
-
-    /**
-     * Return the active annotation ID.  Other widgets can query this to treat
-     * this annotation in a special manner.
-     *
-     * @return {string} The annotation id, or falsy if no current id.
-     */
-    getActiveAnnotation() {
-        return this._activeAnnotationId;
     },
 
     /**
@@ -211,9 +201,17 @@ var DrawWidget = Panel.extend({
      * the image viewer and rerendering the panel.
      */
     _onCollectionChange() {
-        this._autoSaveAnnotation();
-        this.viewer.drawAnnotation(this.collection.annotation);
-        this.render();
+        const xhr = this._autoSaveAnnotation();
+        if (this.collection.annotation.isNew()) {
+            // If the annotation is new, we have to defer drawing it until
+            // it is saved to get a valid id for the drawing code to keep
+            // track of.
+            xhr.done(() => {
+                this._drawAnnotation();
+            });
+        } else {
+            this._drawAnnotation();
+        }
     },
 
     /**
@@ -223,16 +221,27 @@ var DrawWidget = Panel.extend({
         return this.$(evt.currentTarget).parent('.h-element').data('id');
     },
 
+    /*
+     * Return the active annotation ID.  Other widgets can query this to treat
+     * this annotation in a special manner.
+     *
+     * @return {string} The annotation id, or falsy if no current id.
+     */
+    getActiveAnnotation() {
+        return this.annotation.id;
+    },
+
     /**
      * Respond to a click on the "Save" button by POSTing the
      * annotation to the server and resetting the panel.
      */
     _onSaveAnnotation() {
         this._autoSaveAnnotation().done((data) => {
-            this._activeAnnotationId = null;
             data.displayed = true;
+            this.annotation.unset('_id');
             this.annotations.add(data);
             this.reset();
+            this.render();
         });
     },
 
@@ -244,28 +253,6 @@ var DrawWidget = Panel.extend({
         const date = new Date();
         const user = getCurrentUser().get('login');
         return `${user} ${date.toLocaleString()}`;
-    },
-
-    /**
-     * Get a JSON serializaton of the element collection attached to this
-     * view.
-     */
-    _getAnnotationData() {
-        var data = _.defaults(
-            this.annotation.toJSON(),
-            {name: this._getDefaultAnnotationName()}
-        );
-
-        // Process elements to remove empty labels which don't validate according
-        // to the annotation schema.
-        data.elements = _.map(data.annotation.elements, (element) => {
-            if (element.label && !element.label.value) {
-                delete element.label;
-            }
-            return element;
-        });
-        delete data.annotation;
-        return data;
     },
 
     _setStyleGroup() {
@@ -286,47 +273,31 @@ var DrawWidget = Panel.extend({
      * prevent overloading the server.
      */
     _autoSaveAnnotation() {
+        this.annotation.set('itemId', this.image.id);
         this._savePromise = this._savePromise.then(() => {
-            const data = this._getAnnotationData();
-            let url;
-            let type;
+            let xhr;
+            const annotationData = this.annotation.get('annotation') || {};
 
-            // On the first call to this method `this._activeAnnotationId` will
-            // be unset and a new annotation will be generated.  Otherwise,
-            // the old annotation will be updated.  In addition, if all
-            // elements were deleted, then the autosaved annotation will instead
-            // be deleted from the server.
-            if (this._activeAnnotationId) {
-                url = `annotation/${this._activeAnnotationId}`;
-                type = data.elements.length ? 'PUT' : 'DELETE';
-            } else if (data.elements.length) {
-                url = `annotation?itemId=${this.image.id}`;
-                type = 'POST';
+            if (!annotationData.name) {
+                annotationData.name = this._getDefaultAnnotationName();
             }
 
-            if (url) {
-                return restRequest({
-                    contentType: 'application/json',
-                    processData: false,
-                    data: JSON.stringify(data),
-                    url,
-                    type
-                }).done((annotation) => {
-                    // Set or delete the current annotation id on return.
-                    if (annotation) {
-                        this._activeAnnotationId = annotation._id;
-                    } else {
-                        delete this._activeAnnotationId;
-                    }
-                }).fail((resp) => {
+            if (this.collection.isEmpty()) {
+                xhr = this.annotation.delete();
+            } else {
+                xhr = this.annotation.save();
+            }
+
+            if (xhr) {
+                return xhr.fail((resp) => {
                     // if we fail for any reason, create a new save promise
                     // so we can try again
                     this._savePromise = $.Deferred().resolve().promise();
                     // if the active annotation was deleted by another window,
                     // mark that it is gone so we can create a new one, and
                     // recall the auto save function.
-                    if (this._activeAnnotationId && ((resp.responseJSON || {}).message || '').indexOf('Invalid annotation id') === 0) {
-                        delete this._activeAnnotationId;
+                    if (((resp.responseJSON || {}).message || '').indexOf('Invalid annotation id') === 0) {
+                        this.annotation.unset('_id');
                         this._autoSaveAnnotation();
                     }
                 });
@@ -334,6 +305,37 @@ var DrawWidget = Panel.extend({
             return null;
         });
         return this._savePromise;
+    },
+
+    _onDeleteAnnotation() {
+        this.viewer.removeAnnotation(this.collection.annotation);
+    },
+
+    /**
+     * Redraw the current annotation as soon as possible.  Due to race conditions
+     * with auto and manual saving, it is possible to have a situation where
+     * this method is called on a new (no `_id` attribute) annotation despite
+     * the effort to prevent that in `_onCollectionChange`.  This retries the
+     * redraw in a loop until the next time the model save returns.  In addition,
+     * this function prevents unnecessary redrawing by setting a flag while
+     * another redraw is queued.
+     */
+    _drawAnnotation() {
+        if (this._drawing) {
+            return;
+        }
+
+        this._drawing = true;
+        if (!this.annotation.isNew()) {
+            this.viewer.drawAnnotation(this.annotation);
+            this.render();
+            this._drawing = false;
+        } else {
+            window.setTimeout(() => {
+                this._drawing = false;
+                this._drawAnnotation();
+            }, 100);
+        }
     }
 });
 
