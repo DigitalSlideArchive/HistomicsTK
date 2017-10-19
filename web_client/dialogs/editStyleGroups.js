@@ -15,6 +15,7 @@ const EditStyleGroups = View.extend({
     events: {
         'click .h-create-new-style': '_createNewStyle',
         'click .h-save-new-style': '_saveNewStyle',
+        'click .h-delete-style': '_deleteStyle',
         'change .h-style-def': '_updateStyle',
         'changeColor .h-colorpicker': '_updateStyle',
         'change select': '_setStyle'
@@ -48,7 +49,7 @@ const EditStyleGroups = View.extend({
         const label = this.$('#h-element-label').val();
         let validation = '';
 
-        data.id = this.$('.h-style-selector :selected').val() || this.$('.h-new-style-name').val();
+        data.id = this.$('.h-style-selector :selected').val() || this.$('.h-new-style-name').val().trim();
         if (!data.id) {
             validation += 'A style name is required';
             this.$('.h-new-style-name').parent().addClass('has-error');
@@ -111,6 +112,22 @@ const EditStyleGroups = View.extend({
         this._updateStyle(evt);
         this._newStyle = false;
         this.collection.create(this.model.toJSON());
+        this.render();
+    },
+
+    _deleteStyle(evt) {
+        evt.preventDefault();
+        // if we are creating a new style, cancel that and go back to a
+        // previous style.
+        if (this._newStyle) {
+            this._newStyle = false;
+        } else {
+            const id = this.$('.h-style-selector :selected').val();
+            var model = this.collection.get(id);
+            model.destroy();
+            this.collection.remove(model);
+        }
+        this.model.set(this.collection.at(0).toJSON());
         this.render();
     }
 });

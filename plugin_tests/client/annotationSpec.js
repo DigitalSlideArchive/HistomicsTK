@@ -503,6 +503,7 @@ $(function () {
             runs(function () {
                 $('.h-configure-style-group').click();
             });
+            girderTest.waitForDialog();
             waitsFor(function () {
                 return $('body.modal-open').length > 0;
             }, 'dialog to open');
@@ -523,9 +524,10 @@ $(function () {
             $('#h-element-fill-color').val('rgb(0,0,255)').trigger('change');
             $('.h-submit').click();
 
-            waitsFor(function () {
-                return $('body.modal-open').length === 0;
-            }, 'dialog to close');
+            girderTest.waitForLoad();
+            runs(function () {
+                expect($('.h-style-group').val()).toBe('new');
+            });
         });
 
         it('draw a point', function () {
@@ -559,6 +561,31 @@ $(function () {
                 expect(point.get('lineWidth')).toBe(1);
                 expect(point.get('lineColor')).toBe('rgb(255, 0, 0)');
                 expect(point.get('fillColor')).toBe('rgb(0, 0, 255)');
+            });
+        });
+
+        it('open the syle group dialog again', function () {
+            runs(function () {
+                $('.h-configure-style-group').click();
+            });
+            girderTest.waitForDialog();
+            waitsFor(function () {
+                return $('body.modal-open').length > 0;
+            }, 'dialog to open');
+            runs(function () {
+                expect($('.h-style-selector :selected').val()).toBe('new');
+            });
+        });
+
+        it('delete a style group', function () {
+            runs(function () {
+                $('.h-delete-style').click();
+                expect($('.h-style-selector :selected').val()).toBe('default');
+                $('.h-submit').click();
+            });
+            girderTest.waitForLoad();
+            runs(function () {
+                expect($('.h-style-group').val()).toBe('default');
             });
         });
     });
