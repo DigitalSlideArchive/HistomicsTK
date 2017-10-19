@@ -143,7 +143,6 @@ const EditStyleGroupsDialog = View.extend({
             model: new StyleModel(this.model.toJSON()),
             collection: this.collection
         });
-        console.log(['dialog', this.collection]);
     },
 
     render() {
