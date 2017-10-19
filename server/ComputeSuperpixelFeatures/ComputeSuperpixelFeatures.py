@@ -32,9 +32,6 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
     # get slide tile source
     ts = large_image.getTileSource(img_path)
 
-    # get current magnification
-    magnification = ts.getMetadata()['magnification']
-
     # get requested tile
     tile_info = ts.getSingleTile(
         tile_position=tile_position,
@@ -110,7 +107,6 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
     t_num = 0
 
     for i in range(n_labels):
-
         # get x, y centroids for superpixel
         cen_x, cen_y = region_props[i].centroid
 
@@ -141,20 +137,16 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
                 find_boundaries(lmask, mode="inner").astype(np.uint8) == 1)
 
             # get superpixel boundary at highest-res
-            x_boundary = label_boundary[:, 0] * (magnification / args.analysis_mag) + \
-                tile_left_position
+            x_boundary = label_boundary[:, 0] + tile_left_position
 
-            y_boundary = label_boundary[:, 1] * (magnification / args.analysis_mag) + \
-                tile_top_position
+            y_boundary = label_boundary[:, 1] + tile_top_position
 
             x_brs.append(x_boundary)
             y_brs.append(y_boundary)
 
             # get superpixel centers at highest-res
-            x_cent[t_num] = cen_x * (magnification / args.analysis_mag) + \
-                tile_left_position
-            y_cent[t_num] = cen_y * (magnification / args.analysis_mag) + \
-                tile_top_position
+            x_cent[t_num] = cen_x + tile_left_position
+            y_cent[t_num] = cen_y + tile_top_position
 
             # increase true label number by 1
             t_num = t_num + 1
@@ -363,40 +355,39 @@ def main(args):  # noqa: C901
 
         tile_result_list = dask.delayed(tile_result_list).compute()
 
-        print('\n>> tile_result_list to slide information ...\n')
+        superpixel_data = []
+        x_centroids = []
+        y_centroids = []
+        x_boundaries = []
+        y_boundaries = []
 
-        superpixel_data = np.asarray([
-            data for s_data_out, x_cent_out, y_cent_out, x_brs, y_brs
-            in tile_result_list for data in s_data_out]
-        )
+        for s_data_out, x_cent_out, y_cent_out, x_brs, y_brs in tile_result_list:
 
-        x_centroids = np.asarray([
-            centers for s_data_out, x_cent_out, y_cent_out, x_brs, y_brs
-            in tile_result_list for centers in x_cent_out]
-        )
+            for s_data in s_data_out:
+                superpixel_data.append(s_data)
 
-        y_centroids = np.asarray([
-            centers for s_data_out, x_cent_out, y_cent_out, x_brs, y_brs
-            in tile_result_list for centers in y_cent_out]
-        )
+            for x_cent in x_cent_out:
+                x_centroids.append(x_cent)
 
-        x_boundaries = [
-            boundary for s_data_out, x_cent_out, y_cent_out, x_brs, y_brs
-            in tile_result_list for boundary in x_brs]
+            for y_cent in y_cent_out:
+                y_centroids.append(y_cent)
 
-        y_boundaries = [
-            boundary for s_data_out, x_cent_out, y_cent_out, x_brs, y_brs
-            in tile_result_list for boundary in y_brs]
+            for x_b in x_brs:
+                x_boundaries.append(x_b)
 
-        #
-        # Get slide information, superpixel data, and x, y centroids
-        #
+            for y_b in y_brs:
+                y_boundaries.append(y_b)
+
+        superpixel_data = np.asarray(superpixel_data)
+        x_centroids = np.asarray(x_centroids)
+        y_centroids = np.asarray(y_centroids)
+
         n_superpixels = len(superpixel_data)
 
-        base = os.path.basename(img_paths[i])
-
         # get slide name
-        slide_name_list.append(os.path.splitext(base)[0])
+        base = os.path.basename(img_paths[i])
+        s_name = os.path.splitext(base)[0].split(".")
+        slide_name_list.append(s_name[0])
 
         # get first superpixel index
         first_superpixel_index[i, 0] = superpixel_index
@@ -453,8 +444,7 @@ def main(args):  # noqa: C901
     # loop layers in the input model
     for layer in model.layers:
 
-        # find encoding layer number assuming that the shape of encoding layer is 2
-        # and the encoding layer has the lowest dimension
+        # find encoding layer
         if len(layer.output.shape) == 2 and encoded_layer_out < layer.output.shape[1]:
             encoded_layer_out = layer.output.shape[1]
             encoded_layer_num = layer_num_temp
@@ -500,6 +490,7 @@ def main(args):  # noqa: C901
         output.create_dataset('features', data=encoded_features)
         output.create_dataset('x_centroid', data=slide_x_centroids)
         output.create_dataset('y_centroid', data=slide_y_centroids)
+        output.create_dataset('patch_size', data=args.patchSize)
         output.close()
 
     else:
