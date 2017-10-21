@@ -2,10 +2,10 @@ FROM ubuntu:16.04
 MAINTAINER David Manthey <david.manthey@kitware.com>
 
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade && \
-    apt-get install -y git python2.7-dev python-pip libssl-dev sudo net-tools vim locales apt-utils && \
+    DEBIAN_FRONTEND=noninteractive apt-get --yes --no-install-recommends -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade && \
+    apt-get install -y --no-install-recommends git python2.7-dev python-pip libssl-dev sudo net-tools vim locales apt-utils python-setuptools && \
     # Install some additional packages for convenience when testing with bash
-    apt-get install -y iputils-ping telnet-ssl tmux && \
+    apt-get install -y --no-install-recommends iputils-ping telnet-ssl tmux less && \
     sudo rm -rf /var/lib/apt/lists/* /tmp/*
 RUN pip install -U pip
 RUN pip install -U ansible
@@ -16,7 +16,7 @@ RUN adduser --disabled-password --gecos '' ubuntu && \
 USER ubuntu
 ENV LANG en_US.UTF-8
 WORKDIR /home/ubuntu
-RUN git clone --depth=1 https://github.com/DigitalSlideArchive/HistomicsTK
+RUN git clone --depth=1 https://github.com/DigitalSlideArchive/HistomicsTK && rm -rf HistomicsTK/.git
 WORKDIR /home/ubuntu/HistomicsTK
 ENV GIRDER_EXEC_USER ubuntu
 COPY . /home/ubuntu/HistomicsTK/ansible/.
@@ -29,12 +29,20 @@ WORKDIR /home/ubuntu/HistomicsTK/ansible
 # RUN ansible-playbook -i inventory/local docker_ansible.yml --tags girder --extra-vars=docker=true
 RUN ansible-galaxy install -r requirements.yml -p /home/ubuntu/HistomicsTK/ansible/roles/
 RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=histomicstk && \
+    git -C /opt/histomicstk/girder/plugins/xtk_demo gc && \
+    sudo pyclean /opt/histomicstk/girder && \
+    sudo pyclean /usr/local/lib/python2.7/dist-packages && \
     sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /home/ubuntu/.npm \
+                /home/ubuntu/.cache \
+                /home/ubuntu/.ansible* \
+                /home/ubuntu/.wget-hsts \
                 /root/.npm /opt/histomicstk/girder/node_modules \
                 /opt/histomicstk/openjpeg-* \
                 /opt/histomicstk/openslide-* \
                 /opt/histomicstk/tiff-* \
                 /opt/histomicstk/vips-* \
+                /opt/histomicstk/HistomicsTK/_skbuild \
+                /opt/histomicstk/large_image/build \
                 /root/.cache/pip
 
 WORKDIR /opt/histomicstk/girder
