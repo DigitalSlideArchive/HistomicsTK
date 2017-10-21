@@ -562,7 +562,11 @@ def images_build(retry=False, names=None):
                 decode=True,
             )
             for status in buildStatus:
-                print(status.get('status', status.get('stream', '')).strip())
+                statusLine = status.get('status', status.get('stream', '')).strip()
+                try:
+                    print(statusLine)
+                except Exception:
+                    print(repr(statusLine))
                 if 'errorDetail' in status:
                     if not retry:
                         sys.exit(1)
