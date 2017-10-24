@@ -1,7 +1,6 @@
 from scipy import ndimage
 from skimage.measure import regionprops
-from skimage.segmentation import slic
-from skimage.transform import resize
+from skimage.segmentation import slic, find_boundaries
 from keras.models import Model, load_model
 
 import os
@@ -15,7 +14,6 @@ import h5py
 
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
-import histomicstk.segmentation as htk_seg
 import histomicstk.utils as htk_utils
 
 import large_image
@@ -34,29 +32,31 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
     # get slide tile source
     ts = large_image.getTileSource(img_path)
 
-    # get global magnification
-    gmagnification = ts.getMetadata()['magnification']
+    # get current magnification
+    magnification = ts.getMetadata()['magnification']
 
-    # get requested tile information
+    # get requested tile
     tile_info = ts.getSingleTile(
         tile_position=tile_position,
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         **it_kwargs)
 
-    # get global x and y position
-    left = tile_info['gx']
-    top = tile_info['gy']
+    # get current region in base_pixels
+    rgn_hres = {'left': tile_info['gx'], 'top': tile_info['gy'],
+                'right': tile_info['gx'] + tile_info['gwidth'],
+                'bottom': tile_info['gy'] + tile_info['gheight'],
+                'units': 'base_pixels'}
 
-    # get current magnification
-    magnification = tile_info['magnification']
+    rgn_lres = ts.convertRegionScale(rgn_hres,
+                                     targetScale={'magnification':
+                                                  args.analysis_mag},
+                                     targetUnits='mag_pixels')
 
-    # get magnification ratio from analysis_mag
-    magnification_ratio = magnification / args.analysis_mag
+    top = np.int(rgn_lres['top'])
+    left = np.int(rgn_lres['left'])
 
-    im_tile_org = tile_info['tile'][:, :, :3]
-
-    im_tile = resize(im_tile_org, (im_tile_org.shape[0] / magnification_ratio,
-                                   im_tile_org.shape[1] / magnification_ratio))
+    # get tile image
+    im_tile = tile_info['tile'][:, :, :3]
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
@@ -103,12 +103,21 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
     n_labels = len(region_props)
 
-    # set superpixel data list
-    s_data = []
-    x_cent = []
-    y_cent = []
+    # set superpixel data array
+    s_data = np.zeros((
+        n_labels, args.patchSize, args.patchSize, len(dict_stains))
+    )
+
+    # set x, y centroids array
+    x_cent = np.zeros((n_labels, 1), dtype=np.float32)
+    y_cent = np.zeros((n_labels, 1), dtype=np.float32)
+
+    # set x, y boundary list
     x_brs = []
     y_brs = []
+
+    # set true label number. labels will be removed by foreground mask
+    t_num = 0
 
     for i in range(n_labels):
         # get x, y centroids for superpixel
@@ -122,10 +131,6 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
         lmask = (
             im_label[:, :] == region_props[i].label).astype(np.bool)
 
-        # embed with center pixel in middle of padded window
-        emask = np.zeros((lmask.shape[0] + 2, lmask.shape[1] + 2), dtype=np.bool)
-        emask[1:-1, 1:-1] = lmask
-
         if np.sum(im_fgnd_mask & lmask) > args.min_fgnd_superpixel:
             # get variance of superpixel region
             var = ndimage.variance(
@@ -135,30 +140,35 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
                 continue
 
             # get superpixel data
-            stain_data = np.zeros(
-                (args.patchSize, args.patchSize, len(dict_stains)))
-
             for key in dict_stains.keys():
                 k = dict_stains[key]
                 im_stain = im_stains[:, :, k].astype(np.float) / 255.0
-                stain_data[:, :, k] = im_stain[min_row:max_row, min_col:max_col]
-
-            s_data.append(stain_data)
+                s_data[t_num, :, :, k] = im_stain[min_row:max_row, min_col:max_col]
 
             # find boundaries
-            bx, by = htk_seg.label.trace_object_boundaries(emask)
+            label_boundary = np.argwhere(
+                find_boundaries(lmask, mode="inner").astype(np.uint8) == 1)
 
             # get superpixel boundary at highest-res
-            x_brs.append(
-                (bx[0] - 1) * (gmagnification / args.analysis_mag) + top)
-            y_brs.append(
-                (by[0] - 1) * (gmagnification / args.analysis_mag) + left)
+            x_boundary = (label_boundary[:, 0] + left) * (magnification / args.analysis_mag)
+
+            y_boundary = (label_boundary[:, 1] + top) * (magnification / args.analysis_mag)
+
+            x_brs.append(x_boundary)
+            y_brs.append(y_boundary)
 
             # get superpixel centers at highest-res
-            x_cent.append(cen_x * (gmagnification / args.analysis_mag) + top)
-            y_cent.append(cen_y * (gmagnification / args.analysis_mag) + left)
+            x_cent[t_num] = (cen_x + left) * (magnification / args.analysis_mag)
+            y_cent[t_num] = (cen_y + top) * (magnification / args.analysis_mag)
 
-    return s_data, x_cent, y_cent, x_brs, y_brs
+            # increase true label number by 1
+            t_num = t_num + 1
+
+    s_data_out = s_data[:t_num, :, :, :]
+    x_cent_out = x_cent[:t_num]
+    y_cent_out = y_cent[:t_num]
+
+    return s_data_out, x_cent_out, y_cent_out, x_brs, y_brs
 
 
 def get_patch_bounds(cx, cy, patch_size, m, n):
@@ -364,16 +374,16 @@ def main(args):  # noqa: C901
         x_boundaries = []
         y_boundaries = []
 
-        for s_data, x_cent, y_cent, x_brs, y_brs in tile_result_list:
+        for s_data_out, x_cent_out, y_cent_out, x_brs, y_brs in tile_result_list:
 
-            for s_d in s_data:
-                superpixel_data.append(s_d)
+            for s_data in s_data_out:
+                superpixel_data.append(s_data)
 
-            for x_c in x_cent:
-                x_centroids.append(x_c)
+            for x_cent in x_cent_out:
+                x_centroids.append(x_cent)
 
-            for y_c in y_cent:
-                y_centroids.append(y_c)
+            for y_cent in y_cent_out:
+                y_centroids.append(y_cent)
 
             for x_b in x_brs:
                 x_boundaries.append(x_b)
@@ -381,15 +391,11 @@ def main(args):  # noqa: C901
             for y_b in y_brs:
                 y_boundaries.append(y_b)
 
-        superpixel_data = np.asarray(superpixel_data, dtype=np.float32)
+        superpixel_data = np.asarray(superpixel_data)
+        x_centroids = np.asarray(x_centroids)
+        y_centroids = np.asarray(y_centroids)
 
         n_superpixels = len(superpixel_data)
-
-        x_centroids = np.asarray(
-            x_centroids, dtype=np.float32).reshape((n_superpixels, 1))
-
-        y_centroids = np.asarray(
-            y_centroids, dtype=np.float32).reshape((n_superpixels, 1))
 
         # get slide name
         base = os.path.basename(img_paths[i])
@@ -495,8 +501,8 @@ def main(args):  # noqa: C901
         output.create_dataset('mean', data=slide_feature_mean)
         output.create_dataset('std_dev', data=slide_feature_stddev)
         output.create_dataset('features', data=encoded_features)
-        output.create_dataset('x_centroid', data=slide_y_centroids)
-        output.create_dataset('y_centroid', data=slide_x_centroids)
+        output.create_dataset('x_centroid', data=slide_x_centroids)
+        output.create_dataset('y_centroid', data=slide_y_centroids)
         output.create_dataset('patch_size', data=args.patchSize)
         output.close()
 
@@ -510,16 +516,14 @@ def main(args):  # noqa: C901
     print('>> Writing text boundary file')
 
     boundary_file = open(args.outputBoundariesFile, 'w')
-
+    boundary_file.write("Slide\tX\tY\tBoundaries: x1,y1;x2,y2;...\n")
     for i in range(superpixel_index):
         boundary_file.write("%s\t" % slide_name_list[slide_superpixel_index[i, 0]])
-        boundary_file.write("%f\t" % slide_y_centroids[i, 0])
         boundary_file.write("%f\t" % slide_x_centroids[i, 0])
-
+        boundary_file.write("%f\t" % slide_y_centroids[i, 0])
         for j in range(len(slide_x_boundaries[i])):
             boundary_file.write(
-                "%d,%d " % (slide_y_boundaries[i][j], slide_x_boundaries[i][j]))
-
+                "%d,%d " % (slide_x_boundaries[i][j], slide_y_boundaries[i][j]))
         boundary_file.write("\n")
 
     total_time_taken = time.time() - total_start_time

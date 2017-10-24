@@ -149,7 +149,7 @@
       <label>Minimum foreground fraction</label>
       <description>The minimum amount of foreground that must be present in a tile for it to be analyzed</description>
       <longflag>min_fgnd_frac</longflag>
-      <default>0.5</default>
+      <default>0.1</default>
     </double>
     <region>
       <name>region</name>
@@ -184,13 +184,13 @@
       <longflag>batchSize</longflag>
       <label>Batch size</label>
       <description>Batch size for autoencoder trainnig</description>
-      <default>16</default>
+      <default>128</default>
     </integer>
     <integer>
       <longflag>compactness</longflag>
       <label>Compactness</label>
       <description>Compactness of SLIC algorithm</description>
-      <default>30</default>
+      <default>10</default>
     </integer>
     <integer>
       <longflag>min_fgnd_superpixel</longflag>
