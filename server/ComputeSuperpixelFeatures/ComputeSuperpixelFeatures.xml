@@ -159,6 +159,7 @@
       <default>-1,-1,-1,-1</default>
     </region>
     <integer>
+      <name>maxRegionSize</name>
       <longflag>maxRegionSize</longflag>
       <label>Maximum region size</label>
       <description>Maximum width and height allowed when processing an image, in order to prevent accidentally running on too large a region.  Use -1 for no limit</description>
@@ -169,30 +170,35 @@
     <label>Autoencoder Testing</label>
     <description>Autoencoder test parameters</description>
     <integer>
+      <name>patchSize</name>
       <longflag>patchSize</longflag>
       <label>Patch size</label>
       <description>Patch size for superpixel region</description>
       <default>28</default>
     </integer>
     <integer>
+      <name>epochs</name>
       <longflag>epochs</longflag>
       <label>Number of epochs</label>
       <description>Number of epochs for autoencoder training</description>
       <default>50</default>
     </integer>
     <integer>
+      <name>batchSize</name>
       <longflag>batchSize</longflag>
       <label>Batch size</label>
       <description>Batch size for autoencoder trainnig</description>
       <default>128</default>
     </integer>
     <integer>
+      <name>compactness</name>
       <longflag>compactness</longflag>
       <label>Compactness</label>
       <description>Compactness of SLIC algorithm</description>
       <default>10</default>
     </integer>
     <integer>
+      <name>min_fgnd_superpixel</name>
       <longflag>min_fgnd_superpixel</longflag>
       <label>Minimum foreground pixels in a superpixel</label>
       <description>Minimum number of foreground pixels in a superpixel </description>

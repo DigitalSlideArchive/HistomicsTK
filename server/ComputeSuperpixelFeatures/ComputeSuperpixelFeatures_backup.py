@@ -55,10 +55,8 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
     im_tile_org = tile_info['tile'][:, :, :3]
 
-    im_tile = resize(
-        im_tile_org, (im_tile_org.shape[0] / magnification_ratio,
-                      im_tile_org.shape[1] / magnification_ratio),
-        mode='reflect')
+    im_tile = resize(im_tile_org, (im_tile_org.shape[0] / magnification_ratio,
+                                   im_tile_org.shape[1] / magnification_ratio))
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
@@ -150,9 +148,8 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
             # find boundaries
             bx, by = htk_seg.label.trace_object_boundaries(emask)
 
-            with np.errstate(invalid='ignore'):
-                # remove redundant points
-                mby, mbx = htk_utils.merge_colinear(by[0].astype(float), bx[0].astype(float))
+            # remove redundant points
+            mbx, mby = htk_utils.merge_colinear(bx[0], by[0])
 
             # get superpixel boundary at highest-res
             x_brs.append(
