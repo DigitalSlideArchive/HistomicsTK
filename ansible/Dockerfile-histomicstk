@@ -1,12 +1,12 @@
 FROM ubuntu:16.04
 MAINTAINER David Manthey <david.manthey@kitware.com>
 
-RUN apt-get update
-# For a dist upgrade
-RUN DEBIAN_FRONTEND=noninteractive apt-get --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
-RUN apt-get install -y git python2.7-dev python-pip libssl-dev sudo net-tools vim locales apt-utils
-# Install some additional packages for convenience when testing with bash
-RUN apt-get install -y iputils-ping telnet-ssl tmux
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade && \
+    apt-get install -y git python2.7-dev python-pip libssl-dev sudo net-tools vim locales apt-utils && \
+    # Install some additional packages for convenience when testing with bash
+    apt-get install -y iputils-ping telnet-ssl tmux && \
+    sudo rm -rf /var/lib/apt/lists/* /tmp/*
 RUN pip install -U pip
 RUN pip install -U ansible
 RUN locale-gen en_US.UTF-8
@@ -16,7 +16,7 @@ RUN adduser --disabled-password --gecos '' ubuntu && \
 USER ubuntu
 ENV LANG en_US.UTF-8
 WORKDIR /home/ubuntu
-RUN git clone https://github.com/DigitalSlideArchive/HistomicsTK
+RUN git clone --depth=1 https://github.com/DigitalSlideArchive/HistomicsTK
 WORKDIR /home/ubuntu/HistomicsTK
 ENV GIRDER_EXEC_USER ubuntu
 COPY . /home/ubuntu/HistomicsTK/ansible/.
@@ -28,7 +28,14 @@ WORKDIR /home/ubuntu/HistomicsTK/ansible
 # RUN ansible-playbook -i inventory/local docker_ansible.yml --tags openslide
 # RUN ansible-playbook -i inventory/local docker_ansible.yml --tags girder --extra-vars=docker=true
 RUN ansible-galaxy install -r requirements.yml -p /home/ubuntu/HistomicsTK/ansible/roles/
-RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=histomicstk
+RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=histomicstk && \
+    sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /home/ubuntu/.npm \
+                /root/.npm /opt/histomicstk/girder/node_modules \
+                /opt/histomicstk/openjpeg-* \
+                /opt/histomicstk/openslide-* \
+                /opt/histomicstk/tiff-* \
+                /opt/histomicstk/vips-* \
+                /root/.cache/pip
 
 WORKDIR /opt/histomicstk/girder
 EXPOSE 8080
