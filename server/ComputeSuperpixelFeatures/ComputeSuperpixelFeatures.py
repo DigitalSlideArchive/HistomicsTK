@@ -152,7 +152,8 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
             with np.errstate(invalid='ignore'):
                 # remove redundant points
-                mby, mbx = htk_utils.merge_colinear(by[0].astype(float), bx[0].astype(float))
+                mby, mbx = htk_utils.merge_colinear(
+                    by[0].astype(float), bx[0].astype(float))
 
             # get superpixel boundary at highest-res
             x_brs.append(
