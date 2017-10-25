@@ -195,7 +195,7 @@
       <longflag>compactness</longflag>
       <label>Compactness</label>
       <description>Compactness of SLIC algorithm</description>
-      <default>10</default>
+      <default>30</default>
     </integer>
     <integer>
       <name>min_fgnd_superpixel</name>

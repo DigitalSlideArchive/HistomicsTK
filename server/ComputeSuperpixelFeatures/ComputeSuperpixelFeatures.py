@@ -162,9 +162,9 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
             # get superpixel centers at highest-res
             x_cent.append(
-                round(cen_x, 1) * (gmagnification / args.analysis_mag) + top)
+                cen_x * (gmagnification / args.analysis_mag) + top)
             y_cent.append(
-                round(cen_y, 1) * (gmagnification / args.analysis_mag) + left)
+                cen_y * (gmagnification / args.analysis_mag) + left)
 
     return s_data, x_cent, y_cent, x_brs, y_brs
 
@@ -393,11 +393,13 @@ def main(args):  # noqa: C901
 
         n_superpixels = len(superpixel_data)
 
-        x_centroids = np.asarray(
-            x_centroids, dtype=np.float32).reshape((n_superpixels, 1))
+        x_centroids = np.round(
+            np.asarray(x_centroids, dtype=np.float32).reshape((n_superpixels, 1)),
+            decimals=1)
 
-        y_centroids = np.asarray(
-            y_centroids, dtype=np.float32).reshape((n_superpixels, 1))
+        y_centroids = np.round(
+            np.asarray(y_centroids, dtype=np.float32).reshape((n_superpixels, 1)),
+            decimals=1)
 
         # get slide name
         base = os.path.basename(img_paths[i])
