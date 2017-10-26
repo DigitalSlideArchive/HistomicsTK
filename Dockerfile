@@ -19,7 +19,7 @@ WORKDIR $htk_path
 RUN pip install --upgrade --ignore-installed pip setuptools && \
     pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli' && \
     # Install requirements.txt via pip; installing via conda causes
-    # version issues with our home-built libtif.
+    # version issues with our home-built libtiff.
     # Try twice; conda sometimes causes pip to fail the first time, but if it
     # fails twice then there is a real issue.
     pip install -r requirements.txt && \
@@ -47,6 +47,10 @@ RUN python -c "from matplotlib import pylab"
 
 # pregenerate libtiff wrapper.  This also tests libtiff for failures
 RUN python -c "import libtiff"
+
+# make sure deep learning libraries are accessible
+RUN python -c "import keras"
+RUN python -c "import tensorflow"
 
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/server
