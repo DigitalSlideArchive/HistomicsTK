@@ -1,6 +1,7 @@
 from scipy import ndimage
 from skimage.measure import regionprops
 from skimage.segmentation import slic
+from skimage.transform import resize
 from keras.models import load_model
 
 import os
@@ -37,8 +38,18 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         **it_kwargs)
 
-    # get tile image
-    im_tile = tile_info['tile'][:, :, :3]
+    # get current magnification
+    magnification = tile_info['magnification']
+
+    # get magnification ratio from analysis_mag
+    magnification_ratio = magnification / args.analysis_mag
+
+    im_tile_org = tile_info['tile'][:, :, :3]
+
+    im_tile = resize(
+        im_tile_org, (im_tile_org.shape[0] / magnification_ratio,
+                      im_tile_org.shape[1] / magnification_ratio),
+        mode='reflect')
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
@@ -58,9 +69,7 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
     im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
 
-    #
-    # Detect real stains
-    #
+    # detect real stains
     dict_stains = {}
 
     # compare w with stain_color_map
@@ -83,20 +92,14 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
     im_label = slic(im_nmzd, n_segments=n_superpixels,
                     compactness=args.compactness) + 1
 
-    # extract features
     region_props = regionprops(im_label)
 
     n_labels = len(region_props)
 
     # set superpixel data array
-    s_data = np.zeros((
-        n_labels, args.patchSize, args.patchSize, len(dict_stains)))
-
-    # set true label number. labels will be removed by foreground mask
-    t_num = 0
+    s_data = []
 
     for i in range(n_labels):
-
         # get x, y centroids for superpixel
         cen_x, cen_y = region_props[i].centroid
 
@@ -108,8 +111,11 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
         lmask = (
             im_label[:, :] == region_props[i].label).astype(np.bool)
 
-        if np.sum(im_fgnd_mask & lmask) > args.min_fgnd_superpixel:
+        # embed with center pixel in middle of padded window
+        emask = np.zeros((lmask.shape[0] + 2, lmask.shape[1] + 2), dtype=np.bool)
+        emask[1:-1, 1:-1] = lmask
 
+        if np.sum(im_fgnd_mask & lmask) > args.min_fgnd_superpixel:
             # get variance of superpixel region
             var = ndimage.variance(
                 im_nmzd[min_row:max_row, min_col:max_col, :] / 255.0)
@@ -118,17 +124,17 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
                 continue
 
             # get superpixel data
+            stain_data = np.zeros(
+                (args.patchSize, args.patchSize, len(dict_stains)))
+
             for key in dict_stains.keys():
                 k = dict_stains[key]
                 im_stain = im_stains[:, :, k].astype(np.float) / 255.0
-                s_data[t_num, :, :, k] = im_stain[min_row:max_row, min_col:max_col]
+                stain_data[:, :, k] = im_stain[min_row:max_row, min_col:max_col]
 
-            # increase true label number by 1
-            t_num = t_num + 1
+            s_data.append(stain_data)
 
-    s_data_out = s_data[:t_num, :, :, :]
-
-    return s_data_out
+    return s_data
 
 
 def create_train_model(input_data, input_model, args):
@@ -326,8 +332,14 @@ def main(args):
 
         print('\n>> tile_result_list to superpixel data ...\n')
 
-        superpixel_data = np.asarray([data for s_data_out in tile_result_list
-                                      for data in s_data_out])
+        superpixel_data = []
+
+        for s_data in tile_result_list:
+
+            for s_d in s_data:
+                superpixel_data.append(s_d)
+
+        superpixel_data = np.asarray(superpixel_data, dtype=np.float32)
 
         if i == 0:
 
