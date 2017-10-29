@@ -49,7 +49,7 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
     # get current magnification
     magnification = tile_info['magnification']
-
+    
     # get magnification ratio from analysis_mag
     magnification_ratio = magnification / args.analysis_mag
 
@@ -62,8 +62,8 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
-                                 args.reference_mu_lab,
-                                 args.reference_std_lab)
+                                 args.reference_mu_lab, args.reference_std_lab,
+                                 args.source_mu_lab, args.source_std_lab)
 
     # get red and green channels
     im_red = im_nmzd[:, :, 0]
@@ -268,6 +268,8 @@ def main(args):  # noqa: C901
     slide_x_boundaries = []
     slide_y_boundaries = []
 
+    tile_magnification = 0
+
     for i in range(n_images):
 
         #
@@ -281,7 +283,9 @@ def main(args):  # noqa: C901
 
         print json.dumps(ts_metadata, indent=2)
 
-        is_wsi = ts_metadata['magnification'] is not None
+        tile_magnification = ts_metadata['magnification']
+
+        is_wsi = tile_magnification is not None
 
         #
         # Compute tissue/foreground mask at low-res for whole slide images
@@ -509,6 +513,9 @@ def main(args):  # noqa: C901
         output.create_dataset('x_centroid', data=slide_y_centroids)
         output.create_dataset('y_centroid', data=slide_x_centroids)
         output.create_dataset('patch_size', data=args.patchSize)
+        output.create_dataset('magnification', data=tile_magnification)
+        output.create_dataset('analysis_mag', data= args.analysis_mag)
+
         output.close()
 
     else:

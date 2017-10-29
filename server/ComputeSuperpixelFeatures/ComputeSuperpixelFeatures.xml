@@ -64,6 +64,20 @@
       <longflag>reference_std_lab</longflag>
       <default>0.57506023, 0.10403329, 0.01364062</default>
     </double-vector>
+    <double-vector>
+      <name>source_mu_lab</name>
+      <label>Source Mean LAB</label>
+      <description>Mean of source image in LAB color space for Reinhard color normalization</description>
+      <longflag>source_mu_lab</longflag>
+      <default>-0.7964234, -0.11956765, 0.04405768</default>
+    </double-vector>
+    <double-vector>
+      <name>source_std_lab</name>
+      <label>Source Stddev LAB</label>
+      <description>Standard deviation of source image in LAB color space for Reinhard color normalization</description>
+      <longflag>source_std_lab</longflag>
+      <default>0.53154804, 0.09975676, 0.03118836</default>
+    </double-vector>
   </parameters>
   <parameters advanced="true">
     <label>Color Deconvolution</label>
@@ -149,7 +163,7 @@
       <label>Minimum foreground fraction</label>
       <description>The minimum amount of foreground that must be present in a tile for it to be analyzed</description>
       <longflag>min_fgnd_frac</longflag>
-      <default>0.1</default>
+      <default>0.01</default>
     </double>
     <region>
       <name>region</name>
@@ -195,7 +209,7 @@
       <longflag>compactness</longflag>
       <label>Compactness</label>
       <description>Compactness of SLIC algorithm</description>
-      <default>30</default>
+      <default>50</default>
     </integer>
     <integer>
       <name>min_fgnd_superpixel</name>
@@ -214,7 +228,7 @@
       <longflag>min_var_superpixel</longflag>
       <label>Minumum variance of superpixel</label>
       <description>Minumum variance of superpixel</description>
-      <default>0.002</default>
+      <default>0.005</default>
     </double>
   </parameters>
   <parameters advanced="true">

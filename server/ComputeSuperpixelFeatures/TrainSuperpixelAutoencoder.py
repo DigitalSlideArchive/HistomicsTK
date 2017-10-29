@@ -53,8 +53,8 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
-                                 args.reference_mu_lab,
-                                 args.reference_std_lab)
+                                 args.reference_mu_lab, args.reference_std_lab,
+                                 args.source_mu_lab, args.source_std_lab)
 
     # get red and green channels
     im_red = im_nmzd[:, :, 0]
