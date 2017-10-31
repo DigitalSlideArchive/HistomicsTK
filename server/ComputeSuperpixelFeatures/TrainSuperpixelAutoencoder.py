@@ -27,7 +27,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils  # noqa
 
 
-def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
+def compute_superpixel_data(img_path, tile_position, wsi_mean, wsi_stddev, args, **it_kwargs):
 
     # get slide tile source
     ts = large_image.getTileSource(img_path)
@@ -38,23 +38,12 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         **it_kwargs)
 
-    # get current magnification
-    magnification = tile_info['magnification']
-
-    # get magnification ratio from analysis_mag
-    magnification_ratio = magnification / args.analysis_mag
-
-    im_tile_org = tile_info['tile'][:, :, :3]
-
-    im_tile = resize(
-        im_tile_org, (im_tile_org.shape[0] / magnification_ratio,
-                      im_tile_org.shape[1] / magnification_ratio),
-        mode='reflect')
+    im_tile = tile_info['tile'][:, :, :3]
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
                                  args.reference_mu_lab, args.reference_std_lab,
-                                 args.source_mu_lab, args.source_std_lab)
+                                 wsi_mean, wsi_stddev)
 
     # get red and green channels
     im_red = im_nmzd[:, :, 0]
@@ -252,7 +241,20 @@ def main(args):
 
         is_wsi = ts_metadata['magnification'] is not None
 
-        # compute tissue/foreground mask at low-res for whole slide images
+        #
+        # Compute colorspace statistics (mean, variance) for whole slide
+        #
+        wsi_mean = args.source_mu_lab
+        wsi_stddev = args.source_std_lab
+
+        if is_wsi:
+            print('\n>> Computing mean and variance for whole slide ...\n')
+
+            wsi_mean, wsi_stddev = htk_cnorm.reinhard_stats(img_path[i], args.sample_fraction, args.analysis_mag)
+
+        #
+        # Compute tissue/foreground mask at low-res for whole slide images
+        #
         if is_wsi:
 
             print('\n>> Computing tissue/foreground mask at low-res ...\n')
@@ -260,7 +262,9 @@ def main(args):
             im_fgnd_mask_lres, fgnd_seg_scale = \
                 cli_utils.segment_wsi_foreground_at_low_res(ts)
 
-        # compute foreground fraction of tiles in parallel using Dask
+        #
+        # Compute foreground fraction of tiles in parallel using Dask
+        #
         tile_fgnd_frac_list = [1.0]
 
         it_kwargs = {
@@ -305,7 +309,9 @@ def main(args):
 
             print 'Time taken = %s' % cli_utils.disp_time_hms(fgnd_frac_comp_time)
 
-        # detect superpixel data in parallel using Dask
+        #
+        # Detect superpixel data in parallel using Dask
+        #
         print('\n>> Detecting superpixel data ...\n')
 
         start_time = time.time()
@@ -323,6 +329,7 @@ def main(args):
             cur_result = dask.delayed(compute_superpixel_data)(
                 img_path[i],
                 tile_position,
+                wsi_mean, wsi_stddev,
                 args, **it_kwargs)
 
             # append result to list
