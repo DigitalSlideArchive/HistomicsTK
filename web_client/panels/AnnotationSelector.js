@@ -4,6 +4,7 @@ import eventStream from 'girder/utilities/EventStream';
 import { getCurrentUser } from 'girder/auth';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 
+import events from '../events';
 import annotationSelectorWidget from '../templates/panels/annotationSelector.pug';
 import '../stylesheets/panels/annotationSelector.styl';
 
@@ -109,12 +110,21 @@ var AnnotationSelector = Panel.extend({
      * Delete an annotation from the server.
      */
     deleteAnnotation(evt) {
-        var id = $(evt.currentTarget).parents('.h-annotation').data('id');
-        var model = this.collection.get(id);
+        const id = $(evt.currentTarget).parents('.h-annotation').data('id');
+        const model = this.collection.get(id);
+
         if (model) {
-            model.unset('displayed');
-            this.collection.remove(model);
-            model.destroy();
+            const name = (model.get('annotation') || {}).name || 'unnamed annotation';
+            events.trigger('h:confirmDialog', {
+                title: 'Warning',
+                message: `Are you sure you want to delete ${name}?`,
+                submitButton: 'Delete',
+                onSubmit: () => {
+                    model.unset('displayed');
+                    this.collection.remove(model);
+                    model.destroy();
+                }
+            });
         }
     },
 
