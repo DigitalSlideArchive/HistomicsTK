@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <executable>
   <category>HistomicsTK</category>
-  <title>Computes Encoded Features</title>
-  <description>Computes encoded features for Superpixels</description>
+  <title>Computes Superpixel Features</title>
+  <description>Computes superpixel features using an autoencoder</description>
   <version>0.1.0</version>
   <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
   <license>Apache 2.0</license>
@@ -69,14 +69,14 @@
       <label>Source Mean LAB</label>
       <description>Mean of source image in LAB color space for Reinhard color normalization</description>
       <longflag>source_mu_lab</longflag>
-      <default>-0.7964234, -0.11956765, 0.04405768</default>
+      <default>8.78558583, -0.11619498, 0.05307174</default>
     </double-vector>
     <double-vector>
       <name>source_std_lab</name>
       <label>Source Stddev LAB</label>
       <description>Standard deviation of source image in LAB color space for Reinhard color normalization</description>
       <longflag>source_std_lab</longflag>
-      <default>0.53154804, 0.09975676, 0.03118836</default>
+      <default>0.48594199, 0.09132716, 0.03238871</default>
     </double-vector>
   </parameters>
   <parameters advanced="true">
@@ -163,7 +163,14 @@
       <label>Minimum foreground fraction</label>
       <description>The minimum amount of foreground that must be present in a tile for it to be analyzed</description>
       <longflag>min_fgnd_frac</longflag>
-      <default>0.01</default>
+      <default>0.001</default>
+    </double>
+    <double>
+      <name>sample_fraction</name>
+      <label>Fraction of pixels to sample</label>
+      <description>Fraction of pixels to sample for normalization</description>
+      <longflag>sample_fraction</longflag>
+      <default>0.1</default>
     </double>
     <region>
       <name>region</name>
@@ -181,8 +188,8 @@
     </integer>
   </parameters>
 <parameters advanced="true">
-    <label>Autoencoder Testing</label>
-    <description>Autoencoder test parameters</description>
+    <label>Autoencoder</label>
+    <description>Autoencoder parameters</description>
     <integer>
       <name>patchSize</name>
       <longflag>patchSize</longflag>

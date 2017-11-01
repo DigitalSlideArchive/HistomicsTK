@@ -2,7 +2,7 @@
 <executable>
   <category>HistomicsTK</category>
   <title>Train Superpixel Features</title>
-  <description>Train Superpixel Features using Autoencoder</description>
+  <description>Train Superpixel Features using autoencoder</description>
   <version>0.1.0</version>
   <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
   <license>Apache 2.0</license>
@@ -156,7 +156,7 @@
       <label>Minimum foreground fraction</label>
       <description>The minimum amount of foreground that must be present in a tile for it to be analyzed</description>
       <longflag>min_fgnd_frac</longflag>
-      <default>0.01</default>
+      <default>0.001</default>
     </double>
     <double>
       <name>sample_fraction</name>
@@ -180,8 +180,8 @@
     </integer>
   </parameters>
   <parameters advanced="true">
-    <label>Autoencoder Training</label>
-    <description>Autoencoder train parameters</description>
+    <label>Autoencoder</label>
+    <description>Autoencoder parameters</description>
     <integer>
       <longflag>patchSize</longflag>
       <label>Patch size</label>

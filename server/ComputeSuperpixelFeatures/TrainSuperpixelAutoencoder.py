@@ -27,7 +27,8 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils  # noqa
 
 
-def compute_superpixel_data(img_path, tile_position, wsi_mean, wsi_stddev, args, **it_kwargs):
+def compute_superpixel_data(img_path, tile_position,
+                            wsi_mean, wsi_stddev, args, **it_kwargs):
 
     # get slide tile source
     ts = large_image.getTileSource(img_path)
@@ -38,12 +39,20 @@ def compute_superpixel_data(img_path, tile_position, wsi_mean, wsi_stddev, args,
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         **it_kwargs)
 
+    # get scale
+    scale = tile_info['magnification'] / args.analysis_mag
+
     im_tile = tile_info['tile'][:, :, :3]
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
                                  args.reference_mu_lab, args.reference_std_lab,
                                  wsi_mean, wsi_stddev)
+
+    # resize to requested size
+    im_nmzd = (resize(
+        im_nmzd, (im_nmzd.shape[0] / scale, im_nmzd.shape[1] / scale),
+        mode='reflect') * 255).astype(np.uint8)
 
     # get red and green channels
     im_red = im_nmzd[:, :, 0]
@@ -70,7 +79,7 @@ def compute_superpixel_data(img_path, tile_position, wsi_mean, wsi_stddev, args,
                 dict_stains[j] = i
 
     # compute number of super-pixels
-    im_width, im_height = im_tile.shape[:2]
+    im_width, im_height = im_nmzd.shape[:2]
     n_superpixels = (im_width/args.patchSize) * (im_height/args.patchSize)
 
     #
@@ -118,8 +127,9 @@ def compute_superpixel_data(img_path, tile_position, wsi_mean, wsi_stddev, args,
 
             for key in dict_stains.keys():
                 k = dict_stains[key]
-                im_stain = im_stains[:, :, k].astype(np.float) / 255.0
-                stain_data[:, :, k] = im_stain[min_row:max_row, min_col:max_col]
+                im_stain = im_stains[:, :, k].astype(np.float)
+                stain_data[:, :, k] = im_stain[
+                                      min_row:max_row, min_col:max_col] / 255.0
 
             s_data.append(stain_data)
 
@@ -250,7 +260,8 @@ def main(args):
         if is_wsi:
             print('\n>> Computing mean and variance for whole slide ...\n')
 
-            wsi_mean, wsi_stddev = htk_cnorm.reinhard_stats(img_path[i], args.sample_fraction, args.analysis_mag)
+            wsi_mean, wsi_stddev = htk_cnorm.reinhard_stats(
+                img_path[i], args.sample_fraction, args.analysis_mag)
 
         #
         # Compute tissue/foreground mask at low-res for whole slide images

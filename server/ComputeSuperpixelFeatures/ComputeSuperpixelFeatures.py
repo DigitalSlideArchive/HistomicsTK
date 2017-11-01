@@ -16,6 +16,7 @@ import h5py
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.segmentation as htk_seg
+
 import histomicstk.utils as htk_utils
 
 import large_image
@@ -29,13 +30,11 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils  # noqa
 
 
-def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
+def compute_superpixel_data(img_path, tile_position, wsi_mean,
+                            wsi_stddev, args, **it_kwargs):
 
     # get slide tile source
     ts = large_image.getTileSource(img_path)
-
-    # get global magnification
-    gmagnification = ts.getMetadata()['magnification']
 
     # get requested tile information
     tile_info = ts.getSingleTile(
@@ -43,27 +42,27 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         **it_kwargs)
 
-    # get global x and y position
+    # get global x and y positions, tile height and width
     left = tile_info['gx']
     top = tile_info['gy']
 
-    # get current magnification
-    magnification = tile_info['magnification']
-    
-    # get magnification ratio from analysis_mag
-    magnification_ratio = magnification / args.analysis_mag
+    # get scale
+    scale = tile_info['magnification'] / args.analysis_mag
 
-    im_tile_org = tile_info['tile'][:, :, :3]
+    # get ratio between max(height, width) and pixel points
+    ratio_pixel = tile_info['gwidth'] / (tile_info['width'] / scale)
 
-    im_tile = resize(
-        im_tile_org, (im_tile_org.shape[0] / magnification_ratio,
-                      im_tile_org.shape[1] / magnification_ratio),
-        mode='reflect')
+    im_tile = tile_info['tile'][:, :, :3]
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
                                  args.reference_mu_lab, args.reference_std_lab,
-                                 args.source_mu_lab, args.source_std_lab)
+                                 wsi_mean, wsi_stddev)
+
+    # resize to requested size
+    im_nmzd = (resize(
+        im_nmzd, (im_nmzd.shape[0] / scale, im_nmzd.shape[1] / scale),
+        mode='reflect') * 255).astype(np.uint8)
 
     # get red and green channels
     im_red = im_nmzd[:, :, 0]
@@ -90,7 +89,7 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
                 dict_stains[j] = i
 
     # compute the number of super-pixels
-    im_width, im_height = im_tile.shape[:2]
+    im_width, im_height = im_nmzd.shape[:2]
     n_superpixels = (im_width/args.patchSize) * (im_height/args.patchSize)
 
     #
@@ -142,8 +141,9 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
             for key in dict_stains.keys():
                 k = dict_stains[key]
-                im_stain = im_stains[:, :, k].astype(np.float) / 255.0
-                stain_data[:, :, k] = im_stain[min_row:max_row, min_col:max_col]
+                im_stain = im_stains[:, :, k].astype(np.float)
+                stain_data[:, :, k] = im_stain[
+                                      min_row:max_row, min_col:max_col] / 255.0
 
             s_data.append(stain_data)
 
@@ -157,15 +157,15 @@ def compute_superpixel_data(img_path, tile_position, args, **it_kwargs):
 
             # get superpixel boundary at highest-res
             x_brs.append(
-                (mbx - 1) * (gmagnification / args.analysis_mag) + top)
+                (mbx - 1) * ratio_pixel + top)
             y_brs.append(
-                (mby - 1) * (gmagnification / args.analysis_mag) + left)
+                (mby - 1) * ratio_pixel + left)
 
             # get superpixel centers at highest-res
             x_cent.append(
-                cen_x * (gmagnification / args.analysis_mag) + top)
+                round((cen_x * ratio_pixel + top), 1))
             y_cent.append(
-                cen_y * (gmagnification / args.analysis_mag) + left)
+                round((cen_y * ratio_pixel + left), 1))
 
     return s_data, x_cent, y_cent, x_brs, y_brs
 
@@ -288,6 +288,19 @@ def main(args):  # noqa: C901
         is_wsi = tile_magnification is not None
 
         #
+        # Compute colorspace statistics (mean, variance) for whole slide
+        #
+        wsi_mean = args.source_mu_lab
+        wsi_stddev = args.source_std_lab
+
+        if is_wsi:
+
+            print('\n>> Computing mean and variance for whole slide ...\n')
+
+            wsi_mean, wsi_stddev = htk_cnorm.reinhard_stats(
+                img_paths[i], args.sample_fraction, args.analysis_mag)
+
+        #
         # Compute tissue/foreground mask at low-res for whole slide images
         #
         if is_wsi:
@@ -364,6 +377,7 @@ def main(args):  # noqa: C901
             cur_result = dask.delayed(compute_superpixel_data)(
                 img_paths[i],
                 tile_position,
+                wsi_mean, wsi_stddev,
                 args, **it_kwargs)
 
             # append result to list
@@ -398,13 +412,9 @@ def main(args):  # noqa: C901
 
         n_superpixels = len(superpixel_data)
 
-        x_centroids = np.round(
-            np.asarray(x_centroids, dtype=np.float32).reshape((n_superpixels, 1)),
-            decimals=1)
+        x_centroids = np.asarray(x_centroids).reshape((n_superpixels, 1))
 
-        y_centroids = np.round(
-            np.asarray(y_centroids, dtype=np.float32).reshape((n_superpixels, 1)),
-            decimals=1)
+        y_centroids = np.asarray(y_centroids).reshape((n_superpixels, 1))
 
         # get slide name
         base = os.path.basename(img_paths[i])
@@ -514,8 +524,7 @@ def main(args):  # noqa: C901
         output.create_dataset('y_centroid', data=slide_x_centroids)
         output.create_dataset('patch_size', data=args.patchSize)
         output.create_dataset('magnification', data=tile_magnification)
-        output.create_dataset('analysis_mag', data= args.analysis_mag)
-
+        output.create_dataset('analysis_mag', data=args.analysis_mag)
         output.close()
 
     else:
@@ -531,8 +540,8 @@ def main(args):  # noqa: C901
 
     for i in range(superpixel_index):
         boundary_file.write("%s\t" % slide_name_list[slide_superpixel_index[i, 0]])
-        boundary_file.write("%f\t" % slide_y_centroids[i, 0])
-        boundary_file.write("%f\t" % slide_x_centroids[i, 0])
+        boundary_file.write("%.1f\t" % slide_y_centroids[i, 0])
+        boundary_file.write("%.1f\t" % slide_x_centroids[i, 0])
 
         for j in range(len(slide_x_boundaries[i])):
             boundary_file.write(
