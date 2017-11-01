@@ -1,6 +1,7 @@
 import _ from 'underscore';
 
 import eventStream from 'girder/utilities/EventStream';
+import { getCurrentUser } from 'girder/auth';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 
 import annotationSelectorWidget from '../templates/panels/annotationSelector.pug';
@@ -48,7 +49,8 @@ var AnnotationSelector = Panel.extend({
             id: 'annotation-panel-container',
             title: 'Annotations',
             activeAnnotation: this._getActiveAnnotation ? this._getActiveAnnotation() : null,
-            showLabels: this._showLabels
+            showLabels: this._showLabels,
+            user: getCurrentUser() || {}
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
