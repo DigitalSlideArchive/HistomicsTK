@@ -51,7 +51,7 @@ def compute_superpixel_data(img_path, tile_position,
 
     # resize to requested size
     im_nmzd = (resize(
-        im_nmzd, (im_nmzd.shape[0] / scale, im_nmzd.shape[1] / scale),
+        im_nmzd, (int(im_nmzd.shape[0] / scale), int(im_nmzd.shape[1] / scale)),
         mode='reflect') * 255).astype(np.uint8)
 
     # get red and green channels
@@ -128,8 +128,8 @@ def compute_superpixel_data(img_path, tile_position,
             for key in dict_stains.keys():
                 k = dict_stains[key]
                 im_stain = im_stains[:, :, k].astype(np.float)
-                stain_data[:, :, k] = im_stain[
-                                      min_row:max_row, min_col:max_col] / 255.0
+                stain_data[:, :, k] = \
+                    im_stain[min_row:max_row, min_col:max_col] / 255.0
 
             s_data.append(stain_data)
 
