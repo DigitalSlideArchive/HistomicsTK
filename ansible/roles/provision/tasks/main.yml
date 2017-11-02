@@ -10,6 +10,7 @@
   until: "ret and ret.get('gc_return') and ret.get('gc_return', {}).get('apiVersion')"
   delay: 1
   retries: 300
+  when: docker is defined
 
 - name: Create directory for logs
   file: state=directory path="{{ root_dir }}/logs"
