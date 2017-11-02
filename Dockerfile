@@ -35,7 +35,7 @@ RUN pip install --upgrade --ignore-installed pip setuptools && \
     pip install virtualenv && \
     virtualenv --system-site-packages /venv-gpu && \
     chmod +x /venv-gpu/bin/activate && \
-    /venv-gpu/bin/pip install tensorflow-gpu>=1.3.0
+    /venv-gpu/bin/pip install tensorflow-gpu>=1.3.0 && \
     # clean up
     conda clean -i -l -t -y && \
     rm -rf /root/.cache/pip/*
