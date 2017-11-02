@@ -36,7 +36,7 @@ installed as follows::
 
 If you want the keras/tensorflow based functions of HistomicsTK to take advantage of the GPU,
 then you will have to install the GPU version of tensorflow (tensorflow-gpu) after
-installing HistomicsTK. See tensorflow installation instructions `here https://www.tensorflow.org/install/`__.
+installing HistomicsTK. See tensorflow installation instructions `here <https://www.tensorflow.org/install/>`_.
 
 If you build libtiff or openjpeg locally, ensure that the appropriate pip files
 have also been installed locally so that they use the correct libraries::
