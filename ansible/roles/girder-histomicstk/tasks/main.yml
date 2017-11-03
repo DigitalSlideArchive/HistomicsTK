@@ -134,6 +134,13 @@
   command: girder-install plugin -s {{ root_dir }}/large_image
   become: true
 
+- name: Install large_image extras
+  become: true
+  pip:
+    name: ""
+    extra_args: "{{ root_dir }}/large_image[memcached,openslide]"
+    state: present
+
 - name: Install our external girder plugins - HistomicsTK
   command: girder-install plugin -s {{ root_dir }}/HistomicsTK
   become: true
