@@ -19,7 +19,7 @@ WORKDIR $htk_path
 RUN pip install --upgrade --ignore-installed pip setuptools && \
     pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli' && \
     # Install requirements.txt via pip; installing via conda causes
-    # version issues with our home-built libtif.
+    # version issues with our home-built libtiff.
     # Try twice; conda sometimes causes pip to fail the first time, but if it
     # fails twice then there is a real issue.
     pip install -r requirements.txt && \
@@ -31,6 +31,11 @@ RUN pip install --upgrade --ignore-installed pip setuptools && \
       Pillow && \
     # Install HistomicsTK
     python setup.py install && \
+    # Create separate virtual environments with CPU and GPU versions of tensorflow
+    pip install virtualenv && \
+    virtualenv --system-site-packages /venv-gpu && \
+    chmod +x /venv-gpu/bin/activate && \
+    /venv-gpu/bin/pip install tensorflow-gpu>=1.3.0 && \
     # clean up
     conda clean -i -l -t -y && \
     rm -rf /root/.cache/pip/*
@@ -56,4 +61,4 @@ WORKDIR $htk_path/server
 RUN python /build/slicer_cli_web/server/cli_list_entrypoint.py --list_cli
 RUN python /build/slicer_cli_web/server/cli_list_entrypoint.py ColorDeconvolution --help
 
-ENTRYPOINT ["/build/miniconda/bin/python", "/build/slicer_cli_web/server/cli_list_entrypoint.py"]
+ENTRYPOINT ["/bin/bash", "docker-entrypoint.sh"]
