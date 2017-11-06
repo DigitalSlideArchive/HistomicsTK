@@ -149,7 +149,7 @@
       <label>Analysis Tile Size</label>
       <description>Tile size for blockwise analysis</description>
       <longflag>analysis_tile_size</longflag>
-      <default>4096</default>
+      <default>2048</default>
     </double>
     <double>
       <name>analysis_mag</name>

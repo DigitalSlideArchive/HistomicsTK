@@ -1,7 +1,6 @@
 from scipy import ndimage
 from skimage.measure import regionprops
 from skimage.segmentation import slic
-from skimage.transform import resize
 from keras.models import Model, load_model
 
 import os
@@ -30,6 +29,36 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils  # noqa
 
 
+def encode_superpixel_data(superpixel_data, input_model):
+
+    # load input model
+    model = load_model(input_model)
+
+    encoded_layer_out = 0
+
+    encoded_layer_num = -1
+
+    layer_num_temp = -1
+
+    # loop layers in the input model
+    for layer in model.layers:
+        # find encoding layer
+        if len(layer.output.shape) == 2 and \
+                        encoded_layer_out < layer.output.shape[1]:
+            encoded_layer_out = layer.output.shape[1]
+            encoded_layer_num = layer_num_temp
+
+        # decrease layer number by -1
+        layer_num_temp = layer_num_temp - 1
+
+    encoder = Model(
+        inputs=model.input, outputs=model.layers[encoded_layer_num].output)
+
+    encoded_data = encoder.predict(superpixel_data)
+
+    return encoded_data
+
+
 def compute_superpixel_data(img_path, tile_position, wsi_mean,
                             wsi_stddev, args, **it_kwargs):
 
@@ -39,18 +68,19 @@ def compute_superpixel_data(img_path, tile_position, wsi_mean,
     # get requested tile information
     tile_info = ts.getSingleTile(
         tile_position=tile_position,
+        resample=True,
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         **it_kwargs)
+
+    # fetch the tile
+    t = tile_info['tile']
 
     # get global x and y positions, tile height and width
     left = tile_info['gx']
     top = tile_info['gy']
 
     # get scale
-    scale = tile_info['magnification'] / args.analysis_mag
-
-    # get ratio between max(height, width) and pixel points
-    ratio_pixel = tile_info['gwidth'] / (tile_info['width'] / scale)
+    scale = tile_info['gwidth'] / tile_info['width']
 
     im_tile = tile_info['tile'][:, :, :3]
 
@@ -58,11 +88,6 @@ def compute_superpixel_data(img_path, tile_position, wsi_mean,
     im_nmzd = htk_cnorm.reinhard(im_tile,
                                  args.reference_mu_lab, args.reference_std_lab,
                                  wsi_mean, wsi_stddev)
-
-    # resize to requested size
-    im_nmzd = (resize(
-        im_nmzd, (int(im_nmzd.shape[0] / scale), int(im_nmzd.shape[1] / scale)),
-        mode='reflect') * 255).astype(np.uint8)
 
     # get red and green channels
     im_red = im_nmzd[:, :, 0]
@@ -102,16 +127,15 @@ def compute_superpixel_data(img_path, tile_position, wsi_mean,
 
     region_props = regionprops(im_label)
 
-    n_labels = len(region_props)
-
     # set superpixel data list
     s_data = []
     x_cent = []
     y_cent = []
     x_brs = []
     y_brs = []
+    is_data = False
 
-    for i in range(n_labels):
+    for i in range(len(region_props)):
         # get x, y centroids for superpixel
         cen_x, cen_y = region_props[i].centroid
 
@@ -135,6 +159,7 @@ def compute_superpixel_data(img_path, tile_position, wsi_mean,
             if var < args.min_var_superpixel:
                 continue
 
+            is_data = True
             # get superpixel data
             stain_data = np.zeros(
                 (args.patchSize, args.patchSize, len(dict_stains)))
@@ -157,15 +182,19 @@ def compute_superpixel_data(img_path, tile_position, wsi_mean,
 
             # get superpixel boundary at highest-res
             x_brs.append(
-                (mbx - 1) * ratio_pixel + top)
+                (mbx - 1) * scale + top)
             y_brs.append(
-                (mby - 1) * ratio_pixel + left)
+                (mby - 1) * scale + left)
 
             # get superpixel centers at highest-res
             x_cent.append(
-                round((cen_x * ratio_pixel + top), 1))
+                round((cen_x * scale + top), 1))
             y_cent.append(
-                round((cen_y * ratio_pixel + left), 1))
+                round((cen_y * scale + left), 1))
+
+    if is_data:
+        s_data = encode_superpixel_data(
+            np.asarray(s_data, dtype=np.float32), args.inputModelFile)
 
     return s_data, x_cent, y_cent, x_brs, y_brs
 
@@ -385,6 +414,33 @@ def main(args):  # noqa: C901
 
         tile_result_list = dask.delayed(tile_result_list).compute()
 
+        # print('\n>> Detecting superpixel data ...\n')
+        #
+        # start_time = time.time()
+        #
+        # tile_result_list = []
+        # k = 0
+        # for tile in ts.tileIterator(**it_kwargs):
+        #
+        #     if k < 3:
+        #
+        #         tile_position = tile['tile_position']['position']
+        #
+        #         if is_wsi and tile_fgnd_frac_list[tile_position] <= args.min_fgnd_frac:
+        #             continue
+        #
+        #         # detect superpixel data
+        #         cur_result = compute_superpixel_data(
+        #             img_paths[i],
+        #             tile_position,
+        #             wsi_mean, wsi_stddev,
+        #             args, **it_kwargs)
+        #
+        #         # append result to list
+        #         tile_result_list.append(cur_result)
+        #
+        #         k = k + 1
+
         superpixel_data = []
         x_centroids = []
         y_centroids = []
@@ -458,52 +514,13 @@ def main(args):  # noqa: C901
 
         superpixel_index = superpixel_index + len(superpixel_data)
 
-    #
-    # Compute superpixel data based on the input model
-    #
-    print('\n>> Compute superpixel data to extract low dimensional features ...\n')
-    start_time = time.time()
-
-    # load input model
-    model = load_model(args.inputModelFile)
-
-    encoded_layer_out = 0
-
-    encoded_layer_num = -1
-
-    layer_num_temp = -1
-
-    # loop layers in the input model
-    for layer in model.layers:
-
-        # find encoding layer
-        if len(layer.output.shape) == 2 and encoded_layer_out < layer.output.shape[1]:
-            encoded_layer_out = layer.output.shape[1]
-            encoded_layer_num = layer_num_temp
-
-        # decrease layer number by -1
-        layer_num_temp = layer_num_temp - 1
-
-    encoder = Model(
-        inputs=model.input, outputs=model.layers[encoded_layer_num].output)
-
-    # predict superpixel features using encoder
-    encoded_features = encoder.predict(slide_superpixel_data)
-
-    encoding_time = time.time() - start_time
-
-    print 'Encoding time = %s' % cli_utils.disp_time_hms(encoding_time)
-
-    # get encoder size from the last layer of the input model
-    encoder_size = encoder.layers[-1].get_output_at(0).get_shape().as_list()[1]
-
     # get mean and standard deviation
     slide_feature_mean = np.reshape(
-        np.mean(encoded_features, axis=0), (encoder_size, 1)
+        np.mean(slide_superpixel_data, axis=0), (slide_superpixel_data.shape[1], 1)
     ).astype(np.float32)
 
     slide_feature_stddev = np.reshape(
-        np.std(encoded_features, axis=0), (encoder_size, 1)
+        np.std(slide_superpixel_data, axis=0), (slide_superpixel_data.shape[1], 1)
     ).astype(np.float32)
 
     #
@@ -519,7 +536,7 @@ def main(args):  # noqa: C901
         output.create_dataset('dataIdx', data=first_superpixel_index)
         output.create_dataset('mean', data=slide_feature_mean)
         output.create_dataset('std_dev', data=slide_feature_stddev)
-        output.create_dataset('features', data=encoded_features)
+        output.create_dataset('features', data=slide_superpixel_data)
         output.create_dataset('x_centroid', data=slide_y_centroids)
         output.create_dataset('y_centroid', data=slide_x_centroids)
         output.create_dataset('patch_size', data=args.patchSize)
