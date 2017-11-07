@@ -147,30 +147,72 @@ $(function () {
             it('login', function () {
                 girderTest.waitForLoad();
 
-                runs(function () {
-                    $('.g-login').click();
-                });
-
-                girderTest.waitForDialog();
-                runs(function () {
-                    $('#g-login').val('user');
-                    $('#g-password').val('password');
-                    $('#g-login-button').click();
-                });
-
-                waitsFor(function () {
-                    return $('.h-user-dropdown-link').length > 0;
-                }, 'user to be logged in');
+            runs(function () {
+                $('.g-login').click();
             });
 
-            it('open image', function () {
-                openImage('image');
-                runs(function () {
-                    geojsMap = app.bodyView.viewer;
-                });
+            girderTest.waitForDialog();
+            runs(function () {
+                $('#g-login').val('admin');
+                $('#g-password').val('password');
+                $('#g-login-button').click();
+            });
+
+            waitsFor(function () {
+                return $('.h-user-dropdown-link').length > 0;
+            }, 'user to be logged in');
+        });
+
+        it('open image', function () {
+            openImage('image');
+            runs(function () {
+                geojsMap = app.bodyView.viewer;
+            });
+        });
+    });
+
+    describe('Download a region of interest', function () {
+        it('open the download dialog', function () {
+            var interactor = geojsMap.interactor();
+            $('.h-download-button-area').click();
+
+            interactor.simulateEvent('mousedown', {
+                map: {x: 100, y: 100},
+                button: 'left'
+            });
+            interactor.simulateEvent('mousemove', {
+                map: {x: 200, y: 200},
+                button: 'left'
+            });
+            interactor.simulateEvent('mouseup', {
+                map: {x: 200, y: 200},
+                button: 'left'
+            });
+
+            girderTest.waitForDialog();
+            runs(function () {
+                expect($('.modal-title').text()).toBe('Edit Area');
             });
         });
 
+        it('test modifying form elements', function () {
+            $('#h-element-mag').val(10).trigger('change');
+            // TODO validate values
+        });
+
+        it('ensure the download link is correct', function () {
+            // TODO check href on the download button
+        });
+
+        it('close the dialog', function () {
+            $('#g-dialog-container').girderModal('close');
+            waitsFor(function () {
+                return $('body.modal-open').length === 0;
+            });
+        });
+    });
+
+    describe('Annotation tests', function () {
         describe('Draw panel', function () {
             var annotationInfo = {};
 
