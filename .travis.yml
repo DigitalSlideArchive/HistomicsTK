@@ -117,7 +117,7 @@ install:
     - pip install --no-cache-dir numpy>=1.12.1
     - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
 
-    - pip install -U -r requirements.txt
+    - pip install -U .[memcached,openslide]
     - python setup.py install
     - cd $main_path
     - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
