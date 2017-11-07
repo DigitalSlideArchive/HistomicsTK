@@ -92,7 +92,8 @@ $(function () {
             girder.rest.restRequest({
                 url: 'annotation',
                 data: {
-                    itemId: imageId
+                    itemId: imageId,
+                    userId: girder.auth.getCurrentUser().id
                 }
             }).then(function (a) {
                 annotations = a;
@@ -105,7 +106,7 @@ $(function () {
         }, 'saved annotations to load');
         runs(function () {
             expect(annotations.length).toBe(1);
-            expect(annotations[0].annotation.name).toMatch(/admin/);
+            expect(annotations[0].annotation.name).toMatch(/user/);
             annotationInfo.annotations = annotations;
             girder.rest.restRequest({
                 url: 'annotation/' + annotations[0]._id
@@ -133,7 +134,7 @@ $(function () {
 
                 girderTest.waitForDialog();
                 runs(function () {
-                    $('#g-login').val('admin');
+                    $('#g-login').val('user');
                     $('#g-password').val('password');
                     $('#g-login-button').click();
                 });
@@ -283,13 +284,17 @@ $(function () {
 
                 girderTest.waitForLoad();
                 runs(function () {
-                    expect($('.h-annotation-selector .h-annotation-name').text()).toBe('single point');
+                    expect(
+                        $('.h-annotation-selector .h-annotation:nth-of-type(2) .h-annotation-name').text()
+                    ).toBe('single point');
+
                     expect($('.h-draw-widget .h-save-widget').length).toBe(0);
 
                     girder.rest.restRequest({
                         url: 'annotation',
                         data: {
-                            itemId: imageId
+                            itemId: imageId,
+                            userId: girder.auth.getCurrentUser().id
                         }
                     }).then(function (a) {
                         annotations = a;
@@ -317,6 +322,12 @@ $(function () {
                 expect($('.h-annotation-selector .s-panel-title').text()).toMatch(/Annotations/);
             });
 
+            it('ensure user cannot remove the admin annotation', function () {
+                var adminAnnotation = $('.h-annotation-selector .h-annotation:contains("admin annotation")');
+                expect(adminAnnotation.length).toBe(1);
+                expect(adminAnnotation.find('.h-delete-annotation').length).toBe(0);
+            });
+
             it('toggle visibility of an annotation', function () {
                 runs(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("single point")');
@@ -341,15 +352,21 @@ $(function () {
                 var annotations = null;
                 runs(function () {
                     $('.h-annotation-selector .h-annotation:contains("single point") .h-delete-annotation').click();
-                    expect($('.h-annotation-selector .h-annotation:contains("single point")').length).toBe(0);
+                });
+
+                girderTest.waitForDialog();
+                runs(function () {
+                    $('.h-submit').click();
                 });
 
                 girderTest.waitForLoad();
                 runs(function () {
+                    expect($('.h-annotation-selector .h-annotation:contains("single point")').length).toBe(0);
                     girder.rest.restRequest({
                         url: 'annotation',
                         data: {
-                            itemId: imageId
+                            itemId: imageId,
+                            userId: girder.auth.getCurrentUser().id
                         }
                     }).then(function (a) {
                         annotations = a;
@@ -468,7 +485,7 @@ $(function () {
             it('open the original image', function () {
                 openImage('image');
                 runs(function () {
-                    expect($('.h-annotation-selector .h-annotation').length).toBe(1);
+                    expect($('.h-annotation-selector .h-annotation').length).toBe(2);
                 });
             });
         });

@@ -17,13 +17,22 @@ class WebClientTestCase(web_client_test.WebClientTestCase):
     def setUp(self):
         super(WebClientTestCase, self).setUp()
 
-        user = self.model('user').createUser(
+        admin = self.model('user').createUser(
             login='admin',
             password='password',
             email='admin@email.com',
             firstName='Admin',
             lastName='Admin',
             admin=True
+        )
+
+        user = self.model('user').createUser(
+            login='user',
+            password='password',
+            email='user@email.com',
+            firstName='User',
+            lastName='User',
+            admin=False
         )
 
         publicFolder = self.model('folder').childFolders(
@@ -39,3 +48,6 @@ class WebClientTestCase(web_client_test.WebClientTestCase):
         )
         self.model('image_item', 'large_image').copyItem(
             item, user, name='copy')
+
+        self.model('annotation', 'large_image').createAnnotation(
+            item, admin, {'name': 'admin annotation'})
