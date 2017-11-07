@@ -3,6 +3,7 @@ import _ from 'underscore';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 import { apiRoot } from 'girder/rest';
 
+import editRegionOfInterest from '../dialogs/editRegionOfInterest';
 import router from '../router';
 
 import zoomWidget from '../templates/panels/zoomWidget.pug';
@@ -73,6 +74,7 @@ var ZoomWidget = Panel.extend({
             id: 'zoom-panel-container',
             title: 'Zoom',
             title_download_view: 'Download View',
+            title_download_area: 'Download Area',
             min: min,
             max: max,
             step: 0.01,
@@ -203,6 +205,41 @@ var ZoomWidget = Panel.extend({
         this.$('a.h-download-link#download-view-link').attr({
             href: urlView
         });
+    },
+
+    /**
+     * Respond to clicking an element type by putting the image
+     * viewer into "draw" mode and open a dialog windows to edit this area
+     * params is an object.
+     *
+     */
+    _downloadArea(evt) {
+        const mag = Math.round(this._getSliderValue() * 10) / 10;
+        const maxZoom = this._maxZoom;
+        const maxMag = this._maxMag;
+        if (this._cancelSelection) {
+            this.viewer.annotationLayer.mode(null);
+            this._cancelSelection = false;
+            this.$('.h-download-button-area').removeClass('h-download-area-button-selected');
+        } else {
+            this.$('.h-download-button-area').addClass('h-download-area-button-selected');
+            this._cancelSelection = true;
+            this.viewer.drawRegion().then((coord) => {
+                var areaParams = {
+                    left: coord[0],
+                    top: coord[1],
+                    width: coord[2],
+                    height: coord[3],
+                    magnification: mag,
+                    maxZoom: maxZoom,
+                    maxMag: maxMag
+                };
+                this._cancelSelection = false;
+                this.$('.h-download-button-area').removeClass('h-download-area-button-selected');
+                editRegionOfInterest(areaParams);
+                return this;
+            });
+        }
     },
 
     /**
