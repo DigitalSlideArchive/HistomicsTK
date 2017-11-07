@@ -146,32 +146,49 @@ $(function () {
         describe('setup', function () {
             it('login', function () {
                 girderTest.waitForLoad();
+                runs(function () {
+                    $('.g-login').click();
+                });
 
-            runs(function () {
-                $('.g-login').click();
+                girderTest.waitForDialog();
+                runs(function () {
+                    $('#g-login').val('user');
+                    $('#g-password').val('password');
+                    $('#g-login-button').click();
+                });
+
+                waitsFor(function () {
+                    return $('.h-user-dropdown-link').length > 0;
+                }, 'user to be logged in');
             });
 
-            girderTest.waitForDialog();
-            runs(function () {
-                $('#g-login').val('admin');
-                $('#g-password').val('password');
-                $('#g-login-button').click();
-            });
-
-            waitsFor(function () {
-                return $('.h-user-dropdown-link').length > 0;
-            }, 'user to be logged in');
-        });
-
-        it('open image', function () {
-            openImage('image');
-            runs(function () {
-                geojsMap = app.bodyView.viewer;
+            it('open image', function () {
+                openImage('image');
+                runs(function () {
+                    geojsMap = app.bodyView.viewer;
+                });
             });
         });
     });
 
-    describe('Download a region of interest', function () {
+    describe('Download view and region of interest', function () {
+        it('check href attribute of \'Download View\' link', function () {
+            runs(function () {
+                $('#download-view-link').bind('click', function (event) {
+                    event.preventDefault();
+                });
+                $('.h-download-button-view').click();
+            });
+
+            waitsFor(function () {
+                return $('#download-view-link').attr('href') !== undefined;
+            }, 'to be the url');
+
+            runs(function () {
+                expect($('#download-view-link').attr('href')).toMatch(/\/item\/[0-9a-f]{24}\/tiles\/region\?width=[0-9-]+&height=[0-9-]+&left=[0-9-]+&top=[0-9-]+&right=[0-9-]+&bottom=[0-9-]+&contentDisposition=attachment/);
+            });
+        });
+
         it('open the download dialog', function () {
             var interactor = geojsMap.interactor();
             $('.h-download-button-area').click();
@@ -196,12 +213,36 @@ $(function () {
         });
 
         it('test modifying form elements', function () {
-            $('#h-element-mag').val(10).trigger('change');
-            // TODO validate values
+            const oldSettings = [];
+            const elements = [];
+            elements.push($('#h-element-width'), $('#h-element-height'),
+                $('#h-nb-pixel'), $('#h-size-file'));
+            oldSettings.push($('#h-element-width').val(), $('#h-element-height').val(),
+                $('#h-nb-pixel').val(), $('#h-size-file').val());
+            runs(function () {
+                $('#h-element-mag').val(10).trigger('change');
+                var i = 0;
+                // Check all the setting labels change
+                for (var value in oldSettings) {
+                    expect(elements[i].val()).not.toEqual(value);
+                    i++;
+                }
+            });
+            runs(function () {
+                $('#h-download-image-format').val('TIFF').trigger('change');
+                // Check the size label change
+                expect($('#h-size-file').val()).not.toEqual(oldSettings[3]);
+            });
         });
 
         it('ensure the download link is correct', function () {
-            // TODO check href on the download button
+            waitsFor(function () {
+                return $('#h-download-area-link').attr('href') !== undefined;
+            }, 'to be the url');
+
+            runs(function () {
+                expect($('#h-download-area-link').attr('href')).toMatch(/\/item\/[0-9a-f]{24}\/tiles\/region\?regionWidth=[0-9-]+&regionHeight=[0-9-]+&left=[0-9-]+&top=[0-9-]+&right=[0-9-]+&bottom=[0-9-]+&encoding=[EFGIJNPT]{3,4}&contentDisposition=attachment&magnification=[0-9-]+/);
+            });
         });
 
         it('close the dialog', function () {
