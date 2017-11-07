@@ -4,10 +4,12 @@ block title
   | #[span.icon-tags] #{title}
 
 block content
+  - var admin = user.get('admin');
   each annotation in annotations
     if annotation.id !== activeAnnotation
       - var name = annotation.get('annotation').name;
       - var displayed = annotation.get('displayed');
+      - var writeAccess = admin || user.id === annotation.get('creatorId');
       .h-annotation(data-id=annotation.id)
         if displayed
           span.icon-eye.h-toggle-annotation(
@@ -18,12 +20,13 @@ block content
         span.h-annotation-name(title=name) #{name}
 
         span.h-annotation-right
+          if writeAccess
+            span.icon-cancel.h-delete-annotation(
+                data-toggle='tooltip', title='Remove annotation')
           a(href=annotation.downloadUrl().replace(/\/download$/, ''),
               download=name + '.json')
             span.icon-download.h-download-annotation(
                 data-toggle='tooltip', title='Download annotation')
-          span.icon-cancel.h-delete-annotation(
-              data-toggle='tooltip', title='Remove annotation')
 
   .checkbox.h-annotation-toggle
     label
