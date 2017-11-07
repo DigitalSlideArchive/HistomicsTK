@@ -190,10 +190,12 @@ var DrawWidget = Panel.extend({
     },
 
     /**
-     * Empty all element from the `ElementCollection`.
+     * Empty all element from the `ElementCollection` and restore the current annotation
+     * to its default state.
      */
     reset() {
         this.collection.reset();
+        this.annotation.clear();
     },
 
     /**

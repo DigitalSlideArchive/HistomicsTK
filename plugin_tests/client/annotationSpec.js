@@ -78,7 +78,22 @@ $(function () {
         });
     }
 
-    function checkAutoSave(imageId, numberOfAnnotations, annotationInfo) {
+    /**
+     * This is a test helper method to make assertions about the last autosaved
+     * annotation.  The autosaved annotation is assumed to be the last annotation
+     * returned by the `/api/v1/annotation` endpoint.
+     *
+     * @param {string} imageId The id of the currently opened image
+     * @param {number} numberOfAnnotation The number of annotations to expect
+     * @param {number|null} numberOfElements
+     *      If a number, the number of elements to expect in the last annotation.
+     *      Otherwise, don't make any assertions about the last annotation.  This is
+     *      useful to assert that there are *no* autosaved annotations stored.
+     * @param {object}
+     *      The annotations loaded from the server will be set in this object for
+     *      further use by the caller.
+     */
+    function checkAutoSave(imageId, numberOfAnnotations, numberOfElements, annotationInfo) {
         var annotations;
         var annotation;
 
@@ -104,11 +119,13 @@ $(function () {
             return annotations !== undefined;
         }, 'saved annotations to load');
         runs(function () {
-            expect(annotations.length).toBe(1);
-            expect(annotations[0].annotation.name).toMatch(/admin/);
+            expect(annotations.length).toBe(numberOfAnnotations);
+            if (numberOfElements !== null) {
+                expect(annotations[numberOfAnnotations - 1].annotation.name).toMatch(/admin/);
+            }
             annotationInfo.annotations = annotations;
             girder.rest.restRequest({
-                url: 'annotation/' + annotations[0]._id
+                url: 'annotation/' + annotations[numberOfAnnotations - 1]._id
             }).done(function (a) {
                 annotation = a;
             });
@@ -118,7 +135,9 @@ $(function () {
             return annotation !== undefined;
         }, 'annotation to load');
         runs(function () {
-            expect(annotation.annotation.elements.length).toBe(numberOfAnnotations);
+            if (numberOfElements !== null) {
+                expect(annotation.annotation.elements.length).toBe(numberOfElements);
+            }
         });
     }
 
@@ -187,7 +206,7 @@ $(function () {
                     return !$('.h-draw[data-type="point"]').hasClass('active');
                 }, 'point drawing to be off');
 
-                checkAutoSave(imageId, 1, annotationInfo);
+                checkAutoSave(imageId, 1, 1, annotationInfo);
             });
 
             it('edit a point element', function () {
@@ -230,11 +249,11 @@ $(function () {
 
                 waitsFor(function () {
                     return $('.h-elements-container .h-element').length === 2;
-                }, 'rectangle to be created');
+                }, 'point to be created');
                 runs(function () {
                     expect($('.h-elements-container .h-element:last .h-element-label').text()).toBe('point');
                 });
-                checkAutoSave(imageId, 2, annotationInfo);
+                checkAutoSave(imageId, 1, 2, annotationInfo);
             });
 
             it('delete the autosaved annotation, edit the second point, and make sure it was autosaved', function () {
@@ -260,13 +279,13 @@ $(function () {
                     expect($('.h-elements-container .h-element:eq(1) .h-element-label').text()).toBe('test2');
                 });
 
-                checkAutoSave(imageId, 2, annotationInfo);
+                checkAutoSave(imageId, 1, 2, annotationInfo);
             });
 
             it('delete the second point', function () {
                 $('.h-elements-container .h-element:last .h-delete-element').click();
                 expect($('.h-elements-container .h-element').length).toBe(1);
-                checkAutoSave(imageId, 1, annotationInfo);
+                checkAutoSave(imageId, 1, 1, annotationInfo);
             });
 
             it('save the point annotation', function () {
@@ -309,6 +328,46 @@ $(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("single point")');
                     return $el.find('.icon-eye.h-toggle-annotation').length === 1;
                 }, 'saved annotation to draw');
+            });
+
+            it('draw another point and check the autosave name', function () {
+                runs(function () {
+                    // The draw button must be clicked in the next event loop (not sure why).
+                    window.setTimeout(function () {
+                        $('.h-draw[data-type="point"]').click();
+                    }, 0);
+                });
+
+                waitsFor(function () {
+                    return $('.geojs-map.annotation-input').length > 0;
+                }, 'draw mode to activate');
+                runs(function () {
+                    var interactor = geojsMap.interactor();
+                    interactor.simulateEvent('mousedown', {
+                        map: {x: 100, y: 100},
+                        button: 'left'
+                    });
+                    interactor.simulateEvent('mouseup', {
+                        map: {x: 100, y: 100},
+                        button: 'left'
+                    });
+                });
+
+                waitsFor(function () {
+                    return $('.h-elements-container .h-element').length === 1;
+                }, 'point to be created');
+                runs(function () {
+                    expect($('.h-elements-container .h-element:last .h-element-label').text()).toBe('point');
+                });
+                checkAutoSave(imageId, 2, 1, annotationInfo);
+            });
+
+            it('delete the last point', function () {
+                $('.h-elements-container .h-element:last .h-delete-element').click();
+                expect($('.h-elements-container .h-element').length).toBe(0);
+
+                // reset the draw state
+                $('.h-draw[data-type="point"]').click();
             });
         });
 
