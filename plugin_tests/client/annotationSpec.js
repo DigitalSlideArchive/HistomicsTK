@@ -169,91 +169,89 @@ $(function () {
                 });
             });
         });
-    });
 
-    describe('Download view and region of interest', function () {
-        it('check href attribute of \'Download View\' link', function () {
-            runs(function () {
-                $('#download-view-link').bind('click', function (event) {
-                    event.preventDefault();
+        describe('Download view and region of interest', function () {
+            it('check href attribute of \'Download View\' link', function () {
+                runs(function () {
+                    $('#download-view-link').bind('click', function (event) {
+                        event.preventDefault();
+                    });
+                    $('.h-download-button-view').click();
                 });
-                $('.h-download-button-view').click();
+
+                waitsFor(function () {
+                    return $('#download-view-link').attr('href') !== undefined;
+                }, 'to be the url');
+
+                runs(function () {
+                    expect($('#download-view-link').attr('href')).toMatch(/\/item\/[0-9a-f]{24}\/tiles\/region\?width=[0-9-]+&height=[0-9-]+&left=[0-9-]+&top=[0-9-]+&right=[0-9-]+&bottom=[0-9-]+&contentDisposition=attachment/);
+                });
             });
 
-            waitsFor(function () {
-                return $('#download-view-link').attr('href') !== undefined;
-            }, 'to be the url');
+            it('open the download dialog', function () {
+                var interactor = geojsMap.interactor();
+                $('.h-download-button-area').click();
 
-            runs(function () {
-                expect($('#download-view-link').attr('href')).toMatch(/\/item\/[0-9a-f]{24}\/tiles\/region\?width=[0-9-]+&height=[0-9-]+&left=[0-9-]+&top=[0-9-]+&right=[0-9-]+&bottom=[0-9-]+&contentDisposition=attachment/);
+                interactor.simulateEvent('mousedown', {
+                    map: {x: 100, y: 100},
+                    button: 'left'
+                });
+                interactor.simulateEvent('mousemove', {
+                    map: {x: 200, y: 200},
+                    button: 'left'
+                });
+                interactor.simulateEvent('mouseup', {
+                    map: {x: 200, y: 200},
+                    button: 'left'
+                });
+
+                girderTest.waitForDialog();
+                runs(function () {
+                    expect($('.modal-title').text()).toBe('Edit Area');
+                });
+            });
+
+            it('test modifying form elements', function () {
+                const oldSettings = [];
+                const elements = [];
+                elements.push($('#h-element-width'), $('#h-element-height'),
+                    $('#h-nb-pixel'), $('#h-size-file'));
+                oldSettings.push($('#h-element-width').val(), $('#h-element-height').val(),
+                    $('#h-nb-pixel').val(), $('#h-size-file').val());
+                runs(function () {
+                    $('#h-element-mag').val(10).trigger('change');
+                    var i = 0;
+                    // Check all the setting labels change
+                    for (var value in oldSettings) {
+                        expect(elements[i].val()).not.toEqual(value);
+                        i++;
+                    }
+                });
+                runs(function () {
+                    $('#h-download-image-format').val('TIFF').trigger('change');
+                    // Check the size label change
+                    expect($('#h-size-file').val()).not.toEqual(oldSettings[3]);
+                });
+            });
+
+            it('ensure the download link is correct', function () {
+                waitsFor(function () {
+                    return $('#h-download-area-link').attr('href') !== undefined;
+                }, 'to be the url');
+
+                runs(function () {
+                    expect($('#h-download-area-link').attr('href')).toMatch(/\/item\/[0-9a-f]{24}\/tiles\/region\?regionWidth=[0-9-]+&regionHeight=[0-9-]+&left=[0-9-]+&top=[0-9-]+&right=[0-9-]+&bottom=[0-9-]+&encoding=[EFGIJNPT]{3,4}&contentDisposition=attachment&magnification=[0-9-]+/);
+                });
+            });
+
+            it('close the dialog', function () {
+                $('#g-dialog-container').girderModal('close');
+                waitsFor(function () {
+                    return $('body.modal-open').length === 0;
+                });
             });
         });
 
-        it('open the download dialog', function () {
-            var interactor = geojsMap.interactor();
-            $('.h-download-button-area').click();
-
-            interactor.simulateEvent('mousedown', {
-                map: {x: 100, y: 100},
-                button: 'left'
-            });
-            interactor.simulateEvent('mousemove', {
-                map: {x: 200, y: 200},
-                button: 'left'
-            });
-            interactor.simulateEvent('mouseup', {
-                map: {x: 200, y: 200},
-                button: 'left'
-            });
-
-            girderTest.waitForDialog();
-            runs(function () {
-                expect($('.modal-title').text()).toBe('Edit Area');
-            });
-        });
-
-        it('test modifying form elements', function () {
-            const oldSettings = [];
-            const elements = [];
-            elements.push($('#h-element-width'), $('#h-element-height'),
-                $('#h-nb-pixel'), $('#h-size-file'));
-            oldSettings.push($('#h-element-width').val(), $('#h-element-height').val(),
-                $('#h-nb-pixel').val(), $('#h-size-file').val());
-            runs(function () {
-                $('#h-element-mag').val(10).trigger('change');
-                var i = 0;
-                // Check all the setting labels change
-                for (var value in oldSettings) {
-                    expect(elements[i].val()).not.toEqual(value);
-                    i++;
-                }
-            });
-            runs(function () {
-                $('#h-download-image-format').val('TIFF').trigger('change');
-                // Check the size label change
-                expect($('#h-size-file').val()).not.toEqual(oldSettings[3]);
-            });
-        });
-
-        it('ensure the download link is correct', function () {
-            waitsFor(function () {
-                return $('#h-download-area-link').attr('href') !== undefined;
-            }, 'to be the url');
-
-            runs(function () {
-                expect($('#h-download-area-link').attr('href')).toMatch(/\/item\/[0-9a-f]{24}\/tiles\/region\?regionWidth=[0-9-]+&regionHeight=[0-9-]+&left=[0-9-]+&top=[0-9-]+&right=[0-9-]+&bottom=[0-9-]+&encoding=[EFGIJNPT]{3,4}&contentDisposition=attachment&magnification=[0-9-]+/);
-            });
-        });
-
-        it('close the dialog', function () {
-            $('#g-dialog-container').girderModal('close');
-            waitsFor(function () {
-                return $('body.modal-open').length === 0;
-            });
-        });
-    });
-
-    describe('Annotation tests', function () {
         describe('Draw panel', function () {
             var annotationInfo = {};
 
