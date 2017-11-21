@@ -449,7 +449,12 @@ def docker_client():
     Return the current docker client in a manner that works with both the
     docker-py and docker modules.
     """
-    client = docker.from_env(version='auto')
+    try:
+        client = docker.from_env(version='auto')
+    except TypeError:
+        # On older versions of docker-py (such as 1.9), version isn't a
+        # parameter, so try without it
+        client = docker.from_env()
     client = client if not hasattr(client, 'api') else client.api
     return client
 
