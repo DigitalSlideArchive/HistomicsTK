@@ -70,6 +70,12 @@ class FeatureExtractionTest(base.TestCase):
 
         im_nuclei_stain = im_stains[:, :, nuclei_channel].astype(np.float)
 
+        cytoplasm_channel = htk_cdeconv.find_stain_index(
+            htk_cdeconv.stain_color_map['eosin'], w)
+
+        im_cytoplasm_stain = im_stains[:, :, cytoplasm_channel].astype(
+            np.float)
+
         # segment nuclei
         im_nuclei_seg_mask = cli_utils.detect_nuclei_kofahi(
             im_nuclei_stain, args)
@@ -77,21 +83,37 @@ class FeatureExtractionTest(base.TestCase):
         # perform connected component analysis
         nuclei_rprops = skimage.measure.regionprops(im_nuclei_seg_mask)
 
+        # compute nuclei features
+        fdata_nuclei = htk_features.compute_nuclei_features(
+            im_nuclei_seg_mask, im_nuclei_stain,
+            im_cytoplasm=im_cytoplasm_stain)
+
         self.im_input = im_input
         self.im_input_nmzd = im_input_nmzd
         self.im_nuclei_stain = im_nuclei_stain
         self.im_nuclei_seg_mask = im_nuclei_seg_mask
         self.nuclei_rprops = nuclei_rprops
+        self.fdata_nuclei = fdata_nuclei
 
-    def check_fdata_sanity(self, fdata, expected_feature_list):
+    def check_fdata_sanity(self, fdata, expected_feature_list, prefix=''):
 
         self.assertEqual(len(self.nuclei_rprops), fdata.shape[0])
-        self.assertEqual(len(expected_feature_list), len(fdata.columns))
 
-        for col in fdata.columns:
-            self.assertEqual(col in expected_feature_list, True)
+        if prefix is not None:
 
-    def test_intensity_features(self):
+            fcols = [col[len(prefix):]
+                     for col in fdata.columns if col.startswith(prefix)]
+
+        else:
+
+            fcols = fdata.columns
+
+            self.assertEqual(len(fcols), len(expected_feature_list))
+
+        for col in expected_feature_list:
+            self.assertEqual(col in fcols, True)
+
+    def test_compute_intensity_features(self):
 
         from histomicstk.features.compute_intensity_features import \
             feature_list
@@ -101,7 +123,13 @@ class FeatureExtractionTest(base.TestCase):
 
         self.check_fdata_sanity(fdata, feature_list)
 
-    def test_haralick_features(self):
+        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
+                                prefix='Nucleus.')
+
+        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
+                                prefix='Cytoplasm.')
+
+    def test_compute_haralick_features(self):
 
         from histomicstk.features.compute_haralick_features import \
             feature_list
@@ -111,7 +139,13 @@ class FeatureExtractionTest(base.TestCase):
 
         self.check_fdata_sanity(fdata, feature_list)
 
-    def test_gradient_features(self):
+        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
+                                prefix='Nucleus.')
+
+        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
+                                prefix='Cytoplasm.')
+
+    def test_compute_gradient_features(self):
 
         from histomicstk.features.compute_gradient_features import \
             feature_list
@@ -121,7 +155,13 @@ class FeatureExtractionTest(base.TestCase):
 
         self.check_fdata_sanity(fdata, feature_list)
 
-    def test_morphometry_features(self):
+        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
+                                prefix='Nucleus.')
+
+        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
+                                prefix='Cytoplasm.')
+
+    def test_compute_morphometry_features(self):
 
         from histomicstk.features.compute_morphometry_features import \
             feature_list
@@ -131,7 +171,7 @@ class FeatureExtractionTest(base.TestCase):
 
         self.check_fdata_sanity(fdata, feature_list)
 
-    def test_fsd_features(self):
+    def test_compute_fsd_features(self):
 
         Fs = 6
         feature_list = ['Shape.FSD' + str(i+1) for i in range(Fs)]
