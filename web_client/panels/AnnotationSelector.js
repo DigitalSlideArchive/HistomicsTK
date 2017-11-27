@@ -122,6 +122,7 @@ var AnnotationSelector = Panel.extend({
                 message: `Are you sure you want to delete ${name}?`,
                 submitButton: 'Delete',
                 onSubmit: () => {
+                    this.trigger('h:deleteAnnotation', model);
                     model.unset('displayed');
                     this.collection.remove(model);
                     model.destroy();
