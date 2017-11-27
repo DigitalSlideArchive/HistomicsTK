@@ -15,13 +15,16 @@ import histomicstk.features as htk_features
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../server')))
 from cli_common import utils as cli_utils  # noqa
 
+
 # boiler plate to start and stop the server if needed
 def setUpModule():
+
     base.enabledPlugins.append('HistomicsTK')
     base.startServer()
 
 
 def tearDownModule():
+
     base.stopServer()
 
 
@@ -53,19 +56,23 @@ class FeatureExtractionTest(base.TestCase):
         im_input = skimage.io.imread(input_image_file)[:, :, :3]
 
         # perform color normalization
-        im_input_nmzd = htk_cnorm.reinhard(im_input, args.reference_mu_lab, args.reference_std_lab)
+        im_input_nmzd = htk_cnorm.reinhard(
+            im_input, args.reference_mu_lab, args.reference_std_lab)
 
         # perform color decovolution
-        w = htk_cdeconv.rgb_separate_stains_macenko_pca(im_input_nmzd, im_input_nmzd.max())
+        w = htk_cdeconv.rgb_separate_stains_macenko_pca(
+            im_input_nmzd, im_input_nmzd.max())
 
         im_stains = htk_cdeconv.color_deconvolution(im_input_nmzd, w).Stains
 
-        nuclei_channel = htk_cdeconv.find_stain_index(htk_cdeconv.stain_color_map['hematoxylin'], w)
+        nuclei_channel = htk_cdeconv.find_stain_index(
+            htk_cdeconv.stain_color_map['hematoxylin'], w)
 
         im_nuclei_stain = im_stains[:, :, nuclei_channel].astype(np.float)
 
         # segment nuclei
-        im_nuclei_seg_mask = cli_utils.detect_nuclei_kofahi(im_nuclei_stain, args)
+        im_nuclei_seg_mask = cli_utils.detect_nuclei_kofahi(
+            im_nuclei_stain, args)
 
         # perform connected component analysis
         nuclei_rprops = skimage.measure.regionprops(im_nuclei_seg_mask)
@@ -86,33 +93,41 @@ class FeatureExtractionTest(base.TestCase):
 
     def test_intensity_features(self):
 
-        from histomicstk.features.compute_intensity_features import feature_list
+        from histomicstk.features.compute_intensity_features import \
+            feature_list
 
-        fdata = htk_features.compute_intensity_features(self.im_nuclei_seg_mask, self.im_nuclei_stain)
+        fdata = htk_features.compute_intensity_features(
+            self.im_nuclei_seg_mask, self.im_nuclei_stain)
 
         self.check_fdata_sanity(fdata, feature_list)
 
     def test_haralick_features(self):
 
-        from histomicstk.features.compute_haralick_features import feature_list
+        from histomicstk.features.compute_haralick_features import \
+            feature_list
 
-        fdata = htk_features.compute_haralick_features(self.im_nuclei_seg_mask, self.im_nuclei_stain)
+        fdata = htk_features.compute_haralick_features(
+            self.im_nuclei_seg_mask, self.im_nuclei_stain)
 
         self.check_fdata_sanity(fdata, feature_list)
 
     def test_gradient_features(self):
 
-        from histomicstk.features.compute_gradient_features import feature_list
+        from histomicstk.features.compute_gradient_features import \
+            feature_list
 
-        fdata = htk_features.compute_gradient_features(self.im_nuclei_seg_mask, self.im_nuclei_stain)
+        fdata = htk_features.compute_gradient_features(
+            self.im_nuclei_seg_mask, self.im_nuclei_stain)
 
         self.check_fdata_sanity(fdata, feature_list)
 
     def test_morphometry_features(self):
 
-        from histomicstk.features.compute_morphometry_features import feature_list
+        from histomicstk.features.compute_morphometry_features import \
+            feature_list
 
-        fdata = htk_features.compute_morphometry_features(self.im_nuclei_seg_mask)
+        fdata = htk_features.compute_morphometry_features(
+            self.im_nuclei_seg_mask)
 
         self.check_fdata_sanity(fdata, feature_list)
 
@@ -121,6 +136,7 @@ class FeatureExtractionTest(base.TestCase):
         Fs = 6
         feature_list = ['Shape.FSD' + str(i+1) for i in range(Fs)]
 
-        fdata = htk_features.compute_fsd_features(self.im_nuclei_seg_mask, self.im_nuclei_stain, Fs=Fs)
+        fdata = htk_features.compute_fsd_features(
+            self.im_nuclei_seg_mask, self.im_nuclei_stain, Fs=Fs)
 
         self.check_fdata_sanity(fdata, feature_list)
