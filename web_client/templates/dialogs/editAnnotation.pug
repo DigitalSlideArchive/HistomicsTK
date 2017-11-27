@@ -8,6 +8,10 @@
       .modal-body
         - element.label = element.label || {};
         .form-group
+          label(for='h-group-name') Group Name
+          input#h-group-name.input-sm.form-control(
+            type='text', placeholder='Enter an optional group name for the element', value=element.group)
+        .form-group
           label(for='h-element-label') Label
           input#h-element-label.input-sm.form-control(
             type='text', placeholder='Enter an optional label for the element', value=element.label.value)

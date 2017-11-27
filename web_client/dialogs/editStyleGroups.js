@@ -37,7 +37,7 @@ const EditStyleGroups = View.extend({
     _setStyle(evt) {
         evt.preventDefault();
         this.model.set(
-            this.collection.get(this.$('.h-style-selector').val()).toJSON()
+            this.collection.get(this.$('.h-group-name').val()).toJSON()
         );
         this.render();
     },
@@ -49,19 +49,14 @@ const EditStyleGroups = View.extend({
         const label = this.$('#h-element-label').val();
         let validation = '';
 
-        data.id = this.$('.h-style-selector :selected').val() || this.$('.h-new-style-name').val().trim();
+        data.id = this.$('.h-group-name :selected').val() || this.$('.h-new-group-name').val().trim();
         if (!data.id) {
             validation += 'A style name is required';
-            this.$('.h-new-style-name').parent().addClass('has-error');
+            this.$('.h-new-group-name').parent().addClass('has-error');
         }
-
-        if (label) {
-            data.label = {
-                value: label
-            };
-        } else {
-            data.label = {};
-        }
+        data.label = label ? {value: label} : {};
+        const group = data.id;
+        data.group = group && group !== 'default' ? group : undefined;
 
         const lineWidth = this.$('#h-element-line-width').val();
         if (lineWidth) {
@@ -122,7 +117,7 @@ const EditStyleGroups = View.extend({
         if (this._newStyle) {
             this._newStyle = false;
         } else {
-            const id = this.$('.h-style-selector :selected').val();
+            const id = this.$('.h-group-name :selected').val();
             var model = this.collection.get(id);
             model.destroy();
             this.collection.remove(model);
