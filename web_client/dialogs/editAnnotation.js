@@ -33,16 +33,12 @@ var EditAnnotation = View.extend({
         evt.preventDefault();
 
         var data = {};
-        var label = this.$('#h-element-label').val();
         var validation = '';
 
-        if (label) {
-            data.label = {
-                value: label
-            };
-        } else {
-            data.label = {};
-        }
+        var label = this.$('#h-element-label').val();
+        data.label = label ? {value: label} : {};
+        var group = this.$('#h-group-name').val();
+        data.group = group && group !== 'default' ? group : undefined;
 
         var lineWidth = this.$('#h-element-line-width').val();
         if (lineWidth) {

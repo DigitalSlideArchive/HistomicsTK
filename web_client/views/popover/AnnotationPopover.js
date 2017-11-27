@@ -146,6 +146,9 @@ var AnnotationPopover = View.extend({
         if (element.get('label')) {
             props.label = element.get('label').value;
         }
+        if (element.get('group')) {
+            props.group = element.get('group');
+        }
         setIf('center', point);
         setIf('width', length);
         setIf('height', length);

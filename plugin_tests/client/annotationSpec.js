@@ -585,15 +585,15 @@ $(function () {
             }, 'dialog to open');
             runs(function () {
                 // ensure the default style is created on load
-                expect($('.h-style-selector :selected').val()).toBe('default');
+                expect($('.h-group-name :selected').val()).toBe('default');
             });
         });
 
         it('create a new style group', function () {
             $('.h-create-new-style').click();
-            $('.h-new-style-name').val('new');
+            $('.h-new-group-name').val('new');
             $('.h-save-new-style').click();
-            expect($('.h-style-selector :selected').val()).toBe('new');
+            expect($('.h-group-name :selected').val()).toBe('new');
 
             $('#h-element-line-width').val(1).trigger('change');
             $('#h-element-line-color').val('rgb(255,0,0)').trigger('change');
@@ -649,14 +649,14 @@ $(function () {
                 return $('body.modal-open').length > 0;
             }, 'dialog to open');
             runs(function () {
-                expect($('.h-style-selector :selected').val()).toBe('new');
+                expect($('.h-group-name :selected').val()).toBe('new');
             });
         });
 
         it('delete a style group', function () {
             runs(function () {
                 $('.h-delete-style').click();
-                expect($('.h-style-selector :selected').val()).toBe('default');
+                expect($('.h-group-name :selected').val()).toBe('default');
                 $('.h-submit').click();
             });
             girderTest.waitForLoad();
