@@ -134,7 +134,7 @@ var AnnotationSelector = Panel.extend({
         const id = $(evt.currentTarget).parents('.h-annotation').data('id');
         const model = this.collection.get(id);
         this.listenToOnce(
-            showSaveAnnotationDialog(model),
+            showSaveAnnotationDialog(model, {title: 'Edit annotation'}),
             'g:submit',
             () => model.save()
         );
@@ -204,7 +204,7 @@ var AnnotationSelector = Panel.extend({
             annotation: {}
         });
         this.listenToOnce(
-            showSaveAnnotationDialog(model),
+            showSaveAnnotationDialog(model, {title: 'Create annotation'}),
             'g:submit',
             () => {
                 model.save().done(() => {

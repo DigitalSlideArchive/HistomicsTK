@@ -17,6 +17,7 @@ var SaveAnnotation = View.extend({
     render() {
         this.$el.html(
             saveAnnotation({
+                title: this.options.title,
                 annotation: this.annotation.toJSON().annotation
             })
         ).girderModal(this);
@@ -67,8 +68,10 @@ var dialog = new SaveAnnotation({
  * @param {AnnotationModel} annotationElement The element to edit
  * @returns {SaveAnnotation} The dialog's view
  */
-function show(annotation) {
+function show(annotation, options) {
+    _.defaults(options, {'title': 'Create annotation'});
     dialog.annotation = annotation;
+    dialog.options = options;
     dialog.setElement('#g-dialog-container').render();
     return dialog;
 }
