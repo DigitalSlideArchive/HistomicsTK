@@ -11,13 +11,13 @@
           label(for='h-group-name') Name
           if newStyle
             .input-group
-              input.form-control.input-sm.h-new-style-name(type='text')
+              input.form-control.input-sm.h-new-group-name(type='text')
               .input-group-btn
                 button.btn.btn-default.btn-sm.h-save-new-style
                   span.icon-ok
           else
             .input-group
-              select.form-control.h-style-selector
+              select.form-control.h-group-name
                 each style in collection.sortBy('id')
                   - var selected = model.id === style.id
                   option(value=style.get('id'), selected=selected)

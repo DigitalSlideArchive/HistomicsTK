@@ -261,6 +261,9 @@ var DrawWidget = Panel.extend({
         this._style.set(
             this._groups.get(this.$('.h-style-group').val()).toJSON()
         );
+        if (!this._style.get('group') && this._style.id !== 'default') {
+            this._style.set('group', this._style.id);
+        }
     },
 
     _styleGroupEditor() {
