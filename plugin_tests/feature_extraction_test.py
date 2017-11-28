@@ -147,7 +147,7 @@ class FeatureExtractionTest(base.TestCase):
 
     def test_compute_haralick_features(self):
 
-        expected_feature_list = [
+        f = [
             'Haralick.ASM',
             'Haralick.Contrast',
             'Haralick.Correlation',
@@ -162,6 +162,11 @@ class FeatureExtractionTest(base.TestCase):
             'Haralick.IMC1',
             'Haralick.IMC2',
         ]
+
+        expected_feature_list = []
+        for col in f:
+            expected_feature_list.append(col + '.Mean')
+            expected_feature_list.append(col + '.Range')
 
         fdata = htk_features.compute_haralick_features(
             self.im_nuclei_seg_mask, self.im_nuclei_stain)
