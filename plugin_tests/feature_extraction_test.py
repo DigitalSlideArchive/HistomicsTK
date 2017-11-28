@@ -95,88 +95,150 @@ class FeatureExtractionTest(base.TestCase):
         self.nuclei_rprops = nuclei_rprops
         self.fdata_nuclei = fdata_nuclei
 
-    def check_fdata_sanity(self, fdata, expected_feature_list, prefix=''):
+    def check_fdata_sanity(self, fdata, expected_feature_list,
+                           prefix='', match_feature_count=True):
 
         self.assertEqual(len(self.nuclei_rprops), fdata.shape[0])
 
-        if prefix is not None:
+        if len(prefix) > 0:
 
-            fcols = [col[len(prefix):]
+            fcols = [col
                      for col in fdata.columns if col.startswith(prefix)]
 
         else:
 
             fcols = fdata.columns
 
+        if match_feature_count:
             self.assertEqual(len(fcols), len(expected_feature_list))
 
         for col in expected_feature_list:
-            self.assertEqual(col in fcols, True)
+            self.assertEqual(prefix + col in fcols, True)
 
     def test_compute_intensity_features(self):
 
-        from histomicstk.features.compute_intensity_features import \
-            feature_list
+        expected_feature_list = [
+            'Intensity.Min',
+            'Intensity.Max',
+            'Intensity.Mean',
+            'Intensity.Median',
+            'Intensity.MeanMedianDiff',
+            'Intensity.Std',
+            'Intensity.IQR',
+            'Intensity.MAD',
+            'Intensity.Skewness',
+            'Intensity.Kurtosis',
+            'Intensity.HistEnergy',
+            'Intensity.HistEntropy',
+        ]
 
         fdata = htk_features.compute_intensity_features(
             self.im_nuclei_seg_mask, self.im_nuclei_stain)
 
-        self.check_fdata_sanity(fdata, feature_list)
+        self.check_fdata_sanity(fdata, expected_feature_list)
 
-        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
-                                prefix='Nucleus.')
+        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
+                                prefix='Nucleus.',
+                                match_feature_count=False)
 
-        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
-                                prefix='Cytoplasm.')
+        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
+                                prefix='Cytoplasm.',
+                                match_feature_count=False)
 
     def test_compute_haralick_features(self):
 
-        from histomicstk.features.compute_haralick_features import \
-            feature_list
+        f = [
+            'Haralick.ASM',
+            'Haralick.Contrast',
+            'Haralick.Correlation',
+            'Haralick.SumOfSquares',
+            'Haralick.IDM',
+            'Haralick.SumAverage',
+            'Haralick.SumVariance',
+            'Haralick.SumEntropy',
+            'Haralick.Entropy',
+            'Haralick.DifferenceVariance',
+            'Haralick.DifferenceEntropy',
+            'Haralick.IMC1',
+            'Haralick.IMC2',
+        ]
+
+        expected_feature_list = []
+        for col in f:
+            expected_feature_list.append(col + '.Mean')
+            expected_feature_list.append(col + '.Range')
 
         fdata = htk_features.compute_haralick_features(
             self.im_nuclei_seg_mask, self.im_nuclei_stain)
 
-        self.check_fdata_sanity(fdata, feature_list)
+        self.check_fdata_sanity(fdata, expected_feature_list)
 
-        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
-                                prefix='Nucleus.')
+        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
+                                prefix='Nucleus.',
+                                match_feature_count=False)
 
-        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
-                                prefix='Cytoplasm.')
+        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
+                                prefix='Cytoplasm.',
+                                match_feature_count=False)
 
     def test_compute_gradient_features(self):
 
-        from histomicstk.features.compute_gradient_features import \
-            feature_list
+        expected_feature_list = [
+            'Gradient.Mag.Mean',
+            'Gradient.Mag.Std',
+            'Gradient.Mag.Skewness',
+            'Gradient.Mag.Kurtosis',
+            'Gradient.Mag.HistEntropy',
+            'Gradient.Mag.HistEnergy',
+            'Gradient.Canny.Sum',
+            'Gradient.Canny.Mean',
+        ]
 
         fdata = htk_features.compute_gradient_features(
             self.im_nuclei_seg_mask, self.im_nuclei_stain)
 
-        self.check_fdata_sanity(fdata, feature_list)
+        self.check_fdata_sanity(fdata, expected_feature_list)
 
-        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
-                                prefix='Nucleus.')
+        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
+                                prefix='Nucleus.',
+                                match_feature_count=False)
 
-        self.check_fdata_sanity(self.fdata_nuclei, feature_list,
-                                prefix='Cytoplasm.')
+        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
+                                prefix='Cytoplasm.',
+                                match_feature_count=False)
 
     def test_compute_morphometry_features(self):
 
-        from histomicstk.features.compute_morphometry_features import \
-            feature_list
+        expected_feature_list = [
+            'Size.Area',
+            'Size.MajorAxisLength',
+            'Size.MinorAxisLength',
+            'Size.Perimeter',
+            'Shape.Circularity',
+            'Shape.Eccentricity',
+            'Shape.EquivalentDiameter',
+            'Shape.Extent',
+            'Shape.MinorMajorAxisRatio',
+            'Shape.Solidity',
+        ]
 
         fdata = htk_features.compute_morphometry_features(
             self.im_nuclei_seg_mask)
 
-        self.check_fdata_sanity(fdata, feature_list)
+        self.check_fdata_sanity(fdata, expected_feature_list)
+
+        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
+                                match_feature_count=False)
 
     def test_compute_fsd_features(self):
 
         Fs = 6
-        feature_list = ['Shape.FSD' + str(i+1) for i in range(Fs)]
+        expected_feature_list = ['Shape.FSD' + str(i+1) for i in range(Fs)]
 
         fdata = htk_features.compute_fsd_features(
-            self.im_nuclei_seg_mask, self.im_nuclei_stain, Fs=Fs)
+            self.im_nuclei_seg_mask, Fs=Fs)
 
-        self.check_fdata_sanity(fdata, feature_list)
+        self.check_fdata_sanity(fdata, expected_feature_list)
+
+        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
+                                match_feature_count=False)
