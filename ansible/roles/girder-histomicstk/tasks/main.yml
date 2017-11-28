@@ -169,6 +169,7 @@
 - name: Install girder server dev requirements
   pip:
     requirements: "{{ girder_root }}/requirements-dev.txt"
+    chdir: "{{ girder_root }}"
   become: true
 
 - name: Install HistomicsTK dev requirements
