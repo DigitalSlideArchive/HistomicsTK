@@ -16,15 +16,6 @@ HistomicsTK depends on large_image_ for reading large multi-resolution
 whole-slide images in a tiled fashion. Please see the Github repo of
 large_image to find out how to install it as a Python toolkit/package.
 
-HistomicsTK also leverages the functionality of a number of scientific python
-packages including numpy_, scipy_, scikit-image_, scikit-learn_,
-and pandas_.  If you have not built libtiff or openjpeg locally, we recommend
-installing anaconda_ to ease the cross-platform installation of these packages
-all of which are listed in
-`requirments_c_conda.txt <https://github.com/DigitalSlideArchive/HistomicsTK/blob/master/requirements_c_conda.txt>`__.
-If libtiff or openjpeg were built locally, use pip to install these packages,
-as otherwise the binaries may not match properly.
-
 Once large_image is installed as a python package, HistomicsTK can be
 installed as follows::
 
@@ -37,11 +28,6 @@ installed as follows::
 If you want the keras/tensorflow based functions of HistomicsTK to take advantage of the GPU,
 then you will have to install the GPU version of tensorflow (tensorflow-gpu) after
 installing HistomicsTK. See tensorflow installation instructions `here <https://www.tensorflow.org/install/>`_.
-
-If you build libtiff or openjpeg locally, ensure that the appropriate pip files
-have also been installed locally so that they use the correct libraries::
-
-    $ pip install --upgrade --force-reinstall --ignore-installed --no-cache-dir openslide-python Pillow
 
 We are working on releasing HistomicsTK on PyPI so it can easily be pip
 installed from there.

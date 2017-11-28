@@ -237,4 +237,3 @@ class FeatureExtractionTest(base.TestCase):
 
         self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
                                 match_feature_count=False)
-
