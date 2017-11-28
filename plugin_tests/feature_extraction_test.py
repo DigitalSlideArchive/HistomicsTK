@@ -236,7 +236,7 @@ class FeatureExtractionTest(base.TestCase):
         expected_feature_list = ['Shape.FSD' + str(i+1) for i in range(Fs)]
 
         fdata = htk_features.compute_fsd_features(
-            self.im_nuclei_seg_mask, self.im_nuclei_stain, Fs=Fs)
+            self.im_nuclei_seg_mask, Fs=Fs)
 
         self.check_fdata_sanity(fdata, expected_feature_list)
 
