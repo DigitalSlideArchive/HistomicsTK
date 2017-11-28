@@ -3,8 +3,11 @@ import _ from 'underscore';
 import eventStream from 'girder/utilities/EventStream';
 import { getCurrentUser } from 'girder/auth';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 
 import events from '../events';
+import showSaveAnnotationDialog from '../dialogs/saveAnnotation';
+
 import annotationSelectorWidget from '../templates/panels/annotationSelector.pug';
 import '../stylesheets/panels/annotationSelector.styl';
 
@@ -14,8 +17,11 @@ import '../stylesheets/panels/annotationSelector.styl';
  */
 var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
+        'click .h-annotation-name': 'editAnnotation',
         'click .h-toggle-annotation': 'toggleAnnotation',
         'click .h-delete-annotation': 'deleteAnnotation',
+        'click .h-create-annotation': 'createAnnotation',
+        'click .h-edit-annotation-metadata': 'editAnnotationMetadata',
         'change #h-toggle-labels': 'toggleLabels'
     }),
 
@@ -26,16 +32,12 @@ var AnnotationSelector = Panel.extend({
      * @param {AnnotationCollection} settings.collection
      *     The collection representing the annotations attached
      *     to the current image.
-     * @param {ItemModel} settings.parentItem
-     *     The currently active "large_image" item.
      */
     initialize(settings) {
         this.listenTo(this.collection, 'all', this.render);
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
         this.listenTo(eventStream, 'g:eventStream.start', this._refreshAnnotations);
-        if (settings.parentItem) {
-            this.setItem(settings.parentItem);
-        }
+        this.listenTo(this.collection, 'change:annotation', this._saveAnnotation);
         this._getActiveAnnotation = settings.getActiveAnnotation;
     },
 
@@ -128,6 +130,16 @@ var AnnotationSelector = Panel.extend({
         }
     },
 
+    editAnnotationMetadata(evt) {
+        const id = $(evt.currentTarget).parents('.h-annotation').data('id');
+        const model = this.collection.get(id);
+        this.listenToOnce(
+            showSaveAnnotationDialog(model),
+            'g:submit',
+            () => model.save()
+        );
+    },
+
     _onJobUpdate(evt) {
         if (this.parentItem && evt.data.status > 2) {
             this._refreshAnnotations();
@@ -163,6 +175,55 @@ var AnnotationSelector = Panel.extend({
         this.trigger('h:toggleLabels', {
             show: this._showLabels
         });
+    },
+
+    editAnnotation(evt) {
+        var id = $(evt.currentTarget).parents('.h-annotation').data('id');
+        var model = this.collection.get(id);
+        model.fetch().done(() => {
+            model.set('displayed', true);
+
+            // TODO: expose this information publicly
+            if (model._pageElements) {
+                events.trigger('g:alert', {
+                    text: 'This annotation has too many elements to be edited.',
+                    type: 'warning',
+                    timeout: 5000,
+                    icon: 'info'
+                });
+            } else {
+                this.trigger('h:editAnnotation', model);
+                this._activeAnnotation = model;
+            }
+        });
+    },
+
+    createAnnotation(evt) {
+        var model = new AnnotationModel({
+            itemId: this.parentItem.id,
+            annotation: {}
+        });
+        this.listenToOnce(
+            showSaveAnnotationDialog(model),
+            'g:submit',
+            () => {
+                model.save().done(() => {
+                    model.set('displayed', true);
+                    this.collection.add(model);
+                    this.trigger('h:editAnnotation', model);
+                    this._activeAnnotation = model;
+                });
+            }
+        );
+    },
+
+    _saveAnnotation(annotation) {
+        if (!this._saving && annotation === this._activeAnnotation) {
+            this._saving = true;
+            annotation.save().always(() => {
+                this._saving = false;
+            });
+        }
     }
 });
 

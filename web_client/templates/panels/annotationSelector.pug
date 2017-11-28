@@ -23,6 +23,8 @@ block content
           if writeAccess
             span.icon-cancel.h-delete-annotation(
                 data-toggle='tooltip', title='Remove annotation')
+            span.icon-cog.h-edit-annotation-metadata(
+                data-toggle='tooltip', title='Edit annotation')
           a(href=annotation.downloadUrl().replace(/\/download$/, ''),
               download=name + '.json')
             span.icon-download.h-download-annotation(
@@ -32,3 +34,6 @@ block content
     label
       input#h-toggle-labels(type='checkbox', checked=showLabels)
       | Show labels
+    button.btn.btn-sm.btn-primary.h-create-annotation
+      | #[span.icon-plus-squared] New
+    .clearfix

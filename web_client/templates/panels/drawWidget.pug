@@ -33,11 +33,9 @@ block content
   if elements.length
     .h-elements-container
       each element in elements
+        - element = element.toJSON();
         - var label = (element.label || {}).value || (element.type === 'polyline' ? (element.closed ? 'polygon' : 'line') : element.type);
         .h-element(data-id=element.id)
           span.icon-cog.h-edit-element(data-toggle='tooltip', title='Change style')
           span.h-element-label #{label}
           span.icon-cancel.h-delete-element(data-toggle='tooltip', title='Remove')
-
-    button.btn.btn-primary.h-save-annotation(type='button') Save
-    .clearfix

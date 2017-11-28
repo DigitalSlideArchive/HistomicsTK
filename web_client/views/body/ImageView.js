@@ -40,15 +40,9 @@ var ImageView = View.extend({
         this.zoomWidget = new ZoomWidget({
             parentView: this
         });
-        this.drawWidget = new DrawWidget({
-            parentView: this,
-            annotations: this.annotations,
-            image: this.model
-        });
         this.annotationSelector = new AnnotationSelector({
             parentView: this,
             collection: this.annotations,
-            getActiveAnnotation: () => { return this.drawWidget.getActiveAnnotation(); },
             image: this.model
         });
         this.popover = new AnnotationPopover({
@@ -56,8 +50,9 @@ var ImageView = View.extend({
         });
 
         this.listenTo(events, 'h:select-region', this.showRegion);
-        this.listenTo(this.annotationSelector.collection, 'add change:displayed', this.toggleAnnotation);
+        this.listenTo(this.annotationSelector.collection, 'add update change:displayed', this.toggleAnnotation);
         this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
+        this.listenTo(this.annotationSelector, 'h:editAnnotation', this._editAnnotation);
 
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
         this.render();
@@ -67,6 +62,7 @@ var ImageView = View.extend({
         // This can happen when opening a new image while an annotation is
         // being hovered.
         this.mouseResetAnnotation();
+        this._removeDrawWidget();
 
         if (this.model.id === this._openId) {
             this.controlPanel.setElement('.h-control-panel-container').render();
@@ -125,9 +121,12 @@ var ImageView = View.extend({
                         .setViewer(this.viewerWidget)
                         .setElement('.h-annotation-selector').render();
 
-                    this.drawWidget
-                        .setViewer(this.viewerWidget)
-                        .setElement('.h-draw-widget').render();
+                    if (this.drawWidget) {
+                        this.$('.h-draw-widget').removeClass('hidden');
+                        this.drawWidget
+                            .setViewer(this.viewerWidget)
+                            .setElement('.h-draw-widget').render();
+                    }
                 }
             });
             this.annotationSelector.setItem(this.model);
@@ -136,9 +135,12 @@ var ImageView = View.extend({
                 .setViewer(null)
                 .setElement('.h-annotation-selector').render();
 
-            this.drawWidget
-                .setViewer(null)
-                .setElement('.h-draw-widget').render();
+            if (this.drawWidget) {
+                this.$('.h-draw-widget').removeClass('hidden');
+                this.drawWidget
+                    .setViewer(null)
+                    .setElement('.h-draw-widget').render();
+            }
         }
         this.controlPanel.setElement('.h-control-panel-container').render();
         this.popover.setElement('#h-annotation-popover-container').render();
@@ -294,6 +296,15 @@ var ImageView = View.extend({
         }
     },
 
+    _redrawAnnotation(annotation) {
+        if (!this.viewerWidget || !annotation.get('displayed')) {
+            // We may need a way to queue annotation draws while viewer
+            // initializes, but for now ignore them.
+            return;
+        }
+        this.viewerWidget.drawAnnotation(annotation);
+    },
+
     widgetRegion(model) {
         var value = model.get('value');
         this.showRegion({
@@ -375,6 +386,31 @@ var ImageView = View.extend({
 
     toggleLabels(options) {
         this.popover.toggle(options.show);
+    },
+
+    _removeDrawWidget() {
+        if (this.drawWidget) {
+            this.drawWidget.cancelDrawMode();
+            this.stopListening(this.drawWidget);
+            this.drawWidget.remove();
+            this.drawWidget = null;
+            $('<div/>').addClass('h-draw-widget s-panel hidden')
+                .appendTo(this.$('#h-annotation-selector-container'));
+        }
+    },
+
+    _editAnnotation(model) {
+        this.activeAnnotation = model;
+        this._removeDrawWidget();
+        this.drawWidget = new DrawWidget({
+            parentView: this,
+            image: this.model,
+            annotation: this.activeAnnotation,
+            el: this.$('.h-draw-widget'),
+            viewer: this.viewerWidget
+        }).render();
+        this.listenTo(this.drawWidget, 'h:redraw', this._redrawAnnotation);
+        this.$('.h-draw-widget').removeClass('hidden');
     }
 
 });
