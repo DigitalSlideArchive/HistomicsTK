@@ -1,5 +1,10 @@
 import _ from 'underscore';
+
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+import { apiRoot } from 'girder/rest';
+
+import editRegionOfInterest from '../dialogs/editRegionOfInterest';
+import router from '../router';
 
 import zoomWidget from '../templates/panels/zoomWidget.pug';
 import '../stylesheets/panels/zoomWidget.styl';
@@ -30,14 +35,16 @@ var ZoomWidget = Panel.extend({
     events: _.extend(Panel.prototype.events, {
         'click .h-zoom-button': '_zoomButton',
         'input .h-zoom-slider': '_zoomSliderInput',
-        'change .h-zoom-slider': '_zoomSliderChange'
+        'change .h-zoom-slider': '_zoomSliderChange',
+        'click .h-download-button-view': '_downloadView',
+        'click .h-download-button-area': '_downloadArea'
     }),
     initialize() {
         // set defaults that will be overwritten when a viewer is added
         this._maxMag = 20;
         this._maxZoom = 8;
         this._minZoom = 0;
-
+        this._cancelSelection = false;
         // bind the context of the viewer zoom handler
         this._zoomChanged = _.bind(this._zoomChanged, this);
     },
@@ -66,6 +73,8 @@ var ZoomWidget = Panel.extend({
         this.$el.html(zoomWidget({
             id: 'zoom-panel-container',
             title: 'Zoom',
+            title_download_view: 'Download View',
+            title_download_area: 'Download Area',
             min: min,
             max: max,
             step: 0.01,
@@ -77,8 +86,13 @@ var ZoomWidget = Panel.extend({
         // make the panel collapsible
         this.$('.s-panel-content').collapse({toggle: false});
 
+        // show tooltip of different download button
+        this.$('[data-toggle="tooltip"]').tooltip();
+
         // set the text value on the readonly input box
         this._zoomSliderInput();
+
+        return this;
     },
 
     /**
@@ -164,6 +178,68 @@ var ZoomWidget = Panel.extend({
     _zoomButton(evt) {
         this.setMagnification(this.$(evt.currentTarget).data('value'));
         this._zoomSliderChange();
+    },
+
+     /**
+     * A handler called when the download view button is clicked.
+     */
+    _downloadView(evt) {
+        var imageId = router.getQuery('image');
+        var bounds = this.viewer.viewer.bounds();
+        var params = $.param({
+            width: window.innerWidth,
+            height: window.innerHeight,
+            left: bounds.left < 0 ? 0 : Math.round(bounds.left),
+            top: bounds.top < 0 ? 0 : Math.round(bounds.top),
+            right: bounds.right < 0 ? 0 : Math.round(bounds.right),
+            bottom: bounds.bottom < 0 ? 0 : Math.round(bounds.bottom),
+            contentDisposition: 'attachment'
+        });
+        const urlView = `/${apiRoot}/item/${imageId}/tiles/region?${params}`;
+
+        if (this._cancelSelection) {
+            this.viewer.annotationLayer.mode(null);
+            this._cancelSelection = false;
+            this.$('.h-download-button-area').removeClass('h-download-area-button-selected');
+        }
+        this.$('a.h-download-link#download-view-link').attr({
+            href: urlView
+        });
+    },
+
+    /**
+     * Respond to clicking an element type by putting the image
+     * viewer into "draw" mode and open a dialog windows to edit this area
+     * params is an object.
+     *
+     */
+    _downloadArea(evt) {
+        const mag = Math.round(this._getSliderValue() * 10) / 10;
+        const maxZoom = this._maxZoom;
+        const maxMag = this._maxMag;
+        if (this._cancelSelection) {
+            this.viewer.annotationLayer.mode(null);
+            this._cancelSelection = false;
+            this.$('.h-download-button-area').removeClass('h-download-area-button-selected');
+        } else {
+            this.$('.h-download-button-area').addClass('h-download-area-button-selected');
+            this._cancelSelection = true;
+            this.viewer.drawRegion().then((coord) => {
+                var areaParams = {
+                    left: coord[0],
+                    top: coord[1],
+                    width: coord[2],
+                    height: coord[3],
+                    magnification: mag,
+                    maxZoom: maxZoom,
+                    maxMag: maxMag
+                };
+                this._cancelSelection = false;
+                this.$('.h-download-button-area').removeClass('h-download-area-button-selected');
+                editRegionOfInterest(areaParams);
+                return this;
+            });
+        }
     },
 
     /**
