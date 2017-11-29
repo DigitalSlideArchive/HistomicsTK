@@ -126,7 +126,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             \end{array}
             \right.
 
-    Haralick.SumVariance.Mean, Haralick.SumVariance.Variance : float
+    Haralick.SumVariance.Mean, Haralick.SumVariance.Range : float
         Mean and range of sum variance feature for the GLCMS of all offsets.
         It is computed as follows:
 
@@ -135,7 +135,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             SumVariance =
             \sum_{k=2}^{2 levels} (k - SumEntropy) p_{x+y}(k)
 
-    Haralick.SumEntropy.Mean : float
+    Haralick.SumEntropy.Mean, Haralick.SumEntropy.Range : float
         Mean and range of the sum entropy features for GLCMS of all offsets.
         It is computed as follows:
 
@@ -164,7 +164,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             p_{x-y}(k) =
             \sum_{i,j=0}^{levels-1} \delta_{|i-j|, k} p(i,j)
 
-    Haralick.DifferenceEntropy.Mean : float
+    Haralick.DifferenceEntropy.Mean, Haralick.DifferenceEntropy.Range : float
         Mean and range of the difference entropy feature for GLCMS of all
         offsets. It is computed as follows:
 

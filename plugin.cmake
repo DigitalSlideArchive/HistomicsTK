@@ -83,6 +83,13 @@ add_histomicstk_python_test(glcm
 
 add_histomicstk_python_test(global_cell_graph_features)
 
+add_histomicstk_python_test(feature_extraction
+    EXTERNAL_DATA
+    # There is a bug in cmake that fails when external data files are added to
+    # multiple tests, so add it in one of the tests for now
+    # "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
+)
+
 add_histomicstk_python_test(segmentation_label
     SUBMODULE TraceBoundaryTest
     DBNAME core_trace_boundary
