@@ -4,12 +4,12 @@ block title
   | #[span.icon-tags] #{title}
 
 block content
-  - var admin = user.get('admin');
+  - var admin = user && user.get && user.get('admin');
   each annotation in annotations
     if annotation.id !== activeAnnotation
       - var name = annotation.get('annotation').name;
       - var displayed = annotation.get('displayed');
-      - var writeAccess = admin || user.id === annotation.get('creatorId');
+      - var writeAccess = admin || (user && user.id === annotation.get('creatorId'));
       .h-annotation(data-id=annotation.id)
         if displayed
           span.icon-eye.h-toggle-annotation(
