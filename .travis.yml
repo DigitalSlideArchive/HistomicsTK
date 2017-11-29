@@ -48,7 +48,7 @@ addons:
       - libxml2-dev
       - libsqlite3-dev
       # girder worker
-      - rabbitmq-server
+      # - rabbitmq-server
       # pandoc for displaying jupyter notebook examples on ReadTheDocs
       - pandoc
       - pandoc-citeproc
@@ -140,7 +140,7 @@ script:
     - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} -DPYTHON_COVERAGE_CONFIG="$main_path/plugin_tests/pycoverage.cfg" -DCOVERAGE_MINIMUM_PASS=19 -DJS_COVERAGE_MINIMUM_PASS=19 -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" $girder_path
     - make
     - JASMINE_TIMEOUT=15000 ctest -VV
-    - travis-sphinx build --source=$main_path/docs 
+    - travis-sphinx build --source=$main_path/docs
 
 after_success:
     - bash <(curl -s https://codecov.io/bash) -R $main_path -s $build_path
