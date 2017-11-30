@@ -9,7 +9,6 @@ block content
     if annotation.id !== activeAnnotation
       - var name = annotation.get('annotation').name;
       - var displayed = annotation.get('displayed');
-      - var writeAccess = admin || (user && user.id === annotation.get('creatorId'));
       .h-annotation(data-id=annotation.id)
         if displayed
           span.icon-eye.h-toggle-annotation(
@@ -20,7 +19,7 @@ block content
         span.h-annotation-name(title=name) #{name}
 
         span.h-annotation-right
-          if writeAccess
+          if writeAccess(annotation)
             span.icon-cancel.h-delete-annotation(
                 data-toggle='tooltip', title='Remove annotation')
             span.icon-cog.h-edit-annotation-metadata(

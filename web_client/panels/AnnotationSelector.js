@@ -53,7 +53,8 @@ var AnnotationSelector = Panel.extend({
             title: 'Annotations',
             activeAnnotation: this._getActiveAnnotation ? this._getActiveAnnotation() : null,
             showLabels: this._showLabels,
-            user: getCurrentUser() || {}
+            user: getCurrentUser() || {},
+            writeAccess: this._writeAccess
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
@@ -181,6 +182,15 @@ var AnnotationSelector = Panel.extend({
     editAnnotation(evt) {
         var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
+        if (!this._writeAccess(model)) {
+            events.trigger('g:alert', {
+                text: 'You do not have write access to this annotation.',
+                type: 'warning',
+                timeout: 2500,
+                icon: 'info'
+            });
+            return;
+        }
         model.fetch().done(() => {
             model.set('displayed', true);
 
@@ -225,6 +235,16 @@ var AnnotationSelector = Panel.extend({
                 this._saving = false;
             });
         }
+    },
+
+    _writeAccess(annotation) {
+        const user = getCurrentUser();
+        if (!user || !annotation) {
+            return false;
+        }
+        const admin = user.get && user.get('admin');
+        const creator = user.id === annotation.get('creatorId');
+        return admin || creator;
     }
 });
 

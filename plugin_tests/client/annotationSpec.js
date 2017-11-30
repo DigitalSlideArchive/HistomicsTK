@@ -615,15 +615,23 @@ $(function () {
             });
 
             it('open an annotation in the draw panel', function () {
-                runs(function () {
-                    $('.h-annotation-selector .h-annotation:contains("drawn 2") .h-toggle-annotation').click();
-                    $('.h-annotation-selector .h-annotation:contains("admin annotation") .h-annotation-name').click();
+                var trigger = girder.events.trigger;
+                var alertTriggered;
+                girder.events.trigger = _.wrap(girder.events.trigger, function (func, event, options) {
+                    if (event === 'g:alert') {
+                        alertTriggered = options;
+                    }
+                    return func.apply(arguments);
                 });
+
+                $('.h-annotation-selector .h-annotation:contains("drawn 2") .h-toggle-annotation').click();
+                $('.h-annotation-selector .h-annotation:contains("admin annotation") .h-annotation-name').click();
 
                 girderTest.waitForLoad();
                 runs(function () {
-                    expect($('.h-elements-container').length).toBe(0);
-                    expect($('.h-annotation-selector .h-annotation:contains("admin annotation") .icon-eye').length).toBe(1);
+                    expect(alertTriggered).toBeDefined();
+                    expect(alertTriggered.text).toBe('You do not have write access to this annotation.');
+                    girder.events.trigger = trigger;
 
                     $('.h-annotation-selector .h-annotation:contains("drawn 2") .h-annotation-name').click();
                 });
