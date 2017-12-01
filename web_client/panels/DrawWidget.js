@@ -62,13 +62,15 @@ var DrawWidget = Panel.extend({
             this.$el.empty();
             return;
         }
+        const name = (this.annotation.get('annotation') || {}).name || 'Untitled';
         this.trigger('h:redraw', this.annotation);
         this.$el.html(drawWidget({
             title: 'Draw',
             elements: this.collection.first(MAX_ELEMENTS_LIST_LENGTH),
             drawingType: this._drawingType,
             groups: this._groups,
-            style: this._style.id
+            style: this._style.id,
+            name
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});

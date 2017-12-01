@@ -640,6 +640,7 @@ $(function () {
                 runs(function () {
                     expect($('.h-elements-container').length).toBe(1);
                     expect($('.h-annotation-selector .h-annotation:contains("drawn 2") .icon-eye').length).toBe(1);
+                    expect($('.h-draw-widget .h-panel-name').text()).toBe('drawn 2');
                 });
             });
 
