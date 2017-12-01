@@ -38,7 +38,6 @@ var AnnotationSelector = Panel.extend({
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
         this.listenTo(eventStream, 'g:eventStream.start', this._refreshAnnotations);
         this.listenTo(this.collection, 'change:annotation', this._saveAnnotation);
-        this._getActiveAnnotation = settings.getActiveAnnotation;
     },
 
     render() {
@@ -51,7 +50,7 @@ var AnnotationSelector = Panel.extend({
             annotations: this.collection.sortBy('created'),
             id: 'annotation-panel-container',
             title: 'Annotations',
-            activeAnnotation: this._getActiveAnnotation ? this._getActiveAnnotation() : null,
+            activeAnnotation: this._activeAnnotation ? this._activeAnnotation.id : '',
             showLabels: this._showLabels,
             user: getCurrentUser() || {},
             writeAccess: this._writeAccess
