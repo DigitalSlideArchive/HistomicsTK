@@ -27,6 +27,8 @@ var AnnotationSelector = Panel.extend({
         'click .h-delete-annotation': 'deleteAnnotation',
         'click .h-create-annotation': 'createAnnotation',
         'click .h-edit-annotation-metadata': 'editAnnotationMetadata',
+        'click .h-show-all-annotations': 'showAllAnnotations',
+        'click .h-hide-all-annotations': 'hideAllAnnotations',
         'change #h-toggle-labels': 'toggleLabels'
     }),
 
@@ -256,6 +258,18 @@ var AnnotationSelector = Panel.extend({
         const admin = user.get && user.get('admin');
         const creator = user.id === annotation.get('creatorId');
         return admin || creator;
+    },
+
+    showAllAnnotations() {
+        this.collection.each((model) => {
+            model.set('displayed', true);
+        });
+    },
+
+    hideAllAnnotations() {
+        this.collection.each((model) => {
+            model.set('displayed', false);
+        });
     }
 });
 

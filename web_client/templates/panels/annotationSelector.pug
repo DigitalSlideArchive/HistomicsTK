@@ -4,6 +4,14 @@ block title
   | #[span.icon-tags] #{title}
 
 block content
+  .btn-group.btn-group-justified.h-hide-show-buttons(role='group')
+    .btn-group.btn-group-sm(role='group')
+      button.btn.btn-default.h-show-all-annotations(type='button')
+        | #[span.icon-eye] Show all
+    .btn-group.btn-group-sm(role='group')
+      button.btn.btn-default.h-hide-all-annotations(type='button')
+        | #[span.icon-eye-off] Hide all
+
   - var admin = user && user.get && user.get('admin');
   each annotation in annotations
     - var name = annotation.get('annotation').name;
