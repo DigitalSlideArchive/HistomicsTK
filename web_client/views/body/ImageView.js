@@ -406,15 +406,17 @@ var ImageView = View.extend({
     _editAnnotation(model) {
         this.activeAnnotation = model;
         this._removeDrawWidget();
-        this.drawWidget = new DrawWidget({
-            parentView: this,
-            image: this.model,
-            annotation: this.activeAnnotation,
-            el: this.$('.h-draw-widget'),
-            viewer: this.viewerWidget
-        }).render();
-        this.listenTo(this.drawWidget, 'h:redraw', this._redrawAnnotation);
-        this.$('.h-draw-widget').removeClass('hidden');
+        if (model) {
+            this.drawWidget = new DrawWidget({
+                parentView: this,
+                image: this.model,
+                annotation: this.activeAnnotation,
+                el: this.$('.h-draw-widget'),
+                viewer: this.viewerWidget
+            }).render();
+            this.listenTo(this.drawWidget, 'h:redraw', this._redrawAnnotation);
+            this.$('.h-draw-widget').removeClass('hidden');
+        }
     },
 
     _deleteAnnotation(model) {

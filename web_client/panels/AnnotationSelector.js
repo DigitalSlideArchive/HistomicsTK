@@ -209,6 +209,8 @@ var AnnotationSelector = Panel.extend({
                     timeout: 5000,
                     icon: 'info'
                 });
+                this._activeAnnotation = null;
+                this.trigger('h:editAnnotation', null);
             } else {
                 this.trigger('h:editAnnotation', model);
             }
