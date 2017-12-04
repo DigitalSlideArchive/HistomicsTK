@@ -191,6 +191,7 @@ var AnnotationSelector = Panel.extend({
             return;
         }
         this._activeAnnotation = model;
+        model.set('loading', true);
         model.fetch().done(() => {
             if (this._activeAnnotation && this._activeAnnotation.id !== model.id) {
                 return;
@@ -208,6 +209,8 @@ var AnnotationSelector = Panel.extend({
             } else {
                 this.trigger('h:editAnnotation', model);
             }
+        }).always(() => {
+            model.unset('loading');
         });
     },
 

@@ -288,9 +288,12 @@ var ImageView = View.extend({
         }
 
         if (annotation.get('displayed')) {
+            annotation.set('loading', true);
             annotation.fetch().then(() => {
                 this.viewerWidget.drawAnnotation(annotation);
                 return null;
+            }).always(() => {
+                annotation.unset('loading');
             });
         } else {
             this.viewerWidget.removeAnnotation(annotation);
