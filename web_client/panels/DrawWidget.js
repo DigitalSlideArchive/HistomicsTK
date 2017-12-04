@@ -10,10 +10,6 @@ import editStyleGroups from '../dialogs/editStyleGroups';
 import drawWidget from '../templates/panels/drawWidget.pug';
 import '../stylesheets/panels/drawWidget.styl';
 
-// Too many elements in the draw panel will crash the browser,
-// so we only show the first 1000 elements.
-const MAX_ELEMENTS_LIST_LENGTH = 1000;
-
 /**
  * Create a panel with controls to draw and edit
  * annotation elements.
@@ -66,7 +62,7 @@ var DrawWidget = Panel.extend({
         this.trigger('h:redraw', this.annotation);
         this.$el.html(drawWidget({
             title: 'Draw',
-            elements: this.collection.first(MAX_ELEMENTS_LIST_LENGTH),
+            elements: this.collection.models,
             drawingType: this._drawingType,
             groups: this._groups,
             style: this._style.id,
