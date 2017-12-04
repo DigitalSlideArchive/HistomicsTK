@@ -2,14 +2,14 @@ import tinycolor from 'tinycolor2';
 
 import View from 'girder/views/View';
 
-import editAnnotation from '../templates/dialogs/editAnnotation.pug';
+import editElement from '../templates/dialogs/editElement.pug';
 import 'girder/utilities/jquery/girderModal';
 
 /**
  * Create a modal dialog with fields to edit the properties of
  * an annotation element.
  */
-var EditAnnotation = View.extend({
+var EditElement = View.extend({
     events: {
         'click .h-submit': 'getData',
         'submit form': 'getData'
@@ -17,7 +17,7 @@ var EditAnnotation = View.extend({
 
     render() {
         this.$el.html(
-            editAnnotation({
+            editElement({
                 element: this.annotationElement.toJSON()
             })
         ).girderModal(this);
@@ -86,7 +86,7 @@ var EditAnnotation = View.extend({
  * Create a singleton instance of this widget that will be rendered
  * when `show` is called.
  */
-var dialog = new EditAnnotation({
+var dialog = new EditElement({
     parentView: null
 });
 
