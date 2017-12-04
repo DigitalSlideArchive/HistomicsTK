@@ -165,6 +165,9 @@ var DrawWidget = Panel.extend({
             this.viewer.annotationLayer.removeAllAnnotations();
         }
         if (type) {
+            // always show the active annotation when drawing a new element
+            this.annotation.set('displayed', true);
+
             this._drawingType = type;
             this.viewer.startDrawMode(type)
                 .then((element) => {
