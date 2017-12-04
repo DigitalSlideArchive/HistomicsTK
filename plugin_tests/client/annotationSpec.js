@@ -532,6 +532,30 @@ $(function () {
                 expect(adminAnnotation.find('.h-delete-annotation').length).toBe(0);
             });
 
+            it('hide all annotations', function () {
+                $('.h-hide-all-annotations').click();
+                girderTest.waitForLoad();
+
+                runs(function () {
+                    expect($('.h-annotation .icon-eye-off').length).toBe(3);
+                    expect($('.h-annotation .icon-eye').length).toBe(0);
+                });
+            });
+
+            it('show all annotations', function () {
+                $('.h-show-all-annotations').click();
+                girderTest.waitForLoad();
+
+                waitsFor(function () {
+                    var $el = $('.h-annotation-selector');
+                    return $el.find('.icon-spin3').length === 0;
+                }, 'loading spinners to disappear');
+                runs(function () {
+                    expect($('.h-annotation .icon-eye-off').length).toBe(0);
+                    expect($('.h-annotation .icon-eye').length).toBe(3);
+                });
+            });
+
             it('toggle visibility of an annotation', function () {
                 runs(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("drawn 1")');
