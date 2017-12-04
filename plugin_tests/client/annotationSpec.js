@@ -690,6 +690,10 @@ $(function () {
                 waitsFor(function () {
                     return $('.h-annotation-selector .h-annotation:contains("rectangle")').length === 1;
                 }, 'new annotation to appear');
+                waitsFor(function () {
+                    var $el = $('.h-annotation-selector');
+                    return $el.find('.icon-spin3').length === 0;
+                }, 'loading spinners to disappear');
                 runs(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("rectangle")');
                     expect($el.find('.icon-eye.h-toggle-annotation').length).toBe(1);

@@ -154,11 +154,6 @@ var AnnotationSelector = Panel.extend({
         var models = this.collection.indexBy(_.property('id'));
         this.collection.offset = 0;
         this.collection.fetch({itemId: this.parentItem.id}).then(() => {
-            // don't add the active annotation to the list
-            var activeAnnotation = this._getActiveAnnotation ? this._getActiveAnnotation() : null;
-            if (activeAnnotation) {
-                this.collection.remove(activeAnnotation, {silent: true});
-            }
             this.collection.each((model) => {
                 if (!_.has(models, model.id)) {
                     model.set('displayed', true);
@@ -182,6 +177,7 @@ var AnnotationSelector = Panel.extend({
         var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
         if (this._activeAnnotation && model && this._activeAnnotation.id === model.id) {
+            model.set('displayed', true);
             return;
         }
         if (!this._writeAccess(model)) {
