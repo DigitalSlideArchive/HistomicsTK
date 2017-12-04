@@ -190,7 +190,11 @@ var AnnotationSelector = Panel.extend({
             });
             return;
         }
+        this._activeAnnotation = model;
         model.fetch().done(() => {
+            if (this._activeAnnotation && this._activeAnnotation.id !== model.id) {
+                return;
+            }
             model.set('displayed', true);
 
             // TODO: expose this information publicly
@@ -203,7 +207,6 @@ var AnnotationSelector = Panel.extend({
                 });
             } else {
                 this.trigger('h:editAnnotation', model);
-                this._activeAnnotation = model;
             }
         });
     },
