@@ -13,7 +13,7 @@
             a.list-group-item.h-annotated-image(data-id=item._id, data-toggle='tooltip', title=paths[item._id])
               .media
                 .media-left.media-middle
-                  img(src=`../api/v1/item/${item._id}/tiles/thumbnail?height=64&width=64`)
+                  img(src=`api/v1/item/${item._id}/tiles/thumbnail?height=64&width=64`)
                 .media-body
                   h4.media-heading #{item.name}
                   p #{item.description}
