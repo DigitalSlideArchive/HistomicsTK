@@ -3,10 +3,18 @@ import _ from 'underscore';
 import eventStream from 'girder/utilities/EventStream';
 import { getCurrentUser } from 'girder/auth';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
+import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 
 import events from '../events';
+import showSaveAnnotationDialog from '../dialogs/saveAnnotation';
+
 import annotationSelectorWidget from '../templates/panels/annotationSelector.pug';
 import '../stylesheets/panels/annotationSelector.styl';
+
+// Too many elements in the draw panel will crash the browser,
+// so we only allow editing of annnotations with less than this
+// many elements.
+const MAX_ELEMENTS_LIST_LENGTH = 5000;
 
 /**
  * Create a panel controlling the visibility of annotations
@@ -14,8 +22,13 @@ import '../stylesheets/panels/annotationSelector.styl';
  */
 var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
+        'click .h-annotation-name': 'editAnnotation',
         'click .h-toggle-annotation': 'toggleAnnotation',
         'click .h-delete-annotation': 'deleteAnnotation',
+        'click .h-create-annotation': 'createAnnotation',
+        'click .h-edit-annotation-metadata': 'editAnnotationMetadata',
+        'click .h-show-all-annotations': 'showAllAnnotations',
+        'click .h-hide-all-annotations': 'hideAllAnnotations',
         'change #h-toggle-labels': 'toggleLabels'
     }),
 
@@ -26,17 +39,12 @@ var AnnotationSelector = Panel.extend({
      * @param {AnnotationCollection} settings.collection
      *     The collection representing the annotations attached
      *     to the current image.
-     * @param {ItemModel} settings.parentItem
-     *     The currently active "large_image" item.
      */
     initialize(settings) {
         this.listenTo(this.collection, 'all', this.render);
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
         this.listenTo(eventStream, 'g:eventStream.start', this._refreshAnnotations);
-        if (settings.parentItem) {
-            this.setItem(settings.parentItem);
-        }
-        this._getActiveAnnotation = settings.getActiveAnnotation;
+        this.listenTo(this.collection, 'change:annotation', this._saveAnnotation);
     },
 
     render() {
@@ -49,9 +57,10 @@ var AnnotationSelector = Panel.extend({
             annotations: this.collection.sortBy('created'),
             id: 'annotation-panel-container',
             title: 'Annotations',
-            activeAnnotation: this._getActiveAnnotation ? this._getActiveAnnotation() : null,
+            activeAnnotation: this._activeAnnotation ? this._activeAnnotation.id : '',
             showLabels: this._showLabels,
-            user: getCurrentUser() || {}
+            user: getCurrentUser() || {},
+            writeAccess: this._writeAccess
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
@@ -120,12 +129,23 @@ var AnnotationSelector = Panel.extend({
                 message: `Are you sure you want to delete ${name}?`,
                 submitButton: 'Delete',
                 onSubmit: () => {
+                    this.trigger('h:deleteAnnotation', model);
                     model.unset('displayed');
                     this.collection.remove(model);
                     model.destroy();
                 }
             });
         }
+    },
+
+    editAnnotationMetadata(evt) {
+        const id = $(evt.currentTarget).parents('.h-annotation').data('id');
+        const model = this.collection.get(id);
+        this.listenToOnce(
+            showSaveAnnotationDialog(model, {title: 'Edit annotation'}),
+            'g:submit',
+            () => model.save()
+        );
     },
 
     _onJobUpdate(evt) {
@@ -141,11 +161,6 @@ var AnnotationSelector = Panel.extend({
         var models = this.collection.indexBy(_.property('id'));
         this.collection.offset = 0;
         this.collection.fetch({itemId: this.parentItem.id}).then(() => {
-            // don't add the active annotation to the list
-            var activeAnnotation = this._getActiveAnnotation ? this._getActiveAnnotation() : null;
-            if (activeAnnotation) {
-                this.collection.remove(activeAnnotation, {silent: true});
-            }
             this.collection.each((model) => {
                 if (!_.has(models, model.id)) {
                     model.set('displayed', true);
@@ -162,6 +177,98 @@ var AnnotationSelector = Panel.extend({
         this._showLabels = !this._showLabels;
         this.trigger('h:toggleLabels', {
             show: this._showLabels
+        });
+    },
+
+    editAnnotation(evt) {
+        var id = $(evt.currentTarget).parents('.h-annotation').data('id');
+        var model = this.collection.get(id);
+        if (this._activeAnnotation && model && this._activeAnnotation.id === model.id) {
+            model.set('displayed', true);
+            return;
+        }
+        if (!this._writeAccess(model)) {
+            events.trigger('g:alert', {
+                text: 'You do not have write access to this annotation.',
+                type: 'warning',
+                timeout: 2500,
+                icon: 'info'
+            });
+            return;
+        }
+        this._activeAnnotation = model;
+        model.set('loading', true);
+        model.fetch().done(() => {
+            const numElements = ((model.get('annotation') || {}).elements || []).length;
+            if (this._activeAnnotation && this._activeAnnotation.id !== model.id) {
+                return;
+            }
+            model.set('displayed', true);
+
+            if (numElements > MAX_ELEMENTS_LIST_LENGTH) {
+                events.trigger('g:alert', {
+                    text: 'This annotation has too many elements to be edited.',
+                    type: 'warning',
+                    timeout: 5000,
+                    icon: 'info'
+                });
+                this._activeAnnotation = null;
+                this.trigger('h:editAnnotation', null);
+            } else {
+                this.trigger('h:editAnnotation', model);
+            }
+        }).always(() => {
+            model.unset('loading');
+        });
+    },
+
+    createAnnotation(evt) {
+        var model = new AnnotationModel({
+            itemId: this.parentItem.id,
+            annotation: {}
+        });
+        this.listenToOnce(
+            showSaveAnnotationDialog(model, {title: 'Create annotation'}),
+            'g:submit',
+            () => {
+                model.save().done(() => {
+                    model.set('displayed', true);
+                    this.collection.add(model);
+                    this.trigger('h:editAnnotation', model);
+                    this._activeAnnotation = model;
+                });
+            }
+        );
+    },
+
+    _saveAnnotation(annotation) {
+        if (!this._saving && annotation === this._activeAnnotation) {
+            this._saving = true;
+            annotation.save().always(() => {
+                this._saving = false;
+            });
+        }
+    },
+
+    _writeAccess(annotation) {
+        const user = getCurrentUser();
+        if (!user || !annotation) {
+            return false;
+        }
+        const admin = user.get && user.get('admin');
+        const creator = user.id === annotation.get('creatorId');
+        return admin || creator;
+    },
+
+    showAllAnnotations() {
+        this.collection.each((model) => {
+            model.set('displayed', true);
+        });
+    },
+
+    hideAllAnnotations() {
+        this.collection.each((model) => {
+            model.set('displayed', false);
         });
     }
 });

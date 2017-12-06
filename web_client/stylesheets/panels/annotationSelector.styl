@@ -1,7 +1,7 @@
 .h-annotation
     span
         cursor pointer
-    .h-toggle-annotation
+    .h-float-left
         float left
         margin-right 0.5em
 
@@ -11,11 +11,21 @@
     a
         color #333
     .h-annotation-name
-        width 195px
+        width 180px
         display inline-block
         text-overflow ellipsis
         white-space nowrap
         overflow hidden
 
+.h-annotation.h-active-annotation
+  background-color #c5cae9 !important
+  border-radius 3px
+
+.h-create-annotation
+  float right
+
 .h-annotation:hover
-    background-color #eee
+  background-color #eee
+
+.h-hide-show-buttons
+  margin-bottom 5px
