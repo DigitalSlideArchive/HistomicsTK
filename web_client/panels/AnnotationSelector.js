@@ -29,6 +29,8 @@ var AnnotationSelector = Panel.extend({
         'click .h-edit-annotation-metadata': 'editAnnotationMetadata',
         'click .h-show-all-annotations': 'showAllAnnotations',
         'click .h-hide-all-annotations': 'hideAllAnnotations',
+        'mouseenter .h-annotation': '_highlightAnnotation',
+        'mouseleave .h-annotation': '_unhighlightAnnotation',
         'change #h-toggle-labels': 'toggleLabels'
     }),
 
@@ -113,6 +115,11 @@ var AnnotationSelector = Panel.extend({
         var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
         model.set('displayed', !model.get('displayed'));
+        if (model.get('displayed')) {
+            model.set('highlight', true);
+        } else {
+            model.unset('highlight');
+        }
     },
 
     /**
@@ -131,6 +138,7 @@ var AnnotationSelector = Panel.extend({
                 onSubmit: () => {
                     this.trigger('h:deleteAnnotation', model);
                     model.unset('displayed');
+                    model.unset('highlight');
                     this.collection.remove(model);
                     model.destroy();
                 }
@@ -246,7 +254,10 @@ var AnnotationSelector = Panel.extend({
         );
     },
 
-    _saveAnnotation(annotation) {
+    _saveAnnotation(annotation, attribute, options) {
+        if (options && options.noSave) {
+            return;
+        }
         if (!this._saving && annotation === this._activeAnnotation) {
             this._saving = true;
             annotation.save().always(() => {
@@ -275,6 +286,18 @@ var AnnotationSelector = Panel.extend({
         this.collection.each((model) => {
             model.set('displayed', false);
         });
+    },
+
+    _highlightAnnotation(evt) {
+        const id = $(evt.currentTarget).data('id');
+        const model = this.collection.get(id);
+        if (model.get('displayed')) {
+            this.parentView.trigger('h:highlightAnnotation', id);
+        }
+    },
+
+    _unhighlightAnnotation() {
+        this.parentView.trigger('h:highlightAnnotation');
     }
 });
 
