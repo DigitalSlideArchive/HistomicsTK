@@ -59,14 +59,13 @@ $(function () {
             expect($item.length).toBe(1);
             $item.click();
         });
+        waitsFor(function () {
+            return $('#g-selected-model').val();
+        }, 'selection to be set');
 
         girderTest.waitForDialog();
-        // Sometimes clicking submit fires the `g:saved` event, but doesn't actually
-        // close the dialog.  Delaying the click seems to help.
         runs(function () {
-            window.setTimeout(function () {
-                $('.g-submit-button').click();
-            }, 100);
+            $('.g-submit-button').click();
         });
 
         girderTest.waitForLoad();
@@ -438,6 +437,19 @@ $(function () {
                 });
             });
 
+            it('test reset to defaults as a regular user', function () {
+                runs(function () {
+                    $('#h-element-line-width').val('10');
+                    $('#h-reset-defaults').click();
+                });
+                waitsFor(function () {
+                    return $('#h-element-line-width').val() === '2';
+                });
+                runs(function () {
+                    expect($('.h-group-name :selected').val()).toBe('default');
+                });
+            });
+
             it('create a new style group', function () {
                 $('.h-create-new-style').click();
                 $('.h-new-group-name').val('new');
@@ -659,7 +671,9 @@ $(function () {
 
                     $('.h-annotation-selector .h-annotation:contains("drawn 2") .h-annotation-name').click();
                 });
-
+                waitsFor(function () {
+                    return $('.h-elements-container').length;
+                });
                 girderTest.waitForLoad();
                 runs(function () {
                     expect($('.h-elements-container').length).toBe(1);
@@ -695,7 +709,7 @@ $(function () {
                         contentType: 'application/json',
                         processData: false,
                         data: JSON.stringify(rect),
-                        type: 'POST'
+                        method: 'POST'
                     }).then(function () {
                         uploaded = true;
                         return null;
@@ -783,7 +797,9 @@ $(function () {
 
     describe('Open recently annotated image', function () {
         it('open the dialog', function () {
-            $('.h-open-annotated-image').click();
+            runs(function () {
+                $('.h-open-annotated-image').click();
+            });
             girderTest.waitForDialog();
             runs(function () {
                 var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
@@ -795,11 +811,132 @@ $(function () {
         });
 
         it('click on the image', function () {
-            var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
-            $el.click();
+            runs(function () {
+                var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
+                $el.click();
+            });
             girderTest.waitForLoad();
             runs(function () {
                 expect(girder.plugins.HistomicsTK.router.getQuery('image')).toBe(imageId);
+            });
+        });
+    });
+
+    describe('Annotation tests as admin', function () {
+        describe('setup', function () {
+            girderTest.logout()();
+            it('login', function () {
+                girderTest.waitForLoad();
+                runs(function () {
+                    $('.g-login').click();
+                });
+
+                girderTest.waitForDialog();
+                runs(function () {
+                    $('#g-login').val('admin');
+                    $('#g-password').val('password');
+                    $('#g-login-button').click();
+                });
+
+                waitsFor(function () {
+                    return $('.h-user-dropdown-link').length > 0;
+                }, 'user to be logged in');
+                girderTest.waitForLoad();
+            });
+
+            it('open the dialog', function () {
+                runs(function () {
+                    $('.h-open-annotated-image').click();
+                });
+                waitsFor(function () {
+                    var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
+                    return $el.length === 1;
+                }, 'here');
+                girderTest.waitForDialog();
+                runs(function () {
+                    var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
+                    expect($el.length).toBe(1);
+                    // remock VGL
+                    app.bodyView.once('h:viewerWidgetCreated', function (viewerWidget) {
+                        viewerWidget.once('g:beforeFirstRender', function () {
+                            window.geo.util.mockVGLRenderer();
+                        });
+                    });
+                    $el.click();
+                });
+                girderTest.waitForLoad();
+                runs(function () {
+                    expect(girder.plugins.HistomicsTK.router.getQuery('image')).toBe(imageId);
+                });
+            });
+        });
+
+        describe('style group tests', function () {
+            it('open an annotation in the draw panel', function () {
+                waitsFor(function () {
+                    return $('.h-annotation-selector .h-annotation:contains("drawn 2") .h-toggle-annotation').length;
+                }, 'annotations to appear');
+                runs(function () {
+                    $('.h-annotation-selector .h-annotation:contains("admin annotation") .h-annotation-name').click();
+                });
+                girderTest.waitForLoad();
+                runs(function () {
+                    $('.h-annotation-selector .h-annotation:contains("drawn 2") .h-annotation-name').click();
+                });
+
+                girderTest.waitForLoad();
+                runs(function () {
+                    expect($('.h-elements-container').length).toBe(1);
+                    expect($('.h-annotation-selector .h-annotation:contains("drawn 2") .icon-eye').length).toBe(1);
+                    expect($('.h-draw-widget .h-panel-name').text()).toBe('drawn 2');
+                });
+            });
+
+            it('open the syle group dialog', function () {
+                runs(function () {
+                    $('.h-configure-style-group').click();
+                });
+                girderTest.waitForDialog();
+            });
+
+            it('set the default style groups', function () {
+                runs(function () {
+                    $('#h-set-defaults').click();
+                });
+                waitsFor(function () {
+                    var resp = girder.rest.restRequest({
+                        url: 'system/setting',
+                        method: 'GET',
+                        data: {list: JSON.stringify(['histomicstk.default_draw_styles'])},
+                        async: false
+                    });
+                    var settings = resp.responseJSON;
+                    var settingsStyles = settings && JSON.parse(settings['histomicstk.default_draw_styles']);
+                    if (!settingsStyles || !settingsStyles.length) {
+                        return false;
+                    }
+                    return settingsStyles[0].group === 'new';
+                });
+            });
+            it('reset the style groups', function () {
+                runs(function () {
+                    $('.h-group-name').val('new');  // select the 'new' style
+                    $('#h-element-line-width').val('10');
+                    $('#h-element-label').val('newlabel');
+                    $('#h-reset-defaults').click();
+                });
+                waitsFor(function () {
+                    return $('#h-element-label').val() === '';
+                }, 'label to reset');
+                runs(function () {
+                    expect($('#h-element-line-width').val()).toBe('2');
+                });
+            });
+            it('cancel changes', function () {
+                runs(function () {
+                    $('.h-cancel').click();
+                });
+                girderTest.waitForLoad();
             });
         });
     });

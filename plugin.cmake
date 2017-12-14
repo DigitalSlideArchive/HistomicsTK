@@ -39,6 +39,8 @@ add_python_style_test(
 )
 
 # API tests
+add_histomicstk_python_test(histomicstk)
+
 add_histomicstk_python_test(docker)
 
 add_histomicstk_python_test(example)
@@ -143,6 +145,7 @@ add_histomicstk_python_test(cli_results
 )
 
 # front-end tests
+
 add_web_client_test(
   annotations
   "${CMAKE_CURRENT_LIST_DIR}/plugin_tests/client/annotationSpec.js"
@@ -150,6 +153,14 @@ add_web_client_test(
   TEST_MODULE "plugin_tests.web_client_test"
   TEST_PYTHONPATH "${CMAKE_CURRENT_LIST_DIR}"
   # EXTERNAL_DATA "plugins/HistomicsTK/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs"
+)
+
+add_web_client_test(
+  histomicstk
+  "${CMAKE_CURRENT_LIST_DIR}/plugin_tests/client/histomicstkSpec.js"
+  PLUGIN HistomicsTK
+  TEST_MODULE "plugin_tests.web_client_test"
+  TEST_PYTHONPATH "${CMAKE_CURRENT_LIST_DIR}"
 )
 
 add_eslint_test(

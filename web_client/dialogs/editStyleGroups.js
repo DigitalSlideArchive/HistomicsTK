@@ -1,6 +1,10 @@
 import tinycolor from 'tinycolor2';
+import _ from 'underscore';
 
 import View from 'girder/views/View';
+import events from 'girder/events';
+import { restRequest } from 'girder/rest';
+import { getCurrentUser } from 'girder/auth';
 
 import StyleModel from '../models/StyleModel';
 import editStyleGroups from '../templates/dialogs/editStyleGroups.pug';
@@ -16,6 +20,8 @@ const EditStyleGroups = View.extend({
         'click .h-create-new-style': '_createNewStyle',
         'click .h-save-new-style': '_saveNewStyle',
         'click .h-delete-style': '_deleteStyle',
+        'click #h-reset-defaults': '_resetDefaults',
+        'click #h-set-defaults': '_setDefaults',
         'change .h-style-def': '_updateStyle',
         'changeColor .h-colorpicker': '_updateStyle',
         'change select': '_setStyle'
@@ -27,7 +33,8 @@ const EditStyleGroups = View.extend({
             editStyleGroups({
                 collection: this.collection,
                 model: this.model,
-                newStyle: this._newStyle
+                newStyle: this._newStyle,
+                user: getCurrentUser() || {}
             })
         );
         this.$('.h-colorpicker').colorpicker();
@@ -124,15 +131,66 @@ const EditStyleGroups = View.extend({
         }
         this.model.set(this.collection.at(0).toJSON());
         this.render();
+    },
+
+    _resetDefaults(evt) {
+        restRequest({
+            method: 'GET',
+            url: 'HistomicsTK/settings'
+        }).done((resp) => {
+            var styleJSON = resp['histomicstk.default_draw_styles'],
+                oldid = this.model && this.model.id,
+                styles = [], styleModels;
+            styles = styleJSON ? JSON.parse(styleJSON) : [];
+            styleModels = _.map(styles, function (style) {
+                return new StyleModel(style);
+            });
+            this.collection.reset(styleModels, {merge: true});
+            // make sure we have at least a default style
+            if (!this.collection.get('default')) {
+                this.collection.push(new StyleModel({id: 'default'}));
+            }
+            this.model.set(this.collection.at(0).toJSON());
+            if (oldid && this.collection.get(oldid)) {
+                this.model.set(this.collection.get(oldid).toJSON());
+            }
+            this._newStyle = false;
+            this.render();
+        });
+    },
+
+    _setDefaults(evt) {
+        return restRequest({
+            method: 'PUT',
+            url: 'system/setting',
+            data: {
+                list: JSON.stringify([{
+                    key: 'histomicstk.default_draw_styles',
+                    value: JSON.stringify(this.collection.toJSON())
+                }])
+            }
+        }).done(() => {
+            events.trigger('g:alert', {
+                icon: 'ok',
+                text: 'Settings saved.',
+                type: 'success',
+                timeout: 4000
+            });
+        });
     }
 });
 
 const EditStyleGroupsDialog = View.extend({
     events: {
-        'click .h-submit': '_submit'
+        'click .h-submit': '_submit',
+        'click .h-cancel': '_cancelChanges'
     },
 
     initialize() {
+        // save the collection and current model so we can restore everything
+        // when we cancel
+        this.originalCollectionData = this.collection.toJSON();
+        this.originalModelData = this.model.toJSON();
         this.form = new EditStyleGroups({
             parentView: this,
             model: new StyleModel(this.model.toJSON()),
@@ -153,6 +211,14 @@ const EditStyleGroupsDialog = View.extend({
         this.collection.add(this.form.model.toJSON(), {merge: true});
         this.collection.get(this.model.id).save();
         this.$el.modal('hide');
+    },
+
+    _cancelChanges(evt) {
+        var styleModels = _.map(this.originalCollectionData, function (style) {
+            return new StyleModel(style);
+        });
+        this.collection.reset(styleModels, {merge: true});
+        this.model.set(this.originalModelData);
     }
 });
 
