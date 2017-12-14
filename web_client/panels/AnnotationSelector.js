@@ -183,10 +183,15 @@ var AnnotationSelector = Panel.extend({
     editAnnotation(evt) {
         var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
+
+        // deselect the annotation if it is already selected
         if (this._activeAnnotation && model && this._activeAnnotation.id === model.id) {
-            model.set('displayed', true);
+            this._activeAnnotation = null;
+            this.trigger('h:editAnnotation', null);
+            this.render();
             return;
         }
+
         if (!this._writeAccess(model)) {
             events.trigger('g:alert', {
                 text: 'You do not have write access to this annotation.',
