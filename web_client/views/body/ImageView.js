@@ -56,6 +56,9 @@ var ImageView = View.extend({
         this.listenTo(this.annotationSelector, 'h:deleteAnnotation', this._deleteAnnotation);
 
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
+        this.listenTo(events, 'g:login g:logout.success g:logout.error', () => {
+            this._openId = null;
+        });
         this.render();
     },
     render() {
