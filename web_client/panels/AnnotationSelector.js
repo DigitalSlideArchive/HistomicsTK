@@ -155,7 +155,7 @@ var AnnotationSelector = Panel.extend({
     },
 
     _refreshAnnotations() {
-        if (!this.parentItem) {
+        if (!this.parentItem || !this.parentItem.id) {
             return;
         }
         var models = this.collection.indexBy(_.property('id'));

@@ -1,7 +1,21 @@
+import events from 'girder/events';
+import router from 'girder/router';
+
 import { registerPluginNamespace } from 'girder/pluginUtils';
+import { exposePluginConfig } from 'girder/utilities/PluginUtils';
 
-import * as histomicstk from '.';
+// expose symbols under girder.plugins
+import * as histomicstk from 'girder_plugins/HistomicsTK';
 
-registerPluginNamespace('HistomicsTK', histomicstk);
+import ConfigView from './views/body/ConfigView';
 
-export default histomicstk;
+const pluginName = 'HistomicsTK';
+const configRoute = `plugins/${pluginName}/config`;
+
+registerPluginNamespace(pluginName, histomicstk);
+
+exposePluginConfig(pluginName, configRoute);
+
+router.route(configRoute, 'HistomicsTKConfig', function () {
+    events.trigger('g:navigateTo', ConfigView);
+});

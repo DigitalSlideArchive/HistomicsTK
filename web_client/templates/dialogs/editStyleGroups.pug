@@ -52,5 +52,8 @@
               i
         .g-validation-failed-message.hidden
       .modal-footer
-        button.btn.btn-small.btn-default(type='button', data-dismiss='modal') Cancel
+        button#h-reset-defaults.btn.btn-small.btn-default.h-btn-left(type='button') Reset to Defaults
+        if user.get && user.get('admin')
+          button#h-set-defaults.btn.btn-small.btn-default.h-btn-left(type='button') Save as Defaults
+        button.btn.btn-small.btn-default.h-cancel(type='button', data-dismiss='modal') Cancel
         button.btn.btn-small.btn-primary.h-submit(type='submit') Save

@@ -1,0 +1,15 @@
+.g-config-breadcrumb-container
+p.g-histomicstk-description
+  | Provides a tool hit for analyzing histology images.
+form#g-histomicstk-form(role="form")
+  .form-group
+    label
+      | Default styles for drawing annotations
+    input#g-histomicstk-default-draw-styles.input-sm.form-control(
+        type="text", value=settings['histomicstk.default_draw_styles'],
+        placeholder='A JSON object listing default annotation drawing styles.',
+        title='A dictionary of drawing styles')
+  p#g-histomicstk-error-message.g-validation-failed-message
+.g-histomicstk-buttons
+  button#g-histomicstk-save.btn.btn-sm.btn-primary Save
+  button#g-histomicstk-cancel.btn.btn-sm.btn-default Cancel
