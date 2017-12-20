@@ -12,6 +12,9 @@ girderTest.startApp();
 
 describe('Test the HistomicsTK plugin', function () {
     it('change the HistomicsTK settings', function () {
+        var styles = [{'lineWidth': 8, 'id': 'Sample Group'}];
+        var styleJSON = JSON.stringify(styles);
+
         girderTest.login('admin', 'Admin', 'Admin', 'password')();
         waitsFor(function () {
             return $('a.g-nav-link[g-target="admin"]').length > 0;
@@ -37,8 +40,6 @@ describe('Test the HistomicsTK plugin', function () {
             return $('#g-histomicstk-form input').length > 0;
         }, 'settings to be shown');
         girderTest.waitForLoad();
-        var styles = [{'lineWidth': 8, 'id': 'Sample Group'}];
-        var styleJSON = JSON.stringify(styles);
         runs(function () {
             $('#g-histomicstk-default-draw-styles').val(styleJSON);
             $('.g-histomicstk-buttons .btn-primary').click();

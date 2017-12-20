@@ -26,7 +26,7 @@ var ConfigView = View.extend({
     },
     initialize: function () {
         this.breadcrumb = new PluginConfigBreadcrumbWidget({
-            pluginName: 'Database assetstore',
+            pluginName: 'HistomicsTK',
             parentView: this
         });
 
