@@ -383,7 +383,7 @@ var ImageView = View.extend({
         const elementModel = annotation.elements().get(element.id);
         annotation.set('highlight', true);
         if (this.drawWidget) {
-            this.drawWidget.trigger('h:mouseover', elementModel);
+            this.drawWidget.trigger('h:mouseon', elementModel);
         }
     },
 
@@ -392,7 +392,7 @@ var ImageView = View.extend({
         const elementModel = annotation.elements().get(element.id);
         annotation.unset('highlight');
         if (this.drawWidget) {
-            this.drawWidget.trigger('h:randomevent', elementModel);
+            this.drawWidget.trigger('h:mouseoff', elementModel);
         }
     },
 

@@ -53,11 +53,11 @@ var DrawWidget = Panel.extend({
                 this._groups.get(this._style.id).save();
             }
         });
-        this.on('h:mouseover', (model) => {
+        this.on('h:mouseon', (model) => {
             this._highlighted[model.id] = true;
             this.$(`.h-element[data-id="${model.id}"]`).addClass('h-highlight-element');
         });
-        this.on('h:randomevent', (model) => {
+        this.on('h:mouseoff', (model) => {
             this._highlighted[model.id] = false;
             this.$(`.h-element[data-id="${model.id}"]`).removeClass('h-highlight-element');
         });
