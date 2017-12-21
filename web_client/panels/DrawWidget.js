@@ -55,13 +55,11 @@ var DrawWidget = Panel.extend({
         });
         this.on('h:mouseover', (model) => {
             this._highlighted[model.id] = true;
-            this._skipRedraw = true;
-            this.render();
+            this.$(`.h-element[data-id="${model.id}"]`).addClass('h-highlight-element');
         });
         this.on('h:randomevent', (model) => {
             this._highlighted[model.id] = false;
-            this._skipRedraw = true;
-            this.render();
+            this.$(`.h-element[data-id="${model.id}"]`).removeClass('h-highlight-element');
         });
     },
 
@@ -72,10 +70,7 @@ var DrawWidget = Panel.extend({
             return;
         }
         const name = (this.annotation.get('annotation') || {}).name || 'Untitled';
-        if (!this._skipRedraw) {
-            this.trigger('h:redraw', this.annotation);
-        }
-        this._skipRedraw = false;
+        this.trigger('h:redraw', this.annotation);
         this.$el.html(drawWidget({
             title: 'Draw',
             elements: this.collection.models,

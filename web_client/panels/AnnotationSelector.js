@@ -43,7 +43,8 @@ var AnnotationSelector = Panel.extend({
      *     to the current image.
      */
     initialize(settings) {
-        this.listenTo(this.collection, 'all', this.render);
+        this.listenTo(this.collection, 'sync remove update reset change:displayed change:loading', this.render);
+        this.listenTo(this.collection, 'change:highlight', this._changeAnnotationHighlight);
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
         this.listenTo(eventStream, 'g:eventStream.start', this._refreshAnnotations);
         this.listenTo(this.collection, 'change:annotation', this._saveAnnotation);
@@ -298,6 +299,10 @@ var AnnotationSelector = Panel.extend({
 
     _unhighlightAnnotation() {
         this.parentView.trigger('h:highlightAnnotation');
+    },
+
+    _changeAnnotationHighlight(model) {
+        this.$(`.h-annotation[data-id="${model.id}"]`).toggleClass('h-highlight-annotation', model.get('highlighted'));
     }
 });
 
