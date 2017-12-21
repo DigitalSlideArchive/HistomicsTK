@@ -80,7 +80,8 @@ var ImageView = View.extend({
                 parentView: this,
                 el: this.$('.h-image-view-container'),
                 itemId: this.model.id,
-                hoverEvents: true
+                hoverEvents: true,
+                highlightFeatureSizeLimit: 1000
             });
             this.trigger('h:viewerWidgetCreated', this.viewerWidget);
 
