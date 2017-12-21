@@ -255,10 +255,7 @@ var AnnotationSelector = Panel.extend({
         );
     },
 
-    _saveAnnotation(annotation, attribute, options) {
-        if (options && options.noSave) {
-            return;
-        }
+    _saveAnnotation(annotation) {
         if (!this._saving && annotation === this._activeAnnotation) {
             this._saving = true;
             annotation.save().always(() => {
