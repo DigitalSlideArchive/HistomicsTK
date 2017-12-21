@@ -116,9 +116,7 @@ var AnnotationSelector = Panel.extend({
         var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
         model.set('displayed', !model.get('displayed'));
-        if (model.get('displayed')) {
-            model.set('highlight', true);
-        } else {
+        if (!model.get('displayed')) {
             model.unset('highlight');
         }
     },
