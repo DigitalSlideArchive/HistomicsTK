@@ -54,6 +54,7 @@ var ImageView = View.extend({
         this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
         this.listenTo(this.annotationSelector, 'h:editAnnotation', this._editAnnotation);
         this.listenTo(this.annotationSelector, 'h:deleteAnnotation', this._deleteAnnotation);
+        this.listenTo(this, 'h:highlightAnnotation', this._highlightAnnotation);
 
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
         this.listenTo(events, 'g:login g:logout.success g:logout.error', () => {
@@ -79,13 +80,16 @@ var ImageView = View.extend({
                 parentView: this,
                 el: this.$('.h-image-view-container'),
                 itemId: this.model.id,
-                hoverEvents: true
+                hoverEvents: true,
+                highlightFeatureSizeLimit: 1000
             });
             this.trigger('h:viewerWidgetCreated', this.viewerWidget);
 
             // handle annotation mouse events
             this.listenTo(this.viewerWidget, 'g:mouseOverAnnotation', this.mouseOverAnnotation);
             this.listenTo(this.viewerWidget, 'g:mouseOutAnnotation', this.mouseOutAnnotation);
+            this.listenTo(this.viewerWidget, 'g:mouseOnAnnotation', this.mouseOnAnnotation);
+            this.listenTo(this.viewerWidget, 'g:mouseOffAnnotation', this.mouseOffAnnotation);
             this.listenTo(this.viewerWidget, 'g:mouseClickAnnotation', this.mouseClickAnnotation);
             this.listenTo(this.viewerWidget, 'g:mouseResetAnnotation', this.mouseResetAnnotation);
 
@@ -312,6 +316,10 @@ var ImageView = View.extend({
         this.viewerWidget.drawAnnotation(annotation);
     },
 
+    _highlightAnnotation(annotation, element) {
+        this.viewerWidget.highlightAnnotation(annotation, element);
+    },
+
     widgetRegion(model) {
         var value = model.get('value');
         this.showRegion({
@@ -367,6 +375,24 @@ var ImageView = View.extend({
             this.$('.h-image-coordinates').text(
                 pt.x.toFixed() + ', ' + pt.y.toFixed()
             );
+        }
+    },
+
+    mouseOnAnnotation(element, annotationId) {
+        const annotation = this.annotations.get(annotationId);
+        const elementModel = annotation.elements().get(element.id);
+        annotation.set('highlight', true);
+        if (this.drawWidget) {
+            this.drawWidget.trigger('h:mouseon', elementModel);
+        }
+    },
+
+    mouseOffAnnotation(element, annotationId) {
+        const annotation = this.annotations.get(annotationId);
+        const elementModel = annotation.elements().get(element.id);
+        annotation.unset('highlight');
+        if (this.drawWidget) {
+            this.drawWidget.trigger('h:mouseoff', elementModel);
         }
     },
 

@@ -17,8 +17,12 @@ block content
     - var name = annotation.get('annotation').name;
     - var displayed = annotation.get('displayed');
     - var loading = annotation.get('loading');
-    - var activeClass = annotation.id === activeAnnotation ? 'h-active-annotation' : ''
-    .h-annotation(data-id=annotation.id, class=activeClass)
+    - var classes = [];
+    if annotation.id === activeAnnotation
+      - classes.push('h-active-annotation');
+    if annotation.get('highlight')
+      - classes.push('h-highlight-annotation')
+    .h-annotation(data-id=annotation.id, class=classes)
       if loading
         span.icon-spin3.animate-spin.h-float-left
       else if displayed

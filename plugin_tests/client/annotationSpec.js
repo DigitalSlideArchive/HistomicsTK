@@ -650,7 +650,7 @@ $(function () {
                 });
             });
 
-            it('open an annotation in the draw panel', function () {
+            it('cannot edit an annotation as a non-admin', function () {
                 var trigger = girder.events.trigger;
                 var alertTriggered;
                 girder.events.trigger = _.wrap(girder.events.trigger, function (func, event, options) {
@@ -668,17 +668,93 @@ $(function () {
                     expect(alertTriggered).toBeDefined();
                     expect(alertTriggered.text).toBe('You do not have write access to this annotation.');
                     girder.events.trigger = trigger;
+                });
+            });
 
-                    $('.h-annotation-selector .h-annotation:contains("drawn 2") .h-annotation-name').click();
+            it('close the open draw panel', function () {
+                $('.h-annotation-selector .h-annotation:contains("drawn 2") .h-annotation-name').click();
+                girderTest.waitForLoad();
+                runs(function () {
+                    expect($('.h-elements-container').length).toBe(0);
                 });
-                waitsFor(function () {
-                    return $('.h-elements-container').length;
-                });
+            });
+
+            it('open the draw panel for an editable annotation', function () {
+                $('.h-annotation-selector .h-annotation:contains("drawn 2") .h-annotation-name').click();
                 girderTest.waitForLoad();
                 runs(function () {
                     expect($('.h-elements-container').length).toBe(1);
                     expect($('.h-annotation-selector .h-annotation:contains("drawn 2") .icon-eye').length).toBe(1);
                     expect($('.h-draw-widget .h-panel-name').text()).toBe('drawn 2');
+                });
+            });
+
+            it('trigger a mouseon event on an element', function () {
+                var annotation = $('.h-annotation-selector .h-annotation:contains("drawn 2")').data('id');
+                var element = app.bodyView.annotations.get(annotation).elements().get($('.h-draw-widget .h-element').data('id'));
+                app.bodyView.viewerWidget.trigger('g:mouseOnAnnotation', element, annotation);
+                expect($('.h-annotation-selector .h-annotation:contains("drawn 2")').hasClass('h-highlight-annotation')).toBe(true);
+                expect($('.h-draw-widget .h-element').hasClass('h-highlight-element')).toBe(true);
+            });
+
+            it('trigger a mouseoff event', function () {
+                var annotation = $('.h-annotation-selector .h-annotation:contains("drawn 2")').data('id');
+                var element = app.bodyView.annotations.get(annotation).elements().get($('.h-draw-widget .h-element').data('id'));
+                app.bodyView.viewerWidget.trigger('g:mouseOffAnnotation', element, annotation);
+                expect($('.h-annotation-selector .h-annotation:contains("drawn 2")').hasClass('h-highlight-annotation')).toBe(false);
+                expect($('.h-draw-widget .h-element').hasClass('h-highlight-element')).toBe(false);
+            });
+
+            it('mouseover an annotation in the AnnotationSelector', function () {
+                var called;
+                var highlightAnnotation = app.bodyView.viewerWidget.highlightAnnotation;
+                app.bodyView.viewerWidget.highlightAnnotation = function (annotation, element) {
+                    called = true;
+                    expect(annotation).toBe($('.h-annotation-selector .h-annotation:contains("drawn 2")').data('id'));
+                    expect(element).toBeUndefined();
+                };
+                app.bodyView.annotationSelector.$('.h-annotation:contains("drawn 2")').trigger('mouseenter');
+                expect(called).toBe(true);
+                app.bodyView.viewerWidget.highlightAnnotation = highlightAnnotation;
+            });
+
+            it('mouseover an annotation in the Draw widget', function () {
+                var called;
+                var highlightAnnotation = app.bodyView.viewerWidget.highlightAnnotation;
+                app.bodyView.viewerWidget.highlightAnnotation = function (annotation, element) {
+                    called = true;
+                    expect(annotation).toBe($('.h-annotation-selector .h-annotation:contains("drawn 2")').data('id'));
+                    expect(element).toBe($('.h-element').data('id'));
+                };
+                $('.h-element').trigger('mouseenter');
+                expect(called).toBe(true);
+                app.bodyView.viewerWidget.highlightAnnotation = highlightAnnotation;
+            });
+
+            it('mouseout to reset the highlight state', function () {
+                var called;
+                var highlightAnnotation = app.bodyView.viewerWidget.highlightAnnotation;
+                app.bodyView.viewerWidget.highlightAnnotation = function (annotation, element) {
+                    called = true;
+                    expect(annotation).toBeUndefined();
+                    expect(element).toBeUndefined();
+                };
+                $('.h-element').trigger('mouseout');
+                expect(called).toBe(true);
+                app.bodyView.viewerWidget.highlightAnnotation = highlightAnnotation;
+            });
+
+            it('mouseover a hidden annotation should be a no-op', function () {
+                var highlightAnnotation = app.bodyView.viewerWidget.highlightAnnotation;
+                app.bodyView.viewerWidget.highlightAnnotation = function (annotation, element) {
+                    throw new Error('should not be called');
+                };
+                $('.h-annotation-selector .h-annotation:contains("admin annotation") .icon-eye').click();
+
+                girderTest.waitForLoad();
+                runs(function () {
+                    $('.h-annotation-selector .h-annotation:contains("admin annotation")').trigger('mouseenter');
+                    app.bodyView.viewerWidget.highlightAnnotation = highlightAnnotation;
                 });
             });
 

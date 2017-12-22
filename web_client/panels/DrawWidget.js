@@ -20,7 +20,9 @@ var DrawWidget = Panel.extend({
         'click .h-delete-element': 'deleteElement',
         'click .h-draw': 'drawElement',
         'change .h-style-group': '_setStyleGroup',
-        'click .h-configure-style-group': '_styleGroupEditor'
+        'click .h-configure-style-group': '_styleGroupEditor',
+        'mouseenter .h-element': '_highlightElement',
+        'mouseleave .h-element': '_unhighlightElement'
     }),
 
     /**
@@ -37,6 +39,7 @@ var DrawWidget = Panel.extend({
         this.viewer = settings.viewer;
         this._drawingType = null;
 
+        this._highlighted = {};
         this._groups = new StyleCollection();
         this._style = new StyleModel({id: 'default'});
         this.listenTo(this._groups, 'update', this.render);
@@ -49,6 +52,14 @@ var DrawWidget = Panel.extend({
                 this._groups.add(this._style.toJSON());
                 this._groups.get(this._style.id).save();
             }
+        });
+        this.on('h:mouseon', (model) => {
+            this._highlighted[model.id] = true;
+            this.$(`.h-element[data-id="${model.id}"]`).addClass('h-highlight-element');
+        });
+        this.on('h:mouseoff', (model) => {
+            this._highlighted[model.id] = false;
+            this.$(`.h-element[data-id="${model.id}"]`).removeClass('h-highlight-element');
         });
     },
 
@@ -66,6 +77,7 @@ var DrawWidget = Panel.extend({
             drawingType: this._drawingType,
             groups: this._groups,
             style: this._style.id,
+            highlighted: this._highlighted,
             name
         }));
         this.$('.s-panel-content').collapse({toggle: false});
@@ -199,6 +211,15 @@ var DrawWidget = Panel.extend({
 
     _styleGroupEditor() {
         editStyleGroups(this._style, this._groups);
+    },
+
+    _highlightElement(evt) {
+        const id = $(evt.currentTarget).data('id');
+        this.parentView.trigger('h:highlightAnnotation', this.annotation.id, id);
+    },
+
+    _unhighlightElement() {
+        this.parentView.trigger('h:highlightAnnotation');
     }
 });
 

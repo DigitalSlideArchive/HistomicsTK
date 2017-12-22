@@ -29,6 +29,8 @@ var AnnotationSelector = Panel.extend({
         'click .h-edit-annotation-metadata': 'editAnnotationMetadata',
         'click .h-show-all-annotations': 'showAllAnnotations',
         'click .h-hide-all-annotations': 'hideAllAnnotations',
+        'mouseenter .h-annotation': '_highlightAnnotation',
+        'mouseleave .h-annotation': '_unhighlightAnnotation',
         'change #h-toggle-labels': 'toggleLabels'
     }),
 
@@ -41,7 +43,8 @@ var AnnotationSelector = Panel.extend({
      *     to the current image.
      */
     initialize(settings) {
-        this.listenTo(this.collection, 'all', this.render);
+        this.listenTo(this.collection, 'sync remove update reset change:displayed change:loading', this.render);
+        this.listenTo(this.collection, 'change:highlight', this._changeAnnotationHighlight);
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
         this.listenTo(eventStream, 'g:eventStream.start', this._refreshAnnotations);
         this.listenTo(this.collection, 'change:annotation', this._saveAnnotation);
@@ -113,6 +116,9 @@ var AnnotationSelector = Panel.extend({
         var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
         model.set('displayed', !model.get('displayed'));
+        if (!model.get('displayed')) {
+            model.unset('highlight');
+        }
     },
 
     /**
@@ -131,6 +137,7 @@ var AnnotationSelector = Panel.extend({
                 onSubmit: () => {
                     this.trigger('h:deleteAnnotation', model);
                     model.unset('displayed');
+                    model.unset('highlight');
                     this.collection.remove(model);
                     model.destroy();
                 }
@@ -183,10 +190,15 @@ var AnnotationSelector = Panel.extend({
     editAnnotation(evt) {
         var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
+
+        // deselect the annotation if it is already selected
         if (this._activeAnnotation && model && this._activeAnnotation.id === model.id) {
-            model.set('displayed', true);
+            this._activeAnnotation = null;
+            this.trigger('h:editAnnotation', null);
+            this.render();
             return;
         }
+
         if (!this._writeAccess(model)) {
             events.trigger('g:alert', {
                 text: 'You do not have write access to this annotation.',
@@ -270,6 +282,22 @@ var AnnotationSelector = Panel.extend({
         this.collection.each((model) => {
             model.set('displayed', false);
         });
+    },
+
+    _highlightAnnotation(evt) {
+        const id = $(evt.currentTarget).data('id');
+        const model = this.collection.get(id);
+        if (model.get('displayed')) {
+            this.parentView.trigger('h:highlightAnnotation', id);
+        }
+    },
+
+    _unhighlightAnnotation() {
+        this.parentView.trigger('h:highlightAnnotation');
+    },
+
+    _changeAnnotationHighlight(model) {
+        this.$(`.h-annotation[data-id="${model.id}"]`).toggleClass('h-highlight-annotation', model.get('highlighted'));
     }
 });
 
