@@ -211,14 +211,14 @@ def _totals_to_stats(total):
     t = total
     all_positive = t.NumberWeakPositive + t.NumberPositive + t.NumberStrongPositive
     return Output(
-        IntensityAverage=((t.IntensitySumWeakPositive
-                           + t.IntensitySumPositive
-                           + t.IntensitySumStrongPositive)
-                          / all_positive),
+        IntensityAverage=((t.IntensitySumWeakPositive +
+                           t.IntensitySumPositive +
+                           t.IntensitySumStrongPositive) /
+                          all_positive),
         RatioStrongToTotal=t.NumberStrongPositive / all_positive,
         IntensityAverageWeakAndPositive=(
-            (t.IntensitySumWeakPositive + t.IntensitySumPositive)
-            / (t.NumberWeakPositive + t.NumberPositive)
+            (t.IntensitySumWeakPositive + t.IntensitySumPositive) /
+            (t.NumberWeakPositive + t.NumberPositive)
         ),
         **t._asdict()
     )
