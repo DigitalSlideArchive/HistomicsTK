@@ -254,7 +254,7 @@ var AnnotationSelector = Panel.extend({
     },
 
     _saveAnnotation(annotation) {
-        if (!this._saving && annotation === this._activeAnnotation) {
+        if (!this._saving && annotation === this._activeAnnotation && !annotation.get('loading')) {
             this._saving = true;
             annotation.save().always(() => {
                 this._saving = false;
