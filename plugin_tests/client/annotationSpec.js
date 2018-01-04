@@ -996,7 +996,7 @@ $(function () {
             });
             it('reset the style groups', function () {
                 runs(function () {
-                    $('.h-group-name').val('new');  // select the 'new' style
+                    $('.h-group-name').val('new'); // select the 'new' style
                     $('#h-element-line-width').val('10');
                     $('#h-element-label').val('newlabel');
                     $('#h-reset-defaults').click();
