@@ -180,7 +180,7 @@ var ZoomWidget = Panel.extend({
         this._zoomSliderChange();
     },
 
-     /**
+    /**
      * A handler called when the download view button is clicked.
      */
     _downloadView(evt) {

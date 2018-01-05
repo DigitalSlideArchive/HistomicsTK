@@ -13,9 +13,9 @@ var EditRegionOfInterest = View.extend({
     },
 
     initialize() {
-        this._sizeCte = 1000;    // Constante to find
-        this._format = 'JPEG';    // JPEG is the default format
-        this._compressionRatio = 0.35;    // JPEG ratio
+        this._sizeCte = 1000; // Constante to find
+        this._format = 'JPEG'; // JPEG is the default format
+        this._compressionRatio = 0.35; // JPEG ratio
         this._magnification = 0;
     },
 
