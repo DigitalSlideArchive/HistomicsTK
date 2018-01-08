@@ -168,6 +168,7 @@ var AnnotationSelector = Panel.extend({
         var models = this.collection.indexBy(_.property('id'));
         this.collection.offset = 0;
         this.collection.fetch({itemId: this.parentItem.id}).then(() => {
+            var activeId = (this._activeAnnotation || {}).id;
             this.collection.each((model) => {
                 if (!_.has(models, model.id)) {
                     model.set('displayed', true);
@@ -176,6 +177,10 @@ var AnnotationSelector = Panel.extend({
                 }
             });
             this.render();
+            this._activeAnnotation = null;
+            if (activeId) {
+                this._setActiveAnnotation(this.collection.get(activeId));
+            }
             return null;
         });
     },
@@ -208,6 +213,10 @@ var AnnotationSelector = Panel.extend({
             });
             return;
         }
+        this._setActiveAnnotation(model);
+    },
+
+    _setActiveAnnotation(model) {
         this._activeAnnotation = model;
         model.set('loading', true);
         model.fetch().done(() => {
