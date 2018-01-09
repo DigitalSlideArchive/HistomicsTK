@@ -54,12 +54,16 @@ var DrawWidget = Panel.extend({
             }
         });
         this.on('h:mouseon', (model) => {
-            this._highlighted[model.id] = true;
-            this.$(`.h-element[data-id="${model.id}"]`).addClass('h-highlight-element');
+            if (model && model.id) {
+                this._highlighted[model.id] = true;
+                this.$(`.h-element[data-id="${model.id}"]`).addClass('h-highlight-element');
+            }
         });
         this.on('h:mouseoff', (model) => {
-            this._highlighted[model.id] = false;
-            this.$(`.h-element[data-id="${model.id}"]`).removeClass('h-highlight-element');
+            if (model && model.id) {
+                this._highlighted[model.id] = false;
+                this.$(`.h-element[data-id="${model.id}"]`).removeClass('h-highlight-element');
+            }
         });
     },
 

@@ -75,8 +75,6 @@ before_install:
     - git clone https://github.com/girder/girder.git $girder_path && git -C $girder_path checkout $GIRDER_VERSION
     - ln -sf $main_path $girder_path/plugins/
     - ls -l $girder_path/plugins
-    # Merge girder's setup.cfg into out local file
-    - cat $girder_path/setup.cfg >> setup.cfg
 
     - girder_worker_path=$girder_path/plugins/girder_worker
     - git clone https://github.com/girder/girder_worker.git $girder_worker_path && git -C $girder_worker_path checkout $GIRDER_WORKER_VERSION

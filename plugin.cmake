@@ -165,6 +165,4 @@ add_web_client_test(
 
 add_eslint_test(
   js_static_analysis_HistomicsTK_tests "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client"
-  ESLINT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client/.eslintrc"
-  ESLINT_IGNORE_FILE "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/.eslintignore"
 )
