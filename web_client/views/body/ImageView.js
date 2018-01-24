@@ -423,6 +423,7 @@ var ImageView = View.extend({
 
     _removeDrawWidget() {
         if (this.drawWidget) {
+            this._lastDrawingType = this.drawWidget.drawingType();
             this.drawWidget.cancelDrawMode();
             this.stopListening(this.drawWidget);
             this.drawWidget.remove();
@@ -440,6 +441,7 @@ var ImageView = View.extend({
                 parentView: this,
                 image: this.model,
                 annotation: this.activeAnnotation,
+                drawingType: this._lastDrawingType,
                 el: this.$('.h-draw-widget'),
                 viewer: this.viewerWidget
             }).render();
