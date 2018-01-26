@@ -37,7 +37,7 @@ var DrawWidget = Panel.extend({
         this.annotation = settings.annotation;
         this.collection = this.annotation.elements();
         this.viewer = settings.viewer;
-        this._drawingType = null;
+        this._drawingType = settings.drawingType || null;
 
         this._highlighted = {};
         this._groups = new StyleCollection();
@@ -78,12 +78,15 @@ var DrawWidget = Panel.extend({
         this.$el.html(drawWidget({
             title: 'Draw',
             elements: this.collection.models,
-            drawingType: this._drawingType,
             groups: this._groups,
             style: this._style.id,
             highlighted: this._highlighted,
             name
         }));
+        if (this._drawingType) {
+            this.$('button.h-draw[data-type="' + this._drawingType + '"]').addClass('active');
+            this.drawElement(undefined, this._drawingType);
+        }
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         if (this.viewer.annotationLayer && !this.viewer.annotationLayer._boundHistomicsTKModeChange) {
@@ -195,6 +198,10 @@ var DrawWidget = Panel.extend({
         this.drawElement(undefined, null);
         this.viewer.annotationLayer._boundHistomicsTKModeChange = false;
         this.viewer.annotationLayer.geoOff(window.geo.event.annotation.state);
+    },
+
+    drawingType() {
+        return this._drawingType;
     },
 
     /**
