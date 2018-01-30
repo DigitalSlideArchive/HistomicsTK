@@ -257,7 +257,9 @@ $(function () {
             var annotationInfo = {};
 
             it('create a new annotation', function () {
-                $('.h-create-annotation').click();
+                runs(function () {
+                    $('.h-create-annotation').click();
+                });
                 girderTest.waitForDialog();
 
                 runs(function () {
@@ -401,6 +403,44 @@ $(function () {
 
                 // reset the draw state
                 $('.h-draw[data-type="point"]').click();
+            });
+
+            it('check that the drawing type persists when switching annotatations', function () {
+                runs(function () {
+                    expect($('button.h-draw[data-type="point"]').hasClass('active')).toBe(true);
+                    $('.h-create-annotation').click();
+                });
+                girderTest.waitForDialog();
+                runs(function () {
+                    $('#h-annotation-name').val('drawn b');
+                    $('.h-submit').click();
+                });
+                girderTest.waitForLoad();
+                // expect that the drawing type is the same as before
+                runs(function () {
+                    expect($('button.h-draw[data-type="point"]').hasClass('active')).toBe(true);
+                });
+                // delete the annotation we just created.
+                runs(function () {
+                    $('.h-annotation-selector .h-annotation:contains("drawn b") .h-delete-annotation').click();
+                });
+                girderTest.waitForDialog();
+                runs(function () {
+                    $('.h-submit').click();
+                });
+                girderTest.waitForLoad();
+                // select the original annotation
+                runs(function () {
+                    $('.h-annotation-selector .h-annotation:contains("drawn 1") .h-annotation-name').click();
+                });
+                waitsFor(function () {
+                    return $('.h-draw-widget').not('.hidden').length;
+                });
+                girderTest.waitForLoad();
+                // expect that the drawing type is the same as before
+                runs(function () {
+                    expect($('button.h-draw[data-type="point"]').hasClass('active')).toBe(true);
+                });
             });
         });
 
