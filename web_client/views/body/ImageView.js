@@ -2,8 +2,10 @@
 import _ from 'underscore';
 
 import { restRequest } from 'girder/rest';
+import { getCurrentUser } from 'girder/auth';
 import ItemModel from 'girder/models/ItemModel';
 import FileModel from 'girder/models/FileModel';
+import FolderCollection from 'girder/collections/FolderCollection';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
 import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
@@ -30,6 +32,7 @@ var ImageView = View.extend({
         }
         this.listenTo(this.model, 'g:fetched', this.render);
         this.listenTo(events, 'h:analysis', this._setImageInput);
+        this.listenTo(events, 'h:analysis', this._setDefaultFileOutputs);
         events.trigger('h:imageOpened', null);
         this.listenTo(events, 'query:image', this.openImage);
         this.annotations = new AnnotationCollection();
@@ -246,6 +249,46 @@ var ImageView = View.extend({
                 }
             });
             return null;
+        });
+    },
+
+    _getDefaultOutputFolder() {
+        const user = getCurrentUser();
+        if (!user) {
+            return;
+        }
+        const userFolders = new FolderCollection();
+        return userFolders.fetch({
+            parentId: user.id,
+            parentType: 'user',
+            name: 'Private',
+            limit: 1
+        }).then(() => {
+            if (userFolders.isEmpty()) {
+                throw new Error('Could not find the user\'s private folder when setting defaults');
+            }
+            return userFolders.at(0);
+        });
+    },
+
+    _setDefaultFileOutputs() {
+        return this._getDefaultOutputFolder().done((folder) => {
+            _.each(
+                this.controlPanel.models().filter((model) => model.get('type') === 'new-file'),
+                (model) => {
+                    var analysis = _.last(router.getQuery('analysis').split('/'));
+                    var extension = (model.get('extensions') || '').split('|')[0];
+                    var name = `${analysis}-${model.id}${extension}`;
+                    model.set({
+                        path: [folder.get('name'), name],
+                        parent: folder,
+                        value: new ItemModel({
+                            name,
+                            folderId: folder.id
+                        })
+                    });
+                }
+            );
         });
     },
 
