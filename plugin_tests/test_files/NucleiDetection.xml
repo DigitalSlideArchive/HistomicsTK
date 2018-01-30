@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Detects Nuclei</title>
+  <description>Detects nuclei in a whole-slide image</description>
+  <version>0.1.0</version>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>inputImageFile</name>
+      <label>Input Image</label>
+      <description>Input image</description>
+      <channel>input</channel>
+      <index>0</index>
+    </image>
+    <region>
+      <name>analysis_roi</name>
+      <label>Analysis ROI</label>
+      <description>Region of interest within which the analysis should be done. Must be a four element vector in the format "left, top, width, height" in the space of the base layer. Default value of "-1, -1, -1, -1" indicates that the whole image should be processed.</description>
+      <longflag>analysis_roi</longflag>
+      <default>-1,-1,-1,-1</default>
+    </region>
+    <string-enumeration>
+      <name>nuclei_annotation_format</name>
+      <label>Nuclei annotation format</label>
+      <description>Format of the output nuclei annotations</description>
+      <longflag>nuclei_annotation_format</longflag>
+      <element>bbox</element>
+      <element>boundary</element>
+      <default>boundary</default>
+    </string-enumeration>
+    <file fileExtensions=".anot" reference="inputImageFile">
+      <name>outputNucleiAnnotationFile</name>
+      <label>Output Nuclei Annotation File</label>
+      <description>Output nuclei annotation file (*.anot)</description>
+      <channel>output</channel>
+      <index>1</index>
+    </file>
+  </parameters>
+  <parameters advanced="true">
+    <label>Color Normalization</label>
+    <description>Color Normalization parameters</description>
+    <double-vector>
+      <name>reference_mu_lab</name>
+      <label>Reference Mean LAB</label>
+      <description>Mean of reference image in LAB color space for Reinhard color normalization</description>
+      <longflag>reference_mu_lab</longflag>
+      <default>8.63234435, -0.11501964, 0.03868433</default>
+    </double-vector>
+    <double-vector>
+      <name>reference_std_lab</name>
+      <label>Reference Stddev LAB</label>
+      <description>Standard deviation of reference image in LAB color space for Reinhard color normalization</description>
+      <longflag>reference_std_lab</longflag>
+      <default>0.57506023, 0.10403329, 0.01364062</default>
+    </double-vector>
+  </parameters>
+  <parameters advanced="true">
+    <label>Color Deconvolution</label>
+    <description>Color Deconvolution parameters</description>
+    <string-enumeration>
+      <name>stain_1</name>
+      <label>stain-1</label>
+      <description>Name of stain-1</description>
+      <channel>input</channel>
+      <longflag>stain_1</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>custom</element>
+      <default>hematoxylin</default>
+    </string-enumeration>
+    <double-vector>
+      <name>stain_1_vector</name>
+      <longflag>stain_1_vector</longflag>
+      <label>stain-1 custom vector</label>
+      <default>-1,-1,-1</default>
+      <description>Custom value for stain-1</description>
+    </double-vector>
+    <string-enumeration>
+      <name>stain_2</name>
+      <label>stain-2</label>
+      <description>Name of stain-2</description>
+      <channel>input</channel>
+      <longflag>stain_2</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>custom</element>
+      <default>eosin</default>
+    </string-enumeration>
+    <double-vector>
+      <name>stain_2_vector</name>
+      <longflag>stain_2_vector</longflag>
+      <label>stain-2 custom vector</label>
+      <default>-1,-1,-1</default>
+      <description>Custom value for stain-2</description>
+    </double-vector>
+    <string-enumeration>
+      <name>stain_3</name>
+      <label>stain-3</label>
+      <description>Name of stain-3</description>
+      <channel>input</channel>
+      <longflag>stain_3</longflag>
+      <element>hematoxylin</element>
+      <element>eosin</element>
+      <element>dab</element>
+      <element>null</element>
+      <element>custom</element>
+      <default>null</default>
+    </string-enumeration>
+    <double-vector>
+      <name>stain_3_vector</name>
+      <longflag>stain_3_vector</longflag>
+      <label>stain-3 custom vector</label>
+      <default>-1,-1,-1</default>
+      <description>Custom value for stain-3</description>
+    </double-vector>
+  </parameters>
+  <parameters>
+    <label>Nuclei segmentation</label>
+    <description>Nuclei segmentation parameters</description>
+    <double>
+      <name>foreground_threshold</name>
+      <label>Foreground Intensity Threshold</label>
+      <description>Intensity value to use as threshold to segment foreground in nuclear stain image</description>
+      <longflag>foreground_threshold</longflag>
+      <default>60</default>
+    </double>
+    <double>
+      <name>min_radius</name>
+      <label>Minimum Radius</label>
+      <description>Minimum nuclear radius (used to set min sigma of the multiscale LoG filter)</description>
+      <longflag>min_radius</longflag>
+      <default>20</default>
+    </double>
+    <double>
+      <name>max_radius</name>
+      <label>Maximum Radius</label>
+      <description>Maximum nuclear radius (used to set max sigma of the multiscale LoG filter)</description>
+      <longflag>max_radius</longflag>
+      <default>30</default>
+    </double>
+    <double>
+      <name>local_max_search_radius</name>
+      <label>Local Max Search Radius</label>
+      <description>Local max search radius used for detection seed points in nuclei</description>
+      <longflag>local_max_search_radius</longflag>
+      <default>10</default>
+    </double>
+    <double>
+      <name>min_nucleus_area</name>
+      <label>Minimum Nucleus Area</label>
+      <description>Minimum area that each nucleus should have</description>
+      <longflag>min_nucleus_area</longflag>
+      <default>80</default>
+    </double>
+  </parameters>
+  <parameters advanced="true">
+    <label>WSI Analysis</label>
+    <description>Whole-slide image analysis (WSI) parameters</description>
+    <double>
+      <name>analysis_tile_size</name>
+      <label>Analysis Tile Size</label>
+      <description>Tile size for blockwise analysis</description>
+      <longflag>analysis_tile_size</longflag>
+      <default>4096</default>
+    </double>
+    <double>
+      <name>analysis_mag</name>
+      <label>Analysis Magnification</label>
+      <description>The magnification at which the analysis should be performed.</description>
+      <longflag>analysis_mag</longflag>
+      <default>20</default>
+    </double>
+    <double>
+      <name>min_fgnd_frac</name>
+      <label>Minimum foreground fraction</label>
+      <description>The minimum amount of foreground that must be present in a tile for it to be analyzed</description>
+      <longflag>min_fgnd_frac</longflag>
+      <default>0.5</default>
+    </double>
+  </parameters>
+  <parameters advanced="true">
+    <label>Dask</label>
+    <description>Dask parameters</description>
+    <string>
+      <name>scheduler_address</name>
+      <label>Scheduler Address</label>
+      <description>Address of the dask scheduler in the format '127.0.0.1:8786'.  Not passing this parameter sets up a cluster on the local machine</description>
+      <longflag>scheduler_address</longflag>
+      <default></default>
+    </string>
+  </parameters>
+</executable>
+

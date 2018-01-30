@@ -1,5 +1,8 @@
 import os
 
+from girder.api import access
+from girder.api.describe import Description, describeRoute
+from girder.api.rest import Resource, setRawResponse, setResponseHeader
 from tests import web_client_test
 
 setUpModule = web_client_test.setUpModule
@@ -12,9 +15,77 @@ TEST_FILE = os.path.join(
 )
 
 
+class MockSlicerCLIWebResource(Resource):
+    """
+    This creates a mocked version of the ``/HistomicsTK/HistomicsTK/docker_image``
+    endpoint so we can test generation of the analysis panel on the client without
+    relying on girder_worker + docker.
+    """
+
+    def __init__(self):
+        super(MockSlicerCLIWebResource, self).__init__()
+        self.route('GET', ('docker_image',), self.dockerImage)
+        self.route('GET', ('test_analysis', 'xmlspec'), self.testAnalysisXml)
+        self.route('POST', ('test_analysis', 'run'), self.testAnalysisRun)
+
+    @access.public
+    @describeRoute(
+        Description('Mock the /HistomicsTK/docker_image endpoint.')
+    )
+    def dockerImage(self, params):
+        """
+        Return a single CLI referencing mocked out /xmlspec and /run endpoints.
+        """
+        return {
+            'dsarchive/histomicstk': {
+                'latest': {
+                    'NucleiDetection': {
+                        'run': 'mock_resource/test_analysis/run',
+                        'type': 'python',
+                        'xmlspec': 'mock_resource/test_analysis/xmlspec'
+                    }
+                }
+            }
+        }
+
+    @access.public
+    @describeRoute(
+        Description('Mock an analysis description route.')
+    )
+    def testAnalysisXml(self, params):
+        """Return the nuclei detection XML spec as a test case."""
+        xml_file = os.path.join(
+            os.path.abspath(
+                os.path.join(
+                    os.path.dirname(__file__), 'test_files', 'NucleiDetection.xml'
+                )
+            )
+        )
+        with open(xml_file) as f:
+            xml = f.read()
+        setResponseHeader('Content-Type', 'application/xml')
+        setRawResponse()
+        return xml
+
+    @access.public
+    @describeRoute(
+        Description('Mock an analysis run route.')
+    )
+    def testAnalysisRun(self, params):
+        """
+        Mock out the CLI execution endpoint.
+
+        For now, this is a no-op, but we should add some logic to generate an annotation
+        output and job status events to simulate a real execution of the CLI.
+        """
+        pass
+
+
 class WebClientTestCase(web_client_test.WebClientTestCase):
 
     def setUp(self):
+        web_client_test.testServer.root.api.v1.mock_resource = MockSlicerCLIWebResource()
+
         super(WebClientTestCase, self).setUp()
 
         admin = self.model('user').createUser(
