@@ -1,3 +1,5 @@
+/* global histomicsTest */
+
 girderTest.importPlugin('jobs');
 girderTest.importPlugin('worker');
 girderTest.importPlugin('large_image');
@@ -5,78 +7,13 @@ girderTest.importPlugin('slicer_cli_web');
 girderTest.importPlugin('HistomicsTK');
 
 var app;
-var geojsMap;
-var imageId;
+girderTest.addScript('/plugins/HistomicsTK/plugin_tests/client/common.js');
 
-girderTest.promise.then(function () {
-    $('body').css('overflow', 'hidden');
-    girder.router.enabled(false);
-    girder.events.trigger('g:appload.before');
-    girder.plugins.HistomicsTK.panels.DrawWidget.throttleAutosave = false;
-    app = new girder.plugins.HistomicsTK.App({
-        el: 'body',
-        parentView: null
-    });
-    app.bindRoutes();
-    girder.events.trigger('g:appload.after');
-    return null;
+girderTest.promise.done(function () {
+    app = histomicsTest.startApp();
 });
 
 $(function () {
-    function openImage(name) {
-        runs(function () {
-            app.bodyView.once('h:viewerWidgetCreated', function (viewerWidget) {
-                viewerWidget.once('g:beforeFirstRender', function () {
-                    window.geo.util.mockVGLRenderer();
-                });
-            });
-            $('.h-open-image').click();
-        });
-
-        girderTest.waitForDialog();
-
-        runs(function () {
-            $('#g-root-selector').val(
-                girder.auth.getCurrentUser().id
-            ).trigger('change');
-        });
-
-        waitsFor(function () {
-            return $('#g-dialog-container .g-folder-list-link').length > 0;
-        }, 'Hierarchy widget to render');
-
-        runs(function () {
-            $('.g-folder-list-link:contains("Public")').click();
-        });
-
-        waitsFor(function () {
-            return $('.g-item-list-link').length > 0;
-        }, 'item list to load');
-
-        runs(function () {
-            var $item = $('.g-item-list-link:contains("' + name + '")');
-            imageId = $item.next().attr('href').match(/\/item\/([a-f0-9]+)\/download/)[1];
-            expect($item.length).toBe(1);
-            $item.click();
-        });
-        waitsFor(function () {
-            return $('#g-selected-model').val();
-        }, 'selection to be set');
-
-        girderTest.waitForDialog();
-        runs(function () {
-            $('.g-submit-button').click();
-        });
-
-        girderTest.waitForLoad();
-        waitsFor(function () {
-            return $('.geojs-layer.active').length > 0;
-        }, 'image to load');
-        runs(function () {
-            expect(girder.plugins.HistomicsTK.router.getQuery('image')).toBe(imageId);
-        });
-    }
-
     /**
      * This is a test helper method to make assertions about the last autosaved
      * annotation.  The autosaved annotation is assumed to be the last annotation
@@ -90,9 +27,10 @@ $(function () {
      *      The annotations loaded from the server will be set in this object for
      *      further use by the caller.
      */
-    function checkAutoSave(imageId, annotationName, numberOfElements, annotationInfo) {
+    function checkAutoSave(annotationName, numberOfElements, annotationInfo) {
         var annotations;
         var annotation;
+        var imageId = histomicsTest.imageId();
 
         girderTest.waitForLoad();
 
@@ -146,28 +84,11 @@ $(function () {
     describe('Annotation tests', function () {
         describe('setup', function () {
             it('login', function () {
-                girderTest.waitForLoad();
-                runs(function () {
-                    $('.g-login').click();
-                });
-
-                girderTest.waitForDialog();
-                runs(function () {
-                    $('#g-login').val('user');
-                    $('#g-password').val('password');
-                    $('#g-login-button').click();
-                });
-
-                waitsFor(function () {
-                    return $('.h-user-dropdown-link').length > 0;
-                }, 'user to be logged in');
+                histomicsTest.login();
             });
 
             it('open image', function () {
-                openImage('image');
-                runs(function () {
-                    geojsMap = app.bodyView.viewer;
-                });
+                histomicsTest.openImage('image');
             });
         });
 
@@ -190,7 +111,7 @@ $(function () {
             });
 
             it('open the download dialog', function () {
-                var interactor = geojsMap.interactor();
+                var interactor = histomicsTest.geojsMap().interactor();
                 $('.h-download-button-area').click();
 
                 interactor.simulateEvent('mousedown', {
@@ -285,7 +206,7 @@ $(function () {
                     return $('.geojs-map.annotation-input').length > 0;
                 }, 'draw mode to activate');
                 runs(function () {
-                    var interactor = geojsMap.interactor();
+                    var interactor = histomicsTest.geojsMap().interactor();
                     interactor.simulateEvent('mousedown', {
                         map: {x: 100, y: 100},
                         button: 'left'
@@ -309,7 +230,7 @@ $(function () {
                     return !$('.h-draw[data-type="point"]').hasClass('active');
                 }, 'point drawing to be off');
 
-                checkAutoSave(imageId, 'drawn 1', 1, annotationInfo);
+                checkAutoSave('drawn 1', 1, annotationInfo);
             });
 
             it('edit a point element', function () {
@@ -339,7 +260,7 @@ $(function () {
                     return $('.geojs-map.annotation-input').length > 0;
                 }, 'draw mode to activate');
                 runs(function () {
-                    var interactor = geojsMap.interactor();
+                    var interactor = histomicsTest.geojsMap().interactor();
                     interactor.simulateEvent('mousedown', {
                         map: {x: 200, y: 200},
                         button: 'left'
@@ -356,13 +277,13 @@ $(function () {
                 runs(function () {
                     expect($('.h-elements-container .h-element:last .h-element-label').text()).toBe('point');
                 });
-                checkAutoSave(imageId, 'drawn 1', 2, annotationInfo);
+                checkAutoSave('drawn 1', 2, annotationInfo);
             });
 
             it('delete the second point', function () {
                 $('.h-elements-container .h-element:last .h-delete-element').click();
                 expect($('.h-elements-container .h-element').length).toBe(1);
-                checkAutoSave(imageId, 'drawn 1', 1, annotationInfo);
+                checkAutoSave('drawn 1', 1, annotationInfo);
             });
 
             it('draw another point', function () {
@@ -377,7 +298,7 @@ $(function () {
                     return $('.geojs-map.annotation-input').length > 0;
                 }, 'draw mode to activate');
                 runs(function () {
-                    var interactor = geojsMap.interactor();
+                    var interactor = histomicsTest.geojsMap().interactor();
                     interactor.simulateEvent('mousedown', {
                         map: {x: 100, y: 100},
                         button: 'left'
@@ -394,7 +315,7 @@ $(function () {
                 runs(function () {
                     expect($('.h-elements-container .h-element:last .h-element-label').text()).toBe('point');
                 });
-                checkAutoSave(imageId, 'drawn 1', 2, annotationInfo);
+                checkAutoSave('drawn 1', 2, annotationInfo);
             });
 
             it('delete the last point', function () {
@@ -522,7 +443,7 @@ $(function () {
                     return $('.geojs-map.annotation-input').length > 0;
                 }, 'draw mode to activate');
                 runs(function () {
-                    var interactor = geojsMap.interactor();
+                    var interactor = histomicsTest.geojsMap().interactor();
 
                     interactor.simulateEvent('mousedown', {
                         map: {x: 200, y: 200},
@@ -673,7 +594,7 @@ $(function () {
                     girder.rest.restRequest({
                         url: 'annotation',
                         data: {
-                            itemId: imageId,
+                            itemId: histomicsTest.imageId(),
                             userId: girder.auth.getCurrentUser().id
                         }
                     }).then(function (a) {
@@ -821,7 +742,7 @@ $(function () {
                     };
 
                     girder.rest.restRequest({
-                        url: 'annotation?itemId=' + imageId,
+                        url: 'annotation?itemId=' + histomicsTest.imageId(),
                         contentType: 'application/json',
                         processData: false,
                         data: JSON.stringify(rect),
@@ -857,7 +778,7 @@ $(function () {
             it('hover over annotation with labels off', function () {
                 girderTest.waitForLoad();
                 runs(function () {
-                    var interactor = geojsMap.interactor();
+                    var interactor = histomicsTest.geojsMap().interactor();
                     interactor.simulateEvent('mousemove', {
                         map: {x: 50, y: 50}
                     });
@@ -883,7 +804,7 @@ $(function () {
                 }, 'next event loop');
 
                 runs(function () {
-                    var interactor = geojsMap.interactor();
+                    var interactor = histomicsTest.geojsMap().interactor();
                     interactor.simulateEvent('mousemove', {
                         map: {x: 45, y: 45}
                     });
@@ -896,17 +817,19 @@ $(function () {
             });
 
             it('open a different image', function () {
-                openImage('copy');
-                runs(function () {
-                    expect($('.h-annotation-selector .h-annotation').length).toBe(0);
-                });
+                histomicsTest.waitsForPromise(
+                    histomicsTest.openImage('copy').done(function () {
+                        expect($('.h-annotation-selector .h-annotation').length).toBe(0);
+                    }), 'Annotation selector to appear'
+                );
             });
 
             it('open the original image', function () {
-                openImage('image');
-                runs(function () {
-                    expect($('.h-annotation-selector .h-annotation').length).toBe(3);
-                });
+                histomicsTest.waitsForPromise(
+                    histomicsTest.openImage('image').done(function () {
+                        expect($('.h-annotation-selector .h-annotation').length).toBe(3);
+                    }), 'Annotation selector to appear'
+                );
             });
         });
     });
@@ -918,6 +841,7 @@ $(function () {
             });
             girderTest.waitForDialog();
             runs(function () {
+                var imageId = histomicsTest.imageId();
                 var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
                 expect($el.length).toBe(1);
                 expect($el.find('.media-left img').prop('src'))
@@ -928,11 +852,13 @@ $(function () {
 
         it('click on the image', function () {
             runs(function () {
+                var imageId = histomicsTest.imageId();
                 var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
                 $el.click();
             });
             girderTest.waitForLoad();
             runs(function () {
+                var imageId = histomicsTest.imageId();
                 expect(girder.plugins.HistomicsTK.router.getQuery('image')).toBe(imageId);
             });
         });
@@ -942,22 +868,7 @@ $(function () {
         describe('setup', function () {
             girderTest.logout()();
             it('login', function () {
-                girderTest.waitForLoad();
-                runs(function () {
-                    $('.g-login').click();
-                });
-
-                girderTest.waitForDialog();
-                runs(function () {
-                    $('#g-login').val('admin');
-                    $('#g-password').val('password');
-                    $('#g-login-button').click();
-                });
-
-                waitsFor(function () {
-                    return $('.h-user-dropdown-link').length > 0;
-                }, 'user to be logged in');
-                girderTest.waitForLoad();
+                histomicsTest.login('admin', 'password');
             });
 
             it('open the dialog', function () {
@@ -965,12 +876,12 @@ $(function () {
                     $('.h-open-annotated-image').click();
                 });
                 waitsFor(function () {
-                    var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
+                    var $el = $('.h-annotated-image[data-id="' + histomicsTest.imageId() + '"]');
                     return $el.length === 1;
                 }, 'here');
                 girderTest.waitForDialog();
                 runs(function () {
-                    var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
+                    var $el = $('.h-annotated-image[data-id="' + histomicsTest.imageId() + '"]');
                     expect($el.length).toBe(1);
                     // remock VGL
                     app.bodyView.once('h:viewerWidgetCreated', function (viewerWidget) {
@@ -982,6 +893,7 @@ $(function () {
                 });
                 girderTest.waitForLoad();
                 runs(function () {
+                    var imageId = histomicsTest.imageId();
                     expect(girder.plugins.HistomicsTK.router.getQuery('image')).toBe(imageId);
                 });
             });
