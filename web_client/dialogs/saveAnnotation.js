@@ -10,17 +10,23 @@ import saveAnnotation from '../templates/dialogs/saveAnnotation.pug';
  */
 var SaveAnnotation = View.extend({
     events: {
-        'click .h-submit': 'save',
+        'click .h-cancel': 'cancel',
         'submit form': 'save'
     },
 
     render() {
         this.$el.html(
             saveAnnotation({
-                annotation: this.annotation.toJSON()
+                title: this.options.title,
+                annotation: this.annotation.toJSON().annotation
             })
         ).girderModal(this);
         return this;
+    },
+
+    cancel(evt) {
+        evt.preventDefault();
+        this.$el.modal('hide');
     },
 
     /**
@@ -42,7 +48,7 @@ var SaveAnnotation = View.extend({
             name: this.$('#h-annotation-name').val(),
             description: this.$('#h-annotation-description').val()
         });
-        this.annotation.trigger('g:save');
+        this.trigger('g:submit');
         this.$el.modal('hide');
     }
 });
@@ -56,14 +62,16 @@ var dialog = new SaveAnnotation({
 });
 
 /**
- * Show the save dialog box.  Watch for the `g:save` event on the
- * `AnnotationModel` to respond to user submission of the form.
+ * Show the save dialog box.  Watch for the `g:submit` event on the
+ * view to respond to user submission of the form.
  *
  * @param {AnnotationModel} annotationElement The element to edit
  * @returns {SaveAnnotation} The dialog's view
  */
-function show(annotation) {
+function show(annotation, options) {
+    _.defaults(options, {'title': 'Create annotation'});
     dialog.annotation = annotation;
+    dialog.options = options;
     dialog.setElement('#g-dialog-container').render();
     return dialog;
 }

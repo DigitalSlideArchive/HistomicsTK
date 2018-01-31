@@ -2,8 +2,10 @@
 import _ from 'underscore';
 
 import { restRequest } from 'girder/rest';
+import { getCurrentUser } from 'girder/auth';
 import ItemModel from 'girder/models/ItemModel';
 import FileModel from 'girder/models/FileModel';
+import FolderCollection from 'girder/collections/FolderCollection';
 import GeojsViewer from 'girder_plugins/large_image/views/imageViewerWidget/geojs';
 import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
@@ -30,6 +32,7 @@ var ImageView = View.extend({
         }
         this.listenTo(this.model, 'g:fetched', this.render);
         this.listenTo(events, 'h:analysis', this._setImageInput);
+        this.listenTo(events, 'h:analysis', this._setDefaultFileOutputs);
         events.trigger('h:imageOpened', null);
         this.listenTo(events, 'query:image', this.openImage);
         this.annotations = new AnnotationCollection();
@@ -40,15 +43,9 @@ var ImageView = View.extend({
         this.zoomWidget = new ZoomWidget({
             parentView: this
         });
-        this.drawWidget = new DrawWidget({
-            parentView: this,
-            annotations: this.annotations,
-            image: this.model
-        });
         this.annotationSelector = new AnnotationSelector({
             parentView: this,
             collection: this.annotations,
-            getActiveAnnotation: () => { return this.drawWidget.getActiveAnnotation(); },
             image: this.model
         });
         this.popover = new AnnotationPopover({
@@ -56,10 +53,16 @@ var ImageView = View.extend({
         });
 
         this.listenTo(events, 'h:select-region', this.showRegion);
-        this.listenTo(this.annotationSelector.collection, 'add change:displayed', this.toggleAnnotation);
+        this.listenTo(this.annotationSelector.collection, 'add update change:displayed', this.toggleAnnotation);
         this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
+        this.listenTo(this.annotationSelector, 'h:editAnnotation', this._editAnnotation);
+        this.listenTo(this.annotationSelector, 'h:deleteAnnotation', this._deleteAnnotation);
+        this.listenTo(this, 'h:highlightAnnotation', this._highlightAnnotation);
 
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
+        this.listenTo(events, 'g:login g:logout.success g:logout.error', () => {
+            this._openId = null;
+        });
         this.render();
     },
     render() {
@@ -67,6 +70,7 @@ var ImageView = View.extend({
         // This can happen when opening a new image while an annotation is
         // being hovered.
         this.mouseResetAnnotation();
+        this._removeDrawWidget();
 
         if (this.model.id === this._openId) {
             this.controlPanel.setElement('.h-control-panel-container').render();
@@ -79,13 +83,16 @@ var ImageView = View.extend({
                 parentView: this,
                 el: this.$('.h-image-view-container'),
                 itemId: this.model.id,
-                hoverEvents: true
+                hoverEvents: true,
+                highlightFeatureSizeLimit: 1000
             });
             this.trigger('h:viewerWidgetCreated', this.viewerWidget);
 
             // handle annotation mouse events
             this.listenTo(this.viewerWidget, 'g:mouseOverAnnotation', this.mouseOverAnnotation);
             this.listenTo(this.viewerWidget, 'g:mouseOutAnnotation', this.mouseOutAnnotation);
+            this.listenTo(this.viewerWidget, 'g:mouseOnAnnotation', this.mouseOnAnnotation);
+            this.listenTo(this.viewerWidget, 'g:mouseOffAnnotation', this.mouseOffAnnotation);
             this.listenTo(this.viewerWidget, 'g:mouseClickAnnotation', this.mouseClickAnnotation);
             this.listenTo(this.viewerWidget, 'g:mouseResetAnnotation', this.mouseResetAnnotation);
 
@@ -125,9 +132,12 @@ var ImageView = View.extend({
                         .setViewer(this.viewerWidget)
                         .setElement('.h-annotation-selector').render();
 
-                    this.drawWidget
-                        .setViewer(this.viewerWidget)
-                        .setElement('.h-draw-widget').render();
+                    if (this.drawWidget) {
+                        this.$('.h-draw-widget').removeClass('hidden');
+                        this.drawWidget
+                            .setViewer(this.viewerWidget)
+                            .setElement('.h-draw-widget').render();
+                    }
                 }
             });
             this.annotationSelector.setItem(this.model);
@@ -136,9 +146,12 @@ var ImageView = View.extend({
                 .setViewer(null)
                 .setElement('.h-annotation-selector').render();
 
-            this.drawWidget
-                .setViewer(null)
-                .setElement('.h-draw-widget').render();
+            if (this.drawWidget) {
+                this.$('.h-draw-widget').removeClass('hidden');
+                this.drawWidget
+                    .setViewer(null)
+                    .setElement('.h-draw-widget').render();
+            }
         }
         this.controlPanel.setElement('.h-control-panel-container').render();
         this.popover.setElement('#h-annotation-popover-container').render();
@@ -239,6 +252,46 @@ var ImageView = View.extend({
         });
     },
 
+    _getDefaultOutputFolder() {
+        const user = getCurrentUser();
+        if (!user) {
+            return;
+        }
+        const userFolders = new FolderCollection();
+        return userFolders.fetch({
+            parentId: user.id,
+            parentType: 'user',
+            name: 'Private',
+            limit: 1
+        }).then(() => {
+            if (userFolders.isEmpty()) {
+                throw new Error('Could not find the user\'s private folder when setting defaults');
+            }
+            return userFolders.at(0);
+        });
+    },
+
+    _setDefaultFileOutputs() {
+        return this._getDefaultOutputFolder().done((folder) => {
+            _.each(
+                this.controlPanel.models().filter((model) => model.get('type') === 'new-file'),
+                (model) => {
+                    var analysis = _.last(router.getQuery('analysis').split('/'));
+                    var extension = (model.get('extensions') || '').split('|')[0];
+                    var name = `${analysis}-${model.id}${extension}`;
+                    model.set({
+                        path: [folder.get('name'), name],
+                        parent: folder,
+                        value: new ItemModel({
+                            name,
+                            folderId: folder.id
+                        })
+                    });
+                }
+            );
+        });
+    },
+
     /**
      * Set the view (image bounds) of the current image as a
      * query string parameter.
@@ -285,13 +338,29 @@ var ImageView = View.extend({
         }
 
         if (annotation.get('displayed')) {
+            annotation.set('loading', true);
             annotation.fetch().then(() => {
                 this.viewerWidget.drawAnnotation(annotation);
                 return null;
+            }).always(() => {
+                annotation.unset('loading');
             });
         } else {
             this.viewerWidget.removeAnnotation(annotation);
         }
+    },
+
+    _redrawAnnotation(annotation) {
+        if (!this.viewerWidget || !annotation.get('displayed')) {
+            // We may need a way to queue annotation draws while viewer
+            // initializes, but for now ignore them.
+            return;
+        }
+        this.viewerWidget.drawAnnotation(annotation);
+    },
+
+    _highlightAnnotation(annotation, element) {
+        this.viewerWidget.highlightAnnotation(annotation, element);
     },
 
     widgetRegion(model) {
@@ -352,6 +421,24 @@ var ImageView = View.extend({
         }
     },
 
+    mouseOnAnnotation(element, annotationId) {
+        const annotation = this.annotations.get(annotationId);
+        const elementModel = annotation.elements().get(element.id);
+        annotation.set('highlight', true);
+        if (this.drawWidget) {
+            this.drawWidget.trigger('h:mouseon', elementModel);
+        }
+    },
+
+    mouseOffAnnotation(element, annotationId) {
+        const annotation = this.annotations.get(annotationId);
+        const elementModel = annotation.elements().get(element.id);
+        annotation.unset('highlight');
+        if (this.drawWidget) {
+            this.drawWidget.trigger('h:mouseoff', elementModel);
+        }
+    },
+
     mouseOverAnnotation(element, annotationId) {
         element.annotation = this.annotations.get(annotationId);
         if (element.annotation) {
@@ -375,8 +462,42 @@ var ImageView = View.extend({
 
     toggleLabels(options) {
         this.popover.toggle(options.show);
-    }
+    },
 
+    _removeDrawWidget() {
+        if (this.drawWidget) {
+            this._lastDrawingType = this.drawWidget.drawingType();
+            this.drawWidget.cancelDrawMode();
+            this.stopListening(this.drawWidget);
+            this.drawWidget.remove();
+            this.drawWidget = null;
+            $('<div/>').addClass('h-draw-widget s-panel hidden')
+                .appendTo(this.$('#h-annotation-selector-container'));
+        }
+    },
+
+    _editAnnotation(model) {
+        this.activeAnnotation = model;
+        this._removeDrawWidget();
+        if (model) {
+            this.drawWidget = new DrawWidget({
+                parentView: this,
+                image: this.model,
+                annotation: this.activeAnnotation,
+                drawingType: this._lastDrawingType,
+                el: this.$('.h-draw-widget'),
+                viewer: this.viewerWidget
+            }).render();
+            this.listenTo(this.drawWidget, 'h:redraw', this._redrawAnnotation);
+            this.$('.h-draw-widget').removeClass('hidden');
+        }
+    },
+
+    _deleteAnnotation(model) {
+        if (this.activeAnnotation && this.activeAnnotation.id === model.id) {
+            this._removeDrawWidget();
+        }
+    }
 });
 
 export default ImageView;

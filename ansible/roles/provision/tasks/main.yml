@@ -235,18 +235,18 @@
   tags: data_import
 
 - name: Install CLI
-  command: >-
-    python cli_test.py --username "{{ girder_admin_user|quote }}" --password "{{ girder_admin_password|quote }}" --apiurl "{{ girder_socket_scheme|quote }}://127.0.0.1:{{ girder_socket_port }}/api/v1" "{{ cli_image|quote }}"
+  command: python cli_test.py --username {{ girder_admin_user|quote }} --password {{ girder_admin_password|quote }} --apiurl {{ girder_socket_scheme|quote }}://127.0.0.1:{{ girder_socket_port }}/api/v1 {{ cli_image|quote }}
   args:
     chdir: "{{ root_dir }}"
+  no_log: true
   when: docker is defined and cli_image is defined and cli_image_test is undefined
 
 - name: Install and test CLI
-  command: >-
-    python cli_test.py --username "{{ girder_admin_user|quote }}" --password "{{ girder_admin_password|quote }}" --apiurl "{{ girder_socket_scheme|quote }}://127.0.0.1:{{ girder_socket_port }}/api/v1" --test "{{ cli_image|quote }}"
+  shell: python cli_test.py --username {{ girder_admin_user|quote }} --password {{ girder_admin_password|quote }} --apiurl {{ girder_socket_scheme|quote }}://127.0.0.1:{{ girder_socket_port }}/api/v1 --test {{ cli_image|quote }}
   args:
     chdir: "{{ root_dir }}"
   register: test_output
+  no_log: true
   when: docker is defined and cli_image is defined and cli_image_test is defined
 
 - name: Show test CLI results
@@ -256,4 +256,3 @@
 - name: Show test CLI results
   debug: var=test_output.stderr_lines
   when: docker is defined and cli_image is defined and cli_image_test is defined
-

@@ -6,6 +6,7 @@
     padding 3px 5px
 
     .h-element
+        border-radius 3px
         span
             cursor pointer
 
@@ -15,6 +16,8 @@
         .h-delete-element
             float right
 
+    .h-element.h-highlight-element
+        background-color #ccc
 
     .h-element:hover
         background-color #eee
@@ -35,3 +38,13 @@
     background-color #5790ff
     &:focus, &:hover
       background-color #4672cc
+
+  .h-panel-name:before
+    content " - "
+
+  .h-panel-name
+    display inline
+    overflow hidden
+    white-space nowrap
+    text-overflow ellipsis
+    font-weight normal

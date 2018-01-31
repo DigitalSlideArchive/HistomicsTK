@@ -48,7 +48,7 @@ addons:
       - libxml2-dev
       - libsqlite3-dev
       # girder worker
-      - rabbitmq-server
+      # - rabbitmq-server
       # pandoc for displaying jupyter notebook examples on ReadTheDocs
       - pandoc
       - pandoc-citeproc
@@ -87,7 +87,7 @@ before_install:
     - slicer_cli_web_path=$girder_path/plugins/slicer_cli_web
     - git clone https://github.com/girder/slicer_cli_web.git $slicer_cli_web_path && git -C $slicer_cli_web_path checkout $SLICER_CLI_WEB_VERSION
 
-    - export MONGO_VERSION=2.6.11
+    - export MONGO_VERSION=3.2.18
     - export PY_COVG="ON"
     - CACHE=$HOME/.cache source $girder_path/scripts/install_mongo.sh
     - mkdir /tmp/db
@@ -103,11 +103,6 @@ before_install:
     - npm install -g npm-install-retry
     - npm --version
     - npm prune
-
-    - wget -O $build_path/install_miniconda.sh https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
-    - bash $build_path/install_miniconda.sh -b -p $build_path/miniconda
-    - source $build_path/miniconda/bin/activate $build_path/miniconda
-    - conda update --yes --quiet --all
 
 install:
     - cd $girder_path
@@ -128,20 +123,18 @@ install:
     - pip install -U -r $slicer_cli_web_path/requirements.txt
     - npm-install-retry
     - BABEL_ENV=cover NYC_CWD="$main_path" girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
-    - pip uninstall --yes Sphinx  # Interferes with sphinx from conda
-    - conda install --yes jupyter sphinx sphinx_rtd_theme
-    - pip install nbsphinx travis-sphinx
-    - pip install numpy==1.13.1  # pin numpy for now
+    - pip install jupyter sphinx sphinx_rtd_theme nbsphinx travis-sphinx
+    # - pip install numpy==1.13.1  # pin numpy for now
     - pip freeze  # report what we have installed
 
 script:
     - mkdir -p $build_path/girder_testing_build
     - cd $build_path/girder_testing_build
-    - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} -DPYTHON_COVERAGE_CONFIG="$main_path/plugin_tests/pycoverage.cfg" -DCOVERAGE_MINIMUM_PASS=19 -DJS_COVERAGE_MINIMUM_PASS=19 -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" $girder_path
-    - make
-    - JASMINE_TIMEOUT=15000 ctest -VV
-    - travis-sphinx build --source=$main_path/docs 
+    - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} -DCOVERAGE_MINIMUM_PASS=19 -DJS_COVERAGE_MINIMUM_PASS=19 -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" $girder_path
+    - make -j 5
+    - JASMINE_TIMEOUT=15000 ctest -VV -j 3
+    - travis-sphinx build --source=$main_path/docs
 
 after_success:
-    - bash <(curl -s https://codecov.io/bash) -R $main_path -s $build_path
+    - bash <(curl -s https://codecov.io/bash) -R $main_path -s $girder_path
     - travis-sphinx deploy

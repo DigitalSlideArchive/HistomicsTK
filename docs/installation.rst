@@ -27,7 +27,7 @@ installed as follows::
 
 If you want the keras/tensorflow based functions of HistomicsTK to take advantage of the GPU,
 then you will have to install the GPU version of tensorflow (tensorflow-gpu) after
-installing HistomicsTK. See tensorflow installation instructions `here <https://www.tensorflow.org/install/>`_.
+installing HistomicsTK. See tensorflow installation instructions `here <https://www.tensorflow.org/install/>`__.
 
 We are working on releasing HistomicsTK on PyPI so it can easily be pip
 installed from there.
@@ -50,6 +50,26 @@ There are several methods that can be used to install HistomicsTK.  Each of thes
 
 .. include:: ../ansible/README.rst
    :start-after: __methods
+
+Installing Slice CLI Docker Images for Analysis
+-----------------------------------------------
+
+One of the primary uses of HistomicsTK as a Girder plugin is to analyze images.
+Analyses are configured using Docker images conforming to the Slicer execution
+model.  Different analysis Docker images can be installed by a system
+administrator using the Web API (the link is on the bottom of the Girder web
+page).
+
+Selecting the Web API will show a list of API endpoints for Girder.  In the
+``PUT`` ``/HistomicsTK/HistomicsTK/docker_image`` endpoint, you can add a list
+of Docker images, such as ``["dsarchive/histomicstk:latest"]``, and then click
+"Try it out".  This will pull the specified Docker image and make it available
+to the HistomicsTK interface.  You could also use a specific tag (version) from
+Docker instead of the ``latest`` tag.  Multiple versions and multiple images
+can be installed so that they can be compared against each other.
+
+For an example of how to make a Docker image with a Slicer CLI-compatible 
+interface, see `here <https://github.com/cdeepakroy/slicer_cli_web_plugin>`__.
 
 .. _Girder: http://girder.readthedocs.io/en/latest/
 .. _girder_worker: http://girder-worker.readthedocs.io/en/latest/
