@@ -54,11 +54,9 @@ class MockSlicerCLIWebResource(Resource):
     )
     def testAnalysisXml(self, params):
         """Return the nuclei detection XML spec as a test case."""
-        xml_file = os.path.join(
-            os.path.abspath(
-                os.path.join(
-                    os.path.dirname(__file__), 'test_files', 'NucleiDetection.xml'
-                )
+        xml_file = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__), '..', 'server', 'NucleiDetection', 'NucleiDetection.xml'
             )
         )
         with open(xml_file) as f:

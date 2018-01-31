@@ -15,7 +15,7 @@
         });
         waitsFor(function () {
             return done;
-        }, description || 'Promise to resovle');
+        }, description || 'Promise to resolve');
 
         return promise;
     }
