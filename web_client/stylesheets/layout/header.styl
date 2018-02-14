@@ -1,9 +1,29 @@
-#g-app-header-container
-  #h-navbar-brand
-    font-size 25px
-    font-weight 700
-  .g-header-wrapper
-    .h-image-menu-wrapper
-      display inline
-      float right
-  z-index 1000
+.histomicstk-body
+  #g-app-header-container
+    #h-navbar-brand
+      font-size 25px
+      font-weight 700
+    .g-header-wrapper
+      .h-image-menu-wrapper
+        display inline
+        float right
+    z-index 1000
+  @media (min-width: 768px)
+    .navbar-right
+      float none
+      margin-right 0
+      position absolute
+      right 0
+      white-space nowrap
+      z-index 10
+    .navbar-nav li
+      float none
+      display inline-block
+    .navbar > .container-fluid .navbar-brand
+      margin-left 0
+  .navbar-header
+    z-index 20
+    background #f8f8f8
+    float none
+    position absolute
+    left 0

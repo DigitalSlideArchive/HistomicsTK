@@ -16,15 +16,24 @@ var HeaderImageView = View.extend({
 
     initialize() {
         this.imageModel = null;
+        this.parentChain = null;
         this.listenTo(events, 'h:imageOpened', (model) => {
             this.imageModel = model;
+            this.parentChain = null;
+            if (model) {
+                this.imageModel.getRootPath((resp) => {
+                    this.parentChain = resp;
+                    this.render();
+                });
+            }
             this.render();
         });
     },
 
     render() {
         this.$el.html(headerImageTemplate({
-            image: this.imageModel
+            image: this.imageModel,
+            parentChain: this.parentChain
         }));
         return this;
     }
