@@ -835,6 +835,30 @@ $(function () {
     });
 
     describe('Open recently annotated image', function () {
+        var restPromise = null;
+        var girderRestRequest = null;
+
+        beforeEach(function () {
+            restPromise = $.Deferred();
+            girderRestRequest = girder.rest.restRequest;
+            // Wrap girder's restRequest method to notify the testing code below
+            // that the image list endpoint has returned.
+            girder.rest.restRequest = function (opts) {
+                var promise = girderRestRequest.apply(this, arguments);
+                if (opts.url === 'annotation/images') {
+                    promise.done(function () {
+                        restPromise.resolve(opts);
+                    });
+                }
+                return promise;
+            };
+        });
+
+        afterEach(function () {
+            girder.rest.restRequest = girderRestRequest;
+            restPromise = null;
+        });
+
         it('open the dialog', function () {
             runs(function () {
                 $('.h-open-annotated-image').click();
@@ -848,6 +872,55 @@ $(function () {
                     .toMatch(/item\/[0-9a-f]*\/tiles\/thumbnail/);
                 expect($el.find('.media-heading').text()).toBe('image');
             });
+        });
+
+        it('assert user list exists', function () {
+            var options = $('#h-annotation-creator option');
+            expect(options.length).toBe(3);
+            expect(options[0].text).toBe('Any user');
+            expect(options[1].text).toBe('admin');
+            expect(options[2].text).toBe('user');
+        });
+
+        it('filter by creator', function () {
+            var select = $('#h-annotation-creator');
+            var userid = select.find('option:nth(1)').val();
+            select.val(userid).trigger('change');
+
+            histomicsTest.waitsForPromise(
+                restPromise.done(function (opts) {
+                    expect(opts.data.creatorId).toBe(userid);
+                }),
+                'Creator filter to update'
+            );
+
+            waitsFor(function () {
+                return $('.h-annotated-image').length === 1;
+            }, 'Dialog to rerender');
+        });
+
+        it('filter by name', function () {
+            $('#h-image-name').val('invalid name').trigger('keyup');
+
+            histomicsTest.waitsForPromise(
+                restPromise.done(function (opts) {
+                    expect(opts.data.imageName).toBe('invalid name');
+                }),
+                'Name filter to update'
+            );
+
+            waitsFor(function () {
+                return $('.h-annotated-image').length === 0;
+            }, 'Dialog to rerender');
+        });
+
+        it('reset filter', function () {
+            $('#h-image-name').val('').trigger('keyup');
+            histomicsTest.waitsForPromise(restPromise, 'Name filter to reset');
+
+            waitsFor(function () {
+                return $('.h-annotated-image').length === 1;
+            }, 'Dialog to rerender');
         });
 
         it('click on the image', function () {

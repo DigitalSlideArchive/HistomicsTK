@@ -3,46 +3,104 @@ import _ from 'underscore';
 
 import { restRequest } from 'girder/rest';
 import ItemCollection from 'girder/collections/ItemCollection';
+import UserCollection from 'girder/collections/UserCollection';
 import View from 'girder/views/View';
 import 'girder/utilities/jquery/girderModal';
 
 import events from '../events';
 import router from '../router';
 
+import listTemplate from '../templates/dialogs/annotatedImageList.pug';
 import template from '../templates/dialogs/openAnnotatedImage.pug';
 import '../stylesheets/dialogs/openAnnotatedImage.styl';
 
 let dialog;
-let paths = {};
+const paths = {};
+
+const AnnotatedImageList = View.extend({
+    events: {
+        'keyup .form-control': 'fetch'
+    },
+
+    initialize() {
+        this.listenTo(this.collection, 'reset', this.render);
+    },
+
+    render() {
+        this.$el.html(listTemplate({
+            items: this.collection.toJSON(),
+            paths
+        }));
+        return this;
+    }
+});
 
 const OpenAnnotatedImage = View.extend({
     events: {
-        'click .h-annotated-image': '_submit'
+        'click .h-annotated-image': '_submit',
+        'keyup input': '_debouncedFetch',
+        'change select': '_debouncedFetch'
     },
 
     initialize() {
         this.collection = new ItemCollection();
         // disable automatic sorting of this collection
         this.collection.comparator = null;
-        this.listenTo(this.collection, 'reset', this.render);
+
+        this._users = new UserCollection();
+        this._users.sortField = 'login';
+        this._users.pageLimit = 500;
+        this._usersIsFetched = false;
+        this._users.fetch().done(() => {
+            this._usersIsFetched = true;
+            this.render();
+        });
+
+        if (createDialog.debounceTimeout > 0) {
+            this._debouncedFetch = _.debounce(this.fetch, createDialog.debounceTimeout);
+        } else {
+            this._debouncedFetch = this.fetch;
+        }
     },
 
     render() {
+        if (!this._usersIsFetched) {
+            return this;
+        }
         this.$el.html(template({
-            items: this.collection.toJSON(),
-            paths
+            imageName: this._imageName,
+            creator: this._creator,
+            users: this._users
         })).girderModal(this);
         this.$el.tooltip();
+
+        new AnnotatedImageList({
+            parentView: this,
+            collection: this.collection,
+            el: this.$('.h-annotated-images-list-container')
+        }).render();
         return this;
     },
 
     fetch() {
-        var items;
+        const data = {
+            limit: 10
+        };
+        let items;
+
+        this._creator = this.$('#h-annotation-creator').val();
+        if (this._creator) {
+            data.creatorId = this._creator;
+        }
+
+        this._imageName = this.$('#h-image-name').val();
+        if (this._imageName) {
+            data.imageName = this._imageName;
+        }
+
         return restRequest({
             url: 'annotation/images',
-            data: {
-                limit: 10
-            }
+            data
         }).then((_items) => {
             items = _items;
             const promises = _.map(items, (item) => {
@@ -84,11 +142,13 @@ function createDialog() {
     });
 }
 
+createDialog.debounceTimeout = 500;
+
 events.on('h:openAnnotatedImageUi', function () {
     if (!dialog) {
         dialog = createDialog();
     }
-    dialog.setElement($('#g-dialog-container')).fetch();
+    dialog.setElement($('#g-dialog-container')).render().fetch();
 });
 
 export default createDialog;
