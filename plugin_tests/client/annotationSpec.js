@@ -863,11 +863,15 @@ $(function () {
             runs(function () {
                 $('.h-open-annotated-image').click();
             });
-            girderTest.waitForDialog();
+
+            waitsFor(function () {
+                var imageId = histomicsTest.imageId();
+                var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
+                return $el.length === 1;
+            });
             runs(function () {
                 var imageId = histomicsTest.imageId();
                 var $el = $('.h-annotated-image[data-id="' + imageId + '"]');
-                expect($el.length).toBe(1);
                 expect($el.find('.media-left img').prop('src'))
                     .toMatch(/item\/[0-9a-f]*\/tiles\/thumbnail/);
                 expect($el.find('.media-heading').text()).toBe('image');
