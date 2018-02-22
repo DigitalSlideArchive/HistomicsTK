@@ -15,15 +15,13 @@ import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.utils as htk_utils
 
-print 'histomicsk import time = %s' % cli_utils.disp_time_hms(
-    time.time() - htk_import_time)
+htk_import_time = time.time() - htk_import_time
 
 large_import_time = time.time()
 
 import large_image
 
-print 'large_image import time = %s' % cli_utils.disp_time_hms(
-    time.time() - large_import_time)
+large_import_time = time.time() - large_import_time
 
 from ctk_cli import CLIArgumentParser
 
@@ -33,8 +31,7 @@ logging.basicConfig(level=logging.CRITICAL)
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils  # noqa
 
-print 'Total import time = %s' % cli_utils.disp_time_hms(
-    time.time() - import_time)
+import_time = time.time() - import_time
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
@@ -75,11 +72,20 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
 
 def main(args):
 
+    print('histomicsk import time = {}'.format(cli_utils.disp_time_hms(
+        htk_import_time)))
+
+    print('large_image import time = {}'.format(cli_utils.disp_time_hms(
+        time.time() - large_import_time)))
+
+    print('Total import time = {}'.format(cli_utils.disp_time_hms(
+        time.time() - import_time)))
+
     total_start_time = time.time()
 
     print('\n>> CLI Parameters ...\n')
 
-    print args
+    print(args)
 
     if not os.path.isfile(args.inputImageFile):
         raise IOError('Input image file does not exist.')
@@ -105,7 +111,7 @@ def main(args):
 
     c = cli_utils.create_dask_client(args)
 
-    print c
+    print(c)
 
     #
     # Read Input Image
@@ -116,7 +122,7 @@ def main(args):
 
     ts_metadata = ts.getMetadata()
 
-    print json.dumps(ts_metadata, indent=2)
+    print(json.dumps(ts_metadata, indent=2))
 
     is_wsi = ts_metadata['magnification'] is not None
 
@@ -158,7 +164,7 @@ def main(args):
 
         num_tiles = ts.getSingleTile(**it_kwargs)['iterator_range']['position']
 
-        print 'Number of tiles = %d' % num_tiles
+        print('Number of tiles = {}'.format(num_tiles))
 
         tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
             args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
@@ -172,10 +178,11 @@ def main(args):
 
         fgnd_frac_comp_time = time.time() - start_time
 
-        print 'Number of foreground tiles = %d (%.2f%%)' % (
-            num_fgnd_tiles, percent_fgnd_tiles)
+        print('Number of foreground tiles = {0:d} ({1:2f}%%)'.format(
+            num_fgnd_tiles, percent_fgnd_tiles))
 
-        print 'Time taken = %s' % cli_utils.disp_time_hms(fgnd_frac_comp_time)
+        print('Time taken = {}'.format(
+            cli_utils.disp_time_hms(fgnd_frac_comp_time)))
 
     #
     # Detect nuclei in parallel using Dask
@@ -208,8 +215,10 @@ def main(args):
 
     nuclei_detection_time = time.time() - start_time
 
-    print 'Number of nuclei = ', len(nuclei_list)
-    print "Time taken = %s" % cli_utils.disp_time_hms(nuclei_detection_time)
+    print('Number of nuclei = {}'.format(len(nuclei_list)))
+
+    print('Time taken = {}'.format(
+        cli_utils.disp_time_hms(nuclei_detection_time)))
 
     #
     # Write annotation file
@@ -229,17 +238,10 @@ def main(args):
 
     total_time_taken = time.time() - total_start_time
 
-    print 'Total analysis time = %s' % cli_utils.disp_time_hms(
-        total_time_taken)
+    print('Total analysis time = {}'.format(cli_utils.disp_time_hms(
+        total_time_taken)))
 
 
 if __name__ == "__main__":
 
-    parse_time = time.time()
-
-    args = CLIArgumentParser().parse_args()
-
-    print 'xml parse time = %s' % cli_utils.disp_time_hms(
-        time.time() - parse_time)
-
-    main(args)
+    main(CLIArgumentParser().parse_args())
