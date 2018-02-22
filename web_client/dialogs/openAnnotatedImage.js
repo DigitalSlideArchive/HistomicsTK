@@ -19,10 +19,6 @@ let dialog;
 const paths = {};
 
 const AnnotatedImageList = View.extend({
-    events: {
-        'keyup .form-control': 'fetch'
-    },
-
     initialize() {
         this.listenTo(this.collection, 'reset', this.render);
     },
@@ -48,11 +44,16 @@ const OpenAnnotatedImage = View.extend({
         // disable automatic sorting of this collection
         this.collection.comparator = null;
 
+        // This is a view model used to store the form state of the dialog.
         this._query = new backbone.Model({
             imageName: '',
             creator: ''
         });
+
+        // These properties are used to debounce rest calls, preventing a new
+        // rest call from occuring until the previous one has finished.
         this._nextQuery = {};
+        this._inFetch = false;
 
         this._users = new UserCollection();
         this._users.sortField = 'login';
@@ -89,9 +90,10 @@ const OpenAnnotatedImage = View.extend({
         const data = this._nextQuery;
         let items;
 
-        if (!this._nextQuery) {
+        if (!this._nextQuery || this._inFetch) {
             return;
         }
+        this._inFetch = true;
         delete this._nextQuery;
 
         data.limit = 10;
@@ -106,6 +108,7 @@ const OpenAnnotatedImage = View.extend({
             return $.when(...promises);
         }).done(() => {
             this.collection.reset(items);
+            this._inFetch = false;
             this._fetchImages();
         });
     },
