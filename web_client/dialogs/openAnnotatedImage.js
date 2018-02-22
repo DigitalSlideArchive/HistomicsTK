@@ -87,15 +87,30 @@ const OpenAnnotatedImage = View.extend({
             limit: 10
         };
         let items;
+        let changed = false;
 
-        this._creator = this.$('#h-annotation-creator').val();
-        if (this._creator) {
-            data.creatorId = this._creator;
+        const creator = this.$('#h-annotation-creator').val();
+        if (this._creator !== creator) {
+            this._creator = creator;
+            changed = true;
+
+            if (creator) {
+                data.creatorId = creator;
+            }
         }
 
-        this._imageName = (this.$('#h-image-name').val() || '').trim();
-        if (this._imageName) {
-            data.imageName = this._imageName;
+        const imageName = (this.$('#h-image-name').val() || '').trim();
+        if (this._imageName !== imageName) {
+            this._imageName = imageName;
+            changed = true;
+
+            if (imageName) {
+                data.imageName = this._imageName;
+            }
+        }
+
+        if (!changed) {
+            return $.Deferred().resolve(this.collection).promise();
         }
 
         return restRequest({
@@ -109,7 +124,7 @@ const OpenAnnotatedImage = View.extend({
             return $.when(...promises);
         }).then(() => {
             this.collection.reset(items);
-            return items;
+            return this.collection;
         });
     },
 
