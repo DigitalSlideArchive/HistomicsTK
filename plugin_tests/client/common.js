@@ -25,7 +25,6 @@
         girder.router.enabled(false);
         girder.events.trigger('g:appload.before');
         girder.plugins.HistomicsTK.panels.DrawWidget.throttleAutosave = false;
-        girder.plugins.HistomicsTK.dialogs.openAnnotatedImage.debounceTimeout = 0;
         app = new girder.plugins.HistomicsTK.App({
             el: 'body',
             parentView: null

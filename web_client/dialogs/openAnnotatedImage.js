@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import _ from 'underscore';
+import backbone from 'backbone';
 
 import { restRequest } from 'girder/rest';
 import ItemCollection from 'girder/collections/ItemCollection';
@@ -38,14 +39,20 @@ const AnnotatedImageList = View.extend({
 const OpenAnnotatedImage = View.extend({
     events: {
         'click .h-annotated-image': '_submit',
-        'keyup input': '_debouncedFetch',
-        'change select': '_debouncedFetch'
+        'keyup input': '_updateQuery',
+        'change select': '_updateQuery'
     },
 
     initialize() {
         this.collection = new ItemCollection();
         // disable automatic sorting of this collection
         this.collection.comparator = null;
+
+        this._query = new backbone.Model({
+            imageName: '',
+            creator: ''
+        });
+        this._nextQuery = {};
 
         this._users = new UserCollection();
         this._users.sortField = 'login';
@@ -54,13 +61,9 @@ const OpenAnnotatedImage = View.extend({
         this._users.fetch().done(() => {
             this._usersIsFetched = true;
             this.render();
+            this._fetchImages();
         });
-
-        if (createDialog.debounceTimeout > 0) {
-            this._debouncedFetch = _.debounce(this.fetch, createDialog.debounceTimeout);
-        } else {
-            this._debouncedFetch = this.fetch;
-        }
+        this.listenTo(this._query, 'change', this._queueFetchImages);
     },
 
     render() {
@@ -68,8 +71,8 @@ const OpenAnnotatedImage = View.extend({
             return this;
         }
         this.$el.html(template({
-            imageName: this._imageName,
-            creator: this._creator,
+            imageName: this._query.get('imageName'),
+            creator: this._query.get('creator'),
             users: this._users
         })).girderModal(this);
         this.$el.tooltip();
@@ -82,38 +85,17 @@ const OpenAnnotatedImage = View.extend({
         return this;
     },
 
-    fetch() {
-        const data = {
-            limit: 10
-        };
+    _fetchImages() {
+        const data = this._nextQuery;
         let items;
-        let changed = false;
 
-        const creator = this.$('#h-annotation-creator').val();
-        if (this._creator !== creator) {
-            this._creator = creator;
-            changed = true;
-
-            if (creator) {
-                data.creatorId = creator;
-            }
+        if (!this._nextQuery) {
+            return;
         }
+        delete this._nextQuery;
 
-        const imageName = (this.$('#h-image-name').val() || '').trim();
-        if (this._imageName !== imageName) {
-            this._imageName = imageName;
-            changed = true;
-
-            if (imageName) {
-                data.imageName = this._imageName;
-            }
-        }
-
-        if (!changed) {
-            return $.Deferred().resolve(this.collection).promise();
-        }
-
-        return restRequest({
+        data.limit = 10;
+        restRequest({
             url: 'annotation/images',
             data
         }).then((_items) => {
@@ -122,9 +104,31 @@ const OpenAnnotatedImage = View.extend({
                 return this._getResourcePath(item);
             });
             return $.when(...promises);
-        }).then(() => {
+        }).done(() => {
             this.collection.reset(items);
-            return this.collection;
+            this._fetchImages();
+        });
+    },
+
+    _queueFetchImages() {
+        const imageName = this._query.get('imageName');
+        const creator = this._query.get('creator');
+        this._nextQuery = {};
+
+        if (imageName) {
+            this._nextQuery.imageName = imageName;
+        }
+        if (creator) {
+            this._nextQuery.creatorId = creator;
+        }
+
+        this._fetchImages();
+    },
+
+    _updateQuery() {
+        this._query.set({
+            creator: this.$('#h-annotation-creator').val(),
+            imageName: (this.$('#h-image-name').val() || '').trim()
         });
     },
 
@@ -157,13 +161,11 @@ function createDialog() {
     });
 }
 
-createDialog.debounceTimeout = 500;
-
 events.on('h:openAnnotatedImageUi', function () {
     if (!dialog) {
         dialog = createDialog();
     }
-    dialog.setElement($('#g-dialog-container')).render().fetch();
+    dialog.setElement($('#g-dialog-container')).render();
 });
 
 export default createDialog;
