@@ -1,17 +1,29 @@
+import time
+import_time = time.time()
+
 import os
 import sys
 import json
 import itertools
-import time
 
 import numpy as np
 import dask
+
+htk_import_time = time.time()
 
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.utils as htk_utils
 
+print 'histomicsk import time = %s' % cli_utils.disp_time_hms(
+    time.time() - htk_import_time)
+
+large_import_time = time.time()
+
 import large_image
+
+print 'large_image import time = %s' % cli_utils.disp_time_hms(
+    time.time() - large_import_time)
 
 from ctk_cli import CLIArgumentParser
 
@@ -20,6 +32,9 @@ logging.basicConfig(level=logging.CRITICAL)
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils  # noqa
+
+print 'Total import time = %s' % cli_utils.disp_time_hms(
+    time.time() - import_time)
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
@@ -187,11 +202,11 @@ def main(args):
         # append result to list
         tile_nuclei_list.append(cur_nuclei_list)
 
-    nuclei_detection_time = time.time() - start_time
-
     tile_nuclei_list = dask.delayed(tile_nuclei_list).compute()
 
     nuclei_list = list(itertools.chain.from_iterable(tile_nuclei_list))
+
+    nuclei_detection_time = time.time() - start_time
 
     print 'Number of nuclei = ', len(nuclei_list)
     print "Time taken = %s" % cli_utils.disp_time_hms(nuclei_detection_time)
@@ -214,8 +229,17 @@ def main(args):
 
     total_time_taken = time.time() - total_start_time
 
-    print 'Total analysis time = %s' % cli_utils.disp_time_hms(total_time_taken)
+    print 'Total analysis time = %s' % cli_utils.disp_time_hms(
+        total_time_taken)
 
 
 if __name__ == "__main__":
-    main(CLIArgumentParser().parse_args())
+
+    parse_time = time.time()
+
+    args = CLIArgumentParser().parse_args()
+
+    print 'xml parse time = %s' % cli_utils.disp_time_hms(
+        time.time() - parse_time)
+
+    main(args)
