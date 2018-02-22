@@ -1,4 +1,6 @@
 import time
+from datetime import timedelta
+
 import numpy as np
 import scipy as sp
 import skimage.measure
@@ -43,14 +45,14 @@ def get_stain_matrix(args, count=3):
     return np.array([get_stain_vector(args, i+1) for i in range(count)]).T
 
 
-def segment_wsi_foreground_at_low_res(ts):
+def segment_wsi_foreground_at_low_res(ts, lres_size=1024):
 
     ts_metadata = ts.getMetadata()
 
     # get image at low-res
     maxSize = max(ts_metadata['sizeX'], ts_metadata['sizeY'])
 
-    downsample_factor = 2 ** np.floor(np.log2(maxSize / 2048))
+    downsample_factor = 2 ** np.floor(np.log2(maxSize / lres_size))
 
     fgnd_seg_mag = ts_metadata['magnification'] / downsample_factor
 
@@ -258,7 +260,7 @@ def disp_time_hms(seconds):
     """Converts time from seconds to a string of the form hours:minutes:seconds
     """
 
-    return time.strftime("%H:%M:%S", time.gmtime(seconds))
+    return str(timedelta(seconds=seconds))
 
 
 def splitArgs(args, split='_'):
