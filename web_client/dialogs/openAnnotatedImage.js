@@ -93,7 +93,7 @@ const OpenAnnotatedImage = View.extend({
             data.creatorId = this._creator;
         }
 
-        this._imageName = this.$('#h-image-name').val();
+        this._imageName = (this.$('#h-image-name').val() || '').trim();
         if (this._imageName) {
             data.imageName = this._imageName;
         }
