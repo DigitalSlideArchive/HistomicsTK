@@ -44,7 +44,7 @@ def get_stain_matrix(args, count=3):
     return np.array([get_stain_vector(args, i+1) for i in range(count)]).T
 
 
-def segment_wsi_foreground_at_low_res(ts, lres_size=1024):
+def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
 
     ts_metadata = ts.getMetadata()
 
