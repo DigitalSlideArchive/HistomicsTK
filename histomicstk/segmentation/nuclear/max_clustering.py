@@ -68,6 +68,8 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
     # compute object properties
     obj_props = skimage.measure.regionprops(im_label, im_response_nmzd)
 
+    obj_props = [prop for prop in obj_props if np.isfinite(prop.weighted_centroid).all()]
+
     num_labels = len(obj_props)
 
     # extract object seeds
