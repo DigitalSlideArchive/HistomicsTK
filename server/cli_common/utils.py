@@ -50,7 +50,7 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
 
     # get image at low-res
     maxSize = max(ts_metadata['sizeX'], ts_metadata['sizeY'])
-    maxSize = float(min(maxSize, lres_size))
+    maxSize = float(max(maxSize, lres_size))
 
     downsample_factor = 2.0 ** np.floor(np.log2(maxSize / lres_size))
 
