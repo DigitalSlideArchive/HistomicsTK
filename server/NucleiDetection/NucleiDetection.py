@@ -22,7 +22,8 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils  # noqa
 
 
-def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
+def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
+                       src_mu_lab=None, src_sigma_lab=None):
 
     # get slide tile source
     ts = large_image.getTileSource(slide_path)
@@ -39,7 +40,9 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
                                  args.reference_mu_lab,
-                                 args.reference_std_lab)
+                                 args.reference_std_lab,
+                                 src_mu=src_mu_lab,
+                                 src_sigma=src_sigma_lab)
 
     # perform color decovolution
     w = cli_utils.get_stain_matrix(args)
@@ -182,6 +185,28 @@ def main(args):
         print('Tile foreground fraction computation time = {}'.format(
             cli_utils.disp_time_hms(fgnd_frac_comp_time)))
 
+
+    #
+    # Compute reinhard stats for color normalization
+    #
+    src_mu_lab = None
+    src_sigma_lab = None
+
+    if is_wsi and process_whole_image:
+
+        print('\n>> Computing reinhard color normalization stats ...\n')
+
+        start_time = time.time()
+
+        src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
+            args.inputImageFile, 0.01, magnification=args.analysis_mag)
+
+        rstats_time = time.time() - start_time
+
+        print('Reinhard stats computation time = {}'.format(
+            cli_utils.disp_time_hms(rstats_time)))
+
+
     #
     # Detect nuclei in parallel using Dask
     #
@@ -202,7 +227,9 @@ def main(args):
         cur_nuclei_list = dask.delayed(detect_tile_nuclei)(
             args.inputImageFile,
             tile_position,
-            args, **it_kwargs)
+            args, it_kwargs,
+            src_mu_lab, src_sigma_lab
+        )
 
         # append result to list
         tile_nuclei_list.append(cur_nuclei_list)
