@@ -172,7 +172,7 @@ class CliResultsTest(unittest.TestCase):
     def testNucleiDetectionDefaults(self):
         cli_args = (
             'NucleiDetection',
-            os.path.join(TEST_DATA_DIR, 'TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7-crop.tif'),   #noqa
+            os.path.join(TEST_DATA_DIR, 'TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7-crop.tif'),   # noqa
             'tmp_1.anot',
         )
 
