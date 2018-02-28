@@ -142,6 +142,8 @@ add_histomicstk_python_test(cli_results
     ENVIRONMENT
     "CLI_LIST_ENTRYPOINT=${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/server/cli_list_entrypoint.py"
     "CLI_CWD=${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/server"
+    EXTERNAL_DATA
+    "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7-crop.tif"
 )
 
 # front-end tests
