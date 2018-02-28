@@ -185,7 +185,6 @@ def main(args):
         print('Tile foreground fraction computation time = {}'.format(
             cli_utils.disp_time_hms(fgnd_frac_comp_time)))
 
-
     #
     # Compute reinhard stats for color normalization
     #
@@ -205,7 +204,6 @@ def main(args):
 
         print('Reinhard stats computation time = {}'.format(
             cli_utils.disp_time_hms(rstats_time)))
-
 
     #
     # Detect nuclei in parallel using Dask
