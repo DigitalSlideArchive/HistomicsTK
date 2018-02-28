@@ -183,14 +183,14 @@
       <label>Minimum Radius</label>
       <description>Minimum nuclear radius (used to set min sigma of the multiscale LoG filter)</description>
       <longflag>min_radius</longflag>
-      <default>20</default>
+      <default>10</default>
     </double>
     <double>
       <name>max_radius</name>
       <label>Maximum Radius</label>
       <description>Maximum nuclear radius (used to set max sigma of the multiscale LoG filter)</description>
       <longflag>max_radius</longflag>
-      <default>30</default>
+      <default>20</default>
     </double>
     <double>
       <name>local_max_search_radius</name>
