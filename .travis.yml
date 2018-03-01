@@ -64,7 +64,7 @@ before_install:
 
     - GIRDER_VERSION=2.x-maintenance
     - GIRDER_WORKER_VERSION=master
-    - LARGE_IMAGE_VERSION=include-scale-in-level-mag
+    - LARGE_IMAGE_VERSION=master
     - SLICER_CLI_WEB_VERSION=master
     - main_path=$PWD
     - build_path=$PWD/build
