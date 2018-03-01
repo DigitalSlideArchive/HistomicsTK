@@ -1,8 +1,8 @@
 import os
 import sys
 import json
-import itertools
 import time
+import itertools
 
 import numpy as np
 import dask
@@ -22,7 +22,8 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils  # noqa
 
 
-def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
+def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
+                       src_mu_lab=None, src_sigma_lab=None):
 
     # get slide tile source
     ts = large_image.getTileSource(slide_path)
@@ -39,7 +40,9 @@ def detect_tile_nuclei(slide_path, tile_position, args, **it_kwargs):
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
                                  args.reference_mu_lab,
-                                 args.reference_std_lab)
+                                 args.reference_std_lab,
+                                 src_mu=src_mu_lab,
+                                 src_sigma=src_sigma_lab)
 
     # perform color decovolution
     w = cli_utils.get_stain_matrix(args)
@@ -64,7 +67,7 @@ def main(args):
 
     print('\n>> CLI Parameters ...\n')
 
-    print args
+    print(args)
 
     if not os.path.isfile(args.inputImageFile):
         raise IOError('Input image file does not exist.')
@@ -88,9 +91,15 @@ def main(args):
     #
     print('\n>> Creating Dask client ...\n')
 
+    start_time = time.time()
+
     c = cli_utils.create_dask_client(args)
 
-    print c
+    print(c)
+
+    dask_setup_time = time.time() - start_time
+    print('Dask setup time = {}'.format(
+        cli_utils.disp_time_hms(dask_setup_time)))
 
     #
     # Read Input Image
@@ -101,19 +110,26 @@ def main(args):
 
     ts_metadata = ts.getMetadata()
 
-    print json.dumps(ts_metadata, indent=2)
+    print(json.dumps(ts_metadata, indent=2))
 
     is_wsi = ts_metadata['magnification'] is not None
 
     #
     # Compute tissue/foreground mask at low-res for whole slide images
     #
-    if is_wsi:
+    if is_wsi and process_whole_image:
 
         print('\n>> Computing tissue/foreground mask at low-res ...\n')
 
+        start_time = time.time()
+
         im_fgnd_mask_lres, fgnd_seg_scale = \
             cli_utils.segment_wsi_foreground_at_low_res(ts)
+
+        fgnd_time = time.time() - start_time
+
+        print('low-res foreground mask computation time = {}'.format(
+            cli_utils.disp_time_hms(fgnd_time)))
 
     #
     # Compute foreground fraction of tiles in parallel using Dask
@@ -143,12 +159,18 @@ def main(args):
 
         num_tiles = ts.getSingleTile(**it_kwargs)['iterator_range']['position']
 
-        print 'Number of tiles = %d' % num_tiles
+        print('Number of tiles = {}'.format(num_tiles))
 
-        tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
-            args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
-            **it_kwargs
-        )
+        if process_whole_image:
+
+            tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
+                args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
+                **it_kwargs
+            )
+
+        else:
+
+            tile_fgnd_frac_list = np.full(num_tiles, 1.0)
 
         num_fgnd_tiles = np.count_nonzero(
             tile_fgnd_frac_list >= args.min_fgnd_frac)
@@ -157,10 +179,31 @@ def main(args):
 
         fgnd_frac_comp_time = time.time() - start_time
 
-        print 'Number of foreground tiles = %d (%.2f%%)' % (
-            num_fgnd_tiles, percent_fgnd_tiles)
+        print('Number of foreground tiles = {0:d} ({1:2f}%%)'.format(
+            num_fgnd_tiles, percent_fgnd_tiles))
 
-        print 'Time taken = %s' % cli_utils.disp_time_hms(fgnd_frac_comp_time)
+        print('Tile foreground fraction computation time = {}'.format(
+            cli_utils.disp_time_hms(fgnd_frac_comp_time)))
+
+    #
+    # Compute reinhard stats for color normalization
+    #
+    src_mu_lab = None
+    src_sigma_lab = None
+
+    if is_wsi and process_whole_image:
+
+        print('\n>> Computing reinhard color normalization stats ...\n')
+
+        start_time = time.time()
+
+        src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
+            args.inputImageFile, 0.01, magnification=args.analysis_mag)
+
+        rstats_time = time.time() - start_time
+
+        print('Reinhard stats computation time = {}'.format(
+            cli_utils.disp_time_hms(rstats_time)))
 
     #
     # Detect nuclei in parallel using Dask
@@ -182,19 +225,23 @@ def main(args):
         cur_nuclei_list = dask.delayed(detect_tile_nuclei)(
             args.inputImageFile,
             tile_position,
-            args, **it_kwargs)
+            args, it_kwargs,
+            src_mu_lab, src_sigma_lab
+        )
 
         # append result to list
         tile_nuclei_list.append(cur_nuclei_list)
-
-    nuclei_detection_time = time.time() - start_time
 
     tile_nuclei_list = dask.delayed(tile_nuclei_list).compute()
 
     nuclei_list = list(itertools.chain.from_iterable(tile_nuclei_list))
 
-    print 'Number of nuclei = ', len(nuclei_list)
-    print "Time taken = %s" % cli_utils.disp_time_hms(nuclei_detection_time)
+    nuclei_detection_time = time.time() - start_time
+
+    print('Number of nuclei = {}'.format(len(nuclei_list)))
+
+    print('Nuclei detection time = {}'.format(
+        cli_utils.disp_time_hms(nuclei_detection_time)))
 
     #
     # Write annotation file
@@ -214,8 +261,10 @@ def main(args):
 
     total_time_taken = time.time() - total_start_time
 
-    print 'Total analysis time = %s' % cli_utils.disp_time_hms(total_time_taken)
+    print('Total analysis time = {}'.format(
+        cli_utils.disp_time_hms(total_time_taken)))
 
 
 if __name__ == "__main__":
+
     main(CLIArgumentParser().parse_args())

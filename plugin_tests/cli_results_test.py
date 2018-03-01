@@ -172,11 +172,24 @@ class CliResultsTest(unittest.TestCase):
     def testNucleiDetectionDefaults(self):
         cli_args = (
             'NucleiDetection',
-            os.path.join(TEST_DATA_DIR, 'Easy1.png'),
+            os.path.join(TEST_DATA_DIR, 'TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7-crop.tif'),   # noqa
             'tmp_1.anot',
         )
+
+        # test without ROI
         cli_kwargs = {
             'analysis_roi': '-1.0, -1.0, -1.0, -1.0',
+        }
+        self._runTest(cli_args, cli_kwargs, outputs={
+            'tmp_1.anot': {
+                'contains': ['elements'],
+                # 'hash': '02b240586412c87ad5cbf349b7c22f80f1df31eef54ed8ee4ad1fd3624a89fa2',
+            },
+        })
+
+        # test with ROI
+        cli_kwargs = {
+            'analysis_roi': '0.0, 200.0, 512.0, 512.0'
         }
         self._runTest(cli_args, cli_kwargs, outputs={
             'tmp_1.anot': {
