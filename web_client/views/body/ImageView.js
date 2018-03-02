@@ -33,6 +33,7 @@ var ImageView = View.extend({
         this.listenTo(this.model, 'g:fetched', this.render);
         this.listenTo(events, 'h:analysis', this._setImageInput);
         this.listenTo(events, 'h:analysis', this._setDefaultFileOutputs);
+        this.listenTo(events, 'h:analysis', this._resetRegion);
         events.trigger('h:imageOpened', null);
         this.listenTo(events, 'query:image', this.openImage);
         this.annotations = new AnnotationCollection();
@@ -375,10 +376,16 @@ var ImageView = View.extend({
         });
     },
 
+    _resetRegion() {
+        if (this.viewerWidget) {
+            this.viewerWidget.removeAnnotation(
+                new AnnotationModel({_id: 'region-selection'})
+            );
+        }
+    },
+
     showRegion(region) {
-        this.viewerWidget.removeAnnotation(
-            new AnnotationModel({_id: 'region-selection'})
-        );
+        this._resetRegion();
 
         if (!region) {
             return;

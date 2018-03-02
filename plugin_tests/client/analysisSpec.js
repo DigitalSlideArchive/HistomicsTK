@@ -7,8 +7,10 @@ girderTest.importPlugin('slicer_cli_web');
 girderTest.importPlugin('HistomicsTK');
 girderTest.addScript('/plugins/HistomicsTK/plugin_tests/client/common.js');
 
+var app;
+
 girderTest.promise.done(function () {
-    histomicsTest.startApp();
+    app = histomicsTest.startApp();
 });
 
 $(function () {
@@ -72,6 +74,42 @@ $(function () {
             runs(function () {
                 expect($('#outputNucleiAnnotationFile').val()).toBe('test_analysis-outputNucleiAnnotationFile.anot');
             });
+        });
+        it('draw a region of interest', function () {
+            var regionButton = $('.s-select-region-button');
+            var interactor = histomicsTest.geojsMap().interactor();
+
+            expect(regionButton.length).toBe(1);
+            regionButton.click();
+
+            interactor.simulateEvent('mousedown', {
+                map: {x: 100, y: 100},
+                button: 'left'
+            });
+            interactor.simulateEvent('mousemove', {
+                map: {x: 200, y: 200},
+                button: 'left'
+            });
+            interactor.simulateEvent('mouseup', {
+                map: {x: 200, y: 200},
+                button: 'left'
+            });
+
+            waitsFor(function () {
+                return $('#analysis_roi').val() !== '-1,-1,-1,-1';
+            }, 'roi widget to update');
+        });
+        it('assert roi resets on analysis change', function () {
+            var resetCalled;
+            app.bodyView.viewerWidget.on('g:mouseResetAnnotation', function (annotation) {
+                if (annotation.id === 'region-selection') {
+                    resetCalled = true;
+                }
+            });
+            girder.plugins.HistomicsTK.events.trigger('h:analysis', null);
+            waitsFor(function () {
+                return resetCalled;
+            }, 'region annotation to be removed');
         });
     });
 });
