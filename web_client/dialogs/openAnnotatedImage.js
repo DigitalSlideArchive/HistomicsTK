@@ -26,7 +26,8 @@ const AnnotatedImageList = View.extend({
     render() {
         this.$el.html(listTemplate({
             items: this.collection.toJSON(),
-            paths
+            paths,
+            inFetch: this.collection._inFetch
         }));
         return this;
     }
@@ -53,7 +54,7 @@ const OpenAnnotatedImage = View.extend({
         // These properties are used to debounce rest calls, preventing a new
         // rest call from occuring until the previous one has finished.
         this._nextQuery = {};
-        this._inFetch = false;
+        this.collection._inFetch = false;
 
         this._users = new UserCollection();
         this._users.sortField = 'login';
@@ -61,8 +62,8 @@ const OpenAnnotatedImage = View.extend({
         this._usersIsFetched = false;
         this._users.fetch().done(() => {
             this._usersIsFetched = true;
-            this.render();
             this._fetchImages();
+            this.render();
         });
         this.listenTo(this._query, 'change', this._queueFetchImages);
     },
@@ -90,10 +91,10 @@ const OpenAnnotatedImage = View.extend({
         const data = this._nextQuery;
         let items;
 
-        if (!this._nextQuery || this._inFetch) {
+        if (!this._nextQuery || this.collection._inFetch) {
             return;
         }
-        this._inFetch = true;
+        this.collection._inFetch = true;
         delete this._nextQuery;
 
         data.limit = 10;
@@ -107,8 +108,8 @@ const OpenAnnotatedImage = View.extend({
             });
             return $.when(...promises);
         }).done(() => {
+            this.collection._inFetch = false;
             this.collection.reset(items);
-            this._inFetch = false;
             this._fetchImages();
         });
     },

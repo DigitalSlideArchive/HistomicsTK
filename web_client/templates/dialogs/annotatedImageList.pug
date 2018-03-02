@@ -1,5 +1,8 @@
 if !items.length
-  p Sorry, no annotated images were found.
+  if inFetch
+    p Requesting annotated image list...
+  else
+    p Sorry, no annotated images were found.
 else
   .list-group
     each item in items
