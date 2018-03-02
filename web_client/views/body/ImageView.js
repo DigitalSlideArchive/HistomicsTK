@@ -174,6 +174,8 @@ var ImageView = View.extend({
         } else {
             this.model.set({_id: null});
             this.render();
+            this._openId = null;
+            events.trigger('h:imageOpened', null);
         }
     },
     /**
