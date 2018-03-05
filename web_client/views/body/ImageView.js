@@ -448,6 +448,9 @@ var ImageView = View.extend({
     },
 
     mouseOnAnnotation(element, annotationId) {
+        if (annotationId === 'region-selection') {
+            return;
+        }
         const annotation = this.annotations.get(annotationId);
         const elementModel = annotation.elements().get(element.id);
         annotation.set('highlight', true);
@@ -457,6 +460,9 @@ var ImageView = View.extend({
     },
 
     mouseOffAnnotation(element, annotationId) {
+        if (annotationId === 'region-selection') {
+            return;
+        }
         const annotation = this.annotations.get(annotationId);
         const elementModel = annotation.elements().get(element.id);
         annotation.unset('highlight');
@@ -466,6 +472,9 @@ var ImageView = View.extend({
     },
 
     mouseOverAnnotation(element, annotationId) {
+        if (annotationId === 'region-selection') {
+            return;
+        }
         element.annotation = this.annotations.get(annotationId);
         if (element.annotation) {
             this.popover.collection.add(element);
@@ -473,6 +482,9 @@ var ImageView = View.extend({
     },
 
     mouseOutAnnotation(element, annotationId) {
+        if (annotationId === 'region-selection') {
+            return;
+        }
         element.annotation = this.annotations.get(annotationId);
         if (element.annotation) {
             this.popover.collection.remove(element);
