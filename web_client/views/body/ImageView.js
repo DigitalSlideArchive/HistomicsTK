@@ -27,6 +27,8 @@ var ImageView = View.extend({
     initialize(settings) {
         this.viewerWidget = null;
         this._openId = null;
+        this._displayedRegion = null;
+
         if (!this.model) {
             this.model = new ItemModel();
         }
@@ -368,6 +370,7 @@ var ImageView = View.extend({
 
     widgetRegion(model) {
         var value = model.get('value');
+        this._displayedRegion = value.slice();
         this.showRegion({
             left: parseFloat(value[0]),
             right: parseFloat(value[0]) + parseFloat(value[2]),
@@ -377,15 +380,29 @@ var ImageView = View.extend({
     },
 
     _resetRegion() {
+        var hasRegionParameter;
+        if (!this._displayedRegion) {
+            return;
+        }
+        _.each(
+            this.controlPanel.models().filter((model) => model.get('type') === 'region'),
+            (model) => {
+                model.set('value', this._displayedRegion);
+                hasRegionParameter = true;
+            }
+        );
+        if (!hasRegionParameter) {
+            this._displayedRegion = null;
+            this.showRegion(null);
+        }
+    },
+
+    showRegion(region) {
         if (this.viewerWidget) {
             this.viewerWidget.removeAnnotation(
                 new AnnotationModel({_id: 'region-selection'})
             );
         }
-    },
-
-    showRegion(region) {
-        this._resetRegion();
 
         if (!region) {
             return;
