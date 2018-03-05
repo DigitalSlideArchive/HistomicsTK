@@ -27,12 +27,15 @@ var ImageView = View.extend({
     initialize(settings) {
         this.viewerWidget = null;
         this._openId = null;
+        this._displayedRegion = null;
+
         if (!this.model) {
             this.model = new ItemModel();
         }
         this.listenTo(this.model, 'g:fetched', this.render);
         this.listenTo(events, 'h:analysis', this._setImageInput);
         this.listenTo(events, 'h:analysis', this._setDefaultFileOutputs);
+        this.listenTo(events, 'h:analysis', this._resetRegion);
         events.trigger('h:imageOpened', null);
         this.listenTo(events, 'query:image', this.openImage);
         this.annotations = new AnnotationCollection();
@@ -367,6 +370,7 @@ var ImageView = View.extend({
 
     widgetRegion(model) {
         var value = model.get('value');
+        this._displayedRegion = value.slice();
         this.showRegion({
             left: parseFloat(value[0]),
             right: parseFloat(value[0]) + parseFloat(value[2]),
@@ -375,10 +379,30 @@ var ImageView = View.extend({
         });
     },
 
-    showRegion(region) {
-        this.viewerWidget.removeAnnotation(
-            new AnnotationModel({_id: 'region-selection'})
+    _resetRegion() {
+        var hasRegionParameter;
+        if (!this._displayedRegion) {
+            return;
+        }
+        _.each(
+            this.controlPanel.models().filter((model) => model.get('type') === 'region'),
+            (model) => {
+                model.set('value', this._displayedRegion);
+                hasRegionParameter = true;
+            }
         );
+        if (!hasRegionParameter) {
+            this._displayedRegion = null;
+            this.showRegion(null);
+        }
+    },
+
+    showRegion(region) {
+        if (this.viewerWidget) {
+            this.viewerWidget.removeAnnotation(
+                new AnnotationModel({_id: 'region-selection'})
+            );
+        }
 
         if (!region) {
             return;
@@ -424,6 +448,9 @@ var ImageView = View.extend({
     },
 
     mouseOnAnnotation(element, annotationId) {
+        if (annotationId === 'region-selection') {
+            return;
+        }
         const annotation = this.annotations.get(annotationId);
         const elementModel = annotation.elements().get(element.id);
         annotation.set('highlight', true);
@@ -433,6 +460,9 @@ var ImageView = View.extend({
     },
 
     mouseOffAnnotation(element, annotationId) {
+        if (annotationId === 'region-selection') {
+            return;
+        }
         const annotation = this.annotations.get(annotationId);
         const elementModel = annotation.elements().get(element.id);
         annotation.unset('highlight');
@@ -442,6 +472,9 @@ var ImageView = View.extend({
     },
 
     mouseOverAnnotation(element, annotationId) {
+        if (annotationId === 'region-selection') {
+            return;
+        }
         element.annotation = this.annotations.get(annotationId);
         if (element.annotation) {
             this.popover.collection.add(element);
@@ -449,6 +482,9 @@ var ImageView = View.extend({
     },
 
     mouseOutAnnotation(element, annotationId) {
+        if (annotationId === 'region-selection') {
+            return;
+        }
         element.annotation = this.annotations.get(annotationId);
         if (element.annotation) {
             this.popover.collection.remove(element);

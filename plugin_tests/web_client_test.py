@@ -25,8 +25,11 @@ class MockSlicerCLIWebResource(Resource):
     def __init__(self):
         super(MockSlicerCLIWebResource, self).__init__()
         self.route('GET', ('docker_image',), self.dockerImage)
-        self.route('GET', ('test_analysis', 'xmlspec'), self.testAnalysisXml)
-        self.route('POST', ('test_analysis', 'run'), self.testAnalysisRun)
+        self.route('GET', ('test_analysis_detection', 'xmlspec'), self.testAnalysisXmlDetection)
+        self.route('GET', ('test_analysis_features', 'xmlspec'),
+                   self.testAnalysisXmlFeatures)
+        self.route('POST', ('test_analysis_detection', 'run'), self.testAnalysisRun)
+        self.route('POST', ('test_analysis_features', 'run'), self.testAnalysisRun)
 
     @access.public
     @describeRoute(
@@ -39,10 +42,15 @@ class MockSlicerCLIWebResource(Resource):
         return {
             'dsarchive/histomicstk': {
                 'latest': {
-                    'NucleiDetection': {
-                        'run': 'mock_resource/test_analysis/run',
+                    'ComputeNucleiFeatures': {
+                        'run': 'mock_resource/test_analysis_features/run',
                         'type': 'python',
-                        'xmlspec': 'mock_resource/test_analysis/xmlspec'
+                        'xmlspec': 'mock_resource/test_analysis_features/xmlspec'
+                    },
+                    'NucleiDetection': {
+                        'run': 'mock_resource/test_analysis_detection/run',
+                        'type': 'python',
+                        'xmlspec': 'mock_resource/test_analysis_detection/xmlspec'
                     }
                 }
             }
@@ -52,11 +60,29 @@ class MockSlicerCLIWebResource(Resource):
     @describeRoute(
         Description('Mock an analysis description route.')
     )
-    def testAnalysisXml(self, params):
+    def testAnalysisXmlDetection(self, params):
         """Return the nuclei detection XML spec as a test case."""
         xml_file = os.path.abspath(
             os.path.join(
                 os.path.dirname(__file__), '..', 'server', 'NucleiDetection', 'NucleiDetection.xml'
+            )
+        )
+        with open(xml_file) as f:
+            xml = f.read()
+        setResponseHeader('Content-Type', 'application/xml')
+        setRawResponse()
+        return xml
+
+    @access.public
+    @describeRoute(
+        Description('Mock an analysis description route.')
+    )
+    def testAnalysisXmlFeatures(self, params):
+        """Return the nuclei feature classification XML spec as a test case."""
+        xml_file = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__), '..', 'server', 'ComputeNucleiFeatures',
+                'ComputeNucleiFeatures.xml'
             )
         )
         with open(xml_file) as f:
