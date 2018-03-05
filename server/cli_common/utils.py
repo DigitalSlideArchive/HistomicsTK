@@ -198,8 +198,9 @@ def create_dask_client(args):
     if not scheduler_address:
 
         scheduler_address = dask.distributed.LocalCluster(
+            ip='0.0.0.0',  # Allow reaching the diagnostics port externally
+            scheduler_port=0,  # Don't expose the scheduler port
             n_workers=multiprocessing.cpu_count()-1,
-            scheduler_port=0,
             silence_logs=False
         )
 
