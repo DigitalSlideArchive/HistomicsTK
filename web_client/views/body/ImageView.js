@@ -60,6 +60,7 @@ var ImageView = View.extend({
         this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
         this.listenTo(this.annotationSelector, 'h:editAnnotation', this._editAnnotation);
         this.listenTo(this.annotationSelector, 'h:deleteAnnotation', this._deleteAnnotation);
+        this.listenTo(this.annotationSelector, 'h:annotationOpacity', this._setAnnotationOpacity);
         this.listenTo(this, 'h:highlightAnnotation', this._highlightAnnotation);
 
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
@@ -536,6 +537,10 @@ var ImageView = View.extend({
         if (this.activeAnnotation && this.activeAnnotation.id === model.id) {
             this._removeDrawWidget();
         }
+    },
+
+    _setAnnotationOpacity(opacity) {
+        this.viewerWidget.setGlobalAnnotationOpacity(opacity);
     }
 });
 

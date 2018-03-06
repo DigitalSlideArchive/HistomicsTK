@@ -529,6 +529,20 @@ $(function () {
                 });
             });
 
+            it('set the global annotation opacity', function () {
+                var opacity;
+                var setGlobalAnnotationOpacityFunc = app.bodyView.viewerWidget.setGlobalAnnotationOpacity;
+                app.bodyView.viewerWidget.setGlobalAnnotationOpacity = function (_opacity) {
+                    opacity = _opacity;
+                    return setGlobalAnnotationOpacityFunc.apply(this, arguments);
+                };
+
+                $('#h-annotation-opacity').slider('setValue', 0.5).trigger('slideStop');
+                expect(opacity).toBe(0.5);
+
+                app.bodyView.viewerWidget.setGlobalAnnotationOpacity = setGlobalAnnotationOpacityFunc;
+            });
+
             it('toggle visibility of an annotation', function () {
                 runs(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("drawn 1")');

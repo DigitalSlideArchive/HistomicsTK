@@ -44,6 +44,10 @@ block content
           span.icon-download.h-download-annotation(
               data-toggle='tooltip', title='Download annotation')
 
+  .form-group
+    label(for='h-annotation-opacity') Opacity
+    input#h-annotation-opacity.slider.form-control(
+        type='text', data-slider-min='0', data-slider-max='1', data-slider-step='0.01', data-slider-value=opacity)
   .checkbox.h-annotation-toggle
     label
       input#h-toggle-labels(type='checkbox', checked=showLabels)
