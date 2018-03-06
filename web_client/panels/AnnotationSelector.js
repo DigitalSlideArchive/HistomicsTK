@@ -32,7 +32,7 @@ var AnnotationSelector = Panel.extend({
         'mouseenter .h-annotation': '_highlightAnnotation',
         'mouseleave .h-annotation': '_unhighlightAnnotation',
         'change #h-toggle-labels': 'toggleLabels',
-        'slideStop #h-annotation-opacity': '_changeGlobalOpacity'
+        'change #h-annotation-opacity': '_changeGlobalOpacity'
     }),
 
     /**
@@ -70,7 +70,6 @@ var AnnotationSelector = Panel.extend({
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
-        this.$('.slider').slider();
         this._changeGlobalOpacity();
         return this;
     },
@@ -315,7 +314,7 @@ var AnnotationSelector = Panel.extend({
     },
 
     _changeGlobalOpacity() {
-        this._opacity = this.$('#h-annotation-opacity').slider('getValue');
+        this._opacity = this.$('#h-annotation-opacity').val();
         this.trigger('h:annotationOpacity', this._opacity);
     }
 });

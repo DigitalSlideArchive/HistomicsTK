@@ -537,8 +537,8 @@ $(function () {
                     return setGlobalAnnotationOpacityFunc.apply(this, arguments);
                 };
 
-                $('#h-annotation-opacity').slider('setValue', 0.5).trigger('slideStop');
-                expect(opacity).toBe(0.5);
+                $('#h-annotation-opacity').val(0.5).trigger('change');
+                expect(opacity).toBe('0.5');
 
                 app.bodyView.viewerWidget.setGlobalAnnotationOpacity = setGlobalAnnotationOpacityFunc;
             });

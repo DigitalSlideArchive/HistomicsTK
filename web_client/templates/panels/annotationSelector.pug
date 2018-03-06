@@ -4,13 +4,16 @@ block title
   | #[span.icon-tags] #{title}
 
 block content
-  .btn-group.btn-group-justified.h-hide-show-buttons(role='group')
+  .btn-group.h-hide-show-buttons(role='group')
     .btn-group.btn-group-sm(role='group')
-      button.btn.btn-default.h-show-all-annotations(type='button')
-        | #[span.icon-eye] Show all
+      button.btn.btn-default.h-show-all-annotations(type='button', title='Show all annotations')
+        | #[span.icon-eye]
     .btn-group.btn-group-sm(role='group')
-      button.btn.btn-default.h-hide-all-annotations(type='button')
-        | #[span.icon-eye-off] Hide all
+      button.btn.btn-default.h-hide-all-annotations(type='button', title='Hide all annotations')
+        | #[span.icon-eye-off]
+    span(title='Annotation opacity')
+      input#h-annotation-opacity(
+          type="range", min="0", max="1", step="0.01", value=opacity)
 
   - var admin = user && user.get && user.get('admin');
   each annotation in annotations
@@ -44,10 +47,6 @@ block content
           span.icon-download.h-download-annotation(
               data-toggle='tooltip', title='Download annotation')
 
-  .form-group
-    label(for='h-annotation-opacity') Opacity
-    input#h-annotation-opacity.slider.form-control(
-        type='text', data-slider-min='0', data-slider-max='1', data-slider-step='0.01', data-slider-value=opacity)
   .checkbox.h-annotation-toggle
     label
       input#h-toggle-labels(type='checkbox', checked=showLabels)
