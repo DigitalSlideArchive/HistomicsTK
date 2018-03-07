@@ -31,7 +31,8 @@ var AnnotationSelector = Panel.extend({
         'click .h-hide-all-annotations': 'hideAllAnnotations',
         'mouseenter .h-annotation': '_highlightAnnotation',
         'mouseleave .h-annotation': '_unhighlightAnnotation',
-        'change #h-toggle-labels': 'toggleLabels'
+        'change #h-toggle-labels': 'toggleLabels',
+        'input #h-annotation-opacity': '_changeGlobalOpacity'
     }),
 
     /**
@@ -42,7 +43,8 @@ var AnnotationSelector = Panel.extend({
      *     The collection representing the annotations attached
      *     to the current image.
      */
-    initialize(settings) {
+    initialize(settings = {}) {
+        this._opacity = settings.opacity || 0.9;
         this.listenTo(this.collection, 'sync remove update reset change:displayed change:loading', this.render);
         this.listenTo(this.collection, 'change:highlight', this._changeAnnotationHighlight);
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
@@ -63,10 +65,12 @@ var AnnotationSelector = Panel.extend({
             activeAnnotation: this._activeAnnotation ? this._activeAnnotation.id : '',
             showLabels: this._showLabels,
             user: getCurrentUser() || {},
-            writeAccess: this._writeAccess
+            writeAccess: this._writeAccess,
+            opacity: this._opacity
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
+        this._changeGlobalOpacity();
         return this;
     },
 
@@ -307,6 +311,13 @@ var AnnotationSelector = Panel.extend({
 
     _changeAnnotationHighlight(model) {
         this.$(`.h-annotation[data-id="${model.id}"]`).toggleClass('h-highlight-annotation', model.get('highlighted'));
+    },
+
+    _changeGlobalOpacity() {
+        this._opacity = this.$('#h-annotation-opacity').val();
+        this.$('.h-annotation-opacity-container')
+            .attr('title', `Annotation opacity ${(this._opacity * 100).toFixed()}%`);
+        this.trigger('h:annotationOpacity', this._opacity);
     }
 });
 
