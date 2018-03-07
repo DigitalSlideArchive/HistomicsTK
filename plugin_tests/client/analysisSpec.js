@@ -73,7 +73,7 @@ $(function () {
             });
 
             waitsFor(function () {
-                return !!$('#outputNucleiAnnotationFile');
+                return !!$('#outputNucleiAnnotationFile').val();
             }, 'Output annotation file to auto fill');
 
             runs(function () {
