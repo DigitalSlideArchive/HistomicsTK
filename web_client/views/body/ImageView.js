@@ -33,9 +33,9 @@ var ImageView = View.extend({
             this.model = new ItemModel();
         }
         this.listenTo(this.model, 'g:fetched', this.render);
-        this.listenTo(events, 'h:analysis', this._setImageInput);
-        this.listenTo(events, 'h:analysis', this._setDefaultFileOutputs);
-        this.listenTo(events, 'h:analysis', this._resetRegion);
+        this.listenTo(events, 'h:analysis:rendered', this._setImageInput);
+        this.listenTo(events, 'h:analysis:rendered', this._setDefaultFileOutputs);
+        this.listenTo(events, 'h:analysis:rendered', this._resetRegion);
         events.trigger('h:imageOpened', null);
         this.listenTo(events, 'query:image', this.openImage);
         this.annotations = new AnnotationCollection();
@@ -260,7 +260,7 @@ var ImageView = View.extend({
     _getDefaultOutputFolder() {
         const user = getCurrentUser();
         if (!user) {
-            return;
+            return $.Deferred().resolve().promise();
         }
         const userFolders = new FolderCollection();
         return userFolders.fetch({
@@ -398,12 +398,13 @@ var ImageView = View.extend({
     },
 
     showRegion(region) {
-        if (this.viewerWidget) {
-            this.viewerWidget.removeAnnotation(
-                new AnnotationModel({_id: 'region-selection'})
-            );
+        if (!this.viewerWidget) {
+            return;
         }
 
+        this.viewerWidget.removeAnnotation(
+            new AnnotationModel({_id: 'region-selection'})
+        );
         if (!region) {
             return;
         }
