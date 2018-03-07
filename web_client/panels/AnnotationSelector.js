@@ -32,7 +32,7 @@ var AnnotationSelector = Panel.extend({
         'mouseenter .h-annotation': '_highlightAnnotation',
         'mouseleave .h-annotation': '_unhighlightAnnotation',
         'change #h-toggle-labels': 'toggleLabels',
-        'change #h-annotation-opacity': '_changeGlobalOpacity'
+        'input #h-annotation-opacity': '_changeGlobalOpacity'
     }),
 
     /**

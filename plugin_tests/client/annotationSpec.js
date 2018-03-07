@@ -537,7 +537,7 @@ $(function () {
                     return setGlobalAnnotationOpacityFunc.apply(this, arguments);
                 };
 
-                $('#h-annotation-opacity').val(0.5).trigger('change');
+                $('#h-annotation-opacity').val(0.5).trigger('input');
                 expect(opacity).toBe('0.5');
 
                 app.bodyView.viewerWidget.setGlobalAnnotationOpacity = setGlobalAnnotationOpacityFunc;
