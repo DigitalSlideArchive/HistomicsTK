@@ -48,9 +48,12 @@ block content
               data-toggle='tooltip', title='Download annotation')
 
   .checkbox.h-annotation-toggle
-    label
+    label(title='Show annotation labels when hovering with the mouse.')
       input#h-toggle-labels(type='checkbox', checked=showLabels)
-      | Show labels
+      | Labels
+    label(title='Highlight annotations when hovering with the mouse.')
+      input#h-toggle-interactive(type='checkbox', checked=interactiveMode)
+      | Interactive
     button.btn.btn-sm.btn-primary.h-create-annotation
       | #[span.icon-plus-squared] New
     .clearfix

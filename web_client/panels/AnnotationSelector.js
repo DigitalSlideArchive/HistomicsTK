@@ -32,6 +32,7 @@ var AnnotationSelector = Panel.extend({
         'mouseenter .h-annotation': '_highlightAnnotation',
         'mouseleave .h-annotation': '_unhighlightAnnotation',
         'change #h-toggle-labels': 'toggleLabels',
+        'change #h-toggle-interactive': 'toggleInteractiveMode',
         'input #h-annotation-opacity': '_changeGlobalOpacity'
     }),
 
@@ -66,7 +67,8 @@ var AnnotationSelector = Panel.extend({
             showLabels: this._showLabels,
             user: getCurrentUser() || {},
             writeAccess: this._writeAccess,
-            opacity: this._opacity
+            opacity: this._opacity,
+            interactiveMode: this._interactiveMode
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
@@ -194,6 +196,14 @@ var AnnotationSelector = Panel.extend({
         this.trigger('h:toggleLabels', {
             show: this._showLabels
         });
+    },
+
+    toggleInteractiveMode(evt) {
+        this._interactiveMode = !this._interactiveMode;
+    },
+
+    interactiveMode() {
+        return this._interactiveMode;
     },
 
     editAnnotation(evt) {

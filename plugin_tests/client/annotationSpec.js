@@ -664,7 +664,16 @@ $(function () {
                 });
             });
 
-            it('trigger a mouseon event on an element', function () {
+            it('trigger a mouseon event on an element with interactivity off', function () {
+                var annotation = $('.h-annotation-selector .h-annotation:contains("drawn 2")').data('id');
+                var element = app.bodyView.annotations.get(annotation).elements().get($('.h-draw-widget .h-element').data('id'));
+                app.bodyView.viewerWidget.trigger('g:mouseOnAnnotation', element, annotation);
+                expect($('.h-annotation-selector .h-annotation:contains("drawn 2")').hasClass('h-highlight-annotation')).toBe(false);
+                expect($('.h-draw-widget .h-element').hasClass('h-highlight-element')).toBe(false);
+            });
+
+            it('turn on interactivity', function () {
+                $('#h-toggle-interactive').click();
                 var annotation = $('.h-annotation-selector .h-annotation:contains("drawn 2")').data('id');
                 var element = app.bodyView.annotations.get(annotation).elements().get($('.h-draw-widget .h-element').data('id'));
                 app.bodyView.viewerWidget.trigger('g:mouseOnAnnotation', element, annotation);
