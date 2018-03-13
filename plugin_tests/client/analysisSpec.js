@@ -36,6 +36,9 @@ $(function () {
 
         it('open image', function () {
             histomicsTest.openImage('image');
+            waitsFor(function () {
+                return $('.h-analysis-item').length > 0;
+            }, 'analyses dropdown to load');
         });
     });
 

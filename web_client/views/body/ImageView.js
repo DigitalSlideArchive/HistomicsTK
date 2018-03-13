@@ -58,8 +58,10 @@ var ImageView = View.extend({
         this.listenTo(events, 'h:select-region', this.showRegion);
         this.listenTo(this.annotationSelector.collection, 'add update change:displayed', this.toggleAnnotation);
         this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
+        this.listenTo(this.annotationSelector, 'h:toggleInteractiveMode', this._toggleInteractiveMode);
         this.listenTo(this.annotationSelector, 'h:editAnnotation', this._editAnnotation);
         this.listenTo(this.annotationSelector, 'h:deleteAnnotation', this._deleteAnnotation);
+        this.listenTo(this.annotationSelector, 'h:annotationOpacity', this._setAnnotationOpacity);
         this.listenTo(this, 'h:highlightAnnotation', this._highlightAnnotation);
 
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
@@ -365,6 +367,9 @@ var ImageView = View.extend({
     },
 
     _highlightAnnotation(annotation, element) {
+        if (!this.annotationSelector.interactiveMode()) {
+            return;
+        }
         this.viewerWidget.highlightAnnotation(annotation, element);
     },
 
@@ -449,7 +454,7 @@ var ImageView = View.extend({
     },
 
     mouseOnAnnotation(element, annotationId) {
-        if (annotationId === 'region-selection') {
+        if (annotationId === 'region-selection' || !this.annotationSelector.interactiveMode()) {
             return;
         }
         const annotation = this.annotations.get(annotationId);
@@ -461,7 +466,7 @@ var ImageView = View.extend({
     },
 
     mouseOffAnnotation(element, annotationId) {
-        if (annotationId === 'region-selection') {
+        if (annotationId === 'region-selection' || !this.annotationSelector.interactiveMode()) {
             return;
         }
         const annotation = this.annotations.get(annotationId);
@@ -503,6 +508,20 @@ var ImageView = View.extend({
         this.popover.toggle(options.show);
     },
 
+    _toggleInteractiveMode(interactive) {
+        if (!interactive) {
+            this.viewerWidget.highlightAnnotation();
+            this.annotations.each((annotation) => {
+                annotation.unset('highlight');
+                if (this.drawWidget) {
+                    annotation.elements().each((element) => {
+                        this.drawWidget.trigger('h:mouseoff', element);
+                    });
+                }
+            });
+        }
+    },
+
     _removeDrawWidget() {
         if (this.drawWidget) {
             this._lastDrawingType = this.drawWidget.drawingType();
@@ -536,6 +555,10 @@ var ImageView = View.extend({
         if (this.activeAnnotation && this.activeAnnotation.id === model.id) {
             this._removeDrawWidget();
         }
+    },
+
+    _setAnnotationOpacity(opacity) {
+        this.viewerWidget.setGlobalAnnotationOpacity(opacity);
     }
 });
 
