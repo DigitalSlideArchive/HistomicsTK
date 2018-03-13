@@ -200,6 +200,7 @@ var AnnotationSelector = Panel.extend({
 
     toggleInteractiveMode(evt) {
         this._interactiveMode = !this._interactiveMode;
+        this.trigger('h:toggleInteractiveMode', this._interactiveMode);
     },
 
     interactiveMode() {

@@ -58,7 +58,7 @@ var ImageView = View.extend({
         this.listenTo(events, 'h:select-region', this.showRegion);
         this.listenTo(this.annotationSelector.collection, 'add update change:displayed', this.toggleAnnotation);
         this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
-        this.listenTo(this.annotationSelector, 'h:toggleInteractiveMode', this.toggleInteractiveMode);
+        this.listenTo(this.annotationSelector, 'h:toggleInteractiveMode', this._toggleInteractiveMode);
         this.listenTo(this.annotationSelector, 'h:editAnnotation', this._editAnnotation);
         this.listenTo(this.annotationSelector, 'h:deleteAnnotation', this._deleteAnnotation);
         this.listenTo(this.annotationSelector, 'h:annotationOpacity', this._setAnnotationOpacity);
@@ -506,6 +506,20 @@ var ImageView = View.extend({
 
     toggleLabels(options) {
         this.popover.toggle(options.show);
+    },
+
+    _toggleInteractiveMode(interactive) {
+        if (!interactive) {
+            this.viewerWidget.highlightAnnotation();
+            this.annotations.each((annotation) => {
+                annotation.unset('highlight');
+                if (this.drawWidget) {
+                    annotation.elements().each((element) => {
+                        this.drawWidget.trigger('h:mouseoff', element);
+                    });
+                }
+            });
+        }
     },
 
     _removeDrawWidget() {
