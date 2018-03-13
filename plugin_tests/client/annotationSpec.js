@@ -664,7 +664,29 @@ $(function () {
                 });
             });
 
-            it('trigger a mouseon event on an element', function () {
+            it('trigger a mouseon event on an element with interactivity off', function () {
+                var annotation = $('.h-annotation-selector .h-annotation:contains("drawn 2")').data('id');
+                var element = app.bodyView.annotations.get(annotation).elements().get($('.h-draw-widget .h-element').data('id'));
+                app.bodyView.viewerWidget.trigger('g:mouseOnAnnotation', element, annotation);
+                expect($('.h-annotation-selector .h-annotation:contains("drawn 2")').hasClass('h-highlight-annotation')).toBe(false);
+                expect($('.h-draw-widget .h-element').hasClass('h-highlight-element')).toBe(false);
+            });
+
+            it('trigger a mouseon event and then turn interactivity off', function () {
+                $('#h-toggle-interactive').click(); // interactive on
+                var annotation = $('.h-annotation-selector .h-annotation:contains("drawn 2")').data('id');
+                var element = app.bodyView.annotations.get(annotation).elements().get($('.h-draw-widget .h-element').data('id'));
+                app.bodyView.viewerWidget.trigger('g:mouseOnAnnotation', element, annotation);
+                expect($('.h-annotation-selector .h-annotation:contains("drawn 2")').hasClass('h-highlight-annotation')).toBe(true);
+                expect($('.h-draw-widget .h-element').hasClass('h-highlight-element')).toBe(true);
+
+                $('#h-toggle-interactive').click(); // interactive off
+                expect($('.h-annotation-selector .h-annotation:contains("drawn 2")').hasClass('h-highlight-annotation')).toBe(false);
+                expect($('.h-draw-widget .h-element').hasClass('h-highlight-element')).toBe(false);
+            });
+
+            it('turn on interactivity and trigger a mouseon event', function () {
+                $('#h-toggle-interactive').click(); // interactive on
                 var annotation = $('.h-annotation-selector .h-annotation:contains("drawn 2")').data('id');
                 var element = app.bodyView.annotations.get(annotation).elements().get($('.h-draw-widget .h-element').data('id'));
                 app.bodyView.viewerWidget.trigger('g:mouseOnAnnotation', element, annotation);
