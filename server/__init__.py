@@ -59,6 +59,24 @@ class HistomicsTKResource(DockerResource):
         return {k: self.model('setting').get(k) for k in keys}
 
 
+def _saveJob(event):
+    """
+    When a job is saved, if it is a docker run task, add the Dask Bokeh port to
+    the list of exposed ports.
+    """
+    job = event.info
+    try:
+        from bson import json_util
+
+        jobkwargs = json_util.loads(job['kwargs'])
+        if ('docker_run_args' not in jobkwargs['task'] and
+                'scheduler_address' in jobkwargs['inputs']):
+            jobkwargs['task']['docker_run_args'] = {'ports': {'8787': None}}
+            job['kwargs'] = json_util.dumps(jobkwargs)
+    except Exception:
+        pass
+
+
 def load(info):
 
     girderRoot = info['serverRoot']
@@ -69,8 +87,9 @@ def load(info):
     info['serverRoot'].histomicstk = histomicsRoot
     info['serverRoot'].girder = girderRoot
 
+    pluginName = 'HistomicsTK'
     # create root resource for all REST end points of HistomicsTK
-    resource = HistomicsTKResource('HistomicsTK')
+    resource = HistomicsTKResource(pluginName)
     setattr(info['apiRoot'], resource.resourceName, resource)
 
     # load docker images from cache
@@ -82,7 +101,9 @@ def load(info):
     genRESTEndPointsForSlicerCLIsInDockerCache(resource, dockerCache)
 
     # auto-ingest annotations into database when a .anot file is uploaded
-    events.bind('data.process', 'HistomicsTK', process_annotations)
+    events.bind('data.process', pluginName, process_annotations)
 
     events.bind('jobs.job.update.after', resource.resourceName,
                 resource.AddRestEndpoints)
+
+    events.bind('model.job.save', pluginName, _saveJob)
