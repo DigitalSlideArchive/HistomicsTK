@@ -1,9 +1,9 @@
 from datetime import timedelta
 
+import psutil
 import numpy as np
 import scipy as sp
 import skimage.measure
-import multiprocessing
 import dask.distributed
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
@@ -200,7 +200,7 @@ def create_dask_client(args):
         assert args.num_workers != 0, 'num_workers must be non-zero'
 
         if args.num_workers < 0:
-            num_workers = multiprocessing.cpu_coun() + args.num_workers
+            num_workers = psutil.cpu_count(logical=False) + args.num_workers
         else:
             num_workers = args.num_workers
         
