@@ -197,10 +197,18 @@ def create_dask_client(args):
 
     if not scheduler_address:
 
+        assert args.num_workers != 0, 'num_workers must be non-zero'
+
+        if args.num_workers < 0:
+            num_workers = multiprocessing.cpu_coun() + args.num_workers
+        else:
+            num_workers = args.num_workers
+        
         scheduler_address = dask.distributed.LocalCluster(
             ip='0.0.0.0',  # Allow reaching the diagnostics port externally
             scheduler_port=0,  # Don't expose the scheduler port
-            n_workers=multiprocessing.cpu_count()-1,
+            n_workers=num_workers,
+            threads_per_worker=1,
             silence_logs=False
         )
 
