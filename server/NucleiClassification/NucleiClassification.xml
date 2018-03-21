@@ -57,5 +57,12 @@
       <longflag>scheduler_address</longflag>
       <default></default>
     </string>
+    <integer>
+      <name>num_workers</name>
+      <label>Number of workers</label>
+      <description>Number of dask workers to start while setting up a local cluster. If a negative value is specified then the number of workers is set to number of cpu cores on the machine minus the number of workers specified.</description>
+      <longflag>num_workers</longflag>
+      <default>-1</default>
+    </integer>
   </parameters>
 </executable>
