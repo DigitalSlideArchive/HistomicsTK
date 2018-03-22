@@ -169,7 +169,7 @@
       <label>Analysis Tile Size</label>
       <description>Tile size for blockwise analysis</description>
       <longflag>analysis_tile_size</longflag>
-      <default>4096</default>
+      <default>1024</default>
     </double>
     <double>
       <name>analysis_mag</name>
@@ -183,7 +183,7 @@
       <label>Minimum foreground fraction</label>
       <description>The minimum amount of foreground that must be present in a tile for it to be analyzed</description>
       <longflag>min_fgnd_frac</longflag>
-      <default>0.5</default>
+      <default>0.25</default>
     </double>
   </parameters>
   <parameters advanced="true">
