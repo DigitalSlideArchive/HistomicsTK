@@ -198,6 +198,7 @@ def create_dask_client(args):
     if not scheduler_address:
 
         assert args.num_workers != 0, 'num_workers must be non-zero'
+        assert args.num_threads_per_worker >= 1
 
         if args.num_workers < 0:
             num_workers = psutil.cpu_count(logical=False) + args.num_workers
@@ -208,7 +209,7 @@ def create_dask_client(args):
             ip='0.0.0.0',  # Allow reaching the diagnostics port externally
             scheduler_port=0,  # Don't expose the scheduler port
             n_workers=num_workers,
-            threads_per_worker=1,
+            threads_per_worker=args.num_threads_per_worker,
             silence_logs=False
         )
 
