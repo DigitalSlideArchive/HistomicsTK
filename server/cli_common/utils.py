@@ -1,5 +1,4 @@
 from datetime import timedelta
-
 import psutil
 import numpy as np
 import scipy as sp
@@ -205,7 +204,7 @@ def create_dask_client(args):
         else:
             num_workers = args.num_workers
 
-         scheduler_address = dask.distributed.LocalCluster(
+        scheduler_address = dask.distributed.LocalCluster(
             ip='0.0.0.0',  # Allow reaching the diagnostics port externally
             scheduler_port=0,  # Don't expose the scheduler port
             n_workers=num_workers,
