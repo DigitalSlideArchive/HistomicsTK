@@ -140,7 +140,9 @@ class CliCommonTest(base.TestCase):
             'min_nucleus_area': 80,
             'local_max_search_radius': 10,
 
-            'scheduler_address': None
+            'scheduler_address': None,
+            'num_workers': -1,
+            'num_threads_per_worker': 1,
         }
 
         args = collections.namedtuple('Parameters', args.keys())(**args)
