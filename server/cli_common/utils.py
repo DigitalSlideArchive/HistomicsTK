@@ -203,8 +203,8 @@ def create_dask_client(args):
             num_workers = psutil.cpu_count(logical=False) + args.num_workers
         else:
             num_workers = args.num_workers
-        
-        scheduler_address = dask.distributed.LocalCluster(
+
+         scheduler_address = dask.distributed.LocalCluster(
             ip='0.0.0.0',  # Allow reaching the diagnostics port externally
             scheduler_port=0,  # Don't expose the scheduler port
             n_workers=num_workers,
