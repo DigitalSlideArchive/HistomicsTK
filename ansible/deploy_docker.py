@@ -151,8 +151,15 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
     env = {
         'HOST_UID': os.popen('id -u').read().strip(),
         'HOST_GID': os.popen('id -g').read().strip(),
-        'HOST_DOCKER_GID': os.popen('getent group docker').read().split(':')[2],
     }
+    sockpath = '/var/run/docker.sock'
+    if os.path.exists(sockpath):
+        env['HOST_DOCKER_GID'] = str(os.stat(sockpath).st_gid)
+    else:
+        try:
+            env['HOST_DOCKER_GID'] = os.popen('getent group docker').read().split(':')[2]
+        except Exception:
+            pass
     network_create(client, BaseName)
 
     for key in ImageList:
@@ -381,7 +388,7 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
 
 
 def containers_status(**kwargs):
-    """"
+    """
     Report the status of any containers we are responsible for.
     """
     client = docker_client()
@@ -408,7 +415,7 @@ def containers_status(**kwargs):
 
 
 def containers_stop(remove=False, **kwargs):
-    """"
+    """
     Stop and optionally remove any containers we are responsible for.
 
     :param remove: True to remove the containers.  False to just stop them.
@@ -465,8 +472,14 @@ def docker_mounts():
 
     :return: a list of volumes need to work with girder.
     """
+    docker_executable = '/usr/bin/docker'
+    if not os.path.exists(docker_executable):
+        import shutil
+        if not six.PY3:
+            import shutilwhich  # noqa
+        docker_executable = shutil.which('docker')
     mounts = [
-        '/usr/bin/docker:/usr/bin/docker',
+        docker_executable + ':/usr/bin/docker',
         '/var/run/docker.sock:/var/run/docker.sock',
     ]
     return mounts
@@ -585,7 +598,7 @@ def images_build(retry=False, names=None):
 
 
 def images_repull(**kwargs):
-    """"
+    """
     Repull all docker images.
     """
     client = docker_client()
