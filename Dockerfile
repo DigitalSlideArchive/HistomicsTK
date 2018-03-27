@@ -10,6 +10,11 @@ MAINTAINER Deepak Chittajallu <deepak.chittajallu@kitware.com>
 # copy HistomicsTK files
 ENV htk_path=$PWD/HistomicsTK
 RUN mkdir -p $htk_path
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends memcached && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 COPY . $htk_path/
 WORKDIR $htk_path
 
@@ -25,7 +30,7 @@ RUN pip install --upgrade --ignore-installed pip setuptools && \
     pip install -r requirements.txt && \
     pip install bokeh>=0.12.14 && \
     # Install large_image
-    pip install 'git+https://github.com/girder/large_image#egg=large_image' && \
+    pip install 'git+https://github.com/girder/large_image#egg=large_image[openslide,memcached]' && \
     # Ensure we have a locally built Pillow and openslide in conda's environment
     pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed \
       openslide-python \
