@@ -28,60 +28,61 @@ def _max_clustering_cython(double[:, :] im not None, int[:, :] im_fgnd_mask not 
     cdef double mval, cval, nval
     cdef int changed
 
-    for i in range(num_pixels):
+    with nogil:
+        for i in range(num_pixels):
 
-        cx = px[i]
+            cx = px[i]
 
-        if cx < 0 or cx >= sx:
-            continue
-
-        cy = py[i]
-
-        if cy < 0 or cy >= sy:
-            continue
-
-        cval = im[cy, cx]
-
-        my = cy
-        mx = cx
-        mval = cval
-
-        changed = 0
-
-        for ox in range(-r, r+1):
-
-            nx = cx + ox
-
-            if nx < 0 or nx >= sx:
+            if cx < 0 or cx >= sx:
                 continue
 
-            for oy in range(-r, r+1):
+            cy = py[i]
 
-                if (ox * ox + oy * oy) > rad * rad:
+            if cy < 0 or cy >= sy:
+                continue
+
+            cval = im[cy, cx]
+
+            my = cy
+            mx = cx
+            mval = cval
+
+            changed = 0
+
+            for ox in range(-r, r+1):
+
+                nx = cx + ox
+
+                if nx < 0 or nx >= sx:
                     continue
 
-                ny = cy + oy
+                for oy in range(-r, r+1):
 
-                if ny < 0 or ny >= sy:
-                    continue
+                    if (ox * ox + oy * oy) > rad * rad:
+                        continue
 
-                nval = min_im_val
+                    ny = cy + oy
 
-                if im_fgnd_mask[ny, nx]:
-                    nval = im[ny, nx]
+                    if ny < 0 or ny >= sy:
+                        continue
 
-                if nval > mval:
+                    nval = min_im_val
 
-                    changed = True
-                    mval = nval
-                    mx = nx
-                    my = ny
+                    if im_fgnd_mask[ny, nx]:
+                        nval = im[ny, nx]
 
-        local_max_val[cy, cx] = mval
-        local_max_ind[cy, cx] = my * sx + mx
+                    if nval > mval:
 
-        if not changed:  # this pixel itself is the maximum in its neighborhood
-            peak_found[cy, cx] = 1
+                        changed = True
+                        mval = nval
+                        mx = nx
+                        my = ny
+
+            local_max_val[cy, cx] = mval
+            local_max_ind[cy, cx] = my * sx + mx
+
+            if not changed:  # this pixel itself is the maximum in its neighborhood
+                peak_found[cy, cx] = 1
 
     # find local peaks of all requested pixels
     cdef np.ndarray[np.long_t, ndim=2, mode='c'] maxpath_np = np.zeros([1000, 2], dtype=np.long)
@@ -89,57 +90,58 @@ def _max_clustering_cython(double[:, :] im not None, int[:, :] im_fgnd_mask not 
     cdef long end_x, end_y, end_pos, end_ind, end_max_ind
     cdef long path_len = maxpath.shape[0]
 
-    for i in range(num_pixels):
+    with nogil:
+        for i in range(num_pixels):
 
-        cx = px[i]
+            cx = px[i]
 
-        if cx < 0 or cx >= sx:
-            continue
+            if cx < 0 or cx >= sx:
+                continue
 
-        cy = py[i]
+            cy = py[i]
 
-        if cy < 0 or cy >= sy:
-            continue
+            if cy < 0 or cy >= sy:
+                continue
 
-        # initialize tracking trajectory
-        end_pos = 0
+            # initialize tracking trajectory
+            end_pos = 0
 
-        end_x = cx
-        end_y = cy
-        end_ind = cy * sx + cx
-        end_max_ind = local_max_ind[end_y, end_x]
-
-        maxpath[end_pos, 0] = end_x
-        maxpath[end_pos, 1] = end_y
-
-        while not peak_found[end_y, end_x]:
-
-            # increment trajectory counter
-            end_pos += 1
-
-            # if overflow, increase size
-            if end_pos >= path_len:
-
-                maxpath_np.resize([path_len * 2, 2])
-                maxpath = maxpath_np
-                path_len = maxpath.shape[0]
-
-            # add local max to trajectory
-            end_ind = end_max_ind
-            end_x = end_ind % sx
-            end_y = end_ind / sx
+            end_x = cx
+            end_y = cy
+            end_ind = cy * sx + cx
             end_max_ind = local_max_ind[end_y, end_x]
 
             maxpath[end_pos, 0] = end_x
             maxpath[end_pos, 1] = end_y
 
-        for i in range(end_pos+1):
+            while not peak_found[end_y, end_x]:
 
-            cx = maxpath[i, 0]
-            cy = maxpath[i, 1]
+                # increment trajectory counter
+                end_pos += 1
 
-            local_max_ind[cy, cx] = end_max_ind
-            local_max_val[cy, cx] = local_max_val[end_y, end_x]
-            peak_found[cy, cx] = 1
+                # if overflow, increase size
+                if end_pos >= path_len:
+                    with gil:
+                        maxpath_np.resize([path_len * 2, 2])
+                    maxpath = maxpath_np
+                    path_len = maxpath.shape[0]
+
+                # add local max to trajectory
+                end_ind = end_max_ind
+                end_x = end_ind % sx
+                end_y = end_ind / sx
+                end_max_ind = local_max_ind[end_y, end_x]
+
+                maxpath[end_pos, 0] = end_x
+                maxpath[end_pos, 1] = end_y
+
+            for i in range(end_pos+1):
+
+                cx = maxpath[i, 0]
+                cy = maxpath[i, 1]
+
+                local_max_ind[cy, cx] = end_max_ind
+                local_max_val[cy, cx] = local_max_val[end_y, end_x]
+                peak_found[cy, cx] = 1
 
     return np.asarray(local_max_val), np.asarray(local_max_ind)
