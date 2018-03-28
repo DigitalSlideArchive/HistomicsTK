@@ -3,6 +3,7 @@ from datetime import timedelta
 import numpy as np
 import scipy as sp
 import skimage.measure
+import skimage.morphology
 import multiprocessing
 import dask.distributed
 
@@ -73,9 +74,13 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
 
 def detect_nuclei_kofahi(im_nuclei_stain, args):
 
-    # segment foreground (assumes nuclei are darker on a bright background)
-    im_nuclei_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
-        im_nuclei_stain < args.foreground_threshold)
+    # segment foreground and smoothing foreground mask
+    # (assumes nuclei are darker on a bright background)
+    im_nuclei_fgnd_mask = skimage.morphology.closing(
+        im_nuclei_stain < args.foreground_threshold, skimage.morphology.disk(3))
+
+    im_nuclei_fgnd_mask = skimage.morphology.opening(
+        sp.ndimage.morphology.binary_fill_holes(im_nuclei_fgnd_mask))
 
     # run adaptive multi-scale LoG filter
     im_log_max, im_sigma_max = htk_shape_filters.cdog(
@@ -87,6 +92,9 @@ def detect_nuclei_kofahi(im_nuclei_stain, args):
     # apply local maximum clustering
     im_nuclei_seg_mask, seeds, maxima = htk_seg.nuclear.max_clustering(
         im_log_max, im_nuclei_fgnd_mask, args.local_max_search_radius)
+
+    # remove disconnected fragments
+    im_nuclei_seg_mask = htk_seg.label.split(im_nuclei_seg_mask, conn=8)
 
     # filter out small objects
     im_nuclei_seg_mask = htk_seg.label.area_open(
