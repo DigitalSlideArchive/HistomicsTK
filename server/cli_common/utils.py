@@ -15,6 +15,14 @@ import histomicstk.utils as htk_utils
 import large_image
 
 
+# These defaults are only used if girder is not present
+# Use memcached by default.
+large_image.cache_util.cachefactory.defaultConfig['cache_backend'] = 'memcached'
+# If memcached is unavilable, specify the fraction of memory that python
+# caching is allowed to use.  This is deliberately small.
+large_image.cache_util.cachefactory.defaultConfig['cache_python_memory_portion'] = 32
+
+
 def get_stain_vector(args, index):
     """Get the stain corresponding to args.stain_$index and
     args.stain_$index_vector.  If the former is not "custom", all the
