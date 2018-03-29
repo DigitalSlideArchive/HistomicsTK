@@ -82,7 +82,7 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
 
 def detect_nuclei_kofahi(im_nuclei_stain, args):
 
-    # segment foreground and smoothing foreground mask
+    # segment foreground and smoothing foreground mask with closing and opening
     # (assumes nuclei are darker on a bright background)
     im_nuclei_fgnd_mask = skimage.morphology.closing(
         im_nuclei_stain < args.foreground_threshold, skimage.morphology.disk(3))
