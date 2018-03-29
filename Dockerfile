@@ -10,22 +10,27 @@ MAINTAINER Deepak Chittajallu <deepak.chittajallu@kitware.com>
 # copy HistomicsTK files
 ENV htk_path=$PWD/HistomicsTK
 RUN mkdir -p $htk_path
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends memcached && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 COPY . $htk_path/
 WORKDIR $htk_path
 
 # Install HistomicsTK and its dependencies
 #   Upgrade setuptools, as the version in Conda won't upgrade cleanly unless it
 # is ignored.
-RUN pip install --upgrade --ignore-installed pip setuptools && \
-    pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli' && \
+RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
+    pip install --no-cache-dir --upgrade 'git+https://github.com/cdeepakroy/ctk-cli' && \
     # Install requirements.txt via pip; installing via conda causes
     # version issues with our home-built libtiff.
     # Try twice; conda sometimes causes pip to fail the first time, but if it
     # fails twice then there is a real issue.
-    pip install -r requirements.txt && \
-    pip install bokeh>=0.12.14 && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir 'bokeh>=0.12.14' && \
     # Install large_image
-    pip install 'git+https://github.com/girder/large_image#egg=large_image' && \
+    pip install --no-cache-dir 'git+https://github.com/girder/large_image#egg=large_image[openslide,memcached]' && \
     # Ensure we have a locally built Pillow and openslide in conda's environment
     pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed \
       openslide-python \
@@ -33,10 +38,10 @@ RUN pip install --upgrade --ignore-installed pip setuptools && \
     # Install HistomicsTK
     python setup.py install && \
     # Create separate virtual environments with CPU and GPU versions of tensorflow
-    pip install virtualenv && \
+    pip install --no-cache-dir virtualenv && \
     virtualenv --system-site-packages /venv-gpu && \
     chmod +x /venv-gpu/bin/activate && \
-    /venv-gpu/bin/pip install tensorflow-gpu>=1.3.0 && \
+    /venv-gpu/bin/pip install --no-cache-dir tensorflow-gpu>=1.3.0 && \
     # clean up
     conda clean -i -l -t -y && \
     rm -rf /root/.cache/pip/*

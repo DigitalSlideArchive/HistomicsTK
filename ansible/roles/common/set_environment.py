@@ -21,6 +21,8 @@ def adjust_ids(user_name):  # noqa
     if os.path.exists(sockpath):
         # make the gid a string for later use
         sock_docker_gid = str(os.stat(sockpath).st_gid)
+        escapedSockPath = "'%s'" % (sockpath.replace("'", "'\\''"))
+        os.system('sudo chmod 777 %s' % escapedSockPath)
     # Get environment UID and GIDs.  These are not required to be set.
     host_uid = os.environ.get('HOST_UID')
     host_gid = os.environ.get('HOST_GID')
