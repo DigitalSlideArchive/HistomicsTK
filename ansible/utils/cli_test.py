@@ -120,10 +120,13 @@ def test_cli(client, folder, opts):
     :param opts: command line options.
     """
     testItem = None
-    for item in client.listItem(folder['_id']):
-        if item['name'].startswith('TCGA-02'):
-            testItem = item
-            break
+    if not opts.get('testid'):
+        for item in client.listItem(folder['_id']):
+            if item['name'].startswith('TCGA-02'):
+                testItem = item
+                break
+    else:
+        testItem = {'_id': opts.get('testid')}
     localFile = next(client.listFile(testItem['_id']))
     path = 'HistomicsTK/%s/NucleiDetection/run' % (
         opts['cli'].replace('/', '_').replace(':', '_'), )
@@ -133,8 +136,9 @@ def test_cli(client, folder, opts):
     starttime = time.time()
     region = '[15000,15000,1000,1000]'
     if opts.get('randomregion'):
-        w = 32001  # specific to our test image
-        h = 38747
+        metadata = client.get('item/%s/tiles' % testItem['_id'])
+        w = metadata['sizeX']
+        h = metadata['sizeY']
         rw = random.randint(500, 5000)
         rh = random.randint(500, 5000)
         region = '[%d,%d,%d,%d]' % (random.randint(0, w - rw), random.randint(0, h - rh), rw, rh)
@@ -144,31 +148,30 @@ def test_cli(client, folder, opts):
         'inputImageFile_girderFileId': localFile['_id'],
         'outputNucleiAnnotationFile_girderFolderId': folder['_id'],
         'outputNucleiAnnotationFile_name': 'cli_test.anot',
-        'analysis_mag': '20',
         'analysis_roi': region,
-        'analysis_tile_size': '4096',
         'foreground_threshold': '60',
-        'local_max_search_radius': '10',
-        'max_radius': '30',
         'min_fgnd_frac': '0.05',
-        'min_nucleus_area': '80',
-        'min_radius': '20',
+
+        'analysis_tile_size': '4096',
         'nuclei_annotation_format': '"bbox"',
-        'reference_mu_lab': '[8.63234435,-0.11501964,0.03868433]',
-        'reference_std_lab': '[0.57506023,0.10403329,0.01364062]',
-        'scheduler_address': '""',
-        'stain_1': '"hematoxylin"',
-        'stain_1_vector': '[-1,-1,-1]',
-        'stain_2': '"eosin"',
-        'stain_2_vector': '[-1,-1,-1]',
-        'stain_3': '"null"',
-        'stain_3_vector': '[-1,-1,-1]',
+        'max_radius': '30',
+        'min_radius': '20',
+
+        # Current NucleiDetection defaults that could be added
+        # 'analysis_tile_size': '1024',
+        # 'nuclei_annotation_format': '"boundary"',
+        # 'max_radius': '20',
+        # 'min_radius': '6',
+        # 'num_workers': -1,
+        # 'num_threads_per_worker': 1,
     })
     job, peak_memory = wait_for_job(client, job)
-    anList = client.get('annotation', parameters={'itemId': testItem['_id']})
+    anList = client.get('annotation', parameters={
+        'itemId': testItem['_id'], 'sort': '_id', 'sortdir': -1, 'limit': 1})
     annot = client.get('annotation/%s' % anList[0]['_id'])
     if len(annot['annotation']['elements']) < 100:
-        raise Exception('Got less than 100 annotation elements')
+        raise Exception('Got less than 100 annotation elements (%d)' % len(
+            annot['annotation']['elements']))
     runtime = time.time() - starttime
     sys.stdout.write('Total time: %5.3f, Max memory delta: %d bytes\n' % (
         runtime, peak_memory - memory_use))
@@ -256,6 +259,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--no-test', action='store_false', dest='test',
         help='Don\'t download test data and don\'t run checks.')
+    parser.add_argument(
+        '--test-id', dest='testid', help='The ID of the item to test.')
     parser.add_argument('--verbose', '-v', action='count', default=0)
 
     args = parser.parse_args()

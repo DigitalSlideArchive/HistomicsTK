@@ -10,6 +10,11 @@ MAINTAINER Deepak Chittajallu <deepak.chittajallu@kitware.com>
 # copy HistomicsTK files
 ENV htk_path=$PWD/HistomicsTK
 RUN mkdir -p $htk_path
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends memcached && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 COPY . $htk_path/
 WORKDIR $htk_path
 
