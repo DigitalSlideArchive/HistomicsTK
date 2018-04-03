@@ -15,37 +15,51 @@ block content
       input#h-annotation-opacity(
           type="range", min="0", max="1", step="0.01", value=opacity)
 
-  - var admin = user && user.get && user.get('admin');
-  each annotation in annotations
-    - var name = annotation.get('annotation').name;
-    - var displayed = annotation.get('displayed');
-    - var loading = annotation.get('loading');
-    - var classes = [];
-    if annotation.id === activeAnnotation
-      - classes.push('h-active-annotation');
-    if annotation.get('highlight')
-      - classes.push('h-highlight-annotation')
-    .h-annotation(data-id=annotation.id, class=classes)
-      if loading
-        span.icon-spin3.animate-spin.h-float-left
-      else if displayed
-        span.icon-eye.h-toggle-annotation.h-float-left(
-          data-toggle='tooltip', title='Hide annotation')
-      else
-        span.icon-eye-off.h-toggle-annotation.h-float-left(
-          data-toggle='tooltip', title='Show annotation')
-      span.h-annotation-name(title=name) #{name}
+  - var groups = _.keys(annotationGroups);
+  - groups.sort();
+  each groupName in groups
+    - var annotations = annotationGroups[groupName];
+    - var expanded = expandedGroups.has(groupName);
+    - var expandedClass = expanded ? 'h-group-expanded' : 'h-group-collapsed';
+    .h-annotation-group(class=[expandedClass], data-group-name=groupName)
+      .h-annotation-group-name.clearfix
+        = groupName
+        if expanded
+          i.icon-folder-open
+        else
+          i.icon-folder
+      if expanded
+        - var admin = user && user.get && user.get('admin');
+        each annotation in annotations
+          - var name = annotation.get('annotation').name;
+          - var displayed = annotation.get('displayed');
+          - var loading = annotation.get('loading');
+          - var classes = [];
+          if annotation.id === activeAnnotation
+            - classes.push('h-active-annotation');
+          if annotation.get('highlight')
+            - classes.push('h-highlight-annotation')
+          .h-annotation(data-id=annotation.id, class=classes)
+            if loading
+              span.icon-spin3.animate-spin.h-float-left
+            else if displayed
+              span.icon-eye.h-toggle-annotation.h-float-left(
+                data-toggle='tooltip', title='Hide annotation')
+            else
+              span.icon-eye-off.h-toggle-annotation.h-float-left(
+                data-toggle='tooltip', title='Show annotation')
+            span.h-annotation-name(title=name) #{name}
 
-      span.h-annotation-right
-        if writeAccess(annotation)
-          span.icon-cancel.h-delete-annotation(
-              data-toggle='tooltip', title='Remove annotation')
-          span.icon-cog.h-edit-annotation-metadata(
-              data-toggle='tooltip', title='Edit annotation')
-        a(href=annotation.downloadUrl().replace(/\/download$/, ''),
-            download=name + '.json')
-          span.icon-download.h-download-annotation(
-              data-toggle='tooltip', title='Download annotation')
+            span.h-annotation-right
+              if writeAccess(annotation)
+                span.icon-cancel.h-delete-annotation(
+                    data-toggle='tooltip', title='Remove annotation')
+                span.icon-cog.h-edit-annotation-metadata(
+                    data-toggle='tooltip', title='Edit annotation')
+              a(href=annotation.downloadUrl().replace(/\/download$/, ''),
+                  download=name + '.json')
+                span.icon-download.h-download-annotation(
+                    data-toggle='tooltip', title='Download annotation')
 
   .checkbox.h-annotation-toggle
     label(title='Show annotation labels when hovering with the mouse.')

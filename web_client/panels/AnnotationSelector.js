@@ -34,7 +34,8 @@ var AnnotationSelector = Panel.extend({
         'mouseleave .h-annotation': '_unhighlightAnnotation',
         'change #h-toggle-labels': 'toggleLabels',
         'change #h-toggle-interactive': 'toggleInteractiveMode',
-        'input #h-annotation-opacity': '_changeGlobalOpacity'
+        'input #h-annotation-opacity': '_changeGlobalOpacity',
+        'click .h-annotation-group-name': '_toggleExpandGroup'
     }),
 
     /**
@@ -46,6 +47,7 @@ var AnnotationSelector = Panel.extend({
      *     to the current image.
      */
     initialize(settings = {}) {
+        this._expandedGroups = new Set();
         this._opacity = settings.opacity || 0.9;
         this.listenTo(this.collection, 'sync remove update reset change:displayed change:loading', this.render);
         this.listenTo(this.collection, 'change:highlight', this._changeAnnotationHighlight);
@@ -59,13 +61,13 @@ var AnnotationSelector = Panel.extend({
     },
 
     render() {
+        const annotationGroups = this._getAnnotationGroups();
         this.$('[data-toggle="tooltip"]').tooltip('destroy');
         if (!this.viewer) {
             this.$el.empty();
             return;
         }
         this.$el.html(annotationSelectorWidget({
-            annotations: this.collection.sortBy('created'),
             id: 'annotation-panel-container',
             title: 'Annotations',
             activeAnnotation: this._activeAnnotation ? this._activeAnnotation.id : '',
@@ -73,7 +75,10 @@ var AnnotationSelector = Panel.extend({
             user: getCurrentUser() || {},
             writeAccess: this._writeAccess,
             opacity: this._opacity,
-            interactiveMode: this._interactiveMode
+            interactiveMode: this._interactiveMode,
+            expandedGroups: this._expandedGroups,
+            annotationGroups,
+            _
         }));
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
@@ -334,6 +339,39 @@ var AnnotationSelector = Panel.extend({
         this.$('.h-annotation-opacity-container')
             .attr('title', `Annotation opacity ${(this._opacity * 100).toFixed()}%`);
         this.trigger('h:annotationOpacity', this._opacity);
+    },
+
+    _toggleExpandGroup(evt) {
+        const name = $(evt.currentTarget).parent().data('groupName');
+        if (this._expandedGroups.has(name)) {
+            this._expandedGroups.delete(name);
+        } else {
+            this._expandedGroups.add(name);
+        }
+        this.render();
+    },
+
+    _getAnnotationGroups() {
+        // Annotations without elements don't have any groups, so we inject the null group
+        // so that they are displayed in the panel.
+        this.collection.each((a) => {
+            const groups = a.get('groups') || [];
+            if (!groups.length) {
+                groups.push(null);
+            }
+        });
+        const groupObject = {};
+        const groups = _.union(...this.collection.map((a) => a.get('groups')));
+        _.each(groups, (group) => {
+            const groupList = this.collection.filter(
+                (a) => _.contains(a.get('groups'), group));
+
+            if (group === null) {
+                group = 'Other';
+            }
+            groupObject[group] = _.sortBy(groupList, (a) => a.get('created'));
+        });
+        return groupObject;
     }
 });
 
