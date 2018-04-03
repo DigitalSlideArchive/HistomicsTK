@@ -112,6 +112,25 @@ $(function () {
                 regionValue = $('#analysis_roi').val();
             });
         });
+        it('submit the job', function () {
+            var open = window.open;
+            var args;
+            window.open = function () {
+                args = arguments;
+            };
+            var $el = $('.s-info-panel-submit');
+            expect($el.length).toBe(1);
+            $el.click();
+
+            waitsFor(function () {
+                return args !== undefined;
+            }, 'job submission to return');
+            runs(function () {
+                expect(args[0]).toBe('/#job/jobid');
+                expect(args[1]).toBe('_blank');
+                window.open = open;
+            });
+        });
         it('open a new analysis', function () {
             var $el = $('.h-analyses-dropdown');
             expect($el.find('a:contains("dsarchive/histomicstk")').length).toBe(1);

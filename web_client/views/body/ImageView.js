@@ -55,6 +55,10 @@ var ImageView = View.extend({
             parentView: this
         });
 
+        this.listenTo(events, 'h:submit', (data) => {
+            // open the job info page when submitting an analysis
+            window.open(`/#job/${data._id}`, '_blank');
+        });
         this.listenTo(events, 'h:select-region', this.showRegion);
         this.listenTo(this.annotationSelector.collection, 'add update change:displayed', this.toggleAnnotation);
         this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
