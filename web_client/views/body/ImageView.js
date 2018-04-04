@@ -55,6 +55,10 @@ var ImageView = View.extend({
             parentView: this
         });
 
+        this.listenTo(events, 'h:submit', (data) => {
+            this.$('.s-jobs-panel .s-panel-controls .icon-down-open').click();
+            events.trigger('g:alert', {type: 'success', text: 'Analysis job submitted.'});
+        });
         this.listenTo(events, 'h:select-region', this.showRegion);
         this.listenTo(this.annotationSelector.collection, 'add update change:displayed', this.toggleAnnotation);
         this.listenTo(this.annotationSelector, 'h:toggleLabels', this.toggleLabels);
