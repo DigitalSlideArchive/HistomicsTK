@@ -126,7 +126,7 @@ $(function () {
                 return options !== undefined;
             }, 'job submission to return');
             runs(function () {
-                expect(options.text).toBe('Analysis job submitted successfully.');
+                expect(options.text).toBe('Analysis job submitted.');
                 expect($('.s-jobs-panel .s-panel-controls .icon-up-open').length).toBe(1);
             });
         });
