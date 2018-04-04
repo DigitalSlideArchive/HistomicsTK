@@ -56,8 +56,8 @@ var ImageView = View.extend({
         });
 
         this.listenTo(events, 'h:submit', (data) => {
-            // open the job info page when submitting an analysis
-            window.open(`/#job/${data._id}`, '_blank');
+            this.$('.s-jobs-panel .s-panel-controls .icon-down-open').click();
+            events.trigger('g:alert', {type: 'success', text: 'Analysis job submitted successfully.'});
         });
         this.listenTo(events, 'h:select-region', this.showRegion);
         this.listenTo(this.annotationSelector.collection, 'add update change:displayed', this.toggleAnnotation);
