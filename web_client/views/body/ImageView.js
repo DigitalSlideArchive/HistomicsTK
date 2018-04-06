@@ -285,22 +285,24 @@ var ImageView = View.extend({
 
     _setDefaultFileOutputs() {
         return this._getDefaultOutputFolder().done((folder) => {
-            _.each(
-                this.controlPanel.models().filter((model) => model.get('type') === 'new-file'),
-                (model) => {
-                    var analysis = _.last(router.getQuery('analysis').split('/'));
-                    var extension = (model.get('extensions') || '').split('|')[0];
-                    var name = `${analysis}-${model.id}${extension}`;
-                    model.set({
-                        path: [folder.get('name'), name],
-                        parent: folder,
-                        value: new ItemModel({
-                            name,
-                            folderId: folder.id
-                        })
-                    });
-                }
-            );
+            if (folder) {
+                _.each(
+                    this.controlPanel.models().filter((model) => model.get('type') === 'new-file'),
+                    (model) => {
+                        var analysis = _.last(router.getQuery('analysis').split('/'));
+                        var extension = (model.get('extensions') || '').split('|')[0];
+                        var name = `${analysis}-${model.id}${extension}`;
+                        model.set({
+                            path: [folder.get('name'), name],
+                            parent: folder,
+                            value: new ItemModel({
+                                name,
+                                folderId: folder.id
+                            })
+                        });
+                    }
+                );
+            }
         });
     },
 
