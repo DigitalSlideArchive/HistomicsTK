@@ -102,7 +102,7 @@ class MockSlicerCLIWebResource(Resource):
         For now, this is a no-op, but we should add some logic to generate an annotation
         output and job status events to simulate a real execution of the CLI.
         """
-        pass
+        return {'_id': 'jobid'}
 
 
 class WebClientTestCase(web_client_test.WebClientTestCase):
