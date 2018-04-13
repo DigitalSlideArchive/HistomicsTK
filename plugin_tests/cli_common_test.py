@@ -254,7 +254,7 @@ class CliCommonTest(base.TestCase):
         # compare nuclei boundary annotations with gtruth
         nuclei_bndry_annot_gtruth_file = os.path.join(
             TEST_DATA_DIR,
-            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot'  # noqa
+            'Test-TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot'  # noqa
         )
 
         with open(nuclei_bndry_annot_gtruth_file, 'r') as fbndry_annot:
