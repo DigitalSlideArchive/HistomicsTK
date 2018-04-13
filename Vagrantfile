@@ -36,6 +36,8 @@ Vagrant.configure("2") do |config|
 
     if provisioner_type == "ansible_local"
       ansible.provisioning_path = "/vagrant"
+      ansible.install_mode = "pip"
+      ansible.version = "2.4.4.0"
     end
   end
 end
