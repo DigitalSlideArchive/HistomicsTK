@@ -4,6 +4,7 @@ import eventStream from 'girder/utilities/EventStream';
 import { getCurrentUser } from 'girder/auth';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
+import {events as girderEvents} from 'girder';
 
 import events from '../events';
 import showSaveAnnotationDialog from '../dialogs/saveAnnotation';
@@ -51,6 +52,10 @@ var AnnotationSelector = Panel.extend({
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
         this.listenTo(eventStream, 'g:eventStream.start', this._refreshAnnotations);
         this.listenTo(this.collection, 'change:annotation', this._saveAnnotation);
+        this.listenTo(girderEvents, 'g:login', () => {
+            this.collection.reset();
+            this._parentId = undefined;
+        });
     },
 
     render() {

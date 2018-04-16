@@ -88,6 +88,9 @@ var ImageView = View.extend({
         this.$el.html(imageTemplate());
         if (this.model.id) {
             this._openId = this.model.id;
+            if (this.viewerWidget) {
+                this.viewerWidget.destroy();
+            }
             this.viewerWidget = new GeojsViewer({
                 parentView: this,
                 el: this.$('.h-image-view-container'),
