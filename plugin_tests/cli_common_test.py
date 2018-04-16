@@ -230,7 +230,7 @@ class CliCommonTest(base.TestCase):
         # compare nuclei bbox annotations with gtruth
         nuclei_bbox_annot_gtruth_file = os.path.join(
             TEST_DATA_DIR,
-            'Test-TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot'  # noqa
+            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot'  # noqa
         )
 
         with open(nuclei_bbox_annot_gtruth_file, 'r') as fbbox_annot:
@@ -254,7 +254,7 @@ class CliCommonTest(base.TestCase):
         # compare nuclei boundary annotations with gtruth
         nuclei_bndry_annot_gtruth_file = os.path.join(
             TEST_DATA_DIR,
-            'Test-TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot'  # noqa
+            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot'  # noqa
         )
 
         with open(nuclei_bndry_annot_gtruth_file, 'r') as fbndry_annot:

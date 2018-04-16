@@ -132,9 +132,7 @@ add_histomicstk_python_test(cli_common
   "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs"
   "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png"
   "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot"
-  "plugins/HistomicsTK/Test-TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot"
   "plugins/HistomicsTK/TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot"
-  "plugins/HistomicsTK/Test-TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot"
 )
 
 add_histomicstk_python_test(cli_results
