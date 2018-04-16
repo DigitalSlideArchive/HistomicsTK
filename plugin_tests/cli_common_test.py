@@ -134,11 +134,11 @@ class CliCommonTest(base.TestCase):
             'analysis_mag': 20,
             'analysis_tile_size': 1200,
 
-            'min_radius': 12,
-            'max_radius': 30,
             'foreground_threshold': 60,
-            'min_nucleus_area': 80,
-            'local_max_search_radius': 10,
+            'min_radius': 6,
+            'max_radius': 12,
+            'min_nucleus_area': 25,
+            'local_max_search_radius': 8,
 
             'scheduler_address': None
         }
