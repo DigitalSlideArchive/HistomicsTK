@@ -15,6 +15,10 @@
     margin-top 2px
 
 .h-annotation
+    padding 2px
+    line-height 1.1
+    font-weight initial
+    margin-left 5px
     border-radius 3px
     span
         cursor pointer
@@ -28,11 +32,27 @@
     a
         color #333
     .h-annotation-name
-        width 180px
+        width 170px
         display inline-block
         text-overflow ellipsis
         white-space nowrap
         overflow hidden
+
+.h-annotation-group-name
+  font-weight bold
+  text-align left
+  padding 2px
+  border-style none
+  border-width 0
+
+  i
+    margin-right 2px
+    float left
+    color #6b6b6b
+
+  &:hover
+    background-color #eee
+    cursor pointer
 
 .h-annotation.h-active-annotation
   background-color #c5cae9 !important
