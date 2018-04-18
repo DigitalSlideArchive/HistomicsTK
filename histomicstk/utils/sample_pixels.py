@@ -86,14 +86,20 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
     iter_args = dict(scale=dict(magnification=magnification),
                      format=large_image.tilesource.TILE_FORMAT_NUMPY)
 
-    im_fgnd_mask_lres = dask.delayed(im_fgnd_mask_lres)
+    c = dask.distributed.get_client()
+
+    [im_fgnd_mask_lres_fut] = c.scatter([im_fgnd_mask_lres],
+                                        broadcast=True)
 
     total_tiles = ts.getSingleTile(**iter_args)['iterator_range']['position']
+
     for position in range(0, total_tiles, tile_grouping):
+
         sample_pixels.append(dask.delayed(_sample_pixels_tile)(
             slide_path, iter_args,
             (position, min(tile_grouping, total_tiles - position)),
-            sample_fraction, tissue_seg_mag, min_coverage, im_fgnd_mask_lres))
+            sample_fraction, tissue_seg_mag, min_coverage,
+            im_fgnd_mask_lres_fut))
 
     # concatenate pixel values in list
     if sample_pixels:
