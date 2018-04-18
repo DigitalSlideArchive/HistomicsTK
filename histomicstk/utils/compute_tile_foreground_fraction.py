@@ -52,7 +52,7 @@ def compute_tile_foreground_fraction(slide_path, im_fgnd_mask_lres,
         c = dask.distributed.get_client()
 
         # broadcasting fgnd mask to all dask workers
-        [im_fgnd_mask_lres_fut] = c.scatter([im_fgnd_mask_lres],
+        [im_fgnd_mask_lres] = c.scatter([im_fgnd_mask_lres],
                                             broadcast=True)
 
         print('processing tiles in parallel')
@@ -63,7 +63,7 @@ def compute_tile_foreground_fraction(slide_path, im_fgnd_mask_lres,
 
             tile_fgnd_frac.append(
                 dask.delayed(_compute_tile_foreground_fraction_single)(
-                    slide_path, im_fgnd_mask_lres_fut, fgnd_seg_scale,
+                    slide_path, im_fgnd_mask_lres, fgnd_seg_scale,
                     it_kwargs, tile_position
                 ))
 

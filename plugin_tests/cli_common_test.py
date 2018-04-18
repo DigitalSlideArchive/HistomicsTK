@@ -183,7 +183,7 @@ class CliCommonTest(base.TestCase):
         # compute tile foreground fraction
         tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
             wsi_path, im_fgnd_mask_lres, fgnd_seg_scale,
-            **it_kwargs
+            it_kwargs
         )
 
         num_fgnd_tiles = np.count_nonzero(
