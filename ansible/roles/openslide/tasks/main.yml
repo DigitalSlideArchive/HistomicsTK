@@ -225,18 +225,27 @@
 - name: Purge pip cache
   command: |
     python -c '
-    import pip.locations, shutil
-    shutil.rmtree(pip.locations.USER_CACHE_DIR, True)
+    try:
+    ''  import pip.locations as locations
+    except ImportError:
+    ''  import pip._internal.locations as locations
+    import shutil
+    shutil.rmtree(locations.USER_CACHE_DIR, True)
     '
   become: true
 
 - name: Reinstall python modules that depend on OpenJPEG and libtiff if they are installed.
   command: |
     python -c '
-    import pip
+    try:
+    ''  import pip.commands as commands
+    ''  from pip import main
+    except ImportError:
+    ''  import pip._internal.commands as commands
+    ''  from pip._internal import main
     packages = ["Pillow", "libtiff"]
-    for package in pip.commands.show.search_packages_info(packages):
-    ''  pip.main(["install", "--force-reinstall", "--ignore-installed",
+    for package in commands.show.search_packages_info(packages):
+    ''  main(["install", "--force-reinstall", "--ignore-installed",
     ''           "%s==%s" % (package["name"], package["version"])])
     '
   become: true
