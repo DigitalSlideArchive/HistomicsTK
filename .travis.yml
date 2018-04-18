@@ -79,7 +79,7 @@ before_install:
     - girder_worker_path=$girder_path/plugins/girder_worker
     - git clone https://github.com/girder/girder_worker.git $girder_worker_path && git -C $girder_worker_path checkout $GIRDER_WORKER_VERSION
     - cp $PWD/plugin_tests/data/girder_worker.cfg $girder_worker_path/girder_worker/worker.local.cfg
-    - pip install --no-cache-dir -U $girder_worker_path'[girder_io,docker]'
+    - pip install --no-cache-dir -U --upgrade-strategy eager $girder_worker_path'[girder_io,docker]'
 
     - large_image_path=$girder_path/plugins/large_image
     - git clone https://github.com/girder/large_image.git $large_image_path && git -C $large_image_path checkout $LARGE_IMAGE_VERSION
@@ -106,13 +106,13 @@ before_install:
 
 install:
     - cd $girder_path
-    - pip install -U -r requirements-dev.txt
-    - pip install -U -e .[worker]
+    - pip install -U --upgrade-strategy eager -r requirements-dev.txt
+    - pip install -U --upgrade-strategy eager -e .[worker]
     - cd $large_image_path
     - pip install --no-cache-dir numpy>=1.12.1
     - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
 
-    - pip install -U .[memcached,openslide]
+    - pip install -U --upgrade-strategy eager .[memcached,openslide]
     - python setup.py install
     - cd $main_path
     - pip install --upgrade 'git+https://github.com/cdeepakroy/ctk-cli'
@@ -120,7 +120,7 @@ install:
     # needs to be installed in dev mode for it to place binaries of cython/c extensions in place
     - pip install -e .
     - cd $girder_path
-    - pip install -U -r $slicer_cli_web_path/requirements.txt
+    - pip install -U --upgrade-strategy eager -r $slicer_cli_web_path/requirements.txt
     - npm-install-retry
     - BABEL_ENV=cover NYC_CWD="$main_path" girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
     - pip install jupyter 'sphinx<1.7' sphinx_rtd_theme nbsphinx travis-sphinx
