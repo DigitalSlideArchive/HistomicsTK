@@ -195,7 +195,7 @@ def main(args):
 
             tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
                 args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
-                **it_kwargs
+                it_kwargs
             )
 
         else:

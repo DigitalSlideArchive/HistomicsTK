@@ -19,10 +19,9 @@ tensorflow>=1.3.0
 #
 # dask packages
 #
-dask>=0.17.1
-distributed>=1.21.1
-# distributed doesn't work with torando>=5.0 as on 2018-03-07.  Remove this when it has been fixed (see https://github.com/dask/distributed/issues/1725)
-tornado<5
+dask>=0.17.2
+distributed>=1.21.6
+tornado
 
 #
 # Other packages
