@@ -31,6 +31,7 @@ from histomicstk.preprocessing import color_normalization as htk_cn
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../server')))
 from cli_common import utils as cli_utils  # noqa
 
+
 # boiler plate to start and stop the server if needed
 def setUpModule():
     base.enabledPlugins.append('HistomicsTK')
