@@ -19,6 +19,7 @@
 
 from tests import base
 
+import sys
 import collections
 import numpy as np
 import os
@@ -112,6 +113,18 @@ class BackgroundIntensityTest(base.TestCase):
 
         np.random.seed(1)
 
+        # create dask client
+        args = {
+            'scheduler_address': None,
+            'num_workers': -1,
+            'num_threads_per_worker': 1,
+        }
+
+        args = collections.namedtuple('Parameters', args.keys())(**args)
+
+        c = cli_utils.create_dask_client(args)
+
+        # compute background intensity
         I_0 = htk_cn.background_intensity(wsi_path,
                                           sample_approximate_total=5000)
 
