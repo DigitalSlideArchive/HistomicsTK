@@ -90,7 +90,7 @@ class ReinhardNormalizationTest(base.TestCase):
 
         args = collections.namedtuple('Parameters', args.keys())(**args)
 
-        c = cli_utils.create_dask_client(args)
+        cli_utils.create_dask_client(args)
 
         # compute reinhard stats
         wsi_mean, wsi_stddev = htk_cn.reinhard_stats(
@@ -122,7 +122,7 @@ class BackgroundIntensityTest(base.TestCase):
 
         args = collections.namedtuple('Parameters', args.keys())(**args)
 
-        c = cli_utils.create_dask_client(args)
+        cli_utils.create_dask_client(args)
 
         # compute background intensity
         I_0 = htk_cn.background_intensity(wsi_path,

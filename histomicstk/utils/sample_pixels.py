@@ -89,8 +89,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
 
     c = dask.distributed.get_client()
 
-    [im_fgnd_mask_lres] = c.scatter([im_fgnd_mask_lres],
-                                        broadcast=True)
+    [im_fgnd_mask_lres] = c.scatter([im_fgnd_mask_lres], broadcast=True)
 
     total_tiles = ts.getSingleTile(**iter_args)['iterator_range']['position']
 
