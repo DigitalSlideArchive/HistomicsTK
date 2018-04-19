@@ -81,15 +81,20 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
         total_fgnd_pixels = np.count_nonzero(im_fgnd_mask_lres) * scale_ratio ** 2
         sample_fraction = sample_approximate_total / total_fgnd_pixels
 
+    # broadcasting fgnd mask to all dask workers
+    try:
+        c = dask.distributed.get_client()
+
+        [im_fgnd_mask_lres] = c.scatter([im_fgnd_mask_lres],
+                                        broadcast=True)
+    except ValueError:
+        pass
+
     # generate sample pixels
     sample_pixels = []
 
     iter_args = dict(scale=dict(magnification=magnification),
                      format=large_image.tilesource.TILE_FORMAT_NUMPY)
-
-    c = dask.distributed.get_client()
-
-    [im_fgnd_mask_lres] = c.scatter([im_fgnd_mask_lres], broadcast=True)
 
     total_tiles = ts.getSingleTile(**iter_args)['iterator_range']['position']
 

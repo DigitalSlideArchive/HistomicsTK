@@ -48,14 +48,16 @@ def compute_tile_foreground_fraction(slide_path, im_fgnd_mask_lres,
 
         num_tiles = ts.getSingleTile(**it_kwargs)['iterator_range']['position']
 
-        # get current dask client
-        c = dask.distributed.get_client()
-
         # broadcasting fgnd mask to all dask workers
-        [im_fgnd_mask_lres] = c.scatter([im_fgnd_mask_lres], broadcast=True)
+        try:
+            c = dask.distributed.get_client()
 
-        print('processing tiles in parallel')
+            [im_fgnd_mask_lres] = c.scatter([im_fgnd_mask_lres],
+                                            broadcast=True)
+        except ValueError:
+            pass
 
+        # compute tile foreground fraction in parallel
         tile_fgnd_frac = []
 
         for tile_position in range(num_tiles):
