@@ -43,6 +43,7 @@ var DrawWidget = Panel.extend({
         this._groups = new StyleCollection();
         this._style = new StyleModel({id: 'default'});
         this.listenTo(this._groups, 'update', this.render);
+        this.listenTo(this.collection, 'add remove', this._recalculateGroupAggregation);
         this.listenTo(this.collection, 'change update', this.render);
         this._groups.fetch().done(() => {
             // ensure the default style exists
@@ -231,6 +232,14 @@ var DrawWidget = Panel.extend({
 
     _unhighlightElement() {
         this.parentView.trigger('h:highlightAnnotation');
+    },
+
+    _recalculateGroupAggregation() {
+        const groups = _.invoke(
+            this.collection.filter((el) => el.get('group')),
+            'get', 'group'
+        );
+        this.annotation.set('groups', groups);
     }
 });
 

@@ -104,21 +104,21 @@
 - name: Install numpy (must be installed before large_image plugin)
   pip:
     name: numpy
-    extra_args: "-U"
+    extra_args: "-U --upgrade-strategy eager"
     state: present
   become: true
 
 - name: Install scikit-build (must be installed before HistomicsTK plugin)
   pip:
     name: scikit-build
-    extra_args: "-U"
+    extra_args: "-U --upgrade-strategy eager"
     state: present
   become: true
 
 - name: Make sure the six library is updated
   pip:
     name: six
-    extra_args: "-U"
+    extra_args: "-U --upgrade-strategy eager"
     state: present
   become: true
 

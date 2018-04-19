@@ -8,7 +8,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends iputils-ping telnet-ssl tmux less && \
     sudo rm -rf /var/lib/apt/lists/* /tmp/*
 RUN pip install -U pip
-RUN pip install -U 'ansible<2.5'
+RUN pip install -U --upgrade-strategy eager 'ansible<2.5'
 RUN locale-gen en_US.UTF-8
 RUN adduser --disabled-password --gecos '' ubuntu && \
     adduser ubuntu sudo && \
