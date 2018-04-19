@@ -200,7 +200,8 @@ def create_dask_client(args):
         assert args.num_threads_per_worker >= 1
 
         if args.num_workers < 0:
-            num_workers = psutil.cpu_count(logical=False) + args.num_workers
+            num_workers = max(
+                1, psutil.cpu_count(logical=False) + args.num_workers)
         else:
             num_workers = args.num_workers
 
