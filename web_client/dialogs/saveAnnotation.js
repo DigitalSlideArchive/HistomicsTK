@@ -31,6 +31,7 @@ var SaveAnnotation = View.extend({
 
     access(evt) {
         evt.preventDefault();
+        this.annotation.off('g:accessListSaved');
         new AccessWidget({
             el: $('#g-dialog-container'),
             type: 'annotation',
