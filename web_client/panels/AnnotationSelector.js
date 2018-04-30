@@ -1,5 +1,6 @@
 import _ from 'underscore';
 
+import { AccessType } from 'girder/constants';
 import eventStream from 'girder/utilities/EventStream';
 import { getCurrentUser } from 'girder/auth';
 import Panel from 'girder_plugins/slicer_cli_web/views/Panel';
@@ -297,13 +298,7 @@ var AnnotationSelector = Panel.extend({
     },
 
     _writeAccess(annotation) {
-        const user = getCurrentUser();
-        if (!user || !annotation) {
-            return false;
-        }
-        const admin = user.get && user.get('admin');
-        const creator = user.id === annotation.get('creatorId');
-        return admin || creator;
+        return annotation.get('_accessLevel') >= AccessType.ADMIN;
     },
 
     showAllAnnotations() {
