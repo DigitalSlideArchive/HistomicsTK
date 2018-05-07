@@ -13,12 +13,18 @@ import layoutTemplate from './templates/layout/layout.pug';
 import './stylesheets/layout/layout.styl';
 
 var App = GirderApp.extend({
+    initialize(settings) {
+        this.settings = settings;
+        return GirderApp.prototype.initialize.apply(this, arguments);
+    },
+
     render() {
         this.$el.html(layoutTemplate());
 
         this.histomicsHeader = new HeaderView({
             el: this.$('#g-app-header-container'),
-            parentView: this
+            parentView: this,
+            settings: this.settings
         }).render();
 
         return this;
