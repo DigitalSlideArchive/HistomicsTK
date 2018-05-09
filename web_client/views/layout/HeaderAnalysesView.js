@@ -23,15 +23,17 @@ var HeaderUserView = View.extend({
     },
     render() {
         if (this.image) {
-            this.$el.removeClass('hidden');
             restRequest({
                 url: 'HistomicsTK/HistomicsTK/docker_image'
             }).then((analyses) => {
                 if (_.keys(analyses || {}).length > 0) {
+                    this.$el.removeClass('hidden');
                     this.$el.html(headerAnalysesTemplate({
                         analyses: analyses || {}
                     }));
                     this.$('.h-analyses-dropdown-link').submenupicker();
+                } else {
+                    this.$el.addClass('hidden');
                 }
                 return null;
             });
