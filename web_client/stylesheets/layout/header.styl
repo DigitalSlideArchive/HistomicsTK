@@ -25,7 +25,18 @@
       float none
   .navbar-header
     z-index 20
-    background #f8f8f8
     float none
     position absolute
     left 0
+  .navbar-header a#h-navbar-brand.navbar-brand
+      background-color transparent
+  .navbar-default .navbar-nav
+    &> .open > a
+      color inherit
+      background-color rgba(217, 217, 217, 0.5)
+    &> .open > a:hover
+      color inherit
+    &> .open > a:focus
+      color inherit
+    &> li > a
+      color inherit

@@ -123,7 +123,7 @@ install:
     - pip install -U --upgrade-strategy eager -r $slicer_cli_web_path/requirements.txt
     - npm-install-retry
     - BABEL_ENV=cover NYC_CWD="$main_path" girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
-    - pip install jupyter 'sphinx<1.7' sphinx_rtd_theme nbsphinx travis-sphinx
+    - pip install jupyter sphinx sphinx_rtd_theme nbsphinx travis-sphinx
     # - pip install numpy==1.13.1  # pin numpy for now
     - pip freeze  # report what we have installed
 
