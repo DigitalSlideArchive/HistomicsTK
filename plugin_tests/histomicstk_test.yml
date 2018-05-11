@@ -1,0 +1,23 @@
+---
+users:
+  - login: 'adminlogin'
+    email: 'admin@email.com'
+    firstName: 'Admin'
+    lastName: 'Last'
+    password: 'adminpassword'
+    admin: true
+    defaultFolders: true
+  - login: 'goodlogin'
+    email: 'good@email.com'
+    firstName: 'First'
+    lastName: 'Last'
+    password: 'goodpassword'
+    admin: false
+    defaultFolders: true
+  - login: 'user2'
+    email: 'user2@email.com'
+    firstName: 'User'
+    lastName: 'Two'
+    password: 'goodpassword'
+    admin: false
+    defaultFolders: true

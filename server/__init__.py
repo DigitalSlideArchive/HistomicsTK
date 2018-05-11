@@ -146,7 +146,7 @@ class HistomicsTKResource(DockerResource):
         result = super(HistomicsTKResource, self).getDockerImages(*args, **kwargs)
         acList = self._accessList()
         # Use the User().hasAccess to test for access via a synthetic document
-        if not User().hasAccess({'access': acList}, user):
+        if not User().hasAccess({'access': acList, 'public': acList['public']}, user):
             return {}
         return result
 
