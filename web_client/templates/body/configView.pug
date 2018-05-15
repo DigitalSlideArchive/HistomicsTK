@@ -37,6 +37,9 @@ form#g-histomicstk-form(role="form")
         type="text", value=settings['histomicstk.default_draw_styles'],
         placeholder='A JSON object listing default annotation drawing styles.',
         title='A dictionary of drawing styles')
+  .form-group
+    label#g-histomicstk-analysis-access-label(for="g-histomicstk-analysis-access") Analysis Access
+    #g-histomicstk-analysis-access
   p#g-histomicstk-error-message.g-validation-failed-message
 .g-histomicstk-buttons
   button#g-histomicstk-save.btn.btn-sm.btn-primary Save

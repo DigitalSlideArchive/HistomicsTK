@@ -1,7 +1,9 @@
+import $ from 'jquery';
 import _ from 'underscore';
 import View from 'girder/views/View';
 
 import PluginConfigBreadcrumbWidget from 'girder/views/widgets/PluginConfigBreadcrumbWidget';
+import AccessWidget from 'girder/views/widgets/AccessWidget';
 import { restRequest } from 'girder/rest';
 import events from 'girder/events';
 import router from 'girder/router';
@@ -16,13 +18,17 @@ var ConfigView = View.extend({
     events: {
         'click #g-histomicstk-save': function (event) {
             this.$('#g-histomicstk-error-message').text('');
-            this._saveSettings(_.map(this.settingsKeys, (key) => {
+            var settings = _.map(this.settingsKeys, (key) => {
                 const element = this.$('#g-' + key.replace(/[_.]/g, '-'));
                 return {
                     key,
                     value: element.val() || null
                 };
-            }));
+            });
+            var access = this.accessWidget.getAccessList();
+            access.public = this.$('#g-access-public').is(':checked');
+            settings.push({key: 'histomicstk.analysis_access', value: access});
+            this._saveSettings(settings);
         },
         'click #g-histomicstk-brand-default-color': function () {
             this.$('#g-histomicstk-brand-color').val(this.defaults['histomicstk.brand_color']);
@@ -47,15 +53,17 @@ var ConfigView = View.extend({
             'histomicstk.banner_color',
             'histomicstk.default_draw_styles'
         ];
-        restRequest({
-            method: 'GET',
-            url: 'system/setting',
-            data: {
-                list: JSON.stringify(this.settingsKeys),
-                default: 'none'
-            }
-        }).done((resp) => {
-            this.settings = resp;
+        $.when(
+            restRequest({
+                method: 'GET',
+                url: 'system/setting',
+                data: {
+                    list: JSON.stringify(this.settingsKeys),
+                    default: 'none'
+                }
+            }).done((resp) => {
+                this.settings = resp;
+            }),
             restRequest({
                 method: 'GET',
                 url: 'system/setting',
@@ -65,8 +73,15 @@ var ConfigView = View.extend({
                 }
             }).done((resp) => {
                 this.defaults = resp;
-                this.render();
-            });
+            }),
+            restRequest({
+                method: 'GET',
+                url: 'HistomicsTK/analysis/access'
+            }).done((resp) => {
+                this.analysisAccess = resp;
+            })
+        ).done(() => {
+            this.render();
         });
     },
 
@@ -76,6 +91,28 @@ var ConfigView = View.extend({
             defaults: this.defaults
         }));
         this.breadcrumb.setElement(this.$('.g-config-breadcrumb-container')).render();
+        this.accessWidget = new AccessWidget({
+            el: $('#g-histomicstk-analysis-access'),
+            modelType: 'Analyses menu',
+            model: {
+                fetchAccess: () => {
+                    return $.Deferred().resolve(this.analysisAccess);
+                },
+                get: (key) => {
+                    if (key === 'public') {
+                        return this.analysisAccess.public;
+                    } else if (key === 'access') {
+                        return this.analysisAccess;
+                    }
+                }
+            },
+            hideRecurseOption: true,
+            hideSaveButton: true,
+            hideAccessType: true,
+            noAccessFlag: true,
+            modal: false,
+            parentView: this
+        });
         return this;
     },
 
