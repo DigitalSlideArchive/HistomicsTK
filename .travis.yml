@@ -60,6 +60,14 @@ before_install:
     # https://github.com/travis-ci/travis-ci/issues/7940
     - sudo rm -f /etc/boto.cfg
 
+    - mkdir -p $HOME/.cache/node_modules || true
+    - ln -sf $HOME/.cache/node_modules .
+    - nvm install v8
+    - npm install -g npm
+    - npm install -g npm-install-retry
+    - npm --version
+    - npm prune
+
     - CACHE="$HOME/.cache" OPENJPEG_VERSION=2.1.2 OPENJPEG_FILE=v2.1.2.tar.gz OPENJPEG_DIR=openjpeg-2.1.2 LIBTIFF_VERSION=4.0.8 OPENSLIDE_VERSION=3.4.1 source .install-openslide.sh
 
     - GIRDER_VERSION=2.x-maintenance
@@ -96,13 +104,6 @@ before_install:
 
     - CACHE=$HOME/.cache CMAKE_VERSION=3.8.0 CMAKE_SHORT_VERSION=3.8 source $girder_path/scripts/install_cmake.sh
     - cmake --version
-
-    - mkdir -p $HOME/.cache/node_modules || true
-    - ln -sf $HOME/.cache/node_modules .
-    - npm install -g npm
-    - npm install -g npm-install-retry
-    - npm --version
-    - npm prune
 
 install:
     - cd $girder_path

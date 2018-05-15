@@ -5,9 +5,11 @@ import re
 from girder import events
 from girder.api import access
 from girder.api.describe import Description, describeRoute
-from girder.constants import SettingDefault
+from girder.constants import AccessType, SettingDefault
 from girder.exceptions import ValidationException
+from girder.models.group import Group
 from girder.models.setting import Setting
+from girder.models.user import User
 from girder.utility.webroot import Webroot
 from girder.utility import setting_utilities
 
@@ -71,12 +73,31 @@ def validateHistomicsTKWebrootPath(doc):
         raise ValidationException('The webroot path may not be "girder"', 'value')
 
 
+@setting_utilities.validator(PluginSettings.HISTOMICSTK_ANALYSIS_ACCESS)
+def validateHistomicsTKAnalysisAccess(doc):
+    value = doc['value']
+    if not isinstance(value, dict):
+        raise ValidationException('Analysis access policy must be a JSON object.')
+    for i, groupId in enumerate(value.get('groups', ())):
+        if isinstance(groupId, dict):
+            groupId = groupId.get('_id', groupId.get('id'))
+        group = Group().load(groupId, force=True, exc=True)
+        value['groups'][i] = group['_id']
+    for i, userId in enumerate(value.get('users', ())):
+        if isinstance(userId, dict):
+            userId = userId.get('_id', userId.get('id'))
+        user = User().load(userId, force=True, exc=True)
+        value['users'][i] = user['_id']
+    value['public'] = bool(value.get('public'))
+
+
 # Defaults that have fixed values are added to the system defaults dictionary.
 SettingDefault.defaults.update({
     PluginSettings.HISTOMICSTK_WEBROOT_PATH: 'histomicstk',
     PluginSettings.HISTOMICSTK_BRAND_NAME: 'HistomicsTK',
     PluginSettings.HISTOMICSTK_BANNER_COLOR: '#f8f8f8',
     PluginSettings.HISTOMICSTK_BRAND_COLOR: '#777777',
+    PluginSettings.HISTOMICSTK_ANALYSIS_ACCESS: {'public': True},
 })
 
 
@@ -84,6 +105,50 @@ class HistomicsTKResource(DockerResource):
     def __init__(self, name, *args, **kwargs):
         super(HistomicsTKResource, self).__init__(name, *args, **kwargs)
         self.route('GET', ('settings',), self.getPublicSettings)
+        self.route('GET', ('analysis', 'access'), self.getAnalysisAccess)
+
+    def _accessList(self):
+        access = Setting().get(PluginSettings.HISTOMICSTK_ANALYSIS_ACCESS) or {}
+        acList = {
+            'users': [{'id': x, 'level': AccessType.READ}
+                      for x in access.get('users', [])],
+            'groups': [{'id': x, 'level': AccessType.READ}
+                       for x in access.get('groups', [])],
+            'public': access.get('public', True),
+        }
+        for user in acList['users'][:]:
+            userDoc = User().load(
+                user['id'], force=True,
+                fields=['firstName', 'lastName', 'login'])
+            if userDoc is None:
+                acList['users'].remove(user)
+            else:
+                user['login'] = userDoc['login']
+                user['name'] = ' '.join((userDoc['firstName'], userDoc['lastName']))
+        for grp in acList['groups'][:]:
+            grpDoc = Group().load(
+                grp['id'], force=True, fields=['name', 'description'])
+            if grpDoc is None:
+                acList['groups'].remove(grp)
+            else:
+                grp['name'] = grpDoc['name']
+                grp['description'] = grpDoc['description']
+        return acList
+
+    @access.public
+    @describeRoute(
+        Description('List docker images and their CLIs')
+    )
+    def getDockerImages(self, *args, **kwargs):
+        user = self.getCurrentUser()
+        if not user:
+            return {}
+        result = super(HistomicsTKResource, self).getDockerImages(*args, **kwargs)
+        acList = self._accessList()
+        # Use the User().hasAccess to test for access via a synthetic document
+        if not User().hasAccess({'access': acList, 'public': acList['public']}, user):
+            return {}
+        return result
 
     @describeRoute(
         Description('Get public settings for HistomicsTK.')
@@ -94,6 +159,13 @@ class HistomicsTKResource(DockerResource):
             PluginSettings.HISTOMICSTK_DEFAULT_DRAW_STYLES,
         ]
         return {k: self.model('setting').get(k) for k in keys}
+
+    @describeRoute(
+        Description('Get the access list for analyses.')
+    )
+    @access.admin
+    def getAnalysisAccess(self, params):
+        return self._accessList()
 
 
 def _saveJob(event):
