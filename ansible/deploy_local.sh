@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $(lsb_release -cs) != "xenial" ]; then
-  echo "This script will only work on Ubuntu 16.04"
-  return 1
+if [ $(lsb_release -cs) != "xenial" ] && [ $(lsb_release -cs) != "bionic" ]; then
+  echo "This script will only work on Ubuntu 16.04 or Ubuntu 18.04"
+  return 1 || exit 1
 fi
 
 unset PYTHONPATH

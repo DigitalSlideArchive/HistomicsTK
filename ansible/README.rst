@@ -2,7 +2,7 @@
 Install HistomicsTK
 ===================
 
-There are several ways to install HistomicsTK and the Digital Slide Archive.  If you intend to use the interface, use the Docker installation.  If you need to develop the source code, the Vagrant installation is the easiest method.  If you are using Ubuntu 16.04, you can install HistomicsTK on your local system.
+There are several ways to install HistomicsTK and the Digital Slide Archive.  If you intend to use the interface, use the Docker installation.  If you need to develop the source code, the Vagrant installation is the easiest method.  If you are using Ubuntu 16.04 or Ubuntu 18.04, you can install HistomicsTK on your local system.
 
 .. __methods
 
@@ -114,10 +114,10 @@ Inside the vagrant box, tests can be run by typing::
     cd /opt/histomicstk/build
     ctest -VV
 
-Local installation on Ubuntu 16.04
-----------------------------------
+Local installation on Ubuntu 16.04 / 18.04
+------------------------------------------
 
-Due to the library dependencies of OpenJPEG, libtiff, OpenSlide, and vips, local installation may be hard to get fully working.  The local deployment scripts assume a reasonably plain instance of Ubuntu 16.04.
+Due to the library dependencies of OpenJPEG, libtiff, OpenSlide, and vips, local installation may be hard to get fully working.  The local deployment scripts assume a reasonably plain instance of Ubuntu 16.04 or Ubuntu 18.04.
 
 Prerequisites
 #############

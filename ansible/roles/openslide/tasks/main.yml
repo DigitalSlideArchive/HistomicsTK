@@ -6,7 +6,7 @@
       - libssl-dev
       - python-pip
       - python2.7-dev
-      - python-software-properties
+      - software-properties-common
       - wget
       - build-essential
       - cmake
@@ -24,7 +24,7 @@
       - libglib2.0-dev
       - libjpeg-dev
       - libxml2-dev
-      - libpng12-dev
+      - libpng-dev
       - autoconf
       - automake
       - libtool
@@ -35,7 +35,7 @@
       # To update vips
       - build-essential
       - gobject-introspection
-      - libcfitsio3-dev
+      - libcfitsio-dev
       - libexif-dev
       - libfftw3-dev
       - libgif-dev

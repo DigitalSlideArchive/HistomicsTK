@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "bento/ubuntu-16.04"
+  config.vm.box = "bento/ubuntu-18.04"
 
 
   if Vagrant.has_plugin?("vagrant-cachier")
@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 22, host: 2209
   config.vm.network "forwarded_port", guest: 8080, host: 8009
   config.vm.provider "virtualbox" do |v|
-    v.name = "HistomicsTK Ubuntu 16.04"
+    v.name = "HistomicsTK Ubuntu 18.04"
     # You may need to configure this to run benignly on your host machine
     v.memory = 4096
     v.cpus = 4
