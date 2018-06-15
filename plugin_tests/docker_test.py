@@ -52,6 +52,10 @@ class DockerImageEndpointTest(base.TestCase):
         self.assertStatusOk(resp)
         # We should have no images
         self.assertEqual(resp.json, {})
+        # We should get an empty response withotu a user, too
+        resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image')
+        self.assertStatusOk(resp)
+        self.assertEqual(resp.json, {})
 
     def testPutEndpoint(self):
         resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image',
