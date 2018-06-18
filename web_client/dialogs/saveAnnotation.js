@@ -1,8 +1,11 @@
 import _ from 'underscore';
 
+import AccessWidget from 'girder/views/widgets/AccessWidget';
 import View from 'girder/views/View';
+import { AccessType } from 'girder/constants';
 
 import saveAnnotation from '../templates/dialogs/saveAnnotation.pug';
+import '../stylesheets/dialogs/saveAnnotation.styl';
 
 /**
  * Create a modal dialog with fields to edit the properties of
@@ -10,6 +13,7 @@ import saveAnnotation from '../templates/dialogs/saveAnnotation.pug';
  */
 var SaveAnnotation = View.extend({
     events: {
+        'click .h-access': 'access',
         'click .h-cancel': 'cancel',
         'submit form': 'save'
     },
@@ -18,10 +22,25 @@ var SaveAnnotation = View.extend({
         this.$el.html(
             saveAnnotation({
                 title: this.options.title,
+                hasAdmin: this.annotation.get('_accessLevel') >= AccessType.ADMIN,
                 annotation: this.annotation.toJSON().annotation
             })
         ).girderModal(this);
         return this;
+    },
+
+    access(evt) {
+        evt.preventDefault();
+        this.annotation.off('g:accessListSaved');
+        new AccessWidget({
+            el: $('#g-dialog-container'),
+            type: 'annotation',
+            hideRecurseOption: true,
+            parentView: this,
+            model: this.annotation
+        }).on('g:accessListSaved', () => {
+            this.annotation.fetch();
+        });
     },
 
     cancel(evt) {

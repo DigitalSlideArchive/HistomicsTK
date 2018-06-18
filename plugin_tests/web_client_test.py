@@ -144,5 +144,9 @@ class WebClientTestCase(web_client_test.WebClientTestCase):
         self.model('image_item', 'large_image').copyItem(
             item, user, name='copy')
 
-        self.model('annotation', 'large_image').createAnnotation(
+        annotation = self.model('annotation', 'large_image').createAnnotation(
             item, admin, {'name': 'admin annotation'})
+        annotation = self.model('annotation', 'large_image').setAccessList(
+            annotation, {}, force=True, save=False)
+        annotation = self.model('annotation', 'large_image').setPublic(
+            annotation, True, save=True)

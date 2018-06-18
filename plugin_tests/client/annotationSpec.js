@@ -626,6 +626,42 @@ $(function () {
                 });
             });
 
+            it('set annotation permissions to WRITE', function () {
+                runs(function () {
+                    $('.h-annotation-selector .h-annotation:contains("edited 1") .h-edit-annotation-metadata').click();
+                });
+
+                girderTest.waitForDialog();
+                runs(function () {
+                    expect($('#g-dialog-container .h-access').length).toBe(1);
+                    $('#g-dialog-container .h-access').click();
+                });
+
+                girderTest.waitForDialog();
+                runs(function () {
+                    var $el = $('#g-dialog-container');
+                    expect($el.find('.modal-title').text()).toBe('Access control');
+
+                    // set edit-only access
+                    expect($el.find('.g-user-access-entry').length).toBe(1);
+                    $el.find('.g-user-access-entry .g-access-col-right select').val(1);
+                    $el.find('.g-save-access-list').click();
+                });
+
+                girderTest.waitForLoad();
+                runs(function () {
+                    // the user should still have the edit button
+                    expect($('.h-annotation-selector .h-annotation:contains("edited 1") .h-edit-annotation-metadata').length).toBe(1);
+                    $('.h-annotation-selector .h-annotation:contains("edited 1") .h-edit-annotation-metadata').click();
+                });
+
+                girderTest.waitForDialog();
+                runs(function () {
+                    // admin access should be removed
+                    expect($('#g-dialog-container .h-access').length).toBe(0);
+                });
+            });
+
             it('delete an annotation', function () {
                 var annotations = null;
                 runs(function () {

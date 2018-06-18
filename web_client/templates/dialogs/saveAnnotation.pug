@@ -17,5 +17,7 @@
             | #{annotation.description}
         .g-validation-failed-message.hidden
       .modal-footer
+        if hasAdmin
+          button.btn.btn-small.btn-warning.h-access(type='button') Permissions
         button.btn.btn-small.btn-default.h-cancel(type='button', data-dismiss='modal') Cancel
         button.btn.btn-small.btn-primary.h-submit(type='submit') Save
