@@ -39,6 +39,7 @@ RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars="docker=
                 /opt/histomicstk/openslide-* \
                 /opt/histomicstk/tiff-* \
                 /opt/histomicstk/vips-* \
+                /opt/histomicstk/ImageMagick-* \
                 /root/.cache/pip
 
 WORKDIR /opt/girder_worker
