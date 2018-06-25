@@ -55,4 +55,6 @@ EXPOSE 8080
 # address
 CMD sudo -E python /opt/histomicstk/set_environment.py ubuntu && \
     sudo -E su ubuntu -c \
-    'python -m girder >/opt/logs/girder.log 2>&1'
+    'girder mount /opt/histomicstk/mount >/opt/logs/mount.log 2>&1' ; \
+    sudo -E su ubuntu -c \
+    'girder serve >/opt/logs/girder.log 2>&1'
