@@ -69,6 +69,14 @@ describe('Test the HistomicsTK plugin', function () {
             return $('#g-histomicstk-error-message').text().substr('must be a JSON list') >= 0;
         });
         runs(function () {
+            $('#g-histomicstk-brand-color').val('#ffffff');
+            $('#g-histomicstk-brand-default-color').click();
+            expect($('#g-histomicstk-brand-color').val() === '#777777');
+            $('#g-histomicstk-banner-color').val('#ffffff');
+            $('#g-histomicstk-banner-default-color').click();
+            expect($('#g-histomicstk-banner-color').val() === '#f8f8f8');
+        });
+        runs(function () {
             $('.g-histomicstk-buttons #g-histomicstk-cancel').click();
         });
         waitsFor(function () {

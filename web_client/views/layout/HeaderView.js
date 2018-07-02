@@ -14,12 +14,17 @@ var HeaderView = View.extend({
         }
     },
 
-    initialize() {
+    initialize(params) {
+        this.settings = params.settings;
         return View.prototype.initialize.apply(this, arguments);
     },
 
     render() {
-        this.$el.html(headerTemplate());
+        this.$el.html(headerTemplate({
+            brandName: this.settings.brandName,
+            brandColor: this.settings.brandColor,
+            bannerColor: this.settings.bannerColor
+        }));
 
         this.$('a[title]').tooltip({
             placement: 'bottom',

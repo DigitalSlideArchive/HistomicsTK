@@ -24,7 +24,10 @@
       girder.events.trigger('g:appload.before');
       var app = new girder.plugins.HistomicsTK.App({
         el: 'body',
-        parentView: null
+        parentView: null,
+        brandName: '${htkBrandName | js}',
+        brandColor: '${htkBrandColor | js}',
+        bannerColor: '${htkBannerColor | js}',
       });
       app.bindRoutes();
       girder.events.trigger('g:appload.after');

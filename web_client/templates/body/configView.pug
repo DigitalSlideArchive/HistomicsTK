@@ -1,7 +1,35 @@
 .g-config-breadcrumb-container
 p.g-histomicstk-description
-  | Provides a tool hit for analyzing histology images.
+  | Provides a toolkit for analyzing histology images.
 form#g-histomicstk-form(role="form")
+  .form-group
+    label(for="g-histomicstk-brand-name") Root Path
+    input#g-histomicstk-webroot-path.form-control.input-sm(
+        type="text", value=settings['histomicstk.webroot_path'] || '',
+        placeholder=`Default: ${defaults['histomicstk.webroot_path'] || 'histomicstk'}`,
+        title="The relative URL of the application.")
+  .form-group
+    label(for="g-histomicstk-brand-name") Brand Name
+    input#g-histomicstk-brand-name.form-control.input-sm(
+        type="text", value=settings['histomicstk.brand_name'] || '',
+        placeholder=`Default: ${defaults['histomicstk.brand_name'] || 'none'}`,
+        title="The brand name of the application.")
+  .form-group
+    label(for="g-histomicstk-brand-color") Brand Color
+    #g-histomicstk-brand-color-container
+      input#g-histomicstk-brand-color.form-control.input-sm(
+          type="color", value=settings['histomicstk.brand_color'] || defaults['histomicstk.brand_color'],
+          title="The color of the application brand text.")
+      button#g-histomicstk-brand-default-color.form-control.input-sm(
+          type="button", title="Default color") default
+  .form-group
+    label(for="g-histomicstk-banner-color") Banner Color
+    #g-histomicstk-banner-color-container
+      input#g-histomicstk-banner-color.form-control.input-sm(
+          type="color", value=settings['histomicstk.banner_color'] || defaults['histomicstk.banner_color'],
+          title="The banner color of the application.")
+      button#g-histomicstk-banner-default-color.form-control.input-sm(
+          type="button", title="Default color") default
   .form-group
     label
       | Default styles for drawing annotations
@@ -9,6 +37,9 @@ form#g-histomicstk-form(role="form")
         type="text", value=settings['histomicstk.default_draw_styles'],
         placeholder='A JSON object listing default annotation drawing styles.',
         title='A dictionary of drawing styles')
+  .form-group
+    label#g-histomicstk-analysis-access-label(for="g-histomicstk-analysis-access") Analysis Access
+    #g-histomicstk-analysis-access
   p#g-histomicstk-error-message.g-validation-failed-message
 .g-histomicstk-buttons
   button#g-histomicstk-save.btn.btn-sm.btn-primary Save

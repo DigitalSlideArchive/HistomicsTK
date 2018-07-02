@@ -1,4 +1,4 @@
-nav.navbar.navbar-default
+nav.navbar.navbar-default(style=`color: ${brandColor}; background-color: ${bannerColor}`)
   .container-fluid
     .navbar-header
       button.navbar-toggle.collapsed(
@@ -10,7 +10,7 @@ nav.navbar.navbar-default
         span.icon-bar
         span.icon-bar
         span.icon-bar
-      a#h-navbar-brand.navbar-brand HistomicsTK
+      a#h-navbar-brand.navbar-brand(style=`color: ${brandColor}`) #{brandName}
 
     #h-navbar-collapse.collapse.navbar-collapse
       ul.nav.navbar-nav.navbar-right
