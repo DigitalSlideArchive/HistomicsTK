@@ -158,6 +158,33 @@
   command: ldconfig
   become: true
 
+# ImageMagick
+- name: Download ImageMagick
+  git:
+    depth: 1
+    repo: https://github.com/ImageMagick/ImageMagick.git
+    dest: "{{ root_dir }}/ImageMagick"
+
+- name: Configure ImageMagick
+  command: ./configure --with-modules
+  args:
+    chdir: "{{ root_dir }}/ImageMagick"
+
+- name: Build ImageMagick
+  command: make -j2
+  args:
+    chdir: "{{ root_dir }}/ImageMagick"
+
+- name: Install ImageMagick
+  command: make install
+  args:
+    chdir: "{{ root_dir }}/ImageMagick"
+  become: true
+
+- name: Run ldconfig
+  command: ldconfig
+  become: true
+
 # vips
 - name: Download vips
   command: >-
