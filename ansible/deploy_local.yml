@@ -37,7 +37,7 @@
     girder_root: "{{ root_dir }}/girder"
     worker_exec_user: "{{ lookup('env', 'GIRDER_EXEC_USER') }}"
     worker_exec_group: girder
-    mongo_private_ip: localhost
+    mongo_private_ip: 127.0.0.1
     mq_private_ip: localhost
     girder_api_url: http://localhost:8080/api/v1
     mongo_girder_database: girder
