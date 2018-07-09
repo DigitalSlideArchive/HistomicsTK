@@ -84,7 +84,7 @@ class ReinhardNormalizationTest(base.TestCase):
 
         # create dask client
         args = {
-            'scheduler_address': None,
+            'scheduler': None,
             'num_workers': -1,
             'num_threads_per_worker': 1,
         }
@@ -116,7 +116,7 @@ class BackgroundIntensityTest(base.TestCase):
 
         # create dask client
         args = {
-            'scheduler_address': None,
+            'scheduler': None,
             'num_workers': -1,
             'num_threads_per_worker': 1,
         }

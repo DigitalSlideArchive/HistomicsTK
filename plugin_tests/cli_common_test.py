@@ -140,7 +140,7 @@ class CliCommonTest(base.TestCase):
             'min_nucleus_area': 25,
             'local_max_search_radius': 8,
 
-            'scheduler_address': None,
+            'scheduler': None,
             'num_workers': -1,
             'num_threads_per_worker': 1,
         }

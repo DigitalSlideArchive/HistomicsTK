@@ -209,14 +209,14 @@ def create_dask_client(args):
     """Create and install a Dask distributed client using args from a
     Namespace, supporting the following attributes:
 
-    - .scheduler_address: Address of the distributed scheduler, or the
+    - .scheduler: Address of the distributed scheduler, or the
       empty string to start one locally
 
     """
     import dask
-    scheduler_address = args.scheduler_address
+    scheduler = args.scheduler
 
-    if scheduler_address in ('thread', 'threaded', 'threads'):
+    if scheduler == 'multithreading':
         import dask.threaded
         from multiprocessing.pool import ThreadPool
 
@@ -230,7 +230,7 @@ def create_dask_client(args):
         dask.set_options(get=dask.threaded.get)
         return
 
-    if scheduler_address in ('multi', 'multiprocessing', 'process'):
+    if scheduler == 'multiprocessing':
         import dask.multiprocessing
         import multiprocessing
 
@@ -247,7 +247,7 @@ def create_dask_client(args):
         return
 
     import dask.distributed
-    if not scheduler_address:
+    if not scheduler:
 
         if args.num_workers <= 0:
             num_workers = max(
@@ -259,7 +259,7 @@ def create_dask_client(args):
 
         print('Creating dask LocalCluster with %d worker(s), %d thread(s) per '
               'worker' % (num_workers, args.num_threads_per_worker))
-        scheduler_address = dask.distributed.LocalCluster(
+        scheduler = dask.distributed.LocalCluster(
             ip='0.0.0.0',  # Allow reaching the diagnostics port externally
             scheduler_port=0,  # Don't expose the scheduler port
             n_workers=num_workers,
@@ -268,7 +268,7 @@ def create_dask_client(args):
             silence_logs=False
         )
 
-    return dask.distributed.Client(scheduler_address)
+    return dask.distributed.Client(scheduler)
 
 
 def get_region_dict(region, maxRegionSize=None, tilesource=None):
