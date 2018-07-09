@@ -1,11 +1,9 @@
 from datetime import timedelta
-
+import psutil
 import numpy as np
 import scipy as sp
 import skimage.measure
 import skimage.morphology
-import multiprocessing
-import dask.distributed
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.filters.shape as htk_shape_filters
@@ -211,22 +209,66 @@ def create_dask_client(args):
     """Create and install a Dask distributed client using args from a
     Namespace, supporting the following attributes:
 
-    - .scheduler_address: Address of the distributed scheduler, or the
+    - .scheduler: Address of the distributed scheduler, or the
       empty string to start one locally
 
     """
-    scheduler_address = args.scheduler_address
+    import dask
+    scheduler = args.scheduler
 
-    if not scheduler_address:
+    if scheduler == 'multithreading':
+        import dask.threaded
+        from multiprocessing.pool import ThreadPool
 
-        scheduler_address = dask.distributed.LocalCluster(
+        if args.num_threads_per_worker <= 0:
+            num_workers = max(
+                1, psutil.cpu_count(logical=False) + args.num_threads_per_worker)
+        else:
+            num_workers = args.num_threads_per_worker
+        print('Starting dask thread pool with %d thread(s)' % num_workers)
+        dask.set_options(pool=ThreadPool(num_workers))
+        dask.set_options(get=dask.threaded.get)
+        return
+
+    if scheduler == 'multiprocessing':
+        import dask.multiprocessing
+        import multiprocessing
+
+        dask.set_options(get=dask.multiprocessing.get)
+        if args.num_workers <= 0:
+            num_workers = max(
+                1, psutil.cpu_count(logical=False) + args.num_workers)
+        else:
+            num_workers = args.num_workers
+
+        print('Starting dask multiprocessing pool with %d worker(s)' % num_workers)
+        dask.set_options(pool=multiprocessing.Pool(
+            num_workers, initializer=dask.multiprocessing.initialize_worker_process))
+        return
+
+    import dask.distributed
+    if not scheduler:
+
+        if args.num_workers <= 0:
+            num_workers = max(
+                1, psutil.cpu_count(logical=False) + args.num_workers)
+        else:
+            num_workers = args.num_workers
+        num_threads_per_worker = (
+            args.num_threads_per_worker if args.num_threads_per_worker >= 1 else None)
+
+        print('Creating dask LocalCluster with %d worker(s), %d thread(s) per '
+              'worker' % (num_workers, args.num_threads_per_worker))
+        scheduler = dask.distributed.LocalCluster(
             ip='0.0.0.0',  # Allow reaching the diagnostics port externally
             scheduler_port=0,  # Don't expose the scheduler port
-            n_workers=multiprocessing.cpu_count()-1,
+            n_workers=num_workers,
+            memory_limit=0,
+            threads_per_worker=num_threads_per_worker,
             silence_logs=False
         )
 
-    return dask.distributed.Client(scheduler_address)
+    return dask.distributed.Client(scheduler)
 
 
 def get_region_dict(region, maxRegionSize=None, tilesource=None):

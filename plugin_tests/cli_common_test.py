@@ -140,7 +140,9 @@ class CliCommonTest(base.TestCase):
             'min_nucleus_area': 25,
             'local_max_search_radius': 8,
 
-            'scheduler_address': None
+            'scheduler': None,
+            'num_workers': -1,
+            'num_threads_per_worker': 1,
         }
 
         args = collections.namedtuple('Parameters', args.keys())(**args)
@@ -181,7 +183,7 @@ class CliCommonTest(base.TestCase):
         # compute tile foreground fraction
         tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
             wsi_path, im_fgnd_mask_lres, fgnd_seg_scale,
-            **it_kwargs
+            it_kwargs
         )
 
         num_fgnd_tiles = np.count_nonzero(

@@ -19,12 +19,17 @@
 
 from tests import base
 
+import sys
+import collections
 import numpy as np
 import os
 import skimage.io
 
 from histomicstk.preprocessing import color_conversion as htk_cvt
 from histomicstk.preprocessing import color_normalization as htk_cn
+
+sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../server')))
+from cli_common import utils as cli_utils  # noqa
 
 
 # boiler plate to start and stop the server if needed
@@ -77,6 +82,18 @@ class ReinhardNormalizationTest(base.TestCase):
 
         np.random.seed(1)
 
+        # create dask client
+        args = {
+            'scheduler': None,
+            'num_workers': -1,
+            'num_threads_per_worker': 1,
+        }
+
+        args = collections.namedtuple('Parameters', args.keys())(**args)
+
+        cli_utils.create_dask_client(args)
+
+        # compute reinhard stats
         wsi_mean, wsi_stddev = htk_cn.reinhard_stats(
             wsi_path, 0.1, 20)
 
@@ -97,6 +114,18 @@ class BackgroundIntensityTest(base.TestCase):
 
         np.random.seed(1)
 
+        # create dask client
+        args = {
+            'scheduler': None,
+            'num_workers': -1,
+            'num_threads_per_worker': 1,
+        }
+
+        args = collections.namedtuple('Parameters', args.keys())(**args)
+
+        cli_utils.create_dask_client(args)
+
+        # compute background intensity
         I_0 = htk_cn.background_intensity(wsi_path,
                                           sample_approximate_total=5000)
 

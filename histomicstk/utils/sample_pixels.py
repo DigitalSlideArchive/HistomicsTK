@@ -1,4 +1,5 @@
 import dask
+import dask.distributed
 import large_image
 import numpy as np
 import scipy
@@ -80,20 +81,30 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
         total_fgnd_pixels = np.count_nonzero(im_fgnd_mask_lres) * scale_ratio ** 2
         sample_fraction = sample_approximate_total / total_fgnd_pixels
 
+    # broadcasting fgnd mask to all dask workers
+    try:
+        c = dask.distributed.get_client()
+
+        [im_fgnd_mask_lres] = c.scatter([im_fgnd_mask_lres],
+                                        broadcast=True)
+    except ValueError:
+        pass
+
     # generate sample pixels
     sample_pixels = []
 
     iter_args = dict(scale=dict(magnification=magnification),
                      format=large_image.tilesource.TILE_FORMAT_NUMPY)
 
-    im_fgnd_mask_lres = dask.delayed(im_fgnd_mask_lres)
-
     total_tiles = ts.getSingleTile(**iter_args)['iterator_range']['position']
+
     for position in range(0, total_tiles, tile_grouping):
+
         sample_pixels.append(dask.delayed(_sample_pixels_tile)(
             slide_path, iter_args,
             (position, min(tile_grouping, total_tiles - position)),
-            sample_fraction, tissue_seg_mag, min_coverage, im_fgnd_mask_lres))
+            sample_fraction, tissue_seg_mag, min_coverage,
+            im_fgnd_mask_lres))
 
     # concatenate pixel values in list
     if sample_pixels:
