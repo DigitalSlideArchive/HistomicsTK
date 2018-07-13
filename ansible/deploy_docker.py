@@ -747,7 +747,7 @@ def tag_with_version(key, version=None, **kwargs):
     return image
 
 
-def wait_for_girder(client, ctn, maxWait=300):
+def wait_for_girder(client, ctn, maxWait=3600):
     """
     Wait for Girder in a specific container to respond with its current
     version.
@@ -779,7 +779,9 @@ def wait_for_girder(client, ctn, maxWait=300):
         sys.stdout.flush()
     if not output:
         raise Exception('Girder never responded')
-    sys.stdout.write(' %s\n' % output['apiVersion'])
+    else:
+        sys.stdout.write(' %s\n' % output['apiVersion'])
+        sys.stdout.write('Took {} seconds\n'.format(time.time() - starttime))
 
 
 if __name__ == '__main__':
