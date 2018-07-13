@@ -15,7 +15,7 @@ from cli_common import utils  # noqa
 def main(args):
     utils.create_dask_client(args)
     ts = large_image.getTileSource(args.inputImageFile)
-    make_label_image = args.outputLabelImage is not None
+    make_label_image = getattr(args, 'outputLabelImage', None) is not None
     region = utils.get_region_dict(
         args.region,
         *(args.maxRegionSize, ts) if make_label_image else ()
@@ -37,7 +37,13 @@ def main(args):
         color_map[ppc.Labels.STRONG] = 180, 4, 38
         # Cleverly index color_map
         label_image = color_map[label_image]
-        skimage.io.imsave(args.outputLabelImage, label_image)
+        try:
+            skimage.io.imsave(args.outputLabelImage, label_image)
+        except ValueError:
+            # This is likely caused by an unknown extension, so try again
+            altname = args.outputLabelImage + '.png'
+            skimage.io.imsave(altname, label_image)
+            os.rename(altname, args.outputLabelImage)
     else:
         stats, = results
     with open(args.returnParameterFile, 'w') as f:
