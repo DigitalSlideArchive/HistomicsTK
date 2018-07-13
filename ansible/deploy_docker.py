@@ -779,9 +779,8 @@ def wait_for_girder(client, ctn, maxWait=3600):
         sys.stdout.flush()
     if not output:
         raise Exception('Girder never responded')
-    else:
-        sys.stdout.write(' %s\n' % output['apiVersion'])
-        sys.stdout.write('Took {} seconds\n'.format(time.time() - starttime))
+    sys.stdout.write(' %s\n' % output['apiVersion'])
+    sys.stdout.write('Took {} seconds\n'.format(time.time() - starttime))
 
 
 if __name__ == '__main__':
