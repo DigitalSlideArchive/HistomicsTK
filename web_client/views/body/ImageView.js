@@ -295,14 +295,16 @@ var ImageView = View.extend({
                         var analysis = _.last(router.getQuery('analysis').split('/'));
                         var extension = (model.get('extensions') || '').split('|')[0];
                         var name = `${analysis}-${model.id}${extension}`;
-                        model.set({
-                            path: [folder.get('name'), name],
-                            parent: folder,
-                            value: new ItemModel({
-                                name,
-                                folderId: folder.id
-                            })
-                        });
+                        if (model.get('required') !== false) {
+                            model.set({
+                                path: [folder.get('name'), name],
+                                parent: folder,
+                                value: new ItemModel({
+                                    name,
+                                    folderId: folder.id
+                                })
+                            });
+                        }
                     }
                 );
             }

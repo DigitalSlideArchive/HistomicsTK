@@ -23,42 +23,49 @@
       <label>Hue Value</label>
       <index>1</index>
       <description>Center of the hue range in HSI space for the positive color, in the range [0, 1]</description>
+      <default>0.83</default>
     </float>
     <float>
       <name>hue_width</name>
       <label>Hue Width</label>
       <index>2</index>
       <description>Width of the hue range in HSI space</description>
+      <default>0.15</default>
     </float>
     <float>
       <name>saturation_minimum</name>
       <label>Minimum Saturation</label>
       <index>3</index>
       <description>Minimum saturation of positive pixels in HSI space, in the range [0, 1]</description>
+      <default>0.05</default>
     </float>
     <float>
       <name>intensity_upper_limit</name>
       <label>Upper Intensity Limit</label>
       <index>4</index>
       <description>Intensity threshold in HSI space above which a pixel is considered negative, in the range [0, 1]</description>
+      <default>0.95</default>
     </float>
     <float>
       <name>intensity_weak_threshold</name>
       <label>Intensity Threshold for Weak Pixels</label>
       <index>5</index>
       <description>Intensity threshold in HSI space that separates weak-positive pixels (above) from plain positive pixels (below)</description>
+      <default>0.65</default>
     </float>
     <float>
       <name>intensity_strong_threshold</name>
       <label>Intensity Threshold for Strong Pixels</label>
       <index>6</index>
       <description>Intensity threshold in HSI space that separates plain positive pixels (above) from strong positive pixels (below)</description>
+      <default>0.35</default>
     </float>
     <float>
       <name>intensity_lower_limit</name>
       <label>Lower Intensity Limit</label>
       <index>7</index>
       <description>Intensity threshold in HSI space below which a pixel is considered negative</description>
+      <default>0.05</default>
     </float>
     <region>
       <name>region</name>
@@ -67,13 +74,15 @@
       <description>left,top,width,height of the region of interest.  All -1 means the whole image is used.</description>
       <default>-1,-1,-1,-1</default>
     </region>
-    <image>
+    <image fileExtensions=".png">
+      <name>outputLabelImage</name>
       <longflag>outputLabelImage</longflag>
       <label>Output Label Image</label>
       <description>Color-coded image of the region, showing the various classes of pixel</description>
       <channel>output</channel>
     </image>
     <integer>
+      <name>maxRegionSize</name>
       <longflag>maxRegionSize</longflag>
       <label>Maximum region size</label>
       <description>Maximum width and height allowed when processing an image, in order to prevent accidentally running on too large a region.  Use -1 for no limit</description>
