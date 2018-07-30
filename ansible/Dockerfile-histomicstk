@@ -41,7 +41,7 @@ RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=h
                 /opt/histomicstk/openslide-* \
                 /opt/histomicstk/tiff-* \
                 /opt/histomicstk/vips-* \
-                /opt/histomicstk/ImageMagick-* \
+                /opt/histomicstk/ImageMagick* \
                 /opt/histomicstk/HistomicsTK/_skbuild \
                 /opt/histomicstk/large_image/build \
                 /root/.cache/pip
