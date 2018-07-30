@@ -4,9 +4,11 @@ import argparse
 import collections
 import docker
 import getpass
+import gzip
 import json
 import os
 import six
+import socket
 import sys
 import tarfile
 import time
@@ -70,7 +72,7 @@ def config_mounts(mounts, config):
         config['binds'].append(':'.join(mountParts))
 
 
-def containers_provision(**kwargs):
+def containers_provision(**kwargs):  # noqa
     """
     Provision or reprovision the containers.
     """
@@ -117,8 +119,11 @@ def containers_provision(**kwargs):
         try:
             cmd = client.exec_create(
                 container=ctn.get('Id'), cmd=exec_command, tty=True)
-            for output in client.exec_start(cmd.get('Id'), stream=True):
-                print(convert_to_text(output).strip())
+            try:
+                for output in client.exec_start(cmd.get('Id'), stream=True):
+                    print(convert_to_text(output).strip())
+            except socket.error:
+                pass
             cmd = client.exec_inspect(cmd.get('Id'))
             if not cmd['ExitCode']:
                 break
@@ -622,7 +627,14 @@ def merge_configuration(client, ctn, conf, **kwargs):
     cfgPath = '/opt/histomicstk/girder/girder/conf'
     cfgName = 'girder.local.cfg'
     tarStream, stat = client.get_archive(ctn, cfgPath + '/' + cfgName)
-    tarStream = six.BytesIO(tarStream.read())
+    if hasattr(tarStream, 'read'):
+        tarData = tarStream.read()
+    else:
+        tarData = b''.join([part for part in tarStream])
+    # Check if this is actually gzipped and uncompress it
+    if tarData[:2] == b'\x1f\x8b':
+        tarData = gzip.GzipFile(fileobj=six.BytesIO(tarData)).read()
+    tarStream = six.BytesIO(tarData)
     tar = tarfile.TarFile(mode='r', fileobj=tarStream)
     parser = six.moves.configparser.SafeConfigParser()
     cfgFile = six.StringIO(convert_to_text(tar.extractfile(cfgName).read()))
