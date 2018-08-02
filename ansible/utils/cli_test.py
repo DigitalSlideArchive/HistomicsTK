@@ -132,6 +132,11 @@ def test_cli(client, folder, opts):
         opts['cli'].replace('/', '_').replace(':', '_'), )
     sys.stdout.write('Running %s ' % opts['cli'])
     sys.stdout.flush()
+    anList = client.get('annotation', parameters={
+        'itemId': testItem['_id'], 'sort': '_id', 'sortdir': -1, 'limit': 1})
+    lastOldAnnotId = None
+    if len(anList):
+        lastOldAnnotId = anList[0]['_id']
     memory_use = get_memory_use(client)
     starttime = time.time()
     region = '[15000,15000,1000,1000]'
@@ -144,7 +149,7 @@ def test_cli(client, folder, opts):
         region = '[%d,%d,%d,%d]' % (random.randint(0, w - rw), random.randint(0, h - rh), rw, rh)
     if opts.get('noregion'):
         region = '[-1,-1,-1,-1]'
-    job = client.post(path, data={
+    data = {
         'inputImageFile_girderFileId': localFile['_id'],
         'outputNucleiAnnotationFile_girderFolderId': folder['_id'],
         'outputNucleiAnnotationFile_name': 'cli_test.anot',
@@ -164,17 +169,31 @@ def test_cli(client, folder, opts):
         # 'min_radius': '6',
         # 'num_workers': -1,
         # 'num_threads_per_worker': 1,
-    })
+    }
+    if opts.get('testarg') and len(opts.get('testarg')):
+        testarg = {val.split('=', 1)[0]: val.split('=', 1)[1] for val in opts['testarg']}
+        data.update(testarg)
+    if opts.get('verbose', 0) >= 1:
+        sys.stdout.write('%r\n' % data)
+    job = client.post(path, data=data)
     job, peak_memory = wait_for_job(client, job)
-    anList = client.get('annotation', parameters={
-        'itemId': testItem['_id'], 'sort': '_id', 'sortdir': -1, 'limit': 1})
-    annot = client.get('annotation/%s' % anList[0]['_id'])
-    if len(annot['annotation']['elements']) < 100:
-        raise Exception('Got less than 100 annotation elements (%d)' % len(
-            annot['annotation']['elements']))
     runtime = time.time() - starttime
-    sys.stdout.write('Total time: %5.3f, Max memory delta: %d bytes\n' % (
-        runtime, peak_memory - memory_use))
+    # Wait for the annotation to be processed after the job finishes.
+    maxWait = time.time() + 60
+    annot = None
+    while not annot and time.time() < maxWait:
+        anList = client.get('annotation', parameters={
+            'itemId': testItem['_id'], 'sort': '_id', 'sortdir': -1, 'limit': 1})
+        if len(anList) and anList[0]['_id'] != lastOldAnnotId:
+            annot = client.get('annotation/%s' % anList[0]['_id'])
+            break
+        time.sleep(1)
+    sys.stdout.write('Total time: %5.3f, Max memory delta: %d bytes, Elements: %d\n' % (
+        runtime, peak_memory - memory_use, len(annot['annotation']['elements'])))
+    sys.stdout.flush()
+    if len(annot['annotation']['elements']) < 100:
+        raise Exception('Got less than 100 annotation elements (%d) from annotation %s' % (
+            len(annot['annotation']['elements']), anList[0]['_id']))
 
 
 def test_tiles(client, folder, opts):
@@ -253,14 +272,17 @@ if __name__ == '__main__':
         '--test', action='store_true', default=False,
         help='Download test data and check that basic functions work.')
     parser.add_argument(
-        '--test-local', '--local-test', action='store_const', dest='test',
-        const='local',
+        '--test-local', '--local-test', '--local', action='store_const',
+        dest='test', const='local',
         help='Use local test data and check that basic functions work.')
     parser.add_argument(
         '--no-test', action='store_false', dest='test',
         help='Don\'t download test data and don\'t run checks.')
     parser.add_argument(
         '--test-id', dest='testid', help='The ID of the item to test.')
+    parser.add_argument(
+        '--test-arg', '--arg', '--testarg', dest='testarg', action='append',
+        help='Test arguments.  These should be of the form <key>=<value>.')
     parser.add_argument('--verbose', '-v', action='count', default=0)
 
     args = parser.parse_args()
