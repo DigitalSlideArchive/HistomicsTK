@@ -933,11 +933,15 @@ $(function () {
                     map: {x: 50, y: 50},
                     button: 'right'
                 });
-                expect($('#h-annotation-context-menu').hasClass('hidden')).toBe(false);
-                $(document).trigger('mousedown');
-                $(document).trigger('mouseup');
 
-                expect($('#h-annotation-context-menu').hasClass('hidden')).toBe(true);
+                waitsFor(function () {
+                    return $('#h-annotation-context-menu').hasClass('hidden') === false;
+                }, 'context menu to be shown');
+                runs(function () {
+                    $(document).trigger('mousedown');
+                    $(document).trigger('mouseup');
+                    expect($('#h-annotation-context-menu').hasClass('hidden')).toBe(true);
+                });
             });
 
             it('delete an element from the context menu', function () {
@@ -950,10 +954,14 @@ $(function () {
                     map: {x: 50, y: 50},
                     button: 'right'
                 });
-                expect($('#h-annotation-context-menu').hasClass('hidden')).toBe(false);
-                $('#h-annotation-context-menu .h-remove-elements').click();
 
-                expect($('#h-annotation-context-menu').hasClass('hidden')).toBe(true);
+                waitsFor(function () {
+                    return $('#h-annotation-context-menu').hasClass('hidden') === false;
+                }, 'context menu to be shown');
+                runs(function () {
+                    $('#h-annotation-context-menu .h-remove-elements').click();
+                    expect($('#h-annotation-context-menu').hasClass('hidden')).toBe(true);
+                });
             });
 
             it('open a different image', function () {

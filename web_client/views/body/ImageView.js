@@ -622,14 +622,18 @@ var ImageView = View.extend({
             return;
         }
 
-        this._editAnnotation(annotation);
-        const menu = this.$('#h-annotation-context-menu');
-        const position = evt.mouse.page;
-        menu.removeClass('hidden');
-        menu.css({ left: position.x, top: position.y });
-        this.popover.collection.reset();
-        this._contextMenuActive = true;
-        this.contextMenu.setHovered(element, annotation);
+        // Defer the context menu action into the next animation frame
+        // to work around a problem with preventDefault on Windows
+        window.setTimeout(() => {
+            this._editAnnotation(annotation);
+            const menu = this.$('#h-annotation-context-menu');
+            const position = evt.mouse.page;
+            menu.removeClass('hidden');
+            menu.css({ left: position.x, top: position.y });
+            this.popover.collection.reset();
+            this._contextMenuActive = true;
+            this.contextMenu.setHovered(element, annotation);
+        }, 1);
     },
 
     _closeContextMenu() {
