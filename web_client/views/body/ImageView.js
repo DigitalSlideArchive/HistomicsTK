@@ -622,6 +622,7 @@ var ImageView = View.extend({
             return;
         }
 
+        this._editAnnotation(annotation);
         const menu = this.$('#h-annotation-context-menu');
         const position = evt.mouse.page;
         menu.removeClass('hidden');
