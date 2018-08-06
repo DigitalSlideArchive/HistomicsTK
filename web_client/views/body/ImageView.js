@@ -3,6 +3,7 @@ import _ from 'underscore';
 
 import { restRequest } from 'girder/rest';
 import { getCurrentUser } from 'girder/auth';
+import { AccessType } from 'girder/constants';
 import ItemModel from 'girder/models/ItemModel';
 import FileModel from 'girder/models/FileModel';
 import FolderCollection from 'girder/collections/FolderCollection';
@@ -11,6 +12,7 @@ import SlicerPanelGroup from 'girder_plugins/slicer_cli_web/views/PanelGroup';
 import AnnotationModel from 'girder_plugins/large_image/models/AnnotationModel';
 import AnnotationCollection from 'girder_plugins/large_image/collections/AnnotationCollection';
 
+import AnnotationContextMenu from '../popover/AnnotationContextMenu';
 import AnnotationPopover from '../popover/AnnotationPopover';
 import AnnotationSelector from '../../panels/AnnotationSelector';
 import ZoomWidget from '../../panels/ZoomWidget';
@@ -24,9 +26,11 @@ import '../../stylesheets/body/image.styl';
 
 var ImageView = View.extend({
     events: {
-        'keydown .h-image-body': '_onKeyDown'
+        'keydown .h-image-body': '_onKeyDown',
+        'keydown .geojs-map': '_handleKeyDown'
     },
     initialize(settings) {
+        window.view = this;
         this.viewerWidget = null;
         this._openId = null;
         this._displayedRegion = null;
@@ -56,6 +60,10 @@ var ImageView = View.extend({
         this.popover = new AnnotationPopover({
             parentView: this
         });
+        this.contextMenu = new AnnotationContextMenu({
+            parentView: this,
+            collection: this.annotations
+        });
 
         this.listenTo(events, 'h:submit', (data) => {
             this.$('.s-jobs-panel .s-panel-controls .icon-down-open').click();
@@ -69,10 +77,24 @@ var ImageView = View.extend({
         this.listenTo(this.annotationSelector, 'h:deleteAnnotation', this._deleteAnnotation);
         this.listenTo(this.annotationSelector, 'h:annotationOpacity', this._setAnnotationOpacity);
         this.listenTo(this, 'h:highlightAnnotation', this._highlightAnnotation);
+        this.listenTo(this.contextMenu, 'h:redraw', this._redrawAnnotation);
+        this.listenTo(this.contextMenu, 'h:close', this._closeContextMenu);
 
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
         this.listenTo(events, 'g:login g:logout.success g:logout.error', () => {
             this._openId = null;
+        });
+        $(document).on('mousedown.h-image-view', (evt) => {
+            // let the context menu close itself
+            if ($(evt.target).parents('#h-annotation-context-menu').length) {
+                return;
+            }
+            this._closeContextMenu();
+        });
+        $(document).on('keydown.h-image-view', (evt) => {
+            if (evt.keyCode === 27) {
+                this._closeContextMenu();
+            }
         });
         this.render();
     },
@@ -88,6 +110,8 @@ var ImageView = View.extend({
             return;
         }
         this.$el.html(imageTemplate());
+        this.contextMenu.setElement(this.$('#h-annotation-context-menu')).render();
+
         if (this.model.id) {
             this._openId = this.model.id;
             if (this.viewerWidget) {
@@ -178,6 +202,7 @@ var ImageView = View.extend({
         }
         this.viewerWidget = null;
         events.trigger('h:imageOpened', null);
+        $(document).off('.h-image-view');
         return View.prototype.destroy.apply(this, arguments);
     },
     openImage(id) {
@@ -381,7 +406,7 @@ var ImageView = View.extend({
     },
 
     _highlightAnnotation(annotation, element) {
-        if (!this.annotationSelector.interactiveMode()) {
+        if (!this.annotationSelector.interactiveMode() && !this._contextMenuActive) {
             return;
         }
         this.viewerWidget.highlightAnnotation(annotation, element);
@@ -515,7 +540,10 @@ var ImageView = View.extend({
         this.popover.collection.reset();
     },
 
-    mouseClickAnnotation(/* element, annotationId */) {
+    mouseClickAnnotation(element, annotationId, evt) {
+        if (evt.mouse.buttonsDown.right) {
+            this._rightClickElement(element, this.annotations.get(annotationId), evt);
+        }
     },
 
     toggleLabels(options) {
@@ -587,6 +615,35 @@ var ImageView = View.extend({
         } else {
             this.annotationSelector.showAllAnnotations();
         }
+    },
+
+    _rightClickElement(element, annotation, evt) {
+        if (annotation.get('_accessLevel') < AccessType.WRITE) {
+            return;
+        }
+
+        // Defer the context menu action into the next animation frame
+        // to work around a problem with preventDefault on Windows
+        window.setTimeout(() => {
+            this._editAnnotation(annotation);
+            const menu = this.$('#h-annotation-context-menu');
+            const position = evt.mouse.page;
+            menu.removeClass('hidden');
+            menu.css({ left: position.x, top: position.y });
+            this.popover.collection.reset();
+            this._contextMenuActive = true;
+            this.contextMenu.setHovered(element, annotation);
+        }, 1);
+    },
+
+    _closeContextMenu() {
+        if (!this._contextMenuActive) {
+            return;
+        }
+        this.$('#h-annotation-context-menu').addClass('hidden');
+        this.popover.collection.reset();
+        this.contextMenu.reset();
+        this._contextMenuActive = false;
     }
 });
 
