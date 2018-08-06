@@ -16,7 +16,7 @@ block content
         - var text = 'Fit';
         - val = Math.pow(2, min);
       .btn-group
-        button.btn.btn-default.h-zoom-button(type="button", data-value=val) #{text}
+        button.btn.btn-default.h-zoom-button(type="button", data-value=val, class={'btn-sm': val > maxNaturalMag}) #{text}
   .h-download-button-container
     a#download-view-link.h-download-link
       button.btn-default.h-download-button.h-download-button-view(type="button", data-toggle="tooltip", title="Download current view")
