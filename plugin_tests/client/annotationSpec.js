@@ -923,6 +923,47 @@ $(function () {
                 });
             });
 
+            it('open and close the context menu', function () {
+                var interactor = histomicsTest.geojsMap().interactor();
+                interactor.simulateEvent('mousedown', {
+                    map: {x: 50, y: 50},
+                    button: 'right'
+                });
+                interactor.simulateEvent('mouseup', {
+                    map: {x: 50, y: 50},
+                    button: 'right'
+                });
+
+                waitsFor(function () {
+                    return $('#h-annotation-context-menu').hasClass('hidden') === false;
+                }, 'context menu to be shown');
+                runs(function () {
+                    $(document).trigger('mousedown');
+                    $(document).trigger('mouseup');
+                    expect($('#h-annotation-context-menu').hasClass('hidden')).toBe(true);
+                });
+            });
+
+            it('delete an element from the context menu', function () {
+                var interactor = histomicsTest.geojsMap().interactor();
+                interactor.simulateEvent('mousedown', {
+                    map: {x: 50, y: 50},
+                    button: 'right'
+                });
+                interactor.simulateEvent('mouseup', {
+                    map: {x: 50, y: 50},
+                    button: 'right'
+                });
+
+                waitsFor(function () {
+                    return $('#h-annotation-context-menu').hasClass('hidden') === false;
+                }, 'context menu to be shown');
+                runs(function () {
+                    $('#h-annotation-context-menu .h-remove-elements').click();
+                    expect($('#h-annotation-context-menu').hasClass('hidden')).toBe(true);
+                });
+            });
+
             it('open a different image', function () {
                 histomicsTest.waitsForPromise(
                     histomicsTest.openImage('copy').done(function () {
