@@ -35,6 +35,9 @@ var ImageView = View.extend({
         this._openId = null;
         this._displayedRegion = null;
 
+        // Allow zooming this many powers of 2 more than native pixel resolution
+        this._increaseZoom2x = 1;
+
         if (!this.model) {
             this.model = new ItemModel();
         }
@@ -147,6 +150,8 @@ var ImageView = View.extend({
                 this.setBoundsQuery();
 
                 if (this.viewer) {
+                    this.viewer.zoomRange({max: this.viewer.zoomRange().max + this._increaseZoom2x});
+
                     // update the query string on pan events
                     this.viewer.geoOn(geo.event.pan, () => {
                         this.setBoundsQuery();
@@ -259,7 +264,8 @@ var ImageView = View.extend({
             return restRequest({
                 url: 'item/' + itemId + '/tiles'
             }).then((tiles) => {
-                this.zoomWidget.setMaxMagnification(tiles.magnification || 20);
+                this.zoomWidget.setMaxMagnification(tiles.magnification || 20, this._increaseZoom2x);
+                this.zoomWidget.render();
                 return null;
             });
         };

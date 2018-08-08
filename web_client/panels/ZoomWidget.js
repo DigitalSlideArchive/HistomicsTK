@@ -66,9 +66,9 @@ var ZoomWidget = Panel.extend({
         max = Math.log2(this._maxMag) + 0.01;
 
         // get a list of discrete values to show as buttons
-        buttons = _.filter([1, 2.5, 5, 10, 20, 40], (v) => v <= this._maxMag);
-        buttons = _.last(buttons, 5);
-        buttons = [0].concat(buttons);
+        buttons = _.filter([1, 2.5, 5, 10, 20, 40, 80, 160], (v) => v <= this._maxMag);
+        buttons = _.last(buttons, 6);
+        buttons = buttons !== undefined ? [0].concat(buttons) : [0];
 
         this.$el.html(zoomWidget({
             id: 'zoom-panel-container',
@@ -77,6 +77,7 @@ var ZoomWidget = Panel.extend({
             title_download_area: 'Download Area',
             min: min,
             max: max,
+            maxNaturalMag: this._maxNaturalMag + 0.01,
             step: 0.01,
             value: Math.log2(value),
             disabled: !this.renderer,
@@ -117,8 +118,10 @@ var ZoomWidget = Panel.extend({
      * Set the native magnification from the current image.  This
      * is given in the /item/{id}/tiles endpoint from large_image.
      */
-    setMaxMagnification(magnification) {
-        this._maxMag = magnification;
+    setMaxMagnification(magnification, increase) {
+        this._increaseZoom2x = increase || 0;
+        this._maxNaturalMag = magnification;
+        this._maxMag = magnification * Math.pow(2, this._increaseZoom2x);
     },
 
     /**
