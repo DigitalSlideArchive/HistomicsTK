@@ -174,11 +174,28 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
         cur_points = np.zeros((num_points, 3))
         cur_points[:, 0] = np.round(gx + bx[i] * wfrac, 2)
         cur_points[:, 1] = np.round(gy + by[i] * hfrac, 2)
+        cur_points = cur_points.tolist()
+
+        # Remove colinear points, including where the line backs on itself
+        pos = 0
+        while pos < len(cur_points) and len(cur_points) >= 3:
+            p = cur_points[pos][:2]
+            q = cur_points[(pos + 1) % len(cur_points)][:2]
+            r = cur_points[(pos + len(cur_points) - 1) % len(cur_points)][:2]
+            qp = np.array(q) - np.array(p)
+            pr = np.array(p) - np.array(r)
+            ang = np.math.atan2(np.linalg.det([qp, pr]), np.dot(qp, pr))
+            if ang == 0 or ang == np.math.pi:
+                del cur_points[pos]
+            else:
+                pos += 1
+        if len(cur_points) < 3:
+            continue
 
         # create annotation json
         cur_annot = {
             "type": "polyline",
-            "points": cur_points.tolist(),
+            "points": cur_points,
             "closed": True,
             "fillColor": "rgba(0,0,0,0)",
             "lineColor": "rgb(0,255,0)"
