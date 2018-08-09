@@ -29,6 +29,8 @@ RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
     # fails twice then there is a real issue.
     pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir 'bokeh>=0.12.14' && \
+    # Ensure we have the latest libtif
+    pip install --force-reinstall --ignore-installed --upgrade 'git+https://github.com/manthey/pylibtiff@0d89ae2edd37db6c84d0add7ba89ad4b87a0f4e9' && \
     # Install large_image
     pip install --no-cache-dir 'git+https://github.com/girder/large_image#egg=large_image[openslide,memcached]' && \
     # Ensure we have a locally built Pillow and openslide in conda's environment
