@@ -24,7 +24,7 @@ const MAX_ELEMENTS_LIST_LENGTH = 5000;
  */
 var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
-        'click .h-annotation-name': 'editAnnotation',
+        'click .h-annotation-name': '_editAnnotation',
         'click .h-toggle-annotation': 'toggleAnnotation',
         'click .h-delete-annotation': 'deleteAnnotation',
         'click .h-create-annotation': 'createAnnotation',
@@ -54,7 +54,7 @@ var AnnotationSelector = Panel.extend({
         this.listenTo(this.collection, 'change:highlight', this._changeAnnotationHighlight);
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
         this.listenTo(eventStream, 'g:eventStream.start', this._refreshAnnotations);
-        this.listenTo(this.collection, 'change:annotation', this._saveAnnotation);
+        this.listenTo(this.collection, 'change:annotation change:groups', this._saveAnnotation);
         this.listenTo(girderEvents, 'g:login', () => {
             this.collection.reset();
             this._parentId = undefined;
@@ -221,10 +221,12 @@ var AnnotationSelector = Panel.extend({
         return this._interactiveMode;
     },
 
-    editAnnotation(evt) {
+    _editAnnotation(evt) {
         var id = $(evt.currentTarget).parents('.h-annotation').data('id');
-        var model = this.collection.get(id);
+        this.editAnnotation(this.collection.get(id));
+    },
 
+    editAnnotation(model) {
         // deselect the annotation if it is already selected
         if (this._activeAnnotation && model && this._activeAnnotation.id === model.id) {
             this._activeAnnotation = null;

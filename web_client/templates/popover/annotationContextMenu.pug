@@ -1,3 +1,12 @@
 .list-group.h-annotation-context-menu
+  if currentGroup
+    a.h-remove-group.list-group-item(href='#')
+      span.icon-cancel
+      | Remove group
+  each group in groups
+    if group && group !== currentGroup
+      a.h-set-group.list-group-item(href='#', data-group=group)
+        span.icon-right-big
+        = group
   a.list-group-item.h-remove-elements(href='#')
-    | Delete element
+    | #[span.icon-trash] Delete
