@@ -6,7 +6,8 @@ from ._trace_object_boundaries_cython import _trace_object_boundaries_cython
 
 def trace_object_boundaries(im_label,
                             conn=4, trace_all=False,
-                            x_start=None, y_start=None, max_length=None):
+                            x_start=None, y_start=None,
+                            max_length=None, eps_colinear_area=1.0):
     """Performs exterior boundary tracing of one or more objects in a label
     mask. If a starting point is not provided then a raster scan will be performed
     to identify the starting pixel.
@@ -28,6 +29,9 @@ def trace_object_boundaries(im_label,
     max_length : int
         Maximum boundary length to trace before terminating. Default value =
         None.
+    eps_colinear_area : int
+        Minimum area of triangle formed by three consecutive points on the
+        contour for them to be considered as non-colinear. Default value = 1
 
     Notes
     -----
@@ -93,6 +97,8 @@ def trace_object_boundaries(im_label,
             bx = bx + min_row - 1
             by = by + min_col - 1
 
+            bx, by = _remove_thin_colinear_spurs(bx, by, eps_colinear_area)
+
             X.append(bx)
             Y.append(by)
 
@@ -117,7 +123,49 @@ def trace_object_boundaries(im_label,
                 im_label, dtype=np.int), conn, x_start, y_start, max_length
         )
 
+        bx, by = _remove_thin_colinear_spurs(bx, by, eps_colinear_area)
+
         X.append(bx)
         Y.append(by)
 
     return X, Y
+
+
+def _remove_thin_colinear_spurs(px, py, eps_colinear_area=1.0):
+    """Simplifies the given list of points by removing colinear spurs
+    """
+
+    keep = []  # indices of points to keep
+
+    anchor = -1
+    testpos = 0
+
+    while testpos < len(px):
+
+        # get coords of next triplet of points to test
+        ind = [anchor, testpos, (testpos + 1) % len(px)]
+        x1, x2, x3 = px[ind]
+        y1, y2, y3 = py[ind]
+
+        # compute area of triangle formed by triplet
+        area = np.linalg.det(
+            np.array([[x1, x2, x3], [y1, y2, y3], [1, 1, 1]])
+        )
+
+        print(ind, area)
+
+        # if area > 0, add testpos to keep list and move anchor to testpos
+        if abs(area) > eps_area:
+            keep.append(testpos)  # add testpos to keep list
+            anchor = testpos  # make testpos the next anchor point
+            testpos += 1
+        else:
+            testpos += 1
+
+    if len(keep) < 2:  # degenerate case
+        keep = [0, -1]
+
+    px = px[keep]
+    py = py[keep]
+
+    return px, py
