@@ -131,7 +131,7 @@ def trace_object_boundaries(im_label,
     return X, Y
 
 
-def _remove_thin_colinear_spurs(px, py, eps_colinear_area=1.0):
+def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0.0):
     """Simplifies the given list of points by removing colinear spurs
     """
 
@@ -143,7 +143,14 @@ def _remove_thin_colinear_spurs(px, py, eps_colinear_area=1.0):
     while testpos < len(px):
 
         # get coords of next triplet of points to test
-        ind = [anchor, testpos, (testpos + 1) % len(px)]
+        if testpos == len(px) - 1:
+            if not len(keep):
+                break
+            nextpos = keep[0]
+        else:
+            nextpos = testpos + 1
+
+        ind = [anchor, testpos, nextpos]
         x1, x2, x3 = px[ind]
         y1, y2, y3 = py[ind]
 
@@ -161,9 +168,6 @@ def _remove_thin_colinear_spurs(px, py, eps_colinear_area=1.0):
             testpos += 1
         else:
             testpos += 1
-
-    if len(keep) < 2:  # degenerate case
-        keep = [0, -1]
 
     px = px[keep]
     py = py[keep]
