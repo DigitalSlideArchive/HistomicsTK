@@ -159,14 +159,15 @@ def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0.0):
             np.array([[x1, x2, x3], [y1, y2, y3], [1, 1, 1]])
         )
 
-        print(ind, area)
-
         # if area > 0, add testpos to keep list and move anchor to testpos
-        if abs(area) > eps_area:
+        if abs(area) > eps_colinear_area:
+
             keep.append(testpos)  # add testpos to keep list
-            anchor = testpos  # make testpos the next anchor point
+            anchor = testpos      # make testpos the next anchor point
             testpos += 1
+
         else:
+
             testpos += 1
 
     px = px[keep]
