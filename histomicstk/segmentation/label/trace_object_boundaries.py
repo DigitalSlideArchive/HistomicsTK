@@ -99,8 +99,9 @@ def trace_object_boundaries(im_label,
 
             bx, by = _remove_thin_colinear_spurs(bx, by, eps_colinear_area)
 
-            X.append(bx)
-            Y.append(by)
+            if len(bx) > 0:
+                X.append(bx)
+                Y.append(by)
 
     else:
 
@@ -125,8 +126,9 @@ def trace_object_boundaries(im_label,
 
         bx, by = _remove_thin_colinear_spurs(bx, by, eps_colinear_area)
 
-        X.append(bx)
-        Y.append(by)
+        if len(bx) > 0:
+            X.append(bx)
+            Y.append(by)
 
     return X, Y
 
