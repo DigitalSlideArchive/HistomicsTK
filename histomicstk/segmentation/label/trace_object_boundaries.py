@@ -7,7 +7,7 @@ from ._trace_object_boundaries_cython import _trace_object_boundaries_cython
 def trace_object_boundaries(im_label,
                             conn=4, trace_all=False,
                             x_start=None, y_start=None,
-                            max_length=None, eps_colinear_area=1.0):
+                            max_length=None, eps_colinear_area=0.01):
     """Performs exterior boundary tracing of one or more objects in a label
     mask. If a starting point is not provided then a raster scan will be performed
     to identify the starting pixel.
@@ -31,7 +31,8 @@ def trace_object_boundaries(im_label,
         None.
     eps_colinear_area : int
         Minimum area of triangle formed by three consecutive points on the
-        contour for them to be considered as non-colinear. Default value = 1
+        contour for them to be considered as non-colinear. Default value =
+        0.01.
 
     Notes
     -----
@@ -157,7 +158,7 @@ def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0.0):
         y1, y2, y3 = py[ind]
 
         # compute area of triangle formed by triplet
-        area = np.linalg.det(
+        area = 0.5 * np.linalg.det(
             np.array([[x1, x2, x3], [y1, y2, y3], [1, 1, 1]])
         )
 
