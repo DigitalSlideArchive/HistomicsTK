@@ -63,18 +63,20 @@ class TraceBoundaryTest(base.TestCase):
         ry_isbf = [7, 8, 8, 7, 6, 6, 6, 6, 6, 7, 8, 8, 7, 7, 6, 5, 4,
                    3, 3, 2, 2, 1, 2, 2, 3, 3, 4, 5, 6, 7, 7]
 
-        # refenece neighbors for moore
+        # reference neighbors for moore
         rx_moore = [1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 8, 7, 7, 7,
                     7, 6, 5, 4, 3, 3, 3, 3, 2, 1]
         ry_moore = [7, 8, 8, 7, 6, 6, 6, 6, 6, 7, 8, 8, 7, 7, 6, 5, 4,
                     3, 2, 1, 2, 3, 4, 5, 6, 7, 7]
 
-        x_isbf, y_isbf = trace_object_boundaries(m_neighbor)
+        x_isbf, y_isbf = trace_object_boundaries(
+            m_neighbor, simplify_colinear_spurs=False)
 
         np.testing.assert_allclose(rx_isbf, x_isbf[0])
         np.testing.assert_allclose(ry_isbf, y_isbf[0])
 
-        x_moore, y_moore = trace_object_boundaries(m_neighbor, 8)
+        x_moore, y_moore = trace_object_boundaries(
+            m_neighbor, 8, simplify_colinear_spurs=False)
 
         np.testing.assert_allclose(rx_moore, x_moore[0])
         np.testing.assert_allclose(ry_moore, y_moore[0])
