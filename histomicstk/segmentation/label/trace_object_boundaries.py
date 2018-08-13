@@ -7,7 +7,9 @@ from ._trace_object_boundaries_cython import _trace_object_boundaries_cython
 def trace_object_boundaries(im_label,
                             conn=4, trace_all=False,
                             x_start=None, y_start=None,
-                            max_length=None, eps_colinear_area=0.01):
+                            max_length=None,
+                            simplify_colinear_spurs=True,
+                            eps_colinear_area=0.01):
     """Performs exterior boundary tracing of one or more objects in a label
     mask. If a starting point is not provided then a raster scan will be performed
     to identify the starting pixel.
@@ -29,6 +31,10 @@ def trace_object_boundaries(im_label,
     max_length : int
         Maximum boundary length to trace before terminating. Default value =
         None.
+    simplify_colinear_spurs : bool
+        If True colinear streaks/spurs in the object boundary will be
+        simplified/removed. Note that if the object boundary is entirely
+        colinear then the object itself will be removed. Default = True
     eps_colinear_area : int
         Minimum area of triangle formed by three consecutive points on the
         contour for them to be considered as non-colinear. Default value =
@@ -98,7 +104,9 @@ def trace_object_boundaries(im_label,
             bx = bx + min_row - 1
             by = by + min_col - 1
 
-            bx, by = _remove_thin_colinear_spurs(bx, by, eps_colinear_area)
+            if simplify_colinear_spurs:
+                bx, by = _remove_thin_colinear_spurs(bx, by,
+                                                     eps_colinear_area)
 
             if len(bx) > 0:
                 X.append(bx)
@@ -125,7 +133,9 @@ def trace_object_boundaries(im_label,
                 im_label, dtype=np.int), conn, x_start, y_start, max_length
         )
 
-        bx, by = _remove_thin_colinear_spurs(bx, by, eps_colinear_area)
+        if simplify_colinear_spurs:
+            bx, by = _remove_thin_colinear_spurs(bx, by,
+                                                 eps_colinear_area)
 
         if len(bx) > 0:
             X.append(bx)
@@ -134,7 +144,7 @@ def trace_object_boundaries(im_label,
     return X, Y
 
 
-def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0.0):
+def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0):
     """Simplifies the given list of points by removing colinear spurs
     """
 
@@ -162,7 +172,7 @@ def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0.0):
             np.array([[x1, x2, x3], [y1, y2, y3], [1, 1, 1]])
         )
 
-        # if area > 0, add testpos to keep list and move anchor to testpos
+        # if area > cutoff, add testpos to keep and move anchor to testpos
         if abs(area) > eps_colinear_area:
 
             keep.append(testpos)  # add testpos to keep list
