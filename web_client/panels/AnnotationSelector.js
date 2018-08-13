@@ -249,29 +249,42 @@ var AnnotationSelector = Panel.extend({
 
     _setActiveAnnotation(model) {
         this._activeAnnotation = model;
-        model.set('loading', true);
-        model.fetch().done(() => {
-            const numElements = ((model.get('annotation') || {}).elements || []).length;
-            if (this._activeAnnotation && this._activeAnnotation.id !== model.id) {
-                return;
-            }
-            model.set('displayed', true);
 
-            if (numElements > MAX_ELEMENTS_LIST_LENGTH) {
-                events.trigger('g:alert', {
-                    text: 'This annotation has too many elements to be edited.',
-                    type: 'warning',
-                    timeout: 5000,
-                    icon: 'info'
-                });
-                this._activeAnnotation = null;
-                this.trigger('h:editAnnotation', null);
-            } else {
-                this.trigger('h:editAnnotation', model);
-            }
-        }).always(() => {
-            model.unset('loading');
-        });
+        if (!((model.get('annotation') || {}).elements || []).length) {
+            // Only load the annotation if it hasn't already been loaded.
+            // Technically, an annotation *could* have 0 elements, in which
+            // case loading it again should be quick.  There doesn't seem
+            // to be any other way to detect an unloaded annotation.
+            model.set('loading', true);
+            model.fetch().done(() => {
+                this._setActiveAnnotationWithoutLoad(model);
+            }).always(() => {
+                model.unset('loading');
+            });
+        } else {
+            this._setActiveAnnotationWithoutLoad(model);
+        }
+    },
+
+    _setActiveAnnotationWithoutLoad(model) {
+        const numElements = ((model.get('annotation') || {}).elements || []).length;
+        if (this._activeAnnotation && this._activeAnnotation.id !== model.id) {
+            return;
+        }
+        model.set('displayed', true);
+
+        if (numElements > MAX_ELEMENTS_LIST_LENGTH) {
+            events.trigger('g:alert', {
+                text: 'This annotation has too many elements to be edited.',
+                type: 'warning',
+                timeout: 5000,
+                icon: 'info'
+            });
+            this._activeAnnotation = null;
+            this.trigger('h:editAnnotation', null);
+        } else {
+            this.trigger('h:editAnnotation', model);
+        }
     },
 
     createAnnotation(evt) {

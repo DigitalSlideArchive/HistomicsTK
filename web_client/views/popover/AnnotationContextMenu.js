@@ -39,8 +39,10 @@ const AnnotationContextMenu = View.extend({
         }
         this.reset();
         this._hovered = { element, annotation };
-        this.parentView.trigger('h:highlightAnnotation', annotation.id, element.id);
         this.render();
+        window.setTimeout(() => {
+            this.parentView.trigger('h:highlightAnnotation', annotation.id, element.id);
+        }, 1);
     },
     _removeElements(evt) {
         evt.preventDefault();
