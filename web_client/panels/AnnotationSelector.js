@@ -307,8 +307,9 @@ var AnnotationSelector = Panel.extend({
     },
 
     _saveAnnotation(annotation) {
-        if (!this._saving && annotation === this._activeAnnotation && !annotation.get('loading')) {
+        if (!this._saving && !annotation._inFetch && !annotation.get('loading')) {
             this._saving = true;
+            this.trigger('h:redraw', annotation);
             annotation.save().always(() => {
                 this._saving = false;
             });

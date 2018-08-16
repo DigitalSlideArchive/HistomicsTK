@@ -79,6 +79,7 @@ var ImageView = View.extend({
         this.listenTo(this.annotationSelector, 'h:editAnnotation', this._editAnnotation);
         this.listenTo(this.annotationSelector, 'h:deleteAnnotation', this._deleteAnnotation);
         this.listenTo(this.annotationSelector, 'h:annotationOpacity', this._setAnnotationOpacity);
+        this.listenTo(this.annotationSelector, 'h:redraw', this._redrawAnnotation);
         this.listenTo(this, 'h:highlightAnnotation', this._highlightAnnotation);
         this.listenTo(this.contextMenu, 'h:edit', this._editElement);
         this.listenTo(this.contextMenu, 'h:redraw', this._redrawAnnotation);
@@ -636,9 +637,6 @@ var ImageView = View.extend({
         // Defer the context menu action into the next animation frame
         // to work around a problem with preventDefault on Windows
         window.setTimeout(() => {
-            if (!this.activeAnnotation || this.activeAnnotation.id !== annotation.id) {
-                this.annotationSelector.editAnnotation(annotation);
-            }
             const menu = this.$('#h-annotation-context-menu');
             const position = evt.mouse.page;
             menu.removeClass('hidden');
