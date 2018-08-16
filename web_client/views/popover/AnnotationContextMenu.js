@@ -9,6 +9,7 @@ import '../../stylesheets/popover/annotationContextMenu.styl';
 const AnnotationContextMenu = View.extend({
     events: {
         'click .h-remove-elements': '_removeElements',
+        'click .h-edit-elements': '_editElements',
         'click .h-set-group': '_setGroup',
         'click .h-remove-group': '_removeGroup'
     },
@@ -52,6 +53,13 @@ const AnnotationContextMenu = View.extend({
         annotation.elements().remove(element);
         this.reset();
         this.trigger('h:close');
+    },
+    _editElements(evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        const { annotation, element } = this._hovered;
+        this.trigger('h:edit', annotation.elements().get(element));
     },
     _setStyleDefinition(group) {
         const styles = new StyleCollection();
