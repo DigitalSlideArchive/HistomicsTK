@@ -71,11 +71,13 @@ const AnnotationContextMenu = View.extend({
             delete styleAttrs.id;
             if (group) {
                 styleAttrs.group = group;
+            } else {
+                // The change event will be triggered by the set call later.  Unfortunately,
+                // there is no way to unset an attribute while setting others in a single
+                // backbone call.
+                elementModel.unset('group', {silent: true}); // eslint-disable-line backbone/no-silent
             }
             elementModel.set(styleAttrs);
-            if (!group) {
-                elementModel.unset('group');
-            }
         }).always(() => {
             this.reset();
             this.trigger('h:close');
