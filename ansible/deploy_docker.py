@@ -148,7 +148,7 @@ def containers_start(port=8080, rmq='docker', mongo='docker', provision=False,
     :param mongo: 'docker' to use a docker for mongo, 'host' to use the docker
         host, otherwise the IP for the mongo instance, where DOCKER_HOST maps
         to the docker host and anything else is passed through.  The database
-        is always 'girder'.
+        is always 'girder'.  Any other value is considered a docker version.
     :param provision: if True, reprovision after starting.  Otherwise, only
         provision if the histomictk container is created.
     """
@@ -193,7 +193,7 @@ def container_start_histomicstk(client, env, key='histomicstk', port=8080,
     :param mongo: 'docker' to use a docker for mongo, 'host' to use the docker
         host, otherwise the IP for the mongo instance, where DOCKER_HOST maps
         to the docker host and anything else is passed through.  The database
-        is always 'girder'.
+        is always 'girder'.  Any other value is considered a docker version.
     :param provision: if True, reprovision after starting.  Otherwise, only
         provision if the histomictk container is created.
     :returns: True if the container should be provisioned.
@@ -219,7 +219,7 @@ def container_start_histomicstk(client, env, key='histomicstk', port=8080,
         config_mounts(kwargs.get('mount'), config)
         if rmq == 'docker':
             config['links'][ImageList['rmq']['name']] = 'rmq'
-        if mongo == 'docker':
+        if mongo != 'host':
             config['links'][ImageList['mongodb']['name']] = 'mongodb'
         params = {
             'image': image,
@@ -254,15 +254,21 @@ def container_start_mongodb(client, env, key='mongodb', mongo='docker',
     :param mongo: 'docker' to use a docker for mongo, 'host' to use the docker
         host, otherwise the IP for the mongo instance, where DOCKER_HOST maps
         to the docker host and anything else is passed through.  The database
-        is always 'girder'.
+        is always 'girder'.  Any other value is considered a docker version.
     :param mongodb_path: the path to use for mongo when run in docker.  If
         'docker', use an internal data directory.
     """
-    if mongo == 'docker':
-        image = tag_with_version(key, **kwargs)
+    if mongo == 'host':
+        env['HOST_MONGO'] = 'true'
+        # If we generate the girder worker config file on the fly, update this
+        # to something like:
+        # env['HOST_MONGO'] = mongo if mongo != 'host' else 'DOCKER_HOST'
+    else:
+        version = None if mongo == 'docker' else mongo
+        image = tag_with_version(key, version=version, **kwargs)
         name = ImageList[key]['name']
         ctn = get_docker_image_and_container(
-            client, key, version=kwargs.get('pinned'))
+            client, key, version=version if version else kwargs.get('pinned'))
         if ctn is None:
             config = {
                 'restart_policy': {'name': 'always'},
@@ -288,11 +294,6 @@ def container_start_mongodb(client, env, key='mongodb', mongo='docker',
         if ctn.get('State') != 'running':
             print('Starting %s - %s' % (image, name))
         client.start(container=ctn.get('Id'))
-    else:
-        env['HOST_MONGO'] = 'true'
-        # If we generate the girder worker config file on the fly, update this
-        # to something like:
-        # env['HOST_MONGO'] = mongo if mongo != 'host' else 'DOCKER_HOST'
 
 
 def container_start_rmq(client, env, key='rmq', rmq='docker', **kwargs):
@@ -734,6 +735,19 @@ Running containers can be joined using a command like
 To allow docker containers to use memcached, make sure the host is running
 memcached and it is listening on the docker IP address (or listening on all
 addresses via -l 0.0.0.0).
+
+To determine the current mongo docker version, use a command like
+  docker exec histomicstk_mongodb mongo girder --eval 'db.version()'
+To check if mongo can be upgrade, query the compatability mode via
+  docker exec histomicstk_mongodb mongo girder --eval \\
+  'db.adminCommand({getParameter: 1, featureCompatibilityVersion: 1})'
+Mongo can only be upgraded if the compatibility version is the same as the
+semi-major version.  Before upgrading, set the compatibility mode.  For
+instance, if Mongo 3.6.1 is running,
+  docker exec histomicstk_mongodb mongo girder --eval \\
+  'db.adminCommand({setFeatureCompatibilityVersion: "3.6"})'
+after which Mongo can be upgraded to version 4.  After upgrading, set the
+compatibility mode to the new version.
 """)
 
 
@@ -839,8 +853,9 @@ if __name__ == '__main__':
         help='Logs path.')
     parser.add_argument(
         '--mongo', '-m', default='docker',
-        choices=['docker', 'host'],
-        help='Either use mongo from docker or from host.')
+        choices=['docker', 'host', '3.4', '3.6', '4.0', 'latest'],
+        help='Either use mongo from docker or from host.  If a version is '
+        'specified, the docker with that version will be used.')
     parser.add_argument(
         '--mount', '--extra', '-e', action='append',
         help='Extra volumes to mount.  These are mounted internally at '
@@ -853,7 +868,7 @@ if __name__ == '__main__':
         help='Override the Girder admin password used in provisioning.  Set '
         'to an empty string to be prompted for username and password.')
     parser.add_argument(
-        '--pinned', dest='pinned', action='store_true', default=True,
+        '--pinned', dest='pinned', action='store_true', default=False,
         help='When pulling images, use the pinned versions (%s).' % (
             ', '.join(pinned_versions())))
     parser.add_argument(
