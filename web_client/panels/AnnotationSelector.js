@@ -190,6 +190,9 @@ var AnnotationSelector = Panel.extend({
                 if (!_.has(models, model.id)) {
                     model.set('displayed', true);
                 } else {
+                    if (models[model.id].get('displayed')) {
+                        model.refresh(true);
+                    }
                     model.set('displayed', models[model.id].get('displayed'));
                 }
             });
