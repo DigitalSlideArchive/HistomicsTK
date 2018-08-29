@@ -958,6 +958,9 @@ $(function () {
                 waitsFor(function () {
                     return $('#h-annotation-context-menu').hasClass('hidden') === false;
                 }, 'context menu to be shown');
+
+                // wait for the next animation frame so that the highlighting is finished
+                waits(30);
                 runs(function () {
                     $('#h-annotation-context-menu .h-remove-elements').click();
                     expect($('#h-annotation-context-menu').hasClass('hidden')).toBe(true);

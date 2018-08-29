@@ -24,7 +24,7 @@ const MAX_ELEMENTS_LIST_LENGTH = 5000;
  */
 var AnnotationSelector = Panel.extend({
     events: _.extend(Panel.prototype.events, {
-        'click .h-annotation-name': 'editAnnotation',
+        'click .h-annotation-name': '_editAnnotation',
         'click .h-toggle-annotation': 'toggleAnnotation',
         'click .h-delete-annotation': 'deleteAnnotation',
         'click .h-create-annotation': 'createAnnotation',
@@ -54,7 +54,7 @@ var AnnotationSelector = Panel.extend({
         this.listenTo(this.collection, 'change:highlight', this._changeAnnotationHighlight);
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
         this.listenTo(eventStream, 'g:eventStream.start', this._refreshAnnotations);
-        this.listenTo(this.collection, 'change:annotation', this._saveAnnotation);
+        this.listenTo(this.collection, 'change:annotation change:groups', this._saveAnnotation);
         this.listenTo(girderEvents, 'g:login', () => {
             this.collection.reset();
             this._parentId = undefined;
@@ -221,10 +221,12 @@ var AnnotationSelector = Panel.extend({
         return this._interactiveMode;
     },
 
-    editAnnotation(evt) {
+    _editAnnotation(evt) {
         var id = $(evt.currentTarget).parents('.h-annotation').data('id');
-        var model = this.collection.get(id);
+        this.editAnnotation(this.collection.get(id));
+    },
 
+    editAnnotation(model) {
         // deselect the annotation if it is already selected
         if (this._activeAnnotation && model && this._activeAnnotation.id === model.id) {
             this._activeAnnotation = null;
@@ -247,29 +249,42 @@ var AnnotationSelector = Panel.extend({
 
     _setActiveAnnotation(model) {
         this._activeAnnotation = model;
-        model.set('loading', true);
-        model.fetch().done(() => {
-            const numElements = ((model.get('annotation') || {}).elements || []).length;
-            if (this._activeAnnotation && this._activeAnnotation.id !== model.id) {
-                return;
-            }
-            model.set('displayed', true);
 
-            if (numElements > MAX_ELEMENTS_LIST_LENGTH) {
-                events.trigger('g:alert', {
-                    text: 'This annotation has too many elements to be edited.',
-                    type: 'warning',
-                    timeout: 5000,
-                    icon: 'info'
-                });
-                this._activeAnnotation = null;
-                this.trigger('h:editAnnotation', null);
-            } else {
-                this.trigger('h:editAnnotation', model);
-            }
-        }).always(() => {
-            model.unset('loading');
-        });
+        if (!((model.get('annotation') || {}).elements || []).length) {
+            // Only load the annotation if it hasn't already been loaded.
+            // Technically, an annotation *could* have 0 elements, in which
+            // case loading it again should be quick.  There doesn't seem
+            // to be any other way to detect an unloaded annotation.
+            model.set('loading', true);
+            model.fetch().done(() => {
+                this._setActiveAnnotationWithoutLoad(model);
+            }).always(() => {
+                model.unset('loading');
+            });
+        } else {
+            this._setActiveAnnotationWithoutLoad(model);
+        }
+    },
+
+    _setActiveAnnotationWithoutLoad(model) {
+        const numElements = ((model.get('annotation') || {}).elements || []).length;
+        if (this._activeAnnotation && this._activeAnnotation.id !== model.id) {
+            return;
+        }
+        model.set('displayed', true);
+
+        if (numElements > MAX_ELEMENTS_LIST_LENGTH) {
+            events.trigger('g:alert', {
+                text: 'This annotation has too many elements to be edited.',
+                type: 'warning',
+                timeout: 5000,
+                icon: 'info'
+            });
+            this._activeAnnotation = null;
+            this.trigger('h:editAnnotation', null);
+        } else {
+            this.trigger('h:editAnnotation', model);
+        }
     },
 
     createAnnotation(evt) {
@@ -292,8 +307,9 @@ var AnnotationSelector = Panel.extend({
     },
 
     _saveAnnotation(annotation) {
-        if (!this._saving && annotation === this._activeAnnotation && !annotation.get('loading')) {
+        if (!this._saving && !annotation._inFetch && !annotation.get('loading')) {
             this._saving = true;
+            this.trigger('h:redraw', annotation);
             annotation.save().always(() => {
                 this._saving = false;
             });

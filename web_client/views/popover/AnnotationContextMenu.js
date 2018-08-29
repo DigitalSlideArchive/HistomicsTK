@@ -1,3 +1,6 @@
+import _ from 'underscore';
+
+import StyleCollection from '../../collections/StyleCollection';
 import View from '../View';
 
 import template from '../../templates/popover/annotationContextMenu.pug';
@@ -5,13 +8,21 @@ import '../../stylesheets/popover/annotationContextMenu.styl';
 
 const AnnotationContextMenu = View.extend({
     events: {
-        'click .h-remove-elements': '_removeElements'
+        'click .h-remove-elements': '_removeElements',
+        'click .h-edit-elements': '_editElements',
+        'click .h-set-group': '_setGroup',
+        'click .h-remove-group': '_removeGroup'
     },
-    initialize() {
+    initialize(settings) {
         this.reset();
     },
     render() {
-        this.$el.html(template());
+        const hovered = this._hovered || {};
+        const currentGroup = (hovered.element || {}).group;
+        this.$el.html(template({
+            groups: this._getAnnotationGroups(),
+            currentGroup
+        }));
         return this;
     },
     reset() {
@@ -29,7 +40,10 @@ const AnnotationContextMenu = View.extend({
         }
         this.reset();
         this._hovered = { element, annotation };
-        this.parentView.trigger('h:highlightAnnotation', annotation.id, element.id);
+        this.render();
+        window.setTimeout(() => {
+            this.parentView.trigger('h:highlightAnnotation', annotation.id, element.id);
+        }, 1);
     },
     _removeElements(evt) {
         evt.preventDefault();
@@ -39,6 +53,53 @@ const AnnotationContextMenu = View.extend({
         annotation.elements().remove(element);
         this.reset();
         this.trigger('h:close');
+    },
+    _editElements(evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        const { annotation, element } = this._hovered;
+        this.trigger('h:edit', annotation.elements().get(element));
+    },
+    _setStyleDefinition(group) {
+        const styles = new StyleCollection();
+        return styles.fetch().done(() => {
+            const style = styles.get({ id: group }) || styles.get({ id: 'default' });
+            const { element } = this._hovered;
+            const elementModel = this._hovered.annotation.elements().get(element);
+            const styleAttrs = Object.assign({}, style.toJSON());
+            delete styleAttrs.id;
+            if (group) {
+                styleAttrs.group = group;
+            } else {
+                // The change event will be triggered by the set call later.  Unfortunately,
+                // there is no way to unset an attribute while setting others in a single
+                // backbone call.
+                elementModel.unset('group', {silent: true}); // eslint-disable-line backbone/no-silent
+            }
+            elementModel.set(styleAttrs);
+        }).always(() => {
+            this.reset();
+            this.trigger('h:close');
+        });
+    },
+    _getAnnotationGroups() {
+        const groups = _.union(...this.collection.map((a) => a.get('groups')));
+        groups.sort();
+        return groups.slice(0, 10);
+    },
+    _setGroup(evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        const group = $(evt.currentTarget).data('group');
+        this._setStyleDefinition(group);
+    },
+    _removeGroup(evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        this._setStyleDefinition(null);
     }
 });
 

@@ -17,6 +17,7 @@ import AnnotationPopover from '../popover/AnnotationPopover';
 import AnnotationSelector from '../../panels/AnnotationSelector';
 import ZoomWidget from '../../panels/ZoomWidget';
 import DrawWidget from '../../panels/DrawWidget';
+import editElement from '../../dialogs/editElement';
 import router from '../../router';
 import events from '../../events';
 import View from '../View';
@@ -30,7 +31,6 @@ var ImageView = View.extend({
         'keydown .geojs-map': '_handleKeyDown'
     },
     initialize(settings) {
-        window.view = this;
         this.viewerWidget = null;
         this._openId = null;
         this._displayedRegion = null;
@@ -79,7 +79,9 @@ var ImageView = View.extend({
         this.listenTo(this.annotationSelector, 'h:editAnnotation', this._editAnnotation);
         this.listenTo(this.annotationSelector, 'h:deleteAnnotation', this._deleteAnnotation);
         this.listenTo(this.annotationSelector, 'h:annotationOpacity', this._setAnnotationOpacity);
+        this.listenTo(this.annotationSelector, 'h:redraw', this._redrawAnnotation);
         this.listenTo(this, 'h:highlightAnnotation', this._highlightAnnotation);
+        this.listenTo(this.contextMenu, 'h:edit', this._editElement);
         this.listenTo(this.contextMenu, 'h:redraw', this._redrawAnnotation);
         this.listenTo(this.contextMenu, 'h:close', this._closeContextMenu);
 
@@ -635,7 +637,6 @@ var ImageView = View.extend({
         // Defer the context menu action into the next animation frame
         // to work around a problem with preventDefault on Windows
         window.setTimeout(() => {
-            this._editAnnotation(annotation);
             const menu = this.$('#h-annotation-context-menu');
             const position = evt.mouse.page;
             menu.removeClass('hidden');
@@ -654,7 +655,10 @@ var ImageView = View.extend({
         this.popover.collection.reset();
         this.contextMenu.reset();
         this._contextMenuActive = false;
+    },
+
+    _editElement(element) {
+        editElement(element);
     }
 });
-
 export default ImageView;
