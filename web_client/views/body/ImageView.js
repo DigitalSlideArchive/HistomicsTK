@@ -390,6 +390,10 @@ var ImageView = View.extend({
         }
 
         if (annotation.get('displayed')) {
+            var viewer = this.viewerWidget.viewer || {};
+            if (viewer.zoomRange && annotation._pageElements === true) {
+                annotation.setView(viewer.bounds(), viewer.zoom(), viewer.zoomRange().max, true);
+            }
             annotation.set('loading', true);
             annotation.fetch().then(() => {
                 this.viewerWidget.drawAnnotation(annotation);
