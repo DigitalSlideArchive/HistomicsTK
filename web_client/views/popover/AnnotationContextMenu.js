@@ -64,7 +64,7 @@ const AnnotationContextMenu = View.extend({
     _setStyleDefinition(group) {
         const styles = new StyleCollection();
         return styles.fetch().done(() => {
-            const style = styles.get({ id: group || 'default' });
+            const style = styles.get({ id: group }) || styles.get({ id: 'default' });
             const { element } = this._hovered;
             const elementModel = this._hovered.annotation.elements().get(element);
             const styleAttrs = Object.assign({}, style.toJSON());
