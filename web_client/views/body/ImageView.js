@@ -741,7 +741,13 @@ var ImageView = View.extend({
     },
 
     _removeSelection() {
-        console.log('remove');
+        const groupedAnnotations = this.selectedElements.groupBy((element) => element.originalAnnotation.id);
+        _.each(groupedAnnotations, (elements, annotationId) => { /* eslint-disable backbone/no-silent */
+            // silence the event because we want to make one save call for each annotation.
+            const elementsCollection = this.annotations.get(annotationId).elements();
+            elementsCollection.remove(elements, { silent: true });
+            elementsCollection.trigger('reset', elementsCollection);
+        });
     }
 });
 export default ImageView;

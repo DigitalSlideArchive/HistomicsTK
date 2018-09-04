@@ -43,8 +43,8 @@ var DrawWidget = Panel.extend({
         this._groups = new StyleCollection();
         this._style = new StyleModel({id: 'default'});
         this.listenTo(this._groups, 'update', this.render);
-        this.listenTo(this.collection, 'add remove', this._recalculateGroupAggregation);
-        this.listenTo(this.collection, 'change update', this.render);
+        this.listenTo(this.collection, 'add remove reset', this._recalculateGroupAggregation);
+        this.listenTo(this.collection, 'change update reset', this.render);
         this._groups.fetch().done(() => {
             // ensure the default style exists
             if (this._groups.has('default')) {
