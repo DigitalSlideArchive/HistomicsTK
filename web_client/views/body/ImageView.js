@@ -724,19 +724,19 @@ var ImageView = View.extend({
         _.each(groupedAnnotations, (elements, annotationId) => {
             const annotation = this.annotations.get(annotationId);
             _.each(elements, (element) => { /* eslint-disable backbone/no-silent */
+                const annotationElement = annotation.elements().get(element.id);
                 // silence the event because we want to make one save call for each annotation.
-                console.log(element.toJSON());
-                annotation.elements().get(element.id).set(element.toJSON());
+                annotationElement.set(element.toJSON(), { silent: true });
+                if (!element.get('group')) {
+                    annotationElement.unset('group', { silent: true });
+                }
             });
-            /*
             if (!elements.length) {
                 return;
             }
-            annotation.save().done(() => {
-                this._redrawAnnotation(annotation);
-            });
-            */
-            this._redrawAnnotation(annotation);
+            const annotationData = _.extend({}, annotation.get('annotation'));
+            annotationData.elements = annotation.elements().toJSON();
+            annotation.set('annotation', annotationData);
         });
     },
 

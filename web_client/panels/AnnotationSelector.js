@@ -307,11 +307,11 @@ var AnnotationSelector = Panel.extend({
     },
 
     _saveAnnotation(annotation) {
-        if (!this._saving && !annotation._inFetch && !annotation.get('loading')) {
-            this._saving = true;
+        if (!annotation._saving && !annotation._inFetch && !annotation.get('loading')) {
+            annotation._saving = true;
             this.trigger('h:redraw', annotation);
             annotation.save().always(() => {
-                this._saving = false;
+                annotation._saving = false;
             });
         }
     },
