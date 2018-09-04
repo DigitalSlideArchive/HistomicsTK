@@ -12,9 +12,9 @@ const AnnotationContextMenu = View.extend({
         'click .h-remove-group': '_removeGroup'
     },
     initialize(settings) {
-        window.contextMenu = this;
         this.styles = new StyleCollection();
         this.styles.fetch().done(() => this.render());
+        this.listenTo(this.collection, 'add remove reset', this.render);
     },
     render() {
         this.$el.html(template({
@@ -34,7 +34,7 @@ const AnnotationContextMenu = View.extend({
         evt.preventDefault();
         evt.stopPropagation();
 
-        console.log('edit');
+        this.trigger('h:edit', this.collection.at(0));
         this.trigger('h:close');
     },
     _setStyleDefinition(group) {

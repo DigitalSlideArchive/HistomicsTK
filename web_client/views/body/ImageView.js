@@ -36,7 +36,6 @@ var ImageView = View.extend({
         this._displayedRegion = null;
         this.selectedAnnotation = new AnnotationModel({_id: 'selected'});
         this.selectedElements = this.selectedAnnotation.elements();
-        window.view = this;
 
         // Allow zooming this many powers of 2 more than native pixel resolution
         this._increaseZoom2x = 1;
@@ -678,7 +677,9 @@ var ImageView = View.extend({
     },
 
     _editElement(element) {
-        editElement(element);
+        const annotation = this.annotations.get(element.originalAnnotation);
+        this._editAnnotation(annotation);
+        editElement(annotation.elements().get(element.id));
     },
 
     _redrawSelection() {
