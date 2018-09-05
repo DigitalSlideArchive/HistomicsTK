@@ -164,6 +164,7 @@
     depth: 1
     repo: https://github.com/ImageMagick/ImageMagick.git
     dest: "{{ root_dir }}/ImageMagick"
+    force: true
 
 - name: Configure ImageMagick
   command: ./configure --with-modules

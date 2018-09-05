@@ -124,9 +124,10 @@ Prerequisites
 
 ::
 
+    sudo apt-get update
     sudo apt-get install -y --force-yes libssl-dev git python2.7-dev python-pip
     sudo pip install -U pip
-    sudo pip install -U ansible
+    sudo pip install -U 'ansible<2.5'
     git clone https://github.com/DigitalSlideArchive/HistomicsTK
 
 Deploy
@@ -136,3 +137,5 @@ Deploy
 
     cd HistomicsTK/ansible
     ./deploy_local.sh
+
+Note that if there are network issues, this deployment script does not automatically retry installation.  It may be necessary to delete partial files and run it again.
