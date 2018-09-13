@@ -3,9 +3,12 @@ MAINTAINER David Manthey <david.manthey@kitware.com>
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get --yes --no-install-recommends -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade && \
-    apt-get install -y --no-install-recommends git python2.7-dev python-pip libssl-dev sudo net-tools vim locales apt-utils python-setuptools && \
+    apt-get install -y --no-install-recommends git python2.7-dev python-pip libssl-dev sudo net-tools vim locales apt-utils python-setuptools \
+    # Install packages for routing to mongodb
+    iptables dnsutils \
     # Install some additional packages for convenience when testing with bash
-    apt-get install -y --no-install-recommends iputils-ping telnet-ssl tmux less && \
+    iputils-ping telnet-ssl tmux less \
+    && \
     sudo rm -rf /var/lib/apt/lists/* /tmp/*
 RUN pip install -U pip
 RUN pip install -U --upgrade-strategy eager 'ansible<2.5'
@@ -49,10 +52,17 @@ RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=h
 WORKDIR /opt/histomicstk/girder
 EXPOSE 8080
 
-# If the environment vairable
+# Install npx and girder node_modules to aid testing
+RUN sudo npm install -g npx 
+RUN npm install
+
+# If the environment variable
 #   HOST_MONGO=true
 # is set, mongodb is added to the /etc/hosts as mapping to the docker host ip
 # address
 CMD sudo -E python /opt/histomicstk/set_environment.py ubuntu && \
+    sudo -E sysctl -w net.ipv4.conf.eth0.route_localnet=1 && \
+    sudo -E iptables -t nat -A OUTPUT -o lo -p tcp -m tcp --dport 27017 -j DNAT --to-destination `dig +short mongodb`:27017 && \
+    sudo -E iptables -t nat -A POSTROUTING -o eth0 -m addrtype --src-type LOCAL --dst-type UNICAST -j MASQUERADE && \
     sudo -E su ubuntu -c \
     'python -m girder >/opt/logs/girder.log 2>&1'
