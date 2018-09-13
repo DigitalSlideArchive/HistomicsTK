@@ -1,5 +1,3 @@
-import _ from 'underscore';
-
 import StyleCollection from '../../collections/StyleCollection';
 import View from '../View';
 
@@ -14,77 +12,50 @@ const AnnotationContextMenu = View.extend({
         'click .h-remove-group': '_removeGroup'
     },
     initialize(settings) {
-        this.reset();
+        this.styles = new StyleCollection();
+        this.styles.fetch().done(() => this.render());
+        this.listenTo(this.collection, 'add remove reset', this.render);
     },
     render() {
-        const hovered = this._hovered || {};
-        const currentGroup = (hovered.element || {}).group;
         this.$el.html(template({
             groups: this._getAnnotationGroups(),
-            currentGroup
+            numberSelected: this.collection.length
         }));
         return this;
-    },
-    reset() {
-        if (!this._hovered) {
-            return;
-        }
-        this.parentView.trigger('h:highlightAnnotation');
-        this._hovered = null;
-    },
-    setHovered(element, annotation) {
-        const elementModel = annotation.elements().get(element.id);
-        if (annotation._pageElements || !elementModel) {
-            // ignore context menu actions on paged annotations
-            return;
-        }
-        this.reset();
-        this._hovered = { element, annotation };
-        this.render();
-        window.setTimeout(() => {
-            this.parentView.trigger('h:highlightAnnotation', annotation.id, element.id);
-        }, 1);
     },
     _removeElements(evt) {
         evt.preventDefault();
         evt.stopPropagation();
 
-        const { annotation, element } = this._hovered;
-        annotation.elements().remove(element);
-        this.reset();
+        this.collection.trigger('h:remove');
         this.trigger('h:close');
     },
     _editElements(evt) {
         evt.preventDefault();
         evt.stopPropagation();
 
-        const { annotation, element } = this._hovered;
-        this.trigger('h:edit', annotation.elements().get(element));
+        this.trigger('h:edit', this.collection.at(0));
+        this.trigger('h:close');
     },
     _setStyleDefinition(group) {
-        const styles = new StyleCollection();
-        return styles.fetch().done(() => {
-            const style = styles.get({ id: group }) || styles.get({ id: 'default' });
-            const { element } = this._hovered;
-            const elementModel = this._hovered.annotation.elements().get(element);
-            const styleAttrs = Object.assign({}, style.toJSON());
-            delete styleAttrs.id;
+        const style = this.styles.get({ id: group }) || this.styles.get({ id: 'default' });
+        const styleAttrs = Object.assign({}, style.toJSON());
+        delete styleAttrs.id;
+        this.collection.each((element) => { /* eslint-disable backbone/no-silent */
             if (group) {
                 styleAttrs.group = group;
             } else {
-                // The change event will be triggered by the set call later.  Unfortunately,
-                // there is no way to unset an attribute while setting others in a single
-                // backbone call.
-                elementModel.unset('group', {silent: true}); // eslint-disable-line backbone/no-silent
+                element.unset('group', {silent: true});
             }
-            elementModel.set(styleAttrs);
-        }).always(() => {
-            this.reset();
-            this.trigger('h:close');
+            element.set(styleAttrs, {silent: true});
+            // test
+            JSON.stringify(element.toJSON());
         });
+        this.collection.trigger('h:save');
+        this.trigger('h:close');
     },
     _getAnnotationGroups() {
-        const groups = _.union(...this.collection.map((a) => a.get('groups')));
+        const groups = this.styles.map((style) => style.id);
         groups.sort();
         return groups.slice(0, 10);
     },
