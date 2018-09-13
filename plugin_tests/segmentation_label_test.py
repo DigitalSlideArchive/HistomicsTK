@@ -17,14 +17,13 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
-
 import numpy as np
+import unittest
 
 from histomicstk.segmentation.label import trace_object_boundaries
 
 
-class TraceBoundaryTest(base.TestCase):
+class TraceBoundaryTest(unittest.TestCase):
 
     def test_trace_boundary(self):
 

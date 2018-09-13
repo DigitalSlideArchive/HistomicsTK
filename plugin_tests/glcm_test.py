@@ -17,14 +17,13 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
-
 import histomicstk as htk
 import numpy as np
 import skimage.feature
+import unittest
 
 
-class GLCMMatrixGenerationTest(base.TestCase):
+class GLCMMatrixGenerationTest(unittest.TestCase):
 
     def test_graycomatrixext(self):
 

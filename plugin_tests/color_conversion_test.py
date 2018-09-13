@@ -17,7 +17,7 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
+import unittest
 
 import numpy as np
 
@@ -27,7 +27,7 @@ from histomicstk.preprocessing.color_conversion import rgb_to_lab
 from histomicstk.preprocessing.color_conversion import lab_to_rgb
 
 
-class ColorConversionTest(base.TestCase):
+class ColorConversionTest(unittest.TestCase):
 
     def test_rgb_to_od(self):
 

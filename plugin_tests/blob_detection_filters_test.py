@@ -17,9 +17,8 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
-
 import os
+import unittest
 
 import numpy as np
 
@@ -30,7 +29,7 @@ TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
                              'plugins/HistomicsTK')
 
 
-class BlobDetectionFiltersTest(base.TestCase):
+class BlobDetectionFiltersTest(unittest.TestCase):
 
     def test_clog(self):
 

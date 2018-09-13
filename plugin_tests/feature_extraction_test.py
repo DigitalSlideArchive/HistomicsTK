@@ -1,10 +1,9 @@
-from tests import base
-
 import os
 import sys
 import numpy as np
 import skimage.io
 import skimage.measure
+import unittest
 
 import collections
 
@@ -19,7 +18,7 @@ from cli_common import utils as cli_utils  # noqa
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')
 
 
-class FeatureExtractionTest(base.TestCase):
+class FeatureExtractionTest(unittest.TestCase):
 
     def setUp(self):
 
