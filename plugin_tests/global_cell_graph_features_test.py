@@ -26,16 +26,6 @@ from tests import base
 from histomicstk.features import compute_global_cell_graph_features as cgcgf
 
 
-# boiler plate to start and stop the server
-def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
-
-
 class GlobalCellGraphFeaturesTest(base.TestCase):
     def testSimple(self):
         data = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1], [-.5, -.5], [.5, .5]])

@@ -32,16 +32,6 @@ import histomicstk.filters.shape as htk_shape_filters
 import histomicstk.segmentation as htk_seg
 
 
-# boiler plate to start and stop the server if needed
-def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
-
-
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
                              'plugins/HistomicsTK')
 
