@@ -20,13 +20,12 @@
 # This is to serve as an example for how to create a server-side test in a
 # girder plugin, it is not meant to be useful.
 
-from tests import base
-
 from argparse import Namespace
 import os
 import sys
 import json
 import collections
+import unittest
 
 import numpy as np
 import skimage.io
@@ -43,17 +42,7 @@ from cli_common import utils as cli_utils  # noqa
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')
 
 
-# boiler plate to start and stop the server
-def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
-
-
-class CliCommonTest(base.TestCase):
+class CliCommonTest(unittest.TestCase):
 
     def test_get_stain_matrix(self):
 

@@ -17,29 +17,13 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
-
 import numpy as np
-import os
+import unittest
 
 from histomicstk.segmentation.label import trace_object_boundaries
 
 
-# boiler plate to start and stop the server if needed
-def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
-
-
-TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
-                             'plugins/HistomicsTK')
-
-
-class TraceBoundaryTest(base.TestCase):
+class TraceBoundaryTest(unittest.TestCase):
 
     def test_trace_boundary(self):
 

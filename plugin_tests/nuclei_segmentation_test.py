@@ -17,9 +17,8 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
-
 import os
+import unittest
 
 import scipy as sp
 import numpy as np
@@ -32,21 +31,11 @@ import histomicstk.filters.shape as htk_shape_filters
 import histomicstk.segmentation as htk_seg
 
 
-# boiler plate to start and stop the server if needed
-def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
-
-
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
                              'plugins/HistomicsTK')
 
 
-class NucleiSegmentationTest(base.TestCase):
+class NucleiSegmentationTest(unittest.TestCase):
 
     def test_segment_nuclei_kofahi(self):
 

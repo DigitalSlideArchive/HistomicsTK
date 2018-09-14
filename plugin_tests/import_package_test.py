@@ -17,21 +17,11 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
-
-
-# boiler plate to start and stop the server if needed
-def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
+import unittest
 
 
 # Test import of histomicstk and all of its sub-packages independently
-class ImportPackageTest(base.TestCase):
+class ImportPackageTest(unittest.TestCase):
 
     def test_histomicstk(self):
         import histomicstk as htk  # noqa

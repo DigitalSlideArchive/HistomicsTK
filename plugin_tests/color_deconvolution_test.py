@@ -17,30 +17,19 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
-
 import numpy as np
 import os
 import skimage.io
+import unittest
 
 from histomicstk.preprocessing import color_deconvolution as htk_dcv
-
-
-# boiler plate to start and stop the server if needed
-def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
 
 
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
                              'plugins/HistomicsTK')
 
 
-class MacenkoTest(base.TestCase):
+class MacenkoTest(unittest.TestCase):
 
     def test_macenko(self):
         im_path = os.path.join(TEST_DATA_DIR, 'Easy1.png')
@@ -55,7 +44,7 @@ class MacenkoTest(base.TestCase):
         np.testing.assert_allclose(w, w_expected, atol=1e-6)
 
 
-class ColorDeconvolutionTest(base.TestCase):
+class ColorDeconvolutionTest(unittest.TestCase):
 
     def test_roundtrip(self):
         im_path = os.path.join(TEST_DATA_DIR, 'Easy1.png')
