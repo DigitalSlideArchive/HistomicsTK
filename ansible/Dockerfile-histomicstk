@@ -47,7 +47,9 @@ RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=h
                 /opt/histomicstk/ImageMagick* \
                 /opt/histomicstk/HistomicsTK/_skbuild \
                 /opt/histomicstk/large_image/build \
-                /root/.cache/pip
+                /root/.cache/pip && \
+    find /opt/histomicstk/girder/tests -type f -exec sed -i \
+        's/mongodb:\/\/localhost:27017/mongodb:\/\/mongodb:27017/g' {} \;
 
 WORKDIR /opt/histomicstk/girder
 EXPOSE 8080

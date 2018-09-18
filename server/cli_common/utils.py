@@ -1,5 +1,5 @@
 from datetime import timedelta
-import psutil
+import sys
 import numpy as np
 import scipy as sp
 import skimage.measure
@@ -19,6 +19,20 @@ large_image.cache_util.cachefactory.defaultConfig['cache_backend'] = 'memcached'
 # If memcached is unavilable, specify the fraction of memory that python
 # caching is allowed to use.  This is deliberately small.
 large_image.cache_util.cachefactory.defaultConfig['cache_python_memory_portion'] = 32
+
+
+def cpu_count():
+    """Returns the number of physical CPUs"""
+    if sys.platform.startswith("linux"):
+        import re
+        import subprocess
+        output = subprocess.check_output(["lscpu"])
+        nb_cores = int(re.findall(r"Core\(s\) per socket:.*([0-9]+)", output)[0])
+        nb_sockets = int(re.findall(r"Socket\(s\):.*([0-9]+)", output)[0])
+        return nb_cores*nb_sockets
+    else:
+        import psutil
+        return psutil.cpu_count(logical=False)
 
 
 def get_stain_vector(args, index):
@@ -226,7 +240,7 @@ def create_dask_client(args):
 
         if args.num_threads_per_worker <= 0:
             num_workers = max(
-                1, psutil.cpu_count(logical=False) + args.num_threads_per_worker)
+                1, cpu_count() + args.num_threads_per_worker)
         else:
             num_workers = args.num_threads_per_worker
         print('Starting dask thread pool with %d thread(s)' % num_workers)
@@ -241,7 +255,7 @@ def create_dask_client(args):
         dask.set_options(get=dask.multiprocessing.get)
         if args.num_workers <= 0:
             num_workers = max(
-                1, psutil.cpu_count(logical=False) + args.num_workers)
+                1, cpu_count() + args.num_workers)
         else:
             num_workers = args.num_workers
 
@@ -255,7 +269,7 @@ def create_dask_client(args):
 
         if args.num_workers <= 0:
             num_workers = max(
-                1, psutil.cpu_count(logical=False) + args.num_workers)
+                1, cpu_count() + args.num_workers)
         else:
             num_workers = args.num_workers
         num_threads_per_worker = (
