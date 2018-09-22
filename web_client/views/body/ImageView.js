@@ -659,7 +659,15 @@ var ImageView = View.extend({
             const menu = this.$('#h-annotation-context-menu');
             const position = evt.mouse.page;
             menu.removeClass('hidden');
-            menu.css({ left: position.x, top: position.y });
+
+            // adjust the vertical position of the context menu
+            // == 0, above the bottom; < 0, number of pixels below the bottom
+            // the menu height is bigger by 20 pixels due to extra padding
+            const belowWindow = Math.min(0, $(window).height() - position.y - menu.height() + 20);
+            // ensure the top is not above the top of the window
+            const top = Math.max(0, position.y + belowWindow);
+
+            menu.css({ left: position.x, top });
             this.popover.collection.reset();
             this._contextMenuActive = true;
             // this.contextMenu.setHovered(element, annotation);

@@ -48,8 +48,6 @@ const AnnotationContextMenu = View.extend({
                 element.unset('group', {silent: true});
             }
             element.set(styleAttrs, {silent: true});
-            // test
-            JSON.stringify(element.toJSON());
         });
         this.collection.trigger('h:save');
         this.trigger('h:close');
