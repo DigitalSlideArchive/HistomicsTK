@@ -154,6 +154,7 @@ const EditStyleGroups = View.extend({
             if (oldid && this.collection.get(oldid)) {
                 this.model.set(this.collection.get(oldid).toJSON());
             }
+            this.collection.each((model) => { model.save(); });
             this._newStyle = false;
             this.render();
         });
