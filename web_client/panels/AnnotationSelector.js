@@ -385,7 +385,20 @@ var AnnotationSelector = Panel.extend({
             }
             groupObject[group] = _.sortBy(groupList, (a) => a.get('created'));
         });
+        this._triggerGroupCountChange(groupObject);
         return groupObject;
+    },
+
+    _triggerGroupCountChange(groups) {
+        const groupCount = {};
+        _.each(groups, (annotations, name) => {
+            if (name !== 'Other') {
+                groupCount[name] = annotations.length;
+            } else {
+                groupCount.default = annotations.length;
+            }
+        });
+        this.trigger('h:groupCount', groupCount);
     }
 });
 

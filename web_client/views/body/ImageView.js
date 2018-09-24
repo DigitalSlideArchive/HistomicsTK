@@ -71,6 +71,9 @@ var ImageView = View.extend({
             collection: this.selectedElements
         });
 
+        this.listenTo(this.annotationSelector, 'h:groupCount', (obj) => {
+            this.contextMenu.setGroupCount(obj);
+        });
         this.listenTo(events, 'h:submit', (data) => {
             this.$('.s-jobs-panel .s-panel-controls .icon-down-open').click();
             events.trigger('g:alert', {type: 'success', text: 'Analysis job submitted.'});
