@@ -145,7 +145,10 @@ const EditStyleGroups = View.extend({
             styleModels = _.map(styles, function (style) {
                 return new StyleModel(style);
             });
-            this.collection.reset(styleModels, {merge: true});
+            while (this.collection.length) {
+                this.collection.first().destroy();
+            }
+            this.collection.reset(styleModels);
             // make sure we have at least a default style
             if (!this.collection.get('default')) {
                 this.collection.push(new StyleModel({id: 'default'}));
@@ -154,6 +157,7 @@ const EditStyleGroups = View.extend({
             if (oldid && this.collection.get(oldid)) {
                 this.model.set(this.collection.get(oldid).toJSON());
             }
+            this.collection.each((model) => { model.save(); });
             this._newStyle = false;
             this.render();
         });
