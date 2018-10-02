@@ -70,9 +70,12 @@ HistomicsTK can be used in two ways:
   access to image analysis pipelines developed as `slicer execution model`_
   CLIs and containerized using Docker.
 
-This work is funded by the NIH grant U24-CA194362-01_.
-
 Please refer to https://digitalslidearchive.github.io/HistomicsTK/ for more information.
+
+For questions, comments, or to get in touch with the maintainers, head to our
+`Discourse forum`_, or use our `Gitter Chatroom`_.
+
+This work is funded by the NIH grant U24-CA194362-01_.
 
 .. _Digital Slide Archive: http://github.com/DigitalSlideArchive
 .. _Docker: https://www.docker.com/
@@ -85,4 +88,6 @@ Please refer to https://digitalslidearchive.github.io/HistomicsTK/ for more info
 .. _large_image: https://github.com/girder/large_image
 .. _slicer_cli_web: https://github.com/girder/slicer_cli_web
 .. _slicer execution model: https://www.slicer.org/slicerWiki/index.php/Slicer3:Execution_Model_Documentation
+.. _Discourse forum: https://discourse.girder.org/c/histomicstk
+.. _Gitter Chatroom: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 

@@ -17,31 +17,19 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
-
 import os
+import unittest
 
 import numpy as np
 
 from histomicstk.filters.shape import clog, cdog
 
 
-# boiler plate to start and stop the server if needed
-def setUpModule():
-
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
-
-
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
                              'plugins/HistomicsTK')
 
 
-class BlobDetectionFiltersTest(base.TestCase):
+class BlobDetectionFiltersTest(unittest.TestCase):
 
     def test_clog(self):
 

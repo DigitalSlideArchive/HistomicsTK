@@ -17,10 +17,9 @@
 #  limitations under the License.
 ###############################################################################
 
-from tests import base
+import unittest
 
 import numpy as np
-import os
 
 from histomicstk.preprocessing.color_conversion import rgb_to_od
 from histomicstk.preprocessing.color_conversion import od_to_rgb
@@ -28,21 +27,7 @@ from histomicstk.preprocessing.color_conversion import rgb_to_lab
 from histomicstk.preprocessing.color_conversion import lab_to_rgb
 
 
-# boiler plate to start and stop the server if needed
-def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
-
-
-TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
-                             'plugins/HistomicsTK')
-
-
-class ColorConversionTest(base.TestCase):
+class ColorConversionTest(unittest.TestCase):
 
     def test_rgb_to_od(self):
 

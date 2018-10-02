@@ -15,7 +15,7 @@
   become: true
 
 - name: NodeJS | Update npm
-  command: "npm install -g npm@3"
+  command: "npm install -g npm"
   become: true
 
 - name: Install system package dependencies
@@ -26,6 +26,7 @@
       - apparmor
       - apt-transport-https
       - ca-certificates
+      - fuse
       - libjpeg-dev
       - libmemcached-dev
       - libxslt1-dev
@@ -152,6 +153,17 @@
 - name: Install our external girder plugins - digital_slide_archive
   command: girder-install plugin -s {{ root_dir }}/digital_slide_archive
   become: true
+
+- name: Install girder with some optional components
+  pip:
+    chdir: "{{ girder_root }}"
+    extra_args: "-e .[mount]"
+    name: ""
+    state: present
+  become: true
+
+- name: Create a directory for the girder mount
+  file: state=directory path="{{ root_dir }}/mount"
 
 - name: Install girder-client from our source
   pip:

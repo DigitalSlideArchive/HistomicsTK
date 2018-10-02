@@ -21,22 +21,12 @@ import numpy as np
 
 from pandas import DataFrame
 from pandas.util.testing import assert_frame_equal
-from tests import base
+import unittest
 
 from histomicstk.features import compute_global_cell_graph_features as cgcgf
 
 
-# boiler plate to start and stop the server
-def setUpModule():
-    base.enabledPlugins.append('HistomicsTK')
-    base.startServer()
-
-
-def tearDownModule():
-    base.stopServer()
-
-
-class GlobalCellGraphFeaturesTest(base.TestCase):
+class GlobalCellGraphFeaturesTest(unittest.TestCase):
     def testSimple(self):
         data = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1], [-.5, -.5], [.5, .5]])
         actual = cgcgf(data, neighbor_distances=0.7 * np.arange(1, 6), neighbor_counts=(3, 5))
