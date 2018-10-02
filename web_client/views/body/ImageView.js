@@ -684,7 +684,6 @@ var ImageView = View.extend({
             menu.css({ left, top });
             this.popover.collection.reset();
             this._contextMenuActive = true;
-            // this.contextMenu.setHovered(element, annotation);
         }, 1);
     },
 
