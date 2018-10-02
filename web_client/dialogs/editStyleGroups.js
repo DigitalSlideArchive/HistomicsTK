@@ -145,7 +145,10 @@ const EditStyleGroups = View.extend({
             styleModels = _.map(styles, function (style) {
                 return new StyleModel(style);
             });
-            this.collection.reset(styleModels, {merge: true});
+            while (this.collection.length) {
+                this.collection.first().destroy();
+            }
+            this.collection.reset(styleModels);
             // make sure we have at least a default style
             if (!this.collection.get('default')) {
                 this.collection.push(new StyleModel({id: 'default'}));
