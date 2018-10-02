@@ -65,4 +65,6 @@ CMD sudo -E python /opt/histomicstk/set_environment.py ubuntu && \
     sudo -E iptables -t nat -A OUTPUT -o lo -p tcp -m tcp --dport 27017 -j DNAT --to-destination `dig +short mongodb`:27017 && \
     sudo -E iptables -t nat -A POSTROUTING -o eth0 -m addrtype --src-type LOCAL --dst-type UNICAST -j MASQUERADE && \
     sudo -E su ubuntu -c \
-    'python -m girder >/opt/logs/girder.log 2>&1'
+    'girder mount /opt/histomicstk/mount >/opt/logs/mount.log 2>&1' ; \
+    sudo -E su ubuntu -c \
+    'girder serve >/opt/logs/girder.log 2>&1'
