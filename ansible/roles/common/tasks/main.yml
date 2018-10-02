@@ -24,11 +24,17 @@
   become: true
 
 - name: Install curl
-  apt: pkg=curl state=installed install_recommends=no
+  apt:
+    name: curl
+    state: present
+    install_recommends: no
   become: true
 
 - name: Install aptitude
-  apt: pkg=aptitude state=installed install_recommends=no
+  apt:
+    name: aptitude
+    state: present
+    install_recommends: no
   become: true
   when: (vagrant is defined) or (docker is defined)
 
