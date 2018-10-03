@@ -116,6 +116,12 @@
     state: present
   become: true
 
+- name: Pin the version of wheel (should be removed when scikit-build is updated)
+  pip:
+    name: wheel
+    version: 0.31.1
+  become: true
+
 - name: Make sure the six library is updated
   pip:
     name: six

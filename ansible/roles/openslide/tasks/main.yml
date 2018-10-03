@@ -189,43 +189,43 @@
 # vips
 - name: Download vips
   command: >-
-    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/jcupitt/libvips/releases/download/v8.5.9/vips-8.5.9.tar.gz -O vips-8.5.9.tar.gz
+    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/libvips/libvips/releases/download/v8.7.0/vips-8.7.0.tar.gz -O vips-8.7.0.tar.gz
   args:
     chdir: "{{ root_dir }}"
-    creates: vips-8.5.9.tar.gz
+    creates: vips-8.7.0.tar.gz
 
 - name: Extract vips
   unarchive:
-    src: "{{ root_dir }}/vips-8.5.9.tar.gz"
+    src: "{{ root_dir }}/vips-8.7.0.tar.gz"
     dest: "{{ root_dir }}"
-    creates: "{{ root_dir }}/vips-8.5.9"
+    creates: "{{ root_dir }}/vips-8.7.0"
 
 - name: Configure vips
   shell: ./configure
   args:
-    chdir: "{{ root_dir }}/vips-8.5.9"
+    chdir: "{{ root_dir }}/vips-8.7.0"
 
 - name: Build vips
   command: make
   args:
-    chdir: "{{ root_dir }}/vips-8.5.9"
-    creates: "{{ root_dir }}/.built-vips-8.5.9"
+    chdir: "{{ root_dir }}/vips-8.7.0"
+    creates: "{{ root_dir }}/.built-vips-8.7.0"
 
 - name: Leave creation artifact for vips build
   file:
-    path: "{{ root_dir }}/.built-vips-8.5.9"
+    path: "{{ root_dir }}/.built-vips-8.7.0"
     state: touch
 
 - name: Install vips
   command: make install
   args:
-    chdir: "{{ root_dir }}/vips-8.5.9"
-    creates: "{{ root_dir }}/.installed-vips-8.5.9"
+    chdir: "{{ root_dir }}/vips-8.7.0"
+    creates: "{{ root_dir }}/.installed-vips-8.7.0"
   become: true
 
 - name: Leave creation artifact for vips install
   file:
-    path: "{{ root_dir }}/.installed-vips-8.5.9"
+    path: "{{ root_dir }}/.installed-vips-8.7.0"
     state: touch
 
 - name: Run ldconfig
@@ -234,7 +234,7 @@
 
 - name: Install Vips python connector
   copy:
-    src: "{{ root_dir }}/vips-8.5.9/python/packages/gi/overrides/Vips.py"
+    src: "{{ root_dir }}/vips-8.7.0/python/packages/gi/overrides/Vips.py"
     dest: /usr/lib/python2.7/dist-packages/gi/overrides/
   become: true
 
