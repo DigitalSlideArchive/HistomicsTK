@@ -578,6 +578,20 @@ $(function () {
                 app.bodyView.viewerWidget.setGlobalAnnotationOpacity = setGlobalAnnotationOpacityFunc;
             });
 
+            it('set the global annotation fill opacity', function () {
+                var opacity;
+                var setGlobalAnnotationFillOpacityFunc = app.bodyView.viewerWidget.setGlobalAnnotationFillOpacity;
+                app.bodyView.viewerWidget.setGlobalAnnotationFillOpacity = function (_opacity) {
+                    opacity = _opacity;
+                    return setGlobalAnnotationFillOpacityFunc.apply(this, arguments);
+                };
+
+                $('#h-annotation-fill-opacity').val(0.5).trigger('input');
+                expect(opacity).toBe('0.5');
+
+                app.bodyView.viewerWidget.setGlobalAnnotationFillOpacity = setGlobalAnnotationFillOpacityFunc;
+            });
+
             it('toggle visibility of an annotation', function () {
                 runs(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("drawn 1")');

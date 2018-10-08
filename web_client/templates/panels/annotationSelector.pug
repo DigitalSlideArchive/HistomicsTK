@@ -11,9 +11,12 @@ block content
     .btn-group.btn-group-sm(role='group')
       button.btn.btn-default.h-hide-all-annotations(type='button', title='Hide all annotations')
         | #[span.icon-eye-off]
-    span.h-annotation-opacity-container(title=`Annotation opacity ${(opacity * 100).toFixed()}%`)
+    span.h-annotation-opacity-container(title=`Annotation total opacity ${(opacity * 100).toFixed()}%`)
       input#h-annotation-opacity(
           type="range", min="0", max="1", step="0.01", value=opacity)
+    span.h-annotation-fill-opacity-container(title=`Annotation fill opacity ${(fillOpacity * 100).toFixed()}%`)
+      input#h-annotation-fill-opacity(
+          type="range", min="0", max="1", step="0.01", value=fillOpacity)
 
   - var groups = _.keys(annotationGroups);
   - groups.sort();
