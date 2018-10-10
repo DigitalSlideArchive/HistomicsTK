@@ -116,12 +116,6 @@
     state: present
   become: true
 
-- name: Pin the version of wheel (should be removed when scikit-build is updated)
-  pip:
-    name: wheel
-    version: 0.31.1
-  become: true
-
 - name: Make sure the six library is updated
   pip:
     name: six
@@ -148,7 +142,7 @@
 - name: Install large_image extras
   become: true
   pip:
-    name: ""
+    name: "-v"
     extra_args: "{{ root_dir }}/large_image[memcached,openslide]"
     state: present
 
@@ -164,7 +158,7 @@
   pip:
     chdir: "{{ girder_root }}"
     extra_args: "-e .[mount]"
-    name: ""
+    name: "-v"
     state: present
   become: true
 

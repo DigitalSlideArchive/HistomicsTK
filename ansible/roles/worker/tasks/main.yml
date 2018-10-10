@@ -14,7 +14,7 @@
     state: present
 
 - name: Install worker dependencies
-  apt: 
+  apt:
     update_cache: yes
     name:
       - libffi-dev
@@ -57,7 +57,7 @@
 - name: Install girder_worker
   become: true
   pip:
-    name: ""
+    name: "-v"
     extra_args: "-e /opt/girder_worker[docker,girder_io]"
     state: present
 
