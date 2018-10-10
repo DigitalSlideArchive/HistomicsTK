@@ -117,12 +117,12 @@ add_histomicstk_python_test(blob_detection_filters
     # multiple tests, so add it in one of the tests for now
     # "plugins/HistomicsTK/L1.png"
     # "plugins/HistomicsTK/Easy1.png"
-    "plugins/HistomicsTK/Easy1_nuclei_stain.npy"
-    "plugins/HistomicsTK/Easy1_nuclei_fgnd_mask.npy"
-    "plugins/HistomicsTK/Easy1_clog_max.npy"
-    "plugins/HistomicsTK/Easy1_clog_sigma_max.npy"
-    "plugins/HistomicsTK/Easy1_cdog_max.npy"
-    "plugins/HistomicsTK/Easy1_cdog_sigma_max.npy"
+    "plugins/HistomicsTK/Easy1_nuclei_stain.npz"
+    "plugins/HistomicsTK/Easy1_nuclei_fgnd_mask.npz"
+    "plugins/HistomicsTK/Easy1_clog_max.npz"
+    "plugins/HistomicsTK/Easy1_clog_sigma_max.npz"
+    "plugins/HistomicsTK/Easy1_cdog_max.npz"
+    "plugins/HistomicsTK/Easy1_cdog_sigma_max.npz"
 )
 
 add_histomicstk_python_test(cli_common
