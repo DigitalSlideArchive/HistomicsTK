@@ -25,3 +25,8 @@ button.btn.btn-default.navbar-btn.h-open-annotated-image(type='button')
   | #[span.icon-list] Annotated images...
 button.btn.btn-default.navbar-btn.h-open-image(type='button')
   | #[span.icon-picture] Open image...
+span.h-links
+  a.h-previous-image.btn.btn-default(href=previousImageLink, title='Previous image', disabled=!previousImageLink)
+    i.icon-left-open
+  a.h-next-image.btn.btn-default(href=nextImageLink, title='Next image', disabled=!nextImageLink)
+    i.icon-right-open
