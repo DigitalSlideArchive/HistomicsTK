@@ -2,6 +2,7 @@ from girder.api import access
 from girder.api.v1.item import Item as ItemResource
 from girder.api.describe import autoDescribeRoute, Description
 from girder.constants import AccessType
+from girder.exceptions import RestException
 from girder.models.folder import Folder
 
 
@@ -21,8 +22,12 @@ class ImageBrowseResource(ItemResource):
         folderModel = Folder()
         folder = folderModel.load(
             currentImage['folderId'], user=self.getCurrentUser(), level=AccessType.READ)
-        allImages = list(folderModel.childItems(folder))
-        index = allImages.index(currentImage)
+        allImages = [item for item in folderModel.childItems(folder) if 'largeImage' in item]
+        try:
+            index = allImages.index(currentImage)
+        except ValueError:
+            raise RestException('Id is not an image', 404)
+
         return {
             'previous': allImages[index - 1],
             'next': allImages[(index + 1) % len(allImages)]

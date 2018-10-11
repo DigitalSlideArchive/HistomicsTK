@@ -23,6 +23,11 @@ class ImageBrowseEndpointsTest(base.TestCase):
             Item().createItem('item_%i' % i, creator=self.admin, folder=self.folder)
             for i in range(10)
         ]
+        for item in self.items:
+            # make the item look like an image
+            item['largeImage'] = {}
+            Item().save(item)
+        self.nonimage = Item().createItem('non-image', creator=self.admin, folder=self.folder)
 
     def testGetNextImage(self):
         resp = self.request(path='/item/%s/next_image' % str(self.items[0]['_id']),
@@ -45,3 +50,8 @@ class ImageBrowseEndpointsTest(base.TestCase):
                             user=self.admin)
         self.assertStatusOk(resp)
         self.assertEqual(resp.json['_id'], str(self.items[-2]['_id']))
+
+    def testGetNextImageException(self):
+        resp = self.request(path='/item/%s/next_image' % str(self.nonimage['_id']),
+                            user=self.admin)
+        self.assertStatus(resp, 404)
