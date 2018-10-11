@@ -1,12 +1,10 @@
 from datetime import timedelta
 import psutil
 import numpy as np
-import scipy as sp
 import skimage.measure
 import skimage.morphology
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
-import histomicstk.filters.shape as htk_shape_filters
 import histomicstk.segmentation as htk_seg
 import histomicstk.utils as htk_utils
 
@@ -76,43 +74,6 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
     im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)
 
     return im_fgnd_mask_lres, fgnd_seg_scale
-
-
-def detect_nuclei_kofahi(im_nuclei_stain, args):
-
-    # segment nuclear foreground mask
-    # (assumes nuclei are darker on a bright background)
-    im_nuclei_fgnd_mask = im_nuclei_stain < args.foreground_threshold
-
-    # smooth foreground mask with closing and opening
-    im_nuclei_fgnd_mask = skimage.morphology.closing(
-        im_nuclei_fgnd_mask, skimage.morphology.disk(3))
-
-    im_nuclei_fgnd_mask = skimage.morphology.opening(
-        im_nuclei_fgnd_mask, skimage.morphology.disk(3))
-
-    im_nuclei_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
-        im_nuclei_fgnd_mask)
-
-    # run adaptive multi-scale LoG filter
-    im_log_max, im_sigma_max = htk_shape_filters.cdog(
-        im_nuclei_stain, im_nuclei_fgnd_mask,
-        sigma_min=args.min_radius / np.sqrt(2),
-        sigma_max=args.max_radius / np.sqrt(2)
-    )
-
-    # apply local maximum clustering
-    im_nuclei_seg_mask, seeds, maxima = htk_seg.nuclear.max_clustering(
-        im_log_max, im_nuclei_fgnd_mask, args.local_max_search_radius)
-
-    # split any objects with disconnected fragments
-    im_nuclei_seg_mask = htk_seg.label.split(im_nuclei_seg_mask, conn=8)
-
-    # filter out small objects
-    im_nuclei_seg_mask = htk_seg.label.area_open(
-        im_nuclei_seg_mask, args.min_nucleus_area).astype(np.int)
-
-    return im_nuclei_seg_mask
 
 
 def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
@@ -375,7 +336,6 @@ __all__ = (
     'create_tile_nuclei_annotations',
     'create_tile_nuclei_bbox_annotations',
     'create_tile_nuclei_boundary_annotations',
-    'detect_nuclei_kofahi',
     'disp_time_hms',
     'get_region_dict',
     'get_stain_matrix',
