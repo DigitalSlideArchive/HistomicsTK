@@ -12,6 +12,7 @@ const AnnotationContextMenu = View.extend({
         'click .h-remove-group': '_removeGroup'
     },
     initialize(settings) {
+        this._cachedGroupCount = {};
         this.styles = new StyleCollection();
         this.styles.fetch().done(() => this.render());
         this.listenTo(this.collection, 'add remove reset', this.render);
@@ -22,6 +23,9 @@ const AnnotationContextMenu = View.extend({
             numberSelected: this.collection.length
         }));
         return this;
+    },
+    setGroupCount(groupCount) {
+        this._cachedGroupCount = groupCount;
     },
     _removeElements(evt) {
         evt.preventDefault();
@@ -48,15 +52,26 @@ const AnnotationContextMenu = View.extend({
                 element.unset('group', {silent: true});
             }
             element.set(styleAttrs, {silent: true});
-            // test
-            JSON.stringify(element.toJSON());
         });
         this.collection.trigger('h:save');
         this.trigger('h:close');
     },
     _getAnnotationGroups() {
         const groups = this.styles.map((style) => style.id);
-        groups.sort();
+        groups.sort((a, b) => {
+            const countA = this._cachedGroupCount[a] || 0;
+            const countB = this._cachedGroupCount[b] || 0;
+            if (countA !== countB) {
+                return countB - countA;
+            }
+            if (a < b) {
+                return -1;
+            } else if (a > b) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
         return groups.slice(0, 10);
     },
     _setGroup(evt) {
