@@ -6,6 +6,10 @@ from girder.exceptions import RestException
 from girder.models.folder import Folder
 
 
+def _isLargeImageItem(item):
+    return item.get('largeImage', {}).get('fileId') is not None
+
+
 class ImageBrowseResource(ItemResource):
     """Extends the "item" resource to iterate through images im a folder."""
 
@@ -22,7 +26,7 @@ class ImageBrowseResource(ItemResource):
         folderModel = Folder()
         folder = folderModel.load(
             currentImage['folderId'], user=self.getCurrentUser(), level=AccessType.READ)
-        allImages = [item for item in folderModel.childItems(folder) if 'largeImage' in item]
+        allImages = [item for item in folderModel.childItems(folder) if _isLargeImageItem(item)]
         try:
             index = allImages.index(currentImage)
         except ValueError:
