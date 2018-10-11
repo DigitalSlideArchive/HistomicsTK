@@ -36,6 +36,7 @@ var AnnotationSelector = Panel.extend({
         'change #h-toggle-labels': 'toggleLabels',
         'change #h-toggle-interactive': 'toggleInteractiveMode',
         'input #h-annotation-opacity': '_changeGlobalOpacity',
+        'input #h-annotation-fill-opacity': '_changeGlobalFillOpacity',
         'click .h-annotation-group-name': '_toggleExpandGroup'
     }),
 
@@ -50,6 +51,7 @@ var AnnotationSelector = Panel.extend({
     initialize(settings = {}) {
         this._expandedGroups = new Set();
         this._opacity = settings.opacity || 0.9;
+        this._fillOpacity = settings.fillOpacity || 1.0;
         this.listenTo(this.collection, 'sync remove update reset change:displayed change:loading', this.render);
         this.listenTo(this.collection, 'change:highlight', this._changeAnnotationHighlight);
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
@@ -76,6 +78,7 @@ var AnnotationSelector = Panel.extend({
             user: getCurrentUser() || {},
             writeAccess: this._writeAccess,
             opacity: this._opacity,
+            fillOpacity: this._fillOpacity,
             interactiveMode: this._interactiveMode,
             expandedGroups: this._expandedGroups,
             annotationGroups,
@@ -84,6 +87,7 @@ var AnnotationSelector = Panel.extend({
         this.$('.s-panel-content').collapse({toggle: false});
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         this._changeGlobalOpacity();
+        this._changeGlobalFillOpacity();
         return this;
     },
 
@@ -351,8 +355,15 @@ var AnnotationSelector = Panel.extend({
     _changeGlobalOpacity() {
         this._opacity = this.$('#h-annotation-opacity').val();
         this.$('.h-annotation-opacity-container')
-            .attr('title', `Annotation opacity ${(this._opacity * 100).toFixed()}%`);
+            .attr('title', `Annotation total opacity ${(this._opacity * 100).toFixed()}%`);
         this.trigger('h:annotationOpacity', this._opacity);
+    },
+
+    _changeGlobalFillOpacity() {
+        this._fillOpacity = this.$('#h-annotation-fill-opacity').val();
+        this.$('.h-annotation-fill-opacity-container')
+            .attr('title', `Annotation fill opacity ${(this._fillOpacity * 100).toFixed()}%`);
+        this.trigger('h:annotationFillOpacity', this._fillOpacity);
     },
 
     _toggleExpandGroup(evt) {
