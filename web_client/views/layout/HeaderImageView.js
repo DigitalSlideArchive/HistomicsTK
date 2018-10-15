@@ -20,11 +20,11 @@ var HeaderImageView = View.extend({
     initialize() {
         this.imageModel = null;
         this.parentChain = null;
-        this.listenTo(events, 'h:analysis:rendered', this._setNavigationLinks);
+        this.listenTo(events, 'h:analysis:rendered', this.render);
         this.listenTo(events, 'h:imageOpened', (model) => {
             this.imageModel = model;
             this.parentChain = null;
-            this._setNavigationLinks();
+            this._setNextPreviousImage();
             if (model) {
                 this.imageModel.getRootPath((resp) => {
                     this.parentChain = resp;
@@ -36,41 +36,40 @@ var HeaderImageView = View.extend({
     },
 
     render() {
+        const analysis = router.getQuery('analysis') ? `&analysis=${router.getQuery('analysis')}` : '';
+        const nextImageLink = this._nextImage ? `#?image=${this._nextImage}${analysis}` : null;
+        const previousImageLink = this._previousImage ? `#?image=${this._previousImage}${analysis}` : null;
         this.$el.html(headerImageTemplate({
             image: this.imageModel,
             parentChain: this.parentChain,
-            nextImageLink: this.nextImageLink,
-            previousImageLink: this.previousImageLink
+            nextImageLink: nextImageLink,
+            previousImageLink: previousImageLink
         }));
         return this;
     },
 
-    _setNavigationLinks() {
+    _setNextPreviousImage() {
         const model = this.imageModel;
-        let analysisQuery = '';
         if (!model) {
-            this.nextImageLink = null;
-            this.previousImageLink = null;
+            this._nextImage = null;
+            this._previousImage = null;
             this.render();
             return;
         }
 
-        if (router.getQuery('analysis')) {
-            analysisQuery = `&analysis=${router.getQuery('analysis')}`;
-        }
         $.when(
             restRequest({
                 url: `item/${model.id}/previous_image`
             }).done((previous) => {
                 if (previous._id !== model.id) {
-                    this.previousImageLink = `#?image=${previous._id}${analysisQuery}`;
+                    this._previousImage = previous._id;
                 }
             }),
             restRequest({
                 url: `item/${model.id}/next_image`
             }).done((next) => {
                 if (next._id !== model.id) {
-                    this.nextImageLink = `#?image=${next._id}${analysisQuery}`;
+                    this._nextImage = next._id;
                 }
             })
         ).done(() => this.render());
