@@ -41,6 +41,8 @@ add_python_style_test(
 # API tests
 add_histomicstk_python_test(histomicstk)
 
+add_histomicstk_python_test(image_browse_endpoints)
+
 add_histomicstk_python_test(docker)
 
 add_histomicstk_python_test(example)
