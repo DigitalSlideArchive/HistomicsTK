@@ -21,6 +21,7 @@ from girder.plugins.slicer_cli_web.docker_resource import DockerResource
 
 from .handlers import process_annotations
 from .constants import PluginSettings
+from .image_browse_resource import ImageBrowseResource
 
 from girder.models.model_base import ModelImporter
 _template = os.path.join(
@@ -202,6 +203,8 @@ def load(info):
     girderRoot = info['serverRoot']
     histomicsRoot = WebrootHistomicsTK(_template)
     histomicsRoot.updateHtmlVars(girderRoot.vars)
+
+    ImageBrowseResource(info['apiRoot'])
 
     # The interface is always available under histomicstk and also available
     # under the specified path.
