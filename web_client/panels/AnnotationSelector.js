@@ -172,7 +172,13 @@ var AnnotationSelector = Panel.extend({
         this.listenToOnce(
             showSaveAnnotationDialog(model, {title: 'Edit annotation'}),
             'g:submit',
-            () => model.save()
+            () => {
+                model.save().done(() => {
+                    if (model.get('displayed')) {
+                        this.trigger('h:redraw', model);
+                    }
+                });
+            }
         );
     },
 
