@@ -8,11 +8,9 @@ Description
 This folder contains a set of scripts that are convenient to develop
 histomicsTK inside its docker container.
 
-The following environment variables need to be defined for these scripts
+The following environment variable need to be defined for these scripts
 to run:
 
-* ``HISTOMICS_SOURCE_FOLDER``: Points to the location of your HistomicsTK
-  source directory.
 * ``HISTOMICS_TESTDATA_FOLDER``: Folder in which the test data will be installed
   on the host computer. This allows to not download the test data every time,
   but instead keep it directly on the host computer. If the container is removed,
@@ -50,7 +48,6 @@ can now use ``deploy.sh`` in the ``devops`` folder. This will mount their local 
 folder in their container::
 
   $ cd HistomicsTK
-  $ export HISTOMICS_SOURCE_FOLDER=`pwd`
   $ export HISTOMICS_TESTDATA_FOLDER=~/data/histomicsTK
   $ mkdir -p $HISTOMICS_TESTDATA_FOLDER
   $ devops/deploy.sh start --build

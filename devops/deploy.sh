@@ -1,10 +1,8 @@
 #!/bin/bash
 
-if [[ -z "$HISTOMICS_SOURCE_FOLDER" ]]
-then
-  echo "Set environment variable HISTOMICS_SOURCE_FOLDER to HistomicsTK source directory"
-  exit 1
-fi
+# The following line does not work for symbolic link. Do not create a symbolic link
+# of this file to run it.
+HISTOMICS_SOURCE_FOLDER="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )/.."
 
 if [[ -z "$HISTOMICS_TESTDATA_FOLDER" ]]
 then
