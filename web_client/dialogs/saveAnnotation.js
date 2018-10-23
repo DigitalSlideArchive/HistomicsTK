@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import tinycolor from 'tinycolor2';
 
 import AccessWidget from 'girder/views/widgets/AccessWidget';
 import View from 'girder/views/View';
@@ -19,13 +20,18 @@ var SaveAnnotation = View.extend({
     },
 
     render() {
+        // clean up old colorpickers when rerendering
+        this.$('.h-colorpicker').colorpicker('destroy');
+
         this.$el.html(
             saveAnnotation({
                 title: this.options.title,
                 hasAdmin: this.annotation.get('_accessLevel') >= AccessType.ADMIN,
-                annotation: this.annotation.toJSON().annotation
+                annotation: this.annotation.toJSON().annotation,
+                showStyleEditor: this.annotation.get('annotation').elements && !this.annotation._pageElements
             })
         ).girderModal(this);
+        this.$('.h-colorpicker').colorpicker();
         return this;
     },
 
@@ -63,12 +69,32 @@ var SaveAnnotation = View.extend({
             return;
         }
 
+        const setFillColor = !!this.$('#h-annotation-fill-color').val();
+        const fillColor = tinycolor(this.$('#h-annotation-fill-color').val()).toRgbString();
+        const setLineColor = !!this.$('#h-annotation-line-color').val();
+        const lineColor = tinycolor(this.$('#h-annotation-line-color').val()).toRgbString();
+
+        if (setFillColor || setLineColor) {
+            this.annotation.get('annotation').elements.forEach((element) => {
+                if (setFillColor) {
+                    element.fillColor = fillColor;
+                }
+                if (setLineColor) {
+                    element.lineColor = lineColor;
+                }
+            });
+        }
         _.extend(this.annotation.get('annotation'), {
             name: this.$('#h-annotation-name').val(),
             description: this.$('#h-annotation-description').val()
         });
         this.trigger('g:submit');
         this.$el.modal('hide');
+    },
+
+    destroy() {
+        this.$('.h-colorpicker').colorpicker('destroy');
+        SaveAnnotation.prototype.destroy.call(this);
     }
 });
 

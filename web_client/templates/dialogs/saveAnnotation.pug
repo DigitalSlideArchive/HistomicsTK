@@ -15,6 +15,23 @@
           textarea#h-annotation-description.form-control.input-sm(
             rows='6', placeholder='Enter an optional description')
             | #{annotation.description}
+        if showStyleEditor
+          hr
+          h4 Reset the style for all elements in this annotation
+          .form-group
+            label(for='h-annotation-line-color') Line color
+            .input-group.h-colorpicker
+              input#h-annotation-line-color.input-sm.form-control(
+                type='text')
+              span.input-group-addon
+                i
+          .form-group
+            label(for='h-annotation-fill-color') Fill color
+            .input-group.h-colorpicker
+              input#h-annotation-fill-color.input-sm.form-control(
+                type='text')
+              span.input-group-addon
+                i
         .g-validation-failed-message.hidden
       .modal-footer
         if hasAdmin
