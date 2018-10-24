@@ -9,6 +9,7 @@ import dask
 
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.utils as htk_utils
 
 import large_image
@@ -18,7 +19,8 @@ from ctk_cli import CLIArgumentParser
 import logging
 logging.basicConfig(level=logging.CRITICAL)
 
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..')))
 from cli_common import utils as cli_utils  # noqa
 
 
@@ -52,7 +54,12 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
 
     # segment nuclei
-    im_nuclei_seg_mask = cli_utils.detect_nuclei_kofahi(im_nuclei_stain, args)
+    im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(im_nuclei_stain,
+                                                          args.foreground_threshold,
+                                                          args.min_radius,
+                                                          args.max_radius,
+                                                          args.min_nucleus_area,
+                                                          args.local_max_search_radius)
 
     # generate nuclei annotations
     nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(

@@ -7,8 +7,10 @@ from .gaussian_voting import gaussian_voting
 from .gvf_tracking import gvf_tracking
 from .max_clustering import max_clustering
 from .min_model import min_model
+from .detect_nuclei_kofahi import detect_nuclei_kofahi
 
 __all__ = (
+    'detect_nuclei_kofahi',
     'gaussian_voting',
     'gvf_tracking',
     'max_clustering',

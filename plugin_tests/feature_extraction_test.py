@@ -9,10 +9,11 @@ import collections
 
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.features as htk_features
 
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../server')))
-from cli_common import utils as cli_utils  # noqa
+sys.path.append(os.path.normpath(os.path.join(
+    os.path.dirname(__file__), '../server')))
 
 
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')
@@ -64,8 +65,12 @@ class FeatureExtractionTest(unittest.TestCase):
             np.float)
 
         # segment nuclei
-        im_nuclei_seg_mask = cli_utils.detect_nuclei_kofahi(
-            im_nuclei_stain, args)
+        im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(im_nuclei_stain,
+                                                              args.foreground_threshold,
+                                                              args.min_radius,
+                                                              args.max_radius,
+                                                              args.min_nucleus_area,
+                                                              args.local_max_search_radius)
 
         # perform connected component analysis
         nuclei_rprops = skimage.measure.regionprops(im_nuclei_seg_mask)
