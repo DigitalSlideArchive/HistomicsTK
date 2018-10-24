@@ -14,8 +14,8 @@ def process_annotations(event):
     if reference is not None:
         try:
             reference = json.loads(reference)
-            if (isinstance(reference, dict) and
-                    isinstance(reference.get('identifier'), six.string_types)):
+            if (isinstance(reference, dict)
+                    and isinstance(reference.get('identifier'), six.string_types)):
                 identifier = reference['identifier']
         except (ValueError, TypeError):
             logger.warning('Failed to parse data.process reference: %r', reference)

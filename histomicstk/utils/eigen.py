@@ -33,8 +33,8 @@ def eigen(im_hess):
     v2 = np.zeros((sizeX, sizeY, 2))
 
     # compute eigenvalues of H
-    radical = np.sqrt((im_hess[:, :, 0] - im_hess[:, :, 3]) ** 2 +
-                      4 * im_hess[:, :, 1] ** 2)
+    radical = np.sqrt((im_hess[:, :, 0] - im_hess[:, :, 3]) ** 2
+                      + 4 * im_hess[:, :, 1] ** 2)
     lamda[:, :, 0] = (im_hess[:, :, 0] + im_hess[:, :, 3] + radical) / 2
     lamda[:, :, 1] = (im_hess[:, :, 0] + im_hess[:, :, 3] - radical) / 2
 

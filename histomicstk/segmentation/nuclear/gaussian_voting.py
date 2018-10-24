@@ -79,10 +79,10 @@ def gaussian_voting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
     for i in range(Voting[0].size):
 
         # calculate center point of voting region
-        mux = round(Voting[1][i] + r * Grad.dX[Voting[0][i]][Voting[1][i]] /
-                    dMag[Voting[0][i]][Voting[1][i]])
-        muy = round(Voting[0][i] + r * Grad.dY[Voting[0][i]][Voting[1][i]] /
-                    dMag[Voting[0][i]][Voting[1][i]])
+        mux = round(Voting[1][i] + r * Grad.dX[Voting[0][i]][Voting[1][i]]
+                    / dMag[Voting[0][i]][Voting[1][i]])
+        muy = round(Voting[0][i] + r * Grad.dY[Voting[0][i]][Voting[1][i]]
+                    / dMag[Voting[0][i]][Voting[1][i]])
 
         # enter weighted votes at these locations
         Votes[r+muy, r+mux] = Votes[r+muy, r+mux] + \

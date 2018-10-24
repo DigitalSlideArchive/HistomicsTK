@@ -75,8 +75,8 @@ def reinhard(im_src, target_mu, target_sigma, src_mu=None, src_sigma=None):
 
     # calculate src_sigma if not provided
     if src_sigma is None:
-        src_sigma = ((im_lab * im_lab).sum(axis=0).sum(axis=0) /
-                     (m * n - 1)) ** 0.5
+        src_sigma = ((im_lab * im_lab).sum(axis=0).sum(axis=0)
+                     / (m * n - 1)) ** 0.5
 
     # scale to unit variance
     for i in range(3):

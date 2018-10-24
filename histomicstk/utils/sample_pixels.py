@@ -56,8 +56,8 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
     """
 
     if (sample_fraction is None) == (sample_approximate_total is None):
-        raise ValueError('Exactly one of sample_fraction and ' +
-                         'sample_approximate_total must have a value.')
+        raise ValueError('Exactly one of sample_fraction and '
+                         + 'sample_approximate_total must have a value.')
 
     ts = large_image.getTileSource(slide_path)
 

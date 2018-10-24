@@ -67,12 +67,12 @@ def gradient_diffusion(im_dx, im_dy, im_fgnd_mask,
         DivY, DivX = np.gradient(Div)
 
         # calculate laplacians of current solution
-        im_vx += dt * (mu * spf.laplace(im_vx) +
-                       (lamda + mu) * DivX +
-                       im_fgnd_mask * (im_dx - im_vx))
-        im_vy += dt * (mu * spf.laplace(im_vy) +
-                       (lamda + mu) * DivY +
-                       im_fgnd_mask * (im_dy - im_vy))
+        im_vx += dt * (mu * spf.laplace(im_vx)
+                       + (lamda + mu) * DivX
+                       + im_fgnd_mask * (im_dx - im_vx))
+        im_vy += dt * (mu * spf.laplace(im_vy)
+                       + (lamda + mu) * DivY
+                       + im_fgnd_mask * (im_dy - im_vy))
 
     # return solution
     return im_vx, im_vy

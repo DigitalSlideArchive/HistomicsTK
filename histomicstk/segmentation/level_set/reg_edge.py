@@ -93,8 +93,8 @@ def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
         # area and boundary-length energy function terms
         iPhi = impulse(im_phi, epsilon)
         Area = iPhi * G
-        Edge = iPhi * (dG[0] * (dPhi[0] / (mPhi + 1e-10)) +
-                       dG[1] * (dPhi[1] / (mPhi + 1e-10))) + iPhi * G * Curve
+        Edge = iPhi * (dG[0] * (dPhi[0] / (mPhi + 1e-10))
+                       + dG[1] * (dPhi[1] / (mPhi + 1e-10))) + iPhi * G * Curve
 
         # evolve level-set function
         im_phi = im_phi + dt * (mu * Reg + lamda * Edge + alpha * Area)

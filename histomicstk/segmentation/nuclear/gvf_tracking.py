@@ -111,10 +111,10 @@ def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
                                 Trajectory[points-1, 0]])
 
             # check image edge
-            if ((Trajectory[points-1, 0] + xStep < 0) or
-                (Trajectory[points-1, 0] + xStep > N-1) or
-                (Trajectory[points-1, 1] + yStep < 0) or
-                    (Trajectory[points-1, 1] + yStep > M-1)):
+            if ((Trajectory[points-1, 0] + xStep < 0)
+                or (Trajectory[points-1, 0] + xStep > N-1)
+                or (Trajectory[points-1, 1] + yStep < 0)
+                    or (Trajectory[points-1, 1] + yStep > M-1)):
                         break
 
             # add new point to trajectory list
@@ -150,13 +150,13 @@ def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
                 phi = np.pi
             else:
                 phi = np.arccos(dy[Trajectory[points-1, 1],
-                                   Trajectory[points-1, 0]] *
-                                dy[Trajectory[points, 1],
-                                   Trajectory[points, 0]] +
-                                dx[Trajectory[points-1, 1],
-                                   Trajectory[points-1, 0]] *
-                                dx[Trajectory[points, 1],
-                                   Trajectory[points, 0]])
+                                   Trajectory[points-1, 0]]
+                                * dy[Trajectory[points, 1],
+                                     Trajectory[points, 0]]
+                                + dx[Trajectory[points-1, 1],
+                                     Trajectory[points-1, 0]]
+                                * dx[Trajectory[points, 1],
+                                     Trajectory[points, 0]])
 
             # increment trajectory length counter
             points += 1

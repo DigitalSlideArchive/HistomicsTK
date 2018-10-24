@@ -160,10 +160,10 @@ def seed_contours(I, Delta=0.3):
         Gradient = np.hstack((np.nan, I[i, 2:] - I[i, 0:-2], np.nan))
 
         # identify local maxima and minimia of row 'i' of 'I'
-        Maxima = ((I[i, 1:-1] >= I[i, 0:-2]) &
-                  (I[i, 1:-1] > I[i, 2:])).nonzero()[0] + 1
-        Minima = ((I[i, 1:-1] < I[i, 0:-2]) &
-                  (I[i, 1:-1] <= I[i, 2:])).nonzero()[0] + 1
+        Maxima = ((I[i, 1:-1] >= I[i, 0:-2])
+                  & (I[i, 1:-1] > I[i, 2:])).nonzero()[0] + 1
+        Minima = ((I[i, 1:-1] < I[i, 0:-2])
+                  & (I[i, 1:-1] <= I[i, 2:])).nonzero()[0] + 1
 
         # identify transitions - start of intervals of monotonic non-increase
         dI = np.sign(I[i, 1:] - I[i, 0:-1])
@@ -190,8 +190,8 @@ def seed_contours(I, Delta=0.3):
                     MinPos = Index[0]
 
                     # increment transition point to beyond current maxima
-                    while ((TranPos < Transitions.size) &
-                           (Transitions[TranPos] < Maxima[MaxPos])):
+                    while ((TranPos < Transitions.size)
+                           & (Transitions[TranPos] < Maxima[MaxPos])):
                         TranPos += 1
 
                     # add minima to current maxima until transition is reached
@@ -742,8 +742,8 @@ def angle_score(ax1, ay1, bx1, by1, ax2, ay2, bx2, by2, cx1, cy1, cx2, cy2):
     kCutAlpha = np.arctan2(cy1 - cy2, cx2 - cx1)
 
     # calculate angle score
-    Score = (np.abs(np.pi/2 - (jCutAlpha - jHullAlpha)) +
-             np.abs(np.pi/2 - (kCutAlpha - kHullAlpha))) / np.pi
+    Score = (np.abs(np.pi/2 - (jCutAlpha - jHullAlpha))
+             + np.abs(np.pi/2 - (kCutAlpha - kHullAlpha))) / np.pi
 
     return Score
 
