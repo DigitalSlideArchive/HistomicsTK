@@ -37,6 +37,7 @@ var DrawWidget = Panel.extend({
         this.annotation = settings.annotation;
         this.collection = this.annotation.elements();
         this.viewer = settings.viewer;
+        this.setViewer(settings.viewer);
         this._drawingType = settings.drawingType || null;
 
         this._highlighted = {};
