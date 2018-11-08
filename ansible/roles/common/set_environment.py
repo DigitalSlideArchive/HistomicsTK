@@ -108,7 +108,7 @@ def adjust_ids(user_name):  # noqa
 def set_hosts():
     """
     Modify the /etc/hosts file to add a dockerhost entry and, if either the
-    HOST_MONGO and HOST_RMQ environment variables are equal to 'true', also
+    HOST_MONGO and HOST_RMQ environment variables are equal to 'true', also add
     the appropriate mongodb and rmq entries.
     """
     hostip = os.popen('netstat -nr').read().split('\n0.0.0.0')[1].strip().split()[0]
@@ -120,9 +120,15 @@ def set_hosts():
         if 'mongodb' not in [line.split()[-1] for line in hosts]:
             hosts.append('%s mongodb' % hostip)
             changed = True
-    if os.environ.get('HOST_RMQ') == 'true':
+    if os.environ.get('HOST_RMQ'):
+        rmqhost = os.environ.get('HOST_RMQ')
+        if rmqhost == 'true':
+            rmqhost = hostip
+        else:
+            import socket
+            rmqhost = socket.gethostbyname(rmqhost)
         if 'rmq' not in [line.split()[-1] for line in hosts]:
-            hosts.append('%s rmq' % hostip)
+            hosts.append('%s rmq' % rmqhost)
             changed = True
     hosts.append('%s dockerhost' % hostip)
     changed = True

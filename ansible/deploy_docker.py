@@ -12,6 +12,7 @@ import socket
 import sys
 import tarfile
 import time
+import uuid
 from distutils.version import LooseVersion
 
 if not (LooseVersion('1.9') <= LooseVersion(docker.version)):
@@ -296,7 +297,8 @@ def container_start_mongodb(client, env, key='mongodb', mongo='docker',
         client.start(container=ctn.get('Id'))
 
 
-def container_start_rmq(client, env, key='rmq', rmq='docker', **kwargs):
+def container_start_rmq(client, env, key='rmq', rmq='docker', rmqport=None,
+                        **kwargs):
     """
     Start a rabbitmq container if desired, or set an environment variable so
     other containers know where to find it.
@@ -307,6 +309,7 @@ def container_start_rmq(client, env, key='rmq', rmq='docker', **kwargs):
     :param rmq: 'docker' to use a docker for rabbitmq, 'host' to use the docker
         host, otherwise the IP for the rabbitmq instance, where DOCKER_HOST
         maps to the docker host and anything else is passed through.
+    :param rmqport: if specified, docker RMQ port to expose
     """
     if rmq == 'docker':
         image = tag_with_version(key, **kwargs)
@@ -324,6 +327,9 @@ def container_start_rmq(client, env, key='rmq', rmq='docker', **kwargs):
                 'name': name,
                 # 'ports': [15672],  # for management access
             }
+            if rmqport:
+                params['ports'] = [5672]
+                config['port_bindings'] = {5672: int(rmqport)}
             print('Creating %s - %s' % (image, name))
             ctn = client.create_container(
                 host_config=client.create_host_config(**config),
@@ -335,7 +341,7 @@ def container_start_rmq(client, env, key='rmq', rmq='docker', **kwargs):
             print('Starting %s - %s' % (image, name))
         client.start(container=ctn.get('Id'))
     else:
-        env['HOST_RMQ'] = 'true'
+        env['HOST_RMQ'] = 'true' if rmq == 'host' else rmq
         # If we generate the girder worker config file on the fly, update this
         # to something like:
         # env['HOST_RMQ'] = rmq if rmq != 'host' else 'DOCKER_HOST'
@@ -373,11 +379,13 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
         config_mounts(kwargs.get('mount'), config)
         if rmq == 'docker':
             config['links'][ImageList['rmq']['name']] = 'rmq'
+        else:
+            env['HOST_RMQ'] = 'true' if rmq == 'host' else rmq
         env['GIRDER_WORKER_TMP_ROOT'] = worker_tmp_root
         params = {
             'image': image,
             'detach': True,
-            'hostname': key,
+            'hostname': '%s_%s' % (key, str(uuid.uuid1(uuid.getnode(), 0))[24:]),
             'name': name,
             'environment': env.copy(),
         }
@@ -809,7 +817,7 @@ def wait_for_girder(client, ctn, maxWait=3600):
     sys.stdout.write('Took {} seconds\n'.format(time.time() - starttime))
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':   # noqa
     parser = argparse.ArgumentParser(
         description='Provision and run HistomicsTK in docker containers.')
     parser.add_argument(
@@ -863,6 +871,11 @@ if __name__ == '__main__':
         '(host path)[:(name)[:ro]].  If no name is specified, mountX is used, '
         'starting at mount1.')
     parser.add_argument(
+        '--only', '-o',
+        help='A comma separated list to only start specified containers.  '
+        'Defaults to all containers (%s).' % (','.join([
+            key for key in ImageList.keys() if key != 'cli']))),
+    parser.add_argument(
         '--password', '--pass', '--passwd', '--pw',
         const='', default=None, nargs='?',
         help='Override the Girder admin password used in provisioning.  Set '
@@ -887,12 +900,15 @@ if __name__ == '__main__':
         '--retry', '-r', action='store_true', default=True,
         help='Retry builds and provisioning until they succeed')
     parser.add_argument(
+        '--rmqport', type=int,
+        help='RabbitMQ access port (commonly 5672).')
+    parser.add_argument(
         '--no-retry', '--once', '-1', dest='retry', action='store_false',
         help='Do not retry builds and provisioning until they succeed')
     parser.add_argument(
         '--rmq', default='docker',
-        choices=['docker', 'host'],
-        help='Either use rabbitmq from docker or from host.')
+        help='Either use rabbitmq from docker or from host (docker, host, or '
+        'IP adress or hostname of host.')
     parser.add_argument(
         '--status', '-s', action='store_true',
         help='Report the status of relevant docker containers and images.')
@@ -923,6 +939,12 @@ if __name__ == '__main__':
             key, tag, dockerfile = imagestr.split(':')
             ImageList[key]['tag'] = tag
             ImageList[key]['dockerfile'] = dockerfile
+
+    if args.only:
+        only = args.only.split(',')
+        for key in ImageList.keys():
+            if key not in only:
+                del ImageList[key]
 
     if args.info or args.command == 'info':
         show_info()
