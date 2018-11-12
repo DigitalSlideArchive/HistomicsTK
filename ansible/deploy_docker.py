@@ -103,6 +103,8 @@ def containers_provision(**kwargs):  # noqa
     if password:
         extra_vars['girder_admin_password'] = password
         extra_vars['girder_no_create_admin'] = True
+    if kwargs.get('worker_api_url'):
+        extra_vars['girder_api_url'] = kwargs['worker_api_url']
     if kwargs.get('cli'):
         extra_vars['cli_image'] = tag_with_version('cli', **kwargs)
         if kwargs['cli'] == 'test':
@@ -916,6 +918,10 @@ if __name__ == '__main__':   # noqa
         '--username', '--user', const='', default=None, nargs='?',
         help='Override the Girder admin username used in provisioning.  Set '
         'to an empty string to be prompted for username and password.')
+    parser.add_argument(
+        '--worker-api-url',
+        help='The alternate Girder API URL used by workers to reach Girder.  '
+        'This defaults to http://histomicstk:8080/api/v1')
     parser.add_argument(
         '--worker-tmp-root', '--tmp', default='/tmp/girder_worker',
         help='The path to use for the girder_worker tmp_root.  This must be '
