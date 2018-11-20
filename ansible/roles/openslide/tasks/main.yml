@@ -143,6 +143,17 @@
   args:
     chdir: "{{ root_dir }}/openslide-3.4.1"
 
+- name: Copy patches
+  copy:
+    src: "{{ role_path }}/files/openslide-vendor-mirax.c.patch"
+    dest: "{{ root_dir }}/openslide-3.4.1"
+    mode: 0644
+
+- name: Patch mirax reader
+  shell: patch src/openslide-vendor-mirax.c openslide-vendor-mirax.c.patch
+  args:
+    chdir: "{{ root_dir }}/openslide-3.4.1"
+
 - name: Build openslide
   command: make -j2
   args:

@@ -1,0 +1,79 @@
+--- /root/.vim_backup/openslide-vendor-mirax.c_150420224229	2018-11-20 13:35:12.900269121 +0000
++++ src/openslide-vendor-mirax.c	2018-11-20 14:01:14.493237182 +0000
+@@ -398,6 +398,20 @@
+   char *dirname = g_strndup(filename, strlen(filename) - strlen(MRXS_EXT));
+   char *slidedat_path = g_build_filename(dirname, SLIDEDAT_INI, NULL);
+   bool ok = g_file_test(slidedat_path, G_FILE_TEST_EXISTS);
++  /* Handle Girder-style file paths */
++  if (!ok) {
++    char *basename = g_path_get_dirname(filename);
++    if (basename) {
++      if (g_str_has_suffix(basename, MRXS_EXT)) {
++        g_free(slidedat_path);
++        g_free(dirname);
++        dirname = g_strndup(basename, strlen(basename) - strlen(MRXS_EXT));
++        slidedat_path = g_build_filename(dirname, SLIDEDAT_INI, SLIDEDAT_INI, NULL);
++        ok = g_file_test(slidedat_path, G_FILE_TEST_EXISTS);
++      }
++      g_free(basename);
++    }
++  }
+   g_free(slidedat_path);
+   g_free(dirname);
+   if (!ok) {
+@@ -1487,6 +1501,7 @@
+   struct level **levels = NULL;
+ 
+   char *dirname = NULL;
++  bool girder_paths = false;
+ 
+   GKeyFile *slidedat = NULL;
+   GError *tmp_err = NULL;
+@@ -1531,9 +1546,20 @@
+ 
+   // get directory from filename
+   dirname = g_strndup(filename, strlen(filename) - strlen(MRXS_EXT));
++  if (!g_file_test(dirname, G_FILE_TEST_IS_DIR)) {
++    g_free(dirname);
++    char *basename = g_path_get_dirname(filename);
++    dirname = g_strndup(basename, strlen(basename) - strlen(MRXS_EXT));
++    g_free(basename);
++    girder_paths = true;
++  }
+ 
+   // first, check slidedat
+-  tmp = g_build_filename(dirname, SLIDEDAT_INI, NULL);
++  if (!girder_paths) {
++    tmp = g_build_filename(dirname, SLIDEDAT_INI, NULL);
++  } else {
++    tmp = g_build_filename(dirname, SLIDEDAT_INI, SLIDEDAT_INI, NULL);
++  }
+   // hash the slidedat
+   if (!_openslide_hash_file(quickhash1, tmp, err)) {
+     goto FAIL;
+@@ -1653,7 +1679,11 @@
+ 
+     gchar *name;
+     READ_KEY_OR_FAIL(name, slidedat, GROUP_DATAFILE, tmp, value);
+-    datafile_paths[i] = g_build_filename(dirname, name, NULL);
++    if (!girder_paths) {
++      datafile_paths[i] = g_build_filename(dirname, name, NULL);
++    } else {
++      datafile_paths[i] = g_build_filename(dirname, name, name, NULL);
++    }
+     g_free(name);
+ 
+     g_free(tmp);
+@@ -1777,7 +1807,11 @@
+   */
+ 
+   // read indexfile
+-  tmp = g_build_filename(dirname, index_filename, NULL);
++  if (!girder_paths) {
++    tmp = g_build_filename(dirname, index_filename, NULL);
++  } else {
++    tmp = g_build_filename(dirname, index_filename, index_filename, NULL);
++  }
+   indexfile = _openslide_fopen(tmp, "rb", err);
+   g_free(tmp);
+   tmp = NULL;
