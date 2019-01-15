@@ -102,16 +102,23 @@
 - name: Create directory for build
   file: state=directory path="{{ root_dir }}/girder/clients/web/static/built"
 
-- name: Install numpy (must be installed before large_image plugin)
+- name: Install scikit-build (must be installed before HistomicsTK plugin)
   pip:
-    name: numpy
+    name: scikit-build
     extra_args: "-U --upgrade-strategy eager"
     state: present
   become: true
 
-- name: Install scikit-build (must be installed before HistomicsTK plugin)
+- name: Install scipy (version requirement because of scikit-image)
   pip:
-    name: scikit-build
+    name: 'scipy<1.2'
+    extra_args: "-U --upgrade-strategy eager"
+    state: present
+  become: true
+
+- name: Install numpy (must be installed before large_image plugin)
+  pip:
+    name: 'numpy<1.16'
     extra_args: "-U --upgrade-strategy eager"
     state: present
   become: true
