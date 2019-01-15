@@ -110,7 +110,8 @@ install:
     - pip install -U --upgrade-strategy eager -r requirements-dev.txt
     - pip install -U --upgrade-strategy eager -e .[worker]
     - cd $large_image_path
-    - pip install --no-cache-dir numpy>=1.12.1
+    - pip install --no-cache-dir 'numpy>=1.12.1,<1.16'
+    - pip install --no-cache-dir 'scipy<1.2'
     - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
 
     - pip install -U --upgrade-strategy eager .[memcached,openslide]
