@@ -53,7 +53,8 @@ WORKDIR /opt/histomicstk/girder
 EXPOSE 8080
 
 # Install npx and girder node_modules to aid testing
-RUN sudo npm install -g npx 
+RUN sudo npm install -g npx && \
+    sudo chown -R ubuntu:ubuntu /home/ubuntu/.npm
 RUN npm install
 
 # If the environment variable
