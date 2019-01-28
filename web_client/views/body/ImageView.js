@@ -155,6 +155,17 @@ var ImageView = View.extend({
                 // store a reference to the underlying viewer
                 this.viewer = this.viewerWidget.viewer;
 
+                this.imageWidth = this.viewer.maxBounds().right;
+                this.imageHeight = this.viewer.maxBounds().bottom;
+                // allow panning off the image slightly
+                var extraPanWidth = 0.1, extraPanHeight = 0;
+                this.viewer.maxBounds({
+                    left: -this.imageWidth * extraPanWidth,
+                    right: this.imageWidth * (1 + extraPanWidth),
+                    top: -this.imageHeight * extraPanHeight,
+                    bottom: this.imageHeight * (1 + extraPanHeight)
+                });
+
                 // set the viewer bounds on first load
                 this.setImageBounds();
 
