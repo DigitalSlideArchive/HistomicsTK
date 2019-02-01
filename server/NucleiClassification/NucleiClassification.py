@@ -85,7 +85,7 @@ def main(args):
 
     print('\n>> CLI Parameters ...\n')
 
-    print args
+    print(args)
 
     #
     # Initiate Dask client
@@ -94,7 +94,7 @@ def main(args):
 
     c = cli_utils.create_dask_client(args)
 
-    print c
+    print(c)
 
     #
     # read model file
