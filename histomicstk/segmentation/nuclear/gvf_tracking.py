@@ -112,10 +112,10 @@ def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
 
             # check image edge
             if ((Trajectory[points-1, 0] + xStep < 0) or
-                (Trajectory[points-1, 0] + xStep > N-1) or
-                (Trajectory[points-1, 1] + yStep < 0) or
+                    (Trajectory[points-1, 0] + xStep > N-1) or
+                    (Trajectory[points-1, 1] + yStep < 0) or
                     (Trajectory[points-1, 1] + yStep > M-1)):
-                        break
+                break
 
             # add new point to trajectory list
             if points < K:  # buffer is not overrun
