@@ -52,6 +52,7 @@ var AnnotationSelector = Panel.extend({
         this._expandedGroups = new Set();
         this._opacity = settings.opacity || 0.9;
         this._fillOpacity = settings.fillOpacity || 1.0;
+        this._showAllAnnotationsState = false;
         this.listenTo(this.collection, 'sync remove update reset change:displayed change:loading', this.render);
         this.listenTo(this.collection, 'change:highlight', this._changeAnnotationHighlight);
         this.listenTo(eventStream, 'g:event.job_status', _.debounce(this._onJobUpdate, 500));
@@ -88,6 +89,9 @@ var AnnotationSelector = Panel.extend({
         this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
         this._changeGlobalOpacity();
         this._changeGlobalFillOpacity();
+        if (this._showAllAnnotationsState) {
+            this.showAllAnnotations();
+        }
         return this;
     },
 
@@ -136,6 +140,9 @@ var AnnotationSelector = Panel.extend({
     toggleAnnotation(evt) {
         var id = $(evt.currentTarget).parents('.h-annotation').data('id');
         var model = this.collection.get(id);
+
+        // any manual change in the display state will reset the "forced display" behavior
+        this._showAllAnnotationsState = false;
         model.set('displayed', !model.get('displayed'));
         if (!model.get('displayed')) {
             model.unset('highlight');
@@ -331,12 +338,14 @@ var AnnotationSelector = Panel.extend({
     },
 
     showAllAnnotations() {
+        this._showAllAnnotationsState = true;
         this.collection.each((model) => {
             model.set('displayed', true);
         });
     },
 
     hideAllAnnotations() {
+        this._showAllAnnotationsState = false;
         this.collection.each((model) => {
             model.set('displayed', false);
         });
