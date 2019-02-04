@@ -206,6 +206,12 @@
       <longflag>min_nucleus_area</longflag>
       <default>80</default>
     </double>
+    <boolean>
+      <name>ignore_border_nuclei</name>
+      <label>Ignore Border Nuclei</label>
+      <description>Ignore/drop nuclei touching the image/tile border</description>
+      <default>false</default>
+    </boolean>
     <string-enumeration>
       <name>nuclei_annotation_format</name>
       <label>Nuclei annotation format</label>
