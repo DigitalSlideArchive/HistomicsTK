@@ -33,7 +33,7 @@ def main(args):
     print('>> Creating stain matrix')
 
     w = utils.get_stain_matrix(args)
-    print w
+    print(w)
 
     # Perform color deconvolution
     print('>> Performing color deconvolution')
@@ -42,13 +42,13 @@ def main(args):
     # write stain images to output
     print('>> Outputting individual stain images')
 
-    print args.outputStainImageFile_1
+    print(args.outputStainImageFile_1)
     skimage.io.imsave(args.outputStainImageFile_1, im_stains[:, :, 0])
 
-    print args.outputStainImageFile_2
+    print(args.outputStainImageFile_2)
     skimage.io.imsave(args.outputStainImageFile_2, im_stains[:, :, 1])
 
-    print args.outputStainImageFile_3
+    print(args.outputStainImageFile_3)
     skimage.io.imsave(args.outputStainImageFile_3, im_stains[:, :, 2])
 
 

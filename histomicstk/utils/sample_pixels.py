@@ -111,7 +111,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
         sample_pixels = (dask.delayed(np.concatenate)(sample_pixels, 0)
                          .compute())
     else:
-        print "Sampling could not identify any foreground regions."
+        print("Sampling could not identify any foreground regions.")
 
     return sample_pixels
 

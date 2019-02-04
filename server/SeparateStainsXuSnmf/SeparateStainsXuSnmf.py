@@ -24,7 +24,7 @@ def main(args):
 
     args.snmf.w_init = utils.get_stain_matrix(args.stains, 2)
 
-    print args.snmf.w_init
+    print(args.snmf.w_init)
 
     # Perform color deconvolution
     print('>> Performing color deconvolution')

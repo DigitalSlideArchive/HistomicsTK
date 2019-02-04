@@ -419,6 +419,11 @@ var ImageView = View.extend({
             }
             annotation.set('loading', true);
             annotation.fetch().then(() => {
+                // abandon this if the annotation should not longer be shown
+                // or we are now showing a different image.
+                if (!annotation.get('displayed') || annotation.get('itemId') !== this.model.id) {
+                    return null;
+                }
                 this.viewerWidget.drawAnnotation(annotation);
                 return null;
             }).always(() => {
