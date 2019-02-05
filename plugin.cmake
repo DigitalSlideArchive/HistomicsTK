@@ -99,6 +99,10 @@ add_histomicstk_python_test(segmentation_label
     DBNAME core_trace_boundary
 )
 
+add_histomicstk_python_test(segmentation_label
+    SUBMODULE DeleteBorderLabelTest
+    DBNAME core_delete_border
+)
 
 add_histomicstk_python_test(nuclei_segmentation
     SUBMODULE NucleiSegmentationTest

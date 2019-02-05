@@ -12,6 +12,7 @@ import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.features as htk_features
 import histomicstk.utils as htk_utils
 import histomicstk.segmentation.nuclear as htk_nuclear
+import histomicstk.segmentation.label as htk_seg_label
 
 import large_image
 
@@ -54,12 +55,19 @@ def compute_tile_nuclei_features(slide_path, tile_position, args, it_kwargs,
     im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
 
     # segment nuclei
-    im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(im_nuclei_stain,
-                                                          args.foreground_threshold,
-                                                          args.min_radius,
-                                                          args.max_radius,
-                                                          args.min_nucleus_area,
-                                                          args.local_max_search_radius)
+    im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
+        im_nuclei_stain,
+        args.foreground_threshold,
+        args.min_radius,
+        args.max_radius,
+        args.min_nucleus_area,
+        args.local_max_search_radius
+    )
+
+    # Delete border nuclei
+    if args.ignore_border_nuclei is True:
+
+        im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
 
     # generate nuclei annotations
     nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(

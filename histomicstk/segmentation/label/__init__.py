@@ -9,6 +9,7 @@ from .compact import compact
 from .dilate_xor import dilate_xor
 from .condense import condense
 from .delete import delete
+from .delete_border import delete_border
 from .perimeter import perimeter
 from .shuffle import shuffle
 from .trace_object_boundaries import trace_object_boundaries
@@ -27,6 +28,7 @@ __all__ = (
     'dilate_xor',
     'condense',
     'delete',
+    'delete_border',
     'perimeter',
     'shuffle',
     'split',
