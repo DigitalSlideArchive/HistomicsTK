@@ -164,6 +164,7 @@
       <name>ignore_border_nuclei</name>
       <label>Ignore Border Nuclei</label>
       <description>Ignore/drop nuclei touching the image/tile border</description>
+      <longflag>ignore_border_nuclei</longflag>
       <default>false</default>
     </boolean>
   </parameters>

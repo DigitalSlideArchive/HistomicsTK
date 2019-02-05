@@ -12,7 +12,7 @@ import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.features as htk_features
 import histomicstk.utils as htk_utils
 import histomicstk.segmentation.nuclear as htk_nuclear
-import histomicstk.segmenation.label as htk_seg_label
+import histomicstk.segmentation.label as htk_seg_label
 
 import large_image
 
