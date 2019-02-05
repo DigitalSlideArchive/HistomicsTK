@@ -1,6 +1,8 @@
 language: python
 python:
   - "2.7"
+  - "3.5"
+  - "3.6"
 
 cache:
   directories:
@@ -70,24 +72,30 @@ before_install:
 
     - CACHE="$HOME/.cache" OPENJPEG_VERSION=2.1.2 OPENJPEG_FILE=v2.1.2.tar.gz OPENJPEG_DIR=openjpeg-2.1.2 LIBTIFF_VERSION=4.0.8 OPENSLIDE_VERSION=3.4.1 source .install-openslide.sh
 
+    - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "3" ]; then export PY3="true"; else export PY2="true"; fi
     - GIRDER_VERSION=2.x-maintenance
     - GIRDER_WORKER_VERSION=master
     - LARGE_IMAGE_VERSION=master
     - SLICER_CLI_WEB_VERSION=master
     - main_path=$PWD
-    - build_path=$PWD/build
+    - build_path=$HOME/build
     - mkdir -p $build_path
 
-    - girder_path=$build_path/girder
+    - girder_path=$HOME/girder
     - rm -fr $girder_path
     - git clone https://github.com/girder/girder.git $girder_path && git -C $girder_path checkout $GIRDER_VERSION
     - ln -sf $main_path $girder_path/plugins/
     - ls -l $girder_path/plugins
 
-    - girder_worker_path=$girder_path/plugins/girder_worker
+    - girder_worker_path=$HOME/girder_worker
     - git clone https://github.com/girder/girder_worker.git $girder_worker_path && git -C $girder_worker_path checkout $GIRDER_WORKER_VERSION
     - cp $PWD/plugin_tests/data/girder_worker.cfg $girder_worker_path/girder_worker/worker.local.cfg
-    - pip install --no-cache-dir -U --upgrade-strategy eager $girder_worker_path'[girder_io,docker]'
+    - if [ -n "${PY3}" ]; then
+      sudo pip2 install --no-cache-dir -U setuptools &&
+      sudo pip2 install --no-cache-dir -U $girder_worker_path'[girder_io,docker]' ;
+      else
+      pip install --no-cache-dir -U $girder_worker_path'[girder_io,docker]' ;
+      fi
 
     - large_image_path=$girder_path/plugins/large_image
     - git clone https://github.com/girder/large_image.git $large_image_path && git -C $large_image_path checkout $LARGE_IMAGE_VERSION
@@ -130,12 +138,18 @@ install:
     - pip freeze  # report what we have installed
 
 script:
-    - mkdir -p $build_path/girder_testing_build
-    - cd $build_path/girder_testing_build
-    - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} -DCOVERAGE_MINIMUM_PASS=19 -DJS_COVERAGE_MINIMUM_PASS=19 -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" $girder_path
+    - cd $girder_worker_path
+    - python2 -m girder_worker >/tmp/worker.out 2>&1 &
+    - cd $build_path
+    - cmake -DPYTHON_COVERAGE:BOOL=${PY_COVG} -DPYTHON_EXECUTABLE:FILEPATH="`which python`" -DPYTHON_VERSION:STRING=${TRAVIS_PYTHON_VERSION} -DRUN_CORE_TESTS:BOOL="OFF" -DTEST_PLUGINS:STRING="HistomicsTK" $girder_path
     - make -j 5
     - JASMINE_TIMEOUT=15000 ctest -VV -j 3
     - travis-sphinx build --source=$main_path/docs
+
+after_failure:
+  # On failures, show the worker output and other information
+  - pip freeze
+  - cat /tmp/worker.out
 
 after_success:
     - bash <(curl -s https://codecov.io/bash) -R $main_path -s $girder_path

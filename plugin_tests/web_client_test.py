@@ -134,7 +134,7 @@ class WebClientTestCase(web_client_test.WebClientTestCase):
             user, 'user', filters={'name': 'Public'}
         ).next()
 
-        with open(TEST_FILE) as f:
+        with open(TEST_FILE, 'rb') as f:
             file = self.uploadFile('image', f.read(), user, publicFolder)
 
         item = self.model('item').load(file['itemId'], force=True)

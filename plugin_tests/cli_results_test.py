@@ -44,7 +44,7 @@ def tearDownModule():
 
 
 class CliResultsTest(unittest.TestCase):
-    def _runTest(self, cli_args=(), cli_kwargs={}, outputs={},
+    def _runTest(self, cli_args=(), cli_kwargs={}, outputs={},  # noqa
                  contains=[], excludes=[]):
         """
         Test a cli by calling runpy.  Ensure that output files match a
@@ -127,7 +127,7 @@ class CliResultsTest(unittest.TestCase):
                         sys.stderr.write('File hash mismatch: %s\n' % outpath)
                         raise
                 if 'contains' in options:
-                    data = open(outpath, 'rb').read(chunkSize)
+                    data = open(outpath, 'rt').read(chunkSize)
                     for entry in options['contains']:
                         self.assertIn(entry, data)
         except Exception:
@@ -203,7 +203,7 @@ class CliResultsTest(unittest.TestCase):
             cli_args=[
                 'ColorDeconvolution',
                 os.path.join(TEST_DATA_DIR, 'Easy1.png'),
-            ] + ['tmp_out_{}.png'.format(i) for i in 1, 2, 3],
+            ] + ['tmp_out_{}.png'.format(i) for i in (1, 2, 3)],
             outputs={
                 'tmp_out_1.png': dict(
                     hash='ea11f89a7e6752f1d831113472bf78e10d2eff50454ecd76474d7d5ba02e495c',

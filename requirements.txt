@@ -22,7 +22,7 @@ tensorflow>=1.11
 #
 # dask packages
 #
-dask>=0.17.2
+dask>=1.1.0
 distributed>=1.21.6
 tornado
 

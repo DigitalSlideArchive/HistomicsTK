@@ -47,7 +47,7 @@ def process_annotations(event):
             return
 
         try:
-            data = json.loads(''.join(File.download(file)()))
+            data = json.loads(b''.join(File.download(file)()).decode('utf8'))
         except Exception:
             logger.error('Could not parse annotation file')
             raise

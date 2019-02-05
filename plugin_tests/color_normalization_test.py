@@ -73,7 +73,8 @@ class ReinhardNormalizationTest(unittest.TestCase):
 
         # create dask client
         args = {
-            'scheduler': None,
+            # In Python 3 unittesting, the scheduler fails if it uses processes
+            'scheduler': 'multithreading',  # None,
             'num_workers': -1,
             'num_threads_per_worker': 1,
         }
@@ -105,7 +106,8 @@ class BackgroundIntensityTest(unittest.TestCase):
 
         # create dask client
         args = {
-            'scheduler': None,
+            # In Python 3 unittesting, the scheduler fails if it uses processes
+            'scheduler': 'multithreading',  # None,
             'num_workers': -1,
             'num_threads_per_worker': 1,
         }

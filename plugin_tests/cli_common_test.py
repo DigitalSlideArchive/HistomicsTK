@@ -130,7 +130,8 @@ class CliCommonTest(unittest.TestCase):
             'min_nucleus_area': 25,
             'local_max_search_radius': 8,
 
-            'scheduler': None,
+            # In Python 3 unittesting, the scheduler fails if it uses processes
+            'scheduler': 'multithreading',  # None,
             'num_workers': -1,
             'num_threads_per_worker': 1,
         }
