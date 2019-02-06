@@ -1,3 +1,4 @@
+from argparse import Namespace
 from datetime import timedelta
 import psutil
 import numpy as np
@@ -25,7 +26,7 @@ def get_stain_vector(args, index):
     latter's elements must be -1.
 
     """
-    args = vars(args)
+    args = args._asdict() if hasattr(args, '_asdict') else vars(args)
     stain = args['stain_' + str(index)]
     stain_vector = args['stain_' + str(index) + '_vector']
     if all(x == -1 for x in stain_vector):  # Magic default value
@@ -191,15 +192,15 @@ def create_dask_client(args):
         else:
             num_workers = args.num_threads_per_worker
         print('Starting dask thread pool with %d thread(s)' % num_workers)
-        dask.set_options(pool=ThreadPool(num_workers))
-        dask.set_options(get=dask.threaded.get)
+        dask.config.set(pool=ThreadPool(num_workers))
+        dask.config.set(scheduler='threads')
         return
 
     if scheduler == 'multiprocessing':
         import dask.multiprocessing
         import multiprocessing
 
-        dask.set_options(get=dask.multiprocessing.get)
+        dask.config.set(scheduler='processes')
         if args.num_workers <= 0:
             num_workers = max(
                 1, psutil.cpu_count(logical=False) + args.num_workers)
@@ -207,7 +208,7 @@ def create_dask_client(args):
             num_workers = args.num_workers
 
         print('Starting dask multiprocessing pool with %d worker(s)' % num_workers)
-        dask.set_options(pool=multiprocessing.Pool(
+        dask.config.set(pool=multiprocessing.Pool(
             num_workers, initializer=dask.multiprocessing.initialize_worker_process))
         return
 
@@ -304,8 +305,7 @@ def splitArgs(args, split='_'):
         s = k.split(split, 1)
         return (None, s[0]) if len(s) == 1 else s
 
-    Namespace = type(args)
-    args = vars(args)
+    args = args._asdict() if hasattr(args, '_asdict') else vars(args)
     firstKeys = {splitKey(k)[0] for k in args}
     result = Namespace()
     for k in firstKeys - {None}:
@@ -324,7 +324,7 @@ def sample_pixels(args):
     and handles the special default values.
 
     """
-    args = vars(args).copy()
+    args = (args._asdict() if hasattr(args, '_asdict') else vars(args)).copy()
     for k in 'magnification', 'sample_fraction', 'sample_approximate_total':
         if args[k] == -1:
             del args[k]

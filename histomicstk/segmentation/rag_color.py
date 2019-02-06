@@ -1,5 +1,4 @@
 import numpy as np
-from sets import Set
 
 
 def rag_color(adj_mat):
@@ -51,8 +50,8 @@ def rag_color(adj_mat):
             if NeighborColors.size > 0:
 
                 # find lowest legal color of node 'i'
-                Reference = Set(range(1, ColorCount+1))
-                Diff = Reference.difference(Set(NeighborColors))
+                Reference = set(range(1, ColorCount+1))
+                Diff = Reference.difference(set(NeighborColors))
                 if len(Diff) == 0:
                     ColorCount += 1
                     Colors[i] = ColorCount

@@ -218,7 +218,7 @@ class HistomicsTKCoreTest(base.TestCase):
         endTime = time.time() + 180  # maxTimeout
         while time.time() < endTime:
             resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image', user=self.admin)
-            if resp.output_status.startswith('200') and len(resp.json) == 1:
+            if resp.output_status.startswith(b'200') and len(resp.json) == 1:
                 break
             time.sleep(1)
 
