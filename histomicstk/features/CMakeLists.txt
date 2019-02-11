@@ -1,0 +1,9 @@
+find_package(Cython REQUIRED)
+find_package(NumPy REQUIRED)
+
+add_cython_target(_compute_marginal_glcm_probs_cython CXX)
+add_library(_compute_marginal_glcm_probs_cython MODULE ${_compute_marginal_glcm_probs_cython})
+python_extension_module(_compute_marginal_glcm_probs_cython)
+target_include_directories(_compute_marginal_glcm_probs_cython PRIVATE ${NumPy_INCLUDE_DIR})
+
+install(TARGETS _compute_marginal_glcm_probs_cython LIBRARY DESTINATION histomicstk/features)
