@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy as np
+import pandas as pd
 import skimage.io
 import skimage.measure
 import unittest
@@ -65,12 +66,14 @@ class FeatureExtractionTest(unittest.TestCase):
             np.float)
 
         # segment nuclei
-        im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(im_nuclei_stain,
-                                                              args.foreground_threshold,
-                                                              args.min_radius,
-                                                              args.max_radius,
-                                                              args.min_nucleus_area,
-                                                              args.local_max_search_radius)
+        im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
+            im_nuclei_stain,
+            args.foreground_threshold,
+            args.min_radius,
+            args.max_radius,
+            args.min_nucleus_area,
+            args.local_max_search_radius
+        )
 
         # perform connected component analysis
         nuclei_rprops = skimage.measure.regionprops(im_nuclei_seg_mask)
@@ -137,6 +140,14 @@ class FeatureExtractionTest(unittest.TestCase):
                                 prefix='Cytoplasm.',
                                 match_feature_count=False)
 
+        # fdata.to_csv(os.path.join(
+        #    TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'))
+
+        fdata_gtruth = pd.read_csv(os.path.join(
+            TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'))
+
+        self.assertTrue(fdata.equals(fdata_gtruth))
+
     def test_compute_haralick_features(self):
 
         f = [
@@ -173,6 +184,14 @@ class FeatureExtractionTest(unittest.TestCase):
                                 prefix='Cytoplasm.',
                                 match_feature_count=False)
 
+        # fdata.to_csv(os.path.join(
+        #    TEST_DATA_DIR, 'Easy1_nuclei_haralick_features.csv'))
+
+        fdata_gtruth = pd.read_csv(os.path.join(
+            TEST_DATA_DIR, 'Easy1_nuclei_haralick_features.csv'))
+
+        self.assertTrue(fdata.equals(fdata_gtruth))
+
     def test_compute_gradient_features(self):
 
         expected_feature_list = [
@@ -199,6 +218,14 @@ class FeatureExtractionTest(unittest.TestCase):
                                 prefix='Cytoplasm.',
                                 match_feature_count=False)
 
+        # fdata.to_csv(os.path.join(
+        #    TEST_DATA_DIR, 'Easy1_nuclei_gradient_features.csv'))
+
+        fdata_gtruth = pd.read_csv(os.path.join(
+            TEST_DATA_DIR, 'Easy1_nuclei_gradient_features.csv'))
+
+        self.assertTrue(fdata.equals(fdata_gtruth))
+
     def test_compute_morphometry_features(self):
 
         expected_feature_list = [
@@ -222,6 +249,14 @@ class FeatureExtractionTest(unittest.TestCase):
         self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
                                 match_feature_count=False)
 
+        # fdata.to_csv(os.path.join(
+        #    TEST_DATA_DIR, 'Easy1_nuclei_morphometry_features.csv'))
+
+        fdata_gtruth = pd.read_csv(os.path.join(
+            TEST_DATA_DIR, 'Easy1_nuclei_morphometry_features.csv'))
+
+        self.assertTrue(fdata.equals(fdata_gtruth))
+
     def test_compute_fsd_features(self):
 
         Fs = 6
@@ -234,3 +269,11 @@ class FeatureExtractionTest(unittest.TestCase):
 
         self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
                                 match_feature_count=False)
+
+        # fdata.to_csv(os.path.join(
+        #    TEST_DATA_DIR, 'Easy1_nuclei_fsd_features.csv'))
+
+        fdata_gtruth = pd.read_csv(os.path.join(
+            TEST_DATA_DIR, 'Easy1_nuclei_fsd_features.csv'))
+
+        self.assertTrue(fdata.equals(fdata_gtruth))
