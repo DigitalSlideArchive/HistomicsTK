@@ -109,16 +109,9 @@
     state: present
   become: true
 
-- name: Install scipy (version requirement because of scikit-image)
-  pip:
-    name: 'scipy<1.2'
-    extra_args: "-U --upgrade-strategy eager"
-    state: present
-  become: true
-
 - name: Install numpy (must be installed before large_image plugin)
   pip:
-    name: 'numpy<1.16'
+    name: numpy
     extra_args: "-U --upgrade-strategy eager"
     state: present
   become: true
