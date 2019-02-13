@@ -146,7 +146,7 @@ class FeatureExtractionTest(unittest.TestCase):
         #     index=False)
 
         fdata_gtruth = pd.read_csv(os.path.join(
-           TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'),
+            TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'),
             index_col=None)
 
         pd.testing.assert_frame_equal(fdata, fdata_gtruth)
