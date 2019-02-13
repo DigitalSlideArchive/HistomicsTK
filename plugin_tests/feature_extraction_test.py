@@ -17,8 +17,7 @@ sys.path.append(os.path.normpath(os.path.join(
     os.path.dirname(__file__), '../server')))
 
 
-# TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')
-TEST_DATA_DIR = os.environ['GIRDER_TEST_DATA_PREFIX']
+TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')
 
 
 class FeatureExtractionTest(unittest.TestCase):
