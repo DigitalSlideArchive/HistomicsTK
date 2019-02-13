@@ -368,8 +368,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             ldata.at[r, 'Haralick.IMC2'] = \
                 np.sqrt(1 - np.exp(-2.0*(HXY2-HXY)))
 
-        for fname in ldata.columns:
-            fdata.at[i, fname + '.Mean'] = np.mean(ldata.loc[:, fname])
-            fdata.at[i, fname + '.Range'] = np.ptp(ldata.loc[:, fname])
+        fdata.values[i, ::2] = np.mean(ldata.values, axis=0)
+        fdata.values[i, 1::2] = np.ptp(ldata.values, axis=0)
 
     return fdata
