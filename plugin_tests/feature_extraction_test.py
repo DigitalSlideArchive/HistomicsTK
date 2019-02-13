@@ -17,7 +17,8 @@ sys.path.append(os.path.normpath(os.path.join(
     os.path.dirname(__file__), '../server')))
 
 
-TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')
+# TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')
+TEST_DATA_DIR = os.environ['GIRDER_TEST_DATA_PREFIX']
 
 
 class FeatureExtractionTest(unittest.TestCase):
@@ -140,13 +141,16 @@ class FeatureExtractionTest(unittest.TestCase):
                                 prefix='Cytoplasm.',
                                 match_feature_count=False)
 
+        # Uncomment to generate ground truth
         # fdata.to_csv(os.path.join(
-        #    TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'))
+        #     TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'),
+        #     index=False)
 
         fdata_gtruth = pd.read_csv(os.path.join(
-            TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'))
+           TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'),
+            index_col=None)
 
-        self.assertTrue(fdata.equals(fdata_gtruth))
+        pd.testing.assert_frame_equal(fdata, fdata_gtruth)
 
     def test_compute_haralick_features(self):
 
@@ -184,13 +188,15 @@ class FeatureExtractionTest(unittest.TestCase):
                                 prefix='Cytoplasm.',
                                 match_feature_count=False)
 
+        # Uncomment to generate ground truth
         # fdata.to_csv(os.path.join(
-        #    TEST_DATA_DIR, 'Easy1_nuclei_haralick_features.csv'))
+        #    TEST_DATA_DIR, 'Easy1_nuclei_haralick_features.csv'),
+        #     index=False)
 
         fdata_gtruth = pd.read_csv(os.path.join(
             TEST_DATA_DIR, 'Easy1_nuclei_haralick_features.csv'))
 
-        self.assertTrue(fdata.equals(fdata_gtruth))
+        pd.testing.assert_frame_equal(fdata, fdata_gtruth)
 
     def test_compute_gradient_features(self):
 
@@ -218,13 +224,16 @@ class FeatureExtractionTest(unittest.TestCase):
                                 prefix='Cytoplasm.',
                                 match_feature_count=False)
 
+        # Uncomment to generate ground truth
         # fdata.to_csv(os.path.join(
-        #    TEST_DATA_DIR, 'Easy1_nuclei_gradient_features.csv'))
+        #    TEST_DATA_DIR, 'Easy1_nuclei_gradient_features.csv'),
+        #     index=False)
 
         fdata_gtruth = pd.read_csv(os.path.join(
-            TEST_DATA_DIR, 'Easy1_nuclei_gradient_features.csv'))
+            TEST_DATA_DIR, 'Easy1_nuclei_gradient_features.csv'),
+            index_col=None)
 
-        self.assertTrue(fdata.equals(fdata_gtruth))
+        pd.testing.assert_frame_equal(fdata, fdata_gtruth)
 
     def test_compute_morphometry_features(self):
 
@@ -249,13 +258,15 @@ class FeatureExtractionTest(unittest.TestCase):
         self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
                                 match_feature_count=False)
 
+        # Uncomment to generate ground truth
         # fdata.to_csv(os.path.join(
-        #    TEST_DATA_DIR, 'Easy1_nuclei_morphometry_features.csv'))
+        #   TEST_DATA_DIR, 'Easy1_nuclei_morphometry_features.csv'),
+        #    index=False)
 
         fdata_gtruth = pd.read_csv(os.path.join(
             TEST_DATA_DIR, 'Easy1_nuclei_morphometry_features.csv'))
 
-        self.assertTrue(fdata.equals(fdata_gtruth))
+        pd.testing.assert_frame_equal(fdata, fdata_gtruth)
 
     def test_compute_fsd_features(self):
 
@@ -270,10 +281,12 @@ class FeatureExtractionTest(unittest.TestCase):
         self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
                                 match_feature_count=False)
 
+        # Uncomment to generate ground truth
         # fdata.to_csv(os.path.join(
-        #    TEST_DATA_DIR, 'Easy1_nuclei_fsd_features.csv'))
+        #   TEST_DATA_DIR, 'Easy1_nuclei_fsd_features.csv'),
+        #    index=False)
 
         fdata_gtruth = pd.read_csv(os.path.join(
             TEST_DATA_DIR, 'Easy1_nuclei_fsd_features.csv'))
 
-        self.assertTrue(fdata.equals(fdata_gtruth))
+        pd.testing.assert_frame_equal(fdata, fdata_gtruth)

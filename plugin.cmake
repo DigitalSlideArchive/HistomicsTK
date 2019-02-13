@@ -93,11 +93,11 @@ add_histomicstk_python_test(feature_extraction
     # multiple tests, so add it in one of the tests for now
     # "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
     # "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
-    "plugins/HistomicsTK/Easy1_nuclei_intensity_features.csv.sha512"
-    "plugins/HistomicsTK/Easy1_nuclei_gradient_features.csv.sha512"
-    "plugins/HistomicsTK/Easy1_nuclei_morphometry_features.csv.sha512"
-    "plugins/HistomicsTK/Easy1_nuclei_fsd_features.csv.sha512"
-    "plugins/HistomicsTK/Easy1_nuclei_haralick_features.csv.sha512"
+    "plugins/HistomicsTK/Easy1_nuclei_intensity_features.csv"
+    "plugins/HistomicsTK/Easy1_nuclei_gradient_features.csv"
+    "plugins/HistomicsTK/Easy1_nuclei_morphometry_features.csv"
+    "plugins/HistomicsTK/Easy1_nuclei_fsd_features.csv"
+    "plugins/HistomicsTK/Easy1_nuclei_haralick_features.csv"
 )
 
 add_histomicstk_python_test(segmentation_label
