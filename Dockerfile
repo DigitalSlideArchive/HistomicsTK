@@ -21,7 +21,7 @@ WORKDIR $htk_path
 # Install HistomicsTK and its dependencies
 #   Upgrade setuptools, as the version in Conda won't upgrade cleanly unless it
 # is ignored.
-RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
+RUN pip install --no-cache-dir --upgrade --ignore-installed pip 'setuptools<40.8.0' && \
     pip install --no-cache-dir --upgrade 'git+https://github.com/cdeepakroy/ctk-cli' && \
     # Install requirements.txt via pip; installing via conda causes
     # version issues with our home-built libtiff.
@@ -40,7 +40,7 @@ RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
     # Install HistomicsTK
     python setup.py install && \
     # Create separate virtual environments with CPU and GPU versions of tensorflow
-    pip install --no-cache-dir virtualenv && \
+    pip install --no-cache-dir 'virtualenv<16.4.0' && \
     virtualenv --system-site-packages /venv-gpu && \
     chmod +x /venv-gpu/bin/activate && \
     /venv-gpu/bin/pip install --no-cache-dir tensorflow-gpu>=1.3.0 && \

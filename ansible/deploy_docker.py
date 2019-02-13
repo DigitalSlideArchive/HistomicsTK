@@ -384,6 +384,8 @@ def container_start_worker(client, env, key='worker', rmq='docker', **kwargs):
         else:
             env['HOST_RMQ'] = 'true' if rmq == 'host' else rmq
         env['GIRDER_WORKER_TMP_ROOT'] = worker_tmp_root
+        if 'concurrency' in kwargs:
+            env['GIRDER_WORKER_CONCURRENCY'] = kwargs['concurrency']
         params = {
             'image': image,
             'detach': True,
@@ -843,6 +845,9 @@ if __name__ == '__main__':   # noqa
     parser.add_argument(
         '--no-cli', dest='cli', action='store_false',
         help='Do not pull or install the HistomicsTK cli docker image.')
+    parser.add_argument(
+        '--concurrency', '-j', type=int,
+        help='Girder worker concurrency.')
     parser.add_argument(
         '--conf', '--cfg', '--girder-cfg',
         help='Merge a Girder configuration file with the default '
