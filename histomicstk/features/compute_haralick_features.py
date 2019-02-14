@@ -5,6 +5,8 @@ from .graycomatrixext import graycomatrixext
 from .graycomatrixext import _default_num_levels
 from .graycomatrixext import _default_offsets
 
+from ._compute_marginal_glcm_probs_cython import _compute_marginal_glcm_probs_cython
+
 
 def compute_haralick_features(im_label, im_intensity, offsets=None,
                               num_levels=None, gray_limits=None, rprops=None):
@@ -61,7 +63,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
     from normalized GLCMs (P) of the given list of neighborhood offsets:
 
     Haralick.ASM.Mean, Haralick.ASM.Range : float
-        Mean and range of the angular second moment (ASM) feature for GLCMS
+        Mean and range of the angular second moment (ASM) feature for GLCMs
         of all offsets. It is a measure of image homogeneity and is computed
         as follows:
 
@@ -269,6 +271,15 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
     fdata = pd.DataFrame(np.zeros((numLabels, len(agg_feature_list))),
                          columns=agg_feature_list)
 
+    n_Minus = np.arange(num_levels)
+    n_Plus = np.arange(2 * num_levels - 1)
+
+    x, y = np.mgrid[0:num_levels, 0:num_levels]
+    xy = x * y
+    xy_IDM = 1. / (1 + np.square(x - y))
+
+    e = 0.00001  # small positive constant to avoid log 0
+
     for i in range(numLabels):
 
         # get bounds of an intensity image
@@ -291,29 +302,14 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
 
             nGLCM = arrayGLCM[:, :, r]
 
-            # get marginal-probability matrix summing the rows
-            px = np.sum(nGLCM, axis=1)
-            py = np.sum(nGLCM, axis=0)
-
-            # initialize marginal-probability matrix sets
-            # summing normalizedGLCM such that i+j = k or i-j = k
-            pxPlusy = np.zeros(2*num_levels-1)
-            pxMinusy = np.zeros(num_levels)
-
-            # arbitarily small positive constant to avoid log 0
-            e = 0.00001
-            for n in range(0, num_levels):
-                for m in range(0, num_levels):
-
-                    # gets marginal-probability matrix
-                    pxPlusy[n+m] = pxPlusy[n+m] + nGLCM[n, m]
-                    pxMinusy[abs(n-m)] = pxMinusy[abs(n-m)] + nGLCM[n, m]
+            # get marginal-probabilities
+            px, py, pxPlusy, pxMinusy = _compute_marginal_glcm_probs_cython(
+                nGLCM)
 
             # computes angular second moment
             ldata.at[r, 'Haralick.ASM'] = np.sum(np.square(nGLCM))
 
             # computes contrast
-            n_Minus = np.arange(num_levels)
             ldata.at[r, 'Haralick.Contrast'] = \
                 np.dot(np.square(n_Minus), pxMinusy)
 
@@ -322,8 +318,6 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             meanx = np.dot(n_Minus, px)
             variance = np.dot(px, np.square(n_Minus)) - np.square(meanx)
             nGLCMr = np.ravel(nGLCM)
-            x, y = np.mgrid[0:num_levels, 0:num_levels]
-            xy = x*y
             ldata.at[r, 'Haralick.Correlation'] = \
                 (np.dot(np.ravel(xy), nGLCMr) - np.square(meanx)) / variance
 
@@ -331,12 +325,10 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             ldata.at[r, 'Haralick.SumOfSquares'] = variance
 
             # computes inverse difference moment
-            xy_IDM = 1. / (1+np.square(x-y))
             ldata.at[r, 'Haralick.IDM'] = \
                 np.dot(np.ravel(xy_IDM), nGLCMr)
 
             # computes sum average
-            n_Plus = np.arange(2*num_levels-1)
             ldata.at[r, 'Haralick.SumAverage'] = \
                 np.dot(n_Plus, pxPlusy)
 
@@ -376,8 +368,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             ldata.at[r, 'Haralick.IMC2'] = \
                 np.sqrt(1 - np.exp(-2.0*(HXY2-HXY)))
 
-        for fname in ldata.columns:
-            fdata.at[i, fname + '.Mean'] = np.mean(ldata.loc[:, fname])
-            fdata.at[i, fname + '.Range'] = np.ptp(ldata.loc[:, fname])
+        fdata.values[i, ::2] = np.mean(ldata.values, axis=0)
+        fdata.values[i, 1::2] = np.ptp(ldata.values, axis=0)
 
     return fdata
