@@ -85,7 +85,7 @@ class ReinhardNormalizationTest(unittest.TestCase):
 
         # compute reinhard stats
         wsi_mean, wsi_stddev = htk_cn.reinhard_stats(
-            wsi_path, 0.1, 20)
+            wsi_path, 0.1, magnification=20)
 
         gt_mean = [8.88150931, -0.07665037, 0.02211699]
         gt_stddev = [0.63423921, 0.12760392, 0.02212977]
