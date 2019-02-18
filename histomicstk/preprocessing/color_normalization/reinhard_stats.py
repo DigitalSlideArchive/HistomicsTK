@@ -52,8 +52,11 @@ def reinhard_stats(slide_path, sample_fraction, magnification=None,
 
     # generate a sampling of sample_pixels_rgb pixels from whole-slide image
     sample_pixels_rgb = sample_pixels(
-        slide_path, sample_fraction, magnification,
-        tissue_seg_mag=tissue_seg_mag)
+        slide_path,
+        sample_fraction=sample_fraction,
+        magnification=magnification,
+        tissue_seg_mag=tissue_seg_mag
+    )
 
     # reshape the Nx3 pixel array into a 1 x N x 3 image for lab_mean_std
     sample_pixels_rgb = np.reshape(sample_pixels_rgb,
