@@ -25,7 +25,7 @@
       <longflag>analysis_roi</longflag>
       <default>-1,-1,-1,-1</default>
     </region>
-    <file fileExtensions=".csv,.h5">
+    <file fileExtensions=".csv|.h5">
       <name>outputNucleiFeatureFile</name>
       <label>Output Nuclei Feature file</label>
       <channel>output</channel>
@@ -210,6 +210,7 @@
       <name>ignore_border_nuclei</name>
       <label>Ignore Border Nuclei</label>
       <description>Ignore/drop nuclei touching the image/tile border</description>
+      <longflag>ignore_border_nuclei</longflag>
       <default>false</default>
     </boolean>
     <string-enumeration>
