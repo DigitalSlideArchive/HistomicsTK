@@ -2,7 +2,6 @@ import os
 import sys
 import json
 import time
-import itertools
 
 import numpy as np
 import dask
@@ -54,20 +53,29 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
     im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
 
+    # segment nuclear foreground
+    im_nuclei_fgnd_mask = im_nuclei_stain < args.foreground_threshold
+
     # segment nuclei
     im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
         im_nuclei_stain,
-        args.foreground_threshold,
+        im_nuclei_fgnd_mask,
         args.min_radius,
         args.max_radius,
         args.min_nucleus_area,
         args.local_max_search_radius
     )
 
+    if not np.any(im_nuclei_seg_mask):
+        return []
+
     # Delete border nuclei
     if args.ignore_border_nuclei is True:
 
         im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
+
+        if not np.any(im_nuclei_seg_mask):
+            return []
 
     # generate nuclei annotations
     nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
@@ -249,7 +257,8 @@ def main(args):
 
     tile_nuclei_list = dask.delayed(tile_nuclei_list).compute()
 
-    nuclei_list = list(itertools.chain.from_iterable(tile_nuclei_list))
+    nuclei_list = [anot
+                   for anot_list in tile_nuclei_list for anot in anot_list]
 
     nuclei_detection_time = time.time() - start_time
 

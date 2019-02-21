@@ -54,20 +54,29 @@ def compute_tile_nuclei_features(slide_path, tile_position, args, it_kwargs,
 
     im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
 
+    # segment nuclear foreground
+    im_nuclei_fgnd_mask = im_nuclei_stain < args.foreground_threshold
+
     # segment nuclei
     im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
         im_nuclei_stain,
-        args.foreground_threshold,
+        im_nuclei_fgnd_mask,
         args.min_radius,
         args.max_radius,
         args.min_nucleus_area,
         args.local_max_search_radius
     )
 
+    if not np.any(im_nuclei_seg_mask):
+        return [], None
+
     # Delete border nuclei
     if args.ignore_border_nuclei is True:
 
         im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
+
+        if not np.any(im_nuclei_seg_mask):
+            return [], None
 
     # generate nuclei annotations
     nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
@@ -282,8 +291,9 @@ def main(args):
                          for annot_list, fdata in tile_result_list
                          for annot in annot_list]
 
-    nuclei_fdata = pd.concat([fdata for annot_list, fdata in tile_result_list],
-                             ignore_index=True)
+    nuclei_fdata = pd.concat([
+        fdata for annot_list, fdata in tile_result_list if fdata is not None],
+        ignore_index=True)
 
     nuclei_detection_time = time.time() - start_time
 

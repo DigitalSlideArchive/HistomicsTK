@@ -58,10 +58,16 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
     # identify connected regions of local maxima and define their seeds
     im_label = skimage.measure.label(im_fgnd_mask & (im_response == mval))
 
+    if not np.any(im_label):
+        return im_label, None, None
+
     # compute normalized response
     min_resp = im_response.min()
     max_resp = im_response.max()
     resp_range = max_resp - min_resp
+
+    if resp_range == 0:
+        return np.zeros_like(im_label), None, None
 
     im_response_nmzd = (im_response - min_resp) / resp_range
 
@@ -71,6 +77,9 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
     obj_props = [prop for prop in obj_props if np.isfinite(prop.weighted_centroid).all()]
 
     num_labels = len(obj_props)
+
+    if num_labels == 0:
+        return im_label, None, None
 
     # extract object seeds
     seeds = np.array(
