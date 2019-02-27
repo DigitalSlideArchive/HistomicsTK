@@ -208,9 +208,14 @@ var AnnotationSelector = Panel.extend({
                     model.set('displayed', true);
                 } else {
                     if (models[model.id].get('displayed')) {
-                        model.refresh(true);
+                        if (model.get('_version') !== models[model.id].get('_version')) {
+                            model.refresh(true);
+                            model.set('displayed', true);
+                        }
                     }
-                    model.set('displayed', models[model.id].get('displayed'));
+                    // set without triggering a change; a change reloads and
+                    // rerenders, which is only done if it has changed (above)
+                    model.attributes.displayed = models[model.id].get('displayed');
                 }
             });
             this.render();
@@ -218,6 +223,12 @@ var AnnotationSelector = Panel.extend({
             if (activeId) {
                 this._setActiveAnnotation(this.collection.get(activeId));
             }
+            // remove annotations that are displayed but have been deleted
+            Object.keys(models).forEach((id) => {
+                if (!this.collection.get(id) && models[id].get('displayed')) {
+                    this.viewer.removeAnnotation(models[id]);
+                }
+            });
             return null;
         });
     },
