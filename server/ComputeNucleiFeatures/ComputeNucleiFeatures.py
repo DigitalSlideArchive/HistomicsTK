@@ -67,40 +67,44 @@ def compute_tile_nuclei_features(slide_path, tile_position, args, it_kwargs,
         args.local_max_search_radius
     )
 
-    if not np.any(im_nuclei_seg_mask):
-        return [], None
-
     # Delete border nuclei
     if args.ignore_border_nuclei is True:
 
         im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
 
-        if not np.any(im_nuclei_seg_mask):
-            return [], None
-
     # generate nuclei annotations
-    nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
-        im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
+    nuclei_annot_list = []
+
+    flag_nuclei_found = np.any(im_nuclei_seg_mask)
+
+    if flag_nuclei_found:
+
+        nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
+            im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
 
     # compute nuclei features
-    if args.cytoplasm_features:
-        im_cytoplasm_stain = im_stains[:, :, 1].astype(np.float)
-    else:
-        im_cytoplasm_stain = None
+    fdata = None
 
-    fdata = htk_features.compute_nuclei_features(
-        im_nuclei_seg_mask, im_nuclei_stain, im_cytoplasm_stain,
-        fsd_bnd_pts=args.fsd_bnd_pts,
-        fsd_freq_bins=args.fsd_freq_bins,
-        cyto_width=args.cyto_width,
-        num_glcm_levels=args.num_glcm_levels,
-        morphometry_features_flag=args.morphometry_features,
-        fsd_features_flag=args.fsd_features,
-        intensity_features_flag=args.intensity_features,
-        gradient_features_flag=args.gradient_features,
-    )
+    if flag_nuclei_found:
 
-    fdata.columns = ['Feature.' + col for col in fdata.columns]
+        if args.cytoplasm_features:
+            im_cytoplasm_stain = im_stains[:, :, 1].astype(np.float)
+        else:
+            im_cytoplasm_stain = None
+
+        fdata = htk_features.compute_nuclei_features(
+            im_nuclei_seg_mask, im_nuclei_stain, im_cytoplasm_stain,
+            fsd_bnd_pts=args.fsd_bnd_pts,
+            fsd_freq_bins=args.fsd_freq_bins,
+            cyto_width=args.cyto_width,
+            num_glcm_levels=args.num_glcm_levels,
+            morphometry_features_flag=args.morphometry_features,
+            fsd_features_flag=args.fsd_features,
+            intensity_features_flag=args.intensity_features,
+            gradient_features_flag=args.gradient_features,
+        )
+
+        fdata.columns = ['Feature.' + col for col in fdata.columns]
 
     return nuclei_annot_list, fdata
 
@@ -291,9 +295,15 @@ def main(args):
                          for annot_list, fdata in tile_result_list
                          for annot in annot_list]
 
-    nuclei_fdata = pd.concat([
-        fdata for annot_list, fdata in tile_result_list if fdata is not None],
-        ignore_index=True)
+    nuclei_fdata = pd.DataFrame()
+
+    if len(nuclei_annot_list) > 0:
+
+        nuclei_fdata = pd.concat([
+            fdata
+            for annot_list, fdata in tile_result_list if fdata is not None],
+            ignore_index=True
+        )
 
     nuclei_detection_time = time.time() - start_time
 

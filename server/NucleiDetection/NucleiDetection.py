@@ -66,20 +66,19 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
         args.local_max_search_radius
     )
 
-    if not np.any(im_nuclei_seg_mask):
-        return []
-
     # Delete border nuclei
     if args.ignore_border_nuclei is True:
 
         im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
 
-        if not np.any(im_nuclei_seg_mask):
-            return []
-
     # generate nuclei annotations
-    nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
-        im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
+    nuclei_annot_list = []
+
+    flag_nuclei_found = np.any(im_nuclei_seg_mask)
+
+    if flag_nuclei_found:
+        nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
+            im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
 
     return nuclei_annot_list
 
