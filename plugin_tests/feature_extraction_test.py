@@ -68,7 +68,7 @@ class FeatureExtractionTest(unittest.TestCase):
         # segment nuclei
         im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
             im_nuclei_stain,
-            args.foreground_threshold,
+            im_nuclei_stain < args.foreground_threshold,
             args.min_radius,
             args.max_radius,
             args.min_nucleus_area,

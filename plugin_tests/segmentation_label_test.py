@@ -71,6 +71,7 @@ class DeleteBorderLabelTest(unittest.TestCase):
 
     def test_delete_border(self):
 
+        # check for correct deletion in an image that has border objects
         im_label = np.zeros((10, 10), dtype='int')
         im_label[0:3, 4:7] = 1
         im_label[8:10, 4:7] = 2
@@ -80,3 +81,11 @@ class DeleteBorderLabelTest(unittest.TestCase):
         im_label_del = delete_border(im_label)
 
         np.testing.assert_array_equal(im_label_del, np.zeros_like(im_label))
+
+        # check if it returns original mask if there are no border objects
+        im_label = np.zeros((10, 10), dtype='int')
+        im_label[4:6, 4:6] = 1
+
+        im_label_del = delete_border(im_label)
+
+        np.testing.assert_array_equal(im_label_del, im_label)

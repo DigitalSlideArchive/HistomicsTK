@@ -25,15 +25,22 @@ def delete_border(im_label):
 
     """
 
-    im_border_mask = np.zeros_like(im_label)
-    im_border_mask[:, 0] = 1
-    im_border_mask[:, -1] = 1
-    im_border_mask[0, :] = 1
-    im_border_mask[-1, :] = 1
+    im_label_del = np.zeros_like(im_label)
 
-    border_indices = np.unique(im_label[im_border_mask > 0])
-    border_indices = border_indices[border_indices > 0]
+    if np.any(im_label):
 
-    im_label_del = condense(delete(im_label, border_indices))
+        im_border_mask = np.zeros_like(im_label)
+        im_border_mask[:, 0] = 1
+        im_border_mask[:, -1] = 1
+        im_border_mask[0, :] = 1
+        im_border_mask[-1, :] = 1
+
+        border_indices = np.unique(im_label[im_border_mask > 0])
+        border_indices = border_indices[border_indices > 0]
+
+        if len(border_indices) == 0:
+            return im_label
+
+        im_label_del = condense(delete(im_label, border_indices))
 
     return im_label_del
