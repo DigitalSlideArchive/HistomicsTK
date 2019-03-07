@@ -29,6 +29,8 @@ RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
     pip install --force-reinstall --ignore-installed --upgrade 'git+https://github.com/manthey/pylibtiff@0d89ae2edd37db6c84d0add7ba89ad4b87a0f4e9' && \
     # Install large_image
     pip install --no-cache-dir 'git+https://github.com/girder/large_image#egg=large_image[openslide,memcached]' && \
+    # We could, instead, use large_image from pypi:
+    # pip install --no-cache-dir 'large-image[memcached,openslide,tiff,pil]' && \
     # Install HistomicsTK
     python setup.py install && \
     # Create separate virtual environments with CPU and GPU versions of tensorflow
