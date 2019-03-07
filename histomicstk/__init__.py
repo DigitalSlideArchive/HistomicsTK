@@ -10,6 +10,8 @@ from . import features
 from . import filters
 from . import preprocessing
 
+from . import cli
+
 # list out things that are available for public use
 __all__ = (
 
@@ -19,4 +21,5 @@ __all__ = (
     'preprocessing',
     'segmentation',
     'utils',
+    'cli',
 )

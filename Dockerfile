@@ -56,7 +56,7 @@ RUN python -c "from matplotlib import pylab"
 RUN python -c "import libtiff"
 
 # define entrypoint through which all CLIs can be run
-WORKDIR $htk_path/server
+WORKDIR $htk_path/histomicstk/cli
 
 # Test our entrypoint.  If we have incompatible versions of numpy and
 # openslide, one of these will fail

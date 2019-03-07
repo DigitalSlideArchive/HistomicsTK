@@ -1,7 +1,7 @@
 {
     "name": "HistomicsTK",
     "description": "A Python and REST API for Histopathology Image Analysis",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "dependencies": ["worker", "large_image", "slicer_cli_web"],
     "grunt": {
         "file": "Gruntfile.js"

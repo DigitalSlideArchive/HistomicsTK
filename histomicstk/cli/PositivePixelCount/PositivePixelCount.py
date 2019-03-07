@@ -1,5 +1,4 @@
 import os
-import sys
 
 from ctk_cli import CLIArgumentParser
 import large_image
@@ -8,8 +7,7 @@ import skimage.io
 
 import histomicstk.segmentation.positive_pixel_count as ppc
 
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils  # noqa
+from histomicstk.cli import utils
 
 
 def main(args):

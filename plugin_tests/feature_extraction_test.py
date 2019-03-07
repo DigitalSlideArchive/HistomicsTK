@@ -1,5 +1,4 @@
 import os
-import sys
 import numpy as np
 import pandas as pd
 import skimage.io
@@ -12,9 +11,6 @@ import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.features as htk_features
-
-sys.path.append(os.path.normpath(os.path.join(
-    os.path.dirname(__file__), '../server')))
 
 
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')

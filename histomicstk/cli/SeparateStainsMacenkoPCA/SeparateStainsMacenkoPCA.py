@@ -1,13 +1,9 @@
-import os
-import sys
-
 from ctk_cli import CLIArgumentParser
 import numpy
 
 from histomicstk.preprocessing.color_deconvolution import rgb_separate_stains_macenko_pca
 
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils  # noqa
+from histomicstk.cli import utils
 
 
 def main(args):
