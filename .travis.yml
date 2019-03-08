@@ -74,7 +74,7 @@ before_install:
 
     - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "3" ]; then export PY3="true"; else export PY2="true"; fi
     - GIRDER_VERSION=2.x-maintenance
-    - GIRDER_WORKER_VERSION=master
+    - GIRDER_WORKER_VERSION=v0.5.1
     - LARGE_IMAGE_VERSION=master
     - SLICER_CLI_WEB_VERSION=master
     - main_path=$PWD
