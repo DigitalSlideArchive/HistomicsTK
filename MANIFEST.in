@@ -1,8 +1,14 @@
 include *.rst
-include *.txt
+include requirements.txt
+include CMakeLists.txt
+include *.json
+# include *.xml
 include plugin.json
+include LICENSE
 
 global-exclude __pycache__
 global-exclude *.py[co]
 
-recursive-include docs *.rst conf.py Makefile make.bat
+graft histomicstk
+global-exclude *.so
+# recursive-include histomicstk *.xml 

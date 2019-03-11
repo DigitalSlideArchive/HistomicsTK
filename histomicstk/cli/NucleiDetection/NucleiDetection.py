@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import time
 
@@ -16,12 +15,10 @@ import large_image
 
 from ctk_cli import CLIArgumentParser
 
+from histomicstk.cli import utils as cli_utils
+
 import logging
 logging.basicConfig(level=logging.CRITICAL)
-
-sys.path.append(os.path.normpath(
-    os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils as cli_utils  # noqa
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
