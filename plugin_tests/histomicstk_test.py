@@ -217,9 +217,12 @@ class HistomicsTKCoreTest(base.TestCase):
         self.assertStatusOk(resp)
         endTime = time.time() + 180  # maxTimeout
         while time.time() < endTime:
-            resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image', user=self.admin)
-            if resp.output_status.startswith(b'200') and len(resp.json) == 1:
-                break
+            try:
+                resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image', user=self.admin)
+                if resp.output_status.startswith(b'200') and len(resp.json) == 1:
+                    break
+            except (AssertionError, KeyError):
+                pass
             time.sleep(1)
 
         # Intially, access is public, so all users should see the entry,

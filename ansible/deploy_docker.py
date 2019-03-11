@@ -35,18 +35,18 @@ ImageList = collections.OrderedDict([
         'tag': 'dsarchive/girder_worker',
         'name': 'histomicstk_girder_worker',
         'dockerfile': 'Dockerfile-girder-worker',
-        'pinned': 'v0.1.5',
+        'pinned': 'v0.1.6',
     }),
     ('histomicstk', {
         'tag': 'dsarchive/histomicstk_main',
         'name': 'histomicstk_histomicstk',
         'dockerfile': 'Dockerfile-histomicstk',
-        'pinned': 'v0.1.5',
+        'pinned': 'v0.1.6',
     }),
     ('cli', {
         'tag': 'dsarchive/histomicstk',
         'pull': True,
-        'pinned': 'v0.1.6',
+        'pinned': 'v0.1.7',
     }),
 ])
 
