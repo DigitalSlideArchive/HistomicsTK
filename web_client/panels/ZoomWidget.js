@@ -35,7 +35,6 @@ var ZoomWidget = Panel.extend({
     events: _.extend(Panel.prototype.events, {
         'click .h-zoom-button': '_zoomButton',
         'input .h-zoom-slider': '_zoomSliderInput',
-        'change .h-zoom-slider': '_zoomSliderChange',
         'click .h-download-button-view': '_downloadView',
         'click .h-download-button-area': '_downloadArea'
     }),
@@ -50,8 +49,7 @@ var ZoomWidget = Panel.extend({
     },
     render() {
         var value = 0;
-        var min;
-        var max;
+        var min, max, step = 0.025;
         var buttons;
 
         if (this.viewer) {
@@ -62,8 +60,8 @@ var ZoomWidget = Panel.extend({
         // get the minimum value of the slider on a logarithmic scale
         // (here we expand the range slightly to make sure valid ranges
         // aren't clipped due to the slider step size)
-        min = Math.log2(this.zoomToMagnification(this._minZoom)) - 0.01;
-        max = Math.log2(this._maxMag) + 0.01;
+        min = Math.floor((Math.log2(this.zoomToMagnification(this._minZoom)) - Math.log2(this._maxMag)) / step) * step;
+        max = 0;
 
         // get a list of discrete values to show as buttons
         buttons = _.filter([1, 2.5, 5, 10, 20, 40, 80, 160], (v) => v <= this._maxMag);
@@ -78,8 +76,9 @@ var ZoomWidget = Panel.extend({
             min: min,
             max: max,
             maxNaturalMag: this._maxNaturalMag + 0.01,
-            step: 0.01,
-            value: Math.log2(value),
+            minMag: this.zoomToMagnification(this._minZoom),
+            step: step,
+            value: Math.log2(value) - Math.log2(this._maxMag),
             disabled: !this.renderer,
             buttons: buttons
         }));
@@ -150,7 +149,7 @@ var ZoomWidget = Panel.extend({
      * Get the value of the slider in magnification scale.
      */
     _getSliderValue() {
-        return Math.pow(2, parseFloat(this.$('.h-zoom-slider').val()));
+        return Math.pow(2, Math.log2(this._maxMag) + parseFloat(this.$('.h-zoom-slider').val()));
     },
 
     /**
@@ -158,7 +157,7 @@ var ZoomWidget = Panel.extend({
      */
     _setSliderValue(val) {
         if (val > 0) {
-            val = Math.log2(val);
+            val = Math.log2(val) - Math.log2(this._maxMag);
         } else {
             val = 0;
         }
@@ -180,7 +179,7 @@ var ZoomWidget = Panel.extend({
      */
     _zoomButton(evt) {
         this.setMagnification(this.$(evt.currentTarget).data('value'));
-        this._zoomSliderChange();
+        this._zoomSliderInput();
     },
 
     /**
@@ -249,19 +248,11 @@ var ZoomWidget = Panel.extend({
      * A handler called as the slider is moved.
      */
     _zoomSliderInput() {
-        var val = this._getSliderValue().toFixed(1);
-        this.$('.h-zoom-value').text(val);
-    },
-
-    /**
-     * A handler that is called *after* the slider is moved.
-     */
-    _zoomSliderChange() {
+        var val = this._getSliderValue();
         if (this.renderer) {
-            this.renderer.zoom(
-                this.magnificationToZoom(this._getSliderValue())
-            );
+            this.renderer.zoom(this.magnificationToZoom(val));
         }
+        this.$('.h-zoom-value').text(val.toFixed(1));
     }
 });
 
