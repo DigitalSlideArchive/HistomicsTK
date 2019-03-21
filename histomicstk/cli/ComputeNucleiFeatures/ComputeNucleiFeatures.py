@@ -1,32 +1,30 @@
 import os
-import sys
 import json
 import time
-import itertools
 
 import numpy as np
+import pandas as pd
 import dask
 
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk.features as htk_features
+import histomicstk.utils as htk_utils
 import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.segmentation.label as htk_seg_label
-import histomicstk.utils as htk_utils
 
 import large_image
 
 from ctk_cli import CLIArgumentParser
 
+from histomicstk.cli import utils as cli_utils
+
 import logging
 logging.basicConfig(level=logging.CRITICAL)
 
-sys.path.append(os.path.normpath(
-    os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils as cli_utils  # noqa
 
-
-def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
-                       src_mu_lab=None, src_sigma_lab=None):
+def compute_tile_nuclei_features(slide_path, tile_position, args, it_kwargs,
+                                 src_mu_lab=None, src_sigma_lab=None):
 
     # get slide tile source
     ts = large_image.getTileSource(slide_path)
@@ -54,10 +52,13 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
     im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
 
+    # segment nuclear foreground
+    im_nuclei_fgnd_mask = im_nuclei_stain < args.foreground_threshold
+
     # segment nuclei
     im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
         im_nuclei_stain,
-        args.foreground_threshold,
+        im_nuclei_fgnd_mask,
         args.min_radius,
         args.max_radius,
         args.min_nucleus_area,
@@ -70,19 +71,43 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
         im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
 
     # generate nuclei annotations
-    nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
-        im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
+    nuclei_annot_list = []
 
-    return nuclei_annot_list
+    flag_nuclei_found = np.any(im_nuclei_seg_mask)
+
+    if flag_nuclei_found:
+
+        nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
+            im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
+
+    # compute nuclei features
+    fdata = None
+
+    if flag_nuclei_found:
+
+        if args.cytoplasm_features:
+            im_cytoplasm_stain = im_stains[:, :, 1].astype(np.float)
+        else:
+            im_cytoplasm_stain = None
+
+        fdata = htk_features.compute_nuclei_features(
+            im_nuclei_seg_mask, im_nuclei_stain, im_cytoplasm_stain,
+            fsd_bnd_pts=args.fsd_bnd_pts,
+            fsd_freq_bins=args.fsd_freq_bins,
+            cyto_width=args.cyto_width,
+            num_glcm_levels=args.num_glcm_levels,
+            morphometry_features_flag=args.morphometry_features,
+            fsd_features_flag=args.fsd_features,
+            intensity_features_flag=args.intensity_features,
+            gradient_features_flag=args.gradient_features,
+        )
+
+        fdata.columns = ['Feature.' + col for col in fdata.columns]
+
+    return nuclei_annot_list, fdata
 
 
-def main(args):
-
-    total_start_time = time.time()
-
-    print('\n>> CLI Parameters ...\n')
-
-    print(args)
+def check_args(args):
 
     if not os.path.isfile(args.inputImageFile):
         raise IOError('Input image file does not exist.')
@@ -95,6 +120,22 @@ def main(args):
 
     if len(args.analysis_roi) != 4:
         raise ValueError('Analysis ROI must be a vector of 4 elements.')
+
+    if os.path.splitext(args.outputNucleiFeatureFile)[1] not in ['.csv', '.h5']:
+        raise ValueError('Extension of output feature file must be .csv or .h5')
+
+
+def main(args):
+
+    total_start_time = time.time()
+
+    print('\n>> CLI Parameters ...\n')
+
+    print(args)
+
+    check_args(args)
+
+    feature_file_format = os.path.splitext(args.outputNucleiFeatureFile)[1]
 
     if np.all(np.array(args.analysis_roi) == -1):
         process_whole_image = True
@@ -113,8 +154,7 @@ def main(args):
     print(c)
 
     dask_setup_time = time.time() - start_time
-    print('Dask setup time = {}'.format(
-        cli_utils.disp_time_hms(dask_setup_time)))
+    print('Dask setup time = {} seconds'.format(dask_setup_time))
 
     #
     # Read Input Image
@@ -185,7 +225,7 @@ def main(args):
 
         else:
 
-            tile_fgnd_frac_list = np.full(num_tiles, 1.0)
+            tile_fgnd_frac_list = [1.0] * num_tiles
 
         num_fgnd_tiles = np.count_nonzero(
             tile_fgnd_frac_list >= args.min_fgnd_frac)
@@ -221,13 +261,13 @@ def main(args):
             cli_utils.disp_time_hms(rstats_time)))
 
     #
-    # Detect nuclei in parallel using Dask
+    # Detect and compute nuclei features in parallel using Dask
     #
-    print('\n>> Detecting nuclei ...\n')
+    print('\n>> Detecting nuclei and computing features ...\n')
 
     start_time = time.time()
 
-    tile_nuclei_list = []
+    tile_result_list = []
 
     for tile in ts.tileIterator(**it_kwargs):
 
@@ -237,7 +277,7 @@ def main(args):
             continue
 
         # detect nuclei
-        cur_nuclei_list = dask.delayed(detect_tile_nuclei)(
+        cur_result = dask.delayed(compute_tile_nuclei_features)(
             args.inputImageFile,
             tile_position,
             args, it_kwargs,
@@ -245,16 +285,27 @@ def main(args):
         )
 
         # append result to list
-        tile_nuclei_list.append(cur_nuclei_list)
+        tile_result_list.append(cur_result)
 
-    tile_nuclei_list = dask.delayed(tile_nuclei_list).compute()
+    tile_result_list = dask.delayed(tile_result_list).compute()
 
-    nuclei_list = list(itertools.chain.from_iterable(tile_nuclei_list))
+    nuclei_annot_list = [annot
+                         for annot_list, fdata in tile_result_list
+                         for annot in annot_list]
+
+    nuclei_fdata = pd.DataFrame()
+
+    if len(nuclei_annot_list) > 0:
+
+        nuclei_fdata = pd.concat([
+            fdata
+            for annot_list, fdata in tile_result_list if fdata is not None],
+            ignore_index=True
+        )
 
     nuclei_detection_time = time.time() - start_time
 
-    print('Number of nuclei = {}'.format(len(nuclei_list)))
-
+    print('Number of nuclei = {}'.format(len(nuclei_annot_list)))
     print('Nuclei detection time = {}'.format(
         cli_utils.disp_time_hms(nuclei_detection_time)))
 
@@ -267,12 +318,30 @@ def main(args):
         os.path.basename(args.outputNucleiAnnotationFile))[0]
 
     annotation = {
-        "name":     annot_fname + '-nuclei-' + args.nuclei_annotation_format,
-        "elements": nuclei_list
+        "name": annot_fname + '-nuclei-' + args.nuclei_annotation_format,
+        "elements": nuclei_annot_list
     }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, indent=2, sort_keys=False)
+
+    #
+    # Create CSV Feature file
+    #
+    print('>> Writing CSV feature file')
+
+    if feature_file_format == '.csv':
+
+        nuclei_fdata.to_csv(args.outputNucleiFeatureFile, index=False)
+
+    elif feature_file_format == '.h5':
+
+        nuclei_fdata.to_hdf(args.outputNucleiFeatureFile, 'Features',
+                            format='table', mode='w')
+
+    else:
+
+        raise ValueError('Extension of output feature file must be .csv or .h5')
 
     total_time_taken = time.time() - total_start_time
 
@@ -281,5 +350,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-
     main(CLIArgumentParser().parse_args())

@@ -22,7 +22,6 @@
 
 from argparse import Namespace
 import os
-import sys
 import json
 import collections
 import unittest
@@ -37,8 +36,7 @@ import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.utils as htk_utils
 
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../server')))
-from cli_common import utils as cli_utils  # noqa
+from histomicstk.cli import utils as cli_utils
 
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins/HistomicsTK')
 
@@ -207,7 +205,7 @@ class CliCommonTest(unittest.TestCase):
             # segment nuclei
             im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
                 im_nuclei_stain,
-                args.foreground_threshold,
+                im_nuclei_stain < args.foreground_threshold,
                 args.min_radius,
                 args.max_radius,
                 args.min_nucleus_area,

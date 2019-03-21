@@ -1,14 +1,10 @@
-import os
-import sys
-
 import numpy
 
 from ctk_cli import CLIArgumentParser
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils  # noqa
+from histomicstk.cli import utils
 
 
 def main(args):

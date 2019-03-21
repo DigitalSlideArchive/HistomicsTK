@@ -41,7 +41,7 @@
         runs(function () {
             app.bodyView.once('h:viewerWidgetCreated', function (viewerWidget) {
                 viewerWidget.once('g:beforeFirstRender', function () {
-                    window.geo.util.mockVGLRenderer();
+                    window.geo.util.mockWebglRenderer();
                 });
             });
             $('.h-open-image').click();

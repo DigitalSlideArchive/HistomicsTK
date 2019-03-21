@@ -17,7 +17,6 @@
 #  limitations under the License.
 ###############################################################################
 
-import sys
 import collections
 import numpy as np
 import os
@@ -27,8 +26,7 @@ import unittest
 from histomicstk.preprocessing import color_conversion as htk_cvt
 from histomicstk.preprocessing import color_normalization as htk_cn
 
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../server')))
-from cli_common import utils as cli_utils  # noqa
+from histomicstk.cli import utils as cli_utils
 
 
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
@@ -85,10 +83,10 @@ class ReinhardNormalizationTest(unittest.TestCase):
 
         # compute reinhard stats
         wsi_mean, wsi_stddev = htk_cn.reinhard_stats(
-            wsi_path, 0.1, 20)
+            wsi_path, 0.1, magnification=20)
 
-        gt_mean = [8.88150931, -0.07665037, 0.02211699]
-        gt_stddev = [0.63423921, 0.12760392, 0.02212977]
+        gt_mean = [8.896134, -0.074579,  0.022006]
+        gt_stddev = [0.612143, 0.122667, 0.021361]
 
         np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-2)
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)

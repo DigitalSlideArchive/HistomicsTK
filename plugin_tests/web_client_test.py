@@ -64,7 +64,8 @@ class MockSlicerCLIWebResource(Resource):
         """Return the nuclei detection XML spec as a test case."""
         xml_file = os.path.abspath(
             os.path.join(
-                os.path.dirname(__file__), '..', 'server', 'NucleiDetection', 'NucleiDetection.xml'
+                os.path.dirname(__file__), '..', 'histomicstk', 'cli',
+                'NucleiDetection', 'NucleiDetection.xml'
             )
         )
         with open(xml_file) as f:
@@ -81,8 +82,8 @@ class MockSlicerCLIWebResource(Resource):
         """Return the nuclei feature classification XML spec as a test case."""
         xml_file = os.path.abspath(
             os.path.join(
-                os.path.dirname(__file__), '..', 'server', 'ComputeNucleiFeatures',
-                'ComputeNucleiFeatures.xml'
+                os.path.dirname(__file__), '..', 'histomicstk', 'cli',
+                'ComputeNucleiFeatures', 'ComputeNucleiFeatures.xml'
             )
         )
         with open(xml_file) as f:

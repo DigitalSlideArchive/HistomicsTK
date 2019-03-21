@@ -4,14 +4,9 @@
 from __future__ import print_function
 
 import json
-import os
 import sys
 
-try:
-    from setuptools import find_packages, Extension
-except ImportError:
-    from distutils.core import setup, find_packages
-    from distutils.extension import Extension
+from setuptools import find_packages
 
 try:
     from skbuild import setup
@@ -55,30 +50,37 @@ test_requirements = [
 # if sys.platform == "darwin":  # osx
 #    ext_compiler_args.append("-mmacosx-version-min=10.9")
 
-setup(name='histomicstk',
-      version=pkginfo['version'],
-      description=pkginfo['description'],
-      long_description=readme + '\n\n' + history,
-      author='Kitware, Inc.',
-      author_email='developers@digitalslidearchive.net',
-      url='https://github.com/DigitalSlideArchive/HistomicsTK',
-      packages=find_packages(exclude=['doc']),
-      package_dir={'histomicstk':
-                   'histomicstk'},
-      include_package_data=True,
-      install_requires=requirements,
-      license=license_str,
-      zip_safe=False,
-      keywords='histomicstk',
-      classifiers=[
-          'Development Status :: 2 - Pre-Alpha',
-          'Environment :: Console',
-          'License :: OSI Approved :: Apache Software License',
-          'Operating System :: OS Independent',
-          'Programming Language :: Python :: 2',
-          'Topic :: Scientific/Engineering :: Artificial Intelligence',
-          'Topic :: Software Development :: Libraries :: Python Modules',
-      ],
-      test_suite='plugin_tests',
-      tests_require=test_requirements,
+setup(
+    name='histomicstk',
+    version=pkginfo['version'],
+    description=pkginfo['description'],
+    long_description=readme + '\n\n' + history,
+    author='Kitware, Inc.',
+    author_email='developers@digitalslidearchive.net',
+    url='https://github.com/DigitalSlideArchive/HistomicsTK',
+    packages=find_packages(include=['histomicstk*']),
+    package_dir={
+        'histomicstk': 'histomicstk',
+    },
+    include_package_data=True,
+    # package_data={
+    #    '': ['*.rst', '*.txt', 'LICENSE*', '*.json', '*.xml', '*.pyx'],
+    #     'histomicstk': ['*.rst', '*.txt', 'LICENSE*', '*.json', '*.xml', '*.pyx'],
+    # },
+    install_requires=requirements,
+    license=license_str,
+    keywords='histomicstk',
+    classifiers=[
+        'Development Status :: 2 - Pre-Alpha',
+        'Environment :: Console',
+        'License :: OSI Approved :: Apache Software License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ],
+    # test_suite='plugin_tests',
+    # tests_require=test_requirements,
+    zip_safe=False,
 )

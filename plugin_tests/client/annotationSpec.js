@@ -1150,10 +1150,10 @@ $(function () {
                 runs(function () {
                     var $el = $('.h-annotated-image[data-id="' + histomicsTest.imageId() + '"]');
                     expect($el.length).toBe(1);
-                    // remock VGL
+                    // remock Webgl
                     app.bodyView.once('h:viewerWidgetCreated', function (viewerWidget) {
                         viewerWidget.once('g:beforeFirstRender', function () {
-                            window.geo.util.mockVGLRenderer();
+                            window.geo.util.mockWebglRenderer();
                         });
                     });
                     $el.click();

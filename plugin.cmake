@@ -118,7 +118,7 @@ add_histomicstk_python_test(nuclei_segmentation
     # multiple tests, so add it in one of the tests for now
     # "plugins/HistomicsTK/L1.png"    # put L1.png.sha512 in plugin_tests/data
     # "plugins/HistomicsTK/Easy1.png" # put Easy1.png.sha512 in plugin_tests/data
-    "plugins/HistomicsTK/Easy1_nuclei_seg_kofahi_adaptive.npy" # put Easy1_nuclei_seg_kofahi_adaptive.npy.sha512 in plugin_tests/data
+    "plugins/HistomicsTK/Easy1_nuclei_seg_kofahi.npy" # put Easy1_nuclei_seg_kofahi.npy.sha512 in plugin_tests/data
 )
 
 add_histomicstk_python_test(blob_detection_filters
@@ -153,7 +153,7 @@ add_histomicstk_python_test(cli_results
     # "plugins/HistomicsTK/Easy1.png"
     ENVIRONMENT
     "CLI_LIST_ENTRYPOINT=${PROJECT_SOURCE_DIR}/plugins/slicer_cli_web/server/cli_list_entrypoint.py"
-    "CLI_CWD=${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/server"
+    "CLI_CWD=${CMAKE_CURRENT_LIST_DIR}/histomicstk/cli"
     EXTERNAL_DATA
     "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7-crop.tif"
 )

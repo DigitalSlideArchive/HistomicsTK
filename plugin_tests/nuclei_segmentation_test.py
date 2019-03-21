@@ -20,16 +20,13 @@
 import os
 import unittest
 
-import scipy as sp
 import numpy as np
 import skimage.io
 
 import histomicstk.preprocessing.color_conversion as htk_cvt
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
-import histomicstk.filters.shape as htk_shape_filters
 import histomicstk.segmentation as htk_seg
-
 
 TEST_DATA_DIR = os.path.join(os.environ['GIRDER_TEST_DATA_PREFIX'],
                              'plugins/HistomicsTK')
@@ -71,38 +68,34 @@ class NucleiSegmentationTest(unittest.TestCase):
 
         im_nuclei_stain = im_stains[:, :, nuclei_channel].astype(np.float)
 
-        # segment foreground (assumes nuclei are darker on a bright background)
-        im_nuclei_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
-            im_nuclei_stain < 60)
+        # segment nuclei
+        im_nuclei_seg_mask = htk_seg.nuclear.detect_nuclei_kofahi(
+            im_nuclei_stain, im_nuclei_stain < 60,
+            min_radius=20, max_radius=30,
+            min_nucleus_area=80, local_max_search_radius=10
+        )
 
-        # run adaptive multi-scale LoG filter
-        im_log, im_sigma_max = htk_shape_filters.clog(
-            im_nuclei_stain, im_nuclei_fgnd_mask,
-            sigma_min=20 / np.sqrt(2), sigma_max=30 / np.sqrt(2))
-
-        # apply local maximum clustering
-        im_nuclei_seg_mask, seeds, maxima = htk_seg.nuclear.max_clustering(
-            im_log, im_nuclei_fgnd_mask, 10)
-
-        # filter out small objects
-        im_nuclei_seg_mask = htk_seg.label.area_open(
-            im_nuclei_seg_mask, 80).astype(np.uint8)
-
-        # perform connected component analysis
-        obj_props = skimage.measure.regionprops(im_nuclei_seg_mask)
-
-        num_nuclei = len(obj_props)
+        num_nuclei = len(np.unique(im_nuclei_seg_mask)) - 1
 
         # check if segmentation mask matches ground truth
         gtruth_mask_file = os.path.join(TEST_DATA_DIR,
-                                        'Easy1_nuclei_seg_kofahi_adaptive.npy')
+                                        'Easy1_nuclei_seg_kofahi.npy')
 
         im_gtruth_mask = np.load(gtruth_mask_file)
 
-        obj_props_gtruth = skimage.measure.regionprops(im_gtruth_mask)
+        num_nuclei_gtruth = len(np.unique(im_gtruth_mask)) - 1
 
-        num_nuclei_gtruth = len(obj_props_gtruth)
-
-        assert(num_nuclei == num_nuclei_gtruth)
+        self.assertEqual(num_nuclei, num_nuclei_gtruth)
 
         np.testing.assert_allclose(im_nuclei_seg_mask, im_gtruth_mask)
+
+        # check no nuclei case
+        im_nuclei_seg_mask = htk_seg.nuclear.detect_nuclei_kofahi(
+            255 * np.ones_like(im_nuclei_stain), np.ones_like(im_nuclei_stain),
+            min_radius=20, max_radius=30,
+            min_nucleus_area=80, local_max_search_radius=10
+        )
+
+        num_nuclei = len(np.unique(im_nuclei_seg_mask)) - 1
+
+        self.assertEqual(num_nuclei, 0)

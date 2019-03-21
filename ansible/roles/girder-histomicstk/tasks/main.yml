@@ -89,7 +89,7 @@
   become: true
 
 - name: Install requests (needed to resolve conflict with docker-py)
-  pip: name=requests version=2.10.0
+  pip: name=requests[security]
   become: true
 
 - name: Install ctk-cli using pip

@@ -1,12 +1,8 @@
-import os
-import sys
-
 from ctk_cli import CLIArgumentParser
 
 from histomicstk.preprocessing.color_normalization import background_intensity
 
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-from cli_common import utils  # noqa
+from histomicstk.cli import utils
 
 
 def main(args):

@@ -4,7 +4,8 @@ from histomicstk.utils import sample_pixels
 from histomicstk.preprocessing import color_conversion
 
 
-def reinhard_stats(slide_path, sample_fraction, magnification=None):
+def reinhard_stats(slide_path, sample_fraction, magnification=None,
+                   tissue_seg_mag=1.25):
     """Samples a whole-slide-image to determine colorspace statistics (mean,
     variance) needed to perform global Reinhard color normalization.
 
@@ -25,6 +26,9 @@ def reinhard_stats(slide_path, sample_fraction, magnification=None):
     magnification : scalar
         Desired magnification for sampling. Defaults to native scan
         magnification.
+    tissue_seg_mag: double, optional
+        low resolution magnification at which foreground will be segmented.
+        Default value = 1.25.
 
     Returns
     -------
@@ -47,8 +51,12 @@ def reinhard_stats(slide_path, sample_fraction, magnification=None):
     """
 
     # generate a sampling of sample_pixels_rgb pixels from whole-slide image
-    sample_pixels_rgb = sample_pixels(slide_path, sample_fraction,
-                                      magnification)
+    sample_pixels_rgb = sample_pixels(
+        slide_path,
+        sample_fraction=sample_fraction,
+        magnification=magnification,
+        tissue_seg_mag=tissue_seg_mag
+    )
 
     # reshape the Nx3 pixel array into a 1 x N x 3 image for lab_mean_std
     sample_pixels_rgb = np.reshape(sample_pixels_rgb,
