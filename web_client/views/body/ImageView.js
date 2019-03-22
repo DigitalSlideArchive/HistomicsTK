@@ -28,7 +28,8 @@ import '../../stylesheets/body/image.styl';
 var ImageView = View.extend({
     events: {
         'keydown .h-image-body': '_onKeyDown',
-        'keydown .geojs-map': '_handleKeyDown'
+        'keydown .geojs-map': '_handleKeyDown',
+        'click .h-control-panel-container .s-close-panel-group': '_closeAnalysis'
     },
     initialize(settings) {
         this.viewerWidget = null;
@@ -54,7 +55,8 @@ var ImageView = View.extend({
         this.annotations = new AnnotationCollection();
 
         this.controlPanel = new SlicerPanelGroup({
-            parentView: this
+            parentView: this,
+            closeButton: true
         });
         this.zoomWidget = new ZoomWidget({
             parentView: this
@@ -367,6 +369,12 @@ var ImageView = View.extend({
                 );
             }
         });
+    },
+
+    _closeAnalysis(evt) {
+        evt.preventDefault();
+        router.setQuery('analysis', null, {trigger: false});
+        this.controlPanel.$el.addClass('hidden');
     },
 
     /**
