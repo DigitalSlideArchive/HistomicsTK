@@ -165,4 +165,20 @@ $(function () {
             }, 'region annotation to be removed');
         });
     });
+    describe('close analysis', function () {
+        it('open analysis', function () {
+            var $el = $('.h-analyses-dropdown');
+            var link = $el.find('a:contains("NucleiDetection")');
+            link.click();
+            girderTest.waitForLoad();
+            waitsFor(function () {
+                return $('.h-control-panel-container .s-panel').length;
+            }, 'panels to load');
+        });
+        it('click close', function () {
+            expect($('.s-close-panel-group:visible').length).toBe(1);
+            $('.s-close-panel-group:visible').click();
+            expect($('.s-close-panel-group:visible').length).toBe(0);
+        });
+    });
 });
