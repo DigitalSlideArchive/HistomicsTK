@@ -37,6 +37,6 @@ block content
         - element = element.toJSON();
         - var label = (element.label || {}).value || (element.type === 'polyline' ? (element.closed ? 'polygon' : 'line') : element.type);
         .h-element(data-id=element.id, class=classes)
-          span.icon-cog.h-edit-element(data-toggle='tooltip', title='Change style')
-          span.h-element-label #{label}
-          span.icon-cancel.h-delete-element(data-toggle='tooltip', title='Remove')
+          span.icon-cog.h-edit-element(title='Change style')
+          span.h-element-label(title=label) #{label}
+          span.icon-cancel.h-delete-element(title='Remove')
