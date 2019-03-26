@@ -137,7 +137,9 @@ var ImageView = View.extend({
                 el: this.$('.h-image-view-container'),
                 itemId: this.model.id,
                 hoverEvents: true,
-                highlightFeatureSizeLimit: 1000,
+                // it is very confusing if this value is smaller than the
+                // AnnotationSelector MAX_ELEMENTS_LIST_LENGTH
+                highlightFeatureSizeLimit: 5000,
                 scale: {position: {bottom: 20, right: 10}}
             });
             this.trigger('h:viewerWidgetCreated', this.viewerWidget);
