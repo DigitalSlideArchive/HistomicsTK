@@ -26,11 +26,11 @@ block content
     - var expandedClass = expanded ? 'h-group-expanded' : 'h-group-collapsed';
     .h-annotation-group(class=[expandedClass], data-group-name=groupName)
       .h-annotation-group-name.clearfix
-        = groupName
         if expanded
           i.icon-folder-open
         else
           i.icon-folder
+        = groupName
       if expanded
         - var admin = user && user.get && user.get('admin');
         each annotation in annotations
