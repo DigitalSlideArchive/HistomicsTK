@@ -223,7 +223,10 @@ var DrawWidget = Panel.extend({
     },
 
     _styleGroupEditor() {
-        editStyleGroups(this._style, this._groups);
+        var dlg = editStyleGroups(this._style, this._groups);
+        dlg.$el.on('hidden.bs.modal', () => {
+            this.render();
+        });
     },
 
     _highlightElement(evt) {

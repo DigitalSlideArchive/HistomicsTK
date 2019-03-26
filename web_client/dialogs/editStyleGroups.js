@@ -22,6 +22,10 @@ const EditStyleGroups = View.extend({
         'click .h-delete-style': '_deleteStyle',
         'click #h-reset-defaults': '_resetDefaults',
         'click #h-set-defaults': '_setDefaults',
+        'click #h-export': '_exportGroups',
+        'click #h-import': '_selectImportGroups',
+        'click #h-import-replace': '_toggleImportReplace',
+        'change #h-import-groups': '_importGroups',
         'change .h-style-def': '_updateStyle',
         'changeColor .h-colorpicker': '_updateStyle',
         'change select': '_setStyle'
@@ -181,6 +185,73 @@ const EditStyleGroups = View.extend({
                 timeout: 4000
             });
         });
+    },
+
+    _exportGroups(evt) {
+        this.collection.add(this.model.toJSON(), {merge: true});
+        var data = new Blob([JSON.stringify(this.collection.toJSON(), undefined, 2)], {type: 'text/plain'});
+        var url = window.URL.createObjectURL(data);
+        this.$el.find('#h-export-link').attr('href', url);
+        this.$el.find('#h-export-link')[0].click();
+    },
+
+    _selectImportGroups(evt) {
+        this.$el.find('#h-import-groups').click();
+    },
+
+    _toggleImportReplace(evt) {
+        evt.stopPropagation();
+    },
+
+    _importGroups(evt) {
+        // disable the UI until we succeed or fail
+        this.$el.find('input').girderEnable(false);
+        var replace = this.$el.find('#h-import-replace').prop('checked');
+        var files = evt.target.files;
+        if (files.length === 1) {
+            var fr = new FileReader();
+            fr.onload = (evt) => {
+                this.$el.find('input').girderEnable(true);
+                try {
+                    var groups = JSON.parse(evt.target.result);
+                    var styleModels = groups.map((group) => {
+                        return new StyleModel(group);
+                    });
+                } catch (err) {
+                    this.$('.g-validation-failed-message').text('Failed to parse style specifications.').removeClass('hidden');
+                    return;
+                }
+                if (replace) {
+                    // remove all if we are replacing
+                    while (this.collection.length) {
+                        this.collection.first().destroy();
+                    }
+                    this.collection.reset(styleModels);
+                } else {
+                    // For merge, completely replace existing styles
+                    for (var i = this.collection.length - 1; i >= 0; i -= 1) {
+                        if (styleModels.some((model) => model.id === this.collection.at(i).id)) {
+                            this.collection.at(i).destroy();
+                        }
+                    }
+                    this.collection.add(styleModels, {merge: true});
+                }
+                // make sure we have at least a default style
+                if (!this.collection.get('default')) {
+                    this.collection.push(new StyleModel({id: 'default'}));
+                }
+                this.model.set(this.collection.at(0).toJSON());
+                this.collection.each((model) => { model.save(); });
+                this._newStyle = false;
+                this.$('.g-validation-failed-message').addClass('hidden');
+                this.render();
+            };
+            fr.onerror = (evt) => {
+                this.$el.find('input').girderEnable(true);
+                this.$('.g-validation-failed-message').text('Failed to read file').removeClass('hidden');
+            };
+            fr.readAsText(files[0]);
+        }
     }
 });
 
@@ -195,6 +266,7 @@ const EditStyleGroupsDialog = View.extend({
         // when we cancel
         this.originalCollectionData = this.collection.toJSON();
         this.originalModelData = this.model.toJSON();
+        this.originalModelId = this.model.id;
         this.form = new EditStyleGroups({
             parentView: this,
             model: new StyleModel(this.model.toJSON()),
@@ -221,8 +293,12 @@ const EditStyleGroupsDialog = View.extend({
         var styleModels = _.map(this.originalCollectionData, function (style) {
             return new StyleModel(style);
         });
+        while (this.collection.length) {
+            this.collection.first().destroy();
+        }
         this.collection.reset(styleModels, {merge: true});
         this.model.set(this.originalModelData);
+        this.collection.each((model) => { model.save(); });
     }
 });
 
