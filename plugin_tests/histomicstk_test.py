@@ -21,6 +21,7 @@ config.loadConfig()  # Must reload config to pickup correct port
 
 # boiler plate to start and stop the server
 def setUpModule():
+    config.getConfig()['histomicstk'] = {'restrict_downloads': True}
     base.enabledPlugins.append('HistomicsTK')
     base.startServer()
 
@@ -255,3 +256,24 @@ class HistomicsTKCoreTest(base.TestCase):
             resp = self.request(path='/HistomicsTK/HistomicsTK/docker_image', user=user)
             self.assertStatusOk(resp)
             self.assertEqual(len(resp.json), count)
+
+    def testRestrictDownloads(self):
+        publicFolder = self.model('folder').childFolders(
+            self.user, 'user', filters={'name': 'Public'}
+        ).next()
+        test_file = os.path.join(
+            os.environ['GIRDER_TEST_DATA_PREFIX'], 'plugins', 'HistomicsTK', 'Easy1.png')
+        with open(test_file, 'rb') as f:
+            file = self.uploadFile('image', f.read(), self.user, publicFolder)
+        resp = self.request(
+            path='/item/%s/download' % file['itemId'], user=self.user2, isJson=False)
+        self.assertStatusOk(resp)
+        resp = self.request(
+            path='/item/%s/download' % file['itemId'], user=None)
+        self.assertStatus(resp, 401)
+        resp = self.request(
+            path='/item/%s/tiles/images/noimage' % file['itemId'], user=self.user2)
+        self.assertStatus(resp, 400)
+        resp = self.request(
+            path='/item/%s/tiles/images/noimage' % file['itemId'], user=None)
+        self.assertStatus(resp, 401)

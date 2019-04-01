@@ -11,7 +11,7 @@ from girder.models.group import Group
 from girder.models.setting import Setting
 from girder.models.user import User
 from girder.utility.webroot import Webroot
-from girder.utility import setting_utilities
+from girder.utility import config, setting_utilities
 
 from girder.plugins.slicer_cli_web.rest_slicer_cli import (
     genRESTEndPointsForSlicerCLIsInDockerCache
@@ -243,3 +243,26 @@ def load(info):
             setattr(info['serverRoot'], event.info['value'], histomicsRoot)
 
     events.bind('model.setting.save.after', 'histomicstk', updateWebroot)
+
+    curConfig = config.getConfig().get('histomicstk', {})
+    if curConfig.get('restrict_downloads'):
+        # Change some endpoints to require user access
+        endpoints = [
+            ('collection', 'GET', (':id', 'download')),
+            ('file', 'GET', (':id', 'download')),
+            ('file', 'GET', (':id', 'download', ':name')),
+            ('folder', 'GET', (':id', 'download')),
+            ('item', 'GET', (':id', 'download')),
+            ('resource', 'GET', ('download', )),
+            ('resource', 'POST', ('download', )),
+
+            ('item', 'GET', (':itemId', 'tiles', 'images', ':image')),
+        ]
+
+        for resource, method, route in endpoints:
+            cls = getattr(info['apiRoot'], resource)
+            func = cls.getRouteHandler(method, route)
+            if func.accessLevel == 'public':
+                func = access.user(func)
+                cls.removeRoute(method, route)
+                cls.route(method, route, func)
