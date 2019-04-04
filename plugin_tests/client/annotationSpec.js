@@ -13,6 +13,14 @@ girderTest.promise.done(function () {
     app = histomicsTest.startApp();
 });
 
+function asciiToUint8Array(text) {
+    var l = text.length, arr = new Uint8Array(l), i;
+    for (i = 0; i < l; i += 1) {
+        arr[i] = text.charCodeAt(i);
+    }
+    return arr;
+}
+
 $(function () {
     /**
      * This is a test helper method to make assertions about the last autosaved
@@ -1232,6 +1240,186 @@ $(function () {
                     $('.h-cancel').click();
                 });
                 girderTest.waitForLoad();
+            });
+
+            it('export style groups', function () {
+                runs(function () {
+                    $('.h-configure-style-group').click();
+                });
+                girderTest.waitForDialog();
+                runs(function () {
+                    $('#h-export').click();
+                    expect($('#h-export-link').attr('href').substr(0, 5)).toBe('blob:');
+                });
+                runs(function () {
+                    $('.h-cancel').click();
+                });
+                girderTest.waitForLoad();
+            });
+
+            it('import style groups', function () {
+                runs(function () {
+                    expect($('.h-style-group option').map(function () { return $(this).val(); }).get()).toEqual(['default']);
+                    $('.h-configure-style-group').click();
+                });
+                girderTest.waitForDialog();
+                runs(function () {
+                    var contents = [{
+                        lineWidth: 2,
+                        lineColor: 'rgb(0,0,0)',
+                        fillColor: 'rgba(0,0,0,0)',
+                        id: 'Black 2'
+                    }, {
+                        lineWidth: 4,
+                        lineColor: 'rgb(0, 0, 255)',
+                        fillColor: 'rgba(0, 0, 255, 0)',
+                        id: 'Blue 4'
+                    }];
+                    var file = new Blob(
+                        [asciiToUint8Array(JSON.stringify(contents))],
+                        {lastModified: null, type: 'application/json'});
+                    file.name = 'test1.json';
+                    // in the test environment, we can't actually upload a file
+                    // by clicking or setting the FileList of the upload
+                    // element.  click gratuitiously, then reach into the
+                    // jQuery event list and trigger the upload event manually.
+                    // We rely on the handler we want being the first
+                    // registered change event in the dialog.
+                    $('#h-import').click();
+                    $._data($('.h-style-editor')[0], 'events').change[0].handler({target: {files: [file]}});
+                });
+                waitsFor(function () {
+                    return $('.h-style-editor input.disabled').length === 0;
+                });
+                runs(function () {
+                    $('.h-submit').click();
+                });
+                girderTest.waitForLoad();
+                runs(function () {
+                    expect($('.h-style-group option').map(function () { return $(this).val(); }).get()).toEqual(['Black 2', 'Blue 4', 'default']);
+                });
+            });
+            it('import style groups, merging with existing', function () {
+                runs(function () {
+                    $('.h-configure-style-group').click();
+                });
+                girderTest.waitForDialog();
+                runs(function () {
+                    var contents = [{
+                        lineWidth: 4,
+                        lineColor: 'rgb(128, 128, 255)',
+                        fillColor: 'rgba(0, 0, 255, 0)',
+                        id: 'Blue 4'
+                    }, {
+                        lineWidth: 8,
+                        lineColor: 'rgb(255,0,0)',
+                        fillColor: 'rgba(255,0,0,0.25)',
+                        id: 'Red 8'
+                    }];
+                    var file = new Blob(
+                        [asciiToUint8Array(JSON.stringify(contents))],
+                        {lastModified: null, type: 'application/json'});
+                    file.name = 'test1.json';
+                    $._data($('.h-style-editor')[0], 'events').change[0].handler({target: {files: [file]}});
+                });
+                waitsFor(function () {
+                    return $('.h-style-editor input.disabled').length === 0;
+                });
+                runs(function () {
+                    $('.h-submit').click();
+                });
+                girderTest.waitForLoad();
+                runs(function () {
+                    expect($('.h-style-group option').map(function () { return $(this).val(); }).get()).toEqual(['Black 2', 'Blue 4', 'Red 8', 'default']);
+                });
+            });
+            it('import style groups, replacing existing', function () {
+                runs(function () {
+                    $('.h-configure-style-group').click();
+                });
+                girderTest.waitForDialog();
+                runs(function () {
+                    var contents = [{
+                        lineWidth: 4,
+                        lineColor: 'rgb(128, 128, 255)',
+                        fillColor: 'rgba(0, 0, 255, 0)',
+                        id: 'Blue 4'
+                    }, {
+                        lineWidth: 8,
+                        lineColor: 'rgb(255,0,0)',
+                        fillColor: 'rgba(255,0,0,0.25)',
+                        id: 'Red 8'
+                    }];
+                    var file = new Blob(
+                        [asciiToUint8Array(JSON.stringify(contents))],
+                        {lastModified: null, type: 'application/json'});
+                    file.name = 'test1.json';
+                    $('#h-import-replace').click();
+                    $._data($('.h-style-editor')[0], 'events').change[0].handler({target: {files: [file]}});
+                });
+                waitsFor(function () {
+                    return $('.h-style-editor input.disabled').length === 0;
+                });
+                runs(function () {
+                    $('.h-submit').click();
+                });
+                girderTest.waitForLoad();
+                runs(function () {
+                    expect($('.h-style-group option').map(function () { return $(this).val(); }).get()).toEqual(['Blue 4', 'Red 8', 'default']);
+                });
+            });
+            it('import style groups, cancel', function () {
+                runs(function () {
+                    $('.h-configure-style-group').click();
+                });
+                girderTest.waitForDialog();
+                runs(function () {
+                    var contents = [{
+                        lineWidth: 6,
+                        lineColor: 'rgb(0, 255, 0)',
+                        fillColor: 'rgba(0, 255, 0, 0)',
+                        id: 'Green 6'
+                    }];
+                    var file = new Blob(
+                        [asciiToUint8Array(JSON.stringify(contents))],
+                        {lastModified: null, type: 'application/json'});
+                    file.name = 'test1.json';
+                    $._data($('.h-style-editor')[0], 'events').change[0].handler({target: {files: [file]}});
+                });
+                waitsFor(function () {
+                    return $('.h-style-editor input.disabled').length === 0;
+                });
+                runs(function () {
+                    $('.h-cancel').click();
+                });
+                girderTest.waitForLoad();
+                runs(function () {
+                    expect($('.h-style-group option').map(function () { return $(this).val(); }).get()).toEqual(['Blue 4', 'Red 8', 'default']);
+                });
+            });
+            it('import style groups, error', function () {
+                runs(function () {
+                    $('.h-configure-style-group').click();
+                });
+                girderTest.waitForDialog();
+                runs(function () {
+                    var file = new Blob(
+                        [asciiToUint8Array(JSON.stringify('this is not json'))],
+                        {lastModified: null, type: 'application/json'});
+                    file.name = 'test1.json';
+                    $._data($('.h-style-editor')[0], 'events').change[0].handler({target: {files: [file]}});
+                });
+                waitsFor(function () {
+                    return $('.h-style-editor input.disabled').length === 0;
+                });
+                runs(function () {
+                    expect($('.g-validation-failed-message').text().indexOf('parse') >= 0);
+                    $('.h-cancel').click();
+                });
+                girderTest.waitForLoad();
+                runs(function () {
+                    expect($('.h-style-group option').map(function () { return $(this).val(); }).get()).toEqual(['Blue 4', 'Red 8', 'default']);
+                });
             });
         });
     });
