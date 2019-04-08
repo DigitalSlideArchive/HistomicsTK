@@ -20,6 +20,7 @@
 import hashlib
 import json
 import os
+import PIL.Image
 import runpy
 import shutil
 import six
@@ -115,14 +116,20 @@ class CliResultsTest(unittest.TestCase):
                 self.assertTrue(os.path.isfile(outpath))
                 if 'hash' in options:
                     sha = hashlib.sha256()
-                    with open(outpath, 'rb') as fptr:
-                        while True:
-                            data = fptr.read(chunkSize)
-                            if not data:
-                                break
-                            sha.update(data)
+                    # For png test files, take a hash of the decoded image
+                    # rather than the file.
+                    if outpath.endswith('.png'):
+                        sha.update(PIL.Image.open(outpath).convert('RGBA').tobytes())
+                    else:
+                        with open(outpath, 'rb') as fptr:
+                            while True:
+                                data = fptr.read(chunkSize)
+                                if not data:
+                                    break
+                                sha.update(data)
+                    hashval = sha.hexdigest()
                     try:
-                        self.assertEqual(options['hash'], sha.hexdigest())
+                        self.assertEqual(options['hash'], hashval)
                     except Exception:
                         sys.stderr.write('File hash mismatch: %s\n' % outpath)
                         raise
@@ -206,7 +213,7 @@ class CliResultsTest(unittest.TestCase):
             ] + ['tmp_out_{}.png'.format(i) for i in (1, 2, 3)],
             outputs={
                 'tmp_out_1.png': dict(
-                    hash='ea11f89a7e6752f1d831113472bf78e10d2eff50454ecd76474d7d5ba02e495c',
+                    hash='b91d961b7eba8c02a1c067da91fced315fa3922db73f489202a296f4c2304b94',
                 ),
             },
         )
