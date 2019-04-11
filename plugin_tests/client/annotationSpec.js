@@ -518,6 +518,9 @@ $(function () {
 
                 // make sure all groups are expanded
                 $('.h-annotation-selector .h-group-collapsed .h-annotation-group-name').click();
+                waitsFor(function () {
+                    return !$('.h-annotation-selector').hasClass('h-group-collapsed');
+                }, 'groups to expand');
             });
 
             it('collapse an annotation group', function () {
@@ -525,10 +528,15 @@ $(function () {
                 expect($el.length).toBe(1);
                 $el.find('.h-annotation-group-name').click();
 
-                $el = $('.h-annotation-selector .h-annotation-group[data-group-name="Other"]');
-                expect($el.hasClass('h-group-collapsed')).toBe(true);
-                expect($el.hasClass('h-group-expanded')).toBe(false);
-                expect($el.find('.h-annotation').length).toBe(0);
+                waitsFor(function () {
+                    $el = $('.h-annotation-selector .h-annotation-group[data-group-name="Other"]');
+                    return $el.hasClass('h-group-collapsed');
+                }, 'group to collapse');
+                runs(function () {
+                    expect($el.hasClass('h-group-collapsed')).toBe(true);
+                    expect($el.hasClass('h-group-expanded')).toBe(false);
+                    expect($el.find('.h-annotation').length).toBe(0);
+                });
             });
 
             it('expand an annotation group', function () {
@@ -536,10 +544,15 @@ $(function () {
                 expect($el.length).toBe(1);
                 $el.find('.h-annotation-group-name').click();
 
-                $el = $('.h-annotation-selector .h-annotation-group[data-group-name="Other"]');
-                expect($el.hasClass('h-group-collapsed')).toBe(false);
-                expect($el.hasClass('h-group-expanded')).toBe(true);
-                expect($el.find('.h-annotation').length).toBeGreaterThan(0);
+                waitsFor(function () {
+                    $el = $('.h-annotation-selector .h-annotation-group[data-group-name="Other"]');
+                    return $el.hasClass('h-group-expanded');
+                }, 'group to expand');
+                runs(function () {
+                    expect($el.hasClass('h-group-collapsed')).toBe(false);
+                    expect($el.hasClass('h-group-expanded')).toBe(true);
+                    expect($el.find('.h-annotation').length).toBeGreaterThan(0);
+                });
             });
 
             it('ensure user cannot remove the admin annotation', function () {
@@ -923,6 +936,10 @@ $(function () {
                     var $el = $('.h-annotation-selector');
                     return $el.find('.icon-spin3').length === 0;
                 }, 'loading spinners to disappear');
+                waitsFor(function () {
+                    var $el = $('.h-annotation-selector .h-annotation:contains("rectangle")');
+                    return $el.find('.icon-eye.h-toggle-annotation').length === 1;
+                }, 'annotation list to render');
                 runs(function () {
                     var $el = $('.h-annotation-selector .h-annotation:contains("rectangle")');
                     expect($el.find('.icon-eye.h-toggle-annotation').length).toBe(1);
