@@ -47,22 +47,22 @@ block content
               span.icon-spin3.animate-spin.h-float-left
             else if displayed
               span.icon-eye.h-toggle-annotation.h-float-left(
-                data-toggle='tooltip', title='Hide annotation')
+                title='Hide annotation')
             else
               span.icon-eye-off.h-toggle-annotation.h-float-left(
-                data-toggle='tooltip', title='Show annotation')
+                title='Show annotation')
             span.h-annotation-name(title=name) #{name}
 
             span.h-annotation-right
               if writeAccess(annotation)
                 span.icon-cancel.h-delete-annotation(
-                    data-toggle='tooltip', title='Remove annotation')
+                    title='Remove annotation')
                 span.icon-cog.h-edit-annotation-metadata(
-                    data-toggle='tooltip', title='Edit annotation')
+                    title='Edit annotation')
               a(href=annotation.downloadUrl().replace(/\/download$/, ''),
                   download=name + '.json')
                 span.icon-download.h-download-annotation(
-                    data-toggle='tooltip', title='Download annotation')
+                    title='Download annotation')
 
   .checkbox.h-annotation-toggle
     label(title='Show annotation labels when hovering with the mouse.')

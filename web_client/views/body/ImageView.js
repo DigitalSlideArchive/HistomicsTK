@@ -586,7 +586,9 @@ var ImageView = View.extend({
     },
 
     mouseResetAnnotation() {
-        this.popover.collection.reset();
+        if (this.popover.collection.length) {
+            this.popover.collection.reset();
+        }
     },
 
     mouseClickAnnotation(element, annotationId, evt) {
@@ -755,7 +757,9 @@ var ImageView = View.extend({
             left = Math.max(left, 0);
 
             menu.css({ left, top });
-            this.popover.collection.reset();
+            if (this.popover.collection.lenth) {
+                this.popover.collection.reset();
+            }
             this._contextMenuActive = true;
         }, 1);
     },
@@ -766,7 +770,9 @@ var ImageView = View.extend({
         }
         this.$('#h-annotation-context-menu').addClass('hidden');
         this._resetSelection();
-        this.popover.collection.reset();
+        if (this.popover.collection.lenth) {
+            this.popover.collection.reset();
+        }
         this._contextMenuActive = false;
     },
 
@@ -811,7 +817,9 @@ var ImageView = View.extend({
 
     _resetSelection() {
         this.viewerWidget.highlightAnnotation();
-        this.selectedElements.reset();
+        if (this.selectedElements.lenth) {
+            this.selectedElements.reset();
+        }
     },
 
     _saveSelection() {
