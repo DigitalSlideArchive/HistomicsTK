@@ -2,7 +2,9 @@ import _ from 'underscore';
 
 import { restRequest } from 'girder/rest';
 import ElementCollection from 'girder_plugins/large_image/collections/ElementCollection';
+import convertRectangle from 'girder_plugins/large_image/annotations/geometry/rectangle';
 
+import events from '../../events';
 import View from '../View';
 import annotationPopover from '../../templates/popover/annotationPopover.pug';
 import '../../stylesheets/popover/annotationPopover.styl';
@@ -60,20 +62,27 @@ var AnnotationPopover = View.extend({
         this.collection = new ElementCollection();
         this.listenTo(this.collection, 'add', this._getUser);
         this.listenTo(this.collection, 'all', this.render);
+        this.listenTo(events, 'h:imageOpened', this._bindMoveEvent);
+
+        this._recomputeClosestElementThrottled = _.throttle(this._recomputeClosestElement, 100);
     },
 
     render() {
-        this.$el.html(
-            annotationPopover({
-                annotations: _.uniq(
-                    this.collection.pluck('annotation'),
-                    _.property('id')),
-                elements: this.collection.groupBy((element) => element.get('annotation').id),
-                formatDate,
-                users: this._users,
-                elementProperties: this._elementProperties
-            })
-        );
+        if (!this._closestElement) {
+            this.$el.html('');
+        } else {
+            const element = this._closestElement;
+            const annotation = element.get('annotation');
+            this.$el.html(
+                annotationPopover({
+                    annotations: [annotation],
+                    elements: {[annotation.id]: [element]},
+                    formatDate,
+                    users: this._users,
+                    elementProperties: this._elementProperties
+                })
+            );
+        }
         this._show();
         if (!this._visible()) {
             this._hide();
@@ -194,6 +203,61 @@ var AnnotationPopover = View.extend({
                 top: evt.pageY - this._height / 2
             });
         }
+    },
+
+    _distanceToElement(points) {
+        const center = this._lastCenter;
+        if (!center) {
+            return 0;
+        }
+        let minimumDistance = Number.POSITIVE_INFINITY;
+        // use an explicit loop for speed
+        for (let index = 0; index < points.length; index += 1) {
+            const point = points[index];
+            const dx = point[0] - center.x;
+            const dy = point[1] - center.y;
+            const distance = dx * dx + dy * dy;
+            minimumDistance = Math.min(minimumDistance, distance);
+        }
+        return minimumDistance;
+    },
+
+    _bindMoveEvent() {
+        this.parentView.viewerWidget.viewer.geoOn(
+            window.geo.event.mousemove, (evt) => {
+                this._lastCenter = _.extend({}, evt.geo);
+                this._recomputeClosestElementThrottled();
+            }
+        );
+    },
+
+    _recomputeClosestElement() {
+        let minimumDistance = Number.POSITIVE_INFINITY;
+        const lastElement = this._closestElement;
+        this._closestElement = null;
+        this.collection.each((e) => {
+            let distance;
+            // TODO: distance calculation only valid for polylines and rectangles...
+            // ignore other element types
+            if (e.get('type') === 'polyline') {
+                distance = this._distanceToElement(e.get('points'));
+            } else if (e.get('type') === 'rectangle') {
+                distance = this._distanceToElement(
+                    convertRectangle(e.attributes).coordinates[0]
+                );
+            } else {
+                distance = 0;
+            }
+            if (distance < minimumDistance) {
+                this._closestElement = e;
+                minimumDistance = distance;
+            }
+        });
+        if (lastElement && this._closestElement && lastElement.id === this._closestElement.id) {
+            // Don't rerender if the element didn't change;
+            return;
+        }
+        this.render();
     }
 });
 
