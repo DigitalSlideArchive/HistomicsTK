@@ -979,7 +979,14 @@ $(function () {
                     interactor.simulateEvent('mousemove', {
                         map: {x: 45, y: 45}
                     });
+                });
 
+                waitsFor(function () {
+                    var $el = $('#h-annotation-popover-container');
+                    return $el.find('.h-annotation-name').text() !== '';
+                }, 'popup window to update');
+
+                runs(function () {
                     var $el = $('#h-annotation-popover-container');
                     expect($el.hasClass('hidden')).toBe(false);
                     expect($el.find('.h-annotation-name').text()).toBe('rectangle');
