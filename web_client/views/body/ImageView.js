@@ -757,7 +757,7 @@ var ImageView = View.extend({
             left = Math.max(left, 0);
 
             menu.css({ left, top });
-            if (this.popover.collection.lenth) {
+            if (this.popover.collection.length) {
                 this.popover.collection.reset();
             }
             this._contextMenuActive = true;
@@ -770,7 +770,7 @@ var ImageView = View.extend({
         }
         this.$('#h-annotation-context-menu').addClass('hidden');
         this._resetSelection();
-        if (this.popover.collection.lenth) {
+        if (this.popover.collection.length) {
             this.popover.collection.reset();
         }
         this._contextMenuActive = false;
@@ -817,7 +817,7 @@ var ImageView = View.extend({
 
     _resetSelection() {
         this.viewerWidget.highlightAnnotation();
-        if (this.selectedElements.lenth) {
+        if (this.selectedElements.length) {
             this.selectedElements.reset();
         }
     },
