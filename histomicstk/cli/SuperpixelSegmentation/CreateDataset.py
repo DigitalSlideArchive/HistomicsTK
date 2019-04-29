@@ -355,7 +355,7 @@ def main(args):		# noqa: C901
 
         ts_metadata = ts.getMetadata()
 
-        print (json.dumps(ts_metadata, indent=2))
+        print(json.dumps(ts_metadata, indent=2))
 
         is_wsi = ts_metadata['magnification'] is not None
 
