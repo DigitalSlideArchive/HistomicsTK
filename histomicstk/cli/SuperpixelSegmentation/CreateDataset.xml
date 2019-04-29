@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Create HistomicsML Dataset</title>
+  <description>Create HistomicsML files</description>
+  <version>0.1.0</version>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Deepak Roy Chittajallu (Kitware), Sanghoon Lee (Emory University)</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <string>
+      <name>inputSlidePath</name>
+      <label>Input Images</label>
+      <description>Input images</description>
+      <channel>input</channel>
+      <index>0</index>
+    </string>
+    <string>
+      <name>inputPCAModel</name>
+      <label>Input PCA fitted model</label>
+      <description>Input PCA Model</description>
+      <channel>input</channel>
+      <index>1</index>
+    </string>
+    <file fileExtensions=".h5">
+      <name>outputDataSetFile</name>
+      <label>Output DataSet file</label>
+      <channel>output</channel>
+      <index>2</index>
+      <description>Output dataset file (*.h5)</description>
+      <default>spfeatures.h5</default>
+    </file>
+    <file fileExtensions=".txt">
+      <name>outputBoundariesFile</name>
+      <label>Output Boundary file</label>
+      <channel>output</channel>
+      <index>3</index>
+      <description>Output boundary file (*.txt)</description>
+      <default>spboundaries.txt</default>
+    </file>
+  </parameters>
+  <parameters advanced="true">
+    <label>Color Normalization</label>
+    <description>Color Normalization parameters</description>
+    <double-vector>
+      <name>reference_mu_lab</name>
+      <label>Reference Mean LAB</label>
+      <description>Mean of reference image in LAB color space for Reinhard color normalization</description>
+      <longflag>reference_mu_lab</longflag>
+      <default>8.63234435, -0.11501964, 0.03868433</default>
+    </double-vector>
+    <double-vector>
+      <name>reference_std_lab</name>
+      <label>Reference Stddev LAB</label>
+      <description>Standard deviation of reference image in LAB color space for Reinhard color normalization</description>
+      <longflag>reference_std_lab</longflag>
+      <default>0.57506023, 0.10403329, 0.01364062</default>
+    </double-vector>
+    <double-vector>
+      <name>source_mu_lab</name>
+      <label>Source Mean LAB</label>
+      <description>Mean of source image in LAB color space for Reinhard color normalization</description>
+      <longflag>source_mu_lab</longflag>
+      <default>8.96447078, -0.0879669, 0.04412108</default>
+    </double-vector>
+    <double-vector>
+      <name>source_std_lab</name>
+      <label>Source Stddev LAB</label>
+      <description>Standard deviation of source image in LAB color space for Reinhard color normalization</description>
+      <longflag>source_std_lab</longflag>
+      <default>0.2586885, 0.04744802, 0.02011073</default>
+    </double-vector>
+  </parameters>
+  <parameters advanced="true">
+    <label>WSI Analysis</label>
+    <description>Whole-slide image analysis (WSI) parameters</description>
+    <double>
+      <name>analysis_tile_size</name>
+      <label>Analysis Tile Size</label>
+      <description>Tile size for blockwise analysis</description>
+      <longflag>analysis_tile_size</longflag>
+      <default>2048</default>
+    </double>
+    <double>
+      <name>analysis_mag</name>
+      <label>Analysis Magnification</label>
+      <description>The magnification at which the analysis should be performed.</description>
+      <longflag>analysis_mag</longflag>
+      <default>5</default>
+    </double>
+    <double>
+      <name>superpixel_tile_size</name>
+      <label>Superpixel Analysis Tile Size</label>
+      <description>Tile size for blockwise analysis</description>
+      <longflag>superpixel_tile_size</longflag>
+      <default>4096</default>
+    </double>
+    <double>
+      <name>superpixel_mag</name>
+      <label>Superpixel Analysis Magnification</label>
+      <description>The magnification at which the analysis should be performed.</description>
+      <longflag>superpixel_mag</longflag>
+      <default>20</default>
+    </double>
+    <double>
+      <name>min_fgnd_frac</name>
+      <label>Minimum foreground fraction</label>
+      <description>The minimum amount of foreground that must be present in a tile for it to be analyzed</description>
+      <longflag>min_fgnd_frac</longflag>
+      <default>0.001</default>
+    </double>
+    <double>
+      <name>sample_fraction</name>
+      <label>Fraction of pixels to sample</label>
+      <description>Fraction of pixels to sample for normalization</description>
+      <longflag>sample_fraction</longflag>
+      <default>0.1</default>
+    </double>
+  </parameters>
+<parameters advanced="true">
+    <label>SuperpixelParameters</label>
+    <description>Superpixel parameters</description>
+    <integer>
+      <name>superpixelSize</name>
+      <longflag>superpixelSize</longflag>
+      <label>Superpixel size</label>
+      <description>Patch size for superpixel region</description>
+      <default>128</default>
+    </integer>
+    <integer>
+      <name>patchSize</name>
+      <longflag>patchSize</longflag>
+      <label>Patch size</label>
+      <description>Patch size for superpixel region</description>
+      <default>128</default>
+    </integer>
+    <integer>
+      <name>patchSizeResized</name>
+      <longflag>patchSizeResized</longflag>
+      <label>Resized patch size</label>
+      <description>patchSize resized for superpixel region</description>
+      <default>224</default>
+    </integer>
+    <integer>
+      <name>pca_dim</name>
+      <longflag>pca_dim</longflag>
+      <label>PCA dimension</label>
+      <description>PCA dimension</description>
+      <default>64</default>
+    </integer>
+    <integer>
+      <name>fcn</name>
+      <longflag>fcn</longflag>
+      <label>fully connected network</label>
+      <description>size of fully connected network</description>
+      <default>4096</default>
+    </integer>
+    <integer>
+      <name>compactness</name>
+      <longflag>compactness</longflag>
+      <label>Compactness</label>
+      <description>Compactness of SLIC algorithm</description>
+      <default>50</default>
+    </integer>
+    <integer>
+      <name>min_fgnd_superpixel</name>
+      <longflag>min_fgnd_superpixel</longflag>
+      <label>Minimum foreground pixels in a superpixel</label>
+      <description>Minimum number of foreground pixels in a superpixel </description>
+      <default>10</default>
+    </integer>
+    <double>
+      <longflag>rg_ratio_superpixel</longflag>
+      <label>Red and green ratio for superpixel</label>
+      <description>Red and green ratio for superpixel</description>
+      <default>1.2</default>
+    </double>
+    <double>
+      <longflag>pca_sample_scale</longflag>
+      <label>pca_sample_scale</label>
+      <description>PCA sampling scale</description>
+      <default>0.1</default>
+    </double>
+    <double>
+      <longflag>min_var_superpixel</longflag>
+      <label>Minumum variance of superpixel</label>
+      <description>Minumum variance of superpixel</description>
+      <default>0.0015</default>
+    </double>
+  </parameters>
+  <parameters advanced="true">
+    <label>HistomicsMLParameters</label>
+    <description>HistomicsML parameters</description>
+    <integer>
+      <name>columnSize</name>
+      <longflag>columnSize</longflag>
+      <label>Column size</label>
+      <description>HistomicsML dataset column size</description>
+      <default>1</default>
+    </integer>
+    <integer>
+      <name>channelSize</name>
+      <longflag>channelSize</longflag>
+      <label>Channel size</label>
+      <description>HistomicsML color channel size</description>
+      <default>3</default>
+    </integer>
+  </parameters>
+  <parameters advanced="true">
+    <label>Dask</label>
+    <description>Dask parameters</description>
+    <string>
+      <name>scheduler</name>
+      <label>Scheduler Address</label>
+      <description>Address of a dask scheduler in the format '127.0.0.1:8786'.  Not passing this parameter sets up a dask cluster on the local machine.  'multiprocessing' uses Python multiprocessing.  'multithreading' uses Python multiprocessing in threaded mode.</description>
+      <longflag>scheduler</longflag>
+      <default></default>
+    </string>
+    <integer>
+      <name>num_workers</name>
+      <label>Number of workers</label>
+      <description>Number of dask workers to start while setting up a local cluster internally. If a negative value is specified then the number of workers is set to number of cpu cores on the machine minus the number of workers specified.</description>
+      <longflag>num_workers</longflag>
+      <default>-1</default>
+    </integer>
+    <integer>
+      <name>num_threads_per_worker</name>
+      <label>Number of threads per worker</label>
+      <description>Number of threads to use per worker while setting up a local cluster internally. Must be a positive integer >= 1.</description>
+      <longflag>num_threads_per_worker</longflag>
+      <default>1</default>
+    </integer>
+  </parameters>
+</executable>
