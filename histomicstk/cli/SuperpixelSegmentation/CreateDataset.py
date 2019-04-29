@@ -32,8 +32,10 @@ import logging
 logging.basicConfig(level=logging.CRITICAL)
 
 
-def compute_boundary_data(img_path, tile_position, args, it_kwargs,
-						  src_mu_lab=None, src_sigma_lab=None):
+def compute_boundary_data(
+		img_path, tile_position, args,
+		it_kwargs, src_mu_lab=None, src_sigma_lab=None):
+
 	# get slide tile source
 	ts = large_image.getTileSource(img_path)
 
@@ -53,11 +55,9 @@ def compute_boundary_data(img_path, tile_position, args, it_kwargs,
 	im_tile = tile_info['tile'][:, :, :3]
 
 	# perform color normalization
-	im_nmzd = htk_cnorm.reinhard(im_tile,
-								 args.reference_mu_lab,
-								 args.reference_std_lab,
-								 src_mu=src_mu_lab,
-								 src_sigma=src_sigma_lab)
+	im_nmzd = htk_cnorm.reinhard(
+		im_tile, args.reference_mu_lab, args.reference_std_lab,
+		src_mu=src_mu_lab, src_sigma=src_sigma_lab)
 
 	# get red and green channels
 	im_red = im_nmzd[:, :, 0]
@@ -70,12 +70,12 @@ def compute_boundary_data(img_path, tile_position, args, it_kwargs,
 	# compute superpixel number
 	n_rows, n_cols = im_nmzd.shape[:2]
 	low_mag_patch_size = args.superpixelSize / scale
-	n_superpixels = int((n_rows / low_mag_patch_size) *
-						(n_cols / low_mag_patch_size))
+	n_superpixels = int(
+		(n_rows / low_mag_patch_size) * (n_cols / low_mag_patch_size))
 
 	# get labels
-	im_label = slic(im_nmzd, n_segments=n_superpixels,
-					compactness=args.compactness) + 1
+	im_label = slic(
+		im_nmzd, n_segments=n_superpixels, compactness=args.compactness) + 1
 
 	region_props = regionprops(im_label)
 
@@ -128,12 +128,12 @@ def compute_boundary_data(img_path, tile_position, args, it_kwargs,
 
 			# grab label mask
 			lmask = (
-				im_label[
-				min_row:max_row, min_col:max_col] == region_props[i].label
+				im_label[min_row:max_row, min_col:max_col] ==
+				region_props[i].label
 			).astype(np.bool)
 
-			mask = np.zeros((lmask.shape[0] + 2, lmask.shape[1] + 2),
-							dtype=np.bool)
+			mask = np.zeros(
+				(lmask.shape[0] + 2, lmask.shape[1] + 2), dtype=np.bool)
 			mask[1:-1, 1:-1] = lmask
 
 			# find boundaries
@@ -160,10 +160,10 @@ def compute_boundary_data(img_path, tile_position, args, it_kwargs,
 	return x_cent, y_cent, x_brs, y_brs
 
 
-def compute_superpixel_data(model, pca, slide_path, tile_position,
-							x_centroids, y_centroids,
-							args, superpixel_kwargs,
-							src_mu_lab=None, src_sigma_lab=None):
+def compute_superpixel_data(
+		model, pca, slide_path, tile_position, x_centroids, y_centroids,
+		args, superpixel_kwargs, src_mu_lab=None, src_sigma_lab=None):
+
 	# get slide tile source
 	ts = large_image.getTileSource(slide_path)
 
@@ -182,11 +182,9 @@ def compute_superpixel_data(model, pca, slide_path, tile_position,
 	im_tile = tile_info['tile'][:, :, :3]
 
 	# perform color normalization
-	im_nmzd = htk_cnorm.reinhard(im_tile,
-								 args.reference_mu_lab,
-								 args.reference_std_lab,
-								 src_mu=src_mu_lab,
-								 src_sigma=src_sigma_lab)
+	im_nmzd = htk_cnorm.reinhard(
+		im_tile, args.reference_mu_lab, args.reference_std_lab,
+		src_mu=src_mu_lab, src_sigma=src_sigma_lab)
 
 	im_height, im_width = im_nmzd.shape[:2]
 
@@ -245,12 +243,12 @@ def compute_superpixel_data(model, pca, slide_path, tile_position,
 	return tile_features, tile_x_centroids, tile_y_centroids
 
 
-def get_boundary_bounds(bbox, delta, M, N):
+def get_boundary_bounds(bbox, delta, m, n):
 	min_row, min_col, max_row, max_col = bbox
 	min_row_out = max(0, (min_row - delta))
-	max_row_out = min(M - 1, (max_row + delta))
+	max_row_out = min(m - 1, (max_row + delta))
 	min_col_out = max(0, (min_col - delta))
-	max_col_out = min(N - 1, (max_col + delta))
+	max_col_out = min(n - 1, (max_col + delta))
 
 	return min_row_out, max_row_out, min_col_out, max_col_out
 
@@ -330,12 +328,9 @@ def main(args):
 	slide_y_centroids = []
 	slide_names = []
 	slide_spixel_index = []
-	first_spixel_index = np.zeros((n_slides,
-								   args.columnSize), dtype=np.int32)
-	slide_wsi_mean = np.zeros((n_slides,
-							   args.channelSize), dtype=np.float32)
-	slide_wsi_stddev = np.zeros((n_slides,
-								 args.channelSize), dtype=np.float32)
+	first_spixel_index = np.zeros((n_slides, args.columnSize), dtype=np.int32)
+	slide_wsi_mean = np.zeros((n_slides, args.channelSize), dtype=np.float32)
+	slide_wsi_std = np.zeros((n_slides, args.channelSize), dtype=np.float32)
 
 	total_n_superpixels = 0
 
@@ -561,34 +556,39 @@ def main(args):
 						superpixel_data = tile_f
 						is_first = False
 					else:
-						superpixel_data = np.append(superpixel_data,
-													tile_f, axis=0)
+						superpixel_data = np.append(
+							superpixel_data, tile_f, axis=0)
 
 					superpixel_x_centroids.extend(tile_x)
 					superpixel_y_centroids.extend(tile_y)
 
 			n_object = len(superpixel_x_centroids)
+
 			x_centroids = np.asarray(
-				superpixel_x_centroids, dtype=np.float32).reshape((n_object, 1))
+				superpixel_x_centroids,
+				dtype=np.float32).reshape((n_object, 1))
 			y_centroids = np.asarray(
-				superpixel_y_centroids, dtype=np.float32).reshape((n_object, 1))
-			slide_superpixels = \
-				superpixel_data if i == 0 else np.append(
-					slide_superpixels, superpixel_data, axis=0)
+				superpixel_y_centroids,
+				dtype=np.float32).reshape((n_object, 1))
+
+			slide_superpixels = superpixel_data if i == 0 else np.append(
+				slide_superpixels, superpixel_data, axis=0)
 			first_spixel_index[i, 0] = total_n_superpixels
-			slide_x_centroids = \
-				x_centroids if i == 0 else np.append(
-					slide_x_centroids, x_centroids, axis=0)
-			slide_y_centroids = \
-				y_centroids if i == 0 else np.append(
-					slide_y_centroids, y_centroids, axis=0)
+
+			slide_x_centroids = x_centroids if i == 0 else np.append(
+				slide_x_centroids, x_centroids, axis=0)
+			slide_y_centroids = y_centroids if i == 0 else np.append(
+				slide_y_centroids, y_centroids, axis=0)
+
 			slide_wsi_mean[i] = src_mu_lab
-			slide_wsi_stddev[i] = src_sigma_lab
+			slide_wsi_std[i] = src_sigma_lab
+
 			slide_index = np.zeros((n_object, 1), dtype=np.int32)
 			slide_index.fill(i)
-			slide_spixel_index = \
-				slide_index if i == 0 else np.append(
-					slide_spixel_index, slide_index, axis=0)
+
+			slide_spixel_index = slide_index if i == 0 else np.append(
+				slide_spixel_index, slide_index, axis=0)
+
 			total_n_superpixels += n_object
 
 	total_time_taken = time.time() - total_start_time
@@ -607,7 +607,7 @@ def main(args):
 	dset_out.create_dataset('x_centroid', data=slide_x_centroids)
 	dset_out.create_dataset('y_centroid', data=slide_y_centroids)
 	dset_out.create_dataset('wsi_mean', data=slide_wsi_mean)
-	dset_out.create_dataset('wsi_stddev', data=slide_wsi_stddev)
+	dset_out.create_dataset('wsi_stddev', data=slide_wsi_std)
 	dset_out.create_dataset('patch_size', data=args.superpixelSize)
 	dset_out.close()
 
