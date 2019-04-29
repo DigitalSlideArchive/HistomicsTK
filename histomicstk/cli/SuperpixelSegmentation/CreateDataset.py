@@ -70,8 +70,8 @@ def compute_boundary_data(img_path, tile_position, args, it_kwargs,
     # compute superpixel number
     n_rows, n_cols = im_nmzd.shape[:2]
     low_mag_patch_size = args.superpixelSize/scale
-    n_superpixels = int(
-                    (n_rows/low_mag_patch_size) * (n_cols/low_mag_patch_size))
+    n_superpixels = int((n_rows/low_mag_patch_size) *
+                        (n_cols/low_mag_patch_size))
 
     # get labels
     im_label = slic(im_nmzd, n_segments=n_superpixels,
@@ -98,8 +98,8 @@ def compute_boundary_data(img_path, tile_position, args, it_kwargs,
                 get_patch_bounds(cen_x, cen_y, args.patchSize, n_rows, n_cols)
 
             # get variance of superpixel region
-            im_superpixel = im_nmzd[
-                            min_row:max_row, min_col:max_col, :] / 255.0
+            im_superpixel = im_nmzd[min_row:max_row, min_col:max_col, :] / \
+                            255.0
             var = ndimage.variance(im_superpixel)
 
             if var < args.min_var_superpixel:
@@ -132,8 +132,8 @@ def compute_boundary_data(img_path, tile_position, args, it_kwargs,
                     min_row:max_row, min_col:max_col] == region_props[i].label
             ).astype(np.bool)
 
-            mask = np.zeros(
-                    (lmask.shape[0] + 2, lmask.shape[1] + 2), dtype=np.bool)
+            mask = np.zeros((lmask.shape[0] + 2, lmask.shape[1] + 2),
+                            dtype=np.bool)
             mask[1:-1, 1:-1] = lmask
 
             # find boundaries
@@ -397,8 +397,8 @@ def main(args):
 
             start_time = time.time()
 
-            num_tiles = ts.getSingleTile(
-                        **it_kwargs)['iterator_range']['position']
+            num_tiles = \
+                ts.getSingleTile(**it_kwargs)['iterator_range']['position']
 
             print('Number of tiles = {}'.format(num_tiles))
 
@@ -501,21 +501,21 @@ def main(args):
             #
             print('\n>> Computing foreground fraction of all tiles ...\n')
 
-            superpixel_kwargs = {
+            it_kwargs = {
                 'tile_size': {'width': args.superpixel_tile_size},
                 'scale': {'magnification': args.superpixel_mag},
             }
 
             start_time = time.time()
 
-            num_tiles = ts.getSingleTile(
-                        **superpixel_kwargs)['iterator_range']['position']
+            num_tiles = \
+                ts.getSingleTile(**it_kwargs)['iterator_range']['position']
 
             print('Number of tiles = {}'.format(num_tiles))
 
             tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
                 img_paths[i], im_fgnd_mask_lres, fgnd_seg_scale,
-                superpixel_kwargs
+                it_kwargs
             )
 
             num_fgnd_tiles = np.count_nonzero(
@@ -539,7 +539,7 @@ def main(args):
 
             is_first = True
 
-            for tile in ts.tileIterator(**superpixel_kwargs):
+            for tile in ts.tileIterator(**it_kwargs):
                 tile_position = tile['tile_position']['position']
 
                 if tile_fgnd_frac_list[tile_position] <= args.min_fgnd_frac:
@@ -553,7 +553,7 @@ def main(args):
                     tile_position,
                     x_centroids,
                     y_centroids,
-                    args, superpixel_kwargs,
+                    args, it_kwargs,
                     src_mu_lab, src_sigma_lab
                 )
 
@@ -576,19 +576,23 @@ def main(args):
                                      dtype=np.float32).reshape((n_object, 1))
             y_centroids = np.asarray(superpixel_y_centroids,
                                      dtype=np.float32).reshape((n_object, 1))
-            slide_superpixels = superpixel_data if i == 0 else np.append(
-                                slide_superpixels, superpixel_data, axis=0)
+            slide_superpixels = \
+                superpixel_data if i == 0 else \
+                    np.append(slide_superpixels, superpixel_data, axis=0)
             first_spixel_index[i, 0] = total_n_superpixels
-            slide_x_centroids = x_centroids if i == 0 else np.append(
-                                slide_x_centroids, x_centroids, axis=0)
-            slide_y_centroids = y_centroids if i == 0 else np.append(
-                                slide_y_centroids, y_centroids, axis=0)
+            slide_x_centroids = \
+                x_centroids if i == 0 else \
+                    np.append(slide_x_centroids, x_centroids, axis=0)
+            slide_y_centroids = \
+                y_centroids if i == 0 else \
+                    np.append(slide_y_centroids, y_centroids, axis=0)
             slide_wsi_mean[i] = src_mu_lab
             slide_wsi_stddev[i] = src_sigma_lab
             slide_index = np.zeros((n_object, 1), dtype=np.int32)
             slide_index.fill(i)
-            slide_spixel_index = slide_index if i == 0 else np.append(
-                                 slide_spixel_index, slide_index, axis=0)
+            slide_spixel_index = \
+                slide_index if i == 0 else \
+                    np.append(slide_spixel_index, slide_index, axis=0)
             total_n_superpixels += n_object
 
     total_time_taken = time.time() - total_start_time
