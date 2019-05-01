@@ -23,3 +23,4 @@ _skbuild
 MANIFEST
 # cython output
 *.so
+wheels/

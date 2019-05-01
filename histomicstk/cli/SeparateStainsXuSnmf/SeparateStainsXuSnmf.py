@@ -1,6 +1,6 @@
 import numpy
 
-from ctk_cli import CLIArgumentParser
+from histomicstk.cli.utils import CLIArgumentParser
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 

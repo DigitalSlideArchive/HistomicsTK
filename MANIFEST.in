@@ -1,5 +1,4 @@
 include *.rst
-include requirements.txt
 include CMakeLists.txt
 include *.json
 # include *.xml

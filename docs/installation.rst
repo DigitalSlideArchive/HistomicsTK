@@ -21,8 +21,6 @@ installed as follows::
 
     $ git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
     $ cd HistomicsTK
-    # pip install git+https://github.com/cdeepakroy/ctk-cli
-    $ pip install --no-cache-dir -r requirements.txt
     $ pip install -e .
 
 If you want the keras/tensorflow based functions of HistomicsTK to take advantage of the GPU,

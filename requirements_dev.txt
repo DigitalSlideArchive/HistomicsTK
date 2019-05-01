@@ -1,10 +1,13 @@
 bumpversion>=0.5.3
+cmake>=0.6.0
 cryptography>=1.0.1
+Cython>=0.25.2
 matplotlib>=2.2.0
 jupyter>=1.0.0
 nbsphinx>=0.3.4
 pprintpp>=0.3.0
 PyYAML>=3.11
+scikit-build>=0.8.1
 Sphinx>=1.7.6
 sphinx-rtd-theme>=0.4.1
 watchdog>=0.8.3

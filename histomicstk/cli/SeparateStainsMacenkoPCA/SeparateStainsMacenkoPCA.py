@@ -1,4 +1,4 @@
-from ctk_cli import CLIArgumentParser
+from histomicstk.cli.utils import CLIArgumentParser
 import numpy
 
 from histomicstk.preprocessing.color_deconvolution import rgb_separate_stains_macenko_pca
