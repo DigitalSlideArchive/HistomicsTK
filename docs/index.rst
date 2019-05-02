@@ -55,6 +55,13 @@ HistomicsTK can be used in two ways:
     to image analysis pipelines developed as `slicer execution model`_
     CLIs and containerized using Docker.
 
+  HistomicsTK uses Girder's configuration files for some settings under the 
+  `histomicstk` section:
+
+  - `restrict_downloads`: if True, Girder's standard download endpoints and 
+    large_image's `item/{id}/tiles/images/{image}` endpoint are only 
+    available to logged-in users.
+
 For questions, comments, or to get in touch with the maintainers, head to our
 `Discourse forum`_, or use our `Gitter Chatroom`_.
 
