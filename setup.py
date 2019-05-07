@@ -3,7 +3,7 @@
 
 from __future__ import print_function
 
-import json
+import os
 import sys
 
 from setuptools import find_packages
@@ -21,20 +21,32 @@ except ImportError:
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
-
-with open('plugin.json') as f:
-    pkginfo = json.load(f)
-
 with open('LICENSE') as f:
     license_str = f.read()
 
+
+def prerelease_local_scheme(version):
+    """
+    Return local scheme version unless building on master in CircleCI.
+
+    This function returns the local scheme version number
+    (e.g. 0.0.0.dev<N>+g<HASH>) unless building on CircleCI for a
+    pre-release in which case it ignores the hash and produces a
+    PEP440 compliant pre-release version number (e.g. 0.0.0.dev<N>).
+    """
+    from setuptools_scm.version import get_local_node_and_date
+
+    if os.getenv('CIRCLE_BRANCH') in ('master', 'wheel-ci'):
+        return ''
+    else:
+        return get_local_node_and_date(version)
+
+
 setup(
     name='histomicstk',
-    version=pkginfo['version'],
-    description=pkginfo['description'],
-    long_description=readme + '\n\n' + history,
+    use_scm_version={'local_scheme': prerelease_local_scheme},
+    description='A Python toolkit for Histopathology Image Analysis',
+    long_description=readme,
     author='Kitware, Inc.',
     author_email='developers@digitalslidearchive.net',
     url='https://github.com/DigitalSlideArchive/HistomicsTK',
@@ -43,11 +55,9 @@ setup(
         'histomicstk': 'histomicstk',
     },
     include_package_data=True,
-    # package_data={
-    #    '': ['*.rst', '*.txt', 'LICENSE*', '*.json', '*.xml', '*.pyx'],
-    #     'histomicstk': ['*.rst', '*.txt', 'LICENSE*', '*.json', '*.xml', '*.pyx'],
-    # },
     setup_requires=[
+        'setuptools-scm',
+        'pygit2',
         'Cython>=0.25.2',
         'scikit-build>=0.8.1',
         'cmake>=0.6.0',

@@ -1,0 +1,57 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/project
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+      # - run:
+      #     name: Run tests via tox
+      #     command: tox | cat
+      # - run:
+      #     name: Install Codecov client
+      #     command: pip install codecov
+      # - run:
+      #     name: Upload coverage
+      #     command: codecov --disable search pycov gcov --root project --file build/test/coverage/py_coverage.xml build/test/coverage/cobertura-coverage.xml
+
+  release:
+    working_directory: ~/project
+    docker:
+      - image: circleci/python:3.6
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Setup virtual environment
+          command: |
+            if [ ! -d env ]; then python -m virtualenv env || python -m venv env; fi
+            echo ". $CIRCLE_WORKING_DIRECTORY/env/bin/activate" >> $BASH_ENV
+      - run:
+          name: Install python packages
+          command: pip install setuptools_scm twine
+      - run:
+          name: Build wheels
+          command: ./build_wheels.sh
+      - run:
+          name: Release to PyPi
+          command: twine upload --verbose wheels/*
+
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /^v.*/
+      - release:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only: wheel-ci

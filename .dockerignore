@@ -9,10 +9,9 @@
 .coverage
 .cache
 .idea
-.git
+# Keep the .git directory; we need it for versioning
+# .git
 
-build
-docs/_build
 dist
 examples
 node_modules
@@ -163,6 +162,7 @@ __pycache__/
 .Python
 env/
 build/
+_build/
 develop-eggs/
 dist/
 downloads/

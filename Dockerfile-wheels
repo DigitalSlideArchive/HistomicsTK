@@ -14,20 +14,25 @@ RUN for PYBIN in /opt/python/*/bin; do \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \
-        ${PYBIN}/pip install Cython; \
+        ${PYBIN}/pip install Cython setuptools-scm; \
     done
 
-ENV htk_path=$PWD/HistomicsTK
+ENV htk_path=/HistomicsTK
 RUN mkdir -p $htk_path
 
 COPY . $htk_path/
 
+ARG CIRCLE_BRANCH
+ENV CIRCLE_BRANCH=$CIRCLE_BRANCH
+
 RUN cd $htk_path && \
     for PYBIN in /opt/python/*/bin; do \
         ${PYBIN}/pip install . && \
-        ${PYBIN}/pip wheel . -w /io/wheelhouse/; \
+        ${PYBIN}/pip wheel . --no-deps -w /io/wheelhouse/; \
     done && \
     for WHL in /io/wheelhouse/histomicstk*.whl; do \
       auditwheel repair "${WHL}" -w /io/wheelhouse/; \
     done && \
-    ls -l /io/wheelhouse
+    ls -l /io/wheelhouse && \
+    mkdir /io/wheels && \
+    cp /io/wheelhouse/histomicstk*many* /io/wheels/. 
