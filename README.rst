@@ -50,15 +50,22 @@ HistomicsTK can be used in two ways:
   and `examples <https://digitalslidearchive.github.io/HistomicsTK/examples.html>`__
   for more information.
 
-  This can be installed via `pip install histomicstk`. 
+  This can be installed on Linux via `pip install histomicstk`.
 
-  If you want to specify precise library versions for reading various
-  microscopy formats, you will need to install various libraries via your
-  package manager or from source (libopenslide-dev, libtiff-dev).
+  HistomicsTK uses the `large_image`_ library to read and various microscopy
+  image formats.  Depending on your exact system, installing the necessary 
+  libraries to support these formats can be complex.  There are some
+  non-official prebuilt libraries available for Linux, that can be included as
+  part of the installation by specifying 
+  `pip install histomicstk --find-links https://manthey.github.io/large_image_wheels`.
+  Note that if your previously installed HistomicsTK or large_image without
+  these, you may need to add `--force-reinstall --no-cache-dir` to the `pip
+  install` command to force it to use the find-links option.
 
-  To avoid installing these complex dependencies, you can install
-  using specific prebuilt wheels via 
-  `pip install histomicstk -f https://manthey.github.io/large_image_wheels`.
+  The system version of various libraries are used if the `--find-links` option
+  is not specified.  You will need to use your package manager to install 
+  appropriate libraries (on Ubuntu, for instance, you'll need 
+  `libopenslide-dev` and `libtiff-dev`).
 
 - **As a server-side Girder plugin for web-based analysis**: This is intended
   to allow pathologists/biologists to apply analysis modules/pipelines
