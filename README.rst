@@ -50,6 +50,16 @@ HistomicsTK can be used in two ways:
   and `examples <https://digitalslidearchive.github.io/HistomicsTK/examples.html>`__
   for more information.
 
+  This can be installed via `pip install histomicstk`. 
+
+  If you want to specify precise library versions for reading various
+  microscopy formats, you will need to install various libraries via your
+  package manager or from source (libopenslide-dev, libtiff-dev).
+
+  To avoid installing these complex dependencies, you can install
+  using specific prebuilt wheels via 
+  `pip install histomicstk -f https://manthey.github.io/large_image_wheels`.
+
 - **As a server-side Girder plugin for web-based analysis**: This is intended
   to allow pathologists/biologists to apply analysis modules/pipelines
   containerized in HistomicsTK's docker plugins on data over the web. Girder_
