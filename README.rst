@@ -55,10 +55,10 @@ HistomicsTK can be used in two ways:
   HistomicsTK uses the `large_image`_ library to read and various microscopy
   image formats.  Depending on your exact system, installing the necessary 
   libraries to support these formats can be complex.  There are some
-  non-official prebuilt libraries available for Linux, that can be included as
+  non-official prebuilt libraries available for Linux that can be included as
   part of the installation by specifying 
   `pip install histomicstk --find-links https://manthey.github.io/large_image_wheels`.
-  Note that if your previously installed HistomicsTK or large_image without
+  Note that if you previously installed HistomicsTK or large_image without
   these, you may need to add `--force-reinstall --no-cache-dir` to the `pip
   install` command to force it to use the find-links option.
 
