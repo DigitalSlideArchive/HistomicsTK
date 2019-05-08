@@ -12,12 +12,16 @@ these scenarios.
 Installing HistomicsTK as a Python toolkit
 ------------------------------------------
 
-HistomicsTK depends on large_image_ for reading large multi-resolution
-whole-slide images in a tiled fashion. Please see the Github repo of
-large_image to find out how to install it as a Python toolkit/package.
+On Linux, HistomicsTK can be installed via pip.  You can specify the
+`--find-links` option to get prebuilt libraries for ready some common image 
+formats.  The installation command is::
 
-Once large_image is installed as a python package, HistomicsTK can be
-installed as follows::
+    $ pip install histomicstk --find-links https://manthey.github.io/large_image_wheels
+
+For non-Linux systems, or to use system libraries for reading image formats,
+please see the Github repo of large_image to find out how to install it as a
+Python toolkit/package.  Once large_image is installed as a python package,
+HistomicsTK can be installed as follows::
 
     $ git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
     $ cd HistomicsTK
@@ -26,9 +30,6 @@ installed as follows::
 If you want the keras/tensorflow based functions of HistomicsTK to take advantage of the GPU,
 then you will have to install the GPU version of tensorflow (tensorflow-gpu) after
 installing HistomicsTK. See tensorflow installation instructions `here <https://www.tensorflow.org/install/>`__.
-
-We are working on releasing HistomicsTK on PyPI so it can easily be pip
-installed from there.
 
 Installing HistomicsTK as a server-side Girder plugin
 -----------------------------------------------------
