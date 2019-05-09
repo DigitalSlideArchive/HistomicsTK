@@ -75,7 +75,7 @@ const AnnotationContextMenu = View.extend({
                 return 0;
             }
         });
-        return groups.slice(0, 10);
+        return groups;
     },
     _setGroup(evt) {
         evt.preventDefault();
