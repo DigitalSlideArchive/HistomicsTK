@@ -13,7 +13,7 @@ Installing HistomicsTK as a Python toolkit
 ------------------------------------------
 
 On Linux, HistomicsTK can be installed via pip.  You can specify the
-`--find-links` option to get prebuilt libraries for ready some common image 
+`--find-links` option to get prebuilt libraries for reading some common image
 formats.  The installation command is::
 
     $ pip install histomicstk --find-links https://manthey.github.io/large_image_wheels
@@ -67,7 +67,7 @@ to the HistomicsTK interface.  You could also use a specific tag (version) from
 Docker instead of the ``latest`` tag.  Multiple versions and multiple images
 can be installed so that they can be compared against each other.
 
-For an example of how to make a Docker image with a Slicer CLI-compatible 
+For an example of how to make a Docker image with a Slicer CLI-compatible
 interface, see `here <https://github.com/cdeepakroy/slicer_cli_web_plugin>`__.
 
 .. _Girder: http://girder.readthedocs.io/en/latest/
