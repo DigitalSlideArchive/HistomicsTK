@@ -226,6 +226,7 @@ var DrawWidget = Panel.extend({
         var dlg = editStyleGroups(this._style, this._groups);
         dlg.$el.on('hidden.bs.modal', () => {
             this.render();
+            this.parentView.trigger('h:styleGroupsEdited', this._groups);
         });
     },
 

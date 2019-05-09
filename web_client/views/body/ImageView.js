@@ -73,6 +73,9 @@ var ImageView = View.extend({
             parentView: this,
             collection: this.selectedElements
         });
+        this.listenTo(this, 'h:styleGroupsEdited', () => {
+            this.contextMenu.refetchStyles();
+        });
 
         this.listenTo(this.annotationSelector, 'h:groupCount', (obj) => {
             this.contextMenu.setGroupCount(obj);
