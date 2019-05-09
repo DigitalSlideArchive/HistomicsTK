@@ -24,6 +24,9 @@ const AnnotationContextMenu = View.extend({
         }));
         return this;
     },
+    refetchStyles() {
+        this.styles.fetch().done(() => this.render());
+    },
     setGroupCount(groupCount) {
         this._cachedGroupCount = groupCount;
     },
@@ -72,7 +75,7 @@ const AnnotationContextMenu = View.extend({
                 return 0;
             }
         });
-        return groups.slice(0, 10);
+        return groups;
     },
     _setGroup(evt) {
         evt.preventDefault();
