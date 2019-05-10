@@ -70,7 +70,7 @@ setup(
         'scipy>=0.19.0',
         'pandas>=0.19.2',
         'scikit-image>=0.14.2',
-        'scikit-learn>=0.18.1',
+        'scikit-learn>=0.18.1' + ('' if sys.version_info >= (3, ) else ',<0.21'),
         # deep learning packages
         'h5py>=2.7.1',
         'keras>=2.0.8',
