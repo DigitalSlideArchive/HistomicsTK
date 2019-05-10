@@ -54,4 +54,4 @@ workflows:
             tags:
               only: /^v.*/
             branches:
-              only: wheel-ci
+              only: master
