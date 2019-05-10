@@ -43,12 +43,6 @@
   shell: "npm install -g node-gyp-install && /usr/lib/node_modules/node-gyp-install/bin.js"
   become: true
 
-- name: Clone ctk-cli
-  git:
-    repo: https://github.com/cdeepakroy/ctk-cli.git
-    dest: "{{ root_dir }}/ctk-cli"
-    accept_hostkey: yes
-
 - name: Clone slicer_cli_web plugin
   git:
     repo: https://github.com/girder/slicer_cli_web.git
@@ -90,13 +84,6 @@
 
 - name: Install requests (needed to resolve conflict with docker-py)
   pip: name=requests[security]
-  become: true
-
-- name: Install ctk-cli using pip
-  pip:
-    name: "{{ root_dir }}/ctk-cli"
-    extra_args: "-e"
-    state: present
   become: true
 
 - name: Create directory for build
@@ -194,7 +181,6 @@
   become: true
   when: docker is undefined
   with_items:
-    - requirements.txt
     - requirements_dev.txt
 
 # Always have a build directory

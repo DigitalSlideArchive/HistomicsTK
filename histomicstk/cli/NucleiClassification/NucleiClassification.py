@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.externals import joblib
 import dask.dataframe as dd
 
-from ctk_cli import CLIArgumentParser
+from histomicstk.cli.utils import CLIArgumentParser
 
 from histomicstk.cli import utils as cli_utils
 

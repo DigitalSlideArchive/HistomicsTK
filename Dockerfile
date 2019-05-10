@@ -22,8 +22,6 @@ WORKDIR $htk_path
 #   Upgrade setuptools, as the version in Conda won't upgrade cleanly unless it
 # is ignored.
 RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
-    pip install --no-cache-dir --upgrade 'git+https://github.com/cdeepakroy/ctk-cli' && \
-    pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir 'bokeh>=0.12.14' && \
     # Ensure we have the latest pylibtif
     pip install --force-reinstall --ignore-installed --upgrade 'git+https://github.com/manthey/pylibtiff@0d89ae2edd37db6c84d0add7ba89ad4b87a0f4e9' && \
@@ -32,7 +30,7 @@ RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
     # We could, instead, use large_image from pypi:
     # pip install --no-cache-dir 'large-image[memcached,openslide,tiff,pil]' && \
     # Install HistomicsTK
-    python setup.py install && \
+    pip install . && \
     # Create separate virtual environments with CPU and GPU versions of tensorflow
     pip install --no-cache-dir 'virtualenv<16.4.0' && \
     virtualenv --system-site-packages /venv-gpu && \

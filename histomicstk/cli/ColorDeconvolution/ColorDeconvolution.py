@@ -1,6 +1,6 @@
 import skimage.io
 
-from ctk_cli import CLIArgumentParser
+from histomicstk.cli.utils import CLIArgumentParser
 import large_image
 
 import histomicstk.preprocessing.color_deconvolution as htk_cd

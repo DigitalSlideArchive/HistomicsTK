@@ -1,4 +1,4 @@
-from ctk_cli import CLIArgumentParser
+from histomicstk.cli.utils import CLIArgumentParser
 
 from histomicstk.preprocessing.color_normalization import background_intensity
 

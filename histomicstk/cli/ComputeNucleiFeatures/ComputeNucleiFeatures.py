@@ -15,7 +15,7 @@ import histomicstk.segmentation.label as htk_seg_label
 
 import large_image
 
-from ctk_cli import CLIArgumentParser
+from histomicstk.cli.utils import CLIArgumentParser
 
 from histomicstk.cli import utils as cli_utils
 

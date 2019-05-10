@@ -12,25 +12,24 @@ these scenarios.
 Installing HistomicsTK as a Python toolkit
 ------------------------------------------
 
-HistomicsTK depends on large_image_ for reading large multi-resolution
-whole-slide images in a tiled fashion. Please see the Github repo of
-large_image to find out how to install it as a Python toolkit/package.
+On Linux, HistomicsTK can be installed via pip.  You can specify the
+`--find-links` option to get prebuilt libraries for reading some common image
+formats.  The installation command is::
 
-Once large_image is installed as a python package, HistomicsTK can be
-installed as follows::
+    $ pip install histomicstk --find-links https://manthey.github.io/large_image_wheels
+
+For non-Linux systems, or to use system libraries for reading image formats,
+please see the Github repo of large_image to find out how to install it as a
+Python toolkit/package.  Once large_image is installed as a python package,
+HistomicsTK can be installed as follows::
 
     $ git clone https://github.com/DigitalSlideArchive/HistomicsTK.git
     $ cd HistomicsTK
-    # pip install git+https://github.com/cdeepakroy/ctk-cli
-    $ pip install --no-cache-dir -r requirements.txt
     $ pip install -e .
 
 If you want the keras/tensorflow based functions of HistomicsTK to take advantage of the GPU,
 then you will have to install the GPU version of tensorflow (tensorflow-gpu) after
 installing HistomicsTK. See tensorflow installation instructions `here <https://www.tensorflow.org/install/>`__.
-
-We are working on releasing HistomicsTK on PyPI so it can easily be pip
-installed from there.
 
 Installing HistomicsTK as a server-side Girder plugin
 -----------------------------------------------------
@@ -68,7 +67,7 @@ to the HistomicsTK interface.  You could also use a specific tag (version) from
 Docker instead of the ``latest`` tag.  Multiple versions and multiple images
 can be installed so that they can be compared against each other.
 
-For an example of how to make a Docker image with a Slicer CLI-compatible 
+For an example of how to make a Docker image with a Slicer CLI-compatible
 interface, see `here <https://github.com/cdeepakroy/slicer_cli_web_plugin>`__.
 
 .. _Girder: http://girder.readthedocs.io/en/latest/

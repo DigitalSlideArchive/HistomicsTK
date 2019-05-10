@@ -1,6 +1,6 @@
 import os
 
-from ctk_cli import CLIArgumentParser
+from histomicstk.cli.utils import CLIArgumentParser
 import large_image
 import numpy as np
 import skimage.io
