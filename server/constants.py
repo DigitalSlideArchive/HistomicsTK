@@ -10,3 +10,4 @@ class PluginSettings(object):
     HISTOMICSTK_BRAND_COLOR = 'histomicstk.brand_color'
     HISTOMICSTK_BANNER_COLOR = 'histomicstk.banner_color'
     HISTOMICSTK_ANALYSIS_ACCESS = 'histomicstk.analysis_access'
+    HISTOMICSTK_QUARANTINE_FOLDER = 'histomicstk.quarantine_folder'

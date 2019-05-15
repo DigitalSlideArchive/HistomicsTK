@@ -76,6 +76,28 @@ describe('Test the HistomicsTK plugin', function () {
             $('#g-histomicstk-banner-default-color').click();
             expect($('#g-histomicstk-banner-color').val() === '#f8f8f8');
         });
+        /* test the quarantine folder */
+        runs(function () {
+            $('.g-open-browser').click();
+        });
+        girderTest.waitForDialog();
+        runs(function () {
+            $('#g-root-selector').val($('#g-root-selector')[0].options[1].value).trigger('change');
+        });
+        waitsFor(function () {
+            return $('.g-folder-list-link').length >= 2;
+        });
+        runs(function () {
+            $('.g-folder-list-link').click();
+        });
+        waitsFor(function () {
+            return $('#g-selected-model').val() !== '';
+        });
+        runs(function () {
+            $('.g-submit-button').click();
+        });
+        girderTest.waitForLoad();
+        /* Cancel the changes */
         runs(function () {
             $('.g-histomicstk-buttons #g-histomicstk-cancel').click();
         });

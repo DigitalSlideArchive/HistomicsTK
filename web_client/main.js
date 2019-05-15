@@ -7,6 +7,9 @@ import { exposePluginConfig } from 'girder/utilities/PluginUtils';
 // expose symbols under girder.plugins
 import * as histomicstk from 'girder_plugins/HistomicsTK';
 
+// import modules for side effects
+import './views/itemList';
+
 import ConfigView from './views/body/ConfigView';
 
 const pluginName = 'HistomicsTK';
