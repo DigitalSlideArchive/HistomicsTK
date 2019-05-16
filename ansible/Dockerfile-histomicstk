@@ -19,7 +19,10 @@ RUN adduser --disabled-password --gecos '' ubuntu && \
 USER ubuntu
 ENV LANG en_US.UTF-8
 WORKDIR /home/ubuntu
-RUN git clone --depth=1 https://github.com/DigitalSlideArchive/HistomicsTK && rm -rf HistomicsTK/.git
+RUN git clone --depth=1 --no-checkout https://github.com/DigitalSlideArchive/HistomicsTK && \
+    cd HistomicsTK && \
+    git checkout master -- ansible/ && \
+    rm -rf .git
 WORKDIR /home/ubuntu/HistomicsTK
 ENV GIRDER_EXEC_USER ubuntu
 COPY . /home/ubuntu/HistomicsTK/ansible/.
@@ -40,6 +43,7 @@ RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=h
                 /home/ubuntu/.ansible* \
                 /home/ubuntu/.wget-hsts \
                 /root/.npm \
+                /opt/histomicstk/logs/*.log \
                 /opt/histomicstk/girder/node_modules \
                 /opt/histomicstk/openjpeg-* \
                 /opt/histomicstk/openslide-* \
@@ -48,6 +52,7 @@ RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=h
                 /opt/histomicstk/ImageMagick* \
                 /opt/histomicstk/HistomicsTK/_skbuild \
                 /opt/histomicstk/large_image/build \
+                /opt/histomicstk/HistomicsTK/.eggs \
                 /root/.cache/pip
 
 WORKDIR /opt/histomicstk/girder
@@ -61,7 +66,8 @@ RUN sudo npm install -g npx && \
 RUN npm install && \
     sudo rm -rf /home/ubuntu/.npm \
                 /root/.npm \
-                /opt/histomicstk/girder/node_modules
+                /opt/histomicstk/girder/node_modules \
+                /tmp/*
 
 # If the environment variable
 #   HOST_MONGO=true
