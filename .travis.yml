@@ -116,19 +116,21 @@ before_install:
 install:
     - cd $girder_path
     - pip install -U --upgrade-strategy eager -r requirements-dev.txt
-    - pip install -U --upgrade-strategy eager -e .[worker]
+    - pip install -U -e .[worker]
     - cd $large_image_path
     - pip install --no-cache-dir 'numpy>=1.12.1'
     - pip install --upgrade --no-cache-dir --force-reinstall --ignore-installed openslide-python Pillow
 
-    - pip install -U --upgrade-strategy eager .[memcached,openslide]
+    - pip install -U .[memcached,openslide]
     - python setup.py install
     - cd $main_path
     - pip install -r requirements_dev.txt
     # needs to be installed in dev mode for it to place binaries of cython/c extensions in place
     - pip install -e .
     - cd $girder_path
-    - pip install -U --upgrade-strategy eager -r $slicer_cli_web_path/requirements.txt
+    - pip install -U -r $slicer_cli_web_path/requirements.txt
+    # Fix versions that were upgraded that shouldn't have been
+    - pip install botocore 'python-dateutil<2.7'
     - npm-install-retry
     - BABEL_ENV=cover NYC_CWD="$main_path" girder-install web --plugins=jobs,worker,large_image,slicer_cli_web,HistomicsTK --dev
     - pip install jupyter sphinx sphinx_rtd_theme nbsphinx travis-sphinx

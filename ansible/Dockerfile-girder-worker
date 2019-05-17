@@ -16,7 +16,10 @@ RUN adduser --disabled-password --gecos '' ubuntu && \
 USER ubuntu
 ENV LANG en_US.UTF-8
 WORKDIR /home/ubuntu
-RUN git clone --depth=1 https://github.com/DigitalSlideArchive/HistomicsTK && rm -rf HistomicsTK/.git
+RUN git clone --depth=1 --no-checkout https://github.com/DigitalSlideArchive/HistomicsTK && \
+    cd HistomicsTK && \
+    git checkout master -- ansible/ && \
+    rm -rf .git
 WORKDIR /home/ubuntu/HistomicsTK
 ENV GIRDER_EXEC_USER ubuntu
 COPY . /home/ubuntu/HistomicsTK/ansible/.

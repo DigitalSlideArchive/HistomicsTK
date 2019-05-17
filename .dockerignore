@@ -163,6 +163,7 @@ __pycache__/
 env/
 build/
 _build/
+_skbuild/
 develop-eggs/
 dist/
 downloads/

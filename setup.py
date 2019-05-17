@@ -57,7 +57,6 @@ setup(
     include_package_data=True,
     setup_requires=[
         'setuptools-scm',
-        'pygit2',
         'Cython>=0.25.2',
         'scikit-build>=0.8.1',
         'cmake>=0.6.0',

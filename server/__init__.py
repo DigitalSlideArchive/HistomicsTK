@@ -22,6 +22,7 @@ from girder.plugins.slicer_cli_web.docker_resource import DockerResource
 from .handlers import process_annotations
 from .constants import PluginSettings
 from .image_browse_resource import ImageBrowseResource
+from . import ctk_cli_adjustment  # noqa - for side effects
 
 from girder.models.model_base import ModelImporter
 _template = os.path.join(
