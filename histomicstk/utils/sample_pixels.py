@@ -1,8 +1,8 @@
 import dask
 import dask.distributed
 import large_image
+import PIL.Image
 import numpy as np
-import scipy
 
 from .simple_mask import simple_mask
 
@@ -152,11 +152,10 @@ def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
         im_tile = tile['tile'][:, :, :3]
 
         # get tile foreground mask at resolution of current tile
-        tile_fgnd_mask = scipy.misc.imresize(
-            tile_fgnd_mask_lres,
-            im_tile.shape,
-            interp='nearest'
-        )
+        tile_fgnd_mask = np.array(PIL.Image.fromarray(tile_fgnd_mask_lres).resize(
+            im_tile.shape[:2],
+            resample=PIL.Image.NEAREST
+        ))
 
         # generate linear indices of sample pixels in fgnd mask
         nz_ind = np.nonzero(tile_fgnd_mask.flatten())[0]
