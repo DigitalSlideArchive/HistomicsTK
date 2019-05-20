@@ -207,6 +207,7 @@ class HistomicsTKResource(DockerResource):
             raise RestException('The quarantine folder does not exist.')
         if str(folder['_id']) == str(item['folderId']):
             raise RestException('The item is already in the quarantine folder.')
+        originalFolder = Folder().load(item['folderId'], force=True)
         quarantineInfo = {
             'originalFolderId': item['folderId'],
             'originalBaseParentType': item['baseParentType'],
@@ -216,8 +217,18 @@ class HistomicsTKResource(DockerResource):
             'quarantineTime': datetime.datetime.utcnow()
         }
         item = Item().move(item, folder)
+        placeholder = Item().createItem(
+            item['name'], {'_id': item['creatorId']}, originalFolder,
+            description=item['description'])
+        quarantineInfo['placeholderItemId'] = placeholder['_id']
         item.setdefault('meta', {})['quarantine'] = quarantineInfo
         item = Item().updateItem(item)
+        placeholderInfo = {
+            'quarantined': True,
+            'quarantineTime': quarantineInfo['quarantineTime']
+        }
+        placeholder.setdefault('meta', {})['quarantine'] = placeholderInfo
+        placeholder = Item().updateItem(placeholder)
         return item
 
     @autoDescribeRoute(
@@ -235,10 +246,13 @@ class HistomicsTKResource(DockerResource):
         folder = Folder().load(item['meta']['quarantine']['originalFolderId'], force=True)
         if not folder:
             raise RestException('The original folder is not accesible.')
+        placeholder = Item().load(item['meta']['quarantine']['placeholderItemId'], force=True)
         item = Item().move(item, folder)
         item['updated'] = item['meta']['quarantine']['originalUpdated']
         del item['meta']['quarantine']
         item = Item().updateItem(item)
+        if placeholder is not None:
+            Item().remove(placeholder)
         return item
 
 

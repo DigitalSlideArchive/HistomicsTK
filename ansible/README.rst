@@ -127,7 +127,7 @@ Prerequisites
     sudo apt-get update
     sudo apt-get install -y --force-yes libssl-dev git python2.7-dev python-pip
     sudo pip install -U pip
-    sudo pip install -U 'ansible<2.5'
+    sudo pip install -U ansible
     git clone https://github.com/DigitalSlideArchive/HistomicsTK
 
 Deploy

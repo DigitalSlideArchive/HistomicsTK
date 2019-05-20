@@ -1,6 +1,7 @@
 import { wrap } from 'girder/utilities/PluginUtils';
 import { AccessType } from 'girder/constants';
 import { restRequest } from 'girder/rest';
+import events from 'girder/events';
 import ItemListWidget from 'girder/views/widgets/ItemListWidget';
 
 import '../stylesheets/views/itemList.styl';
@@ -16,6 +17,7 @@ wrap(ItemListWidget, 'render', function (render) {
         }
         root.$el.find('.g-item-list-entry').each(function () {
             var parent = $(this);
+            parent.remove('.g-histomicstk-quarantine');
             parent.append($('<a class="g-histomicstk-quarantine"><span>Q</span></a>').attr({
                 'g-item-cid': $('[g-item-cid]', parent).attr('g-item-cid'),
                 title: 'Move this item to the quarantine folder'
@@ -29,14 +31,28 @@ wrap(ItemListWidget, 'render', function (render) {
         const item = root.collection.get(cid);
         restRequest({
             type: 'PUT',
-            url: 'HistomicsTK/quarantine/' + item.id
+            url: 'HistomicsTK/quarantine/' + item.id,
+            error: null
         }).done((resp) => {
+            events.trigger('g:alert', {
+                icon: 'ok',
+                text: 'Item quarantined.',
+                type: 'success',
+                timeout: 4000
+            });
             root.trigger('g:changed');
             if (root.parentView && root.parentView.setCurrentModel && root.parentView.parentModel) {
                 root.parentView.setCurrentModel(root.parentView.parentModel, {setRoute: false});
             } else {
                 target.closest('.g-item-list-entry').remove();
             }
+        }).fail((resp) => {
+            events.trigger('g:alert', {
+                icon: 'cancel',
+                text: 'Failed to quarantine item.',
+                type: 'danger',
+                timeout: 4000
+            });
         });
     }
 
