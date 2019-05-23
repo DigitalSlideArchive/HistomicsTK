@@ -57,7 +57,6 @@ setup(
     include_package_data=True,
     setup_requires=[
         'setuptools-scm',
-        'pygit2',
         'Cython>=0.25.2',
         'scikit-build>=0.8.1',
         'cmake>=0.6.0',
@@ -68,6 +67,7 @@ setup(
         'nimfa>=1.3.2',
         'numpy>=1.12.1',
         'scipy>=0.19.0',
+        'Pillow>=3.2.0',
         'pandas>=0.19.2',
         'scikit-image>=0.14.2',
         'scikit-learn>=0.18.1' + ('' if sys.version_info >= (3, ) else ',<0.21'),
