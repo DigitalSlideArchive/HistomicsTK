@@ -18,11 +18,8 @@ except ImportError:
     sys.exit(1)
 
 
-with open('README.rst') as readme_file:
+with open('README.rst', 'rt') as readme_file:
     readme = readme_file.read()
-
-with open('LICENSE') as f:
-    license_str = f.read()
 
 
 def prerelease_local_scheme(version):
@@ -47,6 +44,7 @@ setup(
     use_scm_version={'local_scheme': prerelease_local_scheme},
     description='A Python toolkit for Histopathology Image Analysis',
     long_description=readme,
+    long_description_content_type='text/x-rst',
     author='Kitware, Inc.',
     author_email='developers@digitalslidearchive.net',
     url='https://github.com/DigitalSlideArchive/HistomicsTK',
@@ -84,7 +82,7 @@ setup(
         'large-image-source-openslide',
         'large-image-source-pil',
     ],
-    license=license_str,
+    license='Apache Software License 2.0',
     keywords='histomicstk',
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -94,7 +92,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7'
+        'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
