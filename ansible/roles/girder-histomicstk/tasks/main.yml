@@ -140,6 +140,14 @@
     extra_args: "{{ root_dir }}/large_image[memcached,openslide]"
     state: present
 
+- name: Install python cmake modules
+  # as of 2019-05-27, this needs to be installed before the HistomicsTK plugin,
+  # though it isn't clear why.
+  pip:
+    name: cmake
+    state: present
+  become: true
+
 - name: Install our external girder plugins - HistomicsTK
   command: girder-install plugin -s {{ root_dir }}/HistomicsTK
   become: true
