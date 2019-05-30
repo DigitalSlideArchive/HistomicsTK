@@ -176,7 +176,7 @@
       name: default
       type: filesystem
       root: "{{ root_dir }}/assetstore"
-      current: true
+      # current: true
     state: present
 
 - name: Get assetstore list
