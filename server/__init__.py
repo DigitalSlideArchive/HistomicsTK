@@ -247,7 +247,7 @@ def load(info):
 
     curConfig = config.getConfig().get('histomicstk', {})
     if curConfig.get('restrict_downloads'):
-        # Change some endpoints to require user access
+        # Change some endpoints to require token access
         endpoints = [
             ('collection', 'GET', (':id', 'download')),
             ('file', 'GET', (':id', 'download')),
@@ -264,6 +264,6 @@ def load(info):
             cls = getattr(info['apiRoot'], resource)
             func = cls.getRouteHandler(method, route)
             if func.accessLevel == 'public':
-                func = access.user(func)
+                func = access.token(func)
                 cls.removeRoute(method, route)
                 cls.route(method, route, func)
