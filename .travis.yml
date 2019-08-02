@@ -62,6 +62,8 @@ before_install:
     # https://github.com/travis-ci/travis-ci/issues/7940
     - sudo rm -f /etc/boto.cfg
 
+    - pip install -U pip
+
     - mkdir -p $HOME/.cache/node_modules || true
     - ln -sf $HOME/.cache/node_modules .
     - nvm install v8

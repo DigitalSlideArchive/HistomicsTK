@@ -10,6 +10,7 @@ build
 _build
 .coverage
 *.egg
+.eggs
 *.egg-info
 .cache
 .idea

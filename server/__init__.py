@@ -1,13 +1,17 @@
+import datetime
 import json
 import os
 import re
 
 from girder import events
 from girder.api import access
-from girder.api.describe import Description, describeRoute
-from girder.constants import AccessType, SettingDefault
-from girder.exceptions import ValidationException
+from girder.api.describe import Description, describeRoute, autoDescribeRoute
+from girder.api.rest import filtermodel
+from girder.constants import AccessType, SettingDefault, TokenScope
+from girder.exceptions import RestException, ValidationException
+from girder.models.folder import Folder
 from girder.models.group import Group
+from girder.models.item import Item
 from girder.models.setting import Setting
 from girder.models.user import User
 from girder.utility.webroot import Webroot
@@ -25,6 +29,8 @@ from .image_browse_resource import ImageBrowseResource
 from . import ctk_cli_adjustment  # noqa - for side effects
 
 from girder.models.model_base import ModelImporter
+
+
 _template = os.path.join(
     os.path.dirname(__file__),
     'webroot.mako'
@@ -93,6 +99,14 @@ def validateHistomicsTKAnalysisAccess(doc):
     value['public'] = bool(value.get('public'))
 
 
+@setting_utilities.validator(PluginSettings.HISTOMICSTK_QUARANTINE_FOLDER)
+def validateHistomicsTKQuarantineFolder(doc):
+    if not doc.get('value', None):
+        doc['value'] = None
+    else:
+        Folder().load(doc['value'], force=True, exc=True)
+
+
 # Defaults that have fixed values are added to the system defaults dictionary.
 SettingDefault.defaults.update({
     PluginSettings.HISTOMICSTK_WEBROOT_PATH: 'histomicstk',
@@ -107,6 +121,8 @@ class HistomicsTKResource(DockerResource):
     def __init__(self, name, *args, **kwargs):
         super(HistomicsTKResource, self).__init__(name, *args, **kwargs)
         self.route('GET', ('settings',), self.getPublicSettings)
+        self.route('PUT', ('quarantine', ':id'), self.putQuarantine)
+        self.route('PUT', ('quarantine', ':id', 'restore'), self.restoreQuarantine)
         self.route('GET', ('analysis', 'access'), self.getAnalysisAccess)
 
     def _accessList(self):
@@ -159,8 +175,12 @@ class HistomicsTKResource(DockerResource):
     def getPublicSettings(self, params):
         keys = [
             PluginSettings.HISTOMICSTK_DEFAULT_DRAW_STYLES,
+            PluginSettings.HISTOMICSTK_QUARANTINE_FOLDER,
         ]
-        return {k: self.model('setting').get(k) for k in keys}
+        result = {k: self.model('setting').get(k) for k in keys}
+        result[PluginSettings.HISTOMICSTK_QUARANTINE_FOLDER] = bool(
+            result[PluginSettings.HISTOMICSTK_QUARANTINE_FOLDER])
+        return result
 
     @describeRoute(
         Description('Get the access list for analyses.')
@@ -168,6 +188,72 @@ class HistomicsTKResource(DockerResource):
     @access.admin
     def getAnalysisAccess(self, params):
         return self._accessList()
+
+    @autoDescribeRoute(
+        Description('Move an item to the quarantine folder.')
+        .responseClass('Item')
+        .modelParam('id', model=Item, level=AccessType.WRITE)
+        .errorResponse('ID was invalid.')
+        .errorResponse('Write access was denied for the item', 403)
+    )
+    @access.user(scope=TokenScope.DATA_WRITE)
+    @filtermodel(model=Item)
+    def putQuarantine(self, item):
+        folder = Setting().get(PluginSettings.HISTOMICSTK_QUARANTINE_FOLDER)
+        if not folder:
+            raise RestException('The quarantine folder is not configured.')
+        folder = Folder().load(folder, force=True, exc=True)
+        if not folder:
+            raise RestException('The quarantine folder does not exist.')
+        if str(folder['_id']) == str(item['folderId']):
+            raise RestException('The item is already in the quarantine folder.')
+        originalFolder = Folder().load(item['folderId'], force=True)
+        quarantineInfo = {
+            'originalFolderId': item['folderId'],
+            'originalBaseParentType': item['baseParentType'],
+            'originalBaseParentId': item['baseParentId'],
+            'originalUpdated': item['updated'],
+            'quarantineUserId': self.getCurrentUser()['_id'],
+            'quarantineTime': datetime.datetime.utcnow()
+        }
+        item = Item().move(item, folder)
+        placeholder = Item().createItem(
+            item['name'], {'_id': item['creatorId']}, originalFolder,
+            description=item['description'])
+        quarantineInfo['placeholderItemId'] = placeholder['_id']
+        item.setdefault('meta', {})['quarantine'] = quarantineInfo
+        item = Item().updateItem(item)
+        placeholderInfo = {
+            'quarantined': True,
+            'quarantineTime': quarantineInfo['quarantineTime']
+        }
+        placeholder.setdefault('meta', {})['quarantine'] = placeholderInfo
+        placeholder = Item().updateItem(placeholder)
+        return item
+
+    @autoDescribeRoute(
+        Description('Restore a quarantined item to its original folder.')
+        .responseClass('Item')
+        .modelParam('id', model=Item, level=AccessType.WRITE)
+        .errorResponse('ID was invalid.')
+        .errorResponse('Write access was denied for the item', 403)
+    )
+    @access.admin
+    @filtermodel(model=Item)
+    def restoreQuarantine(self, item):
+        if not item.get('meta', {}).get('quarantine'):
+            raise RestException('The item has no quarantine record.')
+        folder = Folder().load(item['meta']['quarantine']['originalFolderId'], force=True)
+        if not folder:
+            raise RestException('The original folder is not accesible.')
+        placeholder = Item().load(item['meta']['quarantine']['placeholderItemId'], force=True)
+        item = Item().move(item, folder)
+        item['updated'] = item['meta']['quarantine']['originalUpdated']
+        del item['meta']['quarantine']
+        item = Item().updateItem(item)
+        if placeholder is not None:
+            Item().remove(placeholder)
+        return item
 
 
 def _saveJob(event):

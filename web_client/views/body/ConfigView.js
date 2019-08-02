@@ -3,6 +3,7 @@ import _ from 'underscore';
 import View from 'girder/views/View';
 
 import PluginConfigBreadcrumbWidget from 'girder/views/widgets/PluginConfigBreadcrumbWidget';
+import BrowserWidget from 'girder/views/widgets/BrowserWidget';
 import AccessWidget from 'girder/views/widgets/AccessWidget';
 import { restRequest } from 'girder/rest';
 import events from 'girder/events';
@@ -20,10 +21,14 @@ var ConfigView = View.extend({
             this.$('#g-histomicstk-error-message').text('');
             var settings = _.map(this.settingsKeys, (key) => {
                 const element = this.$('#g-' + key.replace(/[_.]/g, '-'));
-                return {
+                var result = {
                     key,
                     value: element.val() || null
                 };
+                if (key === 'histomicstk.quarantine_folder') {
+                    result.value = result.value ? result.value.split(' ')[0] : '';
+                }
+                return result;
             });
             var access = this.accessWidget.getAccessList();
             access.public = this.$('#g-access-public').is(':checked');
@@ -38,7 +43,8 @@ var ConfigView = View.extend({
         },
         'click #g-histomicstk-cancel': function (event) {
             router.navigate('plugins', {trigger: true});
-        }
+        },
+        'click .g-open-browser': '_openBrowser'
     },
     initialize: function () {
         this.breadcrumb = new PluginConfigBreadcrumbWidget({
@@ -51,7 +57,8 @@ var ConfigView = View.extend({
             'histomicstk.brand_name',
             'histomicstk.brand_color',
             'histomicstk.banner_color',
-            'histomicstk.default_draw_styles'
+            'histomicstk.default_draw_styles',
+            'histomicstk.quarantine_folder'
         ];
         $.when(
             restRequest({
@@ -82,6 +89,35 @@ var ConfigView = View.extend({
             })
         ).done(() => {
             this.render();
+        });
+
+        this._browserWidgetView = new BrowserWidget({
+            parentView: this,
+            titleText: 'Quarantine Destination',
+            helpText: 'Browse to a location to select it as the destination.',
+            submitText: 'Select Destination',
+            validate: function (model) {
+                let isValid = $.Deferred();
+                if (!model || model.get('_modelType') !== 'folder') {
+                    isValid.reject('Please select a folder.');
+                } else {
+                    isValid.resolve();
+                }
+                return isValid.promise();
+            }
+        });
+        this.listenTo(this._browserWidgetView, 'g:saved', function (val) {
+            this.$('#g-histomicstk-quarantine-folder').val(val.id);
+            restRequest({
+                url: `resource/${val.id}/path`,
+                method: 'GET',
+                data: {type: val.get('_modelType')}
+            }).done((result) => {
+                // Only add the resource path if the value wasn't altered
+                if (this.$('#g-histomicstk-quarantine-folder').val() === val.id) {
+                    this.$('#g-histomicstk-quarantine-folder').val(`${val.id} (${result})`);
+                }
+            });
         });
     },
 
@@ -136,6 +172,10 @@ var ConfigView = View.extend({
                 resp.responseJSON.message
             );
         });
+    },
+
+    _openBrowser: function () {
+        this._browserWidgetView.setElement($('#g-dialog-container')).render();
     }
 });
 

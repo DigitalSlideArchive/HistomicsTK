@@ -3,7 +3,7 @@ p.g-histomicstk-description
   | Provides a toolkit for analyzing histology images.
 form#g-histomicstk-form(role="form")
   .form-group
-    label(for="g-histomicstk-brand-name") Root Path
+    label(for="g-histomicstk-webroot-path") Root Path
     input#g-histomicstk-webroot-path.form-control.input-sm(
         type="text", value=settings['histomicstk.webroot_path'] || '',
         placeholder=`Default: ${defaults['histomicstk.webroot_path'] || 'histomicstk'}`,
@@ -40,6 +40,17 @@ form#g-histomicstk-form(role="form")
   .form-group
     label#g-histomicstk-analysis-access-label(for="g-histomicstk-analysis-access") Analysis Access
     #g-histomicstk-analysis-access
+  .form-group
+    label(for="g-histomicstk-quarantine-folder") Quarantine Folder
+    p.g-histomicstk-description
+      | If a quarantine folder is specified, users with write access will see a Quarantine button next to items.  When clicked, this moves that item to the quarantine folder and adds metadata to record where it was originally.  The quarantine folder should have restricted visibility.
+    .input-group.input-group-sm
+      input#g-histomicstk-quarantine-folder.form-control.input-sm(
+          type="text", value=settings['histomicstk.quarantine_folder'] || '',
+          title="A folder to store quarantined items.")
+      .input-group-btn
+        button.g-open-browser.btn.btn-default(type="button")
+          i.icon-folder-open
   p#g-histomicstk-error-message.g-validation-failed-message
 .g-histomicstk-buttons
   button#g-histomicstk-save.btn.btn-sm.btn-primary Save
