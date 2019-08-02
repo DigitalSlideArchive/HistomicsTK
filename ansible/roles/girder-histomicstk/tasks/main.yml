@@ -5,7 +5,7 @@
 
 - name: NodeJS | Add PPA
   apt_repository:
-    repo: "deb https://deb.nodesource.com/node_6.x {{ ansible_distribution_release }} main"
+    repo: "deb https://deb.nodesource.com/node_8.x {{ ansible_distribution_release }} main"
   become: true
 
 - name: NodeJS | Install package
@@ -15,7 +15,7 @@
   become: true
 
 - name: NodeJS | Update npm
-  command: "npm install -g npm"
+  command: "npm install -g npm@latest"
   become: true
 
 - name: Install system package dependencies
@@ -40,7 +40,7 @@
   become: true
 
 - name: Install node-gyp
-  shell: "npm install -g node-gyp-install && /usr/lib/node_modules/node-gyp-install/bin.js"
+  shell: "npm install -g node-gyp-install && node-gyp-install"
   become: true
 
 - name: Clone slicer_cli_web plugin
