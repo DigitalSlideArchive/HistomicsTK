@@ -1,4 +1,4 @@
-FROM dockcross/manylinux-x64
+FROM dockcross/manylinux2010-x64
 
 # Don't build python 3.4 wheels.
 RUN rm -r /opt/python/cp27-cp27m

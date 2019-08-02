@@ -77,6 +77,7 @@ setup(
         'dask>=1.1.0',
         'distributed>=1.21.6',
         'tornado',
+        'fsspec>=0.3.3;python_version>="3"',
         # large image sources
         'large-image-source-tiff',
         'large-image-source-openslide',
