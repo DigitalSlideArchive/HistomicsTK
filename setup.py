@@ -82,6 +82,8 @@ setup(
         'large-image-source-tiff',
         'large-image-source-openslide',
         'large-image-source-pil',
+        # for interaction with girder
+        'girder_client',
     ],
     license='Apache Software License 2.0',
     keywords='histomicstk',
