@@ -21,7 +21,7 @@ from histomicstk.utils.polygon_and_mask_utils import (
 
 APIURL = 'http://demo.kitware.com/histomicstk/api/v1/'
 SOURCE_FOLDER_ID = '5bbdeba3e629140048d017bb'
-SAMPLE_SLIDE_ID = "5bbdeed1e629140048d01bcb"
+SAMPLE_SLIDE_ID = "5bbdee92e629140048d01b5d" 
 GTCODE_PATH = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), 
         'test_files', 'sample_GTcodes.csv')
@@ -40,7 +40,7 @@ class GirderUtilsTest(unittest.TestCase):
         resp  = gc.get(getStr, jsonResp=False)
         rgb = get_image_from_htk_response(resp)
 
-        self.TestCase.assertTupleEqual(rgb.shape, (100, 100, 3))
+        self.assertTupleEqual(rgb.shape, (100, 100, 3))
         
 # %%===========================================================================
 
@@ -52,7 +52,7 @@ class MaskUtilsTest(unittest.TestCase):
         element_infos = get_bboxes_from_slide_annotations(slide_annotations)
         
         self.assertTupleEqual(element_infos.shape, (49, 9))
-        self.TestCase.assertTupleEqual(
+        self.assertTupleEqual(
             tuple(element_infos.columns), 
             (('annidx','elementidx','type','group','xmin','xmax','ymin',
               'ymax','bbox_area')))
@@ -76,10 +76,10 @@ class MaskUtilsTest(unittest.TestCase):
             GTCodes_df=GTCodes.copy(), 
             idx_for_roi = idxs_for_all_rois[0], # <- let's focus on first ROI, 
             iou_thresh=0.0, roiinfo=None, crop_to_roi=True, 
-            verbose=True, monitorPrefix="roi 1")
+            verbose=False, monitorPrefix="roi 1")
         
-        self.TestCase.assertTupleEqual(ROI.shape, (4594, 4542))
-        self.TestCase.assertTupleEqual((
+        self.assertTupleEqual(ROI.shape, (4594, 4542))
+        self.assertTupleEqual((
                 roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH'],
                 roiinfo['XMIN'], roiinfo['XMAX'],
                 roiinfo['YMIN'], roiinfo['YMAX']), 
