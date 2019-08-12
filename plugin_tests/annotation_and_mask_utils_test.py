@@ -9,11 +9,9 @@ import unittest
 
 import os
 import girder_client
-from pandas import read_csv
 
-from histomicstk.utils.polygon_and_mask_utils import (
-        get_image_from_htk_response, get_bboxes_from_slide_annotations,
-        _get_idxs_for_all_rois, get_roi_mask)
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+        get_image_from_htk_response, get_bboxes_from_slide_annotations)
 
 # %%===========================================================================
 # Constants & prep work
@@ -56,35 +54,7 @@ class MaskUtilsTest(unittest.TestCase):
             tuple(element_infos.columns), 
             (('annidx','elementidx','type','group','xmin','xmax','ymin',
               'ymax','bbox_area')))
-        
-    def test_get_roi_mak(self):
-        
-        slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
-        element_infos = get_bboxes_from_slide_annotations(slide_annotations)
-        
-        # read ground truth codes and information
-        GTCodes = read_csv(GTCODE_PATH)
-        GTCodes.index = GTCodes.loc[:, 'group']
-        
-        # get indices of rois
-        idxs_for_all_rois = _get_idxs_for_all_rois(
-                GTCodes=GTCodes, element_infos=element_infos)
-        
-        # get roi mask and info
-        ROI, roiinfo = get_roi_mask(
-            slide_annotations=slide_annotations, element_infos=element_infos, 
-            GTCodes_df=GTCodes.copy(), 
-            idx_for_roi = idxs_for_all_rois[0], # <- let's focus on first ROI, 
-            iou_thresh=0.0, roiinfo=None, crop_to_roi=True, 
-            verbose=False, monitorPrefix="roi 1")
-        
-        self.assertTupleEqual(ROI.shape, (4594, 4542))
-        self.assertTupleEqual((
-                roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH'],
-                roiinfo['XMIN'], roiinfo['XMAX'],
-                roiinfo['YMIN'], roiinfo['YMAX']), 
-                (4595, 4543, 59206, 63749, 33505, 38100))
-                 
+                       
         
 # %%===========================================================================
         
