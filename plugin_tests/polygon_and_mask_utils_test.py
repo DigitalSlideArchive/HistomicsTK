@@ -7,11 +7,11 @@ Created on Sun Aug 11 22:50:03 2019
 
 import unittest
 
-import numpy as np
+#import numpy as np
 import girder_client
 
 from histomicstk.utils.polygon_and_mask_utils import (
-        get_image_from_htk_response,)
+        get_image_from_htk_response, get_bboxes_from_slide_annotations)
 
 # %%===========================================================================
 # Constants & prep work
@@ -25,8 +25,6 @@ gc= girder_client.GirderClient(apiUrl = APIURL)
 gc.authenticate(interactive=True)
 
 # %%===========================================================================
-# GirderUtilsTest
-# =============================================================================
 
 class GirderUtilsTest(unittest.TestCase):
 
@@ -40,5 +38,19 @@ class GirderUtilsTest(unittest.TestCase):
         unittest.TestCase.assertTupleEqual(rgb.shape, (100, 100, 3))
         
 # %%===========================================================================
-# 
-# =============================================================================
+
+class MaskUtilsTest(unittest.TestCase):
+
+    def test_get_bboxes_from_slide_annotations(self):
+        
+        slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
+        element_infos = get_bboxes_from_slide_annotations(slide_annotations)
+        
+        unittest.TestCase.assertTupleEqual(element_infos.shape, (125, 9))
+        unittest.TestCase.assertTupleEqual(
+            tuple(element_infos.columns), 
+            (('annidx','elementidx','type','group','xmin','xmax','ymin',
+              'ymax','bbox_area')))
+        
+# %%===========================================================================
+        
