@@ -11,7 +11,7 @@ Created on Mon Aug 12 18:33:48 2019
 import numpy as np
 #from pandas import DataFrame, read_csv
 
-from histomicstk.utils.annotation_and_mask_utils import (
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     #get_bboxes_from_slide_annotations, _get_idxs_for_all_rois, 
     get_idxs_for_annots_overlapping_roi_by_bbox, _get_element_mask, 
     _add_element_to_roi)
