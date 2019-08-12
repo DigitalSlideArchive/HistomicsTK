@@ -40,7 +40,7 @@ class GirderUtilsTest(unittest.TestCase):
         resp  = gc.get(getStr, jsonResp=False)
         rgb = get_image_from_htk_response(resp)
 
-        unittest.TestCase.assertTupleEqual(rgb.shape, (100, 100, 3))
+        self.TestCase.assertTupleEqual(rgb.shape, (100, 100, 3))
         
 # %%===========================================================================
 
@@ -51,8 +51,8 @@ class MaskUtilsTest(unittest.TestCase):
         slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
         element_infos = get_bboxes_from_slide_annotations(slide_annotations)
         
-        unittest.TestCase.assertTupleEqual(element_infos.shape, (49, 9))
-        unittest.TestCase.assertTupleEqual(
+        self.assertTupleEqual(element_infos.shape, (49, 9))
+        self.TestCase.assertTupleEqual(
             tuple(element_infos.columns), 
             (('annidx','elementidx','type','group','xmin','xmax','ymin',
               'ymax','bbox_area')))
@@ -78,8 +78,8 @@ class MaskUtilsTest(unittest.TestCase):
             iou_thresh=0.0, roiinfo=None, crop_to_roi=True, 
             verbose=True, monitorPrefix="roi 1")
         
-        unittest.TestCase.assertTupleEqual(ROI.shape, (4594, 4542))
-        unittest.TestCase.assertTupleEqual((
+        self.TestCase.assertTupleEqual(ROI.shape, (4594, 4542))
+        self.TestCase.assertTupleEqual((
                 roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH'],
                 roiinfo['XMIN'], roiinfo['XMAX'],
                 roiinfo['YMIN'], roiinfo['YMAX']), 
