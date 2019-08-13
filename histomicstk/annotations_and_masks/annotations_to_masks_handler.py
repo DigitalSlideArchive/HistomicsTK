@@ -5,14 +5,14 @@ Created on Mon Aug 12 18:33:48 2019
 @author: tageldim
 """
 
-#from io import BytesIO
-#from PIL import Image, ImageDraw
-#Image.MAX_IMAGE_PIXELS = 1000000000
+import os
 import numpy as np
-#from pandas import DataFrame, read_csv
+from pandas import DataFrame, read_csv
+from imageio import imwrite
 
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    #get_bboxes_from_slide_annotations, _get_idxs_for_all_rois, 
+#from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+from annotation_and_mask_utils import (
+    get_bboxes_from_slide_annotations, _get_idxs_for_all_rois, 
     get_idxs_for_annots_overlapping_roi_by_bbox, _get_element_mask, 
     _add_element_to_roi)
 
@@ -54,13 +54,17 @@ def get_roi_mask(
         * roiinfo (optional) - pandas series or dict containing information
            about the roi. Keys will be added to this index containing info
            about the roi like bounding box location and size.
-         * crop_to_roi - flag of whether to crop polygons to roi 
+        * crop_to_roi - flag of whether to crop polygons to roi 
            (prevent 'overflow' beyond roi edge)
-         * verbose (optional) - flag. Print progress to screen?
-         * monitorPrefix (optional) - string, to prepend to printed statements
+        * verbose (optional) - flag. Print progress to screen?
+        * monitorPrefix (optional) - string, to prepend to printed statements
     
     Returns:
-        * Np array (N x 2), where pixel values encode class membership  
+        * Np array (N x 2), where pixel values encode class membership. 
+           -> IMPORTANT NOTE: Zero pixels have special meaning and do NOT
+           encode specific ground truth class. Instead, they simply 
+           mean 'Outside ROI' and should be IGNORED during model training
+           or evaluation.
         * Dict of information about ROI 
         
     Example:
@@ -112,7 +116,10 @@ def get_roi_mask(
     ROI = np.zeros(
             (roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH']), dtype=np.uint8)
     
-    # make sure ROI is overlayed first & is assigned background class if relevant
+    # only parse if roi is polygonal or rectangular
+    assert elinfos_roi.loc[idx_for_roi, 'type'] != 'point'
+    
+    # make sure ROI is overlayed first & assigned background class if relevant
     roi_group = elinfos_roi.loc[idx_for_roi, 'group']
     GTCodes_df.loc[roi_group, 'overlay_order'] = np.min(
             GTCodes_df.loc[:, 'overlay_order']) - 1
@@ -167,8 +174,8 @@ def get_roi_mask(
                     print(e)
             
             # save a copy of ROI-only mask to crop to it later if needed
-            if crop_to_roi and (
-                    overlay_level == GTCodes_df.loc[roi_group, 'overlay_order']):
+            if crop_to_roi and (overlay_level == GTCodes_df.loc[
+                    roi_group, 'overlay_order']):
                 roi_only_mask = ROI.copy()
         
     # Now crop polygons to roi if needed (prevent 'overflow' beyond roi edge)
@@ -194,50 +201,81 @@ def get_roi_mask(
 
 #%% ===========================================================================
 
+def get_all_roi_masks_for_slide(
+        gc, slide_id, GTCODE_PATH, MASK_SAVEPATH, slide_name=None, 
+        verbose=True, monitorPrefix="", get_roi_mask_kwargs):
+    """Parses annotations and saves ground truth masks for ALL
+    regions of interest (ROIs) in a single slide. This is a wrapper
+    around the method get_roi_mask() which should be referred to (including
+    its Docstrings) for implementation details.
     
+    Arguments:
+        * gc - girder client object to make requests, for example:
+            gc = girder_client.GirderClient(apiUrl = APIURL)
+            gc.authenticate(interactive=True)
+        * slide_id - string, girder id for item (slide) 
+        * CTCODE_PATH - string, path to the ground truth codes and information 
+            csv file. Refer to the docstring of get_roi_mask() for more info.
+        * MASK_SAVEPATH - string, path to directory to save ROI masks
+        * slide_name (optional) - string. If not given, it is inferred using 
+             a server request using the girder client.
+        * verbose (optional) - flag. Print progress to screen?
+        * monitorPrefix (optional) - string, to prepend to printed statements
+        * get_roi_mask_kwargs - dictionaey of extra kwargs for get_roi_mask()
+    
+    Returns:
+        * None
+        
+    Example:
+        gc= girder_client.GirderClient(apiUrl = APIURL)
+        gc.authenticate(interactive=True)
+        get_all_roi_masks_for_slide(
+            gc=gc, slide_id=SAMPLE_SLIDE_ID, GTCODE_PATH=GTCODE_PATH, 
+            MASK_SAVEPATH=MASK_SAVEPATH, 
+            get_roi_mask_kwargs = {
+                'iou_thresh': 0.0, 'crop_to_roi': True, 'verbose': True},
+            )
+    """
+
+    # if not given, assign name of first file associated with item
+    if slide_name is None:
+        resp = gc.get('/item/%s/files' % slide_id)
+        slide_name = resp[0]['name']
+        slide_name = slide_name[:slide_name.rfind('.')]
+        
+    # read ground truth codes and information
+    GTCodes = read_csv(GTCODE_PATH)
+    GTCodes.index = GTCodes.loc[:, 'group']
+    assert all(GTCodes.loc[:, 'GT_code'] > 0), "All GT_code must be > 0"
+    
+    # get annotations for slide
+    slide_annotations = gc.get('/annotation/item/' + slide_id)
+        
+    # get bounding box information for all annotations
+    element_infos = get_bboxes_from_slide_annotations(slide_annotations)
+    
+    # get indices of rois
+    idxs_for_all_rois = _get_idxs_for_all_rois(
+            GTCodes=GTCodes, element_infos=element_infos)
+    
+    for roino, idx_for_roi in enumerate(idxs_for_all_rois):
+        
+        roicountStr = "%s: roi %d of %d" % (
+                monitorPrefix, roino+1, len(idxs_for_all_rois))
+        
+        # get roi mask and info
+        ROI, roiinfo = get_roi_mask(
+            slide_annotations=slide_annotations, element_infos=element_infos, 
+            GTCodes_df=GTCodes.copy(), idx_for_roi=idx_for_roi, 
+            monitorPrefix=roicountStr, **get_roi_mask_kwargs)
+        
+        # now save roi
+        ROINAMESTR = "%s_left-%d_top-%d_mag-BASE" % (
+                slide_name, roiinfo['XMIN'], roiinfo['YMIN'])
+        savename = os.path.join(MASK_SAVEPATH, ROINAMESTR + ".png")
+        if verbose: 
+            print("%s: Saving %s\n" % (roicountStr, savename))
+        imwrite(im= ROI, uri= savename)  
 
 #%% ===========================================================================
-#%% ===========================================================================
 
-##import os    
-#import girder_client 
-#
-#APIURL = 'http://demo.kitware.com/histomicstk/api/v1/'
-#SOURCE_FOLDER_ID = '5bbdeba3e629140048d017bb'
-#SAMPLE_SLIDE_ID = "5bbdee92e629140048d01b5d"
-##GTCODE_PATH = os.path.join(
-##        os.path.dirname(os.path.realpath(__file__)), 
-##        'test_files', 'sample_GTcodes.csv')
-#GTCODE_PATH = 'C:\\Users\\tageldim\\Desktop\\HistomicsTK\\plugin_tests\\test_files\\sample_GTcodes.csv'
-#
-##%% ---------------------------------------------------------------------
-#
-#gc= girder_client.GirderClient(apiUrl = APIURL)
-#gc.authenticate(interactive=True)
-#    
-## get annotations for slide
-#slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
-#    
-## get bounding box information for all annotations
-#element_infos = get_bboxes_from_slide_annotations(slide_annotations)
-#
-##%% ---------------------------------------------------------------------
-#
-## read ground truth codes and information
-#GTCodes = read_csv(GTCODE_PATH)
-#GTCodes.index = GTCodes.loc[:, 'group']
-#
-## get indices of rois
-#idxs_for_all_rois = _get_idxs_for_all_rois(
-#        GTCodes=GTCodes, element_infos=element_infos)
-#
-## get roi mask and info
-#ROI, roiinfo = get_roi_mask(
-#    slide_annotations=slide_annotations, element_infos=element_infos, 
-#    GTCodes_df=GTCodes.copy(), 
-#    idx_for_roi = idxs_for_all_rois[0], # <- let's focus on first ROI, 
-#    iou_thresh=0.0, roiinfo=None, crop_to_roi=True, 
-#    verbose=True, monitorPrefix="roi 1")
-#
-#
-##%% ---------------------------------------------------------------------      
