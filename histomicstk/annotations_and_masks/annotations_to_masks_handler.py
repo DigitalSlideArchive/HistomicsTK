@@ -203,7 +203,7 @@ def get_roi_mask(
 
 def get_all_roi_masks_for_slide(
         gc, slide_id, GTCODE_PATH, MASK_SAVEPATH, slide_name=None, 
-        verbose=True, monitorPrefix="", get_roi_mask_kwargs):
+        verbose=True, monitorPrefix="", get_roi_mask_kwargs=dict()):
     """Parses annotations and saves ground truth masks for ALL
     regions of interest (ROIs) in a single slide. This is a wrapper
     around the method get_roi_mask() which should be referred to (including
