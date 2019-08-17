@@ -19,7 +19,7 @@ def get_image_from_htk_response(resp):
 
     Parameters
     ----------
-    resp : object 
+    resp : object
            response from server request
 
     Returns
@@ -48,7 +48,7 @@ def get_image_from_htk_response(resp):
 
 def rotate_point_list(point_list, rotation, center=(0, 0)):
     """Rotates a certain point list around a central point. Modified from.
-    
+
     javascript version at: https://github.com/girder/large_image/blob/master/
     ... web_client/annotations/rotate.js.
 
@@ -59,7 +59,7 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
 
     rotation : float
         degrees (in radians)
-    
+
     center : tuple of ints
         central point coordinates
 
@@ -89,7 +89,7 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
 def get_rotated_rectangular_coords(
         roi_center, roi_width, roi_height, roi_rotation=0):
     """Given data on rectangular ROI center/width/height/rotation.
-    
+
     Get the unrotated abounding box coordinates around rotated ROI. This of course is
     applicable to any rotated rectangular annotation.
 
@@ -97,13 +97,13 @@ def get_rotated_rectangular_coords(
     -----------
     roi_center : tuple or list
         (x, y) format
-    roi_width : float 
+    roi_width : float
     roi_height : float
     roi_rotation : float
 
     Returns
     --------
-    dict 
+    dict
         includes roi corners (x, y) and bounds
 
     """
@@ -211,13 +211,13 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 
 def np_vec_no_jit_iou(bboxes1, bboxes2):
     """Fast, vectorized IoU.
-    
+
     Source: https://medium.com/@venuktan/vectorized-intersection-over-union ...
             -iou-in-numpy-and-tensor-flow-4fa16231b63d
 
     Parameters
     -----------
-    bboxes1 : np array 
+    bboxes1 : np array
         columns encode bounding box corners xmin, ymin, xmax, ymax
     bboxes2 : np array
         same as bboxes 1
@@ -261,8 +261,8 @@ def _get_idxs_for_all_rois(GTCodes, element_infos):
 def get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi, iou_thresh=0.0):
     """Find indices of **potentially** included annoations within the ROI.
-    
-    We say "potentially" because this uses the IoU of roi and annotation as a 
+
+    We say "potentially" because this uses the IoU of roi and annotation as a
     fast indicator of potential inclusion. This helps dramatically scale down
     the number of annotations to look through. Later on, a detailed look at
     whether the annotation polygons actually overlap the ROI can be done.
@@ -271,9 +271,9 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
     -----------
     element_infos : pandas DataFrame
         result from running get_bboxes_from_slide_annotations()
-    idx_for_roi : int 
+    idx_for_roi : int
         index for roi annotation within the element_infos DF
-    iou_thresh : float 
+    iou_thresh : float
         overlap threshold to be considered within ROI
 
     Returns
@@ -298,7 +298,7 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
 
 def create_mask_from_coords(coords):
     """Create a binary mask from given vertices coordinates.
-    
+
     Source: This is modified from code by Juan Carlos from David Gutman Lab.
 
     Parameters

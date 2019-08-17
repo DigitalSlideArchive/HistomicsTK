@@ -22,7 +22,7 @@ def get_roi_mask(
         idx_for_roi, iou_thresh=0.0, roiinfo=None,
         crop_to_roi=True, verbose=False, monitorPrefix=""):
     """Parse annotations and gets a ground truth mask for a single ROI.
-    
+
     This will look at all slide annotations and get ones that
     overlap with the region of interest (ROI) and assigns them to mask.
 
@@ -31,7 +31,7 @@ def get_roi_mask(
     slide_annotations : list of dicts
         response from server request
         eg. slide_annotations = gc.get('/annotation/item/' + SLIDE_ID)
-    element_infos : pandas DataFrame. 
+    element_infos : pandas DataFrame.
         The columns annidx and elementidx
         encode the dict index of annotation document and element,
         respectively, in the original slide_annotations list of dictionaries.
@@ -57,21 +57,21 @@ def get_roi_mask(
     iou_thresh : float
         how much bounding box overlap is enough to
         consider an annotation to belong to the region of interest
-    roiinfo (optional) : pandas series or dict 
-        contains information about the roi. Keys will be added to this 
-        index containing info about the roi like bounding box 
+    roiinfo (optional) : pandas series or dict
+        contains information about the roi. Keys will be added to this
+        index containing info about the roi like bounding box
         location and size.
     crop_to_roi : bool
-        flag of whether to crop polygons to roi 
+        flag of whether to crop polygons to roi
         (prevent 'overflow' beyond roi edge)
     verbose (optional) : bool
         Print progress to screen?
-    monitorPrefix (optional) : str 
+    monitorPrefix (optional) : str
         text to prepend to printed statements
 
     Returns
     --------
-    Np array 
+    Np array
         (N x 2), where pixel values encode class membership.
         -> IMPORTANT NOTE: Zero pixels have special meaning and do NOT
         encode specific ground truth class. Instead, they simply
@@ -220,8 +220,8 @@ def get_all_roi_masks_for_slide(
         gc, slide_id, GTCODE_PATH, MASK_SAVEPATH, slide_name=None,
         verbose=True, monitorPrefix="", get_roi_mask_kwargs=dict()):
     """Parse annotations and saves ground truth masks for ALL ROIs.
-    
-    Get all ROIs in a single slide. This is a wrapper around get_roi_mask() 
+
+    Get all ROIs in a single slide. This is a wrapper around get_roi_mask()
     which should be referred to for implementation details.
 
     Parameters
