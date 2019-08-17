@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Aug 12 18:33:48 2019
+"""Created on Mon Aug 12 18:33:48 2019.
 
 @author: tageldim
 """
@@ -22,52 +21,67 @@ def get_roi_mask(
         slide_annotations, element_infos, GTCodes_df,
         idx_for_roi, iou_thresh=0.0, roiinfo=None,
         crop_to_roi=True, verbose=False, monitorPrefix=""):
-    """Parses annotations and gets a ground truth mask for a single
-    region of interest (ROI). This will look at all slide annotations and
-    get ones that overlap with the ROI and assigns them into a mask.
+    """Parse annotations and gets a ground truth mask for a single ROI.
+    
+    This will look at all slide annotations and get ones that
+    overlap with the region of interest (ROI) and assigns them to mask.
 
-    Arguments:
-        * slide_annotations - response from server request (list of dicts)
-          eg. slide_annotations = gc.get('/annotation/item/' + SLIDE_ID)
-        * element_infos - A pandas DataFrame. The columns annidx and elementidx
-          encode the dict index of annotation document and element,
-          respectively, in the original slide_annotations list of dictionaries.
-          This can be obain by get_bboxes_from_slide_annotations() method, eg.
-          element_infos  = get_bboxes_from_slide_annotations(slide_annotations)
-        * GTCodes_df - the ground truth codes and information dataframe.
-          WARNING: Modified indide this method so pass a copy.
-          This is a dataframe that is indexed by the annotation group name and
-          has the following columns:
-              - group: group name of annotation (string), eg. "mostly_tumor"
-              - overlay_order: int, how early to place the annotation in the
-                 mask. Larger values means this annotation group is overlayed
-                 last and overwrites whatever overlaps it.
-              - GT_code: int, desired ground truth code (in the mask)
-                 Pixels of this value belong to corresponding group (class)
-              - is_roi: Flag for whether this group encodes an ROI
-              - is_background_class: Flag, whether this group is the default
-                fill value inside the ROI. For example, you may descide that
-                any pixel inside the ROI is considered stroma.
-        * idx_for_roi - index of ROI within the element_infos dataframe.
-        * iou_thresh - float, how much bounding box overlap is enough to
-           consider an annotation to belong to the region of interest
-        * roiinfo (optional) - pandas series or dict containing information
-           about the roi. Keys will be added to this index containing info
-           about the roi like bounding box location and size.
-        * crop_to_roi - flag of whether to crop polygons to roi
-           (prevent 'overflow' beyond roi edge)
-        * verbose (optional) - flag. Print progress to screen?
-        * monitorPrefix (optional) - string, to prepend to printed statements
+    Parameters
+    -----------
+    slide_annotations : list of dicts
+        response from server request
+        eg. slide_annotations = gc.get('/annotation/item/' + SLIDE_ID)
+    element_infos : pandas DataFrame. 
+        The columns annidx and elementidx
+        encode the dict index of annotation document and element,
+        respectively, in the original slide_annotations list of dictionaries.
+        This can be obain by get_bboxes_from_slide_annotations() method, eg.
+        element_infos  = get_bboxes_from_slide_annotations(slide_annotations)
+    GTCodes_df : pandas Dataframe
+        the ground truth codes and information dataframe.
+        WARNING: Modified indide this method so pass a copy.
+        This is a dataframe that is indexed by the annotation group name and
+        has the following columns:
+        - group: group name of annotation (string), eg. "mostly_tumor"
+        - overlay_order: int, how early to place the annotation in the
+            mask. Larger values means this annotation group is overlayed
+            last and overwrites whatever overlaps it.
+        - GT_code: int, desired ground truth code (in the mask)
+            Pixels of this value belong to corresponding group (class)
+        - is_roi: Flag for whether this group encodes an ROI
+        - is_background_class: Flag, whether this group is the default
+            fill value inside the ROI. For example, you may descide that
+            any pixel inside the ROI is considered stroma.
+    idx_for_roi : int
+        index of ROI within the element_infos dataframe.
+    iou_thresh : float
+        how much bounding box overlap is enough to
+        consider an annotation to belong to the region of interest
+    roiinfo (optional) : pandas series or dict 
+        contains information about the roi. Keys will be added to this 
+        index containing info about the roi like bounding box 
+        location and size.
+    crop_to_roi : bool
+        flag of whether to crop polygons to roi 
+        (prevent 'overflow' beyond roi edge)
+    verbose (optional) : bool
+        Print progress to screen?
+    monitorPrefix (optional) : str 
+        text to prepend to printed statements
 
-    Returns:
-        * Np array (N x 2), where pixel values encode class membership.
-           -> IMPORTANT NOTE: Zero pixels have special meaning and do NOT
-           encode specific ground truth class. Instead, they simply
-           mean 'Outside ROI' and should be IGNORED during model training
-           or evaluation.
-        * Dict of information about ROI
+    Returns
+    --------
+    Np array 
+        (N x 2), where pixel values encode class membership.
+        -> IMPORTANT NOTE: Zero pixels have special meaning and do NOT
+        encode specific ground truth class. Instead, they simply
+        mean 'Outside ROI' and should be IGNORED during model training
+        or evaluation.
+    Dict
+        information about ROI
 
-    Example:
+    Example
+    -------
         gc= girder_client.GirderClient(apiUrl = APIURL)
         gc.authenticate(interactive=True)
 
@@ -92,8 +106,8 @@ def get_roi_mask(
             idx_for_roi = idxs_for_all_rois[0], # <- let's focus on first ROI,
             iou_thresh=0.0, roiinfo=None, crop_to_roi=True,
             verbose=True, monitorPrefix="roi 1")
-    """
 
+    """
     # This stores information about the ROI like bounds, slide_name, etc
     # Allows passing many parameters and good forward/backward compatibility
     if roiinfo is None:
@@ -205,29 +219,39 @@ def get_roi_mask(
 def get_all_roi_masks_for_slide(
         gc, slide_id, GTCODE_PATH, MASK_SAVEPATH, slide_name=None,
         verbose=True, monitorPrefix="", get_roi_mask_kwargs=dict()):
-    """Parses annotations and saves ground truth masks for ALL
-    regions of interest (ROIs) in a single slide. This is a wrapper
-    around the method get_roi_mask() which should be referred to (including
-    its Docstrings) for implementation details.
+    """Parse annotations and saves ground truth masks for ALL ROIs.
+    
+    Get all ROIs in a single slide. This is a wrapper around get_roi_mask() 
+    which should be referred to for implementation details.
 
-    Arguments:
-        * gc - girder client object to make requests, for example:
-            gc = girder_client.GirderClient(apiUrl = APIURL)
-            gc.authenticate(interactive=True)
-        * slide_id - string, girder id for item (slide)
-        * CTCODE_PATH - string, path to the ground truth codes and information
-            csv file. Refer to the docstring of get_roi_mask() for more info.
-        * MASK_SAVEPATH - string, path to directory to save ROI masks
-        * slide_name (optional) - string. If not given, it is inferred using
-             a server request using the girder client.
-        * verbose (optional) - flag. Print progress to screen?
-        * monitorPrefix (optional) - string, to prepend to printed statements
-        * get_roi_mask_kwargs - dictionaey of extra kwargs for get_roi_mask()
+    Parameters
+    -----------
+    gc : object
+        girder client object to make requests, for example:
+        gc = girder_client.GirderClient(apiUrl = APIURL)
+        gc.authenticate(interactive=True)
+    slide_id : str
+        girder id for item (slide)
+    GTCODE_PATH : str
+        path to the ground truth codes and information
+        csv file. Refer to the docstring of get_roi_mask() for more info.
+    MASK_SAVEPATH : str
+        path to directory to save ROI masks
+    slide_name (optional) : str
+        If not given, it's inferred using a server request using girder client.
+    verbose (optional) : bool
+        Print progress to screen?
+    monitorPrefix (optional) : str
+        text to prepend to printed statements
+    get_roi_mask_kwargs : dict
+        extra kwargs for get_roi_mask()
 
-    Returns:
-        * None
+    Returns
+    --------
+    None
 
-    Example:
+    Example
+    --------
         gc= girder_client.GirderClient(apiUrl = APIURL)
         gc.authenticate(interactive=True)
         get_all_roi_masks_for_slide(
@@ -236,8 +260,8 @@ def get_all_roi_masks_for_slide(
             get_roi_mask_kwargs = {
                 'iou_thresh': 0.0, 'crop_to_roi': True, 'verbose': True},
             )
-    """
 
+    """
     # if not given, assign name of first file associated with item
     if slide_name is None:
         resp = gc.get('/item/%s/files' % slide_id)

@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Aug 11 22:50:03 2019
+Created on Sun Aug 11 22:50:03 2019.
 
 @author: tageldim
 """
-
 import unittest
-
 import os
 import girder_client
 
@@ -30,10 +28,11 @@ gc.authenticate(interactive=True)
 # %%===========================================================================
 
 
-class GiirderUtilsTest(unittest.TestCase):
+class GirderUtilsTest(unittest.TestCase):
+    """Test utilities for interaction with girder."""
 
     def test_get_image_from_htk_response(self):
-
+        """Test get_image_from_htk_response."""
         getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
             SAMPLE_SLIDE_ID, 59000, 59100, 35000, 35100)
         resp = gc.get(getStr, jsonResp=False)
@@ -45,9 +44,10 @@ class GiirderUtilsTest(unittest.TestCase):
 
 
 class MaskUtilsTest(unittest.TestCase):
+    """Test utilities for makign masks."""
 
     def test_get_bboxes_from_slide_annotations(self):
-
+        """Test get_bboxes_from_slide_annotations."""
         slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
         element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Aug 12 18:47:34 2019
+Created on Mon Aug 12 18:47:34 2019.
 
 @author: tageldim
 """
@@ -37,9 +37,10 @@ gc.authenticate(interactive=True)
 
 
 class GetROIMasksTest(unittest.TestCase):
+    """Test methods for getting ROI mask from annotations."""
 
     def test_get_roi_mask(self):
-
+        """Test get_roi_mask()."""
         slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
         element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 
@@ -69,7 +70,7 @@ class GetROIMasksTest(unittest.TestCase):
     # %% ----------------------------------------------------------------------
 
     def test_get_all_roi_masks_for_slide(self):
-
+        """Test get_all_roi_masks_for_slide()."""
         get_all_roi_masks_for_slide(
             gc=gc, slide_id=SAMPLE_SLIDE_ID, GTCODE_PATH=GTCODE_PATH,
             MASK_SAVEPATH=MASK_SAVEPATH,

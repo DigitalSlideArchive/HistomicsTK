@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Aug 11 22:30:06 2019
+"""Created on Sun Aug 11 22:30:06 2019.
 
 @author: tageldim
 """
@@ -18,19 +17,25 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 def get_image_from_htk_response(resp):
     """Given a histomicsTK girder response, get np array image.
 
-    Arguments:
-        * resp - response from server request
+    Parameters
+    ----------
+    resp : object 
+           response from server request
 
-    Returns:
-        * a pillow Image object
+    Returns
+    --------
+    Pillow Image object
+        a pillow Image object of the image
 
-    Example:
+    Example
+    --------
         gc= girder_client.GirderClient(apiUrl = APIURL)
         gc.authenticate(interactive=True)
         getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
           slide_id, left, right, top, bottom)
         resp  = gc.get(getStr, jsonResp=False)
         rgb = get_image_from_htk_response(resp)
+
     """
     image_content = BytesIO(resp.content)
     image_content.seek(0)
@@ -42,18 +47,26 @@ def get_image_from_htk_response(resp):
 
 
 def rotate_point_list(point_list, rotation, center=(0, 0)):
-    """Rotates a certain point list around a central point.
-    Modified from javascript version at:
-        https://github.com/girder/large_image/blob/master/ ...
-        web_client/annotations/rotate.js
+    """Rotates a certain point list around a central point. Modified from.
+    
+    javascript version at: https://github.com/girder/large_image/blob/master/
+    ... web_client/annotations/rotate.js.
 
-    Arguments:
-        * point_list - list of tuples (x, y)
-        * rotation - degrees (in radians)
-        * center - central point coordinates
+    Parameters
+    -----------
+    point_list : list of tuples
+        (x,y) coordinates
 
-    Returns:
-        * list of tuples
+    rotation : float
+        degrees (in radians)
+    
+    center : tuple of ints
+        central point coordinates
+
+    Returns
+    --------
+    list of tuples
+
     """
     point_list_rotated = []
 
@@ -75,16 +88,24 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
 
 def get_rotated_rectangular_coords(
         roi_center, roi_width, roi_height, roi_rotation=0):
-    """Given data on rectangular ROI center/width/height/rotation,
-    get the unrotated abounding box coordinates around rotated ROI. This
-    of course is applicable to any rotated rectangular annotation.
+    """Given data on rectangular ROI center/width/height/rotation.
+    
+    Get the unrotated abounding box coordinates around rotated ROI. This of course is
+    applicable to any rotated rectangular annotation.
 
-    Arguments:
-        * roi_center - [x, y] format
-        * roi_width, roi_height, roi_rotation - float
+    Parameters
+    -----------
+    roi_center : tuple or list
+        (x, y) format
+    roi_width : float 
+    roi_height : float
+    roi_rotation : float
 
-    Returns:
-        * dict with roi corners (x, y) and bounds
+    Returns
+    --------
+    dict 
+        includes roi corners (x, y) and bounds
+
     """
     # Get false bounds
     x_min = roi_center[0] - int(roi_width / 2)
@@ -120,19 +141,25 @@ def get_rotated_rectangular_coords(
 def get_bboxes_from_slide_annotations(slide_annotations):
     """Given a slide annotation list, gets information on bounding boxes.
 
-    Arguments:
-        * slide_annotations - response from server request (list of dicts)
+    Parameters
+    -----------
+    slide_annotations : list of dicts
+        response from server request
 
-    Returns:
-        * A pandas DataFrame. The columns annidx and elementidx encode the
-          dict index of annotation document and element, respectively, in the
-          original slide_annotations list of dictionaries
+    Returns
+    ---------
+    Pandas DataFrame
+        The columns annidx and elementidx encode the
+        dict index of annotation document and element, respectively, in the
+        original slide_annotations list of dictionaries
 
-    Example:
+    Example
+    ---------
         gc= girder_client.GirderClient(apiUrl = APIURL)
         gc.authenticate(interactive=True)
         slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
         element_infos  = get_bboxes_from_slide_annotations(slide_annotations)
+
     """
     element_infos = DataFrame(columns=[
         'annidx', 'elementidx', 'type', 'group',
@@ -184,16 +211,22 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 
 def np_vec_no_jit_iou(bboxes1, bboxes2):
     """Fast, vectorized IoU.
+    
     Source: https://medium.com/@venuktan/vectorized-intersection-over-union ...
             -iou-in-numpy-and-tensor-flow-4fa16231b63d
 
-    Arguments:
-        * bboxes1 - np array where columns encode bounding box
-                  corners xmin, ymin, xmax, ymax
-        * bboxes2 - same as bboxes 1
+    Parameters
+    -----------
+    bboxes1 : np array 
+        columns encode bounding box corners xmin, ymin, xmax, ymax
+    bboxes2 : np array
+        same as bboxes 1
 
-    Returns:
-        * np array of IoU values for each pair from bboxes1 & bboxes2
+    Returns
+    --------
+    np array
+        IoU values for each pair from bboxes1 & bboxes2
+
     """
     x11, y11, x12, y12 = np.split(bboxes1, 4, axis=1)
     x21, y21, x22, y22 = np.split(bboxes2, 4, axis=1)
@@ -211,7 +244,10 @@ def np_vec_no_jit_iou(bboxes1, bboxes2):
 
 
 def _get_idxs_for_all_rois(GTCodes, element_infos):
-    """Gets indices of ROIs within the element_infos dataframe. (Internal)"""
+    """Get indices of ROIs within the element_infos dataframe.
+
+    (Internal)
+    """
     roi_labels = list(GTCodes.loc[GTCodes.loc[:, 'is_roi'] == 1, 'group'])
     idxs_for_all_rois = []
     for idx, elinfo in element_infos.iterrows():
@@ -224,20 +260,27 @@ def _get_idxs_for_all_rois(GTCodes, element_infos):
 
 def get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi, iou_thresh=0.0):
-    """Find indices of **potentially** included annoations within the ROI
-    We say "potentially" because this uses the IoU of roi and annotation
-    as a fast indicator of potential inclusion. This helps dramatically scale
-    down the number of annotations to look through. Later on, a detailed look
-    at wheter the annotation polygons actually overlap the ROI can be done.
+    """Find indices of **potentially** included annoations within the ROI.
+    
+    We say "potentially" because this uses the IoU of roi and annotation as a 
+    fast indicator of potential inclusion. This helps dramatically scale down
+    the number of annotations to look through. Later on, a detailed look at
+    whether the annotation polygons actually overlap the ROI can be done.
 
-    Arguments:
-        * element_infos - pandas DataFrame
-               from running get_bboxes_from_slide_annotations()
-        * idx_for_roi - index for roi annotation within the element_infos DF
-        * iou_thresh - overlap threshold to be considered within ROI
+    Parameters
+    -----------
+    element_infos : pandas DataFrame
+        result from running get_bboxes_from_slide_annotations()
+    idx_for_roi : int 
+        index for roi annotation within the element_infos DF
+    iou_thresh : float 
+        overlap threshold to be considered within ROI
 
-    Returns:
-        * list of indices relative to element_infos
+    Returns
+    --------
+    list
+        indices relative to element_infos
+
     """
     bboxes = np.array(
         element_infos.loc[:, ['xmin', 'ymin', 'xmax', 'ymax']],
@@ -254,18 +297,22 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
 
 
 def create_mask_from_coords(coords):
-    """ Creates a binary mask from given vertices coordinates.
+    """Create a binary mask from given vertices coordinates.
+    
     Source: This is modified from code by Juan Carlos from David Gutman Lab.
 
-    Arguments:
-        * vertices - must be in numpy ndarray form
-          (e.g. ([x1,y1],[x2,y2],[x3,y3],.....,[xn,yn])),
-          where xn and yn corresponds to the nth vertix coordinate.
+    Parameters
+    -----------
+    vertices : np arrray
+        must be in the form (e.g. ([x1,y1],[x2,y2],[x3,y3],.....,[xn,yn])),
+        where xn and yn corresponds to the nth vertix coordinate.
 
-    Returns:
-        * mask: a numpy array binary mask
+    Returns
+    --------
+    np array
+        binary mask
+
     """
-
     polygon = coords.copy()
 
     # use the smallest bounding region, calculated from vertices
@@ -290,8 +337,10 @@ def create_mask_from_coords(coords):
 
 
 def _get_element_mask(elinfo, slide_annotations):
-    """get coordinates and mask for annotation element. (Internal)"""
+    """Get coordinates and mask for annotation element.
 
+    (Internal)
+    """
     element = slide_annotations[int(elinfo['annidx'])][
         'annotation']['elements'][int(elinfo['elementidx'])]
 
@@ -310,8 +359,7 @@ def _get_element_mask(elinfo, slide_annotations):
 
 
 def _add_element_to_roi(elinfo, ROI, GT_code, element_mask, roiinfo):
-    """add single polygon to ROI given mask (Internal)"""
-
+    """Add single polygon to ROI given mask (Internal)."""
     ymin = int(elinfo.ymin - roiinfo['YMIN'])
     ymax = int(elinfo.ymax - roiinfo['YMIN'])
     xmin = int(elinfo.xmin - roiinfo['XMIN'])
