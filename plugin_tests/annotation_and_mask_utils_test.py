@@ -53,7 +53,7 @@ class MaskUtilsTest(unittest.TestCase):
         slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
         element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 
-        self.assertTupleEqual(element_infos.shape, (49, 9))
+        self.assertTupleEqual(element_infos.shape, (76, 9))
         self.assertTupleEqual(
             tuple(element_infos.columns),
             (('annidx', 'elementidx', 'type', 'group',

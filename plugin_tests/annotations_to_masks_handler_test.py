@@ -62,12 +62,12 @@ class GetROIMasksTest(unittest.TestCase):
             iou_thresh=0.0, roiinfo=None, crop_to_roi=True,
             verbose=False, monitorPrefix="roi 1")
 
-        self.assertTupleEqual(ROI.shape, (4594, 4542))
+        self.assertTupleEqual(ROI.shape, (4594, 6137))
         self.assertTupleEqual((
             roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH'],
             roiinfo['XMIN'], roiinfo['XMAX'],
             roiinfo['YMIN'], roiinfo['YMAX']),
-            (4595, 4543, 59206, 63749, 33505, 38100))
+            (4820, 7006, 57611, 64617, 33505, 38325))
 
     # %% ----------------------------------------------------------------------
 
