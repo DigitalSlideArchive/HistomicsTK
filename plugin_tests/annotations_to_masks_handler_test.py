@@ -23,7 +23,7 @@ from histomicstk.annotations_and_masks.annotations_to_masks_handler import (
 
 # APIURL = 'http://demo.kitware.com/histomicstk/api/v1/'
 # SAMPLE_SLIDE_ID = '5bbdee92e629140048d01b5d'
-APIURL = 'http://http://candygram.neurology.emory.edu:8080/api/v1/'
+APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
 SAMPLE_SLIDE_ID = '5d586d57bd4404c6b1f28640'
 GTCODE_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -32,7 +32,8 @@ MASK_SAVEPATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), '../../')
 
 gc = girder_client.GirderClient(apiUrl=APIURL)
-gc.authenticate(interactive=True)
+# gc.authenticate(interactive=True)
+gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 # %%===========================================================================
 
