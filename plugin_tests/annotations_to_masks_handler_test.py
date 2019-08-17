@@ -21,9 +21,10 @@ from histomicstk.annotations_and_masks.annotations_to_masks_handler import (
 # Constants & prep work
 # =============================================================================
 
-APIURL = 'http://demo.kitware.com/histomicstk/api/v1/'
-# SOURCE_FOLDER_ID = '5bbdeba3e629140048d017bb'
-SAMPLE_SLIDE_ID = '5bbdee92e629140048d01b5d'
+# APIURL = 'http://demo.kitware.com/histomicstk/api/v1/'
+# SAMPLE_SLIDE_ID = '5bbdee92e629140048d01b5d'
+APIURL = 'http://http://candygram.neurology.emory.edu:8080/api/v1/'
+SAMPLE_SLIDE_ID = '5d586d57bd4404c6b1f28640'
 GTCODE_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'test_files', 'sample_GTcodes.csv')
