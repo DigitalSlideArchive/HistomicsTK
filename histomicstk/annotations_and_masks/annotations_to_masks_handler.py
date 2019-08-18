@@ -14,7 +14,7 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
 # from annotation_and_mask_utils import (
     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois,
     get_idxs_for_annots_overlapping_roi_by_bbox, _get_element_mask,
-    _add_element_to_roi)
+    _get_and_add_element_to_roi)
 
 # %% =====================================================================
 
@@ -188,35 +188,21 @@ def get_roi_mask(
                 monitorPrefix, overlay_level, elNo, N_elements, elinfo['group'])
             if verbose:
                 print(elcountStr)
-
-            try:
-                coords, element_mask = _get_element_mask(
-                    elinfo=elinfo, slide_annotations=slide_annotations)
-                
-                # ignore if outside ROI (precise)
-                if use_shapely:
-                    el_polygon = Polygon(coords)
-                    if el_polygon.distance(roi_polygon) > 2:
-                        if verbose:
-                            print("%s: OUSIDE ROI." % elcountStr)
-                        continue
-                
-                # Add element to ROI mask
-                ROI = _add_element_to_roi(
-                    elinfo=elinfo, ROI=ROI,
-                    GT_code=GTCodes_df.loc[elinfo['group'], 'GT_code'],
-                    element_mask=element_mask, roiinfo=roiinfo)
-            except Exception as e:
-                if verbose:
-                    print("%s: ERROR! (see below)" % elcountStr)
-                    print(e)
-
+            
+            # now add element to ROI
+            ROI = _get_and_add_element_to_roi(
+                elinfo=elinfo, slide_annotations=slide_annotations, ROI=ROI,
+                roiinfo=roiinfo, roi_polygon=roi_polygon,
+                GT_code=GTCodes_df.loc[elinfo['group'], 'GT_code'],
+                use_shapely=use_shapely, verbose=verbose,
+                monitorPrefix=elcountStr)
+            
             # save a copy of ROI-only mask to crop to it later if needed
             if crop_to_roi and (overlay_level == GTCodes_df.loc[
                     roi_group, 'overlay_order']):
                 roi_only_mask = ROI.copy()
 
-    # Now crop polygons to roi if needed (prevent 'overflow' beyond roi edge)
+    # Crop polygons to roi if needed (prevent 'overflow' beyond roi edge)
     if crop_to_roi:
         ROI[roi_only_mask == 0] = 0
 

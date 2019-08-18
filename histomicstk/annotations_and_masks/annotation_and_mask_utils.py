@@ -6,6 +6,7 @@
 
 from io import BytesIO
 from PIL import Image, ImageDraw
+from shapely.geometry.polygon import Polygon
 import numpy as np
 from pandas import DataFrame
 
@@ -376,6 +377,39 @@ def _add_element_to_roi(elinfo, ROI, GT_code, element_mask, roiinfo):
     patch[element_mask > 0] = GT_code
     ROI[ymin:ymax, xmin:xmax] = patch.copy()
 
+    return ROI
+
+# %%===========================================================================
+
+
+def _get_and_add_element_to_roi(
+    elinfo, slide_annotations, ROI, roiinfo, roi_polygon, GT_code,
+    use_shapely=True, verbose=True, monitorPrefix=""):
+    """Get element coords and mask and add to ROI (Internal)."""
+    try:
+        coords, element_mask = _get_element_mask(
+            elinfo=elinfo, slide_annotations=slide_annotations)
+        
+        ADD_TO_ROI = True
+        
+        # ignore if outside ROI (precise)
+        if use_shapely:
+            el_polygon = Polygon(coords)
+            if el_polygon.distance(roi_polygon) > 2:
+                if verbose:
+                    print("%s: OUSIDE ROI." % monitorPrefix)
+                ADD_TO_ROI = False
+        
+        # Add element to ROI mask
+        if ADD_TO_ROI:
+            ROI = _add_element_to_roi(
+                elinfo=elinfo, ROI=ROI, GT_code=GT_code,
+                element_mask=element_mask, roiinfo=roiinfo)
+            
+    except Exception as e:
+        if verbose:
+            print("%s: ERROR! (see below)" % monitorPrefix)
+            print(e)
     return ROI
 
 # %%===========================================================================
