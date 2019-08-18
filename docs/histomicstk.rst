@@ -14,3 +14,4 @@ feature extraction.
     filters <histomicstk.filters>
     segmentation <histomicstk.segmentation>
     features <histomicstk.features>
+    annotations and masks <histomicstk.annotations_and_masks>
