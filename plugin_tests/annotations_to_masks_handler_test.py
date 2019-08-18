@@ -59,15 +59,15 @@ class GetROIMasksTest(unittest.TestCase):
             slide_annotations=slide_annotations, element_infos=element_infos,
             GTCodes_df=GTCodes.copy(),
             idx_for_roi=idxs_for_all_rois[0],  # <- let's focus on first ROI,
-            iou_thresh=0.0, roiinfo=None, crop_to_roi=True,
+            iou_thresh=0.0, roiinfo=None, crop_to_roi=True, use_shapely= True,
             verbose=False, monitorPrefix="roi 1")
 
-        self.assertTupleEqual(ROI.shape, (4594, 6137))
+        self.assertTupleEqual(ROI.shape, (4594, 4542))
         self.assertTupleEqual((
             roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH'],
             roiinfo['XMIN'], roiinfo['XMAX'],
             roiinfo['YMIN'], roiinfo['YMAX']),
-            (4820, 7006, 57611, 64617, 33505, 38325))
+            (4820, 7006, 59206, 66212, 33505, 38325))
 
     # %% ----------------------------------------------------------------------
 
@@ -77,7 +77,8 @@ class GetROIMasksTest(unittest.TestCase):
             gc=gc, slide_id=SAMPLE_SLIDE_ID, GTCODE_PATH=GTCODE_PATH,
             MASK_SAVEPATH=MASK_SAVEPATH,
             get_roi_mask_kwargs={
-                'iou_thresh': 0.0, 'crop_to_roi': True, 'verbose': True},
+                'iou_thresh': 0.0, 'crop_to_roi': True, 'use_shapely': True,
+                'verbose': True},
         )
 
         left = 59206

@@ -8,6 +8,7 @@ import os
 import numpy as np
 from pandas import read_csv
 from imageio import imwrite
+from shapely.geometry.polygon import Polygon
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois,
@@ -20,7 +21,8 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
 def get_roi_mask(
         slide_annotations, element_infos, GTCodes_df,
         idx_for_roi, iou_thresh=0.0, roiinfo=None,
-        crop_to_roi=True, verbose=False, monitorPrefix=""):
+        crop_to_roi=True, use_shapely=True,
+        verbose=False, monitorPrefix=""):
     """Parse annotations and gets a ground truth mask for a single ROI.
 
     This will look at all slide annotations and get ones that
@@ -64,6 +66,11 @@ def get_roi_mask(
     crop_to_roi : bool
         flag of whether to crop polygons to roi
         (prevent 'overflow' beyond roi edge)
+    use_shapely : bool
+        flag of whether to precisely determine whether an element
+        belongs to an ROI using shapely polygons. Slightly slower. If
+        set to False, overlapping bounding box is used as a cheap but
+        less precise indicator of inclusion.
     verbose (optional) : bool
         Print progress to screen?
     monitorPrefix (optional) : str
@@ -125,6 +132,13 @@ def get_roi_mask(
     roiinfo['YMAX'] = int(np.max(elinfos_roi.ymax))
     roiinfo['BBOX_WIDTH'] = roiinfo['XMAX'] - roiinfo['XMIN']
     roiinfo['BBOX_HEIGHT'] = roiinfo['YMAX'] - roiinfo['YMIN']
+    
+    # get roi polygon
+    if use_shapely:
+        coords, _ = _get_element_mask(
+            elinfo=elinfos_roi.loc[idx_for_roi], 
+            slide_annotations=slide_annotations)
+        roi_polygon = Polygon(coords)
 
     # Init mask
     ROI = np.zeros(
@@ -175,9 +189,19 @@ def get_roi_mask(
                 print(elcountStr)
 
             try:
-                # Add element to ROI mask
-                _, element_mask = _get_element_mask(
+                coords, element_mask = _get_element_mask(
                     elinfo=elinfo, slide_annotations=slide_annotations)
+                
+                # ignore if outside ROI (precise)
+                if use_shapely:
+                    el_polygon = Polygon(coords)
+                    if el_polygon.distance(roi_polygon) > 2:
+                        if verbose:
+                            print("%s: OUSIDE ROI." % elcountStr)
+                            print(el_polygon.distance(roi_polygon))
+                        continue
+                
+                # Add element to ROI mask
                 ROI = _add_element_to_roi(
                     elinfo=elinfo, ROI=ROI,
                     GT_code=GTCodes_df.loc[elinfo['group'], 'GT_code'],
