@@ -147,13 +147,6 @@ def get_bboxes_from_slide_annotations(slide_annotations):
         dict index of annotation document and element, respectively, in the
         original slide_annotations list of dictionaries
 
-    Example
-    ---------
-        gc= girder_client.GirderClient(apiUrl = APIURL)
-        gc.authenticate(interactive=True)
-        slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
-        element_infos  = get_bboxes_from_slide_annotations(slide_annotations)
-
     """
     element_infos = DataFrame(columns=[
         'annidx', 'elementidx', 'type', 'group',
