@@ -26,8 +26,7 @@ def get_roi_mask(
         idx_for_roi, iou_thresh=0.0, roiinfo=None,
         crop_to_roi=True, use_shapely=True,
         verbose=False, monitorPrefix=""):
-    """
-    Parse annotations and gets a ground truth mask for a single ROI.
+    """Parse annotations and gets a ground truth mask for a single ROI.
 
     This will look at all slide annotations and get ones that
     overlap with the region of interest (ROI) and assigns them to mask.
@@ -232,8 +231,7 @@ def get_roi_mask(
 def get_all_roi_masks_for_slide(
         gc, slide_id, GTCODE_PATH, MASK_SAVEPATH, slide_name=None,
         verbose=True, monitorPrefix="", get_roi_mask_kwargs=dict()):
-    """
-    Parse annotations and saves ground truth masks for ALL ROIs.
+    """Parse annotations and saves ground truth masks for ALL ROIs.
 
     Get all ROIs in a single slide. This is a wrapper around get_roi_mask()
     which should be referred to for implementation details.

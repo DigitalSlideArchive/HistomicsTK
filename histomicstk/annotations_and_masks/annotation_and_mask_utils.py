@@ -18,8 +18,7 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 
 
 def get_image_from_htk_response(resp):
-    """
-    Given a histomicsTK girder response, get np array image.
+    """Given a histomicsTK girder response, get np array image.
 
     Parameters
     ----------
@@ -30,15 +29,6 @@ def get_image_from_htk_response(resp):
     --------
     Pillow Image object
         a pillow Image object of the image
-
-    Example
-    --------
-        gc= girder_client.GirderClient(apiUrl = APIURL)
-        gc.authenticate(interactive=True)
-        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
-          slide_id, left, right, top, bottom)
-        resp  = gc.get(getStr, jsonResp=False)
-        rgb = get_image_from_htk_response(resp)
 
     """
     image_content = BytesIO(resp.content)
@@ -51,8 +41,7 @@ def get_image_from_htk_response(resp):
 
 
 def rotate_point_list(point_list, rotation, center=(0, 0)):
-    """
-    Rotates a certain point list around a central point. Modified from.
+    """Rotate a certain point list around a central point. Modified from.
 
     javascript version at: https://github.com/girder/large_image/blob/master/
     ... web_client/annotations/rotate.js.
@@ -93,8 +82,7 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
 
 def get_rotated_rectangular_coords(
         roi_center, roi_width, roi_height, roi_rotation=0):
-    """
-    Given data on rectangular ROI center/width/height/rotation.
+    """Given data on rectangular ROI center/width/height/rotation.
 
     Get the unrotated abounding box coordinates around rotated ROI. This of course is
     applicable to any rotated rectangular annotation.
@@ -145,8 +133,7 @@ def get_rotated_rectangular_coords(
 
 
 def get_bboxes_from_slide_annotations(slide_annotations):
-    """
-    Given a slide annotation list, gets information on bounding boxes.
+    """Given a slide annotation list, gets information on bounding boxes.
 
     Parameters
     -----------
@@ -217,8 +204,7 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 
 
 def np_vec_no_jit_iou(bboxes1, bboxes2):
-    """
-    Fast, vectorized IoU.
+    """Fast, vectorized IoU.
 
     Source: https://medium.com/@venuktan/vectorized-intersection-over-union ...
             -iou-in-numpy-and-tensor-flow-4fa16231b63d
@@ -252,8 +238,7 @@ def np_vec_no_jit_iou(bboxes1, bboxes2):
 
 
 def _get_idxs_for_all_rois(GTCodes, element_infos):
-    """
-    Get indices of ROIs within the element_infos dataframe.
+    """Get indices of ROIs within the element_infos dataframe.
 
     (Internal)
 
@@ -270,8 +255,7 @@ def _get_idxs_for_all_rois(GTCodes, element_infos):
 
 def get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi, iou_thresh=0.0):
-    """
-    Find indices of **potentially** included annoations within the ROI.
+    """Find indices of **potentially** included annoations within the ROI.
 
     We say "potentially" because this uses the IoU of roi and annotation as a
     fast indicator of potential inclusion. This helps dramatically scale down
@@ -308,8 +292,7 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
 
 
 def create_mask_from_coords(coords):
-    """
-    Create a binary mask from given vertices coordinates.
+    """Create a binary mask from given vertices coordinates.
 
     Source: This is modified from code by Juan Carlos from David Gutman Lab.
 
@@ -349,8 +332,7 @@ def create_mask_from_coords(coords):
 
 
 def _get_element_mask(elinfo, slide_annotations):
-    """
-    Get coordinates and mask for annotation element.
+    """Get coordinates and mask for annotation element.
 
     (Internal)
 
