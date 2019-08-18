@@ -81,7 +81,6 @@ def get_roi_mask(
     --------
     Np array
         (N x 2), where pixel values encode class membership.
-        
         IMPORTANT NOTE: Zero pixels have special meaning and do NOT
         encode specific ground truth class. Instead, they simply
         mean Outside ROI and should be IGNORED during model training
