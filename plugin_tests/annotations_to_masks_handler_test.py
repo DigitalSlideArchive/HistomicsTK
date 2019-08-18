@@ -29,7 +29,14 @@ GTCODE_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'test_files', 'sample_GTcodes.csv')
 MASK_SAVEPATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), '..', '..')
+    os.path.dirname(os.path.realpath(__file__)), '..',
+    '..', 'roi_masks')
+
+try:
+    os.mkdir(MASK_SAVEPATH)
+except FileExistsError:
+    pass
+
 
 gc = girder_client.GirderClient(apiUrl=APIURL)
 # gc.authenticate(interactive=True)
