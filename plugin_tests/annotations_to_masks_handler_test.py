@@ -29,7 +29,7 @@ GTCODE_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'test_files', 'sample_GTcodes.csv')
 MASK_SAVEPATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), '../../')
+    os.path.dirname(os.path.realpath(__file__)), '..', '..')
 
 gc = girder_client.GirderClient(apiUrl=APIURL)
 # gc.authenticate(interactive=True)
@@ -59,7 +59,7 @@ class GetROIMasksTest(unittest.TestCase):
             slide_annotations=slide_annotations, element_infos=element_infos,
             GTCodes_df=GTCodes.copy(),
             idx_for_roi=idxs_for_all_rois[0],  # <- let's focus on first ROI,
-            iou_thresh=0.0, roiinfo=None, crop_to_roi=True, use_shapely= True,
+            iou_thresh=0.0, roiinfo=None, crop_to_roi=True, use_shapely=True,
             verbose=False, monitorPrefix="roi 1")
 
         self.assertTupleEqual(ROI.shape, (4594, 4542))

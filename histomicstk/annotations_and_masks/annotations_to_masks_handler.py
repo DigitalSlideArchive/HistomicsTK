@@ -10,7 +10,8 @@ from pandas import read_csv
 from imageio import imwrite
 from shapely.geometry.polygon import Polygon
 
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+# from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+from annotation_and_mask_utils import (
     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois,
     get_idxs_for_annots_overlapping_roi_by_bbox, _get_element_mask,
     _add_element_to_roi)
@@ -198,7 +199,6 @@ def get_roi_mask(
                     if el_polygon.distance(roi_polygon) > 2:
                         if verbose:
                             print("%s: OUSIDE ROI." % elcountStr)
-                            print(el_polygon.distance(roi_polygon))
                         continue
                 
                 # Add element to ROI mask
@@ -272,7 +272,8 @@ def get_all_roi_masks_for_slide(
 
     Returns
     --------
-    None
+    list of strs
+        save paths for ROIs
 
     Example
     --------
@@ -306,6 +307,8 @@ def get_all_roi_masks_for_slide(
     # get indices of rois
     idxs_for_all_rois = _get_idxs_for_all_rois(
         GTCodes=GTCodes, element_infos=element_infos)
+    
+    savenames = []
 
     for roino, idx_for_roi in enumerate(idxs_for_all_rois):
 
@@ -325,5 +328,9 @@ def get_all_roi_masks_for_slide(
         if verbose:
             print("%s: Saving %s\n" % (roicountStr, savename))
         imwrite(im=ROI, uri=savename)
+        
+        savenames.append(savename)
+        
+    return savenames
 
 # %% =====================================================================
