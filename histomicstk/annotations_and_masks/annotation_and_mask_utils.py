@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Created on Sun Aug 11 22:30:06 2019.
+"""
+Created on Sun Aug 11 22:30:06 2019.
 
 @author: tageldim
+
 """
 
 from io import BytesIO
@@ -16,7 +18,8 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 
 
 def get_image_from_htk_response(resp):
-    """Given a histomicsTK girder response, get np array image.
+    """
+    Given a histomicsTK girder response, get np array image.
 
     Parameters
     ----------
@@ -48,7 +51,8 @@ def get_image_from_htk_response(resp):
 
 
 def rotate_point_list(point_list, rotation, center=(0, 0)):
-    """Rotates a certain point list around a central point. Modified from.
+    """
+    Rotates a certain point list around a central point. Modified from.
 
     javascript version at: https://github.com/girder/large_image/blob/master/
     ... web_client/annotations/rotate.js.
@@ -89,7 +93,8 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
 
 def get_rotated_rectangular_coords(
         roi_center, roi_width, roi_height, roi_rotation=0):
-    """Given data on rectangular ROI center/width/height/rotation.
+    """
+    Given data on rectangular ROI center/width/height/rotation.
 
     Get the unrotated abounding box coordinates around rotated ROI. This of course is
     applicable to any rotated rectangular annotation.
@@ -140,7 +145,8 @@ def get_rotated_rectangular_coords(
 
 
 def get_bboxes_from_slide_annotations(slide_annotations):
-    """Given a slide annotation list, gets information on bounding boxes.
+    """
+    Given a slide annotation list, gets information on bounding boxes.
 
     Parameters
     -----------
@@ -211,7 +217,8 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 
 
 def np_vec_no_jit_iou(bboxes1, bboxes2):
-    """Fast, vectorized IoU.
+    """
+    Fast, vectorized IoU.
 
     Source: https://medium.com/@venuktan/vectorized-intersection-over-union ...
             -iou-in-numpy-and-tensor-flow-4fa16231b63d
@@ -245,9 +252,11 @@ def np_vec_no_jit_iou(bboxes1, bboxes2):
 
 
 def _get_idxs_for_all_rois(GTCodes, element_infos):
-    """Get indices of ROIs within the element_infos dataframe.
+    """
+    Get indices of ROIs within the element_infos dataframe.
 
     (Internal)
+
     """
     roi_labels = list(GTCodes.loc[GTCodes.loc[:, 'is_roi'] == 1, 'group'])
     idxs_for_all_rois = []
@@ -261,7 +270,8 @@ def _get_idxs_for_all_rois(GTCodes, element_infos):
 
 def get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi, iou_thresh=0.0):
-    """Find indices of **potentially** included annoations within the ROI.
+    """
+    Find indices of **potentially** included annoations within the ROI.
 
     We say "potentially" because this uses the IoU of roi and annotation as a
     fast indicator of potential inclusion. This helps dramatically scale down
@@ -298,7 +308,8 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
 
 
 def create_mask_from_coords(coords):
-    """Create a binary mask from given vertices coordinates.
+    """
+    Create a binary mask from given vertices coordinates.
 
     Source: This is modified from code by Juan Carlos from David Gutman Lab.
 
@@ -338,9 +349,11 @@ def create_mask_from_coords(coords):
 
 
 def _get_element_mask(elinfo, slide_annotations):
-    """Get coordinates and mask for annotation element.
+    """
+    Get coordinates and mask for annotation element.
 
     (Internal)
+
     """
     element = slide_annotations[int(elinfo['annidx'])][
         'annotation']['elements'][int(elinfo['elementidx'])]
@@ -383,15 +396,15 @@ def _add_element_to_roi(elinfo, ROI, GT_code, element_mask, roiinfo):
 
 
 def _get_and_add_element_to_roi(
-    elinfo, slide_annotations, ROI, roiinfo, roi_polygon, GT_code,
-    use_shapely=True, verbose=True, monitorPrefix=""):
+        elinfo, slide_annotations, ROI, roiinfo, roi_polygon, GT_code,
+        use_shapely=True, verbose=True, monitorPrefix=""):
     """Get element coords and mask and add to ROI (Internal)."""
     try:
         coords, element_mask = _get_element_mask(
             elinfo=elinfo, slide_annotations=slide_annotations)
-        
+
         ADD_TO_ROI = True
-        
+
         # ignore if outside ROI (precise)
         if use_shapely:
             el_polygon = Polygon(coords)
@@ -399,13 +412,13 @@ def _get_and_add_element_to_roi(
                 if verbose:
                     print("%s: OUSIDE ROI." % monitorPrefix)
                 ADD_TO_ROI = False
-        
+
         # Add element to ROI mask
         if ADD_TO_ROI:
             ROI = _add_element_to_roi(
                 elinfo=elinfo, ROI=ROI, GT_code=GT_code,
                 element_mask=element_mask, roiinfo=roiinfo)
-            
+
     except Exception as e:
         if verbose:
             print("%s: ERROR! (see below)" % monitorPrefix)

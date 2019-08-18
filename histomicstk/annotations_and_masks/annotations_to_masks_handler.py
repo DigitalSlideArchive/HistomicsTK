@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Created on Mon Aug 12 18:33:48 2019.
+"""
+Created on Mon Aug 12 18:33:48 2019.
 
 @author: tageldim
+
 """
 
 import os
@@ -11,7 +13,7 @@ from imageio import imwrite
 from shapely.geometry.polygon import Polygon
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-# from annotation_and_mask_utils import (
+    # from annotation_and_mask_utils import (
     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois,
     get_idxs_for_annots_overlapping_roi_by_bbox, _get_element_mask,
     _get_and_add_element_to_roi)
@@ -24,7 +26,8 @@ def get_roi_mask(
         idx_for_roi, iou_thresh=0.0, roiinfo=None,
         crop_to_roi=True, use_shapely=True,
         verbose=False, monitorPrefix=""):
-    """Parse annotations and gets a ground truth mask for a single ROI.
+    """
+    Parse annotations and gets a ground truth mask for a single ROI.
 
     This will look at all slide annotations and get ones that
     overlap with the region of interest (ROI) and assigns them to mask.
@@ -133,11 +136,11 @@ def get_roi_mask(
     roiinfo['YMAX'] = int(np.max(elinfos_roi.ymax))
     roiinfo['BBOX_WIDTH'] = roiinfo['XMAX'] - roiinfo['XMIN']
     roiinfo['BBOX_HEIGHT'] = roiinfo['YMAX'] - roiinfo['YMIN']
-    
+
     # get roi polygon
     if use_shapely:
         coords, _ = _get_element_mask(
-            elinfo=elinfos_roi.loc[idx_for_roi], 
+            elinfo=elinfos_roi.loc[idx_for_roi],
             slide_annotations=slide_annotations)
         roi_polygon = Polygon(coords)
 
@@ -188,7 +191,7 @@ def get_roi_mask(
                 monitorPrefix, overlay_level, elNo, N_elements, elinfo['group'])
             if verbose:
                 print(elcountStr)
-            
+
             # now add element to ROI
             ROI = _get_and_add_element_to_roi(
                 elinfo=elinfo, slide_annotations=slide_annotations, ROI=ROI,
@@ -196,7 +199,7 @@ def get_roi_mask(
                 GT_code=GTCodes_df.loc[elinfo['group'], 'GT_code'],
                 use_shapely=use_shapely, verbose=verbose,
                 monitorPrefix=elcountStr)
-            
+
             # save a copy of ROI-only mask to crop to it later if needed
             if crop_to_roi and (overlay_level == GTCodes_df.loc[
                     roi_group, 'overlay_order']):
@@ -229,7 +232,8 @@ def get_roi_mask(
 def get_all_roi_masks_for_slide(
         gc, slide_id, GTCODE_PATH, MASK_SAVEPATH, slide_name=None,
         verbose=True, monitorPrefix="", get_roi_mask_kwargs=dict()):
-    """Parse annotations and saves ground truth masks for ALL ROIs.
+    """
+    Parse annotations and saves ground truth masks for ALL ROIs.
 
     Get all ROIs in a single slide. This is a wrapper around get_roi_mask()
     which should be referred to for implementation details.
@@ -293,7 +297,7 @@ def get_all_roi_masks_for_slide(
     # get indices of rois
     idxs_for_all_rois = _get_idxs_for_all_rois(
         GTCodes=GTCodes, element_infos=element_infos)
-    
+
     savenames = []
 
     for roino, idx_for_roi in enumerate(idxs_for_all_rois):
@@ -314,9 +318,9 @@ def get_all_roi_masks_for_slide(
         if verbose:
             print("%s: Saving %s\n" % (roicountStr, savename))
         imwrite(im=ROI, uri=savename)
-        
+
         savenames.append(savename)
-        
+
     return savenames
 
 # %% =====================================================================
