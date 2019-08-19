@@ -7,6 +7,7 @@ Created on Mon Aug 12 18:47:34 2019.
 
 import unittest
 
+from builtins import FileExistsError
 import os
 import girder_client
 from pandas import read_csv

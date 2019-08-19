@@ -26,8 +26,7 @@ def get_roi_mask(
         idx_for_roi, iou_thresh=0.0, roiinfo=None,
         crop_to_roi=True, use_shapely=True,
         verbose=False, monitorPrefix=""):
-    """
-    Parse annotations and gets a ground truth mask for a single ROI.
+    """Parse annotations and gets a ground truth mask for a single ROI.
 
     This will look at all slide annotations and get ones that
     overlap with the region of interest (ROI) and assigns them to mask.
@@ -36,87 +35,58 @@ def get_roi_mask(
     -----------
     slide_annotations : list of dicts
         response from server request
-        eg. slide_annotations = gc.get('/annotation/item/' + SLIDE_ID)
     element_infos : pandas DataFrame.
         The columns annidx and elementidx
         encode the dict index of annotation document and element,
         respectively, in the original slide_annotations list of dictionaries.
-        This can be obain by get_bboxes_from_slide_annotations() method, eg.
-        element_infos  = get_bboxes_from_slide_annotations(slide_annotations)
+        This can be obain by get_bboxes_from_slide_annotations() method
     GTCodes_df : pandas Dataframe
         the ground truth codes and information dataframe.
         WARNING: Modified indide this method so pass a copy.
         This is a dataframe that is indexed by the annotation group name and
         has the following columns:
-        - group: group name of annotation (string), eg. "mostly_tumor"
+        - group: group name of annotation (string), eg. mostly_tumor
         - overlay_order: int, how early to place the annotation in the
-            mask. Larger values means this annotation group is overlayed
-            last and overwrites whatever overlaps it.
+        mask. Larger values means this annotation group is overlayed
+        last and overwrites whatever overlaps it.
         - GT_code: int, desired ground truth code (in the mask)
-            Pixels of this value belong to corresponding group (class)
+        Pixels of this value belong to corresponding group (class)
         - is_roi: Flag for whether this group encodes an ROI
         - is_background_class: Flag, whether this group is the default
-            fill value inside the ROI. For example, you may descide that
-            any pixel inside the ROI is considered stroma.
+        fill value inside the ROI. For example, you may descide that
+        any pixel inside the ROI is considered stroma.
     idx_for_roi : int
         index of ROI within the element_infos dataframe.
     iou_thresh : float
         how much bounding box overlap is enough to
         consider an annotation to belong to the region of interest
-    roiinfo (optional) : pandas series or dict
+    roiinfo : pandas series or dict
         contains information about the roi. Keys will be added to this
         index containing info about the roi like bounding box
         location and size.
     crop_to_roi : bool
         flag of whether to crop polygons to roi
-        (prevent 'overflow' beyond roi edge)
+        (prevent overflow beyond roi edge)
     use_shapely : bool
         flag of whether to precisely determine whether an element
         belongs to an ROI using shapely polygons. Slightly slower. If
         set to False, overlapping bounding box is used as a cheap but
         less precise indicator of inclusion.
-    verbose (optional) : bool
+    verbose : bool
         Print progress to screen?
-    monitorPrefix (optional) : str
+    monitorPrefix : str
         text to prepend to printed statements
 
     Returns
     --------
     Np array
         (N x 2), where pixel values encode class membership.
-        -> IMPORTANT NOTE: Zero pixels have special meaning and do NOT
+        IMPORTANT NOTE: Zero pixels have special meaning and do NOT
         encode specific ground truth class. Instead, they simply
-        mean 'Outside ROI' and should be IGNORED during model training
+        mean Outside ROI and should be IGNORED during model training
         or evaluation.
     Dict
         information about ROI
-
-    Example
-    -------
-        gc= girder_client.GirderClient(apiUrl = APIURL)
-        gc.authenticate(interactive=True)
-
-        # get annotations for slide
-        slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
-
-        # get bounding box information for all annotations
-        element_infos = get_bboxes_from_slide_annotations(slide_annotations)
-
-        # read ground truth codes and information
-        GTCodes = read_csv(GTCODE_PATH)
-        GTCodes.index = GTCodes.loc[:, 'group']
-
-        # get indices of rois
-        idxs_for_all_rois = _get_idxs_for_all_rois(
-                GTCodes=GTCodes, element_infos=element_infos)
-
-        # get roi mask and info
-        ROI, roiinfo = get_roi_mask(
-            slide_annotations=slide_annotations, element_infos=element_infos,
-            GTCodes_df=GTCodes.copy(),
-            idx_for_roi = idxs_for_all_rois[0], # <- let's focus on first ROI,
-            iou_thresh=0.0, roiinfo=None, crop_to_roi=True,
-            verbose=True, monitorPrefix="roi 1")
 
     """
     # This stores information about the ROI like bounds, slide_name, etc
@@ -232,8 +202,7 @@ def get_roi_mask(
 def get_all_roi_masks_for_slide(
         gc, slide_id, GTCODE_PATH, MASK_SAVEPATH, slide_name=None,
         verbose=True, monitorPrefix="", get_roi_mask_kwargs=dict()):
-    """
-    Parse annotations and saves ground truth masks for ALL ROIs.
+    """Parse annotations and saves ground truth masks for ALL ROIs.
 
     Get all ROIs in a single slide. This is a wrapper around get_roi_mask()
     which should be referred to for implementation details.
@@ -264,17 +233,6 @@ def get_all_roi_masks_for_slide(
     --------
     list of strs
         save paths for ROIs
-
-    Example
-    --------
-        gc= girder_client.GirderClient(apiUrl = APIURL)
-        gc.authenticate(interactive=True)
-        get_all_roi_masks_for_slide(
-            gc=gc, slide_id=SAMPLE_SLIDE_ID, GTCODE_PATH=GTCODE_PATH,
-            MASK_SAVEPATH=MASK_SAVEPATH,
-            get_roi_mask_kwargs = {
-                'iou_thresh': 0.0, 'crop_to_roi': True, 'verbose': True},
-            )
 
     """
     # if not given, assign name of first file associated with item
