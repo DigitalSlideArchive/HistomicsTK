@@ -8,7 +8,7 @@ Created on Mon Aug 12 18:33:48 2019.
 
 import os
 import numpy as np
-from pandas import DataFrame, read_csv
+from pandas import DataFrame, read_csv, concat
 from imageio import imread
 import cv2
 # from shapely.geometry.polygon import Polygon
@@ -18,21 +18,6 @@ import cv2
 #     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois,
 #     get_idxs_for_annots_overlapping_roi_by_bbox, _get_element_mask,
 #     _get_and_add_element_to_roi)
-
-# %% =====================================================================
-
-# read GTCodes dataframe
-GTCODE_PATH = os.path.join(
-    os.getcwd(), '..', '..', 'plugin_tests',
-    'test_files', 'sample_GTcodes.csv')
-GTCodes_df = read_csv(GTCODE_PATH)
-GTCodes_df.index = GTCodes_df.loc[:, 'group']
-
-# read mask
-MASKNAME = "TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39" + \
-    "_left-59206_top-33505_mag-BASE.png"
-MASKPATH = os.path.join(os.getcwd(), '..', '..', '..', 'Masks', MASKNAME)
-MASK = imread(MASKPATH)
 
 # %% =====================================================================
 
@@ -170,78 +155,10 @@ def _add_contour_to_df(
 # %% =====================================================================
 
 
-def get_contours_from_mask(
+def _get_contours_df(
         MASK, GTCodes_df, groups_to_get=None, MIN_SIZE=30, MAX_SIZE=None,
         verbose=False, monitorPrefix=""):
-    """Parse ground truth mask and gets countours for annotations.
-
-    Parameters
-    -----------
-    MASK : nd array
-        ground truth mask (m,n) where pixel values encode group membership.
-    GTCodes_df : pandas Dataframe
-        the ground truth codes and information dataframe.
-        This is a dataframe that is indexed by the annotation group name and
-        has the following columns.
-
-        group: str
-            group name of annotation, eg. mostly_tumor.
-        GT_code: int
-            desired ground truth code (in the mask). Pixels of this value
-            belong to corresponding group (class).
-        color: str
-            rgb format. eg. rgb(255,0,0).
-    groups_to_get : None
-        if None (default) then all groups (ground truth labels) will be
-        extracted. Otherwise pass a list fo strings like ['mostly_tumor',].
-    MIN_SIZE : int
-        minimum bounding box size of contour
-    MAX_SIZE : None
-        if not None, int. Maximum bounding box size of contour. Sometimes
-        very large contours cause segmentation faults that originate from
-        opencv and are not caught by python, causing the python process
-        to unexpectedly hault. If you would like to set a maximum size to
-        defend against this, a suggested maximum would be 15000.
-    verbose : bool
-        Print progress to screen?
-    monitorPrefix : str
-        text to prepend to printed statements
-
-    Returns
-    --------
-    pandas DataFrame
-        contours extracted from input mask. The following columns are output.
-
-        group : str
-            annotation group (ground truth label).
-        color : str
-            annotation color if it were to be posted to DSA.
-        is_roi : bool
-            whether this annotation is a region of interest boundary
-        ymin : int
-            minimun y coordinate
-        ymax : int
-            maximum y coordinate
-        xmin : int
-            minimum x coordinate
-        xmax : int
-            maximum x coordinate
-        has_holes : bool
-            whether this contour has holes
-        touches_edge-top : bool
-            whether this contour touches top mask edge
-        touches_edge-bottom : bool
-            whether this contour touches bottom mask edge
-        touches_edge-left : bool
-            whether this contour touches left mask edge
-        touches_edge-right : bool
-            whether this contour touches right mask edge
-        coords_x : str
-            vertix x coordinates comma-separated values
-        coords_y
-            vertix y coordinated comma-separated values
-
-    """
+    """Parse ground truth mask and gets countours (Internal)."""
     cpr = Conditional_Print(verbose=verbose)
     _print = cpr._print
 
@@ -288,6 +205,113 @@ def get_contours_from_mask(
                 continue
 
     return contours_df
+
+# %% =====================================================================
+
+
+def get_contours_from_mask(
+        MASK, GTCodes_df, groups_to_get=None, MIN_SIZE=30, MAX_SIZE=None,
+        get_roi_contour=True, roi_group='roi',
+        verbose=False, monitorPrefix=""):
+    """Parse ground truth mask and gets countours for annotations.
+
+    Parameters
+    -----------
+    MASK : nd array
+        ground truth mask (m,n) where pixel values encode group membership.
+    GTCodes_df : pandas Dataframe
+        the ground truth codes and information dataframe.
+        This is a dataframe that is indexed by the annotation group name and
+        has the following columns.
+
+        group: str
+            group name of annotation, eg. mostly_tumor.
+        GT_code: int
+            desired ground truth code (in the mask). Pixels of this value
+            belong to corresponding group (class).
+        color: str
+            rgb format. eg. rgb(255,0,0).
+    groups_to_get : None
+        if None (default) then all groups (ground truth labels) will be
+        extracted. Otherwise pass a list fo strings like ['mostly_tumor',].
+    MIN_SIZE : int
+        minimum bounding box size of contour
+    MAX_SIZE : None
+        if not None, int. Maximum bounding box size of contour. Sometimes
+        very large contours cause segmentation faults that originate from
+        opencv and are not caught by python, causing the python process
+        to unexpectedly hault. If you would like to set a maximum size to
+        defend against this, a suggested maximum would be 15000.
+    get_roi_contour : bool
+        whether to get contour for boundary of region of interest (ROI). This
+        is most relevant when dealing with multiple ROIs per slide and with
+        rotated rectangular or polygonal ROIs.
+    verbose : bool
+        Print progress to screen?
+    monitorPrefix : str
+        text to prepend to printed statements
+
+    Returns
+    --------
+    pandas DataFrame
+        contours extracted from input mask. The following columns are output.
+
+        group : str
+            annotation group (ground truth label).
+        color : str
+            annotation color if it were to be posted to DSA.
+        is_roi : bool
+            whether this annotation is a region of interest boundary
+        ymin : int
+            minimun y coordinate
+        ymax : int
+            maximum y coordinate
+        xmin : int
+            minimum x coordinate
+        xmax : int
+            maximum x coordinate
+        has_holes : bool
+            whether this contour has holes
+        touches_edge-top : bool
+            whether this contour touches top mask edge
+        touches_edge-bottom : bool
+            whether this contour touches bottom mask edge
+        touches_edge-left : bool
+            whether this contour touches left mask edge
+        touches_edge-right : bool
+            whether this contour touches right mask edge
+        coords_x : str
+            vertix x coordinates comma-separated values
+        coords_y
+            vertix y coordinated comma-separated values
+
+    """
+    cont_kwargs = {
+      'GTCodes_df': GTCodes_df,
+      'MIN_SIZE': MIN_SIZE,
+      'MAX_SIZE': MAX_SIZE,
+      'verbose': verbose,
+    }
+
+    # get contours df for non-roi contours
+    contours_df = _get_contours_df(
+        MASK=MASK, groups_to_get=groups_to_get,
+        monitorPrefix="%s: %s" % (monitorPrefix, "non-roi"),
+        **cont_kwargs)
+
+    # get contours df for roi boundary and concat
+    if get_roi_contour:
+        MASK_BIN = np.zeros(MASK.shape, dtype=np.uint8)
+        MASK_BIN[MASK > 0] = GTCodes_df.loc[roi_group, 'GT_code']
+        contours_df_roi = _get_contours_df(
+            MASK=MASK_BIN, groups_to_get=[roi_group, ],
+            monitorPrefix="%s: %s" % (monitorPrefix, roi_group),
+            **cont_kwargs)
+        contours_df = concat(
+            (contours_df_roi, contours_df), axis=0, ignore_index=True)
+
+    return contours_df
+
 
 # %% =====================================================================
 
@@ -340,7 +364,7 @@ def get_single_annotation_document_from_contours(
     for _, nest in contours_df_slice.iterrows():
 
         nno += 1
-        nestStr = "%s: nest %d of %s" % (monitorPrefix, nno, nnests)
+        nestStr = "%s: contour %d of %s" % (monitorPrefix, nno, nnests)
         _print(nestStr)
 
         # Parse coordinates
@@ -383,13 +407,14 @@ def get_single_annotation_document_from_contours(
 
 
 def get_annotation_documents_from_contours(
-        contours_df, ANNOTS_PER_DOC=200, docnamePrefix='default',
-        annprops=None, verbose=True, monitorPrefix=""):
+        contours_df, separate_docs_by_group=True, annots_per_doc=200,
+        annprops=None, docnamePrefix="", verbose=True, monitorPrefix=""):
     """Given dataframe of contours, get list of annotation documents.
 
     Parameters
     -----------
     contours_df : pandas DataFrame
+        WARNING - This is modified inside the function, so pass a copy.
 
     Returns
     --------
@@ -405,41 +430,97 @@ def get_annotation_documents_from_contours(
             'opacity': 0.3,
             'lineWidth': 4.0,
         }
-
-    # Go through documents -- add every N annotations to a separate document
-    if contours_df.shape[0] > ANNOTS_PER_DOC:
-        docbounds = list(range(0, contours_df.shape[0], ANNOTS_PER_DOC))
-        docbounds[-1] = contours_df.shape[0]
+    if separate_docs_by_group:
+        contours_df.loc[:, 'doc_group'] = contours_df.loc[:, 'group']
     else:
-        docbounds = [0, contours_df.shape[0]]
+        contours_df.loc[:, 'doc_group'] = 'default'
 
+    # Each style goes to separate document(s) if sepate_docs_by_group
     annotation_docs = []
-    for docidx in range(len(docbounds)-1):
-        docStr = "%s: doc %d of %d" % (
-                monitorPrefix, docidx+1, len(docbounds)-1)
-        start = docbounds[docidx]
-        end = docbounds[docidx+1]
-        contours_df_slice = contours_df.iloc[start:end, :]
-        annotation_doc = get_single_annotation_document_from_contours(
-            contours_df_slice, docname="%s-%d" % (docnamePrefix, docidx),
-            verbose=verbose, monitorPrefix=docStr, **annprops)
-        if len(annotation_doc['elements']) > 0:
-            annotation_docs.append(annotation_doc)
+    for doc_group in set(contours_df.loc[:, 'doc_group']):
+
+        # separate annotations with this group
+        contours_df_slice = contours_df.loc[
+            contours_df.loc[:, 'doc_group'] == doc_group, :]
+
+        # Add every N annotations to a separate document
+        if contours_df_slice.shape[0] > annots_per_doc:
+            docbounds = list(range(
+                0, contours_df_slice.shape[0], annots_per_doc))
+            docbounds[-1] = contours_df_slice.shape[0]
+        else:
+            docbounds = [0, contours_df_slice.shape[0]]
+
+        for docidx in range(len(docbounds)-1):
+            docStr = "%s: %s: doc %d of %d" % (
+                    monitorPrefix, doc_group, docidx+1, len(docbounds)-1)
+            start = docbounds[docidx]
+            end = docbounds[docidx+1]
+            annotation_doc = get_single_annotation_document_from_contours(
+                contours_df_slice.iloc[start:end, :],
+                docname="%s_%s-%d" % (docnamePrefix, doc_group, docidx),
+                verbose=verbose, monitorPrefix=docStr, **annprops)
+            if len(annotation_doc['elements']) > 0:
+                annotation_docs.append(annotation_doc)
 
     return annotation_docs
 
 # %% =====================================================================
 
 
+import girder_client
+
+# APIURL = 'http://demo.kitware.com/histomicstk/api/v1/'
+# SAMPLE_SLIDE_ID = '5bbdee92e629140048d01b5d'
+APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
+SAMPLE_SLIDE_ID = '5d586d76bd4404c6b1f286ae'
+
+gc = girder_client.GirderClient(apiUrl=APIURL)
+# gc.authenticate(interactive=True)
+gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
+
+# read GTCodes dataframe
+GTCODE_PATH = os.path.join(
+    os.getcwd(), '..', '..', 'plugin_tests',
+    'test_files', 'sample_GTcodes.csv')
+GTCodes_df = read_csv(GTCODE_PATH)
+GTCodes_df.index = GTCodes_df.loc[:, 'group']
+
+# read mask
+X_OFFSET = 59206
+Y_OFFSET = 33505
+MASKNAME = "TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39" + \
+    "_left-%d_top-%d_mag-BASE.png" % (X_OFFSET, Y_OFFSET)
+MASKPATH = os.path.join(os.getcwd(), '..', '..', '..', 'Masks', MASKNAME)
+MASK = imread(MASKPATH)
+
 # get specified (or any) contours from mask
-groups_to_get = [
-    'mostly_tumor', 'mostly_stroma', 'mostly_lymphocytic_infiltrate']
+# groups_to_get = [
+#     'mostly_tumor', 'mostly_stroma', 'mostly_lymphocytic_infiltrate']
+groups_to_get = None
 contours_df = get_contours_from_mask(
     MASK=MASK, GTCodes_df=GTCodes_df, groups_to_get=groups_to_get,
-    MIN_SIZE=30, MAX_SIZE=None,
-    verbose=True, monitorPrefix=MASKNAME[:12])
+    get_roi_contour=True, MIN_SIZE=30, MAX_SIZE=None,
+    verbose=True, monitorPrefix=MASKNAME[:12] + ": getting contours")
 
 # get list of annotation documents
+annprops = {
+    'X_OFFSET': X_OFFSET,
+    'Y_OFFSET': Y_OFFSET,
+    'opacity': 0.2,
+    'lineWidth': 4.0,
+}
 annotation_docs = get_annotation_documents_from_contours(
-    contours_df, ANNOTS_PER_DOC=10, docnamePrefix='test',
-    annprops=None, verbose=True, monitorPrefix="")
+    contours_df, separate_docs_by_group=True, annots_per_doc=10,
+    docnamePrefix='test', annprops=annprops,
+    verbose=True, monitorPrefix=MASKNAME[:12] + ": posting contours")
+
+# deleting existing annotations in target slide (if any)
+existing_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
+for ann in existing_annotations:
+    gc.delete('/annotation/%s' % ann['_id'])
+
+# post annotations to slide
+for annotation_doc in annotation_docs:
+    resp = gc.post(
+        "/annotation?itemId=" + SAMPLE_SLIDE_ID, json=annotation_doc)
