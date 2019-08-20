@@ -6,10 +6,8 @@ Created on Mon Aug 12 18:33:48 2019.
 
 """
 
-import os
 import numpy as np
-from pandas import DataFrame, read_csv, concat
-from imageio import imread
+from pandas import DataFrame, concat
 import cv2
 from shapely.geometry.polygon import Polygon
 

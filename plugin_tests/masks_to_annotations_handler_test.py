@@ -13,8 +13,7 @@ from pandas import read_csv
 from imageio import imread
 
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    get_contours_from_bin_mask, get_contours_from_mask,
-    get_annotation_documents_from_contours)
+    get_contours_from_mask, get_annotation_documents_from_contours)
 
 # %%===========================================================================
 # Constants & prep work
@@ -60,7 +59,7 @@ class MasksToAnnotationsTest(unittest.TestCase):
 
     def test_get_contours_from_mask(self):
         """Test get_contours_from_mask()."""
-        # get specified (or any) contours from mask
+        # get contours from mask
         # groups_to_get = [
         #     'mostly_tumor', 'mostly_stroma']
         groups_to_get = None
@@ -71,6 +70,11 @@ class MasksToAnnotationsTest(unittest.TestCase):
             background_group='mostly_stroma',
             MIN_SIZE=30, MAX_SIZE=None, verbose=True,
             monitorPrefix=MASKNAME[:12] + ": getting contours")
+
+        # make sure it is what we expect
+        self.assertTupleEqual(contours_df.shape, CONTOURS_DF.shape)
+        self.assertTupleEqual(contours_df.columns, CONTOURS_DF.columns)
+        self.assertTrue(all(contours_df == CONTOURS_DF))
 
     # %% ----------------------------------------------------------------------
 
@@ -88,15 +92,32 @@ class MasksToAnnotationsTest(unittest.TestCase):
             docnamePrefix='test', annprops=annprops,
             verbose=True, monitorPrefix=MASKNAME[:12] + ": annotation docs")
 
+        # make sure its what we expect
+        self.assertTrue(len(annotation_docs) == 8)
+        self.assertSetEqual(
+            {j['name'] for j in annotation_docs},
+            {
+               'test_blood_vessel-0',
+               'test_exclude-0',
+               'test_mostly_lymphocytic_infiltrate-0',
+               'test_mostly_stroma-0',
+               'test_mostly_tumor-0',
+               'test_mostly_tumor-1',
+               'test_normal_acinus_or_duct-0',
+               'test_roi-0'
+            }
+        )
+
         # deleting existing annotations in target slide (if any)
         existing_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
         for ann in existing_annotations:
             gc.delete('/annotation/%s' % ann['_id'])
 
-        # post annotations to slide
-        for annotation_doc in annotation_docs:
-            _ = gc.post(
-                "/annotation?itemId=" + SAMPLE_SLIDE_ID, json=annotation_doc)
+        # post annotations to slide -- make sure it posts without errors
+        resp = gc.post(
+                "/annotation?itemId=" + SAMPLE_SLIDE_ID,
+                json=annotation_docs[0])
+        self.assertTrue('annotation' in resp.keys())
 
 # %%===========================================================================
 
