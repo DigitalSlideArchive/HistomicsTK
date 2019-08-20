@@ -34,14 +34,6 @@ MASKNAME = "TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39" + \
 MASKPATH = os.path.join(os.getcwd(), '..', '..', '..', 'Masks', MASKNAME)
 MASK = imread(MASKPATH)
 
-# get specified (or any) contours from mask
-groups_to_get = [
-    'mostly_tumor', 'mostly_stroma', 'mostly_lymphocytic_infiltrate']
-nest_contours = get_contours_from_mask(
-    MASK=MASK, GTCodes_df=GTCodes_df, groups_to_get=groups_to_get,
-    MIN_SIZE=30, MAX_SIZE=None,
-    verbose=True, monitorPrefix=MASKNAME[:12])
-
 # %% =====================================================================
 
 
@@ -63,12 +55,24 @@ def get_contours_from_bin_mask(bin_mask):
     Parameters
     -----------
     bin_mask : nd array
-        ground truth mask (m,n) - bool
+        ground truth mask (m,n) - int32 with [0, 1] values.
 
     Returns
     --------
     dict
-        contour group, heirarchy, outer_contours
+        a dictionary with the following keys:
+            contour group - the actual contour x,y coordinates.
+            heirarchy - contour hierarchy. This contains information about
+                how contours relate to each other, in the form:
+                [Next, Previous, First_Child, Parent,
+                index_relative_to_contour_group]
+                The last column is added for convenience and is not part of the
+                original opencv output.
+            outer_contours - index of contours that do not have a parent, and
+                are therefore the outermost most contours. These may have
+                children (holes), however.
+        See docs.opencv.org/3.1.0/d9/d8b/tutorial_py_contours_hierarchy.html
+        for more information.
 
     """
     # Get contours using openCV. See this for modes:
@@ -100,10 +104,10 @@ def get_contours_from_bin_mask(bin_mask):
 # %% =====================================================================
 
 
-def _add_nest_contour(
-        nest_contours, mask_shape, conts, cidx, nest_info,
+def _add_contour_to_df(
+        contours_df, mask_shape, conts, cidx, nest_info,
         pad_margin=0, MIN_SIZE=30, MAX_SIZE=None, monitorPrefix=""):
-    """Add single nest contour to dataframe (Internal)."""
+    """Add single contour to dataframe (Internal)."""
 
     # get coordinates for this contour. These are in x,y format.
     outer_cidx = conts['outer_contours'][cidx, 4]
@@ -117,52 +121,51 @@ def _add_nest_contour(
     has_holes = 0 + (inner_cidx > -1)
 
     # get nest location and size
-    cmin, rmin = np.min(cont_outer, axis=0)
+    xmin, ymin = np.min(cont_outer, axis=0)
     nest_width, nest_height = np.max(
             cont_outer, 0) - np.min(cont_outer, 0)
-    rmax = rmin + nest_height
-    cmax = cmin + nest_width
+    ymax = ymin + nest_height
+    xmax = xmin + nest_width
 
     # ignore nests that are too small
     assert ((nest_height > MIN_SIZE) and (nest_width > MIN_SIZE)), \
         "%s: TOO SMALL (%d x %d pixels) -- IGNORED" % (
         monitorPrefix, nest_height, nest_width)
 
-    # ignore extremely large nests -- THESE CAUSE SEGMENTATION FAULTS
+    # ignore extremely large nests -- THESE MAY CAUSE SEGMENTATION FAULTS
     if MAX_SIZE is not None:
         assert ((nest_height < MAX_SIZE) and (nest_width < MAX_SIZE)), \
             "%s: EXTREMELY LARGE NEST (%d x %d pixels) -- IGNORED" % (
                 monitorPrefix, nest_height, nest_width)
 
     # assign bounding box location
-    ridx = nest_contours.shape[0]
-    nest_contours.loc[ridx, "group"] = nest_info['group']
-    nest_contours.loc[ridx, "color"] = nest_info['color']
-    nest_contours.loc[ridx, "is_roi"] = nest_info['is_roi']
-    nest_contours.loc[ridx, "rmin"] = rmin - pad_margin
-    nest_contours.loc[ridx, "rmax"] = rmax - pad_margin
-    nest_contours.loc[ridx, "cmin"] = cmin - pad_margin
-    nest_contours.loc[ridx, "cmax"] = cmax - pad_margin
+    ridx = contours_df.shape[0]
+    contours_df.loc[ridx, "group"] = nest_info['group']
+    contours_df.loc[ridx, "color"] = nest_info['color']
+    contours_df.loc[ridx, "ymin"] = ymin - pad_margin
+    contours_df.loc[ridx, "ymax"] = ymax - pad_margin
+    contours_df.loc[ridx, "xmin"] = xmin - pad_margin
+    contours_df.loc[ridx, "xmax"] = xmax - pad_margin
 
-    # add other properties useful later
-    nest_contours.loc[ridx, "has_holes"] = has_holes
-    nest_contours.loc[ridx, "touches_edge-top"] = 0 + (
-            rmin - pad_margin - 2 < 0)
-    nest_contours.loc[ridx, "touches_edge-left"] = 0 + (
-            cmin - pad_margin - 2 < 0)
-    nest_contours.loc[ridx, "touches_edge-bottom"] = 0 + (
-            rmax + pad_margin + 2 > mask_shape[0])
-    nest_contours.loc[ridx, "touches_edge-right"] = 0 + (
-            cmax + pad_margin + 2 > mask_shape[1])
+    # add other properties -- maybe useful later
+    contours_df.loc[ridx, "has_holes"] = has_holes
+    contours_df.loc[ridx, "touches_edge-top"] = 0 + (
+            ymin - pad_margin - 2 < 0)
+    contours_df.loc[ridx, "touches_edge-left"] = 0 + (
+            xmin - pad_margin - 2 < 0)
+    contours_df.loc[ridx, "touches_edge-bottom"] = 0 + (
+            ymax + pad_margin + 2 > mask_shape[0])
+    contours_df.loc[ridx, "touches_edge-right"] = 0 + (
+            xmax + pad_margin + 2 > mask_shape[1])
 
-    # get x and y coordinates in HTK friendly format
+    # get x and y coordinates in HTK friendly format (string)
     cont_outer = conts['contour_group'][outer_cidx][:, 0, :].copy()
-    nest_contours.loc[ridx, "coords_x"] = \
+    contours_df.loc[ridx, "coords_x"] = \
         ",".join([str(j - pad_margin) for j in list(cont_outer[:, 0])])
-    nest_contours.loc[ridx, "coords_y"] = \
+    contours_df.loc[ridx, "coords_y"] = \
         ",".join([str(j - pad_margin) for j in list(cont_outer[:, 1])])
 
-    return nest_contours
+    return contours_df
 
 # %% =====================================================================
 
@@ -175,12 +178,68 @@ def get_contours_from_mask(
     Parameters
     -----------
     MASK : nd array
-        ground truth mask (m,n)
+        ground truth mask (m,n) where pixel values encode group membership.
+    GTCodes_df : pandas Dataframe
+        the ground truth codes and information dataframe.
+        This is a dataframe that is indexed by the annotation group name and
+        has the following columns.
+
+        group: str
+            group name of annotation, eg. mostly_tumor.
+        GT_code: int
+            desired ground truth code (in the mask). Pixels of this value
+            belong to corresponding group (class).
+        color: str
+            rgb format. eg. rgb(255,0,0).
+    groups_to_get : None
+        if None (default) then all groups (ground truth labels) will be
+        extracted. Otherwise pass a list fo strings like ['mostly_tumor',].
+    MIN_SIZE : int
+        minimum bounding box size of contour
+    MAX_SIZE : None
+        if not None, int. Maximum bounding box size of contour. Sometimes
+        very large contours cause segmentation faults that originate from
+        opencv and are not caught by python, causing the python process
+        to unexpectedly hault. If you would like to set a maximum size to
+        defend against this, a suggested maximum would be 15000.
+    verbose : bool
+        Print progress to screen?
+    monitorPrefix : str
+        text to prepend to printed statements
 
     Returns
     --------
     pandas DataFrame
-        contours for annotations
+        contours extracted from input mask. The following columns are output.
+
+        group : str
+            annotation group (ground truth label).
+        color : str
+            annotation color if it were to be posted to DSA.
+        is_roi : bool
+            whether this annotation is a region of interest boundary
+        ymin : int
+            minimun y coordinate
+        ymax : int
+            maximum y coordinate
+        xmin : int
+            minimum x coordinate
+        xmax : int
+            maximum x coordinate
+        has_holes : bool
+            whether this contour has holes
+        touches_edge-top : bool
+            whether this contour touches top mask edge
+        touches_edge-bottom : bool
+            whether this contour touches bottom mask edge
+        touches_edge-left : bool
+            whether this contour touches left mask edge
+        touches_edge-right : bool
+            whether this contour touches right mask edge
+        coords_x : str
+            vertix x coordinates comma-separated values
+        coords_y
+            vertix y coordinated comma-separated values
 
     """
     cpr = Conditional_Print(verbose=verbose)
@@ -194,7 +253,7 @@ def get_contours_from_mask(
     # is extracted separately by binarizing the multi-class mask
     if groups_to_get is None:
         groups_to_get = list(GTCodes_df.index)
-    nest_contours = DataFrame()
+    contours_df = DataFrame()
 
     for nestgroup in groups_to_get:
 
@@ -217,8 +276,8 @@ def get_contours_from_mask(
                 if cidx % 25 == 100:
                     _print(nestcountStr)
 
-                nest_contours = _add_nest_contour(
-                    nest_contours, mask_shape=bin_mask.shape,
+                contours_df = _add_contour_to_df(
+                    contours_df, mask_shape=bin_mask.shape,
                     conts=conts, cidx=cidx,
                     nest_info=dict(GTCodes_df.loc[nestgroup, :]),
                     pad_margin=pad_margin, MIN_SIZE=MIN_SIZE,
@@ -228,23 +287,36 @@ def get_contours_from_mask(
                 _print(e)
                 continue
 
-    return nest_contours
+    return contours_df
 
 # %% =====================================================================
 
 
 def get_single_annotation_document_from_contours(
-        contours_slice, docname='default',
-        F=1.0, X_OFFSET=0, Y_OFFSET=0,
-        opacity=0.3, verbose=True, monitorPrefix=""):
+        contours_df_slice, docname='default',
+        F=1.0, X_OFFSET=0, Y_OFFSET=0, opacity=0.3,
+        lineWidth=4.0, verbose=True, monitorPrefix=""):
     """Given dataframe of contours, get annotation document.
 
-    This maybe posted to DSA using something like:
+    This uses the large_image annotation schema to create an annotation
+    document that maybe posted to DSA for viewing using something like:
     resp = gc.post("/annotation?itemId=" + slide_id, json=annotation_doc)
+    The annotation schema can be found at:
+    github.com/girder/large_image/blob/master/docs/annotations.md .
 
     Parameters
     -----------
-    contours_slice : pandas DataFrame
+    contours_df_slice : pandas DataFrame
+        The following columns are of relevance and must be contained.
+
+        group : str
+            annotation group (ground truth label).
+        color : str
+            annotation color if it were to be posted to DSA.
+        coords_x : str
+            vertix x coordinates comma-separated values
+        coords_y
+            vertix y coordinated comma-separated values
 
     Returns
     --------
@@ -264,8 +336,8 @@ def get_single_annotation_document_from_contours(
 
     # go through nests
     nno = 0
-    nnests = contours_slice.shape[0]
-    for _, nest in contours_slice.iterrows():
+    nnests = contours_df_slice.shape[0]
+    for _, nest in contours_df_slice.iterrows():
 
         nno += 1
         nestStr = "%s: nest %d of %s" % (monitorPrefix, nno, nnests)
@@ -294,7 +366,7 @@ def get_single_annotation_document_from_contours(
             "group": nest['group'],
             "type": "polyline",
             "lineColor": nest['color'],
-            "lineWidth": 4.6,
+            "lineWidth": lineWidth,
             "closed": True,
             "points": coords,
             "label": {'value': nest['group']},
@@ -311,17 +383,17 @@ def get_single_annotation_document_from_contours(
 
 
 def get_annotation_documents_from_contours(
-        contours, ANNOTS_PER_DOC=200, docnamePrefix='default',
+        contours_df, ANNOTS_PER_DOC=200, docnamePrefix='default',
         annprops=None, verbose=True, monitorPrefix=""):
     """Given dataframe of contours, get list of annotation documents.
 
     Parameters
     -----------
-    contours_slice : pandas DataFrame
+    contours_df : pandas DataFrame
 
     Returns
     --------
-    dict
+    list of dicts
         DSA-style annotation document.
 
     """
@@ -331,14 +403,15 @@ def get_annotation_documents_from_contours(
             'X_OFFSET': 0,
             'Y_OFFSET': 0,
             'opacity': 0.3,
+            'lineWidth': 4.0,
         }
 
     # Go through documents -- add every N annotations to a separate document
-    if contours.shape[0] > ANNOTS_PER_DOC:
-        docbounds = list(range(0, contours.shape[0], ANNOTS_PER_DOC))
-        docbounds[-1] = contours.shape[0]
+    if contours_df.shape[0] > ANNOTS_PER_DOC:
+        docbounds = list(range(0, contours_df.shape[0], ANNOTS_PER_DOC))
+        docbounds[-1] = contours_df.shape[0]
     else:
-        docbounds = [0, contours.shape[0]]
+        docbounds = [0, contours_df.shape[0]]
 
     annotation_docs = []
     for docidx in range(len(docbounds)-1):
@@ -346,9 +419,9 @@ def get_annotation_documents_from_contours(
                 monitorPrefix, docidx+1, len(docbounds)-1)
         start = docbounds[docidx]
         end = docbounds[docidx+1]
-        contours_slice = contours.iloc[start:end, :]
+        contours_df_slice = contours_df.iloc[start:end, :]
         annotation_doc = get_single_annotation_document_from_contours(
-            contours_slice, docname="%s-%d" % (docnamePrefix, docidx),
+            contours_df_slice, docname="%s-%d" % (docnamePrefix, docidx),
             verbose=verbose, monitorPrefix=docStr, **annprops)
         if len(annotation_doc['elements']) > 0:
             annotation_docs.append(annotation_doc)
@@ -356,3 +429,17 @@ def get_annotation_documents_from_contours(
     return annotation_docs
 
 # %% =====================================================================
+
+
+# get specified (or any) contours from mask
+groups_to_get = [
+    'mostly_tumor', 'mostly_stroma', 'mostly_lymphocytic_infiltrate']
+contours_df = get_contours_from_mask(
+    MASK=MASK, GTCodes_df=GTCodes_df, groups_to_get=groups_to_get,
+    MIN_SIZE=30, MAX_SIZE=None,
+    verbose=True, monitorPrefix=MASKNAME[:12])
+
+# get list of annotation documents
+annotation_docs = get_annotation_documents_from_contours(
+    contours_df, ANNOTS_PER_DOC=10, docnamePrefix='test',
+    annprops=None, verbose=True, monitorPrefix="")
