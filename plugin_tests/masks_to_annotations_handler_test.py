@@ -68,12 +68,13 @@ class MasksToAnnotationsTest(unittest.TestCase):
             get_roi_contour=True, roi_group='roi',
             discard_nonenclosed_background=True,
             background_group='mostly_stroma',
-            MIN_SIZE=30, MAX_SIZE=None, verbose=True,
+            MIN_SIZE=30, MAX_SIZE=None, verbose=False,
             monitorPrefix=MASKNAME[:12] + ": getting contours")
 
         # make sure it is what we expect
         self.assertTupleEqual(contours_df.shape, CONTOURS_DF.shape)
-        self.assertTupleEqual(contours_df.columns, CONTOURS_DF.columns)
+        self.assertSetEqual(
+            set(contours_df.columns), set(CONTOURS_DF.columns))
         self.assertTrue(all(contours_df == CONTOURS_DF))
 
     # %% ----------------------------------------------------------------------
@@ -88,9 +89,9 @@ class MasksToAnnotationsTest(unittest.TestCase):
             'lineWidth': 4.0,
         }
         annotation_docs = get_annotation_documents_from_contours(
-            CONTOURS_DF, separate_docs_by_group=True, annots_per_doc=10,
+            CONTOURS_DF.copy(), separate_docs_by_group=True, annots_per_doc=10,
             docnamePrefix='test', annprops=annprops,
-            verbose=True, monitorPrefix=MASKNAME[:12] + ": annotation docs")
+            verbose=False, monitorPrefix=MASKNAME[:12] + ": annotation docs")
 
         # make sure its what we expect
         self.assertTrue(len(annotation_docs) == 8)
