@@ -45,6 +45,18 @@ nest_contours = get_contours_from_mask(
 # %% =====================================================================
 
 
+class Conditional_Print(object):
+
+    def __init__(self, verbose=True):
+        self.verbose = verbose
+
+    def _print(self, text):
+        if self.verbose:
+            print(text)
+
+# %% =====================================================================
+
+
 def get_contours_from_bin_mask(bin_mask):
     """Given a binary mask, get opencv contours.
 
@@ -89,7 +101,7 @@ def get_contours_from_bin_mask(bin_mask):
 
 
 def _add_nest_contour(
-        nest_contours, mask_shape, conts, cidx, classlabel,
+        nest_contours, mask_shape, conts, cidx, nest_info,
         pad_margin=0, MIN_SIZE=30, MAX_SIZE=None, monitorPrefix=""):
     """Add single nest contour to dataframe (Internal)."""
 
@@ -124,7 +136,9 @@ def _add_nest_contour(
 
     # assign bounding box location
     ridx = nest_contours.shape[0]
-    nest_contours.loc[ridx, "label"] = classlabel
+    nest_contours.loc[ridx, "group"] = nest_info['group']
+    nest_contours.loc[ridx, "color"] = nest_info['color']
+    nest_contours.loc[ridx, "is_roi"] = nest_info['is_roi']
     nest_contours.loc[ridx, "rmin"] = rmin - pad_margin
     nest_contours.loc[ridx, "rmax"] = rmax - pad_margin
     nest_contours.loc[ridx, "cmin"] = cmin - pad_margin
@@ -169,9 +183,8 @@ def get_contours_from_mask(
         contours for annotations
 
     """
-    def _print(text):
-        if verbose:
-            print(text)
+    cpr = Conditional_Print(verbose=verbose)
+    _print = cpr._print
 
     # pad with zeros to be able to detect edge tumor nests later
     pad_margin = 50
@@ -183,20 +196,20 @@ def get_contours_from_mask(
         groups_to_get = list(GTCodes_df.index)
     nest_contours = DataFrame()
 
-    for classlabel in groups_to_get:
+    for nestgroup in groups_to_get:
 
-        bin_mask = 0 + (MASK == GTCodes_df.loc[classlabel, 'GT_code'])
+        bin_mask = 0 + (MASK == GTCodes_df.loc[nestgroup, 'GT_code'])
 
         if bin_mask.sum() < MIN_SIZE * MIN_SIZE:
-            _print("%s: %s: NO NESTS!!" % (monitorPrefix, classlabel))
+            _print("%s: %s: NO NESTS!!" % (monitorPrefix, nestgroup))
             continue
 
-        _print("%s: %s: getting contours" % (monitorPrefix, classlabel))
+        _print("%s: %s: getting contours" % (monitorPrefix, nestgroup))
         conts = get_contours_from_bin_mask(bin_mask=bin_mask)
         n_tumor_nests = conts['outer_contours'].shape[0]
 
         # add nest contours
-        _print("%s: %s: adding contours" % (monitorPrefix, classlabel))
+        _print("%s: %s: adding contours" % (monitorPrefix, nestgroup))
         for cidx in range(n_tumor_nests):
             try:
                 nestcountStr = "%s: nest %s of %s" % (
@@ -206,7 +219,8 @@ def get_contours_from_mask(
 
                 nest_contours = _add_nest_contour(
                     nest_contours, mask_shape=bin_mask.shape,
-                    conts=conts, cidx=cidx, classlabel=classlabel,
+                    conts=conts, cidx=cidx,
+                    nest_info=dict(GTCodes_df.loc[nestgroup, :]),
                     pad_margin=pad_margin, MIN_SIZE=MIN_SIZE,
                     MAX_SIZE=MAX_SIZE, monitorPrefix=nestcountStr)
 
@@ -215,5 +229,130 @@ def get_contours_from_mask(
                 continue
 
     return nest_contours
+
+# %% =====================================================================
+
+
+def get_single_annotation_document_from_contours(
+        contours_slice, docname='default',
+        F=1.0, X_OFFSET=0, Y_OFFSET=0,
+        opacity=0.3, verbose=True, monitorPrefix=""):
+    """Given dataframe of contours, get annotation document.
+
+    This maybe posted to DSA using something like:
+    resp = gc.post("/annotation?itemId=" + slide_id, json=annotation_doc)
+
+    Parameters
+    -----------
+    contours_slice : pandas DataFrame
+
+    Returns
+    --------
+    dict
+        DSA-style annotation document.
+
+    """
+    cpr = Conditional_Print(verbose=verbose)
+    _print = cpr._print
+
+    def _get_fillColor(lineColor):
+        fillColor = lineColor.replace("rgb", "rgba")
+        return fillColor[:fillColor.rfind(")")] + ",%.1f)" % opacity
+
+    # Init annotation document in DSA style
+    annotation_doc = {'name': docname, 'description': '', 'elements': []}
+
+    # go through nests
+    nno = 0
+    nnests = contours_slice.shape[0]
+    for _, nest in contours_slice.iterrows():
+
+        nno += 1
+        nestStr = "%s: nest %d of %s" % (monitorPrefix, nno, nnests)
+        _print(nestStr)
+
+        # Parse coordinates
+        try:
+            x_coords = F * np.int32(
+                [int(j) for j in nest['coords_x'].split(',')]) + X_OFFSET
+            y_coords = F * np.int32(
+                [int(j) for j in nest['coords_y'].split(',')]) + Y_OFFSET
+            zeros = np.zeros(x_coords.shape, dtype=np.int32)
+            coords = np.concatenate(
+                (x_coords[:, None], y_coords[:, None], zeros[:, None]),
+                axis=1)
+            coords = coords.tolist()
+            coords.append(coords[0])
+        except Exception as e:
+            _print("%s: ERROR (below) - moving on!!!" % nestStr)
+            _print(e)
+            continue
+
+        # assign to annotation style. See:
+        # github.com/girder/large_image/blob/master/docs/annotations.md
+        annotation_style = {
+            "group": nest['group'],
+            "type": "polyline",
+            "lineColor": nest['color'],
+            "lineWidth": 4.6,
+            "closed": True,
+            "points": coords,
+            "label": {'value': nest['group']},
+        }
+        if opacity > 0:
+            annotation_style["fillColor"] = _get_fillColor(nest['color'])
+
+        # append to document
+        annotation_doc['elements'].append(annotation_style)
+
+    return annotation_doc
+
+# %% =====================================================================
+
+
+def get_annotation_documents_from_contours(
+        contours, ANNOTS_PER_DOC=200, docnamePrefix='default',
+        annprops=None, verbose=True, monitorPrefix=""):
+    """Given dataframe of contours, get list of annotation documents.
+
+    Parameters
+    -----------
+    contours_slice : pandas DataFrame
+
+    Returns
+    --------
+    dict
+        DSA-style annotation document.
+
+    """
+    if annprops is None:
+        annprops = {
+            'F': 1.0,
+            'X_OFFSET': 0,
+            'Y_OFFSET': 0,
+            'opacity': 0.3,
+        }
+
+    # Go through documents -- every N annotations go to a document
+    if contours.shape[0] > ANNOTS_PER_DOC:
+        docbounds = list(range(0, contours.shape[0], ANNOTS_PER_DOC))
+        docbounds[-1] = contours.shape[0]
+    else:
+        docbounds = [0, contours.shape[0]]
+
+    annotation_docs = []
+    for docidx in range(len(docbounds)-1):
+        docStr = "%s: doc %d of %d" % (
+                monitorPrefix, docidx+1, len(docbounds)-1)
+        start = docbounds[docidx]
+        end = docbounds[docidx+1]
+        contours_slice = contours.iloc[start:end, :]
+        annotation_doc = get_single_annotation_document_from_contours(
+            contours_slice, docname="%s-%d" % (docnamePrefix, docidx),
+            verbose=verbose, monitorPrefix=docStr, **annprops)
+        if len(annotation_doc['elements']) > 0:
+            annotation_docs.append(annotation_doc)
+
+    return annotation_docs
 
 # %% =====================================================================
