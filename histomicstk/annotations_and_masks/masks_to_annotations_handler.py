@@ -11,7 +11,7 @@ import numpy as np
 from pandas import DataFrame, read_csv, concat
 from imageio import imread
 import cv2
-# from shapely.geometry.polygon import Polygon
+from shapely.geometry.polygon import Polygon
 
 # from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
 #     # from annotation_and_mask_utils import (
@@ -162,7 +162,7 @@ def _get_contours_df(
     cpr = Conditional_Print(verbose=verbose)
     _print = cpr._print
 
-    # pad with zeros to be able to detect edge tumor nests later
+    # pad with zeros to be able to detect edge contours later
     pad_margin = 50
     MASK = np.pad(MASK, pad_margin, 'constant')
 
@@ -177,7 +177,7 @@ def _get_contours_df(
         bin_mask = 0 + (MASK == GTCodes_df.loc[nestgroup, 'GT_code'])
 
         if bin_mask.sum() < MIN_SIZE * MIN_SIZE:
-            _print("%s: %s: NO NESTS!!" % (monitorPrefix, nestgroup))
+            _print("%s: %s: NO OBJECTS!!" % (monitorPrefix, nestgroup))
             continue
 
         _print("%s: %s: getting contours" % (monitorPrefix, nestgroup))
@@ -209,9 +209,86 @@ def _get_contours_df(
 # %% =====================================================================
 
 
+def _parse_annot_coords(annot):
+    """Given a single annotation dataframe, this returns the
+    x-, y-, and x-y coordinates in a list format (Internal).
+
+    """
+    coords_x = [int(j) for j in annot['coords_x'].split(',')]
+    coords_y = [int(j) for j in annot['coords_y'].split(',')]
+    coords = [(coords_x[i], coords_y[i]) for i in range(len(coords_x))]
+    return coords
+
+# %% =====================================================================
+
+
+def _discard_nonenclosed_background_group(
+        contours_df, background_group='mostly_stroma',
+        verbose=False, monitorPrefix=""):
+    """If a background group contour is NOT fully enclosed, discard it.
+
+    This is a purely aesthetic method, makes sure that the background group
+    contours (eg stroma) are discarded by default to avoid cluttering the
+    field when posted to DSA for viewing online. The only exception is
+    if they are enclosed within something else (eg tumor), in which case they
+    are kept since they represent holes. This is related to
+    https://github.com/DigitalSlideArchive/HistomicsTK/issues/675
+    (Internal).
+
+    """
+    cpr = Conditional_Print(verbose=verbose)
+    _print = cpr._print
+
+    # isolate background contours and non-background contours with holes
+    background = contours_df.loc[
+        contours_df.loc[:, "group"] == background_group, :]
+    contours_with_holes = contours_df.loc[
+        contours_df.loc[:, "group"] != background_group, :]
+    contours_with_holes = contours_with_holes.loc[
+        contours_with_holes.loc[:, "has_holes"] == 1, :]
+
+    # to avoid redoing things, keep all non-background with holes in a list
+    contour_polygons = []
+    for tid, tnest in contours_with_holes.iterrows():
+        try:
+            contour_polygons.append(Polygon(_parse_annot_coords(tnest)))
+        except Exception as e:
+            _print("%s: contour %d: Shapely Error (below) -- IGNORED!" % (
+                    monitorPrefix, tid))
+            _print(e)
+
+    # iterate through stromal polygons and find if enclosed within something
+    discard_cids = []
+    for cid, cont in background.iterrows():
+        try:
+            background_polygon = Polygon(_parse_annot_coords(cont))
+        except Exception as e:
+            _print(
+                "%s: bckgrnd contour %d: Shapely Error (below) -- IGNORED!"
+                % (monitorPrefix, cid))
+            _print(e)
+        # only keep if enclosed with a tumor polygon
+        discard = True
+        for contour_polygon in contour_polygons:
+            if contour_polygon.contains(background_polygon):
+                discard = False
+        if discard:
+            discard_cids.append(cid)
+
+    # now drop unnecessary contours
+    _print("%s: discarded %d contours" % (monitorPrefix, len(discard_cids)))
+    contours_df.drop(discard_cids, axis=0, inplace=True)
+
+    return contours_df
+
+
+# %% =====================================================================
+
+
 def get_contours_from_mask(
         MASK, GTCodes_df, groups_to_get=None, MIN_SIZE=30, MAX_SIZE=None,
         get_roi_contour=True, roi_group='roi',
+        discard_nonenclosed_background=False, background_group='mostly_stroma',
         verbose=False, monitorPrefix=""):
     """Parse ground truth mask and gets countours for annotations.
 
@@ -246,6 +323,22 @@ def get_contours_from_mask(
         whether to get contour for boundary of region of interest (ROI). This
         is most relevant when dealing with multiple ROIs per slide and with
         rotated rectangular or polygonal ROIs.
+    roi_group : str
+        name of roi group in the GT_Codes dataframe (eg roi)
+    discard_nonenclosed_background : bool
+        If a background group contour is NOT fully enclosed, discard it.
+        This is a purely aesthetic method, makes sure that the background group
+        contours (eg stroma) are discarded by default to avoid cluttering the
+        field when posted to DSA for viewing online. The only exception is
+        if they are enclosed within something else (eg tumor), in which case
+        they are kept since they represent holes. This is related to
+        https://github.com/DigitalSlideArchive/HistomicsTK/issues/675
+        WARNING - This is a bit slower since the contours will have to be
+        converted to shapely polygons. It is not noticeable for hundreds of
+        contours, but you will notice the speed difference if you are parsing
+        thousands of contours. Default, for this reason, is False.
+    background_group : str
+        name of background group in the GT_codes dataframe (eg mostly_stroma)
     verbose : bool
         Print progress to screen?
     monitorPrefix : str
@@ -286,6 +379,23 @@ def get_contours_from_mask(
             vertix y coordinated comma-separated values
 
     """
+    cpr = Conditional_Print(verbose=verbose)
+    _print = cpr._print
+    if groups_to_get is not None:
+        _print("""WARNING!! Only specify groups_to_get is you do NOT mind
+               having NO holes in polygons with holes that are occupied
+               by a non-specified group. For example, let's say you
+               specified that you only want to extract contours for
+               tumor and stroma. If there is a large tumor polygon with two
+               holes for stroma and blood vessel, the stroma hole will be
+               accounted for, but not the blood vessel hole when you
+               post these contours to DSA for viewing then pull them
+               to be parse back into mask form. It's a subtle issue related
+               to
+               https://github.com/DigitalSlideArchive/HistomicsTK/issues/675
+               and will eventually be accounted for once HistomicsTK
+               has an official format to encode polygons with holes.""")
+
     cont_kwargs = {
       'GTCodes_df': GTCodes_df,
       'MIN_SIZE': MIN_SIZE,
@@ -298,6 +408,12 @@ def get_contours_from_mask(
         MASK=MASK, groups_to_get=groups_to_get,
         monitorPrefix="%s: %s" % (monitorPrefix, "non-roi"),
         **cont_kwargs)
+
+    # discard non-enclosed background (eg stroma) if needed
+    if discard_nonenclosed_background:
+        contours_df = _discard_nonenclosed_background_group(
+            contours_df, background_group=background_group, verbose=verbose,
+            monitorPrefix="%s: %s" % (monitorPrefix, "discarding backgrnd"))
 
     # get contours df for roi boundary and concat
     if get_roi_contour:
@@ -500,8 +616,10 @@ MASK = imread(MASKPATH)
 groups_to_get = None
 contours_df = get_contours_from_mask(
     MASK=MASK, GTCodes_df=GTCodes_df, groups_to_get=groups_to_get,
-    get_roi_contour=True, MIN_SIZE=30, MAX_SIZE=None,
-    verbose=True, monitorPrefix=MASKNAME[:12] + ": getting contours")
+    get_roi_contour=True, roi_group='roi',
+    discard_nonenclosed_background=True, background_group='mostly_stroma',
+    MIN_SIZE=30, MAX_SIZE=None, verbose=True,
+    monitorPrefix=MASKNAME[:12] + ": getting contours")
 
 # get list of annotation documents
 annprops = {
@@ -513,7 +631,7 @@ annprops = {
 annotation_docs = get_annotation_documents_from_contours(
     contours_df, separate_docs_by_group=True, annots_per_doc=10,
     docnamePrefix='test', annprops=annprops,
-    verbose=True, monitorPrefix=MASKNAME[:12] + ": posting contours")
+    verbose=True, monitorPrefix=MASKNAME[:12] + ": annotation docs")
 
 # deleting existing annotations in target slide (if any)
 existing_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
