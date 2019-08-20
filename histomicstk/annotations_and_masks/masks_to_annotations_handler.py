@@ -457,11 +457,29 @@ def get_single_annotation_document_from_contours(
             vertix x coordinates comma-separated values
         coords_y
             vertix y coordinated comma-separated values
+    docname : str
+        annotation document name
+    F : float
+        how much smaller is the mask where the contours come from is relative
+        to the slide scan magnification. For example, if the mask is at 10x
+        whereas the slide scan magnification is 20x, then F would be 2.0.
+    X_OFFSET : int
+        x offset to add to contours at BASE (SCAN) magnification
+    Y_OFFSET : int
+        y offset to add to contours at BASE (SCAN) magnification
+    opacity : float
+        opacity of annotation elements (in the range [0, 1])
+    lineWidth : float
+        width of boarders of annotation elements
+    verbose : bool
+        Print progress to screen?
+    monitorPrefix : str
+        text to prepend to printed statements
 
     Returns
     --------
     dict
-        DSA-style annotation document.
+        DSA-style annotation document ready to be post for viewing.
 
     """
     cpr = Conditional_Print(verbose=verbose)
@@ -527,10 +545,50 @@ def get_annotation_documents_from_contours(
         annprops=None, docnamePrefix="", verbose=True, monitorPrefix=""):
     """Given dataframe of contours, get list of annotation documents.
 
+    This method parses a dataframe of contours to a list of dictionaries, each
+    of which represents and large_image style annotation. This is a wrapper
+    that extends the functionality of the method
+    get_single_annotation_document_from_contours(), whose docstring should
+    be referenced for implementation details and further explanation.
+
     Parameters
     -----------
     contours_df : pandas DataFrame
         WARNING - This is modified inside the function, so pass a copy.
+        This dataframe includes data on contours extracted from input mask
+        using get_contours_from_mask(). If you have contours using some other
+        method, just make sure the dataframe follows the same schema as the
+        output from get_contours_from_mask(). You may find a sample dataframe
+        in thie repo at ./plugin_tests/test_files/sample_contours_df.tsv
+        The following columns are relevant for this method.
+
+        group : str
+            annotation group (ground truth label).
+        color : str
+            annotation color if it were to be posted to DSA.
+        coords_x : str
+            vertix x coordinates comma-separated values
+        coords_y
+            vertix y coordinated comma-separated values
+    separate_docs_by_group : bool
+        if set to True, you get one or more annotation documents (dicts)
+        for each group (eg tumor) independently.
+    annots_per_doc : int
+        maximum number of annotation elements (polygons) per dict. The smaller
+        this number, the more numerous the annotation documents, but the more
+        seamless it is to post this data to the DSA server or to view using the
+        HistomicsTK interface since you will be loading smaller chunks of data
+        at a time.
+    annprops : dict
+        properties of annotation elements. Contains the following keys
+        F, X_OFFSET, Y_OFFSET, opacity, lineWidth. Refer to
+        get_single_annotation_document_from_contours() for details.
+    docnamePrefix : str
+        test to prepend to annotation document name
+    verbose : bool
+        Print progress to screen?
+    monitorPrefix : str
+        text to prepend to printed statements
 
     Returns
     --------
@@ -582,63 +640,3 @@ def get_annotation_documents_from_contours(
     return annotation_docs
 
 # %% =====================================================================
-
-
-import girder_client
-
-# APIURL = 'http://demo.kitware.com/histomicstk/api/v1/'
-# SAMPLE_SLIDE_ID = '5bbdee92e629140048d01b5d'
-APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-SAMPLE_SLIDE_ID = '5d586d76bd4404c6b1f286ae'
-
-gc = girder_client.GirderClient(apiUrl=APIURL)
-# gc.authenticate(interactive=True)
-gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
-
-# read GTCodes dataframe
-GTCODE_PATH = os.path.join(
-    os.getcwd(), '..', '..', 'plugin_tests',
-    'test_files', 'sample_GTcodes.csv')
-GTCodes_df = read_csv(GTCODE_PATH)
-GTCodes_df.index = GTCodes_df.loc[:, 'group']
-
-# read mask
-X_OFFSET = 59206
-Y_OFFSET = 33505
-MASKNAME = "TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39" + \
-    "_left-%d_top-%d_mag-BASE.png" % (X_OFFSET, Y_OFFSET)
-MASKPATH = os.path.join(os.getcwd(), '..', '..', '..', 'Masks', MASKNAME)
-MASK = imread(MASKPATH)
-
-# get specified (or any) contours from mask
-# groups_to_get = [
-#     'mostly_tumor', 'mostly_stroma', 'mostly_lymphocytic_infiltrate']
-groups_to_get = None
-contours_df = get_contours_from_mask(
-    MASK=MASK, GTCodes_df=GTCodes_df, groups_to_get=groups_to_get,
-    get_roi_contour=True, roi_group='roi',
-    discard_nonenclosed_background=True, background_group='mostly_stroma',
-    MIN_SIZE=30, MAX_SIZE=None, verbose=True,
-    monitorPrefix=MASKNAME[:12] + ": getting contours")
-
-# get list of annotation documents
-annprops = {
-    'X_OFFSET': X_OFFSET,
-    'Y_OFFSET': Y_OFFSET,
-    'opacity': 0.2,
-    'lineWidth': 4.0,
-}
-annotation_docs = get_annotation_documents_from_contours(
-    contours_df, separate_docs_by_group=True, annots_per_doc=10,
-    docnamePrefix='test', annprops=annprops,
-    verbose=True, monitorPrefix=MASKNAME[:12] + ": annotation docs")
-
-# deleting existing annotations in target slide (if any)
-existing_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
-for ann in existing_annotations:
-    gc.delete('/annotation/%s' % ann['_id'])
-
-# post annotations to slide
-for annotation_doc in annotation_docs:
-    resp = gc.post(
-        "/annotation?itemId=" + SAMPLE_SLIDE_ID, json=annotation_doc)
