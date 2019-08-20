@@ -333,7 +333,7 @@ def get_annotation_documents_from_contours(
             'opacity': 0.3,
         }
 
-    # Go through documents -- every N annotations go to a document
+    # Go through documents -- add every N annotations to a separate document
     if contours.shape[0] > ANNOTS_PER_DOC:
         docbounds = list(range(0, contours.shape[0], ANNOTS_PER_DOC))
         docbounds[-1] = contours.shape[0]
