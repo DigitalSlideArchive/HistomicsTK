@@ -96,7 +96,7 @@ def _add_contour_to_df(
     # get coordinates for this contour. These are in x,y format.
     outer_cidx = conts['outer_contours'][cidx, 4]
     cont_outer = conts['contour_group'][outer_cidx][:, 0, :]
-    assert cont_outer.shape[0] > 10, \
+    assert cont_outer.shape[0] > 3, \
         "%s: TOO SIMPLE (%d coordinates) -- IGNORED" % (
         monitorPrefix, cont_outer.shape[0])
 
