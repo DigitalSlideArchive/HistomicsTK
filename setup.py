@@ -71,6 +71,7 @@ setup(
         'scikit-learn>=0.18.1' + ('' if sys.version_info >= (3, ) else ',<0.21'),
         'imageio>=2.3.0',
         'shapely[vectorized]',
+        'opencv-python',
         # deep learning packages
         'h5py>=2.7.1',
         'keras>=2.0.8',
