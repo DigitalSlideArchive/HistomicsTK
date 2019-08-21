@@ -46,16 +46,16 @@ def get_contours_from_bin_mask(bin_mask):
     --------
     dict
         a dictionary with the following keys:
-            contour group - the actual contour x,y coordinates.
-            heirarchy - contour hierarchy. This contains information about
-                how contours relate to each other, in the form:
-                [Next, Previous, First_Child, Parent,
-                index_relative_to_contour_group]
-                The last column is added for convenience and is not part of the
-                original opencv output.
-            outer_contours - index of contours that do not have a parent, and
-                are therefore the outermost most contours. These may have
-                children (holes), however.
+        - contour group: the actual contour x,y coordinates.
+        - heirarchy: contour hierarchy. This contains information about
+        how contours relate to each other, in the form:
+        [Next, Previous, First_Child, Parent,
+        index_relative_to_contour_group]
+        The last column is added for convenience and is not part of the
+        original opencv output.
+        - outer_contours: index of contours that do not have a parent, and
+        are therefore the outermost most contours. These may have
+        children (holes), however.
         See docs.opencv.org/3.1.0/d9/d8b/tutorial_py_contours_hierarchy.html
         for more information.
 
