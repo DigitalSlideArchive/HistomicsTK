@@ -97,6 +97,9 @@ def get_roi_mask(
     # isolate annotations that potentially overlap (belong to) mask (incl. ROI)
     overlaps = get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi=idx_for_roi, iou_thresh=iou_thresh)
+    idxs_for_all_rois = _get_idxs_for_all_rois(
+        GTCodes=GTCodes_df, element_infos=element_infos)
+    overlaps = list(set(overlaps) - set(idxs_for_all_rois))
     elinfos_roi = element_infos.loc[[idx_for_roi, ] + overlaps, :]
 
     # Add roiinfo
