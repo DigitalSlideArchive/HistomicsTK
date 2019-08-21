@@ -9,6 +9,7 @@ import numpy as np
 from pandas import DataFrame, concat
 import cv2
 from shapely.geometry.polygon import Polygon
+from PIL import Image
 
 # %% =====================================================================
 
@@ -26,6 +27,75 @@ class Conditional_Print(object):
 
 # %% =====================================================================
 
+
+def _get_mask_offsets_from_masknames(maskpaths):
+    """Get dictionary of mask offsets (top and left) (Internal).
+
+    The pattern '_left-123_' and '_top-123_' is assumed to
+    encode the x and y offset of the mask at base magnification.
+
+    Arguments:
+    -----------
+    maskpaths : list
+        names of masks (list of str)
+
+    Returns:
+    ----------
+    dict
+        indexed by maskname, each entry is a dict with keys 'top' and 'left'.
+
+    """
+    roi_offsets = dict()
+    for maskpath in maskpaths:
+        maskname = os.path.split(maskpath)[1]
+        roi_offsets[maskname] = {
+            'left': int(maskname.split('_left-')[1].split('_')[0]),
+            'top': int(maskname.split('_top-')[1].split('_')[0]),
+        }
+    return roi_offsets
+
+# %% =====================================================================
+
+
+def get_roi_bboxes(maskpaths, roi_offsets=None):
+    """Get dictionary of roi bounding boxes.
+
+    Arguments:
+    -----------
+    maskpaths : list
+        names of masks (list of str)
+    roi_offsets : dict (default, None)
+        dict indexed by maskname, each entry is a dict with keys
+        'top' and 'left' each is an integer. If None, then the pattern
+        '_left-123_' and '_top-123_' is assumed to encode the x and y
+        offset of the mask (i.e. inferred from mask name)
+
+    Returns:
+    ----------
+    dict
+        dict indexed by maskname, each entry is a dict with keys
+        top, left, bottom, right, all of which are integers
+
+    """
+    if roi_offsets is not None:
+        roiinfos = roi_offsets.copy()
+    else:
+        # get offset for all rois. This result is a dict that is indexed
+        # by maskname, each entry is a dict with keys 'top' and 'left'.
+        roiinfos = _get_mask_offsets_from_masknames(maskpaths)
+
+    for maskpath in maskpaths:
+        # Note: the following method does NOT actually load the mask
+        # but just uses pillow to get its metadata. See:
+        # https://stackoverflow.com/questions/15800704/ ...
+        # ... get-image-size-without-loading-image-into-memory
+        mask_obj = Image.open(maskpath, mode='r')
+        width, height = mask_obj.size
+        maskname = os.path.split(maskpath)[1]
+        roiinfos[maskname]['right'] = roiinfos[maskname]['left'] + width
+        roiinfos[maskname]['bottom'] = roiinfos[maskname]['top'] + height
+
+    return roiinfos
 
 # %%===========================================================================
 # Constants & prep work
@@ -56,7 +126,16 @@ maskpaths = [
     if j.endswith('.png')]
 
 # %%===========================================================================
-#
-# =============================================================================
+
+# get bounding mox coordinates for masks
+roiinfos = get_roi_bboxes(maskpaths)
+
+
+
+
+
+
+
+
 
 
