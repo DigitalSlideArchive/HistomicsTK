@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Aug 20 18:13:37 2019
+Created on Tue Aug 20 18:13:37 2019.
 
 @author: tageldim
 """
@@ -98,14 +98,14 @@ class MasksToAnnotationsTest(unittest.TestCase):
         self.assertSetEqual(
             {j['name'] for j in annotation_docs},
             {
-               'test_blood_vessel-0',
-               'test_exclude-0',
-               'test_mostly_lymphocytic_infiltrate-0',
-               'test_mostly_stroma-0',
-               'test_mostly_tumor-0',
-               'test_mostly_tumor-1',
-               'test_normal_acinus_or_duct-0',
-               'test_roi-0'
+                'test_blood_vessel-0',
+                'test_exclude-0',
+                'test_mostly_lymphocytic_infiltrate-0',
+                'test_mostly_stroma-0',
+                'test_mostly_tumor-0',
+                'test_mostly_tumor-1',
+                'test_normal_acinus_or_duct-0',
+                'test_roi-0'
             }
         )
 
@@ -116,8 +116,8 @@ class MasksToAnnotationsTest(unittest.TestCase):
 
         # post annotations to slide -- make sure it posts without errors
         resp = gc.post(
-                "/annotation?itemId=" + SAMPLE_SLIDE_ID,
-                json=annotation_docs[0])
+            "/annotation?itemId=" + SAMPLE_SLIDE_ID,
+            json=annotation_docs[0])
         self.assertTrue('annotation' in resp.keys())
 
 # %%===========================================================================

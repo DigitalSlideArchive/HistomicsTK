@@ -21,8 +21,10 @@ from shapely.geometry.polygon import Polygon
 
 
 class Conditional_Print(object):
+    """Print to screen if certain conditions are satisfied (Internal)."""
 
     def __init__(self, verbose=True):
+        """Init. This is for PEP compliance."""
         self.verbose = verbose
 
     def _print(self, text):
@@ -75,7 +77,7 @@ def get_contours_from_bin_mask(bin_mask):
     # to keep track of things better relative to contour_group, now it is:
     # [Next, Previous, First_Child, Parent, index_relative_to_contour_group]
     hierarchy = np.concatenate((hierarchy, np.arange(
-            hierarchy.shape[0])[..., None]), axis=1)
+        hierarchy.shape[0])[..., None]), axis=1)
     outer_contours = hierarchy[hierarchy[:, 3] == -1, :]
     conts = {
         'contour_group': contour_group,
@@ -91,7 +93,6 @@ def _add_contour_to_df(
         contours_df, mask_shape, conts, cidx, nest_info,
         pad_margin=0, MIN_SIZE=30, MAX_SIZE=None, monitorPrefix=""):
     """Add single contour to dataframe (Internal)."""
-
     # get coordinates for this contour. These are in x,y format.
     outer_cidx = conts['outer_contours'][cidx, 4]
     cont_outer = conts['contour_group'][outer_cidx][:, 0, :]
@@ -106,7 +107,7 @@ def _add_contour_to_df(
     # get nest location and size
     xmin, ymin = np.min(cont_outer, axis=0)
     nest_width, nest_height = np.max(
-            cont_outer, 0) - np.min(cont_outer, 0)
+        cont_outer, 0) - np.min(cont_outer, 0)
     ymax = ymin + nest_height
     xmax = xmin + nest_width
 
@@ -133,13 +134,13 @@ def _add_contour_to_df(
     # add other properties -- maybe useful later
     contours_df.loc[ridx, "has_holes"] = has_holes
     contours_df.loc[ridx, "touches_edge-top"] = 0 + (
-            ymin - pad_margin - 2 < 0)
+        ymin - pad_margin - 2 < 0)
     contours_df.loc[ridx, "touches_edge-left"] = 0 + (
-            xmin - pad_margin - 2 < 0)
+        xmin - pad_margin - 2 < 0)
     contours_df.loc[ridx, "touches_edge-bottom"] = 0 + (
-            ymax + pad_margin + 2 > mask_shape[0])
+        ymax + pad_margin + 2 > mask_shape[0])
     contours_df.loc[ridx, "touches_edge-right"] = 0 + (
-            xmax + pad_margin + 2 > mask_shape[1])
+        xmax + pad_margin + 2 > mask_shape[1])
 
     # get x and y coordinates in HTK friendly format (string)
     cont_outer = conts['contour_group'][outer_cidx][:, 0, :].copy()
@@ -208,10 +209,7 @@ def _get_contours_df(
 
 
 def _parse_annot_coords(annot):
-    """Given a single annotation dataframe, this returns the
-    x-, y-, and x-y coordinates in a list format (Internal).
-
-    """
+    """Get x-, y- coordinates in a list format (Internal)."""
     coords_x = [int(j) for j in annot['coords_x'].split(',')]
     coords_y = [int(j) for j in annot['coords_y'].split(',')]
     coords = [(coords_x[i], coords_y[i]) for i in range(len(coords_x))]
@@ -252,7 +250,7 @@ def _discard_nonenclosed_background_group(
             contour_polygons.append(Polygon(_parse_annot_coords(tnest)))
         except Exception as e:
             _print("%s: contour %d: Shapely Error (below) -- IGNORED!" % (
-                    monitorPrefix, tid))
+                monitorPrefix, tid))
             _print(e)
 
     # iterate through stromal polygons and find if enclosed within something
@@ -395,10 +393,10 @@ def get_contours_from_mask(
                has an official format to encode polygons with holes.""")
 
     cont_kwargs = {
-      'GTCodes_df': GTCodes_df,
-      'MIN_SIZE': MIN_SIZE,
-      'MAX_SIZE': MAX_SIZE,
-      'verbose': verbose,
+        'GTCodes_df': GTCodes_df,
+        'MIN_SIZE': MIN_SIZE,
+        'MAX_SIZE': MAX_SIZE,
+        'verbose': verbose,
     }
 
     # get contours df for non-roi contours
@@ -625,7 +623,7 @@ def get_annotation_documents_from_contours(
 
         for docidx in range(len(docbounds)-1):
             docStr = "%s: %s: doc %d of %d" % (
-                    monitorPrefix, doc_group, docidx+1, len(docbounds)-1)
+                monitorPrefix, doc_group, docidx+1, len(docbounds)-1)
             start = docbounds[docidx]
             end = docbounds[docidx+1]
             annotation_doc = get_single_annotation_document_from_contours(
