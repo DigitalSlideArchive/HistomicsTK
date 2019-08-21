@@ -31,7 +31,7 @@ class Conditional_Print(object):
 def _get_mask_offsets_from_masknames(maskpaths):
     """Get dictionary of mask offsets (top and left) (Internal).
 
-    The pattern '_left-123_' and '_top-123_' is assumed to
+    The pattern _left-123_ and _top-123_ is assumed to
     encode the x and y offset of the mask at base magnification.
 
     Arguments:
@@ -42,7 +42,7 @@ def _get_mask_offsets_from_masknames(maskpaths):
     Returns:
     ----------
     dict
-        indexed by maskname, each entry is a dict with keys 'top' and 'left'.
+        indexed by maskname, each entry is a dict with keys top and left.
 
     """
     roi_offsets = dict()
@@ -66,8 +66,8 @@ def get_roi_bboxes(maskpaths, roi_offsets=None):
         names of masks (list of str)
     roi_offsets : dict (default, None)
         dict indexed by maskname, each entry is a dict with keys
-        'top' and 'left' each is an integer. If None, then the pattern
-        '_left-123_' and '_top-123_' is assumed to encode the x and y
+        top and left each is an integer. If None, then the pattern
+        _left-123_ and _top-123_ is assumed to encode the x and y
         offset of the mask (i.e. inferred from mask name)
 
     Returns:
@@ -96,6 +96,63 @@ def get_roi_bboxes(maskpaths, roi_offsets=None):
         roiinfos[maskname]['bottom'] = roiinfos[maskname]['top'] + height
 
     return roiinfos
+
+# %% =====================================================================
+
+
+def _get_roi_pairs(roinames):
+    """Get unique roi pairs (Internal)."""
+    ut = np.triu_indices(len(roinames), k=1)
+    roi_pairs = []
+    for pairidx in range(len(ut[0])):
+        roi_pairs.append((ut[0][pairidx], ut[1][pairidx]))
+    return roi_pairs
+
+# %% =====================================================================
+
+
+def _get_shared_roi_edges(roiinfos):
+    """Get shared edges between rois in same slide (Internal)."""
+    roinames = list(roiinfos.keys())
+    edgepairs = [
+        ('left', 'right'), ('right', 'left'),
+        ('top', 'bottom'), ('bottom', 'top'),
+    ]
+    roi_pairs = _get_roi_pairs(roinames)
+
+    # init shared edges
+    shared_edges = DataFrame(columns=[
+            'roi1-name', 'roi1-edge', 'roi2-name', 'roi2-edge'])
+
+    for roi_pair in roi_pairs:
+        roi1name = roinames[roi_pair[0]]
+        roi2name = roinames[roi_pair[1]]
+        idx = shared_edges.shape[0]
+        for edgepair in edgepairs:
+            # check if they share bounds for one edge
+            if np.abs(
+                  roiinfos[roi1name][edgepair[0]]
+                  - roiinfos[roi2name][edgepair[1]]) < 2:
+                # ensure they overlap in location along other axis
+                if 'left' in edgepair:
+                    start, end = ('top', 'bottom')
+                else:
+                    start, end = ('left', 'right')
+                realStart = np.min(
+                    (roiinfos[roi1name][start], roiinfos[roi2name][start]))
+                realEnd = np.max(
+                    (roiinfos[roi1name][end], roiinfos[roi2name][end]))
+                length = realEnd - realStart
+                nonoverlap_length = (
+                    roiinfos[roi1name][end] - roiinfos[roi1name][start]) + (
+                    roiinfos[roi2name][end] - roiinfos[roi2name][start])
+                if length < nonoverlap_length:
+                    shared_edges.loc[idx, 'roi1-name'] = roi1name
+                    shared_edges.loc[idx, 'roi1-edge'] = edgepair[0]
+                    shared_edges.loc[idx, 'roi2-name'] = roi2name
+                    shared_edges.loc[idx, 'roi2-edge'] = edgepair[1]
+
+    return shared_edges
 
 # %%===========================================================================
 # Constants & prep work
@@ -130,7 +187,8 @@ maskpaths = [
 # get bounding mox coordinates for masks
 roiinfos = get_roi_bboxes(maskpaths)
 
-
+# get shared edges between masks
+# shared_edges = _get_shared_roi_edges(roiinfos)
 
 
 
