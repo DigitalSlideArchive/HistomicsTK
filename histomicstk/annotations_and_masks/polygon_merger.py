@@ -408,9 +408,6 @@ group = 'mostly_tumor'
 # get pairs of contours to merge
 merge_df = _get_merge_df(roiinfos=roiinfos, shared_edges=shared_edges)
 
-
-# %%
-
 # get clusters of polygons to merge
 merge_clusters = _get_merge_clusters_from_df(merge_df)
 
