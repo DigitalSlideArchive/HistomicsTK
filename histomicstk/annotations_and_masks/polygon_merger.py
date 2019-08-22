@@ -11,21 +11,8 @@ import cv2
 from shapely.geometry.polygon import Polygon
 from PIL import Image
 from imageio import imread
-from masks_to_annotations_handler import get_contours_from_mask
-
-# %% =====================================================================
-
-
-class Conditional_Print(object):
-    """Print to screen if certain conditions are satisfied (Internal)."""
-
-    def __init__(self, verbose=True):
-        """Init. This is for PEP compliance."""
-        self.verbose = verbose
-
-    def _print(self, text):
-        if self.verbose:
-            print(text)
+from masks_to_annotations_handler import (
+    Conditional_Print, get_contours_from_mask, _parse_annot_coords, )
 
 # %% =====================================================================
 
@@ -203,6 +190,99 @@ def _get_shared_roi_edges(roiinfos):
 
     return shared_edges
 
+# %% =====================================================================
+
+
+def _get_merge_pairs(
+        edge_contours, edgepair, group, roiinfos,
+        thresh=3, monitorPrefix="", verbose=True):
+    """Get nest dataframes and indices of which ones to merge."""
+    cpr = Conditional_Print(verbose=verbose)
+    _print = cpr._print
+
+    def _get_nests_slice(ridx=1):
+        Nests = edge_contours[edgepair['roi%d-name' % ridx]]
+        edgevar = "touches_edge-%s" % (edgepair['roi%d-edge' % ridx])
+        Nests = Nests.loc[Nests.loc[:, edgevar] == 1, :]
+        Nests = Nests.loc[Nests.loc[:, 'group'] == group, :]
+        return Nests
+
+    # Nests of the same label. The nest IDs are using the index of the
+    # roi dataframe from the edge_nests dictionary
+    Nests1 = _get_nests_slice(1)
+    Nests2 = _get_nests_slice(2)
+
+    # to avoid redoing things, keep all polygons in a list
+    polygons1 = []
+    nno1 = 0
+    nno1Max = Nests1.shape[0]
+    for nid1, nest1 in Nests1.iterrows():
+        nno1 += 1
+        _print("%s: edge1-nest %d of %d" % (monitorPrefix, nno1, nno1Max))
+        try:
+            coords = np.array(_parse_annot_coords(nest1))
+            coords[:, 0] = coords[:, 0] + roiinfos[
+                edgepair['roi1-name']]['left']
+            coords[:, 1] = coords[:, 1] + roiinfos[
+                edgepair['roi1-name']]['top']
+            polygons1.append((nid1, Polygon(coords)))
+        except Exception as e:
+            _print("%s: edge1-nest %d of %d: Shapely Error (below)" % (
+                    monitorPrefix, nno1, nno1Max))
+            _print(e)
+
+    # go through the "other" polygons to get merge list
+    to_merge = DataFrame(columns=[
+        'nest1-roiname', 'nest1-nid', 'nest2-roiname', 'nest2-nid'])
+    nno2 = 0
+    nno2Max = Nests2.shape[0]
+    for nid2, nest2 in Nests2.iterrows():
+        nno2 += 1
+        # _print("%s: edge2-nest %d of %d" % (monitorPrefix, nno2, nno2Max))
+        try:
+            coords = np.array(_parse_annot_coords(nest2))
+            coords[:, 0] = coords[:, 0] + roiinfos[
+                edgepair['roi2-name']]['left']
+            coords[:, 1] = coords[:, 1] + roiinfos[
+                edgepair['roi2-name']]['top']
+            polygon2 = Polygon(coords)
+        except Exception as e:
+            _print("%s: edge2-nest %d of %d: Shapely Error (below)" % (
+                    monitorPrefix, nno2, nno2Max))
+            _print(e)
+            continue
+
+        nno1Max = len(polygons1)-1
+        for nno1, poly1 in enumerate(polygons1):
+            _print("%s: edge2-nest %d of %d: vs. edge1-nest %d of %d" % (
+                    monitorPrefix, nno2, nno2Max, nno1+1, nno1Max+1))
+            nid1, polygon1 = poly1
+            if polygon1.distance(polygon2) < thresh:
+                idx = to_merge.shape[0]
+                to_merge.loc[idx, 'nest1-roiname'] = edgepair['roi1-name']
+                to_merge.loc[idx, 'nest1-nid'] = nid1
+                to_merge.loc[idx, 'nest2-roiname'] = edgepair['roi2-name']
+                to_merge.loc[idx, 'nest2-nid'] = nid2
+
+    return to_merge
+
+# %% =====================================================================
+
+
+def _get_merge_df(roiinfos, shaped_edges):
+    """Get merge dataframe (pairs along shared edges)."""
+    merge_df = DataFrame()
+    for rpno, edgepair in shared_edges.iterrows():
+        edgepair = dict(edgepair)
+        to_merge = _get_merge_pairs(
+            edge_contours, edgepair, group, roiinfos,
+            thresh=3, verbose=verbose,
+            monitorPrefix="%s: pair %d of %d" % (
+                monitorPrefix, rpno + 1, shared_edges.shape[0]))
+        merge_df = concat((merge_df, to_merge), axis=0, ignore_index=True)
+    return merge_df
+
+
 # %%===========================================================================
 # Constants & prep work
 # =============================================================================
@@ -259,102 +339,14 @@ group = 'mostly_tumor'
 
 # %%
 
+# get pairs of contours to merge
+merge_df = _get_merge_df(roiinfos=roiinfos, shared_edges=shared_edges)
 
-def _get_merge_pairs(
-        edge_contours, edgepair, group, thresh=3,
-        monitorPrefix="", verbose=True):
-    """Get nest dataframes and indices of which ones to merge."""
-    cpr = Conditional_Print(verbose=verbose)
-    _print = cpr._print
 
-    def _get_nests_slice(ridx=1):
-        Nests = edge_contours[edgepair['roi%d-name' % ridx]]
-        edgevar = "touches_edge-%s" % (edgepair['roi%d-edge' % ridx])
-        Nests = Nests.loc[Nests.loc[:, edgevar] == 1, :]
-        Nests = Nests.loc[Nests.loc[:, 'group'] == group, :]
-        return Nests
+# %%
 
-    # Nests of the same label. The nest IDs are using the index of the
-    # roi dataframe from the edge_nests dictionary
-    Nests1 = _get_nests_slice(1)
-    Nests2 = _get_nests_slice(2)
 
-    # to avoid redoing things, keep all polygons in a list
-    polygons1 = []
-    nno1 = 0
-    nno1Max = Nests1.shape[0]
-    for nid1, nest1 in Nests1.iterrows():
-        nno1 += 1
-        _print("%s: edge1 nest %d of %d" % (monitorPrefix, nno1, nno1Max))
-        a
-        try:
-            coords = np.array(self._parse_annot_coords(nest1))
-            coords[:, 0] = coords[:, 0] + roi1info['left_adj']
-            coords[:, 1] = coords[:, 1] + roi1info['top_adj']
-            polygons1.append((nid1, Polygon(coords)))
-        except Exception as e:
-            print("%s: edge1 nest %d of %d: Shapely Error (below)" % (
-                    countStrBase, nno1, nno1Max))
-            print(e)
-    
-    # go through the "other" polygons to get merge list
-    to_merge = df(columns=[
-        'nest1-roiname', 'nest1-nid', 'nest2-roiname', 'nest2-nid'])
-    nno2 = 0
-    nno2Max = Nests2.shape[0]
-    for nid2, nest2 in Nests2.iterrows():
-        nno2 += 1
-        print("%s: edge2 nest %d of %d" % (countStrBase, nno2, nno2Max))
-        try:
-            coords = np.array(self._parse_annot_coords(nest2))
-            coords[:, 0] = coords[:, 0] + roi2info['left_adj'] # x
-            coords[:, 1] = coords[:, 1] + roi2info['top_adj'] # y
-            polygon2 = Polygon(coords)
-        except Exception as e:
-            print("%s: edge2 nest %d of %d: Shapely Error (below)" % (
-                    countStrBase, nno2, nno2Max))
-            print(e)
-            continue
-        
-        nno1Max = len(polygons1)-1
-        for nno1, poly1 in enumerate(polygons1):
-            print("%s: edge2 nest %d of %d: vs. edge1 nest %d of %d" % (
-                    countStrBase, nno2, nno2Max, nno1, nno1Max))
-            nid1, polygon1 = poly1
-            if polygon1.distance(polygon2) < thresh:
-                idx = to_merge.shape[0]
-                to_merge.loc[idx, 'nest1-roiname'] = roi1info['roiname']
-                to_merge.loc[idx, 'nest1-nid'] = nid1
-                to_merge.loc[idx, 'nest2-roiname'] = roi2info['roiname']
-                to_merge.loc[idx, 'nest2-nid'] = nid2
-                
-    return to_merge
 
-#%%
-
-# get merge dataframe (pairs along shared edges)
-merge_df = DataFrame()
-for rpno, edgepair in shared_edges.iterrows():
-    edgepair = dict(edgepair)
-    a
-#    countStr = "%s: edge pair %d of %d" % (
-#            monitorPrefix, rpno+1, shared_edges.shape[0])
-#
-#    # isolate nests from the two rois of interest
-#    roi1info = self._get_adjusted_roiinfo(
-#            edge_nests=edge_nests, roiinfos=roiinfos, 
-#            roipair=roipair, roino=1, slide_info=slide_info)
-#    roi2info = self._get_adjusted_roiinfo(
-#            edge_nests=edge_nests, roiinfos=roiinfos, 
-#            roipair=roipair, roino=2, slide_info=slide_info)
-#    # get nest pairs to merge
-#    to_merge = self._get_merge_pairs(
-#        roi1info, roi2info, thresh=thresh, 
-#        label=label, countStrBase=countStr)
-#    merge_df = concat((merge_df, to_merge), axis=0)
-#    
-## We have every single pair to merge, including for same nest
-#merge_df.reset_index(drop=True, inplace=True)
 
 
 
