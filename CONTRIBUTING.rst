@@ -89,13 +89,46 @@ Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1. The pull request should include tests.
+1. The pull request should include tests (see notes below).
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
 3. The pull request should work for Python 2.6, 2.7, and for PyPy. Check
    https://travis-ci.org/DigitalSlideArchive/HistomicsTK/pull_requests
    and make sure that the tests pass for all supported Python versions.
+
+Unit Testing Notes
+----------------------------
+
+HistomicsTK can be used in two ways: as a pure python package and as a server-side
+plugin, there are two 'modes' of testing. 
+
+* __Ordinary unit testing__:
+
+  If your newly added method/function does not need to run on the server side
+  feel free to use python's ``unittest`` module to create unit tests that
+  ensure that your method works when used as a stand-alone python package.
+  Use the standard ``your_python_file_test.py`` naming convention.
+
+* __Server side testing__ :
+
+  If your newly added method/function uses girder and is meant to be run
+  on the server side, you will need to have unit tests that run on the
+  server side. To find examples for these, go to ``./plugin_tests/``.
+  Specifically, ``example_test.py`` provides a schema that you can use.
+  If your tests require access to girder items (slide, JSON, etc), it would be
+  ideal to refactor how the tests are done so that they download files from
+  ``data.kitware.com``, then start a test instance of Girder, upload the files
+  to it, and then proceed with the girder_client calls.  This has the virtue
+  that we would not need to have the credentials for an external girder instance.
+  If you run the tests multiple times, it will only download the test files once.
+  For example, ckeck out ``./plugin_tests/annotations_to_masks_handler.py``,
+  and notice how ``GirderClientTestCase`` is used to provide access to the
+  slide and annotations, which are referenced using ``.sha512`` hash that
+  is present in ``./plugin_tests/data/``. Please contact the owners if you
+  have questions about this or need support on how to host your test data
+  on ``data.kitware.com`` to make this work.
+
 
 Travis Integration Notes
 ----------------------------
