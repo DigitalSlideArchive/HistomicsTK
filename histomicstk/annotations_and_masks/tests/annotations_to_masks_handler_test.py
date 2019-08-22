@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Aug 12 18:47:34 2019.
-@author: tageldim
-"""
 
+@author: tageldim
+
+"""
 import unittest
 
-from builtins import FileExistsError
 import os
 import girder_client
 from pandas import read_csv
 from imageio import imread
+import tempfile
+import shutil
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois)
@@ -28,15 +30,6 @@ SAMPLE_SLIDE_ID = '5d586d57bd4404c6b1f28640'
 GTCODE_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'test_files', 'sample_GTcodes.csv')
-MASK_SAVEPATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), '..',
-    '..', 'roi_masks')
-
-try:
-    os.mkdir(MASK_SAVEPATH)
-except FileExistsError:
-    pass
-
 
 gc = girder_client.GirderClient(apiUrl=APIURL)
 # gc.authenticate(interactive=True)
@@ -80,12 +73,16 @@ class GetROIMasksTest(unittest.TestCase):
 
     def test_get_all_roi_masks_for_slide(self):
         """Test get_all_roi_masks_for_slide()."""
+        # just a temp directory to save masks for now
+        mask_savepath = tempfile.mkdtemp()
+
         get_all_roi_masks_for_slide(
             gc=gc, slide_id=SAMPLE_SLIDE_ID, GTCODE_PATH=GTCODE_PATH,
-            MASK_SAVEPATH=MASK_SAVEPATH,
+            MASK_SAVEPATH=mask_savepath,
             get_roi_mask_kwargs={
                 'iou_thresh': 0.0, 'crop_to_roi': True, 'use_shapely': True,
                 'verbose': True},
+            verbose=True, monitorPrefix="test",
         )
 
         left = 59206
@@ -93,9 +90,12 @@ class GetROIMasksTest(unittest.TestCase):
         expected_savename = 'TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D'
         expected_savename += '-7F0A2ECA0F39_left-%d_top-%d_mag-BASE.png' % (
             left, top)
-        ROI = imread(os.path.join(MASK_SAVEPATH, expected_savename))
+        ROI = imread(os.path.join(mask_savepath, expected_savename))
 
         self.assertTupleEqual(ROI.shape, (4594, 4542))
+
+        # cleanup
+        shutil.rmtree(mask_savepath)
 
 # %%===========================================================================
 
