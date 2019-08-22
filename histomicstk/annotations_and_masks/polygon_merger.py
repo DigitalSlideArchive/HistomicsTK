@@ -269,7 +269,7 @@ def _get_merge_pairs(
 # %% =====================================================================
 
 
-def _get_merge_df(roiinfos, shaped_edges):
+def _get_merge_df(roiinfos, shared_edges, monitorPrefix="", verbose=True):
     """Get merge dataframe (pairs along shared edges)."""
     merge_df = DataFrame()
     for rpno, edgepair in shared_edges.iterrows():
@@ -282,6 +282,72 @@ def _get_merge_df(roiinfos, shaped_edges):
         merge_df = concat((merge_df, to_merge), axis=0, ignore_index=True)
     return merge_df
 
+# %% =====================================================================
+
+
+def _get_merge_clusters_from_df(merge_df, monitorPrefix="", verbose=True):
+    """Assigned each nest to one cluster.
+
+    That is, such that all nests that are connected to each other are
+    in the same cluster. Uses hierarchical-like clustering to do this.
+
+    """
+    cpr = Conditional_Print(verbose=verbose)
+    _print = cpr._print
+
+    checksum_ref = []
+
+    # initi merge groups with clusters of size 2
+    merge_groups = {'level-0': []}
+    for _, merge in merge_df.iterrows():
+        nname1 = "%s_nid-%d" % (merge['nest1-roiname'], merge['nest1-nid'])
+        nname2 = "%s_nid-%d" % (merge['nest2-roiname'], merge['nest2-nid'])
+        merge_groups['level-0'].append([nname1, nname2])
+        checksum_ref.extend([nname1, nname2])
+    checksum_ref = len(list(set(checksum_ref)))
+
+    # go through levels
+    level = 0
+    keep_going = True
+    while keep_going:
+        _print("%s: level %d" % (monitorPrefix, level))
+        merge_groups['level-%d' % (level+1)] = []
+        reference = merge_groups['level-%d' % (level)].copy()
+        # compare each cluster to the others in current level
+        for gid, mgroup in enumerate(merge_groups['level-%d' % (level)]):
+            for gid2, mgroup2 in enumerate(reference):
+                mgroupSet = set(mgroup)
+                mgroup2Set = set(mgroup2)
+                # if there's anything in common between the two clusters
+                # (assuming they're not the same cluster of course)
+                # then merge them and move them to the next level in the
+                # hierarchy and remove them both from this level
+                if (gid != gid2) and (
+                        len(mgroupSet.intersection(mgroup2Set)) > 0):
+                    merge_groups['level-%d' % (level+1)].append(
+                            list(mgroupSet.union(set(mgroup2Set))))
+                    reference[gid] = []
+                    reference[gid2] = []
+        # cleanup
+        merge_groups['level-%d' % (level)] = [
+                j for j in reference if len(j) > 0]
+        if len(merge_groups['level-%d' % (level+1)]) < 1:
+            del merge_groups['level-%d' % (level+1)]
+            keep_going = False
+        level += 1
+
+    # now just concatenate all hierarchical levels together
+    merge_clusters = []
+    for _, mg in merge_groups.items():
+        if len(mg) > 0:
+            merge_clusters.extend(mg)
+
+    # sanity check
+    checksum = np.sum([len(j) for j in merge_clusters])
+    assert checksum == checksum_ref, \
+        "checksum fail! not every value is assigned exactly one cluster."
+
+    return merge_clusters
 
 # %%===========================================================================
 # Constants & prep work
@@ -345,7 +411,8 @@ merge_df = _get_merge_df(roiinfos=roiinfos, shared_edges=shared_edges)
 
 # %%
 
-
+# get clusters of polygons to merge
+merge_clusters = _get_merge_clusters_from_df(merge_df)
 
 
 
