@@ -81,6 +81,7 @@ setup(
         # large image sources
         'large-image-source-tiff',
         'large-image-source-openslide',
+        'large-image-source-ometiff',
         'large-image-source-pil',
     ],
     license='Apache Software License 2.0',
