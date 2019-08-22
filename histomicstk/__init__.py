@@ -9,6 +9,7 @@ from . import segmentation  # must be imported before features
 from . import features
 from . import filters
 from . import preprocessing
+from . import annotations_and_masks
 
 # list out things that are available for public use
 __all__ = (
@@ -19,4 +20,5 @@ __all__ = (
     'preprocessing',
     'segmentation',
     'utils',
+    'annotations_and_masks',
 )
