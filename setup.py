@@ -84,6 +84,7 @@ setup(
         # large image sources
         'large-image-source-tiff',
         'large-image-source-openslide',
+        'large-image-source-ometiff',
         'large-image-source-pil',
         # for interaction with girder
         'girder_client',

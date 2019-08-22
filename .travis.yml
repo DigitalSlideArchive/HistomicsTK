@@ -67,7 +67,7 @@ before_install:
     - mkdir -p $HOME/.cache/node_modules || true
     - ln -sf $HOME/.cache/node_modules .
     - nvm install v8
-    - npm install -g npm
+    - npm install -g npm@6.10.3
     - npm install -g npm-install-retry
     - npm --version
     - npm prune
