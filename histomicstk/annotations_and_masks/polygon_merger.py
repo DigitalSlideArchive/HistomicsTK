@@ -9,6 +9,7 @@ import numpy as np
 from pandas import DataFrame, concat
 import cv2
 from shapely.geometry.polygon import Polygon
+from shapely.ops import cascaded_union
 from PIL import Image
 from imageio import imread
 from masks_to_annotations_handler import (
@@ -269,14 +270,15 @@ def _get_merge_pairs(
 # %% =====================================================================
 
 
-def _get_merge_df(roiinfos, shared_edges, monitorPrefix="", verbose=True):
+def _get_merge_df(
+        roiinfos, shared_edges, thresh=3, monitorPrefix="", verbose=True):
     """Get merge dataframe (pairs along shared edges)."""
     merge_df = DataFrame()
     for rpno, edgepair in shared_edges.iterrows():
         edgepair = dict(edgepair)
         to_merge = _get_merge_pairs(
             edge_contours, edgepair, group, roiinfos,
-            thresh=3, verbose=verbose,
+            thresh=thresh, verbose=verbose,
             monitorPrefix="%s: pair %d of %d" % (
                 monitorPrefix, rpno + 1, shared_edges.shape[0]))
         merge_df = concat((merge_df, to_merge), axis=0, ignore_index=True)
@@ -347,7 +349,62 @@ def _get_merge_clusters_from_df(merge_df, monitorPrefix="", verbose=True):
     assert checksum == checksum_ref, \
         "checksum fail! not every value is assigned exactly one cluster."
 
+    # restructure into dicts with roi name, nest id keys for convenience
+    def _parse_to_dict(text):
+        parts = tuple(text.split('_nid-'))
+        return {'roiname': parts[0], 'nid': int(parts[1])}
+    merge_clusters = [[_parse_to_dict(j) for j in cl] for cl in merge_clusters]
+
     return merge_clusters
+
+# %% =====================================================================
+
+
+def _get_merged_polygon(cluster, buffer_size=5):
+    """Merges polygons using shapely.
+
+    Given a single cluster from _get_merge_clusters_from_df(), This creates
+    and merges polygons into a single cascaded union. It first dilates the
+    polygons by buffer_size pixels to make them overlap, merges them,
+    then erodes back by buffer_size to get the merged polygon.
+
+    """
+    nest_polygons = []
+    for nestinfo in cluster:
+        nest = dict(edge_contours[nestinfo['roiname']].loc[nestinfo['nid'], :])
+        roitop = roiinfos[nestinfo['roiname']]['top']
+        roileft = roiinfos[nestinfo['roiname']]['left']
+        coords = _parse_annot_coords(nest, x_offset=roileft, y_offset=roitop)
+        nest_polygons.append(Polygon(coords).buffer(buffer_size))
+    merged_polygon = cascaded_union(nest_polygons).buffer(-buffer_size)
+    return merged_polygon
+
+# %% =====================================================================
+
+
+def _get_all_merged_polygons(merge_clusters, buffer_size=5):
+    """Merges polygons using shapely.
+
+    Given a a list of clusters from _get_merge_clusters_from_df(), This creates
+    and merges polygons into a single cascaded union. It first dilates the
+    polygons by buffer_size pixels to make them overlap, merges them,
+    then erodes back by buffer_size to get the merged polygon.
+
+    """
+    merged_polygons = [
+        _get_merged_polygon(cl, buffer_size=buffer_size)
+        for cl in merge_clusters]
+    return merged_polygons
+
+# %% =====================================================================
+
+
+def _get_coord_str_from_polygon(polygon):
+    """Parse shapely polygon coordinates into string form (Internal)."""
+    coords = np.int32(polygon.boundary.coords.xy)
+    coords_x = ",".join([str(j) for j in coords[0, :]])
+    coords_y = ",".join([str(j) for j in coords[1, :]])
+    return coords_x, coords_y
 
 # %%===========================================================================
 # Constants & prep work
@@ -381,6 +438,7 @@ maskpaths = [
 
 verbose = True
 monitorPrefix = ""
+merge_thresh = 3
 
 # get contours from all masks, separating edge from non-edge
 # IMPORTANT -- ignore roi boundary but keep background
@@ -406,16 +464,17 @@ group = 'mostly_tumor'
 # %%
 
 # get pairs of contours to merge
-merge_df = _get_merge_df(roiinfos=roiinfos, shared_edges=shared_edges)
+merge_df = _get_merge_df(
+    roiinfos=roiinfos, shared_edges=shared_edges, thresh=merge_thresh)
 
 # get clusters of polygons to merge
 merge_clusters = _get_merge_clusters_from_df(merge_df)
 
+# fetch merged polygons
+merged_polygons = _get_all_merged_polygons(
+    merge_clusters, buffer_size=merge_thresh + 3)
 
 
 
 
-
-
-
-
+#%%

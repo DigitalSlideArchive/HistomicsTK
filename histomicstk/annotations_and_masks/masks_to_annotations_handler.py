@@ -208,10 +208,10 @@ def _get_contours_df(
 # %% =====================================================================
 
 
-def _parse_annot_coords(annot):
+def _parse_annot_coords(annot, x_offset=0, y_offset=0):
     """Get x-, y- coordinates in a list format (Internal)."""
-    coords_x = [int(j) for j in annot['coords_x'].split(',')]
-    coords_y = [int(j) for j in annot['coords_y'].split(',')]
+    coords_x = [int(j) + x_offset for j in annot['coords_x'].split(',')]
+    coords_y = [int(j) + y_offset for j in annot['coords_y'].split(',')]
     coords = [(coords_x[i], coords_y[i]) for i in range(len(coords_x))]
     return coords
 
