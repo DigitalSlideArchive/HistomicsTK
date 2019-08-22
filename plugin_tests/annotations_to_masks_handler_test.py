@@ -5,53 +5,44 @@ Created on Mon Aug 12 18:47:34 2019.
 @author: tageldim
 """
 
-import unittest
-
-from builtins import FileExistsError
 import os
-import girder_client
+import shutil
+import tempfile
 from pandas import read_csv
 from imageio import imread
+
+from tests import base
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois)
 from histomicstk.annotations_and_masks.annotations_to_masks_handler import (
     get_roi_mask, get_all_roi_masks_for_slide)
 
+from .girder_client_common import GirderClientTestCase, GTCODE_PATH
+
+
+# boiler plate to start and stop the server
+
+def setUpModule():
+    base.enabledPlugins.append('HistomicsTK')
+    base.startServer(False)
+
+
+def tearDownModule():
+    base.stopServer()
+
+
 # %%===========================================================================
 # Constants & prep work
 # =============================================================================
 
-# APIURL = 'http://demo.kitware.com/histomicstk/api/v1/'
-# SAMPLE_SLIDE_ID = '5bbdee92e629140048d01b5d'
-APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-SAMPLE_SLIDE_ID = '5d586d57bd4404c6b1f28640'
-GTCODE_PATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    'test_files', 'sample_GTcodes.csv')
-MASK_SAVEPATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), '..',
-    '..', 'roi_masks')
 
-try:
-    os.mkdir(MASK_SAVEPATH)
-except FileExistsError:
-    pass
-
-
-gc = girder_client.GirderClient(apiUrl=APIURL)
-# gc.authenticate(interactive=True)
-gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
-
-# %%===========================================================================
-
-
-class GetROIMasksTest(unittest.TestCase):
+class GetROIMasksTest(GirderClientTestCase):
     """Test methods for getting ROI mask from annotations."""
 
     def test_get_roi_mask(self):
         """Test get_roi_mask()."""
-        slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
+        slide_annotations = self.gc.get('/annotation/item/' + self.wsiFile['itemId'])
         element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 
         # read ground truth codes and information
@@ -75,15 +66,16 @@ class GetROIMasksTest(unittest.TestCase):
             roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH'],
             roiinfo['XMIN'], roiinfo['XMAX'],
             roiinfo['YMIN'], roiinfo['YMAX']),
-            (4820, 7006, 59206, 66212, 33505, 38325))
+            (4595, 4543, 59206, 63749, 33505, 38100))
 
     # %% ----------------------------------------------------------------------
 
     def test_get_all_roi_masks_for_slide(self):
         """Test get_all_roi_masks_for_slide()."""
+        mask_savepath = tempfile.mkdtemp()
         get_all_roi_masks_for_slide(
-            gc=gc, slide_id=SAMPLE_SLIDE_ID, GTCODE_PATH=GTCODE_PATH,
-            MASK_SAVEPATH=MASK_SAVEPATH,
+            gc=self.gc, slide_id=self.wsiFile['itemId'], GTCODE_PATH=GTCODE_PATH,
+            MASK_SAVEPATH=mask_savepath,
             get_roi_mask_kwargs={
                 'iou_thresh': 0.0, 'crop_to_roi': True, 'use_shapely': True,
                 'verbose': True},
@@ -94,12 +86,7 @@ class GetROIMasksTest(unittest.TestCase):
         expected_savename = 'TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D'
         expected_savename += '-7F0A2ECA0F39_left-%d_top-%d_mag-BASE.png' % (
             left, top)
-        ROI = imread(os.path.join(MASK_SAVEPATH, expected_savename))
+        ROI = imread(os.path.join(mask_savepath, expected_savename))
 
         self.assertTupleEqual(ROI.shape, (4594, 4542))
-
-# %%===========================================================================
-
-
-if __name__ == '__main__':
-    unittest.main()
+        shutil.rmtree(mask_savepath)

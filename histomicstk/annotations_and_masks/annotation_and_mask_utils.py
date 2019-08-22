@@ -12,7 +12,7 @@ from shapely.geometry.polygon import Polygon
 import numpy as np
 from pandas import DataFrame
 
-Image.MAX_IMAGE_PIXELS = 1000000000
+Image.MAX_IMAGE_PIXELS = None
 
 # %%===========================================================================
 
@@ -33,7 +33,6 @@ def get_image_from_htk_response(resp):
     """
     image_content = BytesIO(resp.content)
     image_content.seek(0)
-    Image.open(image_content)
     image = Image.open(image_content)
     return np.uint8(image)
 
