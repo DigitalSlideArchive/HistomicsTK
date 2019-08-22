@@ -20,8 +20,10 @@ add_standard_plugin_tests(NO_CLIENT_TESTS NO_SERVER_TESTS)
 function(add_histomicstk_python_test case)
   add_python_test("${case}" PLUGIN HistomicsTK
     COVERAGE_PATHS "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/histomicstk"
+    DBNAME "server_HTK.${case}"
     ${ARGN}
   )
+  set(server_port ${server_port} PARENT_SCOPE)
 endfunction()
 
 # style tests
@@ -156,6 +158,19 @@ add_histomicstk_python_test(cli_results
     "CLI_CWD=${CMAKE_CURRENT_LIST_DIR}/histomicstk/cli"
     EXTERNAL_DATA
     "plugins/HistomicsTK/TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7-crop.tif"
+)
+
+add_histomicstk_python_test(annotation_and_mask_utils BIND_SERVER
+  EXTERNAL_DATA
+  "plugins/HistomicsTK/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs"
+  "plugins/HistomicsTK/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs_annotations.json"
+)
+
+add_histomicstk_python_test(annotations_to_masks_handler BIND_SERVER
+  # Work around CMake bug when using the same image multiple times
+  # EXTERNAL_DATA
+  # "plugins/HistomicsTK/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs"
+  # "plugins/HistomicsTK/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs_annotations.json"
 )
 
 # front-end tests

@@ -96,3 +96,62 @@ Before you submit a pull request, check that it meets these guidelines:
 3. The pull request should work for Python 2.6, 2.7, and for PyPy. Check
    https://travis-ci.org/DigitalSlideArchive/HistomicsTK/pull_requests
    and make sure that the tests pass for all supported Python versions.
+
+Travis Integration Notes
+----------------------------
+
+When you submit a pull request to merge your branch with master, it will be
+automatically submitted to Travis CI for continuous integration. In plain
+English, your new branch will be tested to make sure it complies with the
+standardized coding and documentation style of this repo. If you'd like
+to help the organizers integrate your changes seamlessly, check to see
+if the travis CI was passed. Otherwise, examine for errors and see if you
+can get them fixed. Oftentimes, the errors originate from code and docstring
+formatting and/or integration of jupyter notebooks into the documentaion
+examples. Here are some pointers to help you handle some of these issues:
+
+* Consider using ``flake8`` package to check if you comply with the
+  formatting standard. HistomicsTK uses PEP8 standard with some options
+  turned off. The ``flake8`` parameters we use can be found in:
+  https://github.com/girder/girder/blob/2.x-maintenance/setup.cfg
+
+  For example::
+
+  $ flake8 your_python_file.py
+
+  You can find ``flake8`` at: http://flake8.pycqa.org/en/latest/
+
+  If you like using Vim editor, there is a tool to integrate ``flake8``
+  with Vim for easy correction of errors at: https://github.com/nvie/vim-flake8
+
+* If your text editor does not already have this feature, consider using the
+  package ``autopep8`` to comply with PEP8 standard: https://github.com/hhatto/autopep8 .
+  for example::
+
+  $ autopep8 --in-place --aggressive your_python_file.py
+
+* Consider using ``pydocstyle`` to check if you comply with the PEP257
+  standard for docstrings: https://github.com/PyCQA/pydocstyle . For example::
+
+  $ pydocstyle your_python_file.py
+
+* If your text editor does not already do this, consider using ``docformatter``
+  to fix docstrings to standard: https://pypi.org/project/docformatter/ . For
+  example::
+
+  $ docformatter --in-place --pre-summary-newline --blank your_python_file.py
+
+* If you added new functionality, consider adding the documentation under
+  ``doc`` in the form of rst files. Also consider creating Jupyter
+  Notebooks to showcase functionality under ``doc/examples/``. The documentation
+  is automatically generated using ``sphinx`` when you push your pull request and
+  it gets submitted for travis integration. If you added documentation, consider
+  checking if ``sphinx`` throws errors offline. you may install it from:
+  https://www.sphinx-doc.org/en/master/index.html
+  create a folder for the generated documentation to be saved, let's say
+  ``~/HistomicsTK_test_build/`` . Then you may run something like::
+
+  $ cd HistomicsTK
+  $ sphinx-build ./docs/ ~/HistomicsTK_test_build/ 2>&1 | tee out.log
+
+  Then you may check the file ``out.log`` for build errors.
