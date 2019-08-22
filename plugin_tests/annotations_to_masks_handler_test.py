@@ -8,15 +8,12 @@ Created on Mon Aug 12 18:47:34 2019.
 import os
 import shutil
 import tempfile
-from pandas import read_csv
 from imageio import imread
 
 from tests import base
 
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    get_bboxes_from_slide_annotations, _get_idxs_for_all_rois)
 from histomicstk.annotations_and_masks.annotations_to_masks_handler import (
-    get_roi_mask, get_all_roi_masks_for_slide)
+    get_all_roi_masks_for_slide)
 
 from .girder_client_common import GirderClientTestCase, GTCODE_PATH
 
