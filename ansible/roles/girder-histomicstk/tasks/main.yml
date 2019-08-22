@@ -15,7 +15,7 @@
   become: true
 
 - name: NodeJS | Update npm
-  command: "npm install -g npm@latest"
+  command: "npm install -g npm@6.10.3"
   become: true
 
 - name: Install system package dependencies
