@@ -103,14 +103,14 @@ Unit Testing Notes
 HistomicsTK can be used in two ways: as a pure python package and as a server-side
 plugin, there are two 'modes' of testing. 
 
-* __Ordinary unit testing__:
+* Ordinary unit testing:
 
   If your newly added method/function does not need to run on the server side
   feel free to use python's ``unittest`` module to create unit tests that
   ensure that your method works when used as a stand-alone python package.
   Use the standard ``your_python_file_test.py`` naming convention.
 
-* __Server side testing__ :
+* Server side testing:
 
   If your newly added method/function uses girder and is meant to be run
   on the server side, you will need to have unit tests that run on the
