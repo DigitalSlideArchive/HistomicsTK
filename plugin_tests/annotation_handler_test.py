@@ -17,9 +17,6 @@
 #  limitations under the License.
 #############################################################################
 
-# This is to serve as an example for how to create a server-side test in a
-# girder plugin, it is not meant to be useful.
-
 import json
 
 from girder import events
@@ -39,7 +36,7 @@ def tearDownModule():
 
 class AnnotationHandlerTest(base.TestCase):
 
-    def testHandleAnntation(self):
+    def testHandleAnnotation(self):
         admin = self.model('user').findOne({'login': 'admin'})
         item = self.model('item').findOne({'name': 'Item 1'})
         file1 = self.model('file').findOne({'name': 'File 1'})
