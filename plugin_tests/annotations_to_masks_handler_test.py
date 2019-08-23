@@ -15,7 +15,7 @@ from tests import base
 from histomicstk.annotations_and_masks.annotations_to_masks_handler import (
     get_all_roi_masks_for_slide)
 
-from girder_client_common import GirderClientTestCase, GTCODE_PATH
+from .girder_client_common import GirderClientTestCase, GTCODE_PATH
 
 
 # boiler plate to start and stop the server

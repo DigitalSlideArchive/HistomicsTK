@@ -10,7 +10,7 @@ from tests import base
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response, get_bboxes_from_slide_annotations)
 
-from girder_client_common import GirderClientTestCase
+from .girder_client_common import GirderClientTestCase
 
 
 # boiler plate to start and stop the server
