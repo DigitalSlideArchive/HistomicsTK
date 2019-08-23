@@ -17,4 +17,5 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Mohamed Amgad <mtageld@emory.edu>
+* You! Why not contribute?
