@@ -14,7 +14,8 @@ from shapely.ops import cascaded_union
 from PIL import Image
 from imageio import imread
 from masks_to_annotations_handler import (
-    Conditional_Print, get_contours_from_mask, _parse_annot_coords, )
+    Conditional_Print, get_contours_from_mask, _parse_annot_coords,
+    _discard_nonenclosed_background_group)
 
 
 # %% =====================================================================
@@ -43,6 +44,8 @@ class Polygon_merger(object):
                 vertix x coordinates comma-separated values
             coords_y
                 vertix y coordinated comma-separated values
+            color: str
+                rgb format. eg. rgb(255,0,0).
         merge_thresh : int
             how close do the polygons need to be (in pixels) to be merged
         contkwargs : dict
@@ -445,7 +448,7 @@ class Polygon_merger(object):
 
     # %% =====================================================================
 
-    def _get_all_merged_polygons(self, merge_clusters):
+    def _get_all_merged_polygons(self, merge_clusters, monitorPrefix=""):
         """Merges polygons using shapely.
 
         Given a a list of clusters from _get_merge_clusters_from_df(). Creates
@@ -455,7 +458,9 @@ class Polygon_merger(object):
 
         """
         merged_polygons = []
-        for cl in merge_clusters:
+        for cid, cl in enumerate(merge_clusters):
+            self._print("%s: cluster %d of %d" % (
+                monitorPrefix, cid+1, len(merge_clusters)))
             merged_polygon = self._get_merged_polygon(cluster=cl)
             merged_polygons.append(merged_polygon)
         return merged_polygons
@@ -464,10 +469,38 @@ class Polygon_merger(object):
 
     def _get_coord_str_from_polygon(self, polygon):
         """Parse shapely polygon coordinates into string form (Internal)."""
-        coords = np.int32(polygon.boundary.coords.xy)
+        # outer_contour_idx = np.argmax([j.length for j in polygon.boundary])
+        # outer_contour = polygon.boundary[outer_contour_idx]
+        # coords = np.int32(outer_contour.coords.xy)
+        coords = np.int32(polygon.exterior.coords.xy)
         coords_x = ",".join([str(j) for j in coords[0, :]])
         coords_y = ",".join([str(j) for j in coords[1, :]])
         return coords_x, coords_y
+
+    # %% =====================================================================
+
+    def _add_single_merged_edge_contour(self, polygon):
+        idx = self.merged_contours.shape[0]
+        self.merged_contours.loc[idx, 'group'] = group
+        self.merged_contours.loc[idx, 'color'] = self.GTCodes_df.loc[
+            group, 'color']
+        coords_x, coords_y = self._get_coord_str_from_polygon(polygon)
+        self.merged_contours.loc[idx, 'coords_x'] = coords_x
+        self.merged_contours.loc[idx, 'coords_y'] = coords_y
+
+    # %% =====================================================================
+
+    def _add_merged_edge_contours(
+            self, merged_polygons, group, monitorPrefix=""):
+        """Add merged polygons to self.merged_contours dataframe."""
+        for pno, geometry in enumerate(merged_polygons):
+            self._print("%s: contour %d of %d" % (
+                monitorPrefix, pno+1, len(merged_polygons)))
+            if geometry.type == 'MultiPolygon':
+                for polygon in geometry:
+                    self._add_single_merged_edge_contour(polygon)
+            else:
+                self._add_single_merged_edge_contour(geometry)
 
     # %% =====================================================================
 
@@ -480,6 +513,51 @@ class Polygon_merger(object):
                 nids.extend(list(merge_df.loc[merge_df.loc[
                     :, neststr + '-roiname'] == roiname, neststr + '-nid']))
             self.edge_contours[roiname].drop(nids, axis=0, inplace=True)
+
+    # %% =====================================================================
+
+    def _add_roi_offset_to_contours(self, roi_df, roiname):
+        """add roi offset to coordinates of polygons."""
+        for idx, annot in roi_df.iterrows():
+            coords = np.int32(_parse_annot_coords(dict(annot)))
+            coords[:, 0] = coords[:, 0] + self.roiinfos[roiname]['left']
+            coords[:, 1] = coords[:, 1] + self.roiinfos[roiname]['top']
+            roi_df.loc[idx, 'coords_x'] = ",".join(
+                [str(j) for j in coords[:, 0]])
+            roi_df.loc[idx, 'coords_y'] = ",".join(
+                [str(j) for j in coords[:, 1]])
+        return roi_df
+
+    # %% =====================================================================
+
+    def get_concatenated_contours(self):
+        """Get concatenated contours and overall bounding box."""
+        # concatenate all contours
+        all_contours = self.merged_contours.copy()
+        for contours_dict in [self.edge_contours, self.ordinary_contours]:
+            for roiname, roi_df in contours_dict.items():
+                roi_df = self._add_roi_offset_to_contours(
+                    roi_df=roi_df, roiname=roiname)
+                all_contours = concat(
+                    (all_contours, roi_df), axis=0, ignore_index=True)
+
+        # add overall bounding box contour
+        idx = all_contours.shape[0]
+        top = str(int(np.min([j['top'] for _, j in self.roiinfos.items()])))
+        bottom = str(int(
+            np.max([j['bottom'] for _, j in self.roiinfos.items()])))
+        left = str(int(np.min([j['left'] for _, j in self.roiinfos.items()])))
+        right = str(int(
+            np.max([j['right'] for _, j in self.roiinfos.items()])))
+        all_contours.loc[idx, 'group'] = 'roi'
+        all_contours.loc[idx, 'color'] = self.GTCodes_df.loc['roi', 'color']
+        all_contours.loc[idx, 'coords_x'] = ",".join(
+                [left, right, right, left, left])
+        all_contours.loc[idx, 'coords_y'] = ",".join(
+                [top, top, bottom, bottom, top])
+
+        return all_contours
+
 
 # %%===========================================================================
 # Constants & prep work
@@ -517,29 +595,56 @@ pm.get_roi_bboxes()
 pm._get_shared_roi_edges()
 
 # %%
-group = 'mostly_tumor'
+for group in pm.GTCodes_df.index:
+
+    monitorPrefix = "%s: %s" % (pm.monitorPrefix, group)
+
+    # get pairs of contours to merge
+    merge_df = pm._get_merge_df(
+        group=group, monitorPrefix="%s: _get_merge_df" % monitorPrefix)
+
+    # get clusters of polygons to merge
+    merge_clusters = pm._get_merge_clusters_from_df(
+        merge_df=merge_df,
+        monitorPrefix="%s: _get_merge_clusters_from_df" % monitorPrefix)
+
+    # fetch merged polygons
+    merged_polygons = pm._get_all_merged_polygons(
+        merge_clusters=merge_clusters,
+        monitorPrefix="%s: _get_all_merged_polygons" % monitorPrefix)
+
+    # add medged contours to dataframe
+    pm._add_merged_edge_contours(
+        merged_polygons=merged_polygons, group=group,
+        monitorPrefix="%s: _add_merged_edge_contours" % monitorPrefix)
+
+    # drop merged edge contours from edge dataframes
+    pm._print("%s: _drop_merged_edge_contours" % monitorPrefix)
+    pm._drop_merged_edge_contours(merge_df=merge_df)
 
 # %%
 
-# get pairs of contours to merge
-merge_df = pm._get_merge_df(group=group)
-
-# get clusters of polygons to merge
-merge_clusters = pm._get_merge_clusters_from_df(merge_df=merge_df)
-
-# fetch merged polygons
-merged_polygons = pm._get_all_merged_polygons(merge_clusters=merge_clusters)
-
-# drop merged edge contours from edge dataframes
-pm._drop_merged_edge_contours(merge_df=merge_df)
-
+all_contours = pm.get_concatenated_contours()
 
 # %%
-#
-#
-#
-#
-#
-#
-#
-#
+
+from masks_to_annotations_handler import get_annotation_documents_from_contours
+
+# deleting existing annotations in target slide (if any)
+existing_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
+for ann in existing_annotations:
+    gc.delete('/annotation/%s' % ann['_id'])
+
+# get list of annotation documents
+annotation_docs = get_annotation_documents_from_contours(
+    all_contours.copy(), separate_docs_by_group=True,
+    docnamePrefix='test',
+    verbose=False, monitorPrefix=SAMPLE_SLIDE_ID + ": annotation docs")
+
+# post annotations to slide -- make sure it posts without errors
+for annotation_doc in annotation_docs:
+    resp = gc.post(
+        "/annotation?itemId=" + SAMPLE_SLIDE_ID, json=annotation_doc)
+
+
+
