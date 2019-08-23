@@ -5,9 +5,10 @@ Created on Wed Aug 21 16:25:06 2019
 @author: tageldim
 """
 
+import os
 import numpy as np
 from pandas import DataFrame, concat
-import cv2
+# import cv2
 from shapely.geometry.polygon import Polygon
 from shapely.ops import cascaded_union
 from PIL import Image
@@ -15,52 +16,93 @@ from imageio import imread
 from masks_to_annotations_handler import (
     Conditional_Print, get_contours_from_mask, _parse_annot_coords, )
 
+
 # %% =====================================================================
 
+class Polygon_merger(object):
 
-def get_contours_from_all_masks(maskpaths, contkwargs):
-    """Get contours_df from all masks.
+    def __init__(self, maskpaths, GTCodes_df, **kwargs):
 
-    This is a wrapper around get_contours_from_mask(), with the added
-    functionality of separating out contorus at roi edge from those that
-    are not.
+        self.maskpaths = maskpaths
+        self.GTCodes_df = GTCodes_df
 
-    Arguments:
-    -----------
-    maskpaths : list
-        list of strings representing pathos to masks
-    contkwargs : dict
-        dictionary of kwargs to pass to get_contours_from_mask()
+        # see: https://stackoverflow.com/questions/8187082/how-can-you-set-...
+        # class-attributes-from-variable-arguments-kwargs-in-python
+        default_attr = {
+            'verbose': True,
+            'monitorPrefix': "",
+            'merge_thresh': 3,
+            'contkwargs': {
+                'GTCodes_df': GTCodes_df,
+                'get_roi_contour': False,  # important
+                'discard_nonenclosed_background': False,  # important
+                'MIN_SIZE': 2,
+                'MAX_SIZE': None,
+                'verbose': True,
+            },
+        }
+        more_allowed_attr = ['', ]
+        allowed_attr = list(default_attr.keys()) + more_allowed_attr
+        default_attr.update(kwargs)
+        self.__dict__.update(
+            (k, v) for k, v in default_attr.items() if k in allowed_attr)
 
-    Returns:
-    ---------
-    dict
-        indexed by maskname, each entry is a contours dataframe
+        # To NOT silently ignore rejected keys
+        rejected_keys = set(kwargs.keys()) - set(allowed_attr)
+        if rejected_keys:
+            raise ValueError(
+                "Invalid arguments in constructor:{}".format(rejected_keys))
 
-    """
+        # some sanity checks
+        assert not (
+            self.contkwargs['get_roi_contour']
+            or self.contkwargs['discard_nonenclosed_background'])
 
-    ordinary_contours = dict()
-    edge_contours = dict()
+    # %% =====================================================================
 
-    for midx, maskpath in enumerate(maskpaths):
+    def get_contours_from_all_masks(self):
+        """Get contours_df from all masks.
 
-        # extract contours
-        MASK = imread(maskpath)
-        contours_df = get_contours_from_mask(
-            MASK=MASK, monitorPrefix="mask %d of %d" % (midx, len(maskpaths)),
-            **contkwargs)
+        This is a wrapper around get_contours_from_mask(), with the added
+        functionality of separating out contorus at roi edge from those that
+        are not.
 
-        # separate edge from non-edge contours
-        edgeids = []
-        for edge in ['top', 'left', 'bottom', 'right']:
-            edgeids.extend(list(contours_df.loc[contours_df.loc[
-                :, 'touches_edge-%s' % edge] == 1, :].index))
-        edgeids = list(set(edgeids))
-        roiname = os.path.split(maskpath)[1]
-        edge_contours[roiname] = contours_df.loc[edgeids, :].copy()
-        ordinary_contours[roiname] = contours_df.drop(edgeids, axis=0)
+        Arguments:
+        -----------
+        maskpaths : list
+            list of strings representing pathos to masks
+        contkwargs : dict
+            dictionary of kwargs to pass to get_contours_from_mask()
 
-    return ordinary_contours, edge_contours
+        Returns:
+        ---------
+        dict
+            indexed by maskname, each entry is a contours dataframe
+
+        """
+        ordinary_contours = dict()
+        edge_contours = dict()
+
+        for midx, maskpath in enumerate(self.maskpaths):
+
+            # extract contours
+            MASK = imread(maskpath)
+            contours_df = get_contours_from_mask(
+                MASK=MASK,
+                monitorPrefix="mask %d of %d" % (midx, len(self.maskpaths)),
+                **self.contkwargs)
+
+            # separate edge from non-edge contours
+            edgeids = []
+            for edge in ['top', 'left', 'bottom', 'right']:
+                edgeids.extend(list(contours_df.loc[contours_df.loc[
+                    :, 'touches_edge-%s' % edge] == 1, :].index))
+            edgeids = list(set(edgeids))
+            roiname = os.path.split(maskpath)[1]
+            edge_contours[roiname] = contours_df.loc[edgeids, :].copy()
+            ordinary_contours[roiname] = contours_df.drop(edgeids, axis=0)
+
+        return ordinary_contours, edge_contours
 
 # %% =====================================================================
 
@@ -271,14 +313,15 @@ def _get_merge_pairs(
 
 
 def _get_merge_df(
-        roiinfos, shared_edges, thresh=3, monitorPrefix="", verbose=True):
+        roiinfos, shared_edges, edge_contours, group,
+        thresh=3, monitorPrefix="", verbose=True):
     """Get merge dataframe (pairs along shared edges)."""
     merge_df = DataFrame()
     for rpno, edgepair in shared_edges.iterrows():
         edgepair = dict(edgepair)
         to_merge = _get_merge_pairs(
-            edge_contours, edgepair, group, roiinfos,
-            thresh=thresh, verbose=verbose,
+            edge_contours=edge_contours, edgepair=edgepair, group=group,
+            roiinfos=roiinfos, thresh=thresh, verbose=verbose,
             monitorPrefix="%s: pair %d of %d" % (
                 monitorPrefix, rpno + 1, shared_edges.shape[0]))
         merge_df = concat((merge_df, to_merge), axis=0, ignore_index=True)
@@ -360,7 +403,7 @@ def _get_merge_clusters_from_df(merge_df, monitorPrefix="", verbose=True):
 # %% =====================================================================
 
 
-def _get_merged_polygon(cluster, buffer_size=5):
+def _get_merged_polygon(cluster, edge_contours, roiinfos, buffer_size=5):
     """Merges polygons using shapely.
 
     Given a single cluster from _get_merge_clusters_from_df(), This creates
@@ -382,7 +425,8 @@ def _get_merged_polygon(cluster, buffer_size=5):
 # %% =====================================================================
 
 
-def _get_all_merged_polygons(merge_clusters, buffer_size=5):
+def _get_all_merged_polygons(
+        merge_clusters, edge_contours, roiinfos, buffer_size=5):
     """Merges polygons using shapely.
 
     Given a a list of clusters from _get_merge_clusters_from_df(), This creates
@@ -391,9 +435,12 @@ def _get_all_merged_polygons(merge_clusters, buffer_size=5):
     then erodes back by buffer_size to get the merged polygon.
 
     """
-    merged_polygons = [
-        _get_merged_polygon(cl, buffer_size=buffer_size)
-        for cl in merge_clusters]
+    merged_polygons = []
+    for cl in merge_clusters:
+        merged_polygon = _get_merged_polygon(
+            cluster=cl, edge_contours=edge_contours, roiinfos=roiinfos,
+            buffer_size=buffer_size)
+        merged_polygons.append(merged_polygon)
     return merged_polygons
 
 # %% =====================================================================
@@ -406,75 +453,103 @@ def _get_coord_str_from_polygon(polygon):
     coords_y = ",".join([str(j) for j in coords[1, :]])
     return coords_x, coords_y
 
+# %% =====================================================================
+
+
+def _drop_merged_edge_contours(edge_contours, merge_df):
+    """Drop edge contours that have already been merged (Internal)."""
+    for roiname, edge_df in edge_contours.items():
+        nids = []
+        for rid in [1, 2]:
+            neststr = 'nest%d' % rid
+            nids.extend(list(merge_df.loc[merge_df.loc[
+                :, neststr + '-roiname'] == roiname, neststr + '-nid']))
+        edge_contours[roiname].drop(nids, axis=0, inplace=True)
+    return edge_contours
+
 # %%===========================================================================
 # Constants & prep work
 # =============================================================================
 
-import os
-import girder_client
-from pandas import read_csv
-
-APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-SAMPLE_SLIDE_ID = '5d586d76bd4404c6b1f286ae'
-
-gc = girder_client.GirderClient(apiUrl=APIURL)
-# gc.authenticate(interactive=True)
-gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
-
-# read GTCodes dataframe
-PTESTS_PATH = os.path.join(os.getcwd(), '..', '..', 'plugin_tests')
-GTCODE_PATH = os.path.join(PTESTS_PATH, 'test_files', 'sample_GTcodes.csv')
-GTCodes_df = read_csv(GTCODE_PATH)
-GTCodes_df.index = GTCodes_df.loc[:, 'group']
-
-# This is where masks for adjacent rois are saved
-MASK_LOADPATH = os.path.join(
-    PTESTS_PATH, 'test_files', 'polygon_merger_roi_masks')
-maskpaths = [
-    os.path.join(MASK_LOADPATH, j) for j in os.listdir(MASK_LOADPATH)
-    if j.endswith('.png')]
-
-# %%===========================================================================
-
-verbose = True
-monitorPrefix = ""
-merge_thresh = 3
-
-# get contours from all masks, separating edge from non-edge
-# IMPORTANT -- ignore roi boundary but keep background
-contkwargs = {
-    'GTCodes_df': GTCodes_df,
-    'get_roi_contour': False,
-    'discard_nonenclosed_background': False,
-    'MIN_SIZE': 2,
-    'MAX_SIZE': None,
-    'verbose': verbose,
-}
-ordinary_contours, edge_contours = get_contours_from_all_masks(
-        maskpaths, contkwargs=contkwargs)
-
-# get shared edges between rois
-roiinfos = get_roi_bboxes(maskpaths)
-shared_edges = _get_shared_roi_edges(roiinfos)
-
-# %%
-
-group = 'mostly_tumor'
-
-# %%
-
-# get pairs of contours to merge
-merge_df = _get_merge_df(
-    roiinfos=roiinfos, shared_edges=shared_edges, thresh=merge_thresh)
-
-# get clusters of polygons to merge
-merge_clusters = _get_merge_clusters_from_df(merge_df)
-
-# fetch merged polygons
-merged_polygons = _get_all_merged_polygons(
-    merge_clusters, buffer_size=merge_thresh + 3)
-
-
-
-
-#%%
+#import girder_client
+#from pandas import read_csv
+#
+#APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
+#SAMPLE_SLIDE_ID = '5d586d76bd4404c6b1f286ae'
+#
+#gc = girder_client.GirderClient(apiUrl=APIURL)
+## gc.authenticate(interactive=True)
+#gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
+#
+## read GTCodes dataframe
+#PTESTS_PATH = os.path.join(os.getcwd(), '..', '..', 'plugin_tests')
+#GTCODE_PATH = os.path.join(PTESTS_PATH, 'test_files', 'sample_GTcodes.csv')
+#GTCodes_df = read_csv(GTCODE_PATH)
+#GTCodes_df.index = GTCodes_df.loc[:, 'group']
+#
+## This is where masks for adjacent rois are saved
+#MASK_LOADPATH = os.path.join(
+#    PTESTS_PATH, 'test_files', 'polygon_merger_roi_masks')
+#maskpaths = [
+#    os.path.join(MASK_LOADPATH, j) for j in os.listdir(MASK_LOADPATH)
+#    if j.endswith('.png')]
+#
+## %%===========================================================================
+#
+#verbose = True
+#monitorPrefix = ""
+#merge_thresh = 3
+#
+## get contours from all masks, separating edge from non-edge
+## IMPORTANT -- ignore roi boundary but keep background
+#contkwargs = {
+#    'GTCodes_df': GTCodes_df,
+#    'get_roi_contour': False,
+#    'discard_nonenclosed_background': False,
+#    'MIN_SIZE': 2,
+#    'MAX_SIZE': None,
+#    'verbose': verbose,
+#}
+#ordinary_contours, edge_contours = get_contours_from_all_masks(
+#        maskpaths, contkwargs=contkwargs)
+#
+## init dataframe to save merged contours
+#colnames = edge_contours[list(edge_contours.keys())[0]].columns
+#merged_contours = DataFrame(columns=colnames)
+#
+## get shared edges between rois
+#roiinfos = get_roi_bboxes(maskpaths)
+#shared_edges = _get_shared_roi_edges(roiinfos)
+#
+## %%
+#
+#group = 'mostly_tumor'
+#
+## %%
+#
+## get pairs of contours to merge
+#merge_df = _get_merge_df(
+#    roiinfos=roiinfos, shared_edges=shared_edges,
+#    edge_contours=edge_contours, thresh=merge_thresh)
+#
+## get clusters of polygons to merge
+#merge_clusters = _get_merge_clusters_from_df(merge_df=merge_df)
+#
+## fetch merged polygons
+#merged_polygons = _get_all_merged_polygons(
+#    merge_clusters=merge_clusters, buffer_size=merge_thresh + 3)
+#
+## drop merged edge contours from edge dataframes
+#edge_contours = _drop_merged_edge_contours(
+#    edge_contours=edge_contours, merge_df=merge_df)
+#
+#
+## %%
+#
+#
+#
+#
+#
+#
+#
+#
