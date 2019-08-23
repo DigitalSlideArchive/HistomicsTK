@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Aug 23 17:14:38 2019
+Created on Fri Aug 23 17:14:38 2019.
 
 @author: tageldim
 """
@@ -28,7 +28,8 @@ gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 # read GTCodes dataframe
 PTESTS_PATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), '..', '..', 'plugin_tests')
+    os.path.dirname(os.path.realpath(__file__)), '..', '..',
+    '..', 'plugin_tests')
 GTCODE_PATH = os.path.join(PTESTS_PATH, 'test_files', 'sample_GTcodes.csv')
 GTCodes_df = read_csv(GTCODE_PATH)
 GTCodes_df.index = GTCodes_df.loc[:, 'group']
