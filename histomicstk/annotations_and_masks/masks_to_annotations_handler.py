@@ -243,31 +243,34 @@ def _discard_nonenclosed_background_group(
     contours_with_holes = contours_with_holes.loc[
         contours_with_holes.loc[:, "has_holes"] == 1, :]
 
-    # to avoid redoing things, keep all non-background with holes in a list
-    contour_polygons = []
-    for tid, tnest in contours_with_holes.iterrows():
+    def _append_polygon_if_valid(contDict, cid, polygon_list):
         try:
-            contour_polygons.append(Polygon(_parse_annot_coords(tnest)))
+            polygon = Polygon(_parse_annot_coords(contDict))
+            if polygon.is_valid:
+                polygon_list.append(polygon)
         except Exception as e:
             _print("%s: contour %d: Shapely Error (below) -- IGNORED!" % (
-                monitorPrefix, tid))
+                monitorPrefix, cid))
             _print(e)
+        return polygon_list
+
+    # to avoid redoing things, keep all non-background with holes in a list
+    contour_polygons = []
+    for cid, cont in contours_with_holes.iterrows():
+        contour_polygons = _append_polygon_if_valid(
+            dict(cont), cid=cid, polygon_list=contour_polygons)
 
     # iterate through stromal polygons and find if enclosed within something
     discard_cids = []
     for cid, cont in background.iterrows():
-        try:
-            background_polygon = Polygon(_parse_annot_coords(cont))
-        except Exception as e:
-            _print(
-                "%s: bckgrnd contour %d: Shapely Error (below) -- IGNORED!"
-                % (monitorPrefix, cid))
-            _print(e)
-        # only keep if enclosed with a tumor polygon
+        bck_list = _append_polygon_if_valid(
+            dict(cont), cid=cid, polygon_list=[])
+        # only keep if enclosed with another contour
         discard = True
-        for contour_polygon in contour_polygons:
-            if contour_polygon.contains(background_polygon):
-                discard = False
+        if len(bck_list) > 0:
+            for contour_polygon in contour_polygons:
+                if contour_polygon.contains(bck_list[0]):
+                    discard = False
         if discard:
             discard_cids.append(cid)
 

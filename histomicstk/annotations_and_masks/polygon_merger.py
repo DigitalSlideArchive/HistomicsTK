@@ -50,8 +50,26 @@ class Polygon_merger(object):
             how close do the polygons need to be (in pixels) to be merged
         contkwargs : dict
             dictionary of kwargs to pass to get_contours_from_mask()
-        verbose : bool
-            Print progress to screen?
+        discard_nonenclosed_background : bool
+            If a background group contour is NOT fully enclosed, discard it.
+            This is a purely aesthetic method, makes sure that the background
+            contours (eg stroma) are discarded by default to avoid cluttering
+            the field when posted to DSA for viewing online. The only exception
+            is if they are enclosed within something else (eg tumor), in which
+            case they are kept since they represent holes. This is related to
+            https://github.com/DigitalSlideArchive/HistomicsTK/issues/675
+            WARNING - This is a bit slower since the contours will have to be
+            converted to shapely polygons. It is not noticeable for hundreds of
+            contours, but you will notice the speed difference if you are
+            parsing thousands of contours. Default, for this reason, is False.
+        background_group : str
+            name of bckgrd group in the GT_codes dataframe (eg mostly_stroma)
+        roi_group : str
+            name of roi group in the GT_Codes dataframe (eg roi)
+        verbose : int
+            0 - Do not print to screen
+            1 - Print only key messages
+            2 - Print everything to screen
         monitorPrefix : str
             text to prepend to printed statements
         """
@@ -62,7 +80,7 @@ class Polygon_merger(object):
         # see: https://stackoverflow.com/questions/8187082/how-can-you-set-...
         # class-attributes-from-variable-arguments-kwargs-in-python
         default_attr = {
-            'verbose': True,
+            'verbose': 1,
             'monitorPrefix': "",
             'merge_thresh': 3,
             'contkwargs': {
@@ -71,8 +89,10 @@ class Polygon_merger(object):
                 'discard_nonenclosed_background': False,  # important
                 'MIN_SIZE': 2,
                 'MAX_SIZE': None,
-                'verbose': True,
             },
+            'discard_nonenclosed_background': False,
+            'background_group': 'mostly_stroma',
+            'roi_group': 'roi',
         }
         more_allowed_attr = ['', ]
         allowed_attr = list(default_attr.keys()) + more_allowed_attr
@@ -91,12 +111,14 @@ class Polygon_merger(object):
             self.contkwargs['get_roi_contour']
             or self.contkwargs['discard_nonenclosed_background'])
 
-        self.cpr = Conditional_Print(verbose=self.verbose)
-        self._print = self.cpr._print
+        # verbosity control
+        self.cpr1 = Conditional_Print(verbose=self.verbose > 0)
+        self._print1 = self.cpr._print
+        self.contkwargs['verbose'] = self.verbose > 1
 
     # %% =====================================================================
 
-    def get_contours_from_all_masks(self, monitorPrefix=""):
+    def set_contours_from_all_masks(self, monitorPrefix=""):
         """Get contours_df from all masks.
 
         This is a wrapper around get_contours_from_mask(), with the added
@@ -167,7 +189,7 @@ class Polygon_merger(object):
 
     # %% =====================================================================
 
-    def get_roi_bboxes(self, roi_offsets=None):
+    def set_roi_bboxes(self, roi_offsets=None):
         """Get dictionary of roi bounding boxes.
 
         Arguments:
@@ -217,7 +239,7 @@ class Polygon_merger(object):
 
     # %% =====================================================================
 
-    def _get_shared_roi_edges(self):
+    def set_shared_roi_edges(self):
         """Get shared edges between rois in same slide (Internal)."""
         self.roinames = list(self.roiinfos.keys())
         edgepairs = [
@@ -267,7 +289,7 @@ class Polygon_merger(object):
     # %% =====================================================================
 
     def _get_merge_pairs(self, edgepair, group, monitorPrefix=""):
-        """Get nest dataframes and indices of which ones to merge."""
+        """Get nest dfs and indices of which ones to merge (Internal)."""
 
         def _get_nests_slice(ridx=1):
             Nests = self.edge_contours[edgepair['roi%d-name' % ridx]]
@@ -341,7 +363,7 @@ class Polygon_merger(object):
     # %% =====================================================================
 
     def _get_merge_df(self, group, monitorPrefix=""):
-        """Get merge dataframe (pairs along shared edges)."""
+        """Get merge dataframe (pairs along shared edges) (Internal)."""
         merge_df = DataFrame()
         for rpno, edgepair in self.shared_edges.iterrows():
             edgepair = dict(edgepair)
@@ -355,7 +377,7 @@ class Polygon_merger(object):
     # %% =====================================================================
 
     def _get_merge_clusters_from_df(self, merge_df, monitorPrefix=""):
-        """Assigned each nest to one cluster.
+        """Assign each nest to one cluster (Internal).
 
         That is, such that all nests that are connected to each other are
         in the same cluster. Uses hierarchical-like clustering to do this.
@@ -425,7 +447,7 @@ class Polygon_merger(object):
     # %% =====================================================================
 
     def _get_merged_polygon(self, cluster):
-        """Merges polygons using shapely.
+        """Merges polygons using shapely (Internal).
 
         Given a single cluster from _get_merge_clusters_from_df(), This creates
         and merges polygons into a single cascaded union. It first dilates the
@@ -449,7 +471,7 @@ class Polygon_merger(object):
     # %% =====================================================================
 
     def _get_all_merged_polygons(self, merge_clusters, monitorPrefix=""):
-        """Merges polygons using shapely.
+        """Merges polygons using shapely (Internal).
 
         Given a a list of clusters from _get_merge_clusters_from_df(). Creates
         and merges polygons into a single cascaded union. It first dilates the
@@ -469,9 +491,6 @@ class Polygon_merger(object):
 
     def _get_coord_str_from_polygon(self, polygon):
         """Parse shapely polygon coordinates into string form (Internal)."""
-        # outer_contour_idx = np.argmax([j.length for j in polygon.boundary])
-        # outer_contour = polygon.boundary[outer_contour_idx]
-        # coords = np.int32(outer_contour.coords.xy)
         coords = np.int32(polygon.exterior.coords.xy)
         coords_x = ",".join([str(j) for j in coords[0, :]])
         coords_y = ",".join([str(j) for j in coords[1, :]])
@@ -479,11 +498,14 @@ class Polygon_merger(object):
 
     # %% =====================================================================
 
-    def _add_single_merged_edge_contour(self, polygon):
+    def _add_single_merged_edge_contour(self, polygon, group):
+        """Add single contour to self.merged_contours (Internal)."""
         idx = self.merged_contours.shape[0]
         self.merged_contours.loc[idx, 'group'] = group
         self.merged_contours.loc[idx, 'color'] = self.GTCodes_df.loc[
             group, 'color']
+        self.merged_contours.loc[idx, 'has_holes'] = int(
+                polygon.boundary.geom_type == 'MultiLineString')
         coords_x, coords_y = self._get_coord_str_from_polygon(polygon)
         self.merged_contours.loc[idx, 'coords_x'] = coords_x
         self.merged_contours.loc[idx, 'coords_y'] = coords_y
@@ -492,15 +514,15 @@ class Polygon_merger(object):
 
     def _add_merged_edge_contours(
             self, merged_polygons, group, monitorPrefix=""):
-        """Add merged polygons to self.merged_contours dataframe."""
+        """Add merged polygons to self.merged_contours df (Internal)."""
         for pno, geometry in enumerate(merged_polygons):
             self._print("%s: contour %d of %d" % (
                 monitorPrefix, pno+1, len(merged_polygons)))
             if geometry.type == 'MultiPolygon':
                 for polygon in geometry:
-                    self._add_single_merged_edge_contour(polygon)
+                    self._add_single_merged_edge_contour(polygon, group=group)
             else:
-                self._add_single_merged_edge_contour(geometry)
+                self._add_single_merged_edge_contour(geometry, group=group)
 
     # %% =====================================================================
 
@@ -517,7 +539,7 @@ class Polygon_merger(object):
     # %% =====================================================================
 
     def _add_roi_offset_to_contours(self, roi_df, roiname):
-        """add roi offset to coordinates of polygons."""
+        """add roi offset to coordinates of polygons (Internal)."""
         for idx, annot in roi_df.iterrows():
             coords = np.int32(_parse_annot_coords(dict(annot)))
             coords[:, 0] = coords[:, 0] + self.roiinfos[roiname]['left']
@@ -530,8 +552,53 @@ class Polygon_merger(object):
 
     # %% =====================================================================
 
+    def set_merged_contours(self, monitorPrefix=""):
+        """Go through each group and merge contours.
+
+        Sets:
+        ------
+        self.merged_contours : pandas DataFrame
+            has the same structure as output from get_contours_from_mask().
+        """
+        for group in self.GTCodes_df.index:
+
+            monitorPrefix = "%s: %s" % (monitorPrefix, group)
+
+            # get pairs of contours to merge
+            merge_df = self._get_merge_df(
+                group=group, monitorPrefix="%s: _get_merge_df" % monitorPrefix)
+
+            # get clusters of polygons to merge
+            merge_clusters = self._get_merge_clusters_from_df(
+                merge_df=merge_df,
+                monitorPrefix="%s: _get_merge_clusters_from_df" % (
+                    monitorPrefix))
+
+            # fetch merged polygons
+            merged_polygons = self._get_all_merged_polygons(
+                merge_clusters=merge_clusters,
+                monitorPrefix="%s: _get_all_merged_polygons" % monitorPrefix)
+
+            # add medged contours to dataframe
+            self._add_merged_edge_contours(
+                merged_polygons=merged_polygons, group=group,
+                monitorPrefix="%s: _add_merged_edge_contours" % monitorPrefix)
+
+            # drop merged edge contours from edge dataframes
+            self._print("%s: _drop_merged_edge_contours" % monitorPrefix)
+            self._drop_merged_edge_contours(merge_df=merge_df)
+
+    # %% =====================================================================
+
     def get_concatenated_contours(self):
-        """Get concatenated contours and overall bounding box."""
+        """Get concatenated contours and overall bounding box.
+
+        Returns:
+        ---------
+        pandas DataFrame
+            has the same structure as output from get_contours_from_mask().
+
+        """
         # concatenate all contours
         all_contours = self.merged_contours.copy()
         for contours_dict in [self.edge_contours, self.ordinary_contours]:
@@ -549,7 +616,7 @@ class Polygon_merger(object):
         left = str(int(np.min([j['left'] for _, j in self.roiinfos.items()])))
         right = str(int(
             np.max([j['right'] for _, j in self.roiinfos.items()])))
-        all_contours.loc[idx, 'group'] = 'roi'
+        all_contours.loc[idx, 'group'] = self.roi_group
         all_contours.loc[idx, 'color'] = self.GTCodes_df.loc['roi', 'color']
         all_contours.loc[idx, 'coords_x'] = ",".join(
                 [left, right, right, left, left])
@@ -558,6 +625,45 @@ class Polygon_merger(object):
 
         return all_contours
 
+    # %% =====================================================================
+
+    def run(self):
+        """Run full pipeline to get merged contours.
+
+        Returns:
+        ---------
+        pandas DataFrame
+            has the same structure as output from get_contours_from_mask().
+
+        """
+        self._print(
+            "\n%s: ** Set contours from all masks **\n" % self.monitorPrefix)
+        self.set_contours_from_all_masks(
+            monitorPrefix="%s: set_contours_from_all_masks" %
+            self.monitorPrefix)
+        self._print(
+            "\n%s: ** Set ROI bounding boxes **\n" % self.monitorPrefix)
+        self.set_roi_bboxes()
+        self._print(
+            "\n%s: ** Set shard ROI edges **\n" % self.monitorPrefix)
+        self.set_shared_roi_edges()
+        self._print(
+            "\n%s: ** Set merged contours **\n" % self.monitorPrefix)
+        self.set_merged_contours(
+            monitorPrefix="%s: set_merged_contours" % self.monitorPrefix)
+        self._print(
+            "\n%s: ** Get concatenated contours **\n" % self.monitorPrefix)
+        all_contours = self.get_concatenated_contours()
+        if self.discard_nonenclosed_background:
+            self._print(
+                "\n%s: ** Discard nonenclosed background **\n" %
+                self.monitorPrefix)
+            all_contours = _discard_nonenclosed_background_group(
+                all_contours, background_group=self.background_group,
+                verbose=self.verbose,
+                monitorPrefix="%s: _discard_nonenclosed_background_group" %
+                self.monitorPrefix)
+        return all_contours
 
 # %%===========================================================================
 # Constants & prep work
@@ -589,45 +695,15 @@ maskpaths = [
 
 # %%===========================================================================
 
-pm = Polygon_merger(maskpaths=maskpaths, GTCodes_df=GTCodes_df)
-pm.get_contours_from_all_masks()
-pm.get_roi_bboxes()
-pm._get_shared_roi_edges()
+# init and run polygon merger on masks grid
+pm = Polygon_merger(
+    maskpaths=maskpaths, GTCodes_df=GTCodes_df,
+    discard_nonenclosed_background=True)
+contours_df = pm.run()
+
 
 # %%
-for group in pm.GTCodes_df.index:
-
-    monitorPrefix = "%s: %s" % (pm.monitorPrefix, group)
-
-    # get pairs of contours to merge
-    merge_df = pm._get_merge_df(
-        group=group, monitorPrefix="%s: _get_merge_df" % monitorPrefix)
-
-    # get clusters of polygons to merge
-    merge_clusters = pm._get_merge_clusters_from_df(
-        merge_df=merge_df,
-        monitorPrefix="%s: _get_merge_clusters_from_df" % monitorPrefix)
-
-    # fetch merged polygons
-    merged_polygons = pm._get_all_merged_polygons(
-        merge_clusters=merge_clusters,
-        monitorPrefix="%s: _get_all_merged_polygons" % monitorPrefix)
-
-    # add medged contours to dataframe
-    pm._add_merged_edge_contours(
-        merged_polygons=merged_polygons, group=group,
-        monitorPrefix="%s: _add_merged_edge_contours" % monitorPrefix)
-
-    # drop merged edge contours from edge dataframes
-    pm._print("%s: _drop_merged_edge_contours" % monitorPrefix)
-    pm._drop_merged_edge_contours(merge_df=merge_df)
-
-# %%
-
-all_contours = pm.get_concatenated_contours()
-
-# %%
-
+a
 from masks_to_annotations_handler import get_annotation_documents_from_contours
 
 # deleting existing annotations in target slide (if any)
@@ -637,7 +713,7 @@ for ann in existing_annotations:
 
 # get list of annotation documents
 annotation_docs = get_annotation_documents_from_contours(
-    all_contours.copy(), separate_docs_by_group=True,
+    contours_df.copy(), separate_docs_by_group=True,
     docnamePrefix='test',
     verbose=False, monitorPrefix=SAMPLE_SLIDE_ID + ": annotation docs")
 
