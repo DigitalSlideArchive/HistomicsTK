@@ -17,8 +17,8 @@ from masks_to_annotations_handler import (
     Conditional_Print, get_contours_from_mask, _parse_annot_coords,
     _discard_nonenclosed_background_group)
 
-
 # %% =====================================================================
+
 
 class Polygon_merger(object):
     """Methods to merge polygons in tiled masks."""
@@ -112,8 +112,10 @@ class Polygon_merger(object):
             or self.contkwargs['discard_nonenclosed_background'])
 
         # verbosity control
-        self.cpr1 = Conditional_Print(verbose=self.verbose > 0)
-        self._print1 = self.cpr._print
+        self.cpr1 = Conditional_Print(verbose=self.verbose == 1)
+        self._print1 = self.cpr1._print
+        self.cpr2 = Conditional_Print(verbose=self.verbose == 2)
+        self._print2 = self.cpr2._print
         self.contkwargs['verbose'] = self.verbose > 1
 
     # %% =====================================================================
@@ -309,7 +311,7 @@ class Polygon_merger(object):
         nno1Max = Nests1.shape[0]
         for nid1, nest1 in Nests1.iterrows():
             nno1 += 1
-            self._print("%s: edge1-nest %d of %d" % (
+            self._print2("%s: edge1-nest %d of %d" % (
                 monitorPrefix, nno1, nno1Max))
             try:
                 coords = np.array(_parse_annot_coords(nest1))
@@ -319,10 +321,10 @@ class Polygon_merger(object):
                     edgepair['roi1-name']]['top']
                 polygons1.append((nid1, Polygon(coords)))
             except Exception as e:
-                self._print(
+                self._print2(
                     "%s: edge1-nest %d of %d: Shapely Error (below)" % (
                         monitorPrefix, nno1, nno1Max))
-                self._print(e)
+                self._print2(e)
 
         # go through the "other" polygons to get merge list
         to_merge = DataFrame(columns=[
@@ -339,15 +341,15 @@ class Polygon_merger(object):
                     edgepair['roi2-name']]['top']
                 polygon2 = Polygon(coords)
             except Exception as e:
-                self._print(
+                self._print2(
                     "%s: edge2-nest %d of %d: Shapely Error (below)" % (
                         monitorPrefix, nno2, nno2Max))
-                self._print(e)
+                self._print2(e)
                 continue
 
             nno1Max = len(polygons1)-1
             for nno1, poly1 in enumerate(polygons1):
-                self._print(
+                self._print2(
                     "%s: edge2-nest %d of %d: vs. edge1-nest %d of %d" % (
                         monitorPrefix, nno2, nno2Max, nno1+1, nno1Max+1))
                 nid1, polygon1 = poly1
@@ -398,7 +400,7 @@ class Polygon_merger(object):
         level = 0
         keep_going = True
         while keep_going:
-            self._print("%s: level %d" % (monitorPrefix, level))
+            self._print2("%s: level %d" % (monitorPrefix, level))
             merge_groups['level-%d' % (level+1)] = []
             reference = merge_groups['level-%d' % (level)].copy()
             # compare each cluster to the others in current level
@@ -481,7 +483,7 @@ class Polygon_merger(object):
         """
         merged_polygons = []
         for cid, cl in enumerate(merge_clusters):
-            self._print("%s: cluster %d of %d" % (
+            self._print2("%s: cluster %d of %d" % (
                 monitorPrefix, cid+1, len(merge_clusters)))
             merged_polygon = self._get_merged_polygon(cluster=cl)
             merged_polygons.append(merged_polygon)
@@ -516,7 +518,7 @@ class Polygon_merger(object):
             self, merged_polygons, group, monitorPrefix=""):
         """Add merged polygons to self.merged_contours df (Internal)."""
         for pno, geometry in enumerate(merged_polygons):
-            self._print("%s: contour %d of %d" % (
+            self._print2("%s: contour %d of %d" % (
                 monitorPrefix, pno+1, len(merged_polygons)))
             if geometry.type == 'MultiPolygon':
                 for polygon in geometry:
@@ -585,7 +587,7 @@ class Polygon_merger(object):
                 monitorPrefix="%s: _add_merged_edge_contours" % monitorPrefix)
 
             # drop merged edge contours from edge dataframes
-            self._print("%s: _drop_merged_edge_contours" % monitorPrefix)
+            self._print2("%s: _drop_merged_edge_contours" % monitorPrefix)
             self._drop_merged_edge_contours(merge_df=merge_df)
 
     # %% =====================================================================
@@ -636,27 +638,27 @@ class Polygon_merger(object):
             has the same structure as output from get_contours_from_mask().
 
         """
-        self._print(
-            "\n%s: ** Set contours from all masks **\n" % self.monitorPrefix)
+        self._print1(
+            "\n%s: Set contours from all masks" % self.monitorPrefix)
         self.set_contours_from_all_masks(
             monitorPrefix="%s: set_contours_from_all_masks" %
             self.monitorPrefix)
-        self._print(
-            "\n%s: ** Set ROI bounding boxes **\n" % self.monitorPrefix)
+        self._print1(
+            "\n%s: Set ROI bounding boxes" % self.monitorPrefix)
         self.set_roi_bboxes()
-        self._print(
-            "\n%s: ** Set shard ROI edges **\n" % self.monitorPrefix)
+        self._print1(
+            "\n%s: Set shard ROI edges" % self.monitorPrefix)
         self.set_shared_roi_edges()
-        self._print(
-            "\n%s: ** Set merged contours **\n" % self.monitorPrefix)
+        self._print1(
+            "\n%s: Set merged contours" % self.monitorPrefix)
         self.set_merged_contours(
             monitorPrefix="%s: set_merged_contours" % self.monitorPrefix)
-        self._print(
-            "\n%s: ** Get concatenated contours **\n" % self.monitorPrefix)
+        self._print1(
+            "\n%s: Get concatenated contours" % self.monitorPrefix)
         all_contours = self.get_concatenated_contours()
         if self.discard_nonenclosed_background:
-            self._print(
-                "\n%s: ** Discard nonenclosed background **\n" %
+            self._print2(
+                "\n%s: Discard nonenclosed background" %
                 self.monitorPrefix)
             all_contours = _discard_nonenclosed_background_group(
                 all_contours, background_group=self.background_group,
@@ -665,62 +667,4 @@ class Polygon_merger(object):
                 self.monitorPrefix)
         return all_contours
 
-# %%===========================================================================
-# Constants & prep work
-# =============================================================================
-
-
-import girder_client
-from pandas import read_csv
-
-APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-SAMPLE_SLIDE_ID = '5d586d76bd4404c6b1f286ae'
-
-gc = girder_client.GirderClient(apiUrl=APIURL)
-# gc.authenticate(interactive=True)
-gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
-
-# read GTCodes dataframe
-PTESTS_PATH = os.path.join(os.getcwd(), '..', '..', 'plugin_tests')
-GTCODE_PATH = os.path.join(PTESTS_PATH, 'test_files', 'sample_GTcodes.csv')
-GTCodes_df = read_csv(GTCODE_PATH)
-GTCodes_df.index = GTCodes_df.loc[:, 'group']
-
-# This is where masks for adjacent rois are saved
-MASK_LOADPATH = os.path.join(
-    PTESTS_PATH, 'test_files', 'polygon_merger_roi_masks')
-maskpaths = [
-    os.path.join(MASK_LOADPATH, j) for j in os.listdir(MASK_LOADPATH)
-    if j.endswith('.png')]
-
-# %%===========================================================================
-
-# init and run polygon merger on masks grid
-pm = Polygon_merger(
-    maskpaths=maskpaths, GTCodes_df=GTCodes_df,
-    discard_nonenclosed_background=True)
-contours_df = pm.run()
-
-
-# %%
-a
-from masks_to_annotations_handler import get_annotation_documents_from_contours
-
-# deleting existing annotations in target slide (if any)
-existing_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
-for ann in existing_annotations:
-    gc.delete('/annotation/%s' % ann['_id'])
-
-# get list of annotation documents
-annotation_docs = get_annotation_documents_from_contours(
-    contours_df.copy(), separate_docs_by_group=True,
-    docnamePrefix='test',
-    verbose=False, monitorPrefix=SAMPLE_SLIDE_ID + ": annotation docs")
-
-# post annotations to slide -- make sure it posts without errors
-for annotation_doc in annotation_docs:
-    resp = gc.post(
-        "/annotation?itemId=" + SAMPLE_SLIDE_ID, json=annotation_doc)
-
-
-
+# %% =====================================================================
