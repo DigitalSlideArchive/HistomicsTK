@@ -195,6 +195,94 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 # %%===========================================================================
 
 
+def parse_slide_annotations_into_table(slide_annotations):
+    """Given a slide annotation list, parse into convenient tabular format.
+
+    If the annotation is a point, then it is just treated as if it is a
+    rectangle with zero area (i.e. xmin=xmax). Rotated rectangles are treated
+    as polygons for simplicity.
+
+    Parameters
+    -----------
+    slide_annotations : list of dicts
+        response from server request
+
+    Returns
+    ---------
+    Pandas DataFrame
+        The columns annidx and elementidx encode the
+        dict index of annotation document and element, respectively, in the
+        original slide_annotations list of dictionaries
+
+    """
+    element_infos = DataFrame(columns=[
+        'annidx', 'elementidx', 'type', 'group',
+        'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
+        'coords_x', 'coords_y'])
+
+    def _parse_coords_to_str(coords):
+        return (
+            ",".join(str(j) for j in coords[:, 0]),
+            ",".join(str(j) for j in coords[:, 0]))
+
+    for annidx, ann in enumerate(slide_annotations):
+        for elementidx, element in enumerate(ann['annotation']['elements']):
+
+            elno = element_infos.shape[0]
+            element_infos.loc[elno, 'annidx'] = annidx
+            element_infos.loc[elno, 'elementidx'] = elementidx
+
+            # get bounds
+            if element['type'] == 'polyline':
+                coords = np.int32(element['points'])[:, :-1]
+                xmin, ymin = [int(j) for j in np.min(coords, axis=0)]
+                xmax, ymax = [int(j) for j in np.max(coords, axis=0)]
+                x_coords, y_coords = _parse_coords_to_str(coords)
+
+            elif element['type'] == 'rectangle':
+                roiinfo = get_rotated_rectangular_coords(
+                    roi_center=element['center'],
+                    roi_width=element['width'],
+                    roi_height=element['height'],
+                    roi_rotation=element['rotation'])
+                xmin, ymin = roiinfo['x_min'], roiinfo['y_min']
+                xmax, ymax = roiinfo['x_max'], roiinfo['y_max']
+                coords = np.array(
+                    [(xmin, ymin), (xmax, ymin), (xmax, ymax),
+                     (xmin, ymax), (xmin, ymin)], dtype='int32')
+                x_coords, y_coords = _parse_coords_to_str(coords)
+                if element['rotation'] != 0:
+                    element['type'] = 'polyline'
+
+            elif element['type'] == 'point':
+                xmin = xmax = int(element['center'][0])
+                ymin = ymax = int(element['center'][1])
+
+            else:
+                continue
+
+            # add group or infer from label
+            if 'group' in element.keys():
+                element_infos.loc[elno, 'group'] = element['group']
+            elif 'label' in element.keys():
+                element_infos.loc[elno, 'group'] = element['label']['value']
+
+            element_infos.loc[elno, 'type'] = element['type']
+            element_infos.loc[elno, 'xmin'] = xmin
+            element_infos.loc[elno, 'xmax'] = xmax
+            element_infos.loc[elno, 'ymin'] = ymin
+            element_infos.loc[elno, 'ymax'] = ymax
+            element_infos.loc[elno, 'bbox_area'] = int(
+                (ymax - ymin) * (xmax - xmin))
+            element_infos.loc[elno, 'coords_x'] = x_coords
+            element_infos.loc[elno, 'coords_y'] = y_coords
+
+    return element_infos
+
+
+# %%===========================================================================
+
+
 def np_vec_no_jit_iou(bboxes1, bboxes2):
     """Fast, vectorized IoU.
 
