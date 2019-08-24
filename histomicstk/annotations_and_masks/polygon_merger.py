@@ -13,7 +13,7 @@ from shapely.geometry.polygon import Polygon
 from shapely.ops import cascaded_union
 from PIL import Image
 from imageio import imread
-from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
+from masks_to_annotations_handler import (
     Conditional_Print, get_contours_from_mask, _parse_annot_coords,
     _discard_nonenclosed_background_group)
 
@@ -174,7 +174,7 @@ class Polygon_merger(object):
         encode the x and y offset of the mask at base magnification.
 
         Returns:
-        - dictindexed by maskname, each entry is a dict with keys
+        - dict: indexed by maskname, each entry is a dict with keys
         top and left.
 
         """

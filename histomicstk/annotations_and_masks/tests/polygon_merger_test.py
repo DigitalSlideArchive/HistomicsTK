@@ -36,7 +36,8 @@ GTCodes_df.index = GTCodes_df.loc[:, 'group']
 
 # This is where masks for adjacent rois are saved
 MASK_LOADPATH = os.path.join(
-    PTESTS_PATH, 'test_files', 'polygon_merger_roi_masks')
+    os.path.dirname(os.path.realpath(__file__)),
+    'test_files', 'polygon_merger_roi_masks')
 maskpaths = [
     os.path.join(MASK_LOADPATH, j) for j in os.listdir(MASK_LOADPATH)
     if j.endswith('.png')]
