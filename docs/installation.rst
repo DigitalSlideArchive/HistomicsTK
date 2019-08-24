@@ -50,8 +50,8 @@ There are several methods that can be used to install HistomicsTK.  Each of thes
 .. include:: ../ansible/README.rst
    :start-after: __methods
 
-Installing Slice CLI Docker Images for Analysis
------------------------------------------------
+Installing Slicer CLI Docker Images for Analysis
+------------------------------------------------
 
 One of the primary uses of HistomicsTK as a Girder plugin is to analyze images.
 Analyses are configured using Docker images conforming to the Slicer execution
