@@ -223,7 +223,7 @@ def parse_slide_annotations_into_table(slide_annotations):
     def _parse_coords_to_str(coords):
         return (
             ",".join(str(j) for j in coords[:, 0]),
-            ",".join(str(j) for j in coords[:, 0]))
+            ",".join(str(j) for j in coords[:, 1]))
 
     for annidx, ann in enumerate(slide_annotations):
         for elementidx, element in enumerate(ann['annotation']['elements']):

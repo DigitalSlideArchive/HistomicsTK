@@ -68,6 +68,8 @@ class Polygon_merger_v2(object):
         self.__dict__.update(
             (k, v) for k, v in default_attr.items() if k in allowed_attr)
 
+        self.contours_df = contours_df
+
         # To NOT silently ignore rejected keys
         rejected_keys = set(kwargs.keys()) - set(allowed_attr)
         if rejected_keys:
@@ -111,13 +113,17 @@ pm = Polygon_merger_v2(contours_df, verbose=1)
 
 # %%===========================================================================
 
-contours_df.reset_index(inplace=True, drop=True)
+pm.contours_df.reset_index(inplace=True, drop=True)
+
+group = "mostly_tumor"
+pm.contours_slice = pm.contours_df.loc[pm.contours_df.loc[
+        :, "group"] == group, :]
 
 # %%===========================================================================
 
 # Add contour bounding boxes to R-tree
 rtree = RTree()
-for cidx, cont in contours_df.iterrows():
+for cidx, cont in pm.contours_slice.iterrows():
     rtree.insert("polygon-%d" % cidx, Rect(
             minx=cont['xmin'], miny=cont['ymin'],
             maxx=cont['xmax'], maxy=cont['ymax']))
@@ -141,41 +147,85 @@ def traverse(node):
 rtc = rtree.cursor  # root
 tree_dict = traverse(rtc)
 
-a
+
 # %%===========================================================================
 
 # Get hierarchy of node indices
 
-hierarchy = dict()
 
-def get_hierarchy(node_dict, level):
-    
-    lk = "level-%d" % (level)
-    
-    child_nodes = [k for k, v in node_dict.items() if type(v) is dict]
-    
-    if len(child_nodes) < 1:
-        return
-    
-    # add to current level
-    if lk in hierarchy.keys():
-        hierarchy[lk].extend(child_nodes)
-    else:
-        hierarchy[lk] = child_nodes
-    
-    # add next level
-    for nidx, ndict in node_dict.items():
-        if type(ndict) is dict:
-            get_hierarchy(ndict, level+1)
+def _get_hierarchy():
+    """Get hierarchy of node indices"""
 
-get_hierarchy(tree_dict, 0)
+    hierarchy = dict()
+
+    def _add_hierarchy_level(node_dict, level, parent_idx):
+
+        lk = "level-%d" % (level)
+
+        child_nodes = [
+            {'nidx': k, 'parent_idx': parent_idx,
+             'is_leaf': type(v) is not dict} for k, v in node_dict.items()]
+
+        if len(child_nodes) < 1:
+            return
+
+        # add to current level
+        if lk in hierarchy.keys():
+            hierarchy[lk].extend(child_nodes)
+        else:
+            hierarchy[lk] = child_nodes
+
+        # add next level
+        for nidx, ndict in node_dict.items():
+            if type(ndict) is dict:
+                _add_hierarchy_level(ndict, level=level+1, parent_idx=nidx)
+
+    _add_hierarchy_level(tree_dict, level=0, parent_idx=0)
+
+    return hierarchy
+
+
+hierarchy = _get_hierarchy()
 
 # %%===========================================================================
 
-rtc._become(60)
-[c.leaf_obj() for c in rtc.children()]
-    a
+buffer_size = pm.merge_thresh + 3
 
 
+def _merge_leafs(leafs):
+    nest_polygons = []
+    for leaf in leafs:
+        leafidx = int(leaf.split('polygon-')[1])
+        nest = dict(pm.contours_slice.loc[leafidx, :])
+        coords = _parse_annot_coords(nest)
+        nest_polygons.append(Polygon(coords).buffer(buffer_size))
+    merged_polygon = cascaded_union(nest_polygons).buffer(-buffer_size)
+    return merged_polygon
 
+
+def _get_merged_polygon(nidx):
+    rtc._become(nidx)
+    leafs = [c.leaf_obj() for c in rtc.children()]
+    merged_polygon = _merge_leafs(leafs)
+    return merged_polygon
+
+# %%===========================================================================
+
+
+level = len(hierarchy) - 1
+
+merged_polygons = {}
+
+# %%===========================================================================
+
+for leaf in hierarchy["level-%d" % level]:
+    if leaf['parent_idx'] not in merged_polygons.keys():
+        merged_polygons[leaf['parent_idx']] = []
+    rtc._become(leaf['nidx'])
+    merged_polygons[leaf['parent_idx']].append(rtc.leaf_obj())
+
+for parent_idx, leafs in merged_polygons.items():
+    merged_polygons[parent_idx] = _merge_leafs(leafs)
+
+# %%===========================================================================
 
