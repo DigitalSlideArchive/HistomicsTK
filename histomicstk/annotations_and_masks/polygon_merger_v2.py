@@ -14,9 +14,8 @@ from shapely.ops import cascaded_union
 # from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
 from masks_to_annotations_handler import (
     Conditional_Print, _parse_annot_coords)
-from annotation_and_mask_utils import (
-    parse_slide_annotations_into_table)
-
+from annotation_and_mask_utils import parse_slide_annotations_into_table
+from pyrtree.rtree import RTree, Rect
 
 # %% =====================================================================
 
@@ -80,7 +79,6 @@ class Polygon_merger_v2(object):
         self._print1 = self.cpr1._print
         self.cpr2 = Conditional_Print(verbose=self.verbose == 2)
         self._print2 = self.cpr2._print
-        self.contkwargs['verbose'] = self.verbose > 1
 
     # %% =====================================================================
 
@@ -103,7 +101,7 @@ gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 # %%===========================================================================
 
 # get and parse slide annotations into dataframe
-slide_annotations = gc.get('/annotation/item/5d586d57bd4404c6b1f28640')
+slide_annotations = gc.get('/annotation/item/' + SOURCE_SLIDE_ID)
 contours_df = parse_slide_annotations_into_table(slide_annotations)
 
 # %%===========================================================================
@@ -111,8 +109,73 @@ contours_df = parse_slide_annotations_into_table(slide_annotations)
 # init polygon merger
 pm = Polygon_merger_v2(contours_df, verbose=1)
 
+# %%===========================================================================
+
+contours_df.reset_index(inplace=True, drop=True)
+
+# %%===========================================================================
+
+rtree = RTree()
+
+# cidx = 0; cont = contours_df.loc[cidx, :]
+for cidx, cont in contours_df.iterrows():
+    rtree.insert("polygon-%d" % cidx, Rect(
+            minx=cont['xmin'], miny=cont['ymin'],
+            maxx=cont['xmax'], maxy=cont['ymax']))
+
+a
+# %%===========================================================================
+
+rtc = rtree.cursor # root
+
+
+all_leafs = []
+
+def traverse(node):
+    """recursively traverse tree till you get to leafs"""
+    if not node.is_leaf():
+        node_dict = dict()
+        for c in node.children():
+            node_dict[c.index] = traverse(c)
+        return node_dict
+    else:
+        all_leafs.append(node.index)
+        return node.index
+
+hierarchy = traverse(rtc)
+
+#%%
 
 
 
 
 
+# %%
+# %%
+# %%
+hierarchy = {'level-0': [rtc.index]}
+
+# %%
+
+level = 1
+
+if rtc.has_children():
+
+    children_idxs = [c.index for c in rtc.children()]
+    hierarchy['level-%d' % level] = children_idxs
+
+    hierarchy['level-%d' % (level + 1)] = []
+    for cidx in children_idxs:
+        rtc._become(cidx)
+        children_idxs2 = [c.index for c in rtc.children()]
+        hierarchy['level-%d' % (level + 1)].extend(children_idxs2)
+        
+# %%    
+        
+
+# %%
+# rtree.cursor._become(12)
+
+# %%
+
+c = rtc.get_first_child()
