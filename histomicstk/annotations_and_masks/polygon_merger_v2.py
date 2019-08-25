@@ -213,21 +213,29 @@ def _get_merged_polygon(nidx):
 
 
 # level = len(hierarchy) - 1
-level = 1
 
-merged_polygons = {}
+merged_polygons_all = dict()
 
 # %%===========================================================================
 
-for node in hierarchy["level-%d" % level]:
-    if node['is_leaf']:
-        if node['parent_idx'] not in merged_polygons.keys():
-            merged_polygons[node['parent_idx']] = []
-        rtc._become(node['nidx'])
-        merged_polygons[node['parent_idx']].append(rtc.leaf_obj())
+for level in range(len(hierarchy) - 1, -1, -1):
 
-for parent_idx, leafs in merged_polygons.items():
-    merged_polygons[parent_idx] = _merge_leafs(leafs)
+    merged_polygons = dict()
+    
+    # merge polygons from previous level
+
+    # merge polygons from this level
+    for node in hierarchy["level-%d" % level]:
+        if node['is_leaf']:
+            if node['parent_idx'] not in merged_polygons.keys():
+                merged_polygons[node['parent_idx']] = []
+            rtc._become(node['nidx'])
+            merged_polygons[node['parent_idx']].append(rtc.leaf_obj())
+
+    for parent_idx, leafs in merged_polygons.items():
+        merged_polygons[parent_idx] = _merge_leafs(leafs)
+
+    merged_polygons_all['level-%d' % level] = merged_polygons
 
 # %%===========================================================================
 
