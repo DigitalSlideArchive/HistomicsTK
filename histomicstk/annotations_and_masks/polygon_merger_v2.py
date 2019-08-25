@@ -115,21 +115,16 @@ contours_df.reset_index(inplace=True, drop=True)
 
 # %%===========================================================================
 
+# Add contour bounding boxes to R-tree
 rtree = RTree()
-
-# cidx = 0; cont = contours_df.loc[cidx, :]
 for cidx, cont in contours_df.iterrows():
     rtree.insert("polygon-%d" % cidx, Rect(
             minx=cont['xmin'], miny=cont['ymin'],
             maxx=cont['xmax'], maxy=cont['ymax']))
 
-a
+
 # %%===========================================================================
 
-rtc = rtree.cursor # root
-
-
-all_leafs = []
 
 def traverse(node):
     """recursively traverse tree till you get to leafs"""
@@ -139,43 +134,48 @@ def traverse(node):
             node_dict[c.index] = traverse(c)
         return node_dict
     else:
-        all_leafs.append(node.index)
         return node.index
 
-hierarchy = traverse(rtc)
 
-#%%
+# Get tree in convenience dict format (dicts inside dicts)
+rtc = rtree.cursor  # root
+tree_dict = traverse(rtc)
+
+a
+# %%===========================================================================
+
+# Get hierarchy of node indices
+
+hierarchy = dict()
+
+def get_hierarchy(node_dict, level):
+    
+    lk = "level-%d" % (level)
+    
+    child_nodes = [k for k, v in node_dict.items() if type(v) is dict]
+    
+    if len(child_nodes) < 1:
+        return
+    
+    # add to current level
+    if lk in hierarchy.keys():
+        hierarchy[lk].extend(child_nodes)
+    else:
+        hierarchy[lk] = child_nodes
+    
+    # add next level
+    for nidx, ndict in node_dict.items():
+        if type(ndict) is dict:
+            get_hierarchy(ndict, level+1)
+
+get_hierarchy(tree_dict, 0)
+
+# %%===========================================================================
+
+rtc._become(60)
+[c.leaf_obj() for c in rtc.children()]
+    a
 
 
 
 
-
-# %%
-# %%
-# %%
-hierarchy = {'level-0': [rtc.index]}
-
-# %%
-
-level = 1
-
-if rtc.has_children():
-
-    children_idxs = [c.index for c in rtc.children()]
-    hierarchy['level-%d' % level] = children_idxs
-
-    hierarchy['level-%d' % (level + 1)] = []
-    for cidx in children_idxs:
-        rtc._become(cidx)
-        children_idxs2 = [c.index for c in rtc.children()]
-        hierarchy['level-%d' % (level + 1)].extend(children_idxs2)
-        
-# %%    
-        
-
-# %%
-# rtree.cursor._become(12)
-
-# %%
-
-c = rtc.get_first_child()
