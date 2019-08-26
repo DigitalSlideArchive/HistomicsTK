@@ -9,10 +9,11 @@ import numpy as np
 from pandas import DataFrame  # , concat
 from shapely.geometry.polygon import Polygon
 from shapely.ops import cascaded_union
-from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    # from masks_to_annotations_handler import (
+# from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
+from masks_to_annotations_handler import (
     Conditional_Print, _parse_annot_coords, )
-from .pyrtree.rtree import RTree, Rect
+from pyrtree.rtree import RTree, Rect
+# from .pyrtree.rtree import RTree, Rect
 
 # %% =====================================================================
 
