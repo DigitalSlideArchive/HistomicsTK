@@ -12,7 +12,7 @@ from shapely.ops import cascaded_union
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     # from masks_to_annotations_handler import (
     Conditional_Print, _parse_annot_coords, )
-from pyrtree.rtree import RTree, Rect
+from .pyrtree.rtree import RTree, Rect
 
 # %% =====================================================================
 
@@ -89,6 +89,7 @@ class Polygon_merger_v2(object):
     # %% =====================================================================
 
     def set_contours_slice(self, group):
+        """Slice a single group from self.contours_df."""
         self.contours_slice = self.contours_df.loc[
             self.contours_df.loc[:, "group"] == group, :]
 
@@ -99,15 +100,15 @@ class Polygon_merger_v2(object):
         self.rtree = RTree()
         for cidx, cont in self.contours_slice.iterrows():
             self.rtree.insert("polygon-%d" % cidx, Rect(
-                    minx=cont['xmin'], miny=cont['ymin'],
-                    maxx=cont['xmax'], maxy=cont['ymax']))
+                minx=cont['xmin'], miny=cont['ymin'],
+                maxx=cont['xmax'], maxy=cont['ymax']))
 
     # %% =====================================================================
 
     def set_tree_dict(self):
         """Get tree in convenience dict format (dicts inside dicts)."""
         def _traverse(node):
-            """recursively traverse tree till you get to leafs."""
+            """Recursively traverse tree till you get to leafs."""
             if not node.is_leaf():
                 node_dict = dict()
                 for c in node.children():
@@ -125,7 +126,7 @@ class Polygon_merger_v2(object):
         self.hierarchy = dict()
 
         def _add_hierarchy_level(node_dict, level, parent_idx):
-            """recursively add hierarchy levels."""
+            """Recursively add hierarchy levels."""
             lk = "level-%d" % (level)
 
             child_nodes = [
@@ -180,7 +181,7 @@ class Polygon_merger_v2(object):
     # %% =====================================================================
 
     def get_merged_multipolygon(self):
-        """Get final merged shapely multipolygon by hierarchical merger"""
+        """Get final merged shapely multipolygon by hierarchical merger."""
         merged_polygons_all = dict()
 
         for level in range(len(self.hierarchy) - 1, -1, -1):
@@ -249,7 +250,7 @@ class Polygon_merger_v2(object):
         self.new_contours.loc[idx, 'xmax'] = xmax
         self.new_contours.loc[idx, 'ymax'] = ymax
         self.new_contours.loc[idx, 'bbox_area'] = int(
-                    (ymax - ymin) * (xmax - xmin))
+            (ymax - ymin) * (xmax - xmin))
 
     # %% =====================================================================
 
@@ -267,7 +268,6 @@ class Polygon_merger_v2(object):
 
     def run_for_single_group(self, group, monitorPrefix=""):
         """Run sequence for merging polygons & adding contours (one group)."""
-
         # Prep to get polygons
         self._print1("%s: set_contours_slice" % monitorPrefix)
         self.set_contours_slice(group)

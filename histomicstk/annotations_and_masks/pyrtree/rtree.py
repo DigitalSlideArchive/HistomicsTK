@@ -1,5 +1,6 @@
-# Modified from: https://code.google.com/archive/p/pyrtree/
-#
+"""
+# Modified from: https://code.google.com/archive/p/pyrtree/.
+
 # Copyright Google
 # Under The 3-Clause BSD License
 #
@@ -28,6 +29,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+"""
 
 import random
 import time
@@ -40,7 +42,10 @@ MAX_KMEANS = 5
 
 
 class RTree(object):
+    """Placeholder."""
+
     def __init__(self):
+        """Placeholder."""
         self.count = 0
         self.stats = {
             "overflow_f": 0,
@@ -72,24 +77,31 @@ class RTree(object):
             self.node_pool.extend([0, 0] * idx)
 
     def insert(self, o, orect):
+        """Placeholder."""
         self.cursor.insert(o, orect)
         assert(self.cursor.index == 0)
 
     def query_rect(self, r):
+        """Placeholder."""
         for x in self.cursor.query_rect(r):
             yield x
 
     def query_point(self, p):
+        """Placeholder."""
         for x in self.cursor.query_point(p):
             yield x
 
     def walk(self, pred):
+        """Placeholder."""
         return self.cursor.walk(pred)
 
 
 class _NodeCursor(object):
+    """Placeholder."""
+
     @classmethod
     def create(cls, rooto, rect):
+        """Placeholder."""
         idx = rooto.count
         rooto.count += 1
 
@@ -104,6 +116,7 @@ class _NodeCursor(object):
 
     @classmethod
     def create_with_children(cls, children, rooto):
+        """Placeholder."""
         rect = union_all([c for c in children])
         # nr = Rect(rect.x,rect.y,rect.xx,rect.yy)
         assert(not rect.swapped_x)
@@ -114,6 +127,7 @@ class _NodeCursor(object):
 
     @classmethod
     def create_leaf(cls, rooto, leaf_obj, leaf_rect):
+        """Placeholder."""
         rect = Rect(leaf_rect.x, leaf_rect.y, leaf_rect.xx, leaf_rect.yy)
         rect.swapped_x = True  # Mark as leaf by setting the xswap flag.
         res = _NodeCursor.create(rooto, rect)
@@ -132,6 +146,7 @@ class _NodeCursor(object):
         "next_sibling", "first_child")
 
     def __init__(self, rooto, index, rect, first_child, next_sibling):
+        """Placeholder."""
         self.root = rooto
         self.rpool = rooto.rect_pool
         self.npool = rooto.node_pool
@@ -142,6 +157,7 @@ class _NodeCursor(object):
         self.first_child = first_child
 
     def walk(self, predicate):
+        """Placeholder."""
         if (predicate(self, self.leaf_obj())):
             yield self
             if not self.is_leaf():
@@ -150,14 +166,14 @@ class _NodeCursor(object):
                         yield cr
 
     def query_rect(self, r):
-        """ Return things that intersect with 'r'. """
+        """Return things that intersect with 'r'."""
         def p(o, x):
             return r.does_intersect(o.rect)
         for rr in self.walk(p):
             yield rr
 
     def query_point(self, point):
-        """ Query by a point """
+        """Query by a point."""
         def p(o, x):
             return o.rect.does_containpoint(point)
 
@@ -165,6 +181,7 @@ class _NodeCursor(object):
             yield rr
 
     def lift(self):
+        """Placeholder."""
         return _NodeCursor(self.root,
                            self.index,
                            self.rect,
@@ -172,6 +189,7 @@ class _NodeCursor(object):
                            self.next_sibling)
 
     def _become(self, index):
+        """Placeholder."""
         recti = index * 4
         nodei = index * 2
         rp = self.rpool
@@ -190,30 +208,36 @@ class _NodeCursor(object):
         self.index = index
 
     def is_leaf(self):
+        """Placeholder."""
         return self.rect.swapped_x
 
     def has_children(self):
+        """Placeholder."""
         return (not self.is_leaf()) and (0 != self.first_child)
 
     def holds_leaves(self):
+        """Placeholder."""
         if 0 == self.first_child:
             return True
         else:
             return self.has_children() and self.get_first_child().is_leaf()
 
     def get_first_child(self):
+        """Placeholder."""
         # fc = self.first_child
         c = _NodeCursor(self.root, 0, NullRect, 0, 0)
         c._become(self.first_child)
         return c
 
     def leaf_obj(self):
+        """Placeholder."""
         if self.is_leaf():
             return self.root.leaf_pool[self.first_child]
         else:
             return None
 
     def _save_back(self):
+        """Placeholder."""
         rp = self.rpool
         recti = self.index * 4
         nodei = self.index * 2
@@ -230,6 +254,7 @@ class _NodeCursor(object):
         self.npool[nodei + 1] = self.first_child
 
     def nchildren(self):
+        """Placeholder."""
         # i = self.index
         c = 0
         for x in self.children():
@@ -237,6 +262,7 @@ class _NodeCursor(object):
         return c
 
     def insert(self, leafo, leafrect):
+        """Placeholder."""
         index = self.index
 
         # tail recursion, made into loop:
@@ -279,6 +305,7 @@ class _NodeCursor(object):
                 self._become(child)  # recurse.
 
     def _balance(self):
+        """Placeholder."""
         if (self.nchildren() <= MAXCHILDREN):
             return
 
@@ -310,6 +337,7 @@ class _NodeCursor(object):
             self.root.stats["longest_overflow"], dur)
 
     def _set_children(self, cs):
+        """Placeholder."""
         self.first_child = 0
 
         if 0 == len(cs):
@@ -328,12 +356,14 @@ class _NodeCursor(object):
         self._save_back()
 
     def _insert_child(self, c):
+        """Placeholder."""
         c.next_sibling = self.first_child
         self.first_child = c.index
         c._save_back()
         self._save_back()
 
     def children(self):
+        """Placeholder."""
         if (0 == self.first_child):
             return
 
@@ -359,6 +389,7 @@ class _NodeCursor(object):
 
 
 def avg_diagonals(node, onodes, memo_tab):
+    """Placeholder."""
     nidx = node.index
     sv = 0.0
     diag = 0.0
@@ -379,12 +410,14 @@ def avg_diagonals(node, onodes, memo_tab):
 
 
 def silhouette_w(node, cluster, next_closest_cluster, memo):
+    """Placeholder."""
     ndist = avg_diagonals(node, cluster, memo)
     sdist = avg_diagonals(node, next_closest_cluster, memo)
     return (sdist - ndist) / max(sdist, ndist)
 
 
 def silhouette_coeff(clustering, memo_tab):
+    """Placeholder."""
     # special case for a clustering of 1.0
     if (len(clustering) == 1):
         return 1.0
@@ -394,14 +427,15 @@ def silhouette_coeff(clustering, memo_tab):
         others = [c for c in clustering if c is not cluster]
         others_cntr = [center_of_gravity(c) for c in others]
         ws = [silhouette_w(
-                node, cluster, others[closest(others_cntr, node)], memo_tab)
-              for node in cluster]
+            node, cluster, others[closest(others_cntr, node)], memo_tab)
+            for node in cluster]
         cluster_coeff = sum(ws) / len(ws)
         coeffs.append(cluster_coeff)
     return sum(coeffs) / len(coeffs)
 
 
 def center_of_gravity(nodes):
+    """Placeholder."""
     totarea = 0.0
     xs, ys = 0, 0
     for n in nodes:
@@ -415,6 +449,7 @@ def center_of_gravity(nodes):
 
 
 def closest(centroids, node):
+    """Placeholder."""
     x, y = center_of_gravity([node])
     dist = -1
     ridx = -1
@@ -428,6 +463,7 @@ def closest(centroids, node):
 
 
 def k_means_cluster(root, k, nodes):
+    """Placeholder."""
     t = time.clock()
     if len(nodes) <= k:
         return [[n] for n in nodes]

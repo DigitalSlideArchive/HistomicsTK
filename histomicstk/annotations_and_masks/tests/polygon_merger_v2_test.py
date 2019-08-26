@@ -50,7 +50,7 @@ class PolygonMerger_v2_Test(unittest.TestCase):
         pm.run()
 
         # make sure it is what we expect
-        self.assertTupleEqual(pm.new_contours.shape, (12, 13))
+        self.assertTupleEqual(pm.new_contours.shape, (16, 13))
         self.assertSetEqual(
             set(pm.new_contours.loc[:, 'group']),
             {'mostly_tumor', 'mostly_stroma', 'mostly_lymphocytic_infiltrate'})
@@ -63,7 +63,7 @@ class PolygonMerger_v2_Test(unittest.TestCase):
 
         # get rid of nonenclosed stroma (aesthetic)
         pm.new_contours = _discard_nonenclosed_background_group(
-                        pm.new_contours, background_group="mostly_stroma")
+            pm.new_contours, background_group="mostly_stroma")
 
         # deleting existing annotations in target slide (if any)
         existing_annotations = gc.get('/annotation/item/' + POST_SLIDE_ID)

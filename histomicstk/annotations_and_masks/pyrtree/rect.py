@@ -1,5 +1,6 @@
-# Modified from: https://code.google.com/archive/p/pyrtree/
-#
+"""
+# Modified from: https://code.google.com/archive/p/pyrtree/ .
+
 # Copyright Google
 # Under The 3-Clause BSD License
 #
@@ -28,21 +29,24 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
+"""
 
 import math
 
 
 class Rect(object):
     """
-    A rectangle class that stores: an axis aligned rectangle, and: two
-     flags (swapped_x and swapped_y).  (The flags are stored
-     implicitly via swaps in the order of minx/y and maxx/y.)
+    A rectangle class that stores: .
+
+    an axis aligned rectangle, and: two flags (swapped_x and swapped_y).
+    (The flags are stored implicitly via swaps in the order of
+    minx/y and maxx/y.)
     """
 
     __slots__ = ("x", "y", "xx", "yy", "swapped_x", "swapped_y")
 
     def __init__(self, minx, miny, maxx, maxy):
+        """Placeholder."""
         self.swapped_x = (maxx < minx)
         self.swapped_y = (maxy < miny)
         self.x = minx
@@ -56,12 +60,15 @@ class Rect(object):
             self.y, self.yy = maxy, miny
 
     def coords(self):
+        """Placeholder."""
         return self.x, self.y, self.xx, self.yy
 
     def overlap(self, orect):
+        """Placeholder."""
         return self.intersect(orect).area()
 
     def write_raw_coords(self, toarray, idx):
+        """Placeholder."""
         toarray[idx] = self.x
         toarray[idx+1] = self.y
         toarray[idx+2] = self.xx
@@ -74,20 +81,24 @@ class Rect(object):
             toarray[idx + 3] = self.y
 
     def area(self):
+        """Placeholder."""
         w = self.xx - self.x
         h = self.yy - self.y
         return w * h
 
     def extent(self):
+        """Placeholder."""
         x = self.x
         y = self.y
         return (x, y, self.xx-x, self.yy-y)
 
     def grow(self, amt):
+        """Placeholder."""
         a = amt * 0.5
         return Rect(self.x-a, self.y-a, self.xx+a, self.yy+a)
 
     def intersect(self, o):
+        """Placeholder."""
         if self is NullRect:
             return NullRect
         if o is NullRect:
@@ -103,17 +114,21 @@ class Rect(object):
         return Rect(nx, ny, nx2, ny2)
 
     def does_contain(self, o):
+        """Placeholder."""
         return self.does_containpoint((o.x, o.y)) and self.does_containpoint(
-                (o.xx, o.yy))
+            (o.xx, o.yy))
 
     def does_intersect(self, o):
+        """Placeholder."""
         return (self.intersect(o).area() > 0)
 
     def does_containpoint(self, p):
+        """Placeholder."""
         x, y = p
         return (x >= self.x and x <= self.xx and y >= self.y and y <= self.yy)
 
     def union(self, o):
+        """Placeholder."""
         if o is NullRect:
             return Rect(self.x, self.y, self.xx, self.yy)
         if self is NullRect:
@@ -138,10 +153,12 @@ class Rect(object):
         return res
 
     def union_point(self, o):
+        """Placeholder."""
         x, y = o
         return self.union(Rect(x, y, x, y))
 
     def diagonal_sq(self):
+        """Placeholder."""
         if self is NullRect:
             return 0
         w = self.xx - self.x
@@ -149,6 +166,7 @@ class Rect(object):
         return w * w + h * h
 
     def diagonal(self):
+        """Placeholder."""
         return math.sqrt(self.diagonal_sq())
 
 
@@ -158,6 +176,7 @@ NullRect.swapped_y = False
 
 
 def union_all(kids):
+    """Placeholder."""
     cur = NullRect
     for k in kids:
         cur = cur.union(k.rect)
