@@ -216,7 +216,7 @@ def parse_slide_annotations_into_table(slide_annotations):
 
     """
     element_infos = DataFrame(columns=[
-        'annidx', 'elementidx', 'type', 'group',
+        'annidx', 'elementidx', 'type', 'group', 'color',
         'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
         'coords_x', 'coords_y'])
 
@@ -231,6 +231,7 @@ def parse_slide_annotations_into_table(slide_annotations):
             elno = element_infos.shape[0]
             element_infos.loc[elno, 'annidx'] = annidx
             element_infos.loc[elno, 'elementidx'] = elementidx
+            element_infos.loc[elno, 'color'] = element['lineColor']
 
             # get bounds
             if element['type'] == 'polyline':
