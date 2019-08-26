@@ -114,6 +114,7 @@ pm = Polygon_merger_v2(contours_df, verbose=1)
 # %%===========================================================================
 
 pm.contours_df.reset_index(inplace=True, drop=True)
+pm.new_contours = DataFrame(columns=pm.contours_df.columns)
 
 group = "mostly_tumor"
 pm.contours_slice = pm.contours_df.loc[pm.contours_df.loc[
@@ -192,15 +193,23 @@ hierarchy = _get_hierarchy()
 buffer_size = pm.merge_thresh + 3
 
 
+def _merge_polygons(poly_list):
+    if buffer_size > 0:
+        poly_list = [j.buffer(buffer_size) for j in poly_list]
+        merged_polys = cascaded_union(poly_list).buffer(-buffer_size)
+    else:
+        merged_polys = cascaded_union(poly_list)
+    return merged_polys
+
+
 def _merge_leafs(leafs):
     nest_polygons = []
     for leaf in leafs:
         leafidx = int(leaf.split('polygon-')[1])
         nest = dict(pm.contours_slice.loc[leafidx, :])
         coords = _parse_annot_coords(nest)
-        nest_polygons.append(Polygon(coords).buffer(buffer_size))
-    merged_polygon = cascaded_union(nest_polygons).buffer(-buffer_size)
-    return merged_polygon
+        nest_polygons.append(Polygon(coords))
+    return _merge_polygons(nest_polygons)
 
 
 def _get_merged_polygon(nidx):
@@ -209,47 +218,95 @@ def _get_merged_polygon(nidx):
     merged_polygon = _merge_leafs(leafs)
     return merged_polygon
 
+
+def get_merged_multipolygon():
+
+    merged_polygons_all = dict()
+
+    for level in range(len(hierarchy) - 1, -1, -1):
+
+        merged_polygons = dict()
+
+        # merge polygons from previous level
+        to_merge = dict()
+        for node in hierarchy["level-%d" % level]:
+            if not node['is_leaf']:
+                if node['parent_idx'] not in to_merge.keys():
+                    to_merge[node['parent_idx']] = []
+                to_merge[node['parent_idx']].append(merged_polygons_all[
+                    "level-%d" % (level + 1)][node['nidx']])
+                del merged_polygons_all["level-%d" % (level + 1)][node['nidx']]
+
+        for parent_idx, polygon_list in to_merge.items():
+            merged_polygons[parent_idx] = _merge_polygons(polygon_list)
+
+        # merge polygons from this level
+        to_merge = dict()
+        for node in hierarchy["level-%d" % level]:
+            if node['is_leaf']:
+                if node['parent_idx'] not in to_merge.keys():
+                    to_merge[node['parent_idx']] = []
+                rtc._become(node['nidx'])
+                to_merge[node['parent_idx']].append(rtc.leaf_obj())
+
+        for parent_idx, leafs in to_merge.items():
+            merged_polygons[parent_idx] = _merge_leafs(leafs)
+
+        # assign to persistent dict
+        merged_polygons_all['level-%d' % level] = merged_polygons
+
+    return merged_polygons_all['level-0'][0]
+
+
+# get shapely multipolygon object with merged adjacent contours
+merged_multipolygon = get_merged_multipolygon()
+
 # %%===========================================================================
 
+# get new contours database
 
-# level = len(hierarchy) - 1
 
-merged_polygons_all = dict()
+def _get_coord_str_from_polygon(polygon):
+    """Parse shapely polygon coordinates into string form (Internal)."""
+    coords = np.int32(polygon.exterior.coords.xy)
+    coords_x = ",".join([str(j) for j in coords[0, :]])
+    coords_y = ",".join([str(j) for j in coords[1, :]])
+    return coords_x, coords_y, coords.T
+
+
+def _add_single_merged_edge_contour(polygon, group):
+    """Add single contour to self.new_contours (Internal)."""
+    idx = pm.new_contours.shape[0]
+    pm.new_contours.loc[idx, 'type'] = 'polyline'
+    pm.new_contours.loc[idx, 'group'] = group
+    pm.new_contours.loc[idx, 'has_holes'] = int(
+        polygon.boundary.geom_type == 'MultiLineString')
+    coords_x, coords_y, coords = _get_coord_str_from_polygon(polygon)
+    pm.new_contours.loc[idx, 'coords_x'] = coords_x
+    pm.new_contours.loc[idx, 'coords_y'] = coords_y
+    xmin, ymin = np.min(coords, axis=0)
+    xmax, ymax = np.max(coords, axis=0)
+    pm.new_contours.loc[idx, 'xmin'] = xmin
+    pm.new_contours.loc[idx, 'ymin'] = ymin
+    pm.new_contours.loc[idx, 'xmax'] = xmax
+    pm.new_contours.loc[idx, 'ymax'] = ymax
+    pm.new_contours.loc[idx, 'bbox_area'] = int(
+                (ymax - ymin) * (xmax - xmin))
+
+
+def _add_merged_multipolygon_contours(
+        merged_multipolygon, group, monitorPrefix=""):
+    """Add merged polygons to self.new_contours df (Internal)."""
+    for pno, polygon in enumerate(merged_multipolygon):
+        pm._print2("%s: contour %d of %d" % (
+            monitorPrefix, pno+1, len(merged_multipolygon)))
+        _add_single_merged_edge_contour(polygon, group=group)
+
+# get new contours dataframe
+_add_merged_multipolygon_contours(merged_multipolygon, group=group)
+
 
 # %%===========================================================================
-
-for level in range(len(hierarchy) - 1, -1, -1):
-
-    merged_polygons = dict()
-    
-    # merge polygons from previous level
-
-    # merge polygons from this level
-    for node in hierarchy["level-%d" % level]:
-        if node['is_leaf']:
-            if node['parent_idx'] not in merged_polygons.keys():
-                merged_polygons[node['parent_idx']] = []
-            rtc._become(node['nidx'])
-            merged_polygons[node['parent_idx']].append(rtc.leaf_obj())
-
-    for parent_idx, leafs in merged_polygons.items():
-        merged_polygons[parent_idx] = _merge_leafs(leafs)
-
-    merged_polygons_all['level-%d' % level] = merged_polygons
-
-# %%===========================================================================
-
-new_merged_polygons = {}
-
-
-
-
-
-
-
-
-
-
 
 
 
