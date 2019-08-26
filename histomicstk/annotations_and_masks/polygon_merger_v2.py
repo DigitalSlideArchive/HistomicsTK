@@ -5,17 +5,13 @@ Created on Sat Aug 24 16:01:26 2019.
 @author: tageldim
 """
 
-import os
 import numpy as np
-from pandas import DataFrame, concat
-# import cv2
+from pandas import DataFrame  # , concat
 from shapely.geometry.polygon import Polygon
 from shapely.ops import cascaded_union
-# from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-from masks_to_annotations_handler import (
-    Conditional_Print, _parse_annot_coords,
-    _discard_nonenclosed_background_group)
-from annotation_and_mask_utils import parse_slide_annotations_into_table
+from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
+    # from masks_to_annotations_handler import (
+    Conditional_Print, _parse_annot_coords, )
 from pyrtree.rtree import RTree, Rect
 
 # %% =====================================================================
@@ -299,67 +295,4 @@ class Polygon_merger_v2(object):
             monitorPrefix = "%s: %s" % (self.monitorPrefix, group)
             self.run_for_single_group(group, monitorPrefix=monitorPrefix)
 
-# %% =====================================================================
-# %% =====================================================================
-
-# %%===========================================================================
-# Constants & prep work
-# =============================================================================
-
-import girder_client
-from masks_to_annotations_handler import (
-    get_annotation_documents_from_contours, )
-
-APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-SOURCE_SLIDE_ID = '5d5d6910bd4404c6b1f3d893'
-POST_SLIDE_ID = '5d586d76bd4404c6b1f286ae'
-
-gc = girder_client.GirderClient(apiUrl=APIURL)
-# gc.authenticate(interactive=True)
-gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
-
-# %%===========================================================================
-
-# get and parse slide annotations into dataframe
-slide_annotations = gc.get('/annotation/item/' + SOURCE_SLIDE_ID)
-contours_df = parse_slide_annotations_into_table(slide_annotations)
-
-# %%===========================================================================
-
-# init & run polygon merger
-pm = Polygon_merger_v2(contours_df, verbose=1)
-pm.unique_groups.remove("roi")
-pm.run()
-
-# %%===========================================================================
-
-# add colors (aesthetic)
-for group in pm.unique_groups:
-    cs = contours_df.loc[contours_df.loc[:, "group"] == group, "color"]
-    pm.new_contours.loc[
-        pm.new_contours.loc[:, "group"] == group, "color"] = cs.iloc[0]
-
-# get rid of nonenclosed stroma (aesthetic)
-pm.new_contours = _discard_nonenclosed_background_group(
-                pm.new_contours, background_group="mostly_stroma")
-
-# %%===========================================================================
-
-# deleting existing annotations in target slide (if any)
-existing_annotations = gc.get('/annotation/item/' + POST_SLIDE_ID)
-for ann in existing_annotations:
-    gc.delete('/annotation/%s' % ann['_id'])
-
-# get list of annotation documents
-annotation_docs = get_annotation_documents_from_contours(
-    pm.new_contours.copy(), separate_docs_by_group=True,
-    docnamePrefix='test',
-    verbose=False, monitorPrefix=POST_SLIDE_ID + ": annotation docs")
-
-# post annotations to slide -- make sure it posts without errors
-for annotation_doc in annotation_docs:
-    resp = gc.post(
-        "/annotation?itemId=" + POST_SLIDE_ID, json=annotation_doc)
-
-
-
+# %% ==========================================================================
