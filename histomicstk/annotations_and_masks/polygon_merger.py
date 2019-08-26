@@ -40,10 +40,6 @@ class Polygon_merger(object):
             GT_code: int
                 desired ground truth code (in the mask). Pixels of this value
                 belong to corresponding group (class).
-            coords_x : str
-                vertix x coordinates comma-separated values
-            coords_y
-                vertix y coordinated comma-separated values
             color: str
                 rgb format. eg. rgb(255,0,0).
         merge_thresh : int
