@@ -1,0 +1,24 @@
+group,overlay_order,GT_code,is_roi,is_background_class,color,comments
+roi,0,255,1,0,"rgb(200,0,150)",
+evaluation_roi,0,254,1,0,"rgb(255,0,0)",
+mostly_tumor,1,1,0,0,"rgb(255,0,0)",core class
+mostly_stroma,2,2,0,1,"rgb(255,125,0)",core class
+mostly_lymphocytic_infiltrate,1,3,0,0,"rgb(0,0,255)",core class
+necrosis_or_debris,1,4,0,0,"rgb(255,255,0)",core class
+glandular_secretions,1,5,0,0,"rgb(0,255,0)",secondary class
+mostly_blood,1,6,0,0,"rgb(128,0,128)",secondary class
+exclude,3,7,0,0,"rgb(0,0,0)",secondary class
+metaplasia_NOS,1,8,0,0,"rgb(255,0,0)",secondary class
+mostly_fat,1,9,0,0,"rgb(0,0,0)",secondary class
+mostly_plasma_cells,1,10,0,0,"rgb(0,0,255)",secondary class
+other_immune_infiltrate,1,11,0,0,"rgb(0,0,255)",secondary class
+mostly_mucoid_material,1,12,0,0,"rgb(0,255,0)",secondary class
+normal_acinus_or_duct,1,13,0,0,"rgb(0,255,0)",secondary class
+lymphatics,1,14,0,0,"rgb(0,255,0)",secondary class
+undetermined,1,15,0,0,"rgb(0,0,0)",secondary class
+nerve,1,16,0,0,"rgb(0,0,0)",secondary class
+skin_adnexia,1,17,0,0,"rgb(0,0,0)",secondary class
+blood_vessel,1,18,0,0,"rgb(128,0,128)",secondary class
+angioinvasion,1,19,0,0,"rgb(128,0,128)",secondary class
+mostly_dcis,1,20,0,0,"rgb(0,0,0)",secondary class
+other,1,21,0,0,"rgb(0,0,0)",secondary class
