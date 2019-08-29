@@ -10,7 +10,7 @@ This slide used as a test example:
 [TCGA-A2-A0YE-01Z-00-DX1](http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d586d57bd4404c6b1f28640&bounds=53566%2C33193%2C68926%2C40593%2C0)
 
 The user uses a csv file like the one in 
-``` plugin_tests/test_files/sample_GTcodes.csv ```
+``` ./tests/test_files/sample_GTcodes.csv ```
 to control pixel values assigned to mask, overlay order of various annotation groups, which groups are considered to be ROIs, etc.
 
 **Here's the result:**
