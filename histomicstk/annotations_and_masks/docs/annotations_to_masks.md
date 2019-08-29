@@ -37,13 +37,13 @@ The code added here handles the following complex situations:
 ```
 |_ histomicstk/
 |   |_annotations_and_masks/
-|      |_annotation_and_mask_utils.py 
-|      |_annotations_to_masks_handler.py
-|      |_tests/
-|         |_ annotation_and_mask_utils_test.py
-|         |_ annotations_to_masks_handler_test.py
-|         |_test_files/
-|            |_sample_GTcodes.csv
+|   |  |_annotation_and_mask_utils.py 
+|   |  |_annotations_to_masks_handler.py
+|   |_tests/
+|       |_ annotation_and_mask_utils_test.py
+|       |_ annotations_to_masks_handler_test.py
+|       |_test_files/
+|          |_sample_GTcodes.csv
 |_ docs/
     |_examples/
        |_annotations_to_masks_handler.ipynb
