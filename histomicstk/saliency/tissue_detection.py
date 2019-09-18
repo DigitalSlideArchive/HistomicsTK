@@ -99,9 +99,14 @@ def get_tissue_mask(
         This will make things ever-so-slightly slower but is better in
         getting rid of sharpie marker (if it's green, for example).
         Sometimes things work better without it, though.
-    stain_matrix_method - see deconv_color method in seed_utils
-        n_thresholding_steps - int
-        sigma - int
+    stain_matrix_method : str
+        see deconv_color method in seed_utils
+    n_thresholding_steps : int
+        number of gaussian smoothign steps
+    sigma : float
+        sigma of gaussian filter
+    min_size : int
+        minimum size (in pixels) of contiguous tissue regions to keep
 
     Returns
     --------

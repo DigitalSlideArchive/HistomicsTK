@@ -15,3 +15,15 @@ From left to right: Slide thumbnail, Tissue regions, Largest tissue region
 
 ![image](https://user-images.githubusercontent.com/22067552/65110899-f4b85e00-d9a7-11e9-8782-5a5f18992ae4.png)
 
+**Where to look?**
+
+```
+|_ histomicstk/
+|   |_saliency/
+|      |_tissue_detection.py 
+|      |_tests/
+|         |_tissue_detection_test.py
+|_ docs/
+    |_examples/
+       |_tissue_detection.ipynb
+```
