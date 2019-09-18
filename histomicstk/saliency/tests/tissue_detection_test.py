@@ -18,6 +18,7 @@ import girder_client
 import numpy as np
 from PIL import Image
 from matplotlib import pylab as plt
+from matplotlib.colors import ListedColormap
 # from imageio import imwrite
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response)
@@ -76,8 +77,8 @@ def deconv_color(im, stain_matrix_method="PCA"):
 
 
 def get_tissue_mask(
-        thumbnail_rgb, deconvolve_first=False,
-        stain_matrix_method="PCA", n_thresholding_steps=1, sigma=1):
+        thumbnail_rgb, deconvolve_first=False, stain_matrix_method="PCA",
+        n_thresholding_steps=1, sigma=0., min_size=500):
     """Get binary tissue mask from slide thumbnail.
 
     Parameters
@@ -95,7 +96,10 @@ def get_tissue_mask(
 
     Returns
     --------
-        thumbnail - np binary array of where analysis region is.
+    np bool array
+        largest contiguous tissue region.
+    np int32 array
+        each unique value represents a unique tissue region
     """
     if deconvolve_first:
         # deconvolvve to ge hematoxylin channel (cellular areas)
@@ -110,9 +114,10 @@ def get_tissue_mask(
     for _ in range(n_thresholding_steps):
 
         # gaussian smoothing of grayscale thumbnail
-        thumbnail = gaussian(
-            thumbnail, sigma=sigma,
-            output=None, mode='nearest', preserve_range=True)
+        if sigma > 0.0:
+            thumbnail = gaussian(
+                thumbnail, sigma=sigma,
+                output=None, mode='nearest', preserve_range=True)
 
         # get threshold to keep analysis region
         try:
@@ -124,16 +129,16 @@ def get_tissue_mask(
         thumbnail[thumbnail < thresh] = 0
 
     # convert to binary
-    thumbnail = 0 + (thumbnail > 0)
+    mask = 0 + (thumbnail > 0)
 
     # find connected components
-    labeled, _ = ndimage.label(thumbnail)
+    labeled, _ = ndimage.label(mask)
 
     # each connected component gets a unique value
     unique, counts = np.unique(labeled[labeled > 0], return_counts=True)
-    labeled = labeled == unique[np.argmax(counts)]
+    mask = labeled == unique[np.argmax(counts)]
 
-    return labeled
+    return mask, labeled
 
 # %%===========================================================================
 # Constants & prep work
@@ -155,11 +160,22 @@ gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 thumbnail_rgb = get_slide_thumbnail(gc, SAMPLE_SLIDE_ID)
 
-labeled = get_tissue_mask(
-    thumbnail_rgb, deconvolve_first=False,
-    n_thresholding_steps=1, sigma=1)
+#%%
+mask, labeled = get_tissue_mask(
+    thumbnail_rgb, deconvolve_first=True,
+    n_thresholding_steps=2, sigma=0.)
 
+#%%
 
+#vals = np.random.rand(256,3)
+#vals[0, ...] = [0., 0., 0.]
+#cMap = ListedColormap(1 - vals)
+
+f, ax = plt.subplots(1, 3, figsize=(20, 20))
+ax[0].imshow(thumbnail_rgb)
+ax[1].imshow(mask)
+ax[2].imshow(labeled == 200)
+plt.show()
 
 
 
