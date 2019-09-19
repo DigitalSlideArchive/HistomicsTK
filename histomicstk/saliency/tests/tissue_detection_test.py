@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep 18 00:06:28 2019
+Created on Wed Sep 18 00:06:28 2019.
 
 @author: mtageld
 """
@@ -36,7 +36,6 @@ class TissueDetectionTest(unittest.TestCase):
 
     def test_get_tissue_mask(self):
         """Test get_tissue_mask()."""
-
         thumbnail_rgb = get_slide_thumbnail(gc, SAMPLE_SLIDE_ID)
 
         labeled, mask = get_tissue_mask(
@@ -55,7 +54,7 @@ class TissueDetectionTest(unittest.TestCase):
         # plt.show()
 
         self.assertTupleEqual(labeled.shape, (152, 256))
-        self.assertEquals(len(np.unique(labeled)), 10)
+        self.assertEqual(len(np.unique(labeled)), 10)
 
 
 # %%===========================================================================

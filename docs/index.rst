@@ -28,7 +28,11 @@ HistomicsTK can be used in two ways:
   researchers to use and/or extend the analytics functionality within
   HistomicsTK in Python. HistomicsTK provides algorithms for fundamental
   image analysis tasks such as color normalization, color deconvolution,
-  cell-nuclei segmentation, and feature extraction. Please see the
+  cell-nuclei segmentation, and feature extraction. HistomicsTK also provides
+  functionality for parsing annotations into masks and vice versa and various
+  GIS-type polygon functionality. Additionally, various modules are included
+  for basic computational pathology tasks like detecting tissue regions.
+  Please see the
   :doc:`api-docs <api-docs>` and :doc:`examples <examples>` for more
   information.
 
@@ -55,11 +59,11 @@ HistomicsTK can be used in two ways:
     to image analysis pipelines developed as `slicer execution model`_
     CLIs and containerized using Docker.
 
-  HistomicsTK uses Girder's configuration files for some settings under the 
+  HistomicsTK uses Girder's configuration files for some settings under the
   `histomicstk` section:
 
-  - `restrict_downloads`: if True, Girder's standard download endpoints and 
-    large_image's `item/{id}/tiles/images/{image}` endpoint are only 
+  - `restrict_downloads`: if True, Girder's standard download endpoints and
+    large_image's `item/{id}/tiles/images/{image}` endpoint are only
     available to logged-in users.
 
 For questions, comments, or to get in touch with the maintainers, head to our
