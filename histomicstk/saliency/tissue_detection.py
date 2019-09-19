@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep 18 03:29:24 2019
+Created on Wed Sep 18 03:29:24 2019.
 
 @author: mtageld
 """
@@ -27,17 +27,19 @@ Image.MAX_IMAGE_PIXELS = None
 
 def get_slide_thumbnail(gc, slide_id):
     """Get slide thumbnail using girder client.
-    Parameters:
+
+    Parameters
     -------------
     gc : object
         girder client to use
     slide_id : str
         girder ID of slide
 
-    Returns:
+    Returns
     ---------
     np array
         RGB slide thumbnail at lowest level
+
     """
     getStr = "/item/%s/tiles/thumbnail" % (slide_id)
     resp = gc.get(getStr, jsonResp=False)
@@ -46,17 +48,18 @@ def get_slide_thumbnail(gc, slide_id):
 # %%===========================================================================
 
 
-def deconv_color(im, stain_matrix_method="PCA"):
-    """Convenience wrapper around color_deconvolution for H&E.
+def _deconv_color(im, stain_matrix_method="PCA"):
+    """Deconvolve using wrapper around color_deconvolution for H&E.
 
     See tutorial at:  examples/color-deconvolution.html
 
-    Parameters:
+    Parameters
     ------------
     im : np array
         rgb image
     stain_matrix_method : str
         Currently only PCA supported, but the original method supports others.
+
     """
     # Constant -- see documentation for color_deconvolution method
     stain_color_map = {
@@ -114,11 +117,12 @@ def get_tissue_mask(
         largest contiguous tissue region.
     np int32 array
         each unique value represents a unique tissue region
+
     """
     if deconvolve_first:
         # deconvolvve to ge hematoxylin channel (cellular areas)
         # hematoxylin channel return shows MINIMA so we invert
-        Stains, channel = deconv_color(
+        Stains, channel = _deconv_color(
             thumbnail_rgb, stain_matrix_method=stain_matrix_method)
         thumbnail = 255 - Stains[..., channel]
     else:
