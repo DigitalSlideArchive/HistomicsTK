@@ -29,13 +29,19 @@ from pandas import DataFrame, concat
 from skimage.color import rgb2gray
 from skimage.segmentation import slic
 from skimage.transform import resize
+from sklearn.mixture import GaussianMixture
+from skimage.measure import regionprops
 
 from histomicstk.saliency.tissue_detection import (
-    get_slide_thumbnail, get_tissue_mask)
+    get_slide_thumbnail, get_tissue_mask, _deconv_color)
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     get_contours_from_mask, get_annotation_documents_from_contours)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response)
+from histomicstk.features.compute_intensity_features import (
+    compute_intensity_features)
+from histomicstk.features.compute_haralick_features import (
+    compute_haralick_features)
 
 # %%===========================================================================
 
@@ -123,12 +129,12 @@ resp = gc.get(getStr, jsonResp=False)
 tissue = get_image_from_htk_response(resp)
 del resp
 
-#tissue = rgb2gray(tissue)
+tissue_gray = rgb2gray(tissue)
 
 # %%===========================================================================
 
 # get superpixl mask
-spixel_mask = slic(rgb2gray(tissue), n_segments=500, compactness=0.1)
+spixel_mask = slic(tissue_gray, n_segments=500, compactness=0.1)
 
 # restrict to tissue mask
 tmask = 0 + (labeled == tval)
@@ -174,15 +180,34 @@ annotation_docs = get_annotation_documents_from_contours(
 _ = gc.post(
         "/annotation?itemId=" + SAMPLE_SLIDE_ID, json=annotation_docs[0])
 
+# %% ==========================================================================
+
+# deconvolvve to ge hematoxylin channel (cellular areas)
+# hematoxylin channel return shows MINIMA so we invert
+Stains, channel = _deconv_color(tissue)
+tissue_htx = 255 - Stains[..., channel]
+
+# calculate features from superpixels -- using hematoxylin channel
+rprops = regionprops(spixel_mask)
+fdata_intensity = compute_intensity_features(
+    im_label=spixel_mask, im_intensity=tissue_htx, rprops=rprops)
+fdata_haralick = compute_haralick_features(
+    im_label=spixel_mask, im_intensity=tissue_htx, rprops=rprops)
+fdata = concat((fdata_intensity, fdata_haralick), axis=1)
+
+# Index is corresponding pixel value in the superpixel mask
+# IMPORTANT -- this assumes that regionprops output is sorted by the unique
+# pixel values in label mask, which it is by default
+fdata.index = set(np.unique(spixel_mask)) - {0, }
 
 # %% ==========================================================================
 
+# Fit a two component gaussian mixture model to features, assuming the
+# superpixels are either cellular or acellular
+mmodel = GaussianMixture(n_components=2)
+spixel_labels = mmodel.fit_predict(fdata.values)
 
-
-
-
-
-
+# %% ==========================================================================
 
 
 
