@@ -69,7 +69,7 @@ def _deconv_color(im, stain_matrix_method="PCA"):
         'null':        [0.0, 0.0, 0.0],
         'HE_null':     [0.286, 0.105, 0],
     }
-    I_0 = 255
+    I_0 = None
     if stain_matrix_method == "PCA":  # Visually shows best results
         W_est = rgb_separate_stains_macenko_pca(im, I_0)
         Stains, _, _ = color_deconvolution(im_rgb=im, w=W_est, I_0=I_0)

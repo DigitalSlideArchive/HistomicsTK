@@ -431,6 +431,9 @@ var ImageView = View.extend({
                 annotation.setView(viewer.bounds(), viewer.zoom(), viewer.zoomRange().max, true);
             }
             annotation.set('loading', true);
+            annotation.once('g:fetched', () => {
+                annotation.unset('loading');
+            });
             annotation.fetch().then(() => {
                 // abandon this if the annotation should not longer be shown
                 // or we are now showing a different image.
@@ -439,8 +442,6 @@ var ImageView = View.extend({
                 }
                 this.viewerWidget.drawAnnotation(annotation);
                 return null;
-            }).always(() => {
-                annotation.unset('loading');
             });
         } else {
             this.viewerWidget.removeAnnotation(annotation);
