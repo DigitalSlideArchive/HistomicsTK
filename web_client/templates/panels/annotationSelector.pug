@@ -36,6 +36,7 @@ block content
         each annotation in annotations
           - var name = annotation.get('annotation').name;
           - var displayed = annotation.get('displayed');
+          - var partial = annotation._centroids && annotation._centroids.partial
           - var loading = annotation.get('loading');
           - var classes = [];
           if annotation.id === activeAnnotation
@@ -47,7 +48,7 @@ block content
               span.icon-spin3.animate-spin.h-float-left
             else if displayed
               span.icon-eye.h-toggle-annotation.h-float-left(
-                title='Hide annotation')
+                title='Hide annotation' + (partial ? '.  Annotation is only partially loaded' : ''), class=partial ? 'partial' : '')
             else
               span.icon-eye-off.h-toggle-annotation.h-float-left(
                 title='Show annotation')

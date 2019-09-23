@@ -219,6 +219,8 @@ var AnnotationSelector = Panel.extend({
                         if (model.get('_version') !== models[model.id].get('_version')) {
                             model.refresh(true);
                             model.set('displayed', true);
+                        } else {
+                            model._centroids = models[model.id]._centroids;
                         }
                     }
                     // set without triggering a change; a change reloads and
