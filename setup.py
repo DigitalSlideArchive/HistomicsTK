@@ -58,12 +58,12 @@ setup(
         'Cython>=0.25.2',
         'scikit-build>=0.8.1',
         'cmake>=0.6.0',
+        'numpy>=1.12.1',
     ],
     install_requires=[
         'ctk-cli>=1.5',
         # scientific packages
         'nimfa>=1.3.2',
-        'numpy>=1.12.1',
         'scipy>=0.19.0',
         'Pillow>=3.2.0',
         'pandas>=0.19.2',
