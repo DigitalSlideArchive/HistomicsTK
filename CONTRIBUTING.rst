@@ -70,6 +70,8 @@ Ready to contribute? Here's how to set up `HistomicsTK` for local development.
     $ cd HistomicsTK/
     $ python -m pip install scikit-build ninja cython numpy nimfa
     $ python setup.py develop
+    
+Of course, any type of virtual python environment will do. These instructions are equally applicable inside `conda` environments.
 
 4. Create a branch for local development::
 
