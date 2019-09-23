@@ -35,6 +35,7 @@ savepath = tempfile.mkdtemp()
 # %%===========================================================================
 # Tests
 
+
 class TissueDetectionTest(unittest.TestCase):
     """Test methods for getting ROI mask from annotations."""
 
@@ -44,7 +45,7 @@ class TissueDetectionTest(unittest.TestCase):
 
         labeled, mask = get_tissue_mask(
             thumbnail_rgb, deconvolve_first=True,
-            n_thresholding_steps=2, sigma=0., min_size=30)
+            n_thresholding_steps=1, sigma=1.5, min_size=30)
 
         # # visualize result
         # vals = np.random.rand(256,3)
@@ -58,7 +59,7 @@ class TissueDetectionTest(unittest.TestCase):
         # plt.show()
 
         self.assertTupleEqual(labeled.shape, (156, 256))
-        self.assertEqual(len(np.unique(labeled)), 14)
+        self.assertEqual(len(np.unique(labeled)), 10)
 
         # save for use in the next test
         imwrite(os.path.join(
