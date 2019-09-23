@@ -193,7 +193,6 @@ fdata = concat(fdata_list, axis=1)
 if keep_feats is not None:
     fdata = fdata.loc[:, keep_feats]
 
-
 # Index is corresponding pixel value in the superpixel mask
 # IMPORTANT -- this assumes that regionprops output is sorted by the unique
 # pixel values in label mask, which it is by default
@@ -239,18 +238,19 @@ GTCodes_df = DataFrame(columns=['group', 'GT_code', 'color'])
 
 contours_df = DataFrame()
 
-for sidx, spval in enumerate(list(fdata.index)):
-    spstr = 'spixel-%d_label-%s' % (spval, spixel_labels[sidx])
+for spval, sp in fdata.iterrows():
+    spstr = 'spixel-%d_cellularity-%d' % (
+        spval, cluster_props[sp['cluster']]['cellularity'])
     GTCodes_df.loc[spstr, 'group'] = spstr
     GTCodes_df.loc[spstr, 'GT_code'] = spval
-    GTCodes_df.loc[spstr, 'color'] = cluster_props[spixel_labels[sidx]]['color']
+    GTCodes_df.loc[spstr, 'color'] = cluster_props[sp['cluster']]['color']
 
 contours_df = get_contours_from_mask(
     MASK=spixel_mask, GTCodes_df=GTCodes_df,
     get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False,
     monitorPrefix=spstr)
 contours_df.loc[:, "group"] = [
-    "spixel_label-%s" % j[-1] for j in contours_df.loc[:, "group"]]
+    j.split('_')[-1] for j in contours_df.loc[:, "group"]]
 
 # get annotation docs
 annprops = {
@@ -261,11 +261,11 @@ annprops = {
     'lineWidth': 3.0,
 }
 annotation_docs = get_annotation_documents_from_contours(
-    contours_df.copy(), docnamePrefix='test', annprops=annprops,
+    contours_df.copy(), docnamePrefix='spixel', annprops=annprops,
     annots_per_doc=1000, separate_docs_by_group=True,
     verbose=False, monitorPrefix="spixels : annotation docs")
-
 for doc in annotation_docs:
     _ = gc.post(
             "/annotation?itemId=" + slide_id, json=doc)
 
+# %% ==========================================================================
