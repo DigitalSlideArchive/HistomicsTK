@@ -1,0 +1,1 @@
+"""Saliency detection module."""
