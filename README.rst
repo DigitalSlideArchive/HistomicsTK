@@ -49,8 +49,19 @@ HistomicsTK can be used in two ways:
   `api-docs <https://digitalslidearchive.github.io/HistomicsTK/api-docs.html>`__
   and `examples <https://digitalslidearchive.github.io/HistomicsTK/examples.html>`__
   for more information.
-
-  This can be installed on Linux via ``pip install histomicstk``.
+  
+  Installation instructions on Linux:
+  
+  *To install HistomicsTK using PyPI*::
+  
+  $ pip install histomicstk
+  
+  *To install HistomicsTK from source*::
+  
+  $ git clone https://github.com/DigitalSlideArchive/HistomicsTK/
+  $ cd HistomicsTK/
+  $ python -m pip install scikit-build ninja cython numpy nimfa
+  $ python setup.py develop
 
   HistomicsTK uses the `large_image`_ library to read and various microscopy
   image formats.  Depending on your exact system, installing the necessary 
