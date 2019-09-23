@@ -204,7 +204,7 @@ n_gaussian_components = 5
 
 # Fit a 2? 3? 4? component gaussian mixture model to features
 mmodel = GaussianMixture(n_components=n_gaussian_components)
-spixel_labels = mmodel.fit_predict(fdata.values)
+spixel_labels = mmodel.fit_predict(fdata.values) + 1
 
 # %% ==========================================================================
 
@@ -233,11 +233,10 @@ for clid in np.unique(spixel_labels):
 
 # %% ==========================================================================
 
+# Visualize single superpixels by cellularity
+
 # Define GTCodes dataframe
 GTCodes_df = DataFrame(columns=['group', 'GT_code', 'color'])
-
-contours_df = DataFrame()
-
 for spval, sp in fdata.iterrows():
     spstr = 'spixel-%d_cellularity-%d' % (
         spval, cluster_props[sp['cluster']]['cellularity'])
@@ -245,10 +244,10 @@ for spval, sp in fdata.iterrows():
     GTCodes_df.loc[spstr, 'GT_code'] = spval
     GTCodes_df.loc[spstr, 'color'] = cluster_props[sp['cluster']]['color']
 
+# get contours df
 contours_df = get_contours_from_mask(
     MASK=spixel_mask, GTCodes_df=GTCodes_df,
-    get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False,
-    monitorPrefix=spstr)
+    get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False)
 contours_df.loc[:, "group"] = [
     j.split('_')[-1] for j in contours_df.loc[:, "group"]]
 
@@ -269,3 +268,39 @@ for doc in annotation_docs:
             "/annotation?itemId=" + slide_id, json=doc)
 
 # %% ==========================================================================
+
+# Visualize contiguous superpixels by cellularity
+
+# get cellularity cluster membership mask
+cellularity_mask = np.zeros(spixel_mask.shape)
+for spval, sp in fdata.iterrows():
+    cellularity_mask[spixel_mask == spval] = sp['cluster']
+
+# Define GTCodes dataframe
+GTCodes_df = DataFrame(columns=['group', 'GT_code', 'color'])
+for spval, cp in cluster_props.items():
+    spstr = 'cellularity-%d' % (cp['cellularity'])
+    GTCodes_df.loc[spstr, 'group'] = spstr
+    GTCodes_df.loc[spstr, 'GT_code'] = spval
+    GTCodes_df.loc[spstr, 'color'] = cp['color']
+
+# get contours df
+contours_df = get_contours_from_mask(
+    MASK=cellularity_mask, GTCodes_df=GTCodes_df,
+    get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False)
+
+# get annotation docs
+annprops = {
+    'F': (ymax - ymin) / tissue_gray.shape[0],
+    'X_OFFSET': xmin,
+    'Y_OFFSET': ymin,
+    'opacity': 0,
+    'lineWidth': 3.0,
+}
+annotation_docs = get_annotation_documents_from_contours(
+    contours_df.copy(), docnamePrefix='spixel', annprops=annprops,
+    annots_per_doc=1000, separate_docs_by_group=True,
+    verbose=False, monitorPrefix="spixels : annotation docs")
+for doc in annotation_docs:
+    _ = gc.post(
+            "/annotation?itemId=" + slide_id, json=doc)
