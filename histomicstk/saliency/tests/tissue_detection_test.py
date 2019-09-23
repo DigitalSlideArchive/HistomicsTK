@@ -8,28 +8,32 @@ Created on Wed Sep 18 00:06:28 2019.
 
 import unittest
 
+import os
+import tempfile
+import shutil
+from imageio import imread, imwrite
 import girder_client
 import numpy as np
 # from matplotlib import pylab as plt
 # from matplotlib.colors import ListedColormap
 from histomicstk.saliency.tissue_detection import (
-    get_slide_thumbnail, get_tissue_mask)
+    get_slide_thumbnail, get_tissue_mask,
+    get_tissue_boundary_annotation_documents)
 
 # %%===========================================================================
 # Constants & prep work
 
 APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-# SAMPLE_SLIDE_ID = '5d586d57bd4404c6b1f28640'
-SAMPLE_SLIDE_ID = "5d817f5abd4404c6b1f744bb"
+SAMPLE_SLIDE_ID = "5d586d76bd4404c6b1f286ae"
 
 gc = girder_client.GirderClient(apiUrl=APIURL)
 # gc.authenticate(interactive=True)
 gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
+savepath = tempfile.mkdtemp()
 
 # %%===========================================================================
 # Tests
-# =============================================================================
 
 class TissueDetectionTest(unittest.TestCase):
     """Test methods for getting ROI mask from annotations."""
@@ -53,12 +57,51 @@ class TissueDetectionTest(unittest.TestCase):
         # ax[2].imshow(mask, cmap=cMap)
         # plt.show()
 
-        self.assertTupleEqual(labeled.shape, (152, 256))
-        self.assertEqual(len(np.unique(labeled)), 10)
+        self.assertTupleEqual(labeled.shape, (156, 256))
+        self.assertEqual(len(np.unique(labeled)), 14)
 
+        # save for use in the next test
+        imwrite(os.path.join(
+            savepath, 'tissue_binmask.png'), np.uint8(0 + (labeled > 0)))
+
+    def test_get_tissue_boundary_annotation_documents(self):
+        """Test get_tissue_boundary_annotation_documents()."""
+
+        labeled = imread(os.path.join(savepath, 'tissue_binmask.png'))
+        annotation_docs = get_tissue_boundary_annotation_documents(
+            gc, slide_id=SAMPLE_SLIDE_ID, labeled=labeled)
+
+        self.assertTrue('elements' in annotation_docs[0].keys())
+        self.assertEqual(len(annotation_docs[0]['elements']), 9)
+
+        # deleting existing annotations in target slide (if any)
+        existing_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
+        for ann in existing_annotations:
+            gc.delete('/annotation/%s' % ann['_id'])
+
+        # post annotations to slide
+        for doc in annotation_docs:
+            _ = gc.post("/annotation?itemId=" + SAMPLE_SLIDE_ID, json=doc)
+
+        # cleanup
+        shutil.rmtree(savepath)
+
+
+def suite():
+    """Run chained unit tests in desired order.
+
+    See: https://stackoverflow.com/questions/5387299/...
+         ... python-unittest-testcase-execution-order
+    """
+    suite = unittest.TestSuite()
+    suite.addTest(TissueDetectionTest('test_get_tissue_mask'))
+    suite.addTest(
+        TissueDetectionTest('test_get_tissue_boundary_annotation_documents'))
+    return suite
 
 # %%===========================================================================
 
 
 if __name__ == '__main__':
-    unittest.main()
+    runner = unittest.TextTestRunner(failfast=True)
+    runner.run(suite())
