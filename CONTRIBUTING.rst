@@ -68,7 +68,10 @@ Ready to contribute? Here's how to set up `HistomicsTK` for local development.
 
     $ mkvirtualenv HistomicsTK
     $ cd HistomicsTK/
+    $ python -m pip install setuptools-scm Cython>=0.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
     $ python setup.py develop
+    
+Of course, any type of virtual python environment will do. These instructions are equally applicable inside `conda` environments.
 
 4. Create a branch for local development::
 
