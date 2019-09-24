@@ -91,7 +91,7 @@ class Polygon_merger(Base_HTK_Class):
             'background_group': 'mostly_stroma',
             'roi_group': 'roi',
         }
-        super().__init__(default_attr=default_attr)
+        super(Polygon_merger, self).__init__(default_attr=default_attr)
 
         # some sanity checks
         assert not (
@@ -375,7 +375,7 @@ class Polygon_merger(Base_HTK_Class):
         while keep_going:
             self._print2("%s: level %d" % (monitorPrefix, level))
             merge_groups['level-%d' % (level+1)] = []
-            reference = merge_groups['level-%d' % (level)].copy()
+            reference = merge_groups['level-%d' % (level)][:]
             # compare each cluster to the others in current level
             for gid, mgroup in enumerate(merge_groups['level-%d' % (level)]):
                 for gid2, mgroup2 in enumerate(reference):
