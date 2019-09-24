@@ -14,13 +14,14 @@ from shapely.ops import cascaded_union
 from PIL import Image
 from imageio import imread
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    Conditional_Print, get_contours_from_mask, _parse_annot_coords,
+    get_contours_from_mask, _parse_annot_coords,
     _discard_nonenclosed_background_group)
+from histomicstk.utils.general_utils import Base_HTK_Class
 
 # %% =====================================================================
 
 
-class Polygon_merger(object):
+class Polygon_merger(Base_HTK_Class):
     """Methods to merge polygons in tiled masks."""
 
     def __init__(self, maskpaths, GTCodes_df, **kwargs):
@@ -90,28 +91,12 @@ class Polygon_merger(object):
             'background_group': 'mostly_stroma',
             'roi_group': 'roi',
         }
-        more_allowed_attr = ['', ]
-        allowed_attr = list(default_attr.keys()) + more_allowed_attr
-        default_attr.update(kwargs)
-        self.__dict__.update(
-            (k, v) for k, v in default_attr.items() if k in allowed_attr)
-
-        # To NOT silently ignore rejected keys
-        rejected_keys = set(kwargs.keys()) - set(allowed_attr)
-        if rejected_keys:
-            raise ValueError(
-                "Invalid arguments in constructor:{}".format(rejected_keys))
+        super().__init__(default_attr=default_attr)
 
         # some sanity checks
         assert not (
             self.contkwargs['get_roi_contour']
             or self.contkwargs['discard_nonenclosed_background'])
-
-        # verbosity control
-        self.cpr1 = Conditional_Print(verbose=self.verbose == 1)
-        self._print1 = self.cpr1._print
-        self.cpr2 = Conditional_Print(verbose=self.verbose == 2)
-        self._print2 = self.cpr2._print
         self.contkwargs['verbose'] = self.verbose > 1
 
     # %% =====================================================================

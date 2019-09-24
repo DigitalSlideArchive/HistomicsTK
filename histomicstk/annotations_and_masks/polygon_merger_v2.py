@@ -10,15 +10,14 @@ from pandas import DataFrame  # , concat
 from shapely.geometry.polygon import Polygon
 from shapely.ops import cascaded_union
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    # from masks_to_annotations_handler import (
-    Conditional_Print, _parse_annot_coords, )
-# from pyrtree.rtree import RTree, Rect
+    _parse_annot_coords, )
 from histomicstk.annotations_and_masks.pyrtree.rtree import RTree, Rect
+from histomicstk.utils.general_utils import Base_HTK_Class
 
 # %% =====================================================================
 
 
-class Polygon_merger_v2(object):
+class Polygon_merger_v2(Base_HTK_Class):
     """Methods to merge contiguous polygons from whole-slide image."""
 
     def __init__(self, contours_df, **kwargs):
@@ -60,23 +59,7 @@ class Polygon_merger_v2(object):
             'monitorPrefix': "",
             'merge_thresh': 3,
         }
-        more_allowed_attr = ['', ]
-        allowed_attr = list(default_attr.keys()) + more_allowed_attr
-        default_attr.update(kwargs)
-        self.__dict__.update(
-            (k, v) for k, v in default_attr.items() if k in allowed_attr)
-
-        # To NOT silently ignore rejected keys
-        rejected_keys = set(kwargs.keys()) - set(allowed_attr)
-        if rejected_keys:
-            raise ValueError(
-                "Invalid arguments in constructor:{}".format(rejected_keys))
-
-        # verbosity control
-        self.cpr1 = Conditional_Print(verbose=self.verbose == 1)
-        self._print1 = self.cpr1._print
-        self.cpr2 = Conditional_Print(verbose=self.verbose == 2)
-        self._print2 = self.cpr2._print
+        super().__init__(default_attr=default_attr)
 
         # This is where contours will be stored
         self.contours_df = contours_df
