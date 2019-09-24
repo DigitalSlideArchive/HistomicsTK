@@ -13,9 +13,9 @@ import numpy as np
 # Constants & prep work
 
 APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-SAMPLE_SLIDE_ID = "5d586d76bd4404c6b1f286ae"
+#SAMPLE_SLIDE_ID = "5d586d76bd4404c6b1f286ae"
 
-gc = girder_client.GirderClient(apiUrl=APIURL)
+#gc = girder_client.GirderClient(apiUrl=APIURL)
 # gc.authenticate(interactive=True)
 gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
@@ -72,9 +72,9 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
 
         """
         default_attr = {
-            'MAG': 3.0,
             'verbose': 1,
             'monitorPrefix': "",
+            'MAG': 3.0,
             'spixel_size_baseMag': 350 * 350,
             'compactness': 0.1,
             'use_grayscale': True,
@@ -88,8 +88,16 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
             ],
             'opacity': 0,
             'lineWidth': 3.0,
+            'get_tissue_mask_kwargs': {
+                'deconvolve_first': False, 'n_thresholding_steps': 1,
+                'sigma': 1.5, 'min_size': 500,
+            },
         }
         super().__init__(default_attr=default_attr)
+
+        # set attribs
+        self.gc = gc
+        self.slide_id = slide_id
 
 
 
@@ -109,18 +117,15 @@ a
 # %%===========================================================================
 # %%===========================================================================
 
-slide_id = SAMPLE_SLIDE_ID
 
 # %%===========================================================================
 
 # get tissue mask
-thumbnail_rgb = get_slide_thumbnail(gc, SAMPLE_SLIDE_ID)
-labeled, _ = get_tissue_mask(
-    thumbnail_rgb, deconvolve_first=False,
-    n_thresholding_steps=1, sigma=1.5, min_size=500)
+thumbnail_rgb = get_slide_thumbnail(self.gc, self.SAMPLE_SLIDE_ID)
+labeled, _ = get_tissue_mask(thumbnail_rgb, self.get_tissue_mask_kwargs)
 
 # Find size relative to WSI
-slide_info = gc.get('item/%s/tiles' % SAMPLE_SLIDE_ID)
+slide_info = gc.get('item/%s/tiles' % self.slide_id)
 F_tissue = slide_info['sizeX'] / labeled.shape[1]
 
 unique_tvals = list(set(np.unique(labeled)) - {0, })
