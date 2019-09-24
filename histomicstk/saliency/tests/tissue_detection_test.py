@@ -19,6 +19,8 @@ import numpy as np
 from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask,
     get_tissue_boundary_annotation_documents)
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+    delete_annotations_in_slide)
 
 # %%===========================================================================
 # Constants & prep work
@@ -67,7 +69,6 @@ class TissueDetectionTest(unittest.TestCase):
 
     def test_get_tissue_boundary_annotation_documents(self):
         """Test get_tissue_boundary_annotation_documents()."""
-
         labeled = imread(os.path.join(savepath, 'tissue_binmask.png'))
         annotation_docs = get_tissue_boundary_annotation_documents(
             gc, slide_id=SAMPLE_SLIDE_ID, labeled=labeled)
@@ -76,9 +77,7 @@ class TissueDetectionTest(unittest.TestCase):
         self.assertEqual(len(annotation_docs[0]['elements']), 9)
 
         # deleting existing annotations in target slide (if any)
-        existing_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
-        for ann in existing_annotations:
-            gc.delete('/annotation/%s' % ann['_id'])
+        delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)
 
         # post annotations to slide
         for doc in annotation_docs:

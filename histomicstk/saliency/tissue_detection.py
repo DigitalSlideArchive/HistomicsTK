@@ -198,6 +198,7 @@ def get_tissue_boundary_annotation_documents(
     --------
     list of dicts
         each dict is an annotation document that you can post to DSA
+
     """
     # Get annotations properties
     if annprops is None:

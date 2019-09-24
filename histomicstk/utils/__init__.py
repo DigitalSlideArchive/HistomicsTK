@@ -17,6 +17,7 @@ from .merge_colinear import merge_colinear
 from .fit_poisson_mixture import fit_poisson_mixture
 from .simple_mask import simple_mask
 from .sample_pixels import sample_pixels  # must import after SimpleMask
+from . import general_utils
 
 # list out things that are available for public use
 __all__ = (
@@ -34,4 +35,5 @@ __all__ = (
     'fit_poisson_mixture',
     'sample_pixels',
     'simple_mask',
+    'general_utils',
 )

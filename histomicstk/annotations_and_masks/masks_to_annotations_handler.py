@@ -10,20 +10,7 @@ import numpy as np
 from pandas import DataFrame, concat
 import cv2
 from shapely.geometry.polygon import Polygon
-
-# %% =====================================================================
-
-
-class Conditional_Print(object):
-    """Print to screen if certain conditions are satisfied (Internal)."""
-
-    def __init__(self, verbose=True):
-        """Init. This is for PEP compliance."""
-        self.verbose = verbose
-
-    def _print(self, text):
-        if self.verbose:
-            print(text)
+from histomicstk.utils.general_utils import Conditional_Print
 
 # %% =====================================================================
 

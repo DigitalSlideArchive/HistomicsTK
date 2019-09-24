@@ -33,6 +33,8 @@ from sklearn.mixture import GaussianMixture
 from skimage.measure import regionprops
 from matplotlib import cm
 
+from histomicstk.utils.general_utils import Base_HTK_Class
+
 from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask, _deconv_color)
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
@@ -46,6 +48,71 @@ from histomicstk.features.compute_haralick_features import (
 
 # %%===========================================================================
 
+
+class Cellularity_Detector_Superpixels(Base_HTK_Class):
+    """Detect cellular regions in a slides by classifying superpixels."""
+
+    def __init__(self, gc, slide_id, **kwargs):
+        """Init Polygon_merger object.
+
+        Arguments:
+        -----------
+        gc : object
+            girder client object
+        slide_id : str
+            girder ID of slide
+        MAG : float
+            magnification at which to detect cellularity
+        verbose : int
+            0 - Do not print to screen
+            1 - Print only key messages
+            2 - Print everything to screen
+        monitorPrefix : str
+            text to prepend to printed statements
+
+        """
+        default_attr = {
+            'MAG': 3.0,
+            'verbose': 1,
+            'monitorPrefix': "",
+            'spixel_size_baseMag': 350 * 350,
+            'compactness': 0.1,
+            'use_grayscale': True,
+            'use_intensity': True,
+            'use_texture': False,
+            # 'keep_feats': None,
+            'keep_feats': [
+                "Intensity.Mean", "Intensity.Median",
+                "Intensity.Std", "Intensity.IQR",
+                "Intensity.HistEntropy",
+            ],
+            'opacity': 0,
+            'lineWidth': 3.0,
+        }
+        super().__init__(default_attr=default_attr)
+
+
+
+    # %% =====================================================================
+
+
+
+# %%
+
+cds = Cellularity_Detector_Superpixels(gc, SAMPLE_SLIDE_ID)
+
+# %%
+
+a
+
+# %%===========================================================================
+# %%===========================================================================
+# %%===========================================================================
+
+slide_id = SAMPLE_SLIDE_ID
+
+# %%===========================================================================
+
 # get tissue mask
 thumbnail_rgb = get_slide_thumbnail(gc, SAMPLE_SLIDE_ID)
 labeled, _ = get_tissue_mask(
@@ -56,65 +123,6 @@ labeled, _ = get_tissue_mask(
 slide_info = gc.get('item/%s/tiles' % SAMPLE_SLIDE_ID)
 F_tissue = slide_info['sizeX'] / labeled.shape[1]
 
-# %%===========================================================================
-
-
-def _plot_and_post_tissue():
-
-    # Define color map
-    vals = np.random.rand(256, 3)
-    vals[0, ...] = [0.9, 0.9, 0.9]
-    cMap = ListedColormap(1 - vals)
-
-    TISSUE_COLOR = 'rgb(0,0,0)'
-
-    # visualize
-    f, ax = plt.subplots(1, 2, figsize=(20, 20))
-    ax[0].imshow(thumbnail_rgb)
-    ax[1].imshow(labeled, cmap=cMap)
-    plt.show()
-
-    # Define GTCodes dataframe
-    GTCodes_df = DataFrame(columns=['group', 'GT_code', 'color'])
-    GTCodes_df.loc['tissue', 'group'] = 'tissue'
-    GTCodes_df.loc['tissue', 'GT_code'] = 1
-    GTCodes_df.loc['tissue', 'color'] = TISSUE_COLOR
-
-    # get annotation docs
-    contours_tissue = get_contours_from_mask(
-        MASK=0 + (labeled > 0), GTCodes_df=GTCodes_df,
-        get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False,
-        monitorPrefix="tissue: getting contours")
-    annprops = {
-        'F': F_tissue,
-        'X_OFFSET': 0,
-        'Y_OFFSET': 0,
-        'opacity': 0,
-        'lineWidth': 4.0,
-    }
-    annotation_docs = get_annotation_documents_from_contours(
-        contours_tissue.copy(), docnamePrefix='test', annprops=annprops,
-        verbose=False, monitorPrefix="tissue : annotation docs")
-
-    # deleting existing annotations in target slide (if any)
-    existing_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
-    for ann in existing_annotations:
-        gc.delete('/annotation/%s' % ann['_id'])
-
-    # post annotations to slide
-    _ = gc.post(
-        "/annotation?itemId=" + SAMPLE_SLIDE_ID, json=annotation_docs[0])
-
-
-_plot_and_post_tissue()
-
-# %%===========================================================================
-
-MAG = 3.0
-slide_id = SAMPLE_SLIDE_ID
-
-# %%===========================================================================
-
 unique_tvals = list(set(np.unique(labeled)) - {0, })
 
 tval = unique_tvals[1]
@@ -122,31 +130,33 @@ tval = unique_tvals[1]
 
 # %%===========================================================================
 
-# find coordinates at scan magnification
-tloc = np.argwhere(labeled == tval)
-ymin, xmin = [int(j) for j in np.min(tloc, axis=0) * F_tissue]
-ymax, xmax = [int(j) for j in np.max(tloc, axis=0) * F_tissue]
+tissue_mask = labeled == tval
 
-# load RGB for this tissue piece at saliency magnification
-getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
-    slide_id, xmin, xmax, ymin, ymax) + "&magnification=%d" % MAG
-resp = gc.get(getStr, jsonResp=False)
-tissue = get_image_from_htk_response(resp)
-del resp
+def _get_tissue_rgb_from_small_mask(tissue_mask):
+    # find coordinates at scan magnification
+    tloc = np.argwhere(tissue_mask)
+    ymin, xmin = [int(j) for j in np.min(tloc, axis=0) * F_tissue]
+    ymax, xmax = [int(j) for j in np.max(tloc, axis=0) * F_tissue]
+    # load RGB for this tissue piece at saliency magnification
+    getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
+        slide_id, xmin, xmax, ymin, ymax) + "&magnification=%d" % MAG
+    resp = gc.get(getStr, jsonResp=False)
+    tissue = get_image_from_htk_response(resp)
+    return tissue
 
-tissue_gray = rgb2gray(tissue)
 
 # %%===========================================================================
 
-spixel_size_baseMag = 350 * 350
-compactness = 0.1
+
+
+if use_grayscale:
+    tissue = rgb2gray(tissue)
 
 spixel_size = spixel_size_baseMag * (MAG / slide_info['magnification'])
-n_spixels = int(tissue_gray.shape[0] * tissue_gray.shape[1] / spixel_size)
-n_spixels
+n_spixels = int(tissue.shape[0] * tissue.shape[1] / spixel_size)
 
 # get superpixl mask
-spixel_mask = slic(tissue_gray, n_segments=n_spixels, compactness=compactness)
+spixel_mask = slic(tissue, n_segments=n_spixels, compactness=compactness)
 
 # restrict to tissue mask
 tmask = 0 + (labeled == tval)
@@ -165,16 +175,6 @@ Stains, channel = _deconv_color(tissue)
 tissue_htx = 255 - Stains[..., channel]
 
 # %% ==========================================================================
-
-use_intensity = True
-use_texture = False
-
-keep_feats = None
-keep_feats = [
-    "Intensity.Mean", "Intensity.Median",
-    "Intensity.Std", "Intensity.IQR",
-    "Intensity.HistEntropy",
-]
 
 # sanity checks
 assert (use_intensity or use_texture)
@@ -253,7 +253,7 @@ contours_df.loc[:, "group"] = [
 
 # get annotation docs
 annprops = {
-    'F': (ymax - ymin) / tissue_gray.shape[0],
+    'F': (ymax - ymin) / tissue.shape[0],
     'X_OFFSET': xmin,
     'Y_OFFSET': ymin,
     'opacity': 0,
@@ -291,11 +291,11 @@ contours_df = get_contours_from_mask(
 
 # get annotation docs
 annprops = {
-    'F': (ymax - ymin) / tissue_gray.shape[0],
+    'F': (ymax - ymin) / tissue.shape[0],
     'X_OFFSET': xmin,
     'Y_OFFSET': ymin,
-    'opacity': 0,
-    'lineWidth': 3.0,
+    'opacity': opacity,
+    'lineWidth': lineWidth,
 }
 annotation_docs = get_annotation_documents_from_contours(
     contours_df.copy(), docnamePrefix='spixel', annprops=annprops,
