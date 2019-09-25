@@ -52,7 +52,7 @@ from histomicstk.features.compute_haralick_features import (
 # =============================================================================
 
 
-class Single_tissue_piece(object):
+class CD_Single_tissue_piece(object):
     """Detect cellular regions in a single tissue piece (internal)."""
 
     def __init__(self, cd, tissue_mask):
@@ -68,6 +68,28 @@ class Single_tissue_piece(object):
         """
         self.cd = cd
         self.tissue_mask = 0 + tissue_mask
+
+    # %% ======================================================================
+
+    def run(self):
+        """Get cellularity and optionally visualize on DSA"""
+        # get cellularity
+        self.restrict_mask_to_single_tissue_piece()
+        self.set_tissue_rgb()
+        self.set_superpixel_mask()
+        self.set_superpixel_features()
+        self.set_superpixel_assignment()
+        self.assign_cellularity_scores()
+
+        # visualize
+        if self.cd.visualize_spixels or self.cd.visualize_contiguous:
+            self.assign_colors_to_spixel_clusters()
+
+        if self.cd.visualize_spixels:
+            self.visualize_individual_superpixels()
+
+        if self.cd.visualize_contiguous:
+            self.visualize_contuguous_superpixels()
 
     # %% ======================================================================
 
@@ -173,7 +195,7 @@ class Single_tissue_piece(object):
 
     # %% ======================================================================
 
-    def Assign_cellularity_scores(self):
+    def assign_cellularity_scores(self):
         """Assign cellularity scores to spixel clusters"""
         assert self.cd.use_intensity, "We need intensity to rank cellularity."
         assert self.cd.deconvolve, \
@@ -280,6 +302,7 @@ class Single_tissue_piece(object):
 # %%===========================================================================
 # =============================================================================
 
+
 class Cellularity_Detector_Superpixels(Base_HTK_Class):
     """Detect cellular regions in a slides by classifying superpixels.
 
@@ -364,6 +387,10 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
             width of line when displaying superpixel boundaries.
         cMap : object
             matplotlib color map to use when visualizing cellularity
+        visualize_spixels : bool
+            whether to visualize superpixels, color-coded by cellularity
+        visualize_contiguous : bool
+            whether to visualize contiguous cellular regions
 
         """
         default_attr = {
@@ -391,6 +418,8 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
             'opacity': 0,
             'lineWidth': 3.0,
             'cMap': cm.seismic,
+            'visualize_spixels': True,
+            'visualize_contiguous': True,
         }
         super(Cellularity_Detector_Superpixels, self).__init__(
             default_attr=default_attr)
@@ -398,6 +427,15 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
         # set attribs
         self.gc = gc
         self.slide_id = slide_id
+
+    # %% ======================================================================
+
+    def run(self):
+        """Run cellularity detection and optionally visualize result."""
+        # set general params
+        self.set_color_normalization_values()
+
+#    CD_Single_tissue_piece
 
     # %% ======================================================================
 
