@@ -91,6 +91,13 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
             2 - Print everything to screen
         monitorPrefix : str
             text to prepend to printed statements
+        cnorm_params : dict
+            Reinhard color normalization parameters. Accepted keys: thumbnail
+            and main (since thumbnail normalization is different from color
+            normalization of tissue at target magnification. Each entry is a
+            dict containing values for mu and sigma. This is either given
+            here or can be set using self.set_color_normalization_values().
+            May be left unset if you do not want to normalize.
         MAG : float
             magnification at which to detect cellularity
         spixel_size_baseMag : int
@@ -99,17 +106,41 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
             compactness parameter for the SLIC method. Higher values result
             in more regular superpixels while smaller values are more likely
             to respect tissue boundaries.
+        deconvolve : bool
+            Whether to deconvolve and use hematoxylin channel for feature
+            extraction. Must be True to ranks spixel clusters by cellularity.
         use_grayscale : bool
-            use SLIC
+            If True, grayscale image is used with SLIC. May be more robust to
+            color variations from slide to slide and more efficient.
+        use_intensity : bool
+            Whether to extract intensity features from the hematoxylin channel.
+            This must be True to rank spuerpixel clusters by cellularity.
+        use_texture : bool
+            Whether to extract Haralick texture features from Htx channel. May
+            not necessarily improve results when used in conjunction with
+            intensity features.
+        keep_feats : list
+            Name of intensity features to use. See
+            histomicstk.features.compute_intensity_features.
+            Using fewer informative features may result in better
+            gaussian mixture modeling results.
+        opacity : float
+            opacity of polygons when posted to DSA.
+            0 (no opacity) is more efficient to render.
+        lineWidth : float
+            width of line when displaying superpixel boundaries.
+        get_tissue_mask_kwargs : dict
+            kwargs for the get_tissue_mask() method.
 
         """
         default_attr = {
             'verbose': 1,
             'monitorPrefix': "",
-            'MAG': 3.0,
             'cnorm_params': dict(),
+            'MAG': 3.0,
             'spixel_size_baseMag': 350 * 350,
             'compactness': 0.1,
+            'deconvolve': True,
             'use_grayscale': True,
             'use_intensity': True,
             'use_texture': False,
@@ -135,26 +166,9 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
 
     # %% =====================================================================
 
-    def set_slide_info(self):
-        """Set self.slide_info dict."""
-        # This is a presistent dict to store information about slide
-        self.slide_info = self.gc.get('item/%s/tiles' % self.slide_id)
-
-        # get tissue mask
-        thumbnail_rgb = get_slide_thumbnail(self.gc, self.slide_id)
-        self.slide_info['labeled'], _ = get_tissue_mask(
-                thumbnail_rgb, self.get_tissue_mask_kwargs)
-
-        # Find size relative to WSI
-        self.slide_info['F_tissue'] = self.slide_info[
-            'sizeX'] / self.slide_info['labeled'].shape[1]
-
-    # %% =====================================================================
-
     def set_color_normalization_values(
             self, mu=None, sigma=None, ref_image_path=None, what='main'):
-        """read target image and  fetch normalization values"""
-
+        """Set color normalization values for thumbnail or main image."""
         assert (
             all([j is not None for j in (mu, sigma)])
             or ref_image_path is not None), \
@@ -169,7 +183,27 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
 
     # %% =====================================================================
 
+    def set_slide_info(self):
+        """Set self.slide_info dict."""
+        # This is a presistent dict to store information about slide
+        self.slide_info = self.gc.get('item/%s/tiles' % self.slide_id)
 
+        # get tissue mask
+        thumbnail_rgb = get_slide_thumbnail(self.gc, self.slide_id)
+
+        # color normalization if desired
+        if 'thumbnail' in self.cnorm_params.keys():
+            thumbnail_rgb = np.uint8(reinhard(
+                im_src=thumbnail_rgb,
+                target_mu=self.cnorm_params['thumbnail']['mu'],
+                target_sigma=self.cnorm_params['thumbnail']['sigma']))
+
+        self.slide_info['labeled'], _ = get_tissue_mask(
+            thumbnail_rgb, self.get_tissue_mask_kwargs)
+
+        # Find size relative to WSI
+        self.slide_info['F_tissue'] = self.slide_info[
+            'sizeX'] / self.slide_info['labeled'].shape[1]
 
     # %% =====================================================================
 
@@ -181,17 +215,22 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
             int(j) for j in np.min(tloc, axis=0) * self.slide_info['F_tissue']]
         ymax, xmax = [
             int(j) for j in np.max(tloc, axis=0) * self.slide_info['F_tissue']]
+
         # load RGB for this tissue piece at saliency magnification
         getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
             self.slide_id, xmin, xmax, ymin, ymax
             ) + "&magnification=%d" % self.MAG
         resp = self.gc.get(getStr, jsonResp=False)
         tissue = get_image_from_htk_response(resp)
-        if 'thumbnail' in self.cnorm_params.keys():
+
+        # color normalization if desired
+        if 'main' in self.cnorm_params.keys():
             tissue = np.uint8(reinhard(
                 im_src=tissue,
-                target_mu=self.cnorm_params['thumbnail']['mu'],
-                target_sigma=self.cnorm_params['thumbnail']['sigma']))
+                target_mu=self.cnorm_params['main']['mu'],
+                target_sigma=self.cnorm_params['main']['sigma']))
+
+        # wrap up and return
         tissue_dict = {
             'rgb': tissue,
             'ymin': ymin, 'xmin': xmin,
@@ -203,6 +242,8 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
 
     def get_superpixel_mask(self, tissue_dict, tissue_mask):
         """Use Simple Linear Iterative Clustering (SLIC) to get superpixels."""
+        # optionally use grayscale instead of RGB -- seems more robust to
+        # color variations and sometimes gives better results
         if self.use_grayscale:
             tissue = rgb2gray(tissue_dict['rgb'])
         else:
@@ -267,17 +308,17 @@ a
 
 # %%===========================================================================
 
-# deconvolvve to ge hematoxylin channel (cellular areas)
+assert (self.use_intensity or self.use_texture)
+
+# Possibly deconvolvve to get hematoxylin channel (cellular areas)
 # hematoxylin channel return shows MINIMA so we invert
-Stains, channel = _deconv_color(tissue)
-tissue_htx = 255 - Stains[..., channel]
+if self.deconvolve:
+    Stains, channel = _deconv_color(tissue_dict['rgb'])
+    tissue_htx = 255 - Stains[..., channel]
+else:
+    tissue_htx = rgb2gray(tissue_dict['rgb'])
 
-# %% ==========================================================================
-
-# sanity checks
-assert (use_intensity or use_texture)
-
-# calculate features from superpixels -- using hematoxylin channel
+# calculate features from superpixels
 rprops = regionprops(spixel_mask)
 fdata_list = []
 if use_intensity:
@@ -306,8 +347,11 @@ spixel_labels = mmodel.fit_predict(fdata.values) + 1
 
 # %% ==========================================================================
 
-normalize_colors = True
 cMap = cm.seismic
+
+
+assert self.use_intensity, "We need intensity to rank by cellularity."
+assert self.deconvolve, "We must use hematoxyling channel to rank by cellularity."
 
 # Rank clusters by cellularity (intensity of hematocylin channel)
 
