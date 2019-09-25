@@ -49,7 +49,236 @@ from histomicstk.features.compute_haralick_features import (
     compute_haralick_features)
 
 # %%===========================================================================
+# =============================================================================
 
+
+class Single_tissue_piece(object):
+    """Detect cellular regions in a single tissue piece (internal)."""
+
+    def __init__(self, cd, tissue_mask):
+        """Detect cellularity in one tissue piece (Internal).
+
+        Arguments
+        ----------
+        cd : object
+            Cellularity_Detector_Superpixels instance
+        tissue_mask : np array
+            (mxn) mask of the tissue piece at cd.MAG magnification
+
+        """
+        self.cd = cd
+        self.tissue_mask = 0 + tissue_mask
+
+    # %% ======================================================================
+
+    def restrict_mask_to_single_tissue_piece(self):
+        """Only keep relevant part of slide mask"""
+        # find coordinates at scan magnification
+        tloc = np.argwhere(self.tissue_mask)
+        F = self.cd.slide_info['F_tissue']
+        self.ymin, self.xmin = [int(j) for j in np.min(tloc, axis=0) * F]
+        self.ymax, self.xmax = [int(j) for j in np.max(tloc, axis=0) * F]
+        self.tissue_mask = self.tissue_mask[
+            int(self.ymin / F): int(self.ymax / F),
+            int(self.xmin / F): int(self.xmax / F)]
+
+    # %% ======================================================================
+
+    def set_tissue_rgb(self):
+        """Load RGB from server for single tissue piece."""
+        # load RGB for this tissue piece at saliency magnification
+        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
+            self.cd.slide_id, self.xmin, self.xmax, self.ymin, self.ymax
+            ) + "&magnification=%d" % self.cd.MAG
+        resp = self.cd.gc.get(getStr, jsonResp=False)
+        tissue = get_image_from_htk_response(resp)
+
+        # color normalization if desired
+        if 'main' in self.cd.cnorm_params.keys():
+            self.tissue_rgb = np.uint8(reinhard(
+                im_src=tissue,
+                target_mu=self.cd.cnorm_params['main']['mu'],
+                target_sigma=self.cd.cnorm_params['main']['sigma']))
+
+    # %% ======================================================================
+
+    def set_superpixel_mask(self):
+        """Use Simple Linear Iterative Clustering (SLIC) to get superpixels."""
+
+        # Get superpixel size and number
+        spixel_size = self.cd.spixel_size_baseMag * (
+            self.cd.MAG / self.cd.slide_info['magnification'])
+        n_spixels = int(
+            self.tissue_rgb.shape[0] * self.tissue_rgb.shape[1] / spixel_size)
+
+        # get superpixel mask
+        # optionally use grayscale instead of RGB -- seems more robust to
+        # color variations and sometimes gives better results
+        if self.cd.use_grayscale:
+            self.spixel_mask = slic(
+                rgb2gray(self.tissue_rgb), n_segments=n_spixels,
+                compactness=self.cd.compactness)
+        else:
+            self.spixel_mask = slic(
+                self.tissue_rgb, n_segments=n_spixels,
+                compactness=self.cd.compactness)
+
+        # restrict to tissue mask
+        tmask = resize(
+            self.tissue_mask, output_shape=self.spixel_mask.shape,
+            order=0, preserve_range=True)
+        self.spixel_mask[tmask == 0] = 0
+
+    # %% ======================================================================
+
+    def set_superpixel_features(self):
+        """Get superpixel features."""
+        assert (self.cd.use_intensity or self.cd.use_texture)
+
+        # Possibly deconvolvve to get hematoxylin channel (cellular areas)
+        # hematoxylin channel return shows MINIMA so we invert
+        if self.cd.deconvolve:
+            Stains, channel = _deconv_color(self.tissue_rgb)
+            tissue_htx = 255 - Stains[..., channel]
+        else:
+            tissue_htx = rgb2gray(self.tissue_rgb)
+
+        # calculate features from superpixels
+        rprops = regionprops(self.spixel_mask)
+        fdata_list = []
+        if self.cd.use_intensity:
+            fdata_list.append(compute_intensity_features(
+                im_label=self.spixel_mask, im_intensity=tissue_htx,
+                rprops=rprops))
+        if self.use_texture:
+            fdata_list.append(compute_haralick_features(
+                im_label=self.spixel_mask, im_intensity=tissue_htx,
+                rprops=rprops))
+        self.fdata = concat(fdata_list, axis=1)
+
+        if self.keep_feats is not None:
+            self.fdata = self.fdata.loc[:, self.cd.keep_feats]
+
+        # Index is corresponding pixel value in the superpixel mask
+        # IMPORTANT: this assumes that regionprops output is sorted by unique
+        # pixel values in label mask, which it is by default
+        self.fdata.index = set(np.unique(self.spixel_mask)) - {0, }
+
+    # %% ======================================================================
+
+    def set_superpixel_assignment(self):
+        """Fit gaussian mixture model to features and get assignment"""
+        mmodel = GaussianMixture(n_components=self.cd.n_gaussian_components)
+        self.spixel_labels = mmodel.fit_predict(self.fdata.values) + 1
+
+    # %% ======================================================================
+
+    def Assign_cellularity_scores(self):
+        """Assign cellularity scores to spixel clusters"""
+        assert self.cd.use_intensity, "We need intensity to rank cellularity."
+        assert self.cd.deconvolve, \
+            "We must use hematoxyling channel to rank by cellularity."
+
+        self.cluster_props = dict()
+
+        self.fdata.loc[:, "cluster"] = self.spixel_labels
+        for clid in np.unique(self.spixel_labels):
+            self.cluster_props[clid] = {
+                'cellularity': int(np.median(self.fdata.loc[
+                        self.fdata.loc[:, "cluster"] == clid,
+                        "Intensity.Median"]) / 255 * 100),
+            }
+
+    # %% ======================================================================
+
+    def assign_colors_to_spixel_clusters(self):
+        """Assign RGB color string to cellularity clusters."""
+        max_cellularity = max(
+            [j['cellularity'] for _, j in self.cluster_props.items()])
+        for clid in np.unique(self.spixel_labels):
+            rgb = self.cd.cMap(int(self.cluster_props[clid][
+                    'cellularity'] / max_cellularity * 255))[:-1]
+            rgb = [int(255 * j) for j in rgb]
+            self.cluster_props[clid]['color'] = 'rgb(%d,%d,%d)' % tuple(rgb)
+
+    # %% ======================================================================
+
+    def visualize_individual_superpixels(self):
+        """visualize individual spixels, color-coded by cellularity."""
+        # Define GTCodes dataframe
+        GTCodes_df = DataFrame(columns=['group', 'GT_code', 'color'])
+        for spval, sp in self.fdata.iterrows():
+            spstr = 'spixel-%d_cellularity-%d' % (
+                spval, self.cluster_props[sp['cluster']]['cellularity'])
+            GTCodes_df.loc[spstr, 'group'] = spstr
+            GTCodes_df.loc[spstr, 'GT_code'] = spval
+            GTCodes_df.loc[spstr, 'color'] = \
+                self.cluster_props[sp['cluster']]['color']
+
+        # get contours df
+        contours_df = get_contours_from_mask(
+            MASK=self.spixel_mask, GTCodes_df=GTCodes_df,
+            get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False)
+        contours_df.loc[:, "group"] = [
+            j.split('_')[-1] for j in contours_df.loc[:, "group"]]
+
+        # get annotation docs
+        annprops = {
+            'F': (self.ymax - self.ymin) / self.tissue_rgb.shape[0],
+            'X_OFFSET': self.xmin,
+            'Y_OFFSET': self.ymin,
+            'opacity': self.cd.opacity,
+            'lineWidth': self.cd.lineWidth,
+        }
+        annotation_docs = get_annotation_documents_from_contours(
+            contours_df.copy(), docnamePrefix='spixel', annprops=annprops,
+            annots_per_doc=1000, separate_docs_by_group=True,
+            verbose=False, monitorPrefix="")
+        for doc in annotation_docs:
+            _ = self.cd.gc.post(
+                    "/annotation?itemId=" + self.cd.slide_id, json=doc)
+
+    # %% ======================================================================
+
+    def visualize_contuguous_superpixels(self):
+        """visualize contiguous spixels, color-coded by cellularity."""
+
+        # get cellularity cluster membership mask
+        cellularity_mask = np.zeros(self.spixel_mask.shape)
+        for spval, sp in self.fdata.iterrows():
+            cellularity_mask[self.spixel_mask == spval] = sp['cluster']
+
+        # Define GTCodes dataframe
+        GTCodes_df = DataFrame(columns=['group', 'GT_code', 'color'])
+        for spval, cp in self.cluster_props.items():
+            spstr = 'cellularity-%d' % (cp['cellularity'])
+            GTCodes_df.loc[spstr, 'group'] = spstr
+            GTCodes_df.loc[spstr, 'GT_code'] = spval
+            GTCodes_df.loc[spstr, 'color'] = cp['color']
+
+        # get contours df
+        contours_df = get_contours_from_mask(
+            MASK=cellularity_mask, GTCodes_df=GTCodes_df,
+            get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False)
+
+        # get annotation docs
+        annprops = {
+            'F': (self.ymax - self.ymin) / self.tissue_rgb.shape[0],
+            'X_OFFSET': self.xmin,
+            'Y_OFFSET': self.ymin,
+            'opacity': self.cd.opacity,
+            'lineWidth': self.cd.lineWidth,
+        }
+        annotation_docs = get_annotation_documents_from_contours(
+            contours_df.copy(), docnamePrefix='spixel', annprops=annprops,
+            annots_per_doc=1000, separate_docs_by_group=True,
+            verbose=False, monitorPrefix="")
+        for doc in annotation_docs:
+            _ = self.cd.gc.post(
+                    "/annotation?itemId=" + self.cd.slide_id, json=doc)
+
+# %%===========================================================================
+# =============================================================================
 
 class Cellularity_Detector_Superpixels(Base_HTK_Class):
     """Detect cellular regions in a slides by classifying superpixels.
@@ -170,7 +399,7 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
         self.gc = gc
         self.slide_id = slide_id
 
-    # %% =====================================================================
+    # %% ======================================================================
 
     def set_color_normalization_values(
             self, mu=None, sigma=None, ref_image_path=None, what='main'):
@@ -187,10 +416,10 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
 
         self.cnorm_params[what] = {'mu': mu, 'sigma': sigma}
 
-    # %% =====================================================================
+    # %% ======================================================================
 
-    def set_slide_info(self):
-        """Set self.slide_info dict."""
+    def set_slide_info_and_get_tissue_mask(self):
+        """Set self.slide_info dict and self.labeled tissue mask."""
         # This is a presistent dict to store information about slide
         self.slide_info = self.gc.get('item/%s/tiles' % self.slide_id)
 
@@ -204,179 +433,31 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
                 target_mu=self.cnorm_params['thumbnail']['mu'],
                 target_sigma=self.cnorm_params['thumbnail']['sigma']))
 
-        self.slide_info['labeled'], _ = get_tissue_mask(
+        # get labeled tissue mask -- each unique value is one tissue piece
+        labeled, _ = get_tissue_mask(
             thumbnail_rgb, self.get_tissue_mask_kwargs)
 
         # Find size relative to WSI
         self.slide_info['F_tissue'] = self.slide_info[
-            'sizeX'] / self.slide_info['labeled'].shape[1]
+            'sizeX'] / labeled.shape[1]
 
-    # %% =====================================================================
+        return labeled
 
-    def get_tissue_rgb_from_small_mask(self, tissue_mask):
-        """Load tissue RGB from server for single tissue piece."""
-        # find coordinates at scan magnification
-        tloc = np.argwhere(tissue_mask)
-        ymin, xmin = [
-            int(j) for j in np.min(tloc, axis=0) * self.slide_info['F_tissue']]
-        ymax, xmax = [
-            int(j) for j in np.max(tloc, axis=0) * self.slide_info['F_tissue']]
+    # %% ======================================================================
+    # %% ======================================================================
 
-        # load RGB for this tissue piece at saliency magnification
-        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
-            self.slide_id, xmin, xmax, ymin, ymax
-            ) + "&magnification=%d" % self.MAG
-        resp = self.gc.get(getStr, jsonResp=False)
-        tissue = get_image_from_htk_response(resp)
 
-        # color normalization if desired
-        if 'main' in self.cnorm_params.keys():
-            tissue = np.uint8(reinhard(
-                im_src=tissue,
-                target_mu=self.cnorm_params['main']['mu'],
-                target_sigma=self.cnorm_params['main']['sigma']))
 
-        # wrap up and return
-        tissue_dict = {
-            'rgb': tissue,
-            'ymin': ymin, 'xmin': xmin,
-            'ymax': ymax, 'xmax': xmax,
-        }
-        return tissue_dict
-
-    # %% =====================================================================
-
-    def get_superpixel_mask(self, tissue_dict, tissue_mask):
-        """Use Simple Linear Iterative Clustering (SLIC) to get superpixels."""
-        # optionally use grayscale instead of RGB -- seems more robust to
-        # color variations and sometimes gives better results
-        if self.use_grayscale:
-            tissue = rgb2gray(tissue_dict['rgb'])
-        else:
-            tissue = tissue_dict['rgb']
-
-        spixel_size = self.spixel_size_baseMag * (
-            self.MAG / self.slide_info['magnification'])
-        n_spixels = int(tissue.shape[0] * tissue.shape[1] / spixel_size)
-
-        # get superpixl mask
-        spixel_mask = slic(
-            tissue, n_segments=n_spixels, compactness=self.compactness)
-
-        # restrict to tissue mask
-        tissue_mask = 0 + tissue_mask
-        tissue_mask = tissue_mask[
-            int(tissue_dict['ymin'] / self.slide_info['F_tissue']):
-            int(tissue_dict['ymax'] / self.slide_info['F_tissue']),
-            int(tissue_dict['xmin'] / self.slide_info['F_tissue']):
-            int(tissue_dict['xmax'] / self.slide_info['F_tissue'])]
-        tmask = resize(
-            tissue_mask, output_shape=spixel_mask.shape,
-            order=0, preserve_range=True)
-        spixel_mask[tmask == 0] = 0
-
-        return spixel_mask
-
-    # %% =====================================================================
-
-    def get_superpixel_features(self, tissue_dict, spixel_mask):
-
-        assert (self.use_intensity or self.use_texture)
-
-        # Possibly deconvolvve to get hematoxylin channel (cellular areas)
-        # hematoxylin channel return shows MINIMA so we invert
-        if self.deconvolve:
-            Stains, channel = _deconv_color(tissue_dict['rgb'])
-            tissue_htx = 255 - Stains[..., channel]
-        else:
-            tissue_htx = rgb2gray(tissue_dict['rgb'])
-
-        # calculate features from superpixels
-        rprops = regionprops(spixel_mask)
-        fdata_list = []
-        if self.use_intensity:
-            fdata_list.append(compute_intensity_features(
-                im_label=spixel_mask, im_intensity=tissue_htx, rprops=rprops))
-        if self.use_texture:
-            fdata_list.append(compute_haralick_features(
-                im_label=spixel_mask, im_intensity=tissue_htx, rprops=rprops))
-        fdata = concat(fdata_list, axis=1)
-
-        if self.keep_feats is not None:
-            fdata = fdata.loc[:, self.keep_feats]
-
-        # Index is corresponding pixel value in the superpixel mask
-        # IMPORTANT: this assumes that regionprops output is sorted by unique
-        # pixel values in label mask, which it is by default
-        fdata.index = set(np.unique(spixel_mask)) - {0, }
-
-        return fdata
-
-    # %% =====================================================================
-
-    def get_superpixel_assignment(self, fdata):
-        """Fit gaussian mixture model to features and get assignment"""
-        mmodel = GaussianMixture(n_components=self.n_gaussian_components)
-        spixel_labels = mmodel.fit_predict(fdata.values) + 1
-        return spixel_labels
-
-    # %% =====================================================================
-
-    def Assign_cellularity_scores(self, spixel_labels, fdata):
-        """Assign cellularity scores to spixel clusters"""
-
-        assert self.use_intensity, "We need intensity to rank by cellularity."
-        assert self.deconvolve, \
-            "We must use hematoxyling channel to rank by cellularity."
-
-        cluster_props = dict()
-
-        fdata.loc[:, "cluster"] = spixel_labels
-        for clid in np.unique(spixel_labels):
-            cluster_props[clid] = {
-                'cellularity': int(np.median(fdata.loc[
-                        fdata.loc[:, "cluster"] == clid, "Intensity.Median"])
-                        / 255 * 100),
-            }
-
-        return cluster_props
-
-    # %% =====================================================================
-
-    def assign_colors_to_spixel_clusters(self, spixel_labels, cluster_props):
-        """Assign RGB color string to cellularity clusters."""
-        max_cellularity = max(
-            [j['cellularity'] for _, j in cluster_props.items()])
-        for clid in np.unique(spixel_labels):
-            rgb = self.cMap(int(cluster_props[clid][
-                    'cellularity'] / max_cellularity * 255))[:-1]
-            rgb = [int(255 * j) for j in rgb]
-            cluster_props[clid]['color'] = 'rgb(%d,%d,%d)' % tuple(rgb)
-        return cluster_props
-
-    # %% =====================================================================
 
 
 
 # %%===========================================================================
 # %%===========================================================================
 # %%===========================================================================
-
-# %%
 
 #cds = Cellularity_Detector_Superpixels(gc, SAMPLE_SLIDE_ID)
 
-# %%
-
-a
-
 # %%===========================================================================
-# %%===========================================================================
-# %%===========================================================================
-
-
-# %%===========================================================================
-
 
 #
 #unique_tvals = list(set(np.unique(labeled)) - {0, })
@@ -384,81 +465,8 @@ a
 #tval = unique_tvals[1]
 ##for tval in unique_tvals:
 #
-## %%===========================================================================
+# %%===========================================================================
 #
 #tissue_mask = labeled == tval
 
-## %%===========================================================================
 
-def visualize_individual_superpixels(
-        self, spixel_mask, cluster_props):
-    """visualize individual spixels, color-coded by cellularity."""
-    # Define GTCodes dataframe
-    GTCodes_df = DataFrame(columns=['group', 'GT_code', 'color'])
-    for spval, sp in fdata.iterrows():
-        spstr = 'spixel-%d_cellularity-%d' % (
-            spval, cluster_props[sp['cluster']]['cellularity'])
-        GTCodes_df.loc[spstr, 'group'] = spstr
-        GTCodes_df.loc[spstr, 'GT_code'] = spval
-        GTCodes_df.loc[spstr, 'color'] = cluster_props[sp['cluster']]['color']
-
-    # get contours df
-    contours_df = get_contours_from_mask(
-        MASK=spixel_mask, GTCodes_df=GTCodes_df,
-        get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False)
-    contours_df.loc[:, "group"] = [
-        j.split('_')[-1] for j in contours_df.loc[:, "group"]]
-
-    # get annotation docs
-    annprops = {
-        'F': (ymax - ymin) / tissue.shape[0],
-        'X_OFFSET': xmin,
-        'Y_OFFSET': ymin,
-        'opacity': 0,
-        'lineWidth': 3.0,
-    }
-    annotation_docs = get_annotation_documents_from_contours(
-        contours_df.copy(), docnamePrefix='spixel', annprops=annprops,
-        annots_per_doc=1000, separate_docs_by_group=True,
-        verbose=False, monitorPrefix="spixels : annotation docs")
-    for doc in annotation_docs:
-        _ = gc.post(
-                "/annotation?itemId=" + slide_id, json=doc)
-
-# %% ==========================================================================
-
-# Visualize contiguous superpixels by cellularity
-
-# get cellularity cluster membership mask
-cellularity_mask = np.zeros(spixel_mask.shape)
-for spval, sp in fdata.iterrows():
-    cellularity_mask[spixel_mask == spval] = sp['cluster']
-
-# Define GTCodes dataframe
-GTCodes_df = DataFrame(columns=['group', 'GT_code', 'color'])
-for spval, cp in cluster_props.items():
-    spstr = 'cellularity-%d' % (cp['cellularity'])
-    GTCodes_df.loc[spstr, 'group'] = spstr
-    GTCodes_df.loc[spstr, 'GT_code'] = spval
-    GTCodes_df.loc[spstr, 'color'] = cp['color']
-
-# get contours df
-contours_df = get_contours_from_mask(
-    MASK=cellularity_mask, GTCodes_df=GTCodes_df,
-    get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False)
-
-# get annotation docs
-annprops = {
-    'F': (ymax - ymin) / tissue.shape[0],
-    'X_OFFSET': xmin,
-    'Y_OFFSET': ymin,
-    'opacity': opacity,
-    'lineWidth': lineWidth,
-}
-annotation_docs = get_annotation_documents_from_contours(
-    contours_df.copy(), docnamePrefix='spixel', annprops=annprops,
-    annots_per_doc=1000, separate_docs_by_group=True,
-    verbose=False, monitorPrefix="spixels : annotation docs")
-for doc in annotation_docs:
-    _ = gc.post(
-            "/annotation?itemId=" + slide_id, json=doc)
