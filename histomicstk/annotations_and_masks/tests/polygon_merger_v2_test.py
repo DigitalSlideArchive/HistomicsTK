@@ -17,6 +17,8 @@ from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     _discard_nonenclosed_background_group, )
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     parse_slide_annotations_into_table, )
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+    delete_annotations_in_slide)
 
 # %%===========================================================================
 # Constants & prep work
@@ -66,9 +68,7 @@ class PolygonMerger_v2_Test(unittest.TestCase):
             pm.new_contours, background_group="mostly_stroma")
 
         # deleting existing annotations in target slide (if any)
-        existing_annotations = gc.get('/annotation/item/' + POST_SLIDE_ID)
-        for ann in existing_annotations:
-            gc.delete('/annotation/%s' % ann['_id'])
+        delete_annotations_in_slide(gc, POST_SLIDE_ID)
 
         # get list of annotation documents
         annotation_docs = get_annotation_documents_from_contours(

@@ -489,3 +489,12 @@ def _get_and_add_element_to_roi(
     return ROI
 
 # %%===========================================================================
+
+
+def delete_annotations_in_slide(gc, slide_id):
+    """Delete all annotations in a slide."""
+    existing_annotations = gc.get('/annotation/item/' + slide_id)
+    for ann in existing_annotations:
+        gc.delete('/annotation/%s' % ann['_id'])
+
+# %%===========================================================================
