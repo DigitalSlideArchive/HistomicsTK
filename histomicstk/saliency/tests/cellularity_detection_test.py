@@ -22,9 +22,10 @@ gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 # %%===========================================================================
 
-import matplotlib.pylab as plt
-from matplotlib.colors import ListedColormap
+# import matplotlib.pylab as plt
+# from matplotlib.colors import ListedColormap
 
+from imageio import imread
 from pandas import DataFrame, concat
 from skimage.color import rgb2gray
 from skimage.segmentation import slic
@@ -34,7 +35,8 @@ from skimage.measure import regionprops
 from matplotlib import cm
 
 from histomicstk.utils.general_utils import Base_HTK_Class
-
+from histomicstk.preprocessing.color_conversion import lab_mean_std
+from histomicstk.preprocessing.color_normalization import reinhard
 from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask, _deconv_color)
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
@@ -50,10 +52,32 @@ from histomicstk.features.compute_haralick_features import (
 
 
 class Cellularity_Detector_Superpixels(Base_HTK_Class):
-    """Detect cellular regions in a slides by classifying superpixels."""
+    """Detect cellular regions in a slides by classifying superpixels.
+
+    This uses Simple Linear Iterative Clustering (SLIC) to get superpixels at
+    a low slide magnification to detect cellular regions. The first step of
+    this pipeline detects tissue regions (i.e. individual tissue pieces)
+    using the get_tissue_mask method of the histomicstk.saliency module. Then,
+    each tissue piece is processed separately for accuracy and disk space
+    efficiency. It is important to keep in mind that this does NOT rely on a
+    tile iterator, but loads the entire tissue region (but NOT the whole slide)
+    in memory and passes it on to skimage.segmentation.slic method.
+
+    Once superpixels are segmented, the image is deconvolved and features are
+    extracted from the hematoxylin channel. Features include intensity and
+    possibly also texture features. Then, a mixed component Gaussian mixture
+    model is fit to the features, and median intensity is used to rank
+    superpixel clusters by 'cellularity' (since we are working with the
+    hematoxylin channel).
+
+    Additional functionality includes contour extraction to get the final
+    segmentation boundaries of cellular regions and to visualize them in DSA
+    using one's preferred colormap.
+
+    """
 
     def __init__(self, gc, slide_id, **kwargs):
-        """Init Polygon_merger object.
+        """Init Cellularity_Detector_Superpixels object.
 
         Arguments:
         -----------
@@ -61,20 +85,29 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
             girder client object
         slide_id : str
             girder ID of slide
-        MAG : float
-            magnification at which to detect cellularity
         verbose : int
             0 - Do not print to screen
             1 - Print only key messages
             2 - Print everything to screen
         monitorPrefix : str
             text to prepend to printed statements
+        MAG : float
+            magnification at which to detect cellularity
+        spixel_size_baseMag : int
+            approximate superpixel size at base (scan) magnification
+        compactness : float
+            compactness parameter for the SLIC method. Higher values result
+            in more regular superpixels while smaller values are more likely
+            to respect tissue boundaries.
+        use_grayscale : bool
+            use SLIC
 
         """
         default_attr = {
             'verbose': 1,
             'monitorPrefix': "",
             'MAG': 3.0,
+            'cnorm_params': dict(),
             'spixel_size_baseMag': 350 * 350,
             'compactness': 0.1,
             'use_grayscale': True,
@@ -93,21 +126,121 @@ class Cellularity_Detector_Superpixels(Base_HTK_Class):
                 'sigma': 1.5, 'min_size': 500,
             },
         }
-        super().__init__(default_attr=default_attr)
+        super(Cellularity_Detector_Superpixels, self).__init__(
+            default_attr=default_attr)
 
         # set attribs
         self.gc = gc
         self.slide_id = slide_id
 
+    # %% =====================================================================
 
+    def set_slide_info(self):
+        """Set self.slide_info dict."""
+        # This is a presistent dict to store information about slide
+        self.slide_info = self.gc.get('item/%s/tiles' % self.slide_id)
+
+        # get tissue mask
+        thumbnail_rgb = get_slide_thumbnail(self.gc, self.slide_id)
+        self.slide_info['labeled'], _ = get_tissue_mask(
+                thumbnail_rgb, self.get_tissue_mask_kwargs)
+
+        # Find size relative to WSI
+        self.slide_info['F_tissue'] = self.slide_info[
+            'sizeX'] / self.slide_info['labeled'].shape[1]
+
+    # %% =====================================================================
+
+    def set_color_normalization_values(
+            self, mu=None, sigma=None, ref_image_path=None, what='main'):
+        """read target image and  fetch normalization values"""
+
+        assert (
+            all([j is not None for j in (mu, sigma)])
+            or ref_image_path is not None), \
+            "You must provide mu & sigma values or ref. image to get them."
+        assert what in ('thumbnail', 'main')
+
+        if ref_image_path is not None:
+            ref_im = np.array(imread(self.ref_image_path, pilmode='RGB'))
+            mu, sigma = lab_mean_std(ref_im)
+
+        self.cnorm_params[what] = {'mu': mu, 'sigma': sigma}
 
     # %% =====================================================================
 
 
 
+    # %% =====================================================================
+
+    def get_tissue_rgb_from_small_mask(self, tissue_mask):
+        """Load tissue RGB from server for single tissue piece."""
+        # find coordinates at scan magnification
+        tloc = np.argwhere(tissue_mask)
+        ymin, xmin = [
+            int(j) for j in np.min(tloc, axis=0) * self.slide_info['F_tissue']]
+        ymax, xmax = [
+            int(j) for j in np.max(tloc, axis=0) * self.slide_info['F_tissue']]
+        # load RGB for this tissue piece at saliency magnification
+        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
+            self.slide_id, xmin, xmax, ymin, ymax
+            ) + "&magnification=%d" % self.MAG
+        resp = self.gc.get(getStr, jsonResp=False)
+        tissue = get_image_from_htk_response(resp)
+        if 'thumbnail' in self.cnorm_params.keys():
+            tissue = np.uint8(reinhard(
+                im_src=tissue,
+                target_mu=self.cnorm_params['thumbnail']['mu'],
+                target_sigma=self.cnorm_params['thumbnail']['sigma']))
+        tissue_dict = {
+            'rgb': tissue,
+            'ymin': ymin, 'xmin': xmin,
+            'ymax': ymax, 'xmax': xmax,
+        }
+        return tissue_dict
+
+    # %% =====================================================================
+
+    def get_superpixel_mask(self, tissue_dict, tissue_mask):
+        """Use Simple Linear Iterative Clustering (SLIC) to get superpixels."""
+        if self.use_grayscale:
+            tissue = rgb2gray(tissue_dict['rgb'])
+        else:
+            tissue = tissue_dict['rgb']
+
+        spixel_size = self.spixel_size_baseMag * (
+            self.MAG / self.slide_info['magnification'])
+        n_spixels = int(tissue.shape[0] * tissue.shape[1] / spixel_size)
+
+        # get superpixl mask
+        spixel_mask = slic(
+            tissue, n_segments=n_spixels, compactness=self.compactness)
+
+        # restrict to tissue mask
+        tissue_mask = 0 + tissue_mask
+        tissue_mask = tissue_mask[
+            int(tissue_dict['ymin'] / self.slide_info['F_tissue']):
+            int(tissue_dict['ymax'] / self.slide_info['F_tissue']),
+            int(tissue_dict['xmin'] / self.slide_info['F_tissue']):
+            int(tissue_dict['xmax'] / self.slide_info['F_tissue'])]
+        tmask = resize(
+            tissue_mask, output_shape=spixel_mask.shape,
+            order=0, preserve_range=True)
+        spixel_mask[tmask == 0] = 0
+
+        return spixel_mask
+
+    # %% =====================================================================
+
+
+
+# %%===========================================================================
+# %%===========================================================================
+# %%===========================================================================
+
 # %%
 
-cds = Cellularity_Detector_Superpixels(gc, SAMPLE_SLIDE_ID)
+#cds = Cellularity_Detector_Superpixels(gc, SAMPLE_SLIDE_ID)
 
 # %%
 
@@ -120,59 +253,19 @@ a
 
 # %%===========================================================================
 
-# get tissue mask
-thumbnail_rgb = get_slide_thumbnail(self.gc, self.SAMPLE_SLIDE_ID)
-labeled, _ = get_tissue_mask(thumbnail_rgb, self.get_tissue_mask_kwargs)
 
-# Find size relative to WSI
-slide_info = gc.get('item/%s/tiles' % self.slide_id)
-F_tissue = slide_info['sizeX'] / labeled.shape[1]
-
-unique_tvals = list(set(np.unique(labeled)) - {0, })
-
-tval = unique_tvals[1]
-#for tval in unique_tvals:
-
-# %%===========================================================================
-
-tissue_mask = labeled == tval
-
-def _get_tissue_rgb_from_small_mask(tissue_mask):
-    # find coordinates at scan magnification
-    tloc = np.argwhere(tissue_mask)
-    ymin, xmin = [int(j) for j in np.min(tloc, axis=0) * F_tissue]
-    ymax, xmax = [int(j) for j in np.max(tloc, axis=0) * F_tissue]
-    # load RGB for this tissue piece at saliency magnification
-    getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
-        slide_id, xmin, xmax, ymin, ymax) + "&magnification=%d" % MAG
-    resp = gc.get(getStr, jsonResp=False)
-    tissue = get_image_from_htk_response(resp)
-    return tissue
+#
+#unique_tvals = list(set(np.unique(labeled)) - {0, })
+#
+#tval = unique_tvals[1]
+##for tval in unique_tvals:
+#
+## %%===========================================================================
+#
+#tissue_mask = labeled == tval
 
 
 # %%===========================================================================
-
-
-
-if use_grayscale:
-    tissue = rgb2gray(tissue)
-
-spixel_size = spixel_size_baseMag * (MAG / slide_info['magnification'])
-n_spixels = int(tissue.shape[0] * tissue.shape[1] / spixel_size)
-
-# get superpixl mask
-spixel_mask = slic(tissue, n_segments=n_spixels, compactness=compactness)
-
-# restrict to tissue mask
-tmask = 0 + (labeled == tval)
-tmask = tmask[
-    int(ymin / F_tissue):int(ymax / F_tissue),
-    int(xmin / F_tissue):int(xmax / F_tissue)]
-tmask = resize(
-    tmask, output_shape=spixel_mask.shape, order=0, preserve_range=True)
-spixel_mask[tmask == 0] = 0
-
-# %% ==========================================================================
 
 # deconvolvve to ge hematoxylin channel (cellular areas)
 # hematoxylin channel return shows MINIMA so we invert
