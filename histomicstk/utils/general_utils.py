@@ -73,7 +73,7 @@ class Base_HTK_Class(object):
         # verbosity control
         self.cpr1 = Print_and_log(verbose=self.verbose >= 1, logger=logger)
         self._print1 = self.cpr1._print
-        self.cpr2 = Print_and_log(verbose=self.verbose == 2, logger=logger)
+        self.cpr2 = Print_and_log(verbose=self.verbose >= 2, logger=logger)
         self._print2 = self.cpr2._print
         if self.keep_log:
             self._print1("Saving logs to: %s" % self.logname)

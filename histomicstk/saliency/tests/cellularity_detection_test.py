@@ -67,10 +67,15 @@ class CellularityDetectionTest(unittest.TestCase):
         #     sigma=cnorm_thumbnail['sigma'], what='thumbnail')
         cds.set_color_normalization_values(
             mu=cnorm_main['mu'], sigma=cnorm_main['sigma'], what='main')
-        cds.run()
+        tissue_pieces = cds.run()
 
-        # just make sure it runs without errors & check visual
-        self.assertTrue(True)
+        # check
+        self.assertEqual(len(tissue_pieces), 2)
+        self.assertTrue(all(
+            [j in tissue_pieces[0].__dict__.keys() for j in
+             ('tissue_mask', 'ymin', 'xmin', 'ymax', 'xmax', 'spixel_mask',
+              'fdata', 'spixel_labels', 'cluster_props')]))
+        self.assertEqual(len(tissue_pieces[0].cluster_props), 5)
 
         # cleanup
         shutil.rmtree(logging_savepath)

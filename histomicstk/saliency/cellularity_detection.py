@@ -57,7 +57,7 @@ class CD_single_tissue_piece(object):
         self.tissue_mask = 0 + tissue_mask
         self.monitorPrefix = monitorPrefix
 
-    # %% ======================================================================
+    # =========================================================================
 
     def run(self):
         """Get cellularity and optionally visualize on DSA"""
@@ -88,7 +88,7 @@ class CD_single_tissue_piece(object):
                 "%s: visualize_contiguous_superpixels()" % self.monitorPrefix)
             self.visualize_contiguous_superpixels()
 
-    # %% ======================================================================
+    # =========================================================================
 
     def restrict_mask_to_single_tissue_piece(self):
         """Only keep relevant part of slide mask"""
@@ -101,7 +101,7 @@ class CD_single_tissue_piece(object):
             int(self.ymin / F): int(self.ymax / F),
             int(self.xmin / F): int(self.xmax / F)]
 
-    # %% ======================================================================
+    # =========================================================================
 
     def set_tissue_rgb(self):
         """Load RGB from server for single tissue piece."""
@@ -119,7 +119,7 @@ class CD_single_tissue_piece(object):
                 target_mu=self.cd.cnorm_params['main']['mu'],
                 target_sigma=self.cd.cnorm_params['main']['sigma']))
 
-    # %% ======================================================================
+    # =========================================================================
 
     def set_superpixel_mask(self):
         """Use Simple Linear Iterative Clustering (SLIC) to get superpixels."""
@@ -148,7 +148,7 @@ class CD_single_tissue_piece(object):
             order=0, preserve_range=True)
         self.spixel_mask[tmask == 0] = 0
 
-    # %% ======================================================================
+    # =========================================================================
 
     def set_superpixel_features(self):
         """Get superpixel features."""
@@ -183,14 +183,14 @@ class CD_single_tissue_piece(object):
         # pixel values in label mask, which it is by default
         self.fdata.index = set(np.unique(self.spixel_mask)) - {0, }
 
-    # %% ======================================================================
+    # =========================================================================
 
     def set_superpixel_assignment(self):
         """Fit gaussian mixture model to features and get assignment"""
         mmodel = GaussianMixture(n_components=self.cd.n_gaussian_components)
         self.spixel_labels = mmodel.fit_predict(self.fdata.values) + 1
 
-    # %% ======================================================================
+    # =========================================================================
 
     def assign_cellularity_scores(self):
         """Assign cellularity scores to spixel clusters"""
@@ -208,7 +208,7 @@ class CD_single_tissue_piece(object):
                         "Intensity.Median"]) / 255 * 100),
             }
 
-    # %% ======================================================================
+    # =========================================================================
 
     def assign_colors_to_spixel_clusters(self):
         """Assign RGB color string to cellularity clusters."""
@@ -226,7 +226,7 @@ class CD_single_tissue_piece(object):
             rgb = [int(255 * j) for j in rgb]
             self.cluster_props[clid]['color'] = 'rgb(%d,%d,%d)' % tuple(rgb)
 
-    # %% ======================================================================
+    # =========================================================================
 
     def visualize_individual_superpixels(self):
         """visualize individual spixels, color-coded by cellularity."""
@@ -243,7 +243,8 @@ class CD_single_tissue_piece(object):
         # get contours df
         contours_df = get_contours_from_mask(
             MASK=self.spixel_mask, GTCodes_df=GTCodes_df,
-            get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False)
+            get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None,
+            verbose=self.cd.verbose == 3, monitorPrefix=self.monitorPrefix)
         contours_df.loc[:, "group"] = [
             j.split('_')[-1] for j in contours_df.loc[:, "group"]]
 
@@ -258,12 +259,14 @@ class CD_single_tissue_piece(object):
         annotation_docs = get_annotation_documents_from_contours(
             contours_df.copy(), docnamePrefix='spixel', annprops=annprops,
             annots_per_doc=1000, separate_docs_by_group=True,
-            verbose=self.cd.verbose == 2, monitorPrefix="   ")
-        for doc in annotation_docs:
+            verbose=self.cd.verbose == 3, monitorPrefix=self.monitorPrefix)
+        for didx, doc in enumerate(annotation_docs):
+            self.cd._print2("%s: Posting doc %d of %d" % (
+                self.monitorPrefix, didx + 1, len(annotation_docs)))
             _ = self.cd.gc.post(
                     "/annotation?itemId=" + self.cd.slide_id, json=doc)
 
-    # %% ======================================================================
+    # =========================================================================
 
     def visualize_contiguous_superpixels(self):
         """visualize contiguous spixels, color-coded by cellularity."""
@@ -284,7 +287,8 @@ class CD_single_tissue_piece(object):
         # get contours df
         contours_df = get_contours_from_mask(
             MASK=cellularity_mask, GTCodes_df=GTCodes_df,
-            get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False)
+            get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None,
+            verbose=self.cd.verbose == 3, monitorPrefix=self.monitorPrefix)
 
         # get annotation docs
         annprops = {
@@ -297,8 +301,10 @@ class CD_single_tissue_piece(object):
         annotation_docs = get_annotation_documents_from_contours(
             contours_df.copy(), docnamePrefix='contig', annprops=annprops,
             annots_per_doc=1000, separate_docs_by_group=True,
-            verbose=False, monitorPrefix="")
-        for doc in annotation_docs:
+            verbose=self.cd.verbose == 3, monitorPrefix=self.monitorPrefix)
+        for didx, doc in enumerate(annotation_docs):
+            self.cd._print2("%s: Posting doc %d of %d" % (
+                self.monitorPrefix, didx + 1, len(annotation_docs)))
             _ = self.cd.gc.post(
                     "/annotation?itemId=" + self.cd.slide_id, json=doc)
 
@@ -344,6 +350,7 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
             0 - Do not print to screen
             1 - Print only key messages
             2 - Print everything to screen
+            3 - print everything including from inner functions
         monitorPrefix : str
             text to prepend to printed statements
         logging_savepath : str or None
@@ -455,7 +462,10 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
     # %% ======================================================================
 
     def run(self):
-        """Run cellularity detection and optionally visualize result."""
+        """Run cellularity detection and optionally visualize result.
+
+        This runs the cellularity detection +/- visualization pipeline
+        """
 
         if (len(self.cnorm_params) == 0) and (not self.suppress_warnings):
             input("""
@@ -470,13 +480,17 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
 
         # Go through tissue pieces and do run sequence
         unique_tvals = list(set(np.unique(labeled)) - {0, })
+        tissue_pieces = [None for _ in range(len(unique_tvals))]
         for idx, tval in enumerate(unique_tvals):
             monitorPrefix = "%s: Tissue piece %d of %d" % (
                 self.monitorPrefix, idx+1, len(unique_tvals))
             self._print1(monitorPrefix)
-            tp = CD_single_tissue_piece(
+            tissue_pieces[idx] = CD_single_tissue_piece(
                 self, tissue_mask=labeled == tval, monitorPrefix=monitorPrefix)
-            tp.run()
+            tissue_pieces[idx].run()
+            del tissue_pieces[idx].tissue_rgb  # too much space
+
+        return tissue_pieces
 
     # %% ======================================================================
 
