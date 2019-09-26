@@ -504,7 +504,7 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
 
         # get labeled tissue mask -- each unique value is one tissue piece
         labeled, _ = get_tissue_mask(
-            thumbnail_rgb, self.get_tissue_mask_kwargs)
+            thumbnail_rgb, **self.get_tissue_mask_kwargs)
 
         if self.visualize_tissue_boundary:
             annotation_docs = get_tissue_boundary_annotation_documents(

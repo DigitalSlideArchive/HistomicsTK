@@ -17,7 +17,8 @@ from histomicstk.saliency.cellularity_detection import (
 # Constants & prep work
 
 APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-SAMPLE_SLIDE_ID = "5d586d76bd4404c6b1f286ae"
+# SAMPLE_SLIDE_ID = "5d586d76bd4404c6b1f286ae"
+SAMPLE_SLIDE_ID = "5d8c296cbd4404c6b1fa5572"
 
 gc = girder_client.GirderClient(apiUrl=APIURL)
 gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
@@ -49,9 +50,9 @@ class CellularityDetectionTest(unittest.TestCase):
             gc, slide_id=SAMPLE_SLIDE_ID, MAG=3.0, max_cellularity=40,
             visualize_spixels=True, visualize_contiguous=True,
             get_tissue_mask_kwargs={
-                'deconvolve_first': True, 'n_thresholding_steps': 1,
-                'sigma': 2.0, 'min_size': 500, },
-            suppress_warnings=True, verbose=2, monitorPrefix='test')
+                'deconvolve_first': True, 'n_thresholding_steps': 2,
+                'sigma': 1.5, 'min_size': 500, },
+            suppress_warnings=False, verbose=2, monitorPrefix='test')
         cds.set_color_normalization_values(
             mu=cnorm_thumbnail['mu'],
             sigma=cnorm_thumbnail['sigma'], what='thumbnail')
