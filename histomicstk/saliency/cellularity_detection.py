@@ -464,9 +464,31 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
     def run(self):
         """Run cellularity detection and optionally visualize result.
 
-        This runs the cellularity detection +/- visualization pipeline
-        """
+        This runs the cellularity detection +/- visualization pipeline and
+        returns a list of CD_single_tissue_piece objects. Each object has
+        the following attributes
 
+        tissue_mask : np array
+            mask of where tissue is at target magnification
+        ymin : int
+            min y coordinate at base (scan) magnification
+        xmin : int
+            min x coordinate at base (scan) magnification
+        ymax : int
+            max y coordinate at base (scan) magnification
+        xmax : int
+            max x coordinate at base (scan) magnification
+        spixel_mask : np array
+            np array where each unique value represents one superpixel
+        fdata : pandas DataFrame
+            features extracted for each superpixel. Index corresponds to
+            values in the spixel_mask. This includes a 'cluster' column
+            indicatign which cluster this superpixel belongs to.
+        cluster_props : dict
+            properties of each superpixel cluster, including its assigned
+            cellularity score.
+
+        """
         if (len(self.cnorm_params) == 0) and (not self.suppress_warnings):
             input("""
                 %s: WARNING!! Consider running set_color_normalization_values()

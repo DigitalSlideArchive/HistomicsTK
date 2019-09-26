@@ -74,7 +74,7 @@ class CellularityDetectionTest(unittest.TestCase):
         self.assertTrue(all(
             [j in tissue_pieces[0].__dict__.keys() for j in
              ('tissue_mask', 'ymin', 'xmin', 'ymax', 'xmax', 'spixel_mask',
-              'fdata', 'spixel_labels', 'cluster_props')]))
+              'fdata', 'cluster_props')]))
         self.assertEqual(len(tissue_pieces[0].cluster_props), 5)
 
         # cleanup
