@@ -14,12 +14,14 @@ from skimage.transform import resize
 from sklearn.mixture import GaussianMixture
 from skimage.measure import regionprops
 from matplotlib import cm
+from PIL import Image
 
 from histomicstk.utils.general_utils import Base_HTK_Class
 from histomicstk.preprocessing.color_conversion import lab_mean_std
 from histomicstk.preprocessing.color_normalization import reinhard
 from histomicstk.saliency.tissue_detection import (
-    get_slide_thumbnail, get_tissue_mask, _deconv_color)
+    get_slide_thumbnail, get_tissue_mask, _deconv_color,
+    get_tissue_boundary_annotation_documents)
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     get_contours_from_mask, get_annotation_documents_from_contours)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
@@ -28,6 +30,8 @@ from histomicstk.features.compute_intensity_features import (
     compute_intensity_features)
 from histomicstk.features.compute_haralick_features import (
     compute_haralick_features)
+
+Image.MAX_IMAGE_PIXELS = None
 
 # %%===========================================================================
 # =============================================================================
@@ -216,8 +220,9 @@ class CD_single_tissue_piece(object):
                 [j['cellularity'] for _, j in self.cluster_props.items()])
         # Assign rgb string
         for clid in np.unique(self.spixel_labels):
-            rgb = self.cd.cMap(int(self.cluster_props[clid][
-                    'cellularity'] / max_cellularity * 255))[:-1]
+            cellularity = min(
+                self.cluster_props[clid]['cellularity'], max_cellularity)
+            rgb = self.cd.cMap(int(cellularity / max_cellularity * 255))[:-1]
             rgb = [int(255 * j) for j in rgb]
             self.cluster_props[clid]['color'] = 'rgb(%d,%d,%d)' % tuple(rgb)
 
@@ -290,7 +295,7 @@ class CD_single_tissue_piece(object):
             'lineWidth': self.cd.lineWidth,
         }
         annotation_docs = get_annotation_documents_from_contours(
-            contours_df.copy(), docnamePrefix='spixel', annprops=annprops,
+            contours_df.copy(), docnamePrefix='contig', annprops=annprops,
             annots_per_doc=1000, separate_docs_by_group=True,
             verbose=False, monitorPrefix="")
         for doc in annotation_docs:
@@ -390,6 +395,8 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
             width of line when displaying superpixel boundaries.
         cMap : object
             matplotlib color map to use when visualizing cellularity
+        visualize_tissue_boundary : bool
+            whether to visualize result from tissue detection component
         visualize_spixels : bool
             whether to visualize superpixels, color-coded by cellularity
         visualize_contiguous : bool
@@ -404,9 +411,9 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
             'MAG': 3.0,
             'get_tissue_mask_kwargs': {
                 'deconvolve_first': True, 'n_thresholding_steps': 1,
-                'sigma': 0.5, 'min_size': 300,
+                'sigma': 1.5, 'min_size': 500,
             },
-            'spixel_size_baseMag': 350 * 350,
+            'spixel_size_baseMag': 256 * 256,
             'compactness': 0.1,
             'deconvolve': True,
             'use_grayscale': True,
@@ -419,10 +426,11 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
                 "Intensity.HistEntropy",
             ],
             'n_gaussian_components': 5,
-            'max_cellularity': 50,
+            'max_cellularity': None,
             'opacity': 0,
             'lineWidth': 3.0,
             'cMap': cm.seismic,
+            'visualize_tissue_boundary': True,
             'visualize_spixels': True,
             'visualize_contiguous': True,
         }
@@ -472,7 +480,7 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
         assert what in ('thumbnail', 'main')
 
         if ref_image_path is not None:
-            ref_im = np.array(imread(self.ref_image_path, pilmode='RGB'))
+            ref_im = np.array(imread(ref_image_path, pilmode='RGB'))
             mu, sigma = lab_mean_std(ref_im)
 
         self.cnorm_params[what] = {'mu': mu, 'sigma': sigma}
@@ -497,6 +505,13 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
         # get labeled tissue mask -- each unique value is one tissue piece
         labeled, _ = get_tissue_mask(
             thumbnail_rgb, self.get_tissue_mask_kwargs)
+
+        if self.visualize_tissue_boundary:
+            annotation_docs = get_tissue_boundary_annotation_documents(
+                self.gc, slide_id=self.slide_id, labeled=labeled)
+            for doc in annotation_docs:
+                _ = self.gc.post(
+                    "/annotation?itemId=" + self.slide_id, json=doc)
 
         # Find size relative to WSI
         self.slide_info['F_tissue'] = self.slide_info[
