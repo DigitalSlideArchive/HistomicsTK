@@ -346,6 +346,8 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
             2 - Print everything to screen
         monitorPrefix : str
             text to prepend to printed statements
+        logging_savepath : str or None
+            where to save run logs
         suppress_warnings : bool
             whether to suppress warnings
         cnorm_params : dict
@@ -404,9 +406,13 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
 
         """
         default_attr = {
-            'verbose': 1,
-            'monitorPrefix': "",
-            'suppress_warnings': False,
+
+            # The following are already assigned defaults by Base_HTK_Class
+            # 'verbose': 1,
+            # 'monitorPrefix': "",
+            # 'logging_savepath': None,
+            # 'suppress_warnings': False,
+
             'cnorm_params': dict(),
             'MAG': 3.0,
             'get_tissue_mask_kwargs': {
