@@ -258,7 +258,7 @@ class CD_single_tissue_piece(object):
         annotation_docs = get_annotation_documents_from_contours(
             contours_df.copy(), docnamePrefix='spixel', annprops=annprops,
             annots_per_doc=1000, separate_docs_by_group=True,
-            verbose=False, monitorPrefix="")
+            verbose=self.cd.verbose == 2, monitorPrefix="   ")
         for doc in annotation_docs:
             _ = self.cd.gc.post(
                     "/annotation?itemId=" + self.cd.slide_id, json=doc)
@@ -291,7 +291,7 @@ class CD_single_tissue_piece(object):
             'F': (self.ymax - self.ymin) / self.tissue_rgb.shape[0],
             'X_OFFSET': self.xmin,
             'Y_OFFSET': self.ymin,
-            'opacity': self.cd.opacity,
+            'opacity': self.cd.opacity_contig,
             'lineWidth': self.cd.lineWidth,
         }
         annotation_docs = get_annotation_documents_from_contours(
@@ -391,7 +391,10 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
             Range [0, 100] or None. If None, normalize visualization RGB values
             for each tissue piece separately, else normalize by given number.
         opacity : float
-            opacity of polygons when posted to DSA.
+            opacity of superpixel polygons when posted to DSA.
+            0 (no opacity) is more efficient to render.
+        opacity_contig : float
+            opacity of contiguous region polygons when posted to DSA.
             0 (no opacity) is more efficient to render.
         lineWidth : float
             width of line when displaying superpixel boundaries.
@@ -434,6 +437,7 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
             'n_gaussian_components': 5,
             'max_cellularity': None,
             'opacity': 0,
+            'opacity_contig': 0.3,
             'lineWidth': 3.0,
             'cMap': cm.seismic,
             'visualize_tissue_boundary': True,
@@ -511,6 +515,9 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
         # get labeled tissue mask -- each unique value is one tissue piece
         labeled, _ = get_tissue_mask(
             thumbnail_rgb, **self.get_tissue_mask_kwargs)
+
+        if len(np.unique(labeled)) < 2:
+            raise ValueError("No tissue detected!")
 
         if self.visualize_tissue_boundary:
             annotation_docs = get_tissue_boundary_annotation_documents(
