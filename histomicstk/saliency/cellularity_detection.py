@@ -208,8 +208,13 @@ class CD_single_tissue_piece(object):
 
     def assign_colors_to_spixel_clusters(self):
         """Assign RGB color string to cellularity clusters."""
-        max_cellularity = max(
-            [j['cellularity'] for _, j in self.cluster_props.items()])
+        # normalize values by given value, else by max for each tissue piece
+        if self.cd.max_cellularity is not None:
+            max_cellularity = self.cd.max_cellularity
+        else:
+            max_cellularity = max(
+                [j['cellularity'] for _, j in self.cluster_props.items()])
+        # Assign rgb string
         for clid in np.unique(self.spixel_labels):
             rgb = self.cd.cMap(int(self.cluster_props[clid][
                     'cellularity'] / max_cellularity * 255))[:-1]
@@ -375,6 +380,9 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
             gaussian mixture modeling results.
         n_gaussian_components : int
             no of gaussian mixture model components
+        max_cellularity : int
+            Range [0, 100] or None. If None, normalize visualization RGB values
+            for each tissue piece separately, else normalize by given number.
         opacity : float
             opacity of polygons when posted to DSA.
             0 (no opacity) is more efficient to render.
@@ -411,6 +419,7 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
                 "Intensity.HistEntropy",
             ],
             'n_gaussian_components': 5,
+            'max_cellularity': 50,
             'opacity': 0,
             'lineWidth': 3.0,
             'cMap': cm.seismic,
