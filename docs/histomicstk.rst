@@ -17,4 +17,4 @@ and vice versa.
     segmentation <histomicstk.segmentation>
     features <histomicstk.features>
     annotations and masks <histomicstk.annotations_and_masks>
-    saliency <histomicstk.saliency>
+    saliency (tissue/cellularity detection) <histomicstk.saliency>

@@ -91,6 +91,7 @@ class Polygon_merger(Base_HTK_Class):
             'background_group': 'mostly_stroma',
             'roi_group': 'roi',
         }
+        default_attr.update(kwargs)
         super(Polygon_merger, self).__init__(default_attr=default_attr)
 
         # some sanity checks
