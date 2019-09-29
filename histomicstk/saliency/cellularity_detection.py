@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep 23 21:17:43 2019
+Created on Mon Sep 23 21:17:43 2019.
 
 @author: mtageld
 """
@@ -60,7 +60,7 @@ class CD_single_tissue_piece(object):
     # =========================================================================
 
     def run(self):
-        """Get cellularity and optionally visualize on DSA"""
+        """Get cellularity and optionally visualize on DSA."""
         # get cellularity
         self.restrict_mask_to_single_tissue_piece()
         self.cd._print2("%s: set_tissue_rgb()" % self.monitorPrefix)
@@ -91,7 +91,7 @@ class CD_single_tissue_piece(object):
     # =========================================================================
 
     def restrict_mask_to_single_tissue_piece(self):
-        """Only keep relevant part of slide mask"""
+        """Only keep relevant part of slide mask."""
         # find coordinates at scan magnification
         tloc = np.argwhere(self.tissue_mask)
         F = self.cd.slide_info['F_tissue']
@@ -123,7 +123,6 @@ class CD_single_tissue_piece(object):
 
     def set_superpixel_mask(self):
         """Use Simple Linear Iterative Clustering (SLIC) to get superpixels."""
-
         # Get superpixel size and number
         spixel_size = self.cd.spixel_size_baseMag * (
             self.cd.MAG / self.cd.slide_info['magnification'])
@@ -186,14 +185,14 @@ class CD_single_tissue_piece(object):
     # =========================================================================
 
     def set_superpixel_assignment(self):
-        """Fit gaussian mixture model to features and get assignment"""
+        """Fit gaussian mixture model to features and get assignment."""
         mmodel = GaussianMixture(n_components=self.cd.n_gaussian_components)
         self.spixel_labels = mmodel.fit_predict(self.fdata.values) + 1
 
     # =========================================================================
 
     def assign_cellularity_scores(self):
-        """Assign cellularity scores to spixel clusters"""
+        """Assign cellularity scores to spixel clusters."""
         assert self.cd.use_intensity, "We need intensity to rank cellularity."
         assert self.cd.deconvolve, \
             "We must use hematoxyling channel to rank by cellularity."
@@ -204,8 +203,8 @@ class CD_single_tissue_piece(object):
         for clid in np.unique(self.spixel_labels):
             self.cluster_props[clid] = {
                 'cellularity': int(np.median(self.fdata.loc[
-                        self.fdata.loc[:, "cluster"] == clid,
-                        "Intensity.Median"]) / 255 * 100),
+                    self.fdata.loc[:, "cluster"] == clid,
+                    "Intensity.Median"]) / 255 * 100),
             }
 
     # =========================================================================
@@ -229,7 +228,7 @@ class CD_single_tissue_piece(object):
     # =========================================================================
 
     def visualize_individual_superpixels(self):
-        """visualize individual spixels, color-coded by cellularity."""
+        """Visualize individual spixels, color-coded by cellularity."""
         # Define GTCodes dataframe
         GTCodes_df = DataFrame(columns=['group', 'GT_code', 'color'])
         for spval, sp in self.fdata.iterrows():
@@ -264,13 +263,12 @@ class CD_single_tissue_piece(object):
             self.cd._print2("%s: Posting doc %d of %d" % (
                 self.monitorPrefix, didx + 1, len(annotation_docs)))
             _ = self.cd.gc.post(
-                    "/annotation?itemId=" + self.cd.slide_id, json=doc)
+                "/annotation?itemId=" + self.cd.slide_id, json=doc)
 
     # =========================================================================
 
     def visualize_contiguous_superpixels(self):
-        """visualize contiguous spixels, color-coded by cellularity."""
-
+        """Visualize contiguous spixels, color-coded by cellularity."""
         # get cellularity cluster membership mask
         cellularity_mask = np.zeros(self.spixel_mask.shape)
         for spval, sp in self.fdata.iterrows():
@@ -306,7 +304,7 @@ class CD_single_tissue_piece(object):
             self.cd._print2("%s: Posting doc %d of %d" % (
                 self.monitorPrefix, didx + 1, len(annotation_docs)))
             _ = self.cd.gc.post(
-                    "/annotation?itemId=" + self.cd.slide_id, json=doc)
+                "/annotation?itemId=" + self.cd.slide_id, json=doc)
 
 # %%===========================================================================
 # =============================================================================
