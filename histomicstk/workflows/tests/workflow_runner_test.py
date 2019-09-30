@@ -30,6 +30,7 @@ logging_savepath = tempfile.mkdtemp()
 
 # %%===========================================================================
 
+
 class Slide_iterator_Test(unittest.TestCase):
     """Test slide iterator."""
 
@@ -40,12 +41,13 @@ class Slide_iterator_Test(unittest.TestCase):
         self.assertGreaterEqual(len(si.slide_ids), 1)
 
         sir = si.run()
-        fetched = []
-        for i in range(len(si.slide_ids)):
-            sname, sid = next(sir)
-            fetched.append(sname)
+        for i in range(2):
+            slide_info = next(sir)
 
-        self.assertTupleEqual(tuple(si.slide_ids.keys()), tuple(fetched))
+        self.assertTrue(all(
+            [k in slide_info.keys() for k in
+             ('name', '_id', 'levels', 'magnification', 'mm_x', 'mm_y',
+              'sizeX', 'sizeY', 'tileHeight', 'tileWidth')]))
 
 
 # %%===========================================================================

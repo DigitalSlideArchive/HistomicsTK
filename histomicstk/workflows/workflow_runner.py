@@ -65,6 +65,9 @@ class Slide_iterator(Base_HTK_Class):
     def run(self):
         """Yields information on one slide at a time."""
         for sname, sid in self.slide_ids.items():
-            yield sname, sid
+            slide_info = self.gc.get('item/%s/tiles' % sid)
+            slide_info['name'] = sname
+            slide_info['_id'] = sid
+            yield slide_info
 
 # %% ==========================================================================
