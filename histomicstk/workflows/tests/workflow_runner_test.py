@@ -91,7 +91,8 @@ class Workflow_runner_Test(unittest.TestCase):
         # Init workflow runner
         workflow_runner = Workflow_runner(
             slide_iterator=Slide_iterator(
-                gc, source_folder_id=SAMPLE_SOURCE_FOLDER_ID),
+                gc, source_folder_id=SAMPLE_SOURCE_FOLDER_ID,
+                keep_slides=['TCGA-A1-A0SK-01Z-00-DX1_POST.svs', ]),
             workflow=cellularity_detection_workflow,
             workflow_kwargs={
                 'gc': gc,
@@ -111,4 +112,4 @@ if __name__ == '__main__':
     unittest.main()
 
     # cleanup
-    # shutil.rmtree(logging_savepath)
+    shutil.rmtree(logging_savepath)
