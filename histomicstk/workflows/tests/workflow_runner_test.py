@@ -82,7 +82,6 @@ class Workflow_runner_Test(unittest.TestCase):
 
     def test_workflow_runner_using_cellularity_detector(self):
         """Test workflow runner for cellularity detection."""
-
         # Init Cellularity_detector_superpixels
         cds = Cellularity_detector_superpixels(**cds_params)
         cds.set_color_normalization_values(

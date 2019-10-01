@@ -5,9 +5,7 @@ Created on Wed Sep 18 00:06:28 2019.
 
 @author: mtageld
 """
-
 import unittest
-
 import os
 import tempfile
 import shutil
