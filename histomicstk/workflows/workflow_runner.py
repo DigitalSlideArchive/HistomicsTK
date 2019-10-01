@@ -14,7 +14,7 @@ class Slide_iterator(Base_HTK_Class):
     """Iterate through large_image items in a girder folder."""
 
     def __init__(self, gc, source_folder_id, **kwargs):
-        """Init Cellularity_Detector_Superpixels object.
+        """Init Slide_iterator object.
 
         Arguments:
         -----------
@@ -63,7 +63,7 @@ class Slide_iterator(Base_HTK_Class):
     # =========================================================================
 
     def run(self):
-        """Yields information on one slide at a time."""
+        """Yield information on one slide at a time."""
         for sname, sid in self.slide_ids.items():
             slide_info = self.gc.get('item/%s/tiles' % sid)
             slide_info['name'] = sname
