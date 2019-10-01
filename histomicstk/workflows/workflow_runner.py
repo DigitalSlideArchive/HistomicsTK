@@ -50,7 +50,8 @@ class Slide_iterator(Base_HTK_Class):
 
     def set_slide_ids(self):
         """Get dict of slide idx, indexed by name."""
-        resp = self.gc.get("item?folderId=%s" % self.source_folder_id)
+        resp = self.gc.get(
+            "item?folderId=%s&limit=1000000" % self.source_folder_id)
         self.slide_ids = {j['name']: j['_id'] for j in resp}
         # find discard ids
         if self.keep_slides is not None:
