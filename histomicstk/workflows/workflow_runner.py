@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep 30 22:09:40 2019
+Created on Mon Sep 30 22:09:40 2019.
 
 @author: mtageld
 """
 from histomicstk.utils.general_utils import Base_HTK_Class
 
 # %% ==========================================================================
+# =============================================================================
 
 
 class Slide_iterator(Base_HTK_Class):
@@ -16,7 +17,7 @@ class Slide_iterator(Base_HTK_Class):
     def __init__(self, gc, source_folder_id, **kwargs):
         """Init Slide_iterator object.
 
-        Arguments:
+        Arguments
         -----------
         gc : object
             girder client object
@@ -71,3 +72,68 @@ class Slide_iterator(Base_HTK_Class):
             yield slide_info
 
 # %% ==========================================================================
+# =============================================================================
+
+
+class Workflow_runner(Base_HTK_Class):
+    """Run workflow for all slides in a girder folder."""
+
+    def __init__(self, slide_iterator, workflow, workflow_kwargs, **kwargs):
+        """Init Workflow_runner object.
+
+        Arguments
+        -----------
+        slide_iterator : object
+            Slide_iterator object
+        workflow : method
+            method whose parameters include slide_id and monitorPrefix,
+            which is called for each slide
+        workflow_kwargs : dict
+            keyword arguments for the workflow method
+        kwargs : key-value pairs
+            The following are already assigned defaults by Base_HTK_Class
+            but can be passed here to override defaults
+            [verbose, monitorPrefix, logger, logging_savepath,
+            suppress_warnings]
+
+        """
+        default_attr = dict()
+        default_attr.update(kwargs)
+        super(Workflow_runner, self).__init__(default_attr=default_attr)
+
+        # set attribs
+        self.workflow = workflow
+        self.workflow_kwargs = workflow_kwargs
+        self.exception_path = self.logname.replace('.log', '_EXCEPTIONS.log')
+        self.slide_iterator = slide_iterator
+        self.si = slide_iterator.run()
+
+    # =========================================================================
+
+    def run(self):
+        """Run workflow for all slides."""
+        self.n_slides = len(self.slide_iterator.slide_ids)
+
+        for sno in range(self.n_slides):
+
+            slide_info = next(self.si)
+
+            monitorStr = "%s: slide %d of %d (%s)" % (
+                self.monitorPrefix, sno + 1, self.n_slides, slide_info['name'])
+
+            try:
+                _ = self.workflow(
+                    slide_id=slide_info['_id'], monitorPrefix=monitorStr,
+                    **self.workflow_kwargs)
+            except Exception as e:
+                self.logger.exception("%s: SEE EXCEPTIONS FILE: %s" % (
+                    monitorStr, self.exception_path))
+                with open(self.exception_path, 'a') as f:
+                    print(e)
+                    f.write("%s\n" % monitorStr)
+                    f.write(str(e))
+                    f.write("\n---------------------------------\n")
+
+
+# %% ==========================================================================
+# =============================================================================

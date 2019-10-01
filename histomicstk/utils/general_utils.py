@@ -73,7 +73,9 @@ class Base_HTK_Class(object):
             self.logname = os.path.join(
                 self.logging_savepath,
                 datetime.datetime.now().strftime("%Y-%m-%d_%H-%M") + '.log')
-            logging.basicConfig(filename=self.logname, level=logging.INFO)
+            logging.basicConfig(
+                filename=self.logname, format='%(levelname)s:%(message)s',
+                level=logging.INFO)
 
         # verbosity control
         self.cpr1 = Print_and_log(

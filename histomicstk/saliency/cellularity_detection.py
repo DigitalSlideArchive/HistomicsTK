@@ -503,7 +503,7 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
         tissue_pieces = [None for _ in range(len(unique_tvals))]
         for idx, tval in enumerate(unique_tvals):
             monitorPrefix = "%s: Tissue piece %d of %d" % (
-                self.monitorPrefix, idx+1, len(unique_tvals))
+                self.monitorPrefix, idx + 1, len(unique_tvals))
             self._print1(monitorPrefix)
             tissue_pieces[idx] = CD_single_tissue_piece(
                 self, tissue_mask=labeled == tval, monitorPrefix=monitorPrefix)

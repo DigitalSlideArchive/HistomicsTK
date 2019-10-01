@@ -170,8 +170,8 @@ def get_tissue_mask(
 # %%===========================================================================
 
 def get_tissue_boundary_annotation_documents(
-        gc, slide_id, labeled,
-        color='rgb(0,0,0)', group='tissue', annprops=None):
+        gc, slide_id, labeled, color='rgb(0,0,0)', group='tissue',
+        annprops=None, docnamePrefix=''):
     """Get annotation documents of tissue boundaries to visualize on DSA.
 
     Parameters
@@ -223,7 +223,8 @@ def get_tissue_boundary_annotation_documents(
         get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False,
         monitorPrefix="tissue: getting contours")
     annotation_docs = get_annotation_documents_from_contours(
-        contours_tissue.copy(), docnamePrefix='test', annprops=annprops,
+        contours_tissue.copy(), annprops=annprops,
+        docnamePrefix=docnamePrefix,
         verbose=False, monitorPrefix="tissue : annotation docs")
 
     return annotation_docs
