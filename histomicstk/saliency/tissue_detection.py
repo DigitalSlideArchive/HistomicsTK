@@ -100,6 +100,7 @@ def get_tissue_mask(
     -----------
     thumbnail_rgb : np array
         (m, n, 3) nd array of thumbnail RGB image
+        or (m, n) nd array of thumbnail grayscale image
     deconvolve_first : bool
         use hematoxylin channel to find cellular areas?
         This will make things ever-so-slightly slower but is better in
@@ -128,9 +129,11 @@ def get_tissue_mask(
         Stains, channel = _deconv_color(
             thumbnail_rgb, stain_matrix_method=stain_matrix_method)
         thumbnail = 255 - Stains[..., channel]
-    else:
+    elif len(thumbnail_rgb.shape) == 3:
         # grayscale thumbnail (inverted)
         thumbnail = 255 - cv2.cvtColor(thumbnail_rgb, cv2.COLOR_BGR2GRAY)
+    else:
+        thumbnail = thumbnail_rgb
 
     for _ in range(n_thresholding_steps):
 
