@@ -11,7 +11,7 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
 # %%===========================================================================
 
 
-def cellularity_detection_workflow(
+def cellularity_detection_superpixels_workflow(
         gc, cds, slide_id, monitorPrefix='',
         destination_folder_id=None, keep_existing_annotations=False):
     """Run Cellularity_detector_superpixels for single slide.

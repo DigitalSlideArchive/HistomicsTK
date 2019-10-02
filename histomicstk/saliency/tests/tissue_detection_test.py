@@ -34,9 +34,21 @@ gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 savepath = tempfile.mkdtemp()
 
+whitespace_hsi_thresholds = {
+    'hue': {'min': 0, 'max': 1.0},
+    'saturation': {'min': 0, 'max': 0.2},
+    'intensity': {'min': 220, 'max': 255},
+}
+
 blood_hsi_thresholds = {
     'hue': {'min': 0.15, 'max': 0.2},
-    'saturation': {'min': 0.5, 'max': 1.0},
+    'saturation': {'min': 0.55, 'max': 1.0},
+    'intensity': {'min': 0, 'max': 255},
+}
+
+necrosis_hsi_thresholds = {
+    'hue': {'min': 0.15, 'max': 0.2},
+    'saturation': {'min': 0.35, 'max': 0.55},
     'intensity': {'min': 0, 'max': 255},
 }
 
@@ -102,9 +114,12 @@ class TissueDetectionTest(unittest.TestCase):
         # convert to hsi
         tissue_im = rgb_to_hsi(tissue_im)
 
-        # extract nectoris/bloody regions
+        # extract specific regions
         labeled, mask = threshold_hsi(
-            tissue_im, hsi_thresholds=blood_hsi_thresholds,
+            tissue_im,
+            # hsi_thresholds=whitespace_hsi_thresholds,  # whitespace
+            hsi_thresholds=blood_hsi_thresholds,  # blood
+            # hsi_thresholds=necrosis_hsi_thresholds,  # necrosis
             just_threshold=False, get_tissue_mask_kwargs={
                 'n_thresholding_steps': 1, 'sigma': 5.0, 'min_size': 100},
         )
@@ -114,20 +129,22 @@ class TissueDetectionTest(unittest.TestCase):
 
         # save for use in the next test
         imwrite(os.path.join(
-            savepath, 'blood_binmask.png'), np.uint8(0 + (labeled > 0)))
+            savepath, 'region_binmask.png'), np.uint8(0 + (labeled > 0)))
 
     def visualize_threshold_hsi_annotations(self):
         """Visualize results from threshold_hsi()."""
-        labeled = imread(os.path.join(savepath, 'blood_binmask.png'))
+        labeled = imread(os.path.join(savepath, 'region_binmask.png'))
 
         # deleting existing annotations in target slide (if any)
-        delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)
+        # delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)
 
         # get annotation documents
         slide_info = gc.get('item/%s/tiles' % SAMPLE_SLIDE_ID)
         annotation_docs = get_tissue_boundary_annotation_documents(
             gc, slide_id=SAMPLE_SLIDE_ID, labeled=labeled,
             group='blood', color='rgb(255,255,0)', docnamePrefix='test',
+            # group='whitespace', color='rgb(70,70,70)', docnamePrefix='test',
+            # group='necrosis', color='rgb(255,180,70)', docnamePrefix='test',
             annprops={
                 'F': slide_info['magnification'] / 3.0,
                 'X_OFFSET': 22414,

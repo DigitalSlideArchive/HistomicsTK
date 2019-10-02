@@ -15,7 +15,7 @@ from histomicstk.saliency.cellularity_detection import (
     Cellularity_detector_superpixels)
 from histomicstk.workflows.workflow_runner import Workflow_runner
 from histomicstk.workflows.specific_workflows import (
-    cellularity_detection_workflow)
+    cellularity_detection_superpixels_workflow)
 
 # %%===========================================================================
 # Constants & prep work
@@ -92,7 +92,7 @@ class Workflow_runner_Test(unittest.TestCase):
             slide_iterator=Slide_iterator(
                 gc, source_folder_id=SAMPLE_SOURCE_FOLDER_ID,
                 keep_slides=['TCGA-A1-A0SK-01Z-00-DX1_POST.svs', ]),
-            workflow=cellularity_detection_workflow,
+            workflow=cellularity_detection_superpixels_workflow,
             workflow_kwargs={
                 'gc': gc,
                 'cds': cds,
