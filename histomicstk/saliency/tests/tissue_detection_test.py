@@ -16,15 +16,17 @@ import numpy as np
 # from matplotlib.colors import ListedColormap
 from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask,
-    get_tissue_boundary_annotation_documents)
+    get_tissue_boundary_annotation_documents, threshold_hsi)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    delete_annotations_in_slide)
+    delete_annotations_in_slide, get_image_from_htk_response)
+from histomicstk.preprocessing.color_conversion import rgb_to_hsi
 
 # %%===========================================================================
 # Constants & prep work
 
 APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-SAMPLE_SLIDE_ID = "5d586d76bd4404c6b1f286ae"
+# SAMPLE_SLIDE_ID = "5d586d76bd4404c6b1f286ae"
+SAMPLE_SLIDE_ID = "5d94ee48bd4404c6b1fb0b40"
 
 gc = girder_client.GirderClient(apiUrl=APIURL)
 # gc.authenticate(interactive=True)
@@ -32,12 +34,18 @@ gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 savepath = tempfile.mkdtemp()
 
+blood_hsi_thresholds = {
+    'hue': {'min': 0.15, 'max': 0.2},
+    'saturation': {'min': 0.5, 'max': 1.0},
+    'intensity': {'min': 0, 'max': 255},
+}
+
 # %%===========================================================================
 # Tests
 
 
 class TissueDetectionTest(unittest.TestCase):
-    """Test methods for getting ROI mask from annotations."""
+    """Test methods for detecting tissue."""
 
     def test_get_tissue_mask(self):
         """Test get_tissue_mask()."""
@@ -81,8 +89,58 @@ class TissueDetectionTest(unittest.TestCase):
         for doc in annotation_docs:
             _ = gc.post("/annotation?itemId=" + SAMPLE_SLIDE_ID, json=doc)
 
-        # cleanup
-        shutil.rmtree(savepath)
+    def test_threshold_hsi(self):
+        """Test threshold_hsi()."""
+
+        # load RGB for ROI at target magnification
+        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
+            SAMPLE_SLIDE_ID, 22414, 84140, 13837, 67967
+            ) + "&magnification=%d" % 3.0
+        resp = gc.get(getStr, jsonResp=False)
+        tissue_im = get_image_from_htk_response(resp)
+
+        # convert to hsi
+        tissue_im = rgb_to_hsi(tissue_im)
+
+        # extract nectoris/bloody regions
+        labeled, mask = threshold_hsi(
+            tissue_im, hsi_thresholds=blood_hsi_thresholds,
+            just_threshold=False, get_tissue_mask_kwargs={
+                'n_thresholding_steps': 1, 'sigma': 5.0, 'min_size': 100},
+        )
+
+        self.assertTupleEqual(labeled.shape, (4059, 4629))
+        # self.assertEqual(len(np.unique(labeled)), 659)
+
+        # save for use in the next test
+        imwrite(os.path.join(
+            savepath, 'blood_binmask.png'), np.uint8(0 + (labeled > 0)))
+
+    def visualize_threshold_hsi_annotations(self):
+        """Visualize results from threshold_hsi()."""
+        labeled = imread(os.path.join(savepath, 'blood_binmask.png'))
+
+        # deleting existing annotations in target slide (if any)
+        delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)
+
+        # get annotation documents
+        slide_info = gc.get('item/%s/tiles' % SAMPLE_SLIDE_ID)
+        annotation_docs = get_tissue_boundary_annotation_documents(
+            gc, slide_id=SAMPLE_SLIDE_ID, labeled=labeled,
+            group='blood', color='rgb(255,255,0)', docnamePrefix='test',
+            annprops={
+                'F': slide_info['magnification'] / 3.0,
+                'X_OFFSET': 22414,
+                'Y_OFFSET': 13837,
+                'opacity': 0,
+                'lineWidth': 4.0,
+            }, )
+
+        self.assertTrue('elements' in annotation_docs[0].keys())
+
+        # post annotations to slide
+        for doc in annotation_docs:
+            _ = gc.post("/annotation?itemId=" + SAMPLE_SLIDE_ID, json=doc)
 
 
 def suite():
@@ -92,9 +150,12 @@ def suite():
          ... python-unittest-testcase-execution-order
     """
     suite = unittest.TestSuite()
-    suite.addTest(TissueDetectionTest('test_get_tissue_mask'))
+    # suite.addTest(TissueDetectionTest('test_get_tissue_mask'))
+    # suite.addTest(
+    #     TissueDetectionTest('test_get_tissue_boundary_annotation_documents'))
+    suite.addTest(TissueDetectionTest('test_threshold_hsi'))
     suite.addTest(
-        TissueDetectionTest('test_get_tissue_boundary_annotation_documents'))
+        TissueDetectionTest('visualize_threshold_hsi_annotations'))
     return suite
 
 # %%===========================================================================
@@ -103,3 +164,5 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner(failfast=True)
     runner.run(suite())
+    # cleanup
+    shutil.rmtree(savepath)

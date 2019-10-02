@@ -117,10 +117,10 @@ def get_tissue_mask(
 
     Returns
     --------
-    np bool array
-        largest contiguous tissue region.
     np int32 array
         each unique value represents a unique tissue region
+    np bool array
+        largest contiguous tissue region.
 
     """
     if deconvolve_first:
@@ -231,5 +231,65 @@ def get_tissue_boundary_annotation_documents(
         verbose=False, monitorPrefix="tissue : annotation docs")
 
     return annotation_docs
+
+# %%===========================================================================
+
+
+def threshold_hsi(
+        hsi_im, hsi_thresholds, just_threshold=False,
+        get_tissue_mask_kwargs=None):
+    """Threshold a Hue-Saturation-Intensity (HSI) image to get tissue.
+
+    The relies on the fact that oftentimes some slide elements (eg blood
+    or whitespace) have a characteristic hue/saturation/intensity. This
+    thresholds along each HSI channel, then optionally uses the
+    get_tissue_mask() method (gaussian smoothing, otsu thresholding,
+    connected components) to get each contiguous tissue piece.
+
+    Parameters
+    -----------
+    hsi_im : np array
+        (m, n, 3) array of Hue, Saturation, Intensity (in this order)
+    hsi_thresholds : dict
+        contains the keys hue, saturation, and intensity. Each entry is a dict
+        containing the keys min and max
+    just_threshold : bool
+        if Fase, get_tissue_mask() is used to smooth result and get contiguous
+        regions.
+    get_tissue_mask_kwargs : dict
+        key-value pairs of parameters to pass to get_tissue_mask()
+
+    Returns
+    --------
+    np int32 array or None
+        each unique value represents a unique tissue region
+    np bool array
+        largest contiguous tissue region.
+
+    """
+    if get_tissue_mask_kwargs is None:
+        get_tissue_mask_kwargs = {
+            'n_thresholding_steps': 1,
+            'sigma': 5.0,
+            'min_size': 10,
+        }
+
+    # threshold each channel
+    mask = np.ones(hsi_im.shape[:2])
+    for ax, ch in enumerate(['hue', 'saturation', 'intensity']):
+
+        channel = hsi_im[..., ax].copy()
+
+        mask[channel < hsi_thresholds[ch]['min']] = 0
+        mask[channel >= hsi_thresholds[ch]['max']] = 0
+
+    # smoothing, otsu thresholding then connected components
+    if just_threshold:
+        labeled = None
+    else:
+        get_tissue_mask_kwargs['deconvolve_first'] = False
+        labeled, mask = get_tissue_mask(mask, **get_tissue_mask_kwargs)
+
+    return labeled, mask
 
 # %%===========================================================================
