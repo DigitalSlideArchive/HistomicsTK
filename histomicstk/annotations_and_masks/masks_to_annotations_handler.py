@@ -10,7 +10,7 @@ import numpy as np
 from pandas import DataFrame, concat
 import cv2
 from shapely.geometry.polygon import Polygon
-from histomicstk.utils.general_utils import Conditional_Print
+from histomicstk.utils.general_utils import Print_and_log
 
 # %% =====================================================================
 
@@ -139,7 +139,7 @@ def _get_contours_df(
         MASK, GTCodes_df, groups_to_get=None, MIN_SIZE=30, MAX_SIZE=None,
         verbose=False, monitorPrefix=""):
     """Parse ground truth mask and gets countours (Internal)."""
-    cpr = Conditional_Print(verbose=verbose)
+    cpr = Print_and_log(verbose=verbose)
     _print = cpr._print
 
     # pad with zeros to be able to detect edge contours later
@@ -213,7 +213,7 @@ def _discard_nonenclosed_background_group(
     (Internal).
 
     """
-    cpr = Conditional_Print(verbose=verbose)
+    cpr = Print_and_log(verbose=verbose)
     _print = cpr._print
 
     # isolate background contours and non-background contours with holes
@@ -359,7 +359,7 @@ def get_contours_from_mask(
             vertix y coordinated comma-separated values
 
     """
-    cpr = Conditional_Print(verbose=verbose)
+    cpr = Print_and_log(verbose=verbose)
     _print = cpr._print
     if groups_to_get is not None:
         _print("""WARNING!! Only specify groups_to_get is you do NOT mind
@@ -462,7 +462,7 @@ def get_single_annotation_document_from_contours(
         DSA-style annotation document ready to be post for viewing.
 
     """
-    cpr = Conditional_Print(verbose=verbose)
+    cpr = Print_and_log(verbose=verbose)
     _print = cpr._print
 
     def _get_fillColor(lineColor):

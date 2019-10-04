@@ -59,6 +59,7 @@ class Polygon_merger_v2(Base_HTK_Class):
             'monitorPrefix': "",
             'merge_thresh': 3,
         }
+        default_attr.update(kwargs)
         super(Polygon_merger_v2, self).__init__(default_attr=default_attr)
 
         # This is where contours will be stored
