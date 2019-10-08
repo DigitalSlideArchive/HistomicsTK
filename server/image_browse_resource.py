@@ -1,9 +1,12 @@
+import json
+from bson import json_util
 from girder.api import access
 from girder.api.v1.item import Item as ItemResource
 from girder.api.describe import autoDescribeRoute, Description
 from girder.constants import AccessType
 from girder.exceptions import RestException
 from girder.models.folder import Folder
+from girder.models.item import Item
 
 
 def _isLargeImageItem(item):
@@ -22,14 +25,30 @@ class ImageBrowseResource(ItemResource):
         apiRoot.item.route('GET', (':id', 'next_image'), self.getNextImage)
         apiRoot.item.route('GET', (':id', 'previous_image'), self.getPreviousImage)
 
-    def getAdjacentImages(self, currentImage, currentFolder = None):
+    def _childItems(self, folder):
+        folderModel = Folder()
+        if not folder.get('isVirtual') or 'virtualItemsQuery' not in folder:
+            return folderModel.childItems(folder)
+
+        # need to manually handle virtual folders
+
+        itemModel = Item()
+        q = json_util.loads(folder['virtualItemsQuery'])
+        sort = None
+        if 'virtualItemsSort' in folder:
+            sort = json.loads(folder['virtualItemsSort'])
+        return itemModel.filterResultsByPermission(
+            itemModel.find(q, sort=sort), self.getCurrentUser(), level=AccessType.READ)
+
+    def getAdjacentImages(self, currentImage, currentFolder=None):
         folderModel = Folder()
         if currentFolder:
             folder = currentFolder
         else:
             folder = folderModel.load(
                 currentImage['folderId'], user=self.getCurrentUser(), level=AccessType.READ)
-        allImages = [item for item in folderModel.childItems(folder) if _isLargeImageItem(item)]
+
+        allImages = [item for item in self._childItems(folder) if _isLargeImageItem(item)]
         try:
             index = allImages.index(currentImage)
         except ValueError:
