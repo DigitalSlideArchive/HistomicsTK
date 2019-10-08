@@ -100,7 +100,7 @@ var SaveAnnotation = View.extend({
         }
 
         if (validation) {
-            this.$('.g-validation-failed-message').text(validation)
+            this.$('.g-validation-failed-message').text(validation.trim())
                 .removeClass('hidden');
             return;
         }
