@@ -23,12 +23,31 @@ var SaveAnnotation = View.extend({
         // clean up old colorpickers when rerendering
         this.$('.h-colorpicker').colorpicker('destroy');
 
+        const showStyleEditor = this.annotation.get('annotation').elements && !this.annotation._pageElements;
+        const defaultStyles = {};
+
+        if (showStyleEditor) {
+            const elements = this.annotation.get('annotation').elements;
+            console.assert(elements.length > 0); // otherwise we wouldn't show the style editor
+            const firstElement = elements[0];
+            if (elements.every((d) => d.lineWidth === firstElement.lineWidth)) {
+                defaultStyles.lineWidth = firstElement.lineWidth;
+            }
+            if (elements.every((d) => d.lineColor === firstElement.lineColor)) {
+                defaultStyles.lineColor = firstElement.lineColor;
+            }
+            if (elements.every((d) => d.fillColor === firstElement.fillColor)) {
+                defaultStyles.fillColor = firstElement.fillColor;
+            }
+        }
+
         this.$el.html(
             saveAnnotation({
                 title: this.options.title,
                 hasAdmin: this.annotation.get('_accessLevel') >= AccessType.ADMIN,
                 annotation: this.annotation.toJSON().annotation,
-                showStyleEditor: this.annotation.get('annotation').elements && !this.annotation._pageElements
+                showStyleEditor,
+                defaultStyles
             })
         ).girderModal(this);
         this.$('.h-colorpicker').colorpicker();
