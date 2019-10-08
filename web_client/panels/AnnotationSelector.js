@@ -37,6 +37,7 @@ var AnnotationSelector = Panel.extend({
         'change #h-toggle-interactive': 'toggleInteractiveMode',
         'input #h-annotation-opacity': '_changeGlobalOpacity',
         'input #h-annotation-fill-opacity': '_changeGlobalFillOpacity',
+        'click .h-annotation-select-by-region': 'selectAnnotationByRegion',
         'click .h-annotation-group-name': '_toggleExpandGroup'
     }),
 
@@ -370,6 +371,10 @@ var AnnotationSelector = Panel.extend({
         this.collection.each((model) => {
             model.set('displayed', false);
         });
+    },
+
+    selectAnnotationByRegion() {
+        this.parentView.trigger('h:selectElementsByRegion');
     },
 
     _highlightAnnotation(evt) {
