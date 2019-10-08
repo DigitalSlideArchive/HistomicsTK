@@ -648,7 +648,7 @@ $(function () {
                     var validationEl = $('.g-validation-failed-message');
                     expect(validationEl.length).toBe(1);
                     expect(validationEl.hasClass('hidden')).toBe(false);
-                    expect(validationEl.text()).toBe('Please enter a name.');
+                    expect(validationEl.text()).toBe('Please enter a name. ');
 
                     $('#h-annotation-name').val('edited 1');
                     $('.h-submit').click();
