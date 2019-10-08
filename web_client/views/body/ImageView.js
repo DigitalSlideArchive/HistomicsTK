@@ -29,14 +29,16 @@ var ImageView = View.extend({
     events: {
         'keydown .h-image-body': '_onKeyDown',
         'keydown .geojs-map': '_handleKeyDown',
-        'click .h-control-panel-container .s-close-panel-group': '_closeAnalysis'
+        'click .h-control-panel-container .s-close-panel-group': '_closeAnalysis',
+        'mousemove .geojs-map': '_trackMousePosition',
     },
     initialize(settings) {
         this.viewerWidget = null;
         this._mouseClickQueue = [];
         this._openId = null;
         this._displayedRegion = null;
-        this.selectedAnnotation = new AnnotationModel({_id: 'selected'});
+        this._currentMousePosition = null;
+        this.selectedAnnotation = new AnnotationModel({ _id: 'selected' });
         this.selectedElements = this.selectedAnnotation.elements();
 
         // Allow zooming this many powers of 2 more than native pixel resolution
@@ -82,7 +84,7 @@ var ImageView = View.extend({
         });
         this.listenTo(events, 'h:submit', (data) => {
             this.$('.s-jobs-panel .s-panel-controls .icon-down-open').click();
-            events.trigger('g:alert', {type: 'success', text: 'Analysis job submitted.'});
+            events.trigger('g:alert', { type: 'success', text: 'Analysis job submitted.' });
         });
         this.listenTo(events, 'h:select-region', this.showRegion);
         this.listenTo(this.annotationSelector.collection, 'add update change:displayed', this.toggleAnnotation);
@@ -94,6 +96,7 @@ var ImageView = View.extend({
         this.listenTo(this.annotationSelector, 'h:annotationFillOpacity', this._setAnnotationFillOpacity);
         this.listenTo(this.annotationSelector, 'h:redraw', this._redrawAnnotation);
         this.listenTo(this, 'h:highlightAnnotation', this._highlightAnnotationForInteractiveMode);
+        this.listenTo(this, 'h:selectElementsByRegion', this._selectElementsByRegion);
         this.listenTo(this.contextMenu, 'h:edit', this._editElement);
         this.listenTo(this.contextMenu, 'h:redraw', this._redrawAnnotation);
         this.listenTo(this.contextMenu, 'h:close', this._closeContextMenu);
@@ -145,7 +148,7 @@ var ImageView = View.extend({
                 // it is very confusing if this value is smaller than the
                 // AnnotationSelector MAX_ELEMENTS_LIST_LENGTH
                 highlightFeatureSizeLimit: 5000,
-                scale: {position: {bottom: 20, right: 10}}
+                scale: { position: { bottom: 20, right: 10 } }
             });
             this.trigger('h:viewerWidgetCreated', this.viewerWidget);
 
@@ -180,7 +183,7 @@ var ImageView = View.extend({
                 this.setBoundsQuery();
 
                 if (this.viewer) {
-                    this.viewer.zoomRange({max: this.viewer.zoomRange().max + this._increaseZoom2x});
+                    this.viewer.zoomRange({ max: this.viewer.zoomRange().max + this._increaseZoom2x });
 
                     // update the query string on pan events
                     this.viewer.geoOn(geo.event.pan, () => {
@@ -242,12 +245,12 @@ var ImageView = View.extend({
     },
     openImage(id) {
         if (id) {
-            this.model.set({_id: id}).fetch().then(() => {
+            this.model.set({ _id: id }).fetch().then(() => {
                 this._setImageInput();
                 return null;
             });
         } else {
-            this.model.set({_id: null});
+            this.model.set({ _id: null });
             this.render();
             this._openId = null;
             events.trigger('h:imageOpened', null);
@@ -323,7 +326,7 @@ var ImageView = View.extend({
         return promise.then((file) => {
             _.each(this.controlPanel.models(), (model) => {
                 if (model.get('type') === 'image') {
-                    model.set('value', file, {trigger: true});
+                    model.set('value', file, { trigger: true });
                 }
             });
             return null;
@@ -376,7 +379,7 @@ var ImageView = View.extend({
 
     _closeAnalysis(evt) {
         evt.preventDefault();
-        router.setQuery('analysis', null, {trigger: false});
+        router.setQuery('analysis', null, { trigger: false });
         this.controlPanel.$el.addClass('hidden');
     },
 
@@ -395,7 +398,7 @@ var ImageView = View.extend({
             bottom = bounds.bottom.toFixed();
             router.setQuery('bounds', [
                 left, top, right, bottom, rotation
-            ].join(','), {replace: true});
+            ].join(','), { replace: true });
         }
     },
 
@@ -500,7 +503,7 @@ var ImageView = View.extend({
         }
 
         this.viewerWidget.removeAnnotation(
-            new AnnotationModel({_id: 'region-selection'})
+            new AnnotationModel({ _id: 'region-selection' })
         );
         if (!region) {
             return;
@@ -533,7 +536,7 @@ var ImageView = View.extend({
                 }]
             }
         });
-        this.viewerWidget.drawAnnotation(annotation, {fetch: false});
+        this.viewerWidget.drawAnnotation(annotation, { fetch: false });
     },
 
     showCoordinates(evt) {
@@ -713,7 +716,22 @@ var ImageView = View.extend({
     _onKeyDown(evt) {
         if (evt.key === 'a') {
             this._showOrHideAnnotations();
+        } else if (evt.key === 's') {
+            this.annotationSelector.selectAnnotationByRegion();
         }
+    },
+
+    _trackMousePosition(evt) {
+        this._currentMousePosition = {
+            page: {
+                x: evt.pageX,
+                y: evt.pageY
+            },
+            client: {
+                x: evt.clientX,
+                y: evt.clientY,
+            }
+        };
     },
 
     _showOrHideAnnotations() {
@@ -722,6 +740,50 @@ var ImageView = View.extend({
         } else {
             this.annotationSelector.showAllAnnotations();
         }
+    },
+
+    _selectElementsByRegion() {
+        this.viewerWidget.drawRegion().then((coord) => {
+            const boundingBox = {
+                left: coord[0],
+                top: coord[1],
+                width: coord[2],
+                height: coord[3]
+            };
+            this._resetSelection();
+            const found = this._getElementsInBox(boundingBox);
+            found.forEach(({ element }) => this._selectElement(element));
+            if (this.selectedElements.length > 0 && this._currentMousePosition) {
+                // fake an open context menu
+                const { element, annotationId } = found[0];
+                this._openContextMenu(element, annotationId, {
+                    mouse: this._currentMousePosition
+                });
+            }
+            return this;
+        });
+    },
+
+    _getElementsInBox(boundingBox) {
+        const lowerLeft = { x: boundingBox.left, y: boundingBox.top + boundingBox.height };
+        const upperRight = { x: boundingBox.left + boundingBox.width, y: boundingBox.top };
+
+        const results = [];
+        this.viewerWidget.featureLayer.features().forEach((feature) => {
+            const r = feature.boxSearch(lowerLeft, upperRight, { partial: false });
+            r.found.forEach((feature) => {
+                const annotationId = feature.properties ? feature.properties.annotation : null;
+                const element = feature.properties ? feature.properties.element : null;
+                if (element && element.id && annotationId) {
+                    const annotation = this.annotations.get(annotationId);
+                    results.push({
+                        element: annotation.elements().get(element.id),
+                        annotationId
+                    });
+                }
+            });
+        });
+        return results;
     },
 
     _openContextMenu(element, annotationId, evt) {
