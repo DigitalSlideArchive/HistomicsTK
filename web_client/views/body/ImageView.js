@@ -30,7 +30,7 @@ var ImageView = View.extend({
         'keydown .h-image-body': '_onKeyDown',
         'keydown .geojs-map': '_handleKeyDown',
         'click .h-control-panel-container .s-close-panel-group': '_closeAnalysis',
-        'mousemove .geojs-map': '_trackMousePosition',
+        'mousemove .geojs-map': '_trackMousePosition'
     },
     initialize(settings) {
         this.viewerWidget = null;
@@ -729,7 +729,7 @@ var ImageView = View.extend({
             },
             client: {
                 x: evt.clientX,
-                y: evt.clientY,
+                y: evt.clientY
             }
         };
     },
