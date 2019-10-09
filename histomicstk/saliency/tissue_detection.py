@@ -123,6 +123,7 @@ def get_tissue_mask(
         largest contiguous tissue region.
 
     """
+    thumbnail_rgb = np.uint8(thumbnail_rgb)
     if deconvolve_first:
         # deconvolvve to ge hematoxylin channel (cellular areas)
         # hematoxylin channel return shows MINIMA so we invert
@@ -158,7 +159,7 @@ def get_tissue_mask(
     # find connected components
     labeled, _ = ndimage.label(mask)
 
-    # only keep
+    # only keep if above min size
     unique, counts = np.unique(labeled[labeled > 0], return_counts=True)
     discard = np.in1d(labeled, unique[counts < min_size])
     discard = discard.reshape(labeled.shape)
@@ -235,10 +236,10 @@ def get_tissue_boundary_annotation_documents(
 # %%===========================================================================
 
 
-def threshold_hsi(
-        hsi_im, hsi_thresholds, just_threshold=False,
-        get_tissue_mask_kwargs=None):
-    """Threshold a Hue-Saturation-Intensity (HSI) image to get tissue.
+def threshold_multichannel(
+        im, thresholds, channels=['hue', 'saturation', 'intensity'],
+        just_threshold=False, get_tissue_mask_kwargs=None):
+    """Threshold a multi-channel image (eg. HSI image) to get tissue.
 
     The relies on the fact that oftentimes some slide elements (eg blood
     or whitespace) have a characteristic hue/saturation/intensity. This
@@ -248,14 +249,14 @@ def threshold_hsi(
 
     Parameters
     -----------
-    hsi_im : np array
+    im : np array
         (m, n, 3) array of Hue, Saturation, Intensity (in this order)
-    hsi_thresholds : dict
-        contains the keys hue, saturation, and intensity. Each entry is a dict
-        containing the keys min and max
+    thresholds : dict
+        Each entry is a dict containing the keys min and max
+    channels : list
+        names of channels, in order (eg. hue, saturation, intensity)
     just_threshold : bool
-        if Fase, get_tissue_mask() is used to smooth result and get contiguous
-        regions.
+        if Fase, get_tissue_mask() is used to smooth result and get regions.
     get_tissue_mask_kwargs : dict
         key-value pairs of parameters to pass to get_tissue_mask()
 
@@ -275,13 +276,13 @@ def threshold_hsi(
         }
 
     # threshold each channel
-    mask = np.ones(hsi_im.shape[:2])
-    for ax, ch in enumerate(['hue', 'saturation', 'intensity']):
+    mask = np.ones(im.shape[:2])
+    for ax, ch in enumerate(channels):
 
-        channel = hsi_im[..., ax].copy()
+        channel = im[..., ax].copy()
 
-        mask[channel < hsi_thresholds[ch]['min']] = 0
-        mask[channel >= hsi_thresholds[ch]['max']] = 0
+        mask[channel < thresholds[ch]['min']] = 0
+        mask[channel >= thresholds[ch]['max']] = 0
 
     # smoothing, otsu thresholding then connected components
     if just_threshold:
@@ -291,5 +292,62 @@ def threshold_hsi(
         labeled, mask = get_tissue_mask(mask, **get_tissue_mask_kwargs)
 
     return labeled, mask
+
+# %%===========================================================================
+
+
+def _get_largest_regions(labeled_im, top_n=10):
+
+    unique, counts = np.unique(labeled_im[labeled_im > 0], return_counts=True)
+
+    keep = unique[np.argsort(counts)[-top_n:]]
+
+    mask = np.zeros(labeled_im.shape)
+    keep_pixels = np.in1d(labeled_im, keep)
+    keep_pixels = keep_pixels.reshape(labeled_im.shape)
+    mask[keep_pixels] = 1
+    labeled_im[mask == 0] = 0
+
+    return labeled_im
+
+
+def _get_brightest_regions(labeled_im, intensity_im, top_n=3):
+
+    unique, counts = np.unique(labeled_im[labeled_im > 0], return_counts=True)
+
+    median_brightness = []
+    for pxv in unique:
+        median_brightness.append(np.median(intensity_im[labeled_im == pxv]))
+
+    keep = np.argsort(median_brightness)[::-1][:top_n]
+    keep = unique[keep]
+
+    mask = np.zeros(labeled_im.shape)
+    keep_pixels = np.in1d(labeled_im, keep)
+    keep_pixels = keep_pixels.reshape(labeled_im.shape)
+    mask[keep_pixels] = 1
+    labeled_im[mask == 0] = 0
+
+    return labeled_im
+
+
+def _get_large_bright_regions(labeled_im, intensity_im, top_n=3):
+
+    unique = np.unique(labeled_im[labeled_im > 0])
+
+    total_brightness = []
+    for pxv in unique:
+        total_brightness.append(np.sum(intensity_im[labeled_im == pxv]))
+
+    keep = np.argsort(total_brightness)[::-1][:top_n]
+    keep = unique[keep]
+
+    mask = np.zeros(labeled_im.shape)
+    keep_pixels = np.in1d(labeled_im, keep)
+    keep_pixels = keep_pixels.reshape(labeled_im.shape)
+    mask[keep_pixels] = 1
+    labeled_im[mask == 0] = 0
+
+    return labeled_im
 
 # %%===========================================================================
