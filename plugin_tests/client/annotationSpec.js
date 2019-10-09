@@ -633,6 +633,39 @@ $(function () {
                 }, 'annotation to toggle on');
             });
 
+            it('select annotations by rect - hits', function () {
+                var interactor = histomicsTest.geojsMap().interactor();
+                expect($('.h-annotation-select-by-region').length).toBe(1);
+                $('.h-annotation-select-by-region').click();
+
+                interactor.simulateEvent('mousedown', {
+                    map: { x: 100, y: 100 },
+                    button: 'left'
+                });
+                interactor.simulateEvent('mousemove', {
+                    map: { x: 200, y: 200 },
+                    button: 'left'
+                });
+                interactor.simulateEvent('mouseup', {
+                    map: { x: 200, y: 200 },
+                    button: 'left'
+                });
+
+                expect($('#h-annotation-context-menu').is(':hidden')).toBe(true);
+            });
+
+            it('getElementsInBox', function () {
+                var viewer = app.bodyView.viewerWidget;
+                var boundingBox = {
+                    left: 0,
+                    top: 0,
+                    width: viewer.$el.width(),
+                    height: viewer.$el.height()
+                };
+                var elements = app.bodyView.getElementsInBox(boundingBox);
+                expect(elements.length).toBe(10);
+            });
+
             it('edit annotation metadata', function () {
                 runs(function () {
                     $('.h-annotation-selector .h-annotation:contains("drawn 1") .h-edit-annotation-metadata').click();
@@ -669,8 +702,10 @@ $(function () {
                 girderTest.waitForDialog();
                 runs(function () {
                     expect($('#h-annotation-name').val()).toBe('drawn 2');
+                    expect($('#h-annotation-line-width').length).toBe(1);
                     expect($('#h-annotation-line-color').length).toBe(1);
                     expect($('#h-annotation-fill-color').length).toBe(1);
+                    $('#h-annotation-line-width').val(2);
                     $('#h-annotation-line-color').val('black');
                     $('#h-annotation-fill-color').val('white');
                     $('.h-submit').click();
@@ -681,6 +716,7 @@ $(function () {
                     var annotation = app.bodyView.annotations.filter(function (annotation) {
                         return annotation.get('annotation').name === 'drawn 2';
                     })[0];
+                    expect(annotation.get('annotation').elements[0].lineWidth).toBe(2);
                     expect(annotation.get('annotation').elements[0].lineColor).toBe('rgb(0, 0, 0)');
                     expect(annotation.get('annotation').elements[0].fillColor).toBe('rgb(255, 255, 255)');
                 });

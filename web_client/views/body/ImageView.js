@@ -751,7 +751,7 @@ var ImageView = View.extend({
                 height: coord[3]
             };
             this._resetSelection();
-            const found = this._getElementsInBox(boundingBox);
+            const found = this.getElementsInBox(boundingBox);
             found.forEach(({ element }) => this._selectElement(element));
             if (this.selectedElements.length > 0 && this._currentMousePosition) {
                 // fake an open context menu
@@ -764,7 +764,7 @@ var ImageView = View.extend({
         });
     },
 
-    _getElementsInBox(boundingBox) {
+    getElementsInBox(boundingBox) {
         const lowerLeft = { x: boundingBox.left, y: boundingBox.top + boundingBox.height };
         const upperRight = { x: boundingBox.left + boundingBox.width, y: boundingBox.top };
 
