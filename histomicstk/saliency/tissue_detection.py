@@ -166,7 +166,10 @@ def get_tissue_mask(
     labeled[discard] = 0
 
     # largest tissue region
-    mask = labeled == unique[np.argmax(counts)]
+    if counts.shape[0] > 0:
+        mask = labeled == unique[np.argmax(counts)]
+    else:
+        mask = labeled
 
     return labeled, mask
 
