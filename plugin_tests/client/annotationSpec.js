@@ -669,8 +669,10 @@ $(function () {
                 girderTest.waitForDialog();
                 runs(function () {
                     expect($('#h-annotation-name').val()).toBe('drawn 2');
+                    expect($('#h-annotation-line-width').length).toBe(1);
                     expect($('#h-annotation-line-color').length).toBe(1);
                     expect($('#h-annotation-fill-color').length).toBe(1);
+                    $('#h-annotation-line-width').val(2);
                     $('#h-annotation-line-color').val('black');
                     $('#h-annotation-fill-color').val('white');
                     $('.h-submit').click();
@@ -681,6 +683,7 @@ $(function () {
                     var annotation = app.bodyView.annotations.filter(function (annotation) {
                         return annotation.get('annotation').name === 'drawn 2';
                     })[0];
+                    expect(annotation.get('annotation').elements[0].lineWidth).toBe(2);
                     expect(annotation.get('annotation').elements[0].lineColor).toBe('rgb(0, 0, 0)');
                     expect(annotation.get('annotation').elements[0].fillColor).toBe('rgb(255, 255, 255)');
                 });
