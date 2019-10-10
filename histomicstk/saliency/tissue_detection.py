@@ -150,7 +150,7 @@ def get_tissue_mask(
         except ValueError:  # all values are zero
             thresh = 0
 
-        # replace pixels outside analysis region with upper quantile pixels
+        # threshold
         thumbnail[thumbnail < thresh] = 0
 
     # convert to binary
@@ -262,10 +262,10 @@ def threshold_multichannel(
 
     Returns
     --------
-    np int32 array or None
-        each unique value represents a unique tissue region
+    np int32 array
+        if not just_threshold, unique values represent unique tissue regions
     np bool array
-        largest contiguous tissue region.
+        if not just_threshold, largest contiguous tissue region.
 
     """
     if get_tissue_mask_kwargs is None:
@@ -285,8 +285,8 @@ def threshold_multichannel(
         mask[channel >= thresholds[ch]['max']] = 0
 
     # smoothing, otsu thresholding then connected components
-    if just_threshold:
-        labeled = None
+    if just_threshold or (np.unique(mask).shape[0] < 1):
+        labeled = mask
     else:
         get_tissue_mask_kwargs['deconvolve_first'] = False
         labeled, mask = get_tissue_mask(mask, **get_tissue_mask_kwargs)
@@ -301,26 +301,6 @@ def _get_largest_regions(labeled_im, top_n=10):
     unique, counts = np.unique(labeled_im[labeled_im > 0], return_counts=True)
 
     keep = unique[np.argsort(counts)[-top_n:]]
-
-    mask = np.zeros(labeled_im.shape)
-    keep_pixels = np.in1d(labeled_im, keep)
-    keep_pixels = keep_pixels.reshape(labeled_im.shape)
-    mask[keep_pixels] = 1
-    labeled_im[mask == 0] = 0
-
-    return labeled_im
-
-
-def _get_brightest_regions(labeled_im, intensity_im, top_n=3):
-
-    unique, counts = np.unique(labeled_im[labeled_im > 0], return_counts=True)
-
-    median_brightness = []
-    for pxv in unique:
-        median_brightness.append(np.median(intensity_im[labeled_im == pxv]))
-
-    keep = np.argsort(median_brightness)[::-1][:top_n]
-    keep = unique[keep]
 
     mask = np.zeros(labeled_im.shape)
     keep_pixels = np.in1d(labeled_im, keep)
