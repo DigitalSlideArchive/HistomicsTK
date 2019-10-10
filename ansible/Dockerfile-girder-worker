@@ -39,11 +39,6 @@ RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars="docker=
                 /home/ubuntu/.cache \
                 /home/ubuntu/.ansible* \
                 /home/ubuntu/.wget-hsts \
-                /opt/histomicstk/openjpeg-* \
-                /opt/histomicstk/openslide-* \
-                /opt/histomicstk/tiff-* \
-                /opt/histomicstk/vips-* \
-                /opt/histomicstk/ImageMagick* \
                 /root/.cache/pip
 
 RUN echo 'task_reject_on_worker_lost = True' >> /opt/girder_worker/girder_worker/celeryconfig.py
