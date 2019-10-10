@@ -633,7 +633,7 @@ $(function () {
                 }, 'annotation to toggle on');
             });
 
-            it('select annotations by rect - hits', function () {
+            it('select annotations by rect - no hits', function () {
                 var interactor = histomicsTest.geojsMap().interactor();
                 expect($('.h-annotation-select-by-region').length).toBe(1);
                 $('.h-annotation-select-by-region').click();
@@ -662,8 +662,22 @@ $(function () {
                     width: viewer.$el.width(),
                     height: viewer.$el.height()
                 };
-                var elements = app.bodyView.getElementsInBox(boundingBox);
-                expect(elements.length).toBe(10);
+
+                $('.h-show-all-annotations').click();
+                girderTest.waitForLoad();
+
+                waitsFor(function () {
+                    var $el = $('.h-annotation-selector');
+                    return $el.find('.icon-spin3').length === 0;
+                }, 'load all annotations');
+
+                runs(function () {
+                    var elements = app.bodyView.getElementsInBox(boundingBox);
+                    var countExistingElements = app.bodyView.annotations.reduce(function (acc, annotation) {
+                        return acc + annotation.elements.length;
+                    }, 0);
+                    expect(elements.length).toBe(countExistingElements);
+                });
             });
 
             it('edit annotation metadata', function () {
