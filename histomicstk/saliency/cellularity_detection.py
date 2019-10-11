@@ -114,7 +114,13 @@ class CD_single_tissue_piece(object):
 
         # color normalization if desired
         if 'main' in self.cd.cnorm_params.keys():
-            self.tissue_rgb = np.uint8(reinhard(
+            self._color_normalize_tissue_rgb()
+
+    # =========================================================================
+
+    def _color_normalize_tissue_rgb(self):
+        """Normalize tissue RGB."""
+        self.tissue_rgb = np.uint8(reinhard(
                 im_src=self.tissue_rgb,
                 target_mu=self.cd.cnorm_params['main']['mu'],
                 target_sigma=self.cd.cnorm_params['main']['sigma']))
