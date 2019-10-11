@@ -69,11 +69,7 @@ def lab_mean_std(im_input, input_is_lab=False):
     else:
         im_lab = rgb_to_lab(im_input)
 
-    mean_lab = np.zeros(3)
-    std_lab = np.zeros(3)
-
-    for i in range(3):
-        mean_lab[i] = im_lab[:, :, i].mean()
-        std_lab[i] = (im_lab[:, :, i] - mean_lab[i]).std()
+    mean_lab = np.array([im_lab[..., i].mean() for i in range(3)])
+    std_lab = np.array([im_lab[..., i].std() for i in range(3)])
 
     return mean_lab, std_lab
