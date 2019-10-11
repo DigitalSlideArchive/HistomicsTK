@@ -22,7 +22,7 @@ import numpy as np
 from .rgb_to_lab import rgb_to_lab
 
 
-def lab_mean_std(im_input, input_is_lab=False):
+def lab_mean_std(im_input, mask_out=None):
     """Computes the mean and standard deviation of the intensities of each
     channel of the given RGB image in LAB color space. The outputs of this
     function are needed for reinhard color normalization.
@@ -30,14 +30,11 @@ def lab_mean_std(im_input, input_is_lab=False):
     Parameters
     ----------
     im_input : array_like
-        An RGB or LAB image
+        An RGB image
 
-    input_is_lab : bool
-        if True, input image is assumed to be in the LAB space
-        else it is assumed to be RGB (default behavior). One reason you
-        may want to provide the LAB directly is if you want to used numpy
-        masked array functionality to only keep the relevant pieces of
-        tissue when calculating mean and standard deviation.
+    mask_out : array_like
+        if not None, uses numpy masked array functionality to only keep
+        non-masked areas when calculating mean and standard deviation.
 
     Returns
     -------
@@ -64,10 +61,13 @@ def lab_mean_std(im_input, input_is_lab=False):
        J. Opt. Soc. Am. A vol.15, pp.2036-2045, 1998.
 
     """
-    if input_is_lab:
-        im_lab = im_input
-    else:
-        im_lab = rgb_to_lab(im_input)
+    im_lab = rgb_to_lab(im_input)
+
+    # mask out irrelevant tissue / whitespace / etc
+    if mask_out is not None:
+        mask_out = mask_out[..., None]
+        im_lab = np.ma.masked_array(
+            im_lab, mask=np.tile(mask_out, (1, 1, 3)))
 
     mean_lab = np.array([im_lab[..., i].mean() for i in range(3)])
     std_lab = np.array([im_lab[..., i].std() for i in range(3)])

@@ -39,6 +39,10 @@ def reinhard(
         image channels in LAB color space. Used with reinhard_stats for
         uniform normalization of tiles tiles from a slide.
 
+    mask_out : array_like
+        if not None, uses numpy masked array functionality to only keep
+        non-masked areas when calculating mean and standard deviation.
+
     Returns
     -------
     im_normalized : array_like
