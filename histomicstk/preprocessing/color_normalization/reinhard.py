@@ -63,10 +63,6 @@ def reinhard(
        vol.15, pp.2036-2045, 1998.
 
     """
-    # get input image dimensions
-    m = im_src.shape[0]
-    n = im_src.shape[1]
-
     # convert input image to LAB color space
     im_lab = color_conversion.rgb_to_lab(im_src)
 
@@ -76,22 +72,14 @@ def reinhard(
         im_lab = np.ma.masked_array(
             im_lab, mask=np.tile(mask_out, (1, 1, 3)))
 
-    # calculate src_mu if not provided
-    if src_mu is None:
-        src_mu = im_lab.sum(axis=0).sum(axis=0) / (m * n)
-
-    # center to zero-mean
-    for i in range(3):
-        im_lab[:, :, i] = im_lab[:, :, i] - src_mu[i]
-
-    # calculate src_sigma if not provided
-    if src_sigma is None:
-        src_sigma = ((im_lab * im_lab).sum(axis=0).sum(axis=0) /
-                     (m * n - 1)) ** 0.5
+    # calculate src_mu and src_sigma if either is not provided
+    if (src_mu is None) or (src_sigma is None):
+        src_mu = [im_lab[..., i].mean() for i in range(3)]
+        src_sigma = [im_lab[..., i].std() for i in range(3)]
 
     # scale to unit variance
     for i in range(3):
-        im_lab[:, :, i] = im_lab[:, :, i] / src_sigma[i]
+        im_lab[:, :, i] = (im_lab[:, :, i] - src_mu[i]) / src_sigma[i]
 
     # rescale and recenter to match target statistics
     for i in range(3):
