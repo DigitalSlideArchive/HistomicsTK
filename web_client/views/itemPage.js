@@ -36,7 +36,8 @@ wrap(ItemView, 'render', function (render) {
                 '<li role="presentation"><a class="g-histomicstk-quarantine-item" role="menuitem"><span>Q</span>Quarantine item</a></li>'
             );
         }
-        if (this.$el.find('.g-item-actions-menu').length && !this.$el.find('.g-histomicstk-open-item[role="menuitem"]').length) {
+        if (this.$el.find('.g-item-actions-menu').length && !this.$el.find('.g-histomicstk-open-item[role="menuitem"]').length &&
+            this.model.attributes.largeImage) {
             this.$el.find('.g-item-actions-menu').prepend(
                 `<li role="presentation">
                 <a class="g-histomicstk-open-item" role="menuitem" href="/histomicstk#?image=${this.model.id}" target="_blank">
