@@ -40,8 +40,8 @@ def reinhard(
         uniform normalization of tiles tiles from a slide.
 
     mask_out : array_like
-        if not None, uses numpy masked array functionality to only keep
-        non-masked areas when calculating mean and standard deviation.
+        if not None, uses numpy masked array functionality to only color
+        normalize the non-masked areas.
 
     Returns
     -------
