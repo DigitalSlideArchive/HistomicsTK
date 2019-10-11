@@ -47,11 +47,6 @@ RUN ansible-playbook -i inventory/local docker_ansible.yml --extra-vars=docker=h
                 /root/.npm \
                 /opt/histomicstk/logs/*.log \
                 /opt/histomicstk/girder/node_modules \
-                /opt/histomicstk/openjpeg-* \
-                /opt/histomicstk/openslide-* \
-                /opt/histomicstk/tiff-* \
-                /opt/histomicstk/vips-* \
-                /opt/histomicstk/ImageMagick* \
                 /opt/histomicstk/HistomicsTK/_skbuild \
                 /opt/histomicstk/large_image/build \
                 /opt/histomicstk/HistomicsTK/.eggs \

@@ -1,261 +1,4 @@
 ---
-- name: Install package dependencies
-  apt:
-    state: present
-    name:
-      - libssl-dev
-      - python-pip
-      - python2.7-dev
-      - software-properties-common
-      - wget
-      - build-essential
-      - cmake
-      - cmake-curses-gui
-      - libtiff5-dev
-      - libjpeg8-dev
-      - zlib1g-dev
-      - libfreetype6-dev
-      - liblcms2-dev
-      - libwebp-dev
-      - tcl8.6-dev
-      - tk8.6-dev
-      - python-tk
-      - libvips-tools
-      - libglib2.0-dev
-      - libjpeg-dev
-      - libxml2-dev
-      - libpng-dev
-      - autoconf
-      - automake
-      - libtool
-      - pkg-config
-      - libcairo2-dev
-      - libgdk-pixbuf2.0-dev
-      - libsqlite3-dev
-      # To update vips
-      - build-essential
-      - gobject-introspection
-      - libcfitsio-dev
-      - libexif-dev
-      - libfftw3-dev
-      - libgif-dev
-      - libgirepository1.0-dev
-      - libglib2.0-dev
-      - libgsf-1-dev
-      - libjpeg-turbo8-dev
-      - libmagick++-dev
-      - libmatio-dev
-      - liborc-0.4-dev
-      - libpango1.0-dev
-      - libxml2-dev
-      - pkg-config
-      - python-gi-dev
-      # Don't install libpoppler; it needs an older version of libtif
-      # - libpoppler-glib-dev
-    install_recommends: no
-  become: true
-
-# openjpeg
-- name: Download openjpeg
-  command: >-
-    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz -O openjpeg-2.1.2.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
-    creates: openjpeg-2.1.2.tar.gz
-
-- name: Extract openjpeg
-  unarchive:
-    src: "{{ root_dir }}/openjpeg-2.1.2.tar.gz"
-    dest: "{{ root_dir }}"
-    creates: "{{ root_dir }}/openjpeg-2.1.2"
-
-- name: Configure openjpeg
-  command: cmake .
-  args:
-    chdir: "{{ root_dir }}/openjpeg-2.1.2"
-
-- name: Build openjpeg
-  command: make -j2
-  args:
-    chdir: "{{ root_dir }}/openjpeg-2.1.2"
-
-- name: Install openjpeg
-  command: make install
-  args:
-    chdir: "{{ root_dir }}/openjpeg-2.1.2"
-  become: true
-
-- name: Run ldconfig
-  command: ldconfig
-  become: true
-
-# libtiff
-- name: Download libtiff
-  command: >-
-    wget --retry-connrefused --waitretry=1 --read-timeout=300 http://download.osgeo.org/libtiff/tiff-4.0.8.tar.gz -O tiff-4.0.8.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
-    creates: tiff-4.0.8.tar.gz
-
-
-- name: Extract libtiff
-  unarchive:
-    src: "{{ root_dir }}/tiff-4.0.8.tar.gz"
-    dest: "{{ root_dir }}"
-    creates: "{{ root_dir }}/tiff-4.0.8"
-
-- name: Configure libtiff
-  command: ./configure
-  args:
-    chdir: "{{ root_dir }}/tiff-4.0.8"
-
-- name: Build libtiff
-  command: make -j2
-  args:
-    chdir: "{{ root_dir }}/tiff-4.0.8"
-
-- name: Install libtiff
-  command: make install
-  args:
-    chdir: "{{ root_dir }}/tiff-4.0.8"
-  become: true
-
-- name: Run ldconfig
-  command: ldconfig
-  become: true
-
-# Openslide
-- name: Download openslide
-  command: >-
-    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/openslide/openslide/archive/v3.4.1.tar.gz -O openslide-3.4.1.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
-    creates: openslide-3.4.1.tar.gz
-
-- name: Extract openslide
-  unarchive:
-    src: "{{ root_dir }}/openslide-3.4.1.tar.gz"
-    dest: "{{ root_dir }}"
-    creates: "{{ root_dir }}/openslide-3.4.1"
-
-- name: Configure openslide
-  shell: autoreconf -i && ./configure
-  args:
-    chdir: "{{ root_dir }}/openslide-3.4.1"
-
-- name: Copy patches
-  copy:
-    src: "{{ role_path }}/files/openslide-vendor-mirax.c.patch"
-    dest: "{{ root_dir }}/openslide-3.4.1"
-    mode: 0644
-
-- name: Patch mirax reader
-  shell: patch src/openslide-vendor-mirax.c openslide-vendor-mirax.c.patch
-  args:
-    chdir: "{{ root_dir }}/openslide-3.4.1"
-
-- name: Build openslide
-  command: make -j2
-  args:
-    chdir: "{{ root_dir }}/openslide-3.4.1"
-
-- name: Install openslide
-  command: make install
-  args:
-    chdir: "{{ root_dir }}/openslide-3.4.1"
-  become: true
-
-- name: Run ldconfig
-  command: ldconfig
-  become: true
-
-# ImageMagick
-- name: Download ImageMagick
-  git:
-    depth: 1
-    repo: https://github.com/ImageMagick/ImageMagick.git
-    dest: "{{ root_dir }}/ImageMagick"
-    force: true
-
-- name: Configure ImageMagick
-  command: ./configure --with-modules
-  args:
-    chdir: "{{ root_dir }}/ImageMagick"
-
-- name: Build ImageMagick
-  command: make -j2
-  args:
-    chdir: "{{ root_dir }}/ImageMagick"
-
-- name: Install ImageMagick
-  command: make install
-  args:
-    chdir: "{{ root_dir }}/ImageMagick"
-  become: true
-
-- name: Run ldconfig
-  command: ldconfig
-  become: true
-
-# vips
-- name: Download vips
-  command: >-
-    wget --retry-connrefused --waitretry=1 --read-timeout=300 https://github.com/libvips/libvips/releases/download/v8.7.0/vips-8.7.0.tar.gz -O vips-8.7.0.tar.gz
-  args:
-    chdir: "{{ root_dir }}"
-    creates: vips-8.7.0.tar.gz
-
-- name: Extract vips
-  unarchive:
-    src: "{{ root_dir }}/vips-8.7.0.tar.gz"
-    dest: "{{ root_dir }}"
-    creates: "{{ root_dir }}/vips-8.7.0"
-
-- name: Configure vips
-  shell: ./configure
-  args:
-    chdir: "{{ root_dir }}/vips-8.7.0"
-
-- name: Build vips
-  command: make
-  args:
-    chdir: "{{ root_dir }}/vips-8.7.0"
-    creates: "{{ root_dir }}/.built-vips-8.7.0"
-
-- name: Leave creation artifact for vips build
-  file:
-    path: "{{ root_dir }}/.built-vips-8.7.0"
-    state: touch
-
-- name: Install vips
-  command: make install
-  args:
-    chdir: "{{ root_dir }}/vips-8.7.0"
-    creates: "{{ root_dir }}/.installed-vips-8.7.0"
-  become: true
-
-- name: Leave creation artifact for vips install
-  file:
-    path: "{{ root_dir }}/.installed-vips-8.7.0"
-    state: touch
-
-- name: Run ldconfig
-  command: ldconfig
-  become: true
-
-- name: Install Vips python connector
-  copy:
-    src: "{{ root_dir }}/vips-8.7.0/python/packages/gi/overrides/Vips.py"
-    dest: /usr/lib/python2.7/dist-packages/gi/overrides/
-  become: true
-
-- name: Enable Vips python connector
-  lineinfile:
-    dest: $HOME/.bashrc
-    line: 'export GI_TYPELIB_PATH=/usr/local/lib/girepository-1.0'
-    insertafter: 'EOF'
-    state: present
-
 # Update python packages
 - name: Get the most recent version of pip
   pip: name=pip extra_args="-U"
@@ -265,6 +8,27 @@
   shell: rm -rf ~/.cache/pip
   become: true
 
-- name: Reinstall python modules that depend on OpenJPEG and libtiff if they are installed.
-  shell: for pkg in `pip freeze | egrep '^(libtiff|Pillow)='`; do pip install --force-reinstall --ignore-installed "$pkg"; done
+- name: Install python modules from large_image_wheels
+  pip:
+    name:
+      - libtiff
+      - openslide_python
+      - pyvips
+      - gdal
+      - mapnik
+      - pyproj
+      - glymur
+    extra_args: --force-reinstall --ignore-installed --no-cache-dir -f https://girder.github.io/large_image_wheels
+  become: true
+
+- name: Allow bundled executables to be run directly
+  shell: "ln -s `python -c 'import os,sys,{{ item }};sys.stdout.write(os.path.dirname({{ item }}.__file__))'`/bin/* /usr/local/bin/."
+  loop:
+    - libtiff
+    - glymur
+    - openslide
+    - osgeo
+    - mapnik
+    - pyvips
+    - pyproj
   become: true
