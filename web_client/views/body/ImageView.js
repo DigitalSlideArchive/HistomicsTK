@@ -38,6 +38,7 @@ var ImageView = View.extend({
         this._openId = null;
         this._displayedRegion = null;
         this._currentMousePosition = null;
+        this._selectElementsByRegionCanceled = false;
         this.selectedAnnotation = new AnnotationModel({ _id: 'selected' });
         this.selectedElements = this.selectedAnnotation.elements();
 
@@ -97,6 +98,7 @@ var ImageView = View.extend({
         this.listenTo(this.annotationSelector, 'h:redraw', this._redrawAnnotation);
         this.listenTo(this, 'h:highlightAnnotation', this._highlightAnnotationForInteractiveMode);
         this.listenTo(this, 'h:selectElementsByRegion', this._selectElementsByRegion);
+        this.listenTo(this, 'h:selectElementsByRegionCancel', this._selectElementsByRegionCancel);
         this.listenTo(this.contextMenu, 'h:edit', this._editElement);
         this.listenTo(this.contextMenu, 'h:redraw', this._redrawAnnotation);
         this.listenTo(this.contextMenu, 'h:close', this._closeContextMenu);
@@ -743,7 +745,11 @@ var ImageView = View.extend({
     },
 
     _selectElementsByRegion() {
+        this._selectElementsByRegionCanceled = false;
         this.viewerWidget.drawRegion().then((coord) => {
+            if (this._selectElementsByRegionCanceled) {
+                return this;
+            }
             const boundingBox = {
                 left: coord[0],
                 top: coord[1],
@@ -760,8 +766,15 @@ var ImageView = View.extend({
                     mouse: this._currentMousePosition
                 });
             }
+            this.trigger('h:selectedElementsByRegion', this.selectedElements);
             return this;
         });
+    },
+
+    _selectElementsByRegionCancel() {
+        this.viewerWidget.annotationLayer.mode(null);
+        this._selectElementsByRegionCanceled = true;
+        this.trigger('h:selectedElementsByRegion', []);
     },
 
     getElementsInBox(boundingBox) {

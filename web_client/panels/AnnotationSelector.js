@@ -374,7 +374,28 @@ var AnnotationSelector = Panel.extend({
     },
 
     selectAnnotationByRegion() {
-        this.parentView.trigger('h:selectElementsByRegion');
+        const btn = this.$('.h-annotation-select-by-region');
+        // listen to escape key
+        $(document).on('keydown.h-annotation-select-by-region', (evt) => {
+            if (evt.keyCode === 27) {
+                btn.removeClass('active');
+                $(document).off('keydown.h-annotation-select-by-region');
+                this.parentView.trigger('h:selectElementsByRegionCancel');
+            }
+        });
+        this.listenToOnce(this.parentView, 'h:selectedElementsByRegion', () => {
+            btn.removeClass('active');
+            $(document).off('keydown.h-annotation-select-by-region');
+        });
+
+        if (!btn.hasClass('active')) {
+            btn.addClass('active');
+            this.parentView.trigger('h:selectElementsByRegion');
+        } else {
+            btn.removeClass('active');
+            $(document).off('keydown.h-annotation-select-by-region');
+            this.parentView.trigger('h:selectElementsByRegionCancel');
+        }
     },
 
     _highlightAnnotation(evt) {
