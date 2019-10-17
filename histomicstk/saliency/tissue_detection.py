@@ -9,6 +9,8 @@ Created on Wed Sep 18 03:29:24 2019.
 import numpy as np
 from PIL import Image
 from pandas import DataFrame
+from histomicstk.preprocessing.color_deconvolution.stain_color_map import (
+    stain_color_map)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response)
 from histomicstk.preprocessing.color_deconvolution.color_deconvolution import (
@@ -64,14 +66,6 @@ def _deconv_color(im, stain_matrix_method="PCA"):
         Currently only PCA supported, but the original method supports others.
 
     """
-    # Constant -- see documentation for color_deconvolution method
-    stain_color_map = {
-        'hematoxylin': [0.65, 0.70, 0.29],
-        'eosin':       [0.07, 0.99, 0.11],
-        'dab':         [0.27, 0.57, 0.78],
-        'null':        [0.0, 0.0, 0.0],
-        'HE_null':     [0.286, 0.105, 0],
-    }
     I_0 = None
     if stain_matrix_method == "PCA":  # Visually shows best results
         W_est = rgb_separate_stains_macenko_pca(im, I_0)
