@@ -18,14 +18,15 @@ from histomicstk.preprocessing.color_deconvolution import (
     complement_stain_matrix)
 from histomicstk.preprocessing.color_deconvolution.\
     rgb_separate_stains_macenko_pca import rgb_separate_stains_macenko_pca
+from histomicstk.preprocessing.color_deconvolution.\
+    rgb_separate_stains_xu_snmf import rgb_separate_stains_xu_snmf
 
 
 def deconvolution_based_normalization(
-        im_src, W_source=None,
-        W_target=None, im_target=None,
-        stains=['hematoxylin', 'eosin'],
-        stain_deconvolution_method='macenko', stain_deconvolution_params={},
-        mask_out=None):
+        im_src, W_target=None, im_target=None,
+        stains=['hematoxylin', 'eosin'], W_source=None,
+        stain_deconvolution_method='macenko_pca',
+        stain_deconvolution_params={}):
     """Perform color normalization using color deconvolution to transform the
     color characteristics of an image to a desired standard.
 
@@ -33,9 +34,26 @@ def deconvolution_based_normalization(
     convolved with a stain column vectors matrix from the target image from
     which the color characteristics need to be transferred.
     """
+    stain_deconvolution_method = stain_deconvolution_method.lower()
 
+    if stain_deconvolution_method == 'supervised':
+        assert W_source is not None, \
+            "W_source must be provided for supervised deconvolution."
 
+    elif stain_deconvolution_method == 'macenko_pca':
+        stain_deconvolution = rgb_separate_stains_macenko_pca
 
+    elif stain_deconvolution_method == 'xu_snmf':
+        stain_deconvolution = rgb_separate_stains_xu_snmf
+
+    else:
+        raise ValueError("Unknown/Unimplemented deconvolution method.")
+
+    # get W_source
+    if stain_deconvolution_method != 'supervised':
+        W_source = stain_deconvolution(im_src, **stain_deconvolution_params)
+
+    # Get W_target
 
     if all(j is None for j in [W_target, im_target]):
         # Normalize to 'ideal' stain matrix if none is provided
@@ -44,33 +62,29 @@ def deconvolution_based_normalization(
 
     elif im_target is not None:
         # Get W_target from target image
-        W_target = rgb_separate_stains_macenko_pca(
-            im_target, I_0=None, **macenko_pca_params)
+        W_target = stain_deconvolution(im_target, **stain_deconvolution_params)
 
-    # get W_source
-    W_source = rgb_separate_stains_macenko_pca(
-        im_src, I_0=None, **macenko_pca_params, mask_out=mask_out)
+    # If Macenco method, reorder channels in W_target and W_source as desired.
+    # This is actually a necessary step in macenko's method since we're
+    # not guaranteed the order of the different stains.
+    if stain_deconvolution_method == 'macenko_pca':
 
-    # Reorder channels in W_target and W_source as desired. This is actually
-    # a necessary step since we're not guaranteed the order of the different
-    # stains when using the macenko method.
+        def _get_channel_order(W):
+            first = find_stain_index(stain_color_map[stains[0]], W)
+            second = 1 - first
+            # third "stain" is cross product of 1st 2 channels
+            # calculated using complement_stain_matrix()
+            third = 2
+            return first, second, third
 
-    def _get_channel_order(W):
-        first = find_stain_index(stain_color_map[stains[0]], W)
-        second = 1 - first
-        # third "stain" is cross product of 1st 2 channels
-        # calculated using complement_stain_matrix()
-        third = 2
-        return first, second, third
+        def _ordered_stack(mat, order):
+            return np.stack([mat[..., j] for j in order], -1)
 
-    def _ordered_stack(mat, order):
-        return np.stack([mat[..., j] for j in order], -1)
+        def _reorder_stains(W):
+            return _ordered_stack(W, _get_channel_order(W))
 
-    def _reorder_stains(W):
-        return _ordered_stack(W, _get_channel_order(W))
-
-    W_target = _reorder_stains(W_target)
-    W_source = _reorder_stains(W_source)
+        W_target = _reorder_stains(W_target)
+        W_source = _reorder_stains(W_source)
 
     # find stains matrix from source image
     _, StainsFloat, _ = color_deconvolution(im_src, w=W_source, I_0=None)
