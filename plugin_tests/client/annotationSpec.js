@@ -633,6 +633,53 @@ $(function () {
                 }, 'annotation to toggle on');
             });
 
+            it('select annotations by rect - no hits', function () {
+                var interactor = histomicsTest.geojsMap().interactor();
+                expect($('.h-annotation-select-by-region').length).toBe(1);
+                $('.h-annotation-select-by-region').click();
+
+                interactor.simulateEvent('mousedown', {
+                    map: { x: 100, y: 100 },
+                    button: 'left'
+                });
+                interactor.simulateEvent('mousemove', {
+                    map: { x: 200, y: 200 },
+                    button: 'left'
+                });
+                interactor.simulateEvent('mouseup', {
+                    map: { x: 200, y: 200 },
+                    button: 'left'
+                });
+
+                expect($('#h-annotation-context-menu').is(':hidden')).toBe(true);
+            });
+
+            it('getElementsInBox', function () {
+                var viewer = app.bodyView.viewerWidget;
+                var boundingBox = {
+                    left: 0,
+                    top: 0,
+                    width: viewer.$el.width(),
+                    height: viewer.$el.height()
+                };
+
+                $('.h-show-all-annotations').click();
+                girderTest.waitForLoad();
+
+                waitsFor(function () {
+                    var $el = $('.h-annotation-selector');
+                    return $el.find('.icon-spin3').length === 0;
+                }, 'load all annotations');
+
+                runs(function () {
+                    var elements = app.bodyView.getElementsInBox(boundingBox);
+                    var countExistingElements = app.bodyView.annotations.reduce(function (acc, annotation) {
+                        return acc + annotation.elements.length;
+                    }, 0);
+                    expect(elements.length).toBe(countExistingElements);
+                });
+            });
+
             it('edit annotation metadata', function () {
                 runs(function () {
                     $('.h-annotation-selector .h-annotation:contains("drawn 1") .h-edit-annotation-metadata').click();
