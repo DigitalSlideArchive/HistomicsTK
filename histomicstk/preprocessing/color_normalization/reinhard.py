@@ -39,14 +39,15 @@ def reinhard(
         image channels in LAB color space. Used with reinhard_stats for
         uniform normalization of tiles tiles from a slide.
 
-    mask_out : array_like
-        if not None, uses numpy masked array functionality to only color
-        normalize the non-masked areas. This is relevant because some elements
+    mask_out : array_like, default is None
+        if not None, should be (m, n) boolean numpy array.
+        This method uses numpy masked array functionality to only use
+        non-masked areas in calculations. This is relevant because elements
         like blood, sharpie marker, white space, etc would throw off the
         reinhard normalization by affecting the mean and stdev. Ideally, you
         want to exclude these elements from both the target image (from which
         you calculate target_mu and target_sigma) and from the source image
-        to be normalized by using this mask_out parameter.
+        to be normalized.
 
     Returns
     -------
