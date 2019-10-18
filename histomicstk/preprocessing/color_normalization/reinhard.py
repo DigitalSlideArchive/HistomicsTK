@@ -41,7 +41,12 @@ def reinhard(
 
     mask_out : array_like
         if not None, uses numpy masked array functionality to only color
-        normalize the non-masked areas.
+        normalize the non-masked areas. This is relevant because some elements
+        like blood, sharpie marker, white space, etc would throw off the
+        reinhard normalization by affecting the mean and stdev. Ideally, you
+        want to exclude these elements from both the target image (from which
+        you calculate target_mu and target_sigma) and from the source image
+        to be normalized by using this mask_out parameter.
 
     Returns
     -------

@@ -46,6 +46,15 @@ def lab_mean_std(im_input, mask_out=None):
         A 3-element array containing the standard deviation of each channel
         of the input RGB in LAB color space.
 
+    mask_out : array_like
+        if not None, uses numpy masked array functionality to only use
+        non-masked areas in calculations. This is relevant because elements
+        like blood, sharpie marker, white space, etc would throw off the
+        reinhard normalization by affecting the mean and stdev. Ideally, you
+        want to exclude these elements from both the target image (from which
+        you calculate target_mu and target_sigma) and from the source image
+        to be normalized.
+
     See Also
     --------
     histomicstk.preprocessing.color_conversion.rgb_to_lab,
