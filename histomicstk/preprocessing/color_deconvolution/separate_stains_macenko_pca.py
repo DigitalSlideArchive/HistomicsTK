@@ -5,9 +5,9 @@ from .complement_stain_matrix import complement_stain_matrix
 import numpy
 
 
-def separate_stains_macenko_pca(im_sda, minimum_magnitude=16,
-                                min_angle_percentile=0.01,
-                                max_angle_percentile=0.99):
+def separate_stains_macenko_pca(
+        im_sda, minimum_magnitude=16, min_angle_percentile=0.01,
+        max_angle_percentile=0.99, keep_mask=None):
     """Compute the stain matrix for color deconvolution with the PCA-based
     "Macenko" method.
 
@@ -62,7 +62,18 @@ def separate_stains_macenko_pca(im_sda, minimum_magnitude=16,
 
     """
     # Image matrix
-    m = utils.exclude_nonfinite(utils.convert_image_to_matrix(im_sda))
+    m = utils.convert_image_to_matrix(im_sda)
+
+    # mask out irrelevant values
+    if keep_mask is not None:
+        keep_mask = keep_mask[..., None]
+        keep_mask = numpy.tile(keep_mask, (1, 1, 3))
+        keep_mask = utils.convert_image_to_matrix(keep_mask)
+        m = m[:, keep_mask.all(axis=0)]
+
+    # get rid of NANs and infinities
+    m = utils.exclude_nonfinite(m)
+
     # Principal components matrix
     pcs = linalg.get_principal_components(m)
     # Input pixels projected into the PCA plane
