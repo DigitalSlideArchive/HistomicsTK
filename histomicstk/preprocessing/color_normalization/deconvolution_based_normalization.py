@@ -11,7 +11,7 @@ from histomicstk.preprocessing.color_deconvolution.stain_color_map import (
 from histomicstk.preprocessing.color_deconvolution.find_stain_index import (
     find_stain_index)
 from histomicstk.preprocessing.color_deconvolution.color_deconvolution import (
-    color_deconvolution)
+    color_deconvolution_routine)
 from histomicstk.preprocessing.color_deconvolution.color_convolution import (
     color_convolution)
 from histomicstk.preprocessing.color_deconvolution import (
@@ -24,9 +24,9 @@ from histomicstk.preprocessing.color_deconvolution.\
 
 def deconvolution_based_normalization(
         im_src, W_target=None, im_target=None,
-        stains=['hematoxylin', 'eosin'], W_source=None,
+        stains=['hematoxylin', 'eosin'],
         stain_deconvolution_method='macenko_pca',
-        stain_deconvolution_params={}, mask_out=None):
+        mask_out=None, color_deconvolution_routine_params={}):
     """Perform color normalization using color deconvolution to transform the
     color characteristics of an image to a desired standard.
 
@@ -37,7 +37,7 @@ def deconvolution_based_normalization(
     Parameters
     ------------
     im_src : array_like
-        An RGB image (m x n x 3) to colro normalize
+        An RGB image (m x n x 3) to color normalize
 
     W_target : np array, default is None
         A 3x3 matrix of target stain column vectors. If not provided,
@@ -58,19 +58,9 @@ def deconvolution_based_normalization(
         histomicstk.preprocessing.color_deconvolution.find_stain_index
         to reorder the stains matrix to the order provided by this parameter
 
-    W_source : np array, default is None
-        A 3x3 matrix of source stain column vectors. Only provide this
-        parameter if you know the stains matrix in advance (unlikely) and would
-        like to perform supervised deconvolution. If this is not provided,
-        or the stain_deconvolution_method parameter is something other than
-        'supervised', stain_deconvolution_method is used to estimate W_source.
-
     stain_deconvolution_method : str, default is 'macenko_pca'
         stain deconvolution method to use. It should be one of the following
         'supervised', 'macenko_pca', or 'xu_snmf'.
-
-    stain_deconvolution_params : dict, default is an empty dict
-        kwargs to pass as-is to the stain deconvolution method.
 
     mask_out : array_like, default is None
         if not None, should be (m x n) boolean numpy array.
@@ -87,6 +77,7 @@ def deconvolution_based_normalization(
     See Also
     --------
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
+    histomicstk.preprocessing.color_deconvolution.color_deconvolution_routine
     histomicstk.preprocessing.color_convolution.color_convolution
     histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca
     histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf
@@ -107,28 +98,11 @@ def deconvolution_based_normalization(
            (SNMF) based color unmixing for breast histopathological image
            analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.
     """
-    stain_deconvolution_method = stain_deconvolution_method.lower()
-
-    if stain_deconvolution_method == 'supervised':
-        assert W_source is not None, \
-            "W_source must be provided for supervised deconvolution."
-
-    elif stain_deconvolution_method == 'macenko_pca':
-        stain_deconvolution = rgb_separate_stains_macenko_pca
-        stain_deconvolution_params['I_0'] = None
-        stain_deconvolution_params['mask_out'] = mask_out
-
-    elif stain_deconvolution_method == 'xu_snmf':
-        stain_deconvolution = rgb_separate_stains_xu_snmf
-        stain_deconvolution_params['I_0'] = None
-        assert mask_out is None, "Masking is not yet implemented in xu_snmf."
-
-    else:
-        raise ValueError("Unknown/Unimplemented deconvolution method.")
-
-    # get W_source
-    if stain_deconvolution_method != 'supervised':
-        W_source = stain_deconvolution(im_src, **stain_deconvolution_params)
+    # find stains matrix from source image
+    _, StainsFloat, _ = color_deconvolution_routine(
+        im_src, stains=stains,
+        stain_deconvolution_method=stain_deconvolution_method,
+        mask_out=mask_out, **color_deconvolution_routine_params)
 
     # Get W_target
 
@@ -166,8 +140,7 @@ def deconvolution_based_normalization(
         W_target = _reorder_stains(W_target)
         W_source = _reorder_stains(W_source)
 
-    # find stains matrix from source image
-    _, StainsFloat, _ = color_deconvolution(im_src, w=W_source, I_0=None)
+
 
     # Convolve source image StainsFloat with W_target
     im_src_normalized = color_convolution(StainsFloat, W_target)
