@@ -38,7 +38,6 @@ def color_convolution(im_stains, w, I_0=None):
     histomicstk.preprocessing.color_conversion.sda_to_rgb
 
     """
-
     # transform 3D input stain image to 2D stain matrix format
     m = utils.convert_image_to_matrix(im_stains)
 
