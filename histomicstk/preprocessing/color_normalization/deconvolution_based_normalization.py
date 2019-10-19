@@ -121,10 +121,11 @@ def deconvolution_based_normalization(
 
     # return masked values using unnormalized image
     if mask_out is not None:
+        keep_mask = np.not_equal(mask_out, True)
         for i in range(3):
             original = im_src[:, :, i].copy()
             new = im_src_normalized[:, :, i].copy()
-            original[np.not_equal(mask_out, True)] = 0
+            original[keep_mask] = 0
             new[mask_out] = 0
             im_src_normalized[:, :, i] = new + original
 

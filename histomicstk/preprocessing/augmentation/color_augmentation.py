@@ -10,12 +10,20 @@ from histomicstk.utils import (
     convert_image_to_matrix, convert_matrix_to_image)
 from histomicstk.preprocessing.color_conversion import (
     rgb_to_sda, sda_to_rgb)
+from histomicstk.preprocessing.color_deconvolution import (
+    color_deconvolution_routine)
 
 
-def augment_stain_concentration(
+def perturb_stain_concentration(
         StainsFloat, W, sda_fwd=None, I_0=None, mask_out=None,
-        sigma1=0.8, sigma2=0.8):
-    """
+        sigma1=0.9, sigma2=0.9):
+    """Perturb stain concentrations in SDA space and return augmented image.
+
+    This is an implementeation of the method described in Tellez et
+    al, 2018 (see below). The SDA matrix is perturbed by multiplying each
+    channel independently by a value choosen from a random uniform distribution
+    in the range [1 - sigma1, 1 + sigma1], then add a value chosed from another
+    random uniform distribution in the range [-sigma2, sigma2].
 
     References
     ----------
@@ -70,8 +78,14 @@ def augment_stain_concentration(
     return augmented_rgb
 
 
-def rgb_augment_stain_concentration(im_rgb, I_0, *args, **kwargs):
+def rgb_perturb_stain_concentration(
+        im_rgb,
+        stain_unmixing_routine_params={
+            'stains': ['hematoxylin', 'eosin'],
+            'stain_unmixing_method': 'macenko_pca',
+        }, **kwargs):
     """"""
-    im_sda = rgb_to_sda(im_rgb, I_0)
-    return separate_stains_macenko_pca(im_sda, *args, **kwargs)
+    _, StainsFloat, W_source = color_deconvolution_routine(
+        im_rgb, W_source=None, **stain_unmixing_routine_params)
 
+    return perturb_stain_concentration(StainsFloat, W_source, **kwargs)
