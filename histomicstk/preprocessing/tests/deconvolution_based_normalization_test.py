@@ -69,9 +69,16 @@ class DeconvolutionBasedNormalizationTest(unittest.TestCase):
 
     def test_macenko_normalization(self):
         """Test macenko_pca normalization."""
+
+        stain_unmixing_routine_params = {
+            'stains': ['hematoxylin', 'eosin'],
+            'stain_unmixing_method': 'macenko_pca',
+        }
+
         print("Macenko - Unmasked, using default, 'idealized' W_target")
         tissue_rgb_normalized = deconvolution_based_normalization(
-            tissue_rgb, stain_deconvolution_method='macenko_pca')
+            tissue_rgb,
+            stain_unmixing_routine_params=stain_unmixing_routine_params)
         self.assertTupleEqual(tuple(
             [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]),
             (209, 186, 232)
@@ -80,7 +87,7 @@ class DeconvolutionBasedNormalizationTest(unittest.TestCase):
         print("Macenko - Unmasked, using W_target from good image")
         tissue_rgb_normalized = deconvolution_based_normalization(
             tissue_rgb, W_target=W_target,
-            stain_deconvolution_method='macenko_pca')
+            stain_unmixing_routine_params=stain_unmixing_routine_params)
         self.assertTupleEqual(tuple(
             [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]),
             (213, 189, 212)
@@ -88,8 +95,8 @@ class DeconvolutionBasedNormalizationTest(unittest.TestCase):
 
         print("Macenko - Masked, using W_target from good image")
         tissue_rgb_normalized = deconvolution_based_normalization(
-            tissue_rgb, W_target=W_target,
-            stain_deconvolution_method='macenko_pca', mask_out=mask_out)
+            tissue_rgb, W_target=W_target, mask_out=mask_out,
+            stain_unmixing_routine_params=stain_unmixing_routine_params)
         self.assertTupleEqual(tuple(
             [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]),
             (212, 195, 215)
@@ -97,9 +104,14 @@ class DeconvolutionBasedNormalizationTest(unittest.TestCase):
 
     # def test_xu_normalization(self):
     #     """Test xu_snmf normalization. (VERY SLOW!!)"""
+    #     stain_unmixing_routine_params = {
+    #        'stains': ['hematoxylin', 'eosin'],
+    #        'stain_unmixing_method': 'xu_snmf',
+    #     }
     #     # Unmasked using W_target from good image
     #     tissue_rgb_normalized = deconvolution_based_normalization(
-    #         tissue_rgb, stain_deconvolution_method='xu_snmf')
+    #         tissue_rgb,
+    #         stain_unmixing_routine_params=stain_unmixing_routine_params)
 
 
 # %%===========================================================================

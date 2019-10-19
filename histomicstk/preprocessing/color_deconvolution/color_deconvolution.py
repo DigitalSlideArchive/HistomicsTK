@@ -119,7 +119,7 @@ def _reorder_stains(W, stains=['hematoxylin', 'eosin']):
         A re-ordered 3x3 matrix of stain column vectors.
 
     """
-    assert len(stains == 2), "Only two-stain matrices are supported for now."
+    assert len(stains) == 2, "Only two-stain matrices are supported for now."
 
     def _get_channel_order(W):
         first = find_stain_index(stain_color_map[stains[0]], W)
@@ -210,7 +210,7 @@ def stain_unmixing_routine(
     # This is actually a necessary step in macenko's method since we're
     # not guaranteed the order of the different stains.
     if stain_unmixing_method == 'macenko_pca':
-        W_source = _reorder_stains(W_source)
+        W_source = _reorder_stains(W_source, stains=stains)
 
     return W_source
 
