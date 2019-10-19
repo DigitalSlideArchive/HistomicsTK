@@ -33,6 +33,75 @@ def deconvolution_based_normalization(
     After the image is deconvolved into its component stains (eg, H&E), it is
     convolved with a stain column vectors matrix from the target image from
     which the color characteristics need to be transferred.
+
+    Parameters
+    ------------
+    im_src : array_like
+        An RGB image (m x n x 3) to colro normalize
+
+    W_target : np array, default is None
+        A 3x3 matrix of target stain column vectors. If not provided,
+        and im_target is also not provided, the default behavior is to use
+        histomicstk.preprocessing.color_deconvolution.stain_color_map
+        to provide an idealized target matrix.
+
+    im_target : array_like, default is None
+        An RGB image (m x n x 3) that has good color properties that ought to
+        be transferred to im_src. If you provide this parameter, im_target
+        will be used to extract W_target and the W_target parameter will
+        be ignored.
+
+    stains : list, optional
+        List of stain names (order is important). Default is H&E. This is
+        particularly relevant in macenco where the order of stains is not
+        preserved during stain unmixing, so this method uses
+        histomicstk.preprocessing.color_deconvolution.find_stain_index
+        to reorder the stains matrix to the order provided by this parameter
+
+    W_source : np array, default is None
+        A 3x3 matrix of source stain column vectors. Only provide this
+        parameter if you know the stains matrix in advance (unlikely) and would
+        like to perform supervised deconvolution. If this is not provided,
+        or the stain_deconvolution_method parameter is something other than
+        'supervised', stain_deconvolution_method is used to estimate W_source.
+
+    stain_deconvolution_method : str, default is 'macenko_pca'
+        stain deconvolution method to use. It should be one of the following
+        'supervised', 'macenko_pca', or 'xu_snmf'.
+
+    stain_deconvolution_params : dict, default is an empty dict
+        kwargs to pass as-is to the stain deconvolution method. If you'd like
+        to mask out certain areas from the strain matrix estimation, you may
+        pass this here as, for eg, the mask_out parameter for macenko.
+
+    Returns
+    --------
+    array_like
+        Color Normalized RGB image (m x n x 3)
+
+
+    See Also
+    --------
+    histomicstk.preprocessing.color_deconvolution.color_deconvolution
+    histomicstk.preprocessing.color_convolution.color_convolution
+    histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca
+    histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf
+
+    References
+    ----------
+    .. [#] Van Eycke, Y. R., Allard, J., Salmon, I., Debeir, O., &
+           Decaestecker, C. (2017).  Image processing in digital pathology: an
+           opportunity to solve inter-batch variability of immunohistochemical
+           staining.  Scientific Reports, 7.
+    .. [#] Macenko, M., Niethammer, M., Marron, J. S., Borland, D.,
+           Woosley, J. T., Guan, X., ... & Thomas, N. E. (2009, June).
+           A method for normalizing histology slides for quantitative analysis.
+           In Biomedical Imaging: From Nano to Macro, 2009.  ISBI'09.
+           IEEE International Symposium on (pp. 1107-1110). IEEE.
+    .. [#] Xu, J., Xiang, L., Wang, G., Ganesan, S., Feldman, M., Shih, N. N.,
+           ...& Madabhushi, A. (2015). Sparse Non-negative Matrix Factorization
+           (SNMF) based color unmixing for breast histopathological image
+           analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.
     """
     stain_deconvolution_method = stain_deconvolution_method.lower()
 
