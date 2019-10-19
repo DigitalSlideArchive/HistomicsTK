@@ -8,6 +8,8 @@ histopathology images.
 from .background_intensity import background_intensity
 from .reinhard import reinhard
 from .reinhard_stats import reinhard_stats
+from .deconvolution_based_normalization import (
+    deconvolution_based_normalization)
 
 # list out things that are available for public use
 __all__ = (
@@ -16,4 +18,5 @@ __all__ = (
     'background_intensity',
     'reinhard',
     'reinhard_stats',
+    'deconvolution_based_normalization',
 )
