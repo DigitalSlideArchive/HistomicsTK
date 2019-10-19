@@ -48,7 +48,7 @@ class ReinhardTest(unittest.TestCase):
         slide_info = gc.get('item/%s/tiles' % SAMPLE_SLIDE_ID)
         getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
             SAMPLE_SLIDE_ID, 0, slide_info['sizeX'], 0, slide_info['sizeY']
-            ) + "&magnification=%d" % MAG
+            ) + "&magnification=%.2f" % MAG
         tissue_rgb = get_image_from_htk_response(
             gc.get(getStr, jsonResp=False))
 

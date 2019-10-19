@@ -26,7 +26,7 @@ def deconvolution_based_normalization(
         im_src, W_target=None, im_target=None,
         stains=['hematoxylin', 'eosin'], W_source=None,
         stain_deconvolution_method='macenko_pca',
-        stain_deconvolution_params={}):
+        stain_deconvolution_params={}, mask_out=None):
     """Perform color normalization using color deconvolution to transform the
     color characteristics of an image to a desired standard.
 
@@ -70,9 +70,13 @@ def deconvolution_based_normalization(
         'supervised', 'macenko_pca', or 'xu_snmf'.
 
     stain_deconvolution_params : dict, default is an empty dict
-        kwargs to pass as-is to the stain deconvolution method. If you'd like
-        to mask out certain areas from the strain matrix estimation, you may
-        pass this here as, for eg, the mask_out parameter for macenko.
+        kwargs to pass as-is to the stain deconvolution method.
+
+    mask_out : array_like, default is None
+        if not None, should be (m x n) boolean numpy array.
+        This parameter ensures exclusion of non-masked areas from calculations
+        and normalization. This is relevant because elements like blood,
+        sharpie marker, white space, etc may throw off the normalization.
 
     Returns
     --------
@@ -111,9 +115,13 @@ def deconvolution_based_normalization(
 
     elif stain_deconvolution_method == 'macenko_pca':
         stain_deconvolution = rgb_separate_stains_macenko_pca
+        stain_deconvolution_params['I_0'] = None
+        stain_deconvolution_params['mask_out'] = mask_out
 
     elif stain_deconvolution_method == 'xu_snmf':
         stain_deconvolution = rgb_separate_stains_xu_snmf
+        stain_deconvolution_params['I_0'] = None
+        assert mask_out is None, "Masking is not yet implemented in xu_snmf."
 
     else:
         raise ValueError("Unknown/Unimplemented deconvolution method.")
@@ -126,11 +134,14 @@ def deconvolution_based_normalization(
 
     if all(j is None for j in [W_target, im_target]):
         # Normalize to 'ideal' stain matrix if none is provided
-        W_target = np.array([stain_color_map[stains[0]], stains[1]]).T
+        W_target = np.array(
+            [stain_color_map[stains[0]], stain_color_map[stains[1]]]).T
         W_target = complement_stain_matrix(W_target)
 
     elif im_target is not None:
         # Get W_target from target image
+        if 'mask_out' in stain_deconvolution_params.keys():
+            del stain_deconvolution_params['mask_out']
         W_target = stain_deconvolution(im_target, **stain_deconvolution_params)
 
     # If Macenco method, reorder channels in W_target and W_source as desired.
@@ -158,7 +169,16 @@ def deconvolution_based_normalization(
     # find stains matrix from source image
     _, StainsFloat, _ = color_deconvolution(im_src, w=W_source, I_0=None)
 
-    # Convolve source image SainsFloat with W_target
+    # Convolve source image StainsFloat with W_target
     im_src_normalized = color_convolution(StainsFloat, W_target)
+
+    # return masked values using unnormalized image
+    if mask_out is not None:
+        for i in range(3):
+            original = im_src[:, :, i].copy()
+            new = im_src_normalized[:, :, i].copy()
+            original[np.not_equal(mask_out, True)] = 0
+            new[mask_out] = 0
+            im_src_normalized[:, :, i] = new + original
 
     return im_src_normalized
