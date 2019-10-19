@@ -15,6 +15,8 @@ from .rgb_separate_stains_xu_snmf import rgb_separate_stains_xu_snmf
 
 # must be imported after ComplementStainMatrix
 from .color_deconvolution import color_deconvolution
+from .color_deconvolution import stain_unmixing_routine
+from .color_deconvolution import color_deconvolution_routine
 
 #: A dictionary of names for reference stain vectors
 stain_color_map = _stain_color_map.stain_color_map
@@ -25,6 +27,8 @@ __all__ = (
     # functions, classes, and constants of this package
     'color_convolution',
     'color_deconvolution',
+    'stain_unmixing_routine',
+    'color_deconvolution_routine',
     'complement_stain_matrix',
     'find_stain_index',
     'separate_stains_macenko_pca',
