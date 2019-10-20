@@ -17,20 +17,20 @@ def cellularity_detection_superpixels_workflow(
     """Run Cellularity_detector_superpixels for single slide.
 
     Arguments
-        -----------
-        gc : object
-            girder client object
-        cds : object
-            Cellularity_detector_superpixels object instance
-        slide_id : str
-            girder id of slide on which workflow is done
-        monitoPrefix : str
-            this will set the cds monitorPrefix attribute
-        destination_folder_id : str or None
-            if not None, copy slide to this girder folder and post results
-            there instead of original slide.
-        keep_existing_annotations : bool
-            keep existing annotations in slide when posting results?
+    -----------
+    gc : object
+        girder client object
+    cds : object
+        Cellularity_detector_superpixels object instance
+    slide_id : str
+        girder id of slide on which workflow is done
+    monitoPrefix : str
+        this will set the cds monitorPrefix attribute
+    destination_folder_id : str or None
+        if not None, copy slide to this girder folder and post results
+        there instead of original slide.
+    keep_existing_annotations : bool
+        keep existing annotations in slide when posting results?
 
     """
     cds.monitorPrefix = monitorPrefix
