@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Placeholder."""
+
 ###############################################################################
 #  Copyright Kitware Inc.
 #
@@ -23,9 +25,10 @@ from .rgb_to_lab import rgb_to_lab
 
 
 def lab_mean_std(im_input, mask_out=None):
-    """Computes the mean and standard deviation of the intensities of each
-    channel of the given RGB image in LAB color space. The outputs of this
-    function are needed for reinhard color normalization.
+    """Compute the mean and standard deviation of the intensities.
+
+    ... of each channel of the given RGB image in LAB color space.
+    The outputs of this function is for reinhard normalization.
 
     Parameters
     ----------
@@ -45,6 +48,16 @@ def lab_mean_std(im_input, mask_out=None):
     std_lab : array_like
         A 3-element array containing the standard deviation of each channel
         of the input RGB in LAB color space.
+
+    mask_out : array_like, default is None
+        if not None, should be (m, n) boolean numpy array.
+        This method uses numpy masked array functionality to only use
+        non-masked areas in calculations. This is relevant because elements
+        like blood, sharpie marker, white space, etc would throw off the
+        reinhard normalization by affecting the mean and stdev. Ideally, you
+        want to exclude these elements from both the target image (from which
+        you calculate target_mu and target_sigma) and from the source image
+        to be normalized.
 
     See Also
     --------

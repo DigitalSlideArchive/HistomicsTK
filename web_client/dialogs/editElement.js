@@ -36,7 +36,7 @@ var EditElement = View.extend({
         var validation = '';
 
         var label = this.$('#h-element-label').val();
-        data.label = label ? {value: label} : {};
+        data.label = label ? { value: label } : {};
         var group = this.$('#h-group-name').val();
         data.group = group && group !== 'default' ? group : undefined;
 

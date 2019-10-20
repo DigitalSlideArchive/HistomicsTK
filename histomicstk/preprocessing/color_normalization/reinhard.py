@@ -1,3 +1,4 @@
+"""Placeholder."""
 from histomicstk.preprocessing import color_conversion
 import numpy as np
 
@@ -5,9 +6,9 @@ import numpy as np
 def reinhard(
         im_src, target_mu, target_sigma, src_mu=None, src_sigma=None,
         mask_out=None):
-    """Performs Reinhard color normalization to transform the color
-    characteristics of an image to a desired standard.
+    """Perform Reinhard color normalization.
 
+    Transform the color characteristics of an image to a desired standard.
     The standard is defined by the mean and standard deviations of the target
     image in LAB color space defined by Ruderman. The input image is converted
     to Ruderman's LAB space, the LAB channels are each centered and scaled to
@@ -39,9 +40,15 @@ def reinhard(
         image channels in LAB color space. Used with reinhard_stats for
         uniform normalization of tiles tiles from a slide.
 
-    mask_out : array_like
-        if not None, uses numpy masked array functionality to only color
-        normalize the non-masked areas.
+    mask_out : array_like, default is None
+        if not None, should be (m, n) boolean numpy array.
+        This method uses numpy masked array functionality to only use
+        non-masked areas in calculations. This is relevant because elements
+        like blood, sharpie marker, white space, etc would throw off the
+        reinhard normalization by affecting the mean and stdev. Ideally, you
+        want to exclude these elements from both the target image (from which
+        you calculate target_mu and target_sigma) and from the source image
+        to be normalized.
 
     Returns
     -------
