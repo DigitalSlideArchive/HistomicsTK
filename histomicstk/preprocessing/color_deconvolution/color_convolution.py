@@ -1,10 +1,12 @@
+"""Placeholder."""
 import numpy as np
 import histomicstk.utils as utils
 from histomicstk.preprocessing import color_conversion
 
 
 def color_convolution(im_stains, w, I_0=None):
-    """Performs Color Convolution
+    """Perform Color Convolution.
+
     Reconstructs a color image from the stain matrix `w` and
     the individual images stored as channels in `im_stains` and generated
     by ColorDeconvolution.

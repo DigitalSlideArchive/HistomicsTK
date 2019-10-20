@@ -71,6 +71,7 @@ def perturb_stain_concentration(
     .. [#] Implementation inspired by Peter Byfield StainTools repository. See
            https://github.com/Peter554/StainTools/blob/master/LICENSE.txt
            for copyright license (MIT license).
+
     """
     # augment everything, otherwise only augment specific pixels
     if mask_out is None:
@@ -113,7 +114,7 @@ def rgb_perturb_stain_concentration(
             'stains': ['hematoxylin', 'eosin'],
             'stain_unmixing_method': 'macenko_pca',
         }, **kwargs):
-    """Convenience wrapper that calls perturb_stain_concentration() on RGB.
+    """Apply wrapper that calls perturb_stain_concentration() on RGB.
 
     Parameters
     ------------

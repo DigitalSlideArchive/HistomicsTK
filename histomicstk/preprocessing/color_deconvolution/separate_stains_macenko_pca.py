@@ -1,3 +1,4 @@
+"""Placeholder."""
 import histomicstk.utils as utils
 from . import _linalg as linalg
 from .complement_stain_matrix import complement_stain_matrix
@@ -8,8 +9,7 @@ import numpy
 def separate_stains_macenko_pca(
         im_sda, minimum_magnitude=16, min_angle_percentile=0.01,
         max_angle_percentile=0.99, mask_out=None):
-    """Compute the stain matrix for color deconvolution with the PCA-based
-    "Macenko" method.
+    """Compute the stain matrix for color deconvolution with the Macenko method.
 
     For a two-stain image or matrix in SDA space, this method works by
     computing a best-fit plane with PCA, wherein it selects the stain
@@ -103,9 +103,9 @@ def separate_stains_macenko_pca(
 
 
 def _get_angles(m):
-    """Take a 2xN matrix of vectors and return a length-N array of an
-    angle-like quantity.
+    """Take a 2xN matrix of vectors and return a length-N array of an.
 
+    ... angle-like quantity.
     Since this is an internal function, we assume that the values
     result from PCA, and so the second element of the vectors captures
     secondary variation -- and thus is the one that takes on both
@@ -118,10 +118,7 @@ def _get_angles(m):
 
 
 def argpercentile(arr, p):
-    """Calculate the index in arr of the element nearest the pth
-    percentile.
-
-    """
+    """Calculate index in arr of element nearest the pth percentile."""
     # Index corresponding to percentile
     i = int(p * arr.size + 0.5)
     return numpy.argpartition(arr, i)[i]

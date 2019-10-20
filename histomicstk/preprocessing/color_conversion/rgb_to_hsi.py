@@ -1,8 +1,12 @@
+"""Placeholder."""
+
 import numpy as np
 
 
 def rgb_to_hsi(im):
-    """Convert to HSI the RGB pixels in im.  Adapted from
+    """Convert to HSI the RGB pixels in im.
+
+    Adapted from
     https://en.wikipedia.org/wiki/HSL_and_HSV#Hue_and_chroma.
 
     """

@@ -1,3 +1,4 @@
+"""Placeholder."""
 import histomicstk.utils as utils
 from . import _linalg as htk_linalg
 
@@ -7,8 +8,9 @@ import numpy.linalg as np_linalg
 
 
 def separate_stains_xu_snmf(im_sda, w_init=None, beta=0.2):
-    """Compute the stain matrix for color deconvolution with SNMF (sparse
-    non-negative matrix factorization).
+    """Compute the stain matrix for color deconvolution with SNMF.
+
+    ... (sparse non-negative matrix factorization).
 
     Parameters
     ----------

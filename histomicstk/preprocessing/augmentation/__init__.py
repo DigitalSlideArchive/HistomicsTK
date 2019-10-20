@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-This package contains utility functions to augment images, which is most
-relevant in training convolutional neural network models. See
+This package contains utility functions to augment images.
+
+This is relevant in training convolutional neural network models. Refer to this study ...
 
 Tellez, David, Geert Litjens, Peter Bandi, Wouter Bulten, John-Melle Bokhorst,
 Francesco Ciompi, and Jeroen van der Laak. "Quantifying the effects of data

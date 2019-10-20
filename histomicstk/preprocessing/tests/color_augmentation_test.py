@@ -76,7 +76,6 @@ class ColorAugmentationTest(unittest.TestCase):
 
     def test_rgb_perturb_stain_concentration(self):
         """Test rgb_perturb_stain_concentration."""
-
         # Unmasked
         augmented_rgb = rgb_perturb_stain_concentration(tissue_rgb)
         self.assertTupleEqual(tuple(

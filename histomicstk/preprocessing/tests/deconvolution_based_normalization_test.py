@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sat Oct 19 01:31:38 2019
+Created on Sat Oct 19 01:31:38 2019.
 
 @author: mtageld
 """
@@ -73,7 +73,6 @@ class DeconvolutionBasedNormalizationTest(unittest.TestCase):
 
     def test_macenko_normalization(self):
         """Test macenko_pca normalization."""
-
         stain_unmixing_routine_params = {
             'stains': ['hematoxylin', 'eosin'],
             'stain_unmixing_method': 'macenko_pca',

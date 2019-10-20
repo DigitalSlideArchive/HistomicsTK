@@ -1,3 +1,4 @@
+"""Placeholder."""
 from histomicstk.preprocessing import color_conversion
 import histomicstk.utils as utils
 from ._linalg import normalize
@@ -15,7 +16,8 @@ from histomicstk.preprocessing.color_deconvolution.\
 
 
 def color_deconvolution(im_rgb, w, I_0=None):
-    """Performs color deconvolution.
+    """Perform color deconvolution.
+
     The given RGB Image `I` is first first transformed into optical density
     space, and then projected onto the stain vectors in the columns of the
     3x3 stain matrix `W`.
@@ -187,6 +189,7 @@ def stain_unmixing_routine(
            ...& Madabhushi, A. (2015). Sparse Non-negative Matrix Factorization
            (SNMF) based color unmixing for breast histopathological image
            analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.
+
     """
     stain_unmixing_method = stain_unmixing_method.lower()
 
@@ -216,7 +219,7 @@ def stain_unmixing_routine(
 
 
 def color_deconvolution_routine(im_rgb, W_source=None, **kwargs):
-    """Convenience wrapper that does stain mixing followed by deconvolution.
+    """Unmix stains mixing followed by deconvolution (wrapper).
 
     Parameters
     ------------

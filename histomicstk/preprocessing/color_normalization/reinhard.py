@@ -1,3 +1,4 @@
+"""Placeholder."""
 from histomicstk.preprocessing import color_conversion
 import numpy as np
 
@@ -5,9 +6,9 @@ import numpy as np
 def reinhard(
         im_src, target_mu, target_sigma, src_mu=None, src_sigma=None,
         mask_out=None):
-    """Performs Reinhard color normalization to transform the color
-    characteristics of an image to a desired standard.
+    """Perform Reinhard color normalization.
 
+    Transform the color characteristics of an image to a desired standard.
     The standard is defined by the mean and standard deviations of the target
     image in LAB color space defined by Ruderman. The input image is converted
     to Ruderman's LAB space, the LAB channels are each centered and scaled to

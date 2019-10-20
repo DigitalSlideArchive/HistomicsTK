@@ -1,7 +1,4 @@
-"""
-This package contains functions to correct non-uniform staining issues in
-histopathology images.
-"""
+"""Functions to correct non-uniform staining issues."""
 
 # make functions available at the package level using shadow imports
 # since we mostly have one function per file
