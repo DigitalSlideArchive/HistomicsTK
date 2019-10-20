@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sat Oct 19 01:31:38 2019
+Created on Sun Oct 20 00:14:03 2019.
 
 @author: mtageld
 """
@@ -15,8 +15,8 @@ from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response)
-from histomicstk.preprocessing.color_normalization.\
-    deconvolution_based_normalization import deconvolution_based_normalization
+from histomicstk.preprocessing.augmentation.\
+    color_augmentation import rgb_perturb_stain_concentration
 
 # %%===========================================================================
 # Constants & prep work
@@ -65,58 +65,32 @@ mask_out = resize(
 tissue_rgb = tissue_rgb[1000:1500, 2500:3000, :]
 mask_out = mask_out[1000:1500, 2500:3000]
 
+# for reproducibility
+np.random.seed(0)
+
 # %%===========================================================================
 
 
-class DeconvolutionBasedNormalizationTest(unittest.TestCase):
-    """Test deconvolution normalization."""
+class ColorAugmentationTest(unittest.TestCase):
+    """Test color augmentation."""
 
-    def test_macenko_normalization(self):
-        """Test macenko_pca normalization."""
+    def test_rgb_perturb_stain_concentration(self):
+        """Test rgb_perturb_stain_concentration."""
 
-        stain_unmixing_routine_params = {
-            'stains': ['hematoxylin', 'eosin'],
-            'stain_unmixing_method': 'macenko_pca',
-        }
-
-        print("Macenko - Unmasked, using default, 'idealized' W_target")
-        tissue_rgb_normalized = deconvolution_based_normalization(
-            tissue_rgb,
-            stain_unmixing_routine_params=stain_unmixing_routine_params)
+        # Unmasked
+        augmented_rgb = rgb_perturb_stain_concentration(tissue_rgb)
         self.assertTupleEqual(tuple(
-            [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]),
-            (192, 161, 222)
+            [int(augmented_rgb[..., i].mean()) for i in range(3)]),
+            (184, 166, 192)
         )
 
-        print("Macenko - Unmasked, using W_target from good image")
-        tissue_rgb_normalized = deconvolution_based_normalization(
-            tissue_rgb, W_target=W_target,
-            stain_unmixing_routine_params=stain_unmixing_routine_params)
+        # Masked
+        augmented_rgb = rgb_perturb_stain_concentration(
+            tissue_rgb, mask_out=mask_out)
         self.assertTupleEqual(tuple(
-            [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]),
-            (198, 163, 197)
+            [int(augmented_rgb[..., i].mean()) for i in range(3)]),
+            (178, 174, 193)
         )
-
-        print("Macenko - Masked, using W_target from good image")
-        tissue_rgb_normalized = deconvolution_based_normalization(
-            tissue_rgb, W_target=W_target, mask_out=mask_out,
-            stain_unmixing_routine_params=stain_unmixing_routine_params)
-        self.assertTupleEqual(tuple(
-            [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]),
-            (194, 172, 201)
-        )
-
-    # def test_xu_normalization(self):
-    #     """Test xu_snmf normalization. (VERY SLOW!!)"""
-    #     stain_unmixing_routine_params = {
-    #        'stains': ['hematoxylin', 'eosin'],
-    #        'stain_unmixing_method': 'xu_snmf',
-    #     }
-    #     # Unmasked using W_target from good image
-    #     tissue_rgb_normalized = deconvolution_based_normalization(
-    #         tissue_rgb,
-    #         stain_unmixing_routine_params=stain_unmixing_routine_params)
-
 
 # %%===========================================================================
 

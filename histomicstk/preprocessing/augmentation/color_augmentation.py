@@ -15,8 +15,7 @@ from histomicstk.preprocessing.color_deconvolution import (
 
 
 def perturb_stain_concentration(
-        StainsFloat, W, sda_fwd=None, I_0=None, mask_out=None,
-        sigma1=0.9, sigma2=0.9):
+        StainsFloat, W, I_0=None, mask_out=None, sigma1=0.9, sigma2=0.9):
     """Perturb stain concentrations in SDA space and return augmented image.
 
     This is an implementeation of the method described in Tellez et
@@ -24,6 +23,37 @@ def perturb_stain_concentration(
     channel independently by a value choosen from a random uniform distribution
     in the range [1 - sigma1, 1 + sigma1], then add a value chosed from another
     random uniform distribution in the range [-sigma2, sigma2].
+
+    Parameters
+    ------------
+    StainsFloat : array_like
+        An intensity image (m, n, 3) of deconvolved stains that is unbounded,
+        suitable for reconstructing color images of deconvolved stains
+        with color_convolution.
+
+    W : array_like
+        A 3x3 complemented stain matrix.
+
+    I_0 : float or array_like, optional
+        A float a 3-vector containing background RGB intensities.
+        If unspecified, use the old OD conversion.
+
+    mask_out : array_like, default is None
+        if not None, should be (m x n) boolean numpy array.
+        This parameter ensures exclusion of non-masked areas from perturbing.
+        This is relevant because elements like blood, sharpie marker,
+        white space, etc cannot be simply modeled as a mix of two stains.
+
+    sigma1 : float
+        parameter, see beginning of this docstring.
+
+    sigma2 : float
+        parameter, see beginning of this docstring.
+
+    Returns
+    --------
+    array_like
+        Color augmented RGB image (m x n x 3)
 
     References
     ----------
@@ -54,9 +84,8 @@ def perturb_stain_concentration(
     m = convert_image_to_matrix(StainsFloat)
 
     # transform input stains to optical density values
-    if sda_fwd is None:
-        sda_fwd = rgb_to_sda(
-            m, 255 if I_0 is not None else None, allow_negatives=True)
+    sda_fwd = rgb_to_sda(
+        m, 255 if I_0 is not None else None, allow_negatives=True)
 
     # perturb concentrations in SDA space
     augmented_sda = sda_fwd.copy()
@@ -84,7 +113,25 @@ def rgb_perturb_stain_concentration(
             'stains': ['hematoxylin', 'eosin'],
             'stain_unmixing_method': 'macenko_pca',
         }, **kwargs):
-    """"""
+    """Convenience wrapper that calls perturb_stain_concentration() on RGB.
+
+    Parameters
+    ------------
+    im_rgb : array_like
+        An RGB image (m x n x 3) to colro normalize
+
+    stain_unmixing_routine_params : dict
+        kwargs to pass as-is to the color_deconvolution_routine().
+
+    kwargs : k,v pairs
+        Passed as-is to perturb_stain_concentration()
+
+    Returns
+    --------
+    array_like
+        Color augmented RGB image (m x n x 3)
+
+    """
     _, StainsFloat, W_source = color_deconvolution_routine(
         im_rgb, W_source=None, **stain_unmixing_routine_params)
 
