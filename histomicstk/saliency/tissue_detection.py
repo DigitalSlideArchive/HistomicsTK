@@ -9,8 +9,6 @@ Created on Wed Sep 18 03:29:24 2019.
 import numpy as np
 from PIL import Image
 from pandas import DataFrame
-from histomicstk.preprocessing.color_deconvolution.stain_color_map import (
-    stain_color_map)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response)
 from histomicstk.preprocessing.color_deconvolution.color_deconvolution import (
@@ -66,6 +64,14 @@ def _deconv_color(im, stain_matrix_method="PCA"):
         Currently only PCA supported, but the original method supports others.
 
     """
+    # Constant -- see documentation for color_deconvolution method
+    stain_color_map = {
+        'hematoxylin': [0.65, 0.70, 0.29],
+        'eosin':       [0.07, 0.99, 0.11],
+        'dab':         [0.27, 0.57, 0.78],
+        'null':        [0.0, 0.0, 0.0],
+        'HE_null':     [0.286, 0.105, 0],
+    }
     I_0 = None
     if stain_matrix_method == "PCA":  # Visually shows best results
         W_est = rgb_separate_stains_macenko_pca(im, I_0)
@@ -94,7 +100,6 @@ def get_tissue_mask(
     -----------
     thumbnail_rgb : np array
         (m, n, 3) nd array of thumbnail RGB image
-        or (m, n) nd array of thumbnail grayscale image
     deconvolve_first : bool
         use hematoxylin channel to find cellular areas?
         This will make things ever-so-slightly slower but is better in
@@ -111,24 +116,21 @@ def get_tissue_mask(
 
     Returns
     --------
-    np int32 array
-        each unique value represents a unique tissue region
     np bool array
         largest contiguous tissue region.
+    np int32 array
+        each unique value represents a unique tissue region
 
     """
-    thumbnail_rgb = np.uint8(thumbnail_rgb)
     if deconvolve_first:
         # deconvolvve to ge hematoxylin channel (cellular areas)
         # hematoxylin channel return shows MINIMA so we invert
         Stains, channel = _deconv_color(
             thumbnail_rgb, stain_matrix_method=stain_matrix_method)
         thumbnail = 255 - Stains[..., channel]
-    elif len(thumbnail_rgb.shape) == 3:
+    else:
         # grayscale thumbnail (inverted)
         thumbnail = 255 - cv2.cvtColor(thumbnail_rgb, cv2.COLOR_BGR2GRAY)
-    else:
-        thumbnail = thumbnail_rgb
 
     for _ in range(n_thresholding_steps):
 
@@ -144,7 +146,7 @@ def get_tissue_mask(
         except ValueError:  # all values are zero
             thresh = 0
 
-        # threshold
+        # replace pixels outside analysis region with upper quantile pixels
         thumbnail[thumbnail < thresh] = 0
 
     # convert to binary
@@ -153,17 +155,14 @@ def get_tissue_mask(
     # find connected components
     labeled, _ = ndimage.label(mask)
 
-    # only keep if above min size
+    # only keep
     unique, counts = np.unique(labeled[labeled > 0], return_counts=True)
     discard = np.in1d(labeled, unique[counts < min_size])
     discard = discard.reshape(labeled.shape)
     labeled[discard] = 0
 
     # largest tissue region
-    if counts.shape[0] > 0:
-        mask = labeled == unique[np.argmax(counts)]
-    else:
-        mask = labeled
+    mask = labeled == unique[np.argmax(counts)]
 
     return labeled, mask
 
@@ -171,8 +170,8 @@ def get_tissue_mask(
 # %%===========================================================================
 
 def get_tissue_boundary_annotation_documents(
-        gc, slide_id, labeled, color='rgb(0,0,0)', group='tissue',
-        annprops=None, docnamePrefix=''):
+        gc, slide_id, labeled,
+        color='rgb(0,0,0)', group='tissue', annprops=None):
     """Get annotation documents of tissue boundaries to visualize on DSA.
 
     Parameters
@@ -224,8 +223,7 @@ def get_tissue_boundary_annotation_documents(
         get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False,
         monitorPrefix="tissue: getting contours")
     annotation_docs = get_annotation_documents_from_contours(
-        contours_tissue.copy(), annprops=annprops,
-        docnamePrefix=docnamePrefix,
+        contours_tissue.copy(), docnamePrefix='test', annprops=annprops,
         verbose=False, monitorPrefix="tissue : annotation docs")
 
     return annotation_docs
