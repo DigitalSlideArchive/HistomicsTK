@@ -37,6 +37,7 @@ var AnnotationSelector = Panel.extend({
         'change #h-toggle-interactive': 'toggleInteractiveMode',
         'input #h-annotation-opacity': '_changeGlobalOpacity',
         'input #h-annotation-fill-opacity': '_changeGlobalFillOpacity',
+        'click .h-annotation-select-by-region': 'selectAnnotationByRegion',
         'click .h-annotation-group-name': '_toggleExpandGroup'
     }),
 
@@ -370,6 +371,31 @@ var AnnotationSelector = Panel.extend({
         this.collection.each((model) => {
             model.set('displayed', false);
         });
+    },
+
+    selectAnnotationByRegion() {
+        const btn = this.$('.h-annotation-select-by-region');
+        // listen to escape key
+        $(document).on('keydown.h-annotation-select-by-region', (evt) => {
+            if (evt.keyCode === 27) {
+                btn.removeClass('active');
+                $(document).off('keydown.h-annotation-select-by-region');
+                this.parentView.trigger('h:selectElementsByRegionCancel');
+            }
+        });
+        this.listenToOnce(this.parentView, 'h:selectedElementsByRegion', () => {
+            btn.removeClass('active');
+            $(document).off('keydown.h-annotation-select-by-region');
+        });
+
+        if (!btn.hasClass('active')) {
+            btn.addClass('active');
+            this.parentView.trigger('h:selectElementsByRegion');
+        } else {
+            btn.removeClass('active');
+            $(document).off('keydown.h-annotation-select-by-region');
+            this.parentView.trigger('h:selectElementsByRegionCancel');
+        }
     },
 
     _highlightAnnotation(evt) {
