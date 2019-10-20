@@ -47,7 +47,7 @@ class Base_HTK_Class(object):
         default_attr.update(
             (k, v) for k, v in da.items() if k not in default_attr.keys())
 
-        # see: https://stackoverflow.com/questions/8187082/how-can-you-set-...
+        # See: https://stackoverflow.com/questions/8187082/how-can-you-set-...
         # class-attributes-from-variable-arguments-kwargs-in-python
         allowed_attr = list(default_attr.keys()) + more_allowed_attr
         default_attr.update(kwargs)

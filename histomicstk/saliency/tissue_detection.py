@@ -327,4 +327,5 @@ def _get_large_bright_regions(labeled_im, intensity_im, top_n=3):
 
     return labeled_im
 
+
 # %%===========================================================================

@@ -18,7 +18,7 @@ from histomicstk.workflows.specific_workflows import (
     cellularity_detection_superpixels_workflow)
 
 # %%===========================================================================
-# Constants & prep work
+# Constants & Prep work
 
 APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
 SAMPLE_SOURCE_FOLDER_ID = "5d5c28c6bd4404c6b1f3d598"

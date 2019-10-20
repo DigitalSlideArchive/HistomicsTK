@@ -8,7 +8,6 @@ Created on Mon Sep 30 22:09:40 2019.
 from histomicstk.utils.general_utils import Base_HTK_Class
 
 # %% ==========================================================================
-# =============================================================================
 
 
 class Slide_iterator(Base_HTK_Class):
