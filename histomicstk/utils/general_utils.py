@@ -34,13 +34,12 @@ class Print_and_log(object):
 class Base_HTK_Class(object):
     """Just a base class with preferred behavior to inherit."""
 
-    def __init__(
-            self, default_attr={}, more_allowed_attr=[], **kwargs):
+    def __init__(self, default_attr={}, more_allowed_attr=[], **kwargs):
         """Init base HTK class."""
+
         da = {
             'verbose': 1,
             'monitorPrefix': '',
-            'logger': None,
             'logging_savepath': None,
             'suppress_warnings': False,
         }
@@ -61,28 +60,20 @@ class Base_HTK_Class(object):
                 "Invalid arguments in constructor:{}".format(rejected_keys))
 
         # configure logger
-        self.keep_log = any(
-            [self.logger is not None, self.logging_savepath is not None])
-
-        if self.logger is not None:
-            self.logname = self.logger.root.handlers[0].baseFilename
-            self.logging_savepath = os.path.split(self.logname)[0]
-
-        elif self.logging_savepath is not None:
-            self.logger = logging.getLogger()
+        self.keep_log = self.logging_savepath is not None
+        if self.keep_log:
+            logger = logging.getLogger()
             self.logname = os.path.join(
                 self.logging_savepath,
                 datetime.datetime.now().strftime("%Y-%m-%d_%H-%M") + '.log')
-            logging.basicConfig(
-                filename=self.logname, format='%(levelname)s:%(message)s',
-                level=logging.INFO)
+            logging.basicConfig(filename=self.logname, level=logging.INFO)
+        else:
+            logger = None
 
         # verbosity control
-        self.cpr1 = Print_and_log(
-            verbose=self.verbose >= 1, logger=self.logger)
+        self.cpr1 = Print_and_log(verbose=self.verbose >= 1, logger=logger)
         self._print1 = self.cpr1._print
-        self.cpr2 = Print_and_log(
-            verbose=self.verbose >= 2, logger=self.logger)
+        self.cpr2 = Print_and_log(verbose=self.verbose >= 2, logger=logger)
         self._print2 = self.cpr2._print
         if self.keep_log:
             self._print1("Saving logs to: %s" % self.logname)
