@@ -201,6 +201,14 @@ add_web_client_test(
   TEST_PYTHONPATH "${CMAKE_CURRENT_LIST_DIR}"
 )
 
+add_web_client_test(
+  girderHacks
+  "${CMAKE_CURRENT_LIST_DIR}/plugin_tests/client/girderHacksSpec.js"
+  PLUGIN HistomicsTK
+  TEST_MODULE "plugin_tests.web_client_test"
+  TEST_PYTHONPATH "${CMAKE_CURRENT_LIST_DIR}"
+)
+
 add_eslint_test(
   js_static_analysis_HistomicsTK_tests "${PROJECT_SOURCE_DIR}/plugins/HistomicsTK/plugin_tests/client"
 )
