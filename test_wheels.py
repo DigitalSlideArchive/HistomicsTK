@@ -7,7 +7,7 @@ script = """
 python --version && \\
 pip install --upgrade pip && \\
 pip install 'large_image[tiff,openslide,pil]' \\
-  -f https://manthey.github.io/large_image_wheels && \\
+  -f https://girder.github.io/large_image_wheels && \\
 pip install histomicstk -f /wheels && \\
 echo 'Test basic import of histomicstk' && \\
 python -c 'import histomicstk' && \\

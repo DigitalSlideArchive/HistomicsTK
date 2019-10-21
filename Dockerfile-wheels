@@ -10,7 +10,7 @@ RUN for PYBIN in /opt/python/*/bin; do \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \
-        ${PYBIN}/pip install libtiff openslide_python pyvips -f https://manthey.github.io/large_image_wheels large_image_source_tiff large_image_source_openslide large_image_source_pil; \
+        ${PYBIN}/pip install libtiff openslide_python pyvips -f https://girder.github.io/large_image_wheels large_image_source_tiff large_image_source_openslide large_image_source_pil; \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \

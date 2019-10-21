@@ -16,7 +16,7 @@ On Linux, HistomicsTK can be installed via pip.  You can specify the
 `--find-links` option to get prebuilt libraries for reading some common image
 formats.  The installation command is::
 
-    $ pip install histomicstk --find-links https://manthey.github.io/large_image_wheels
+    $ pip install histomicstk --find-links https://girder.github.io/large_image_wheels
 
 For non-Linux systems, or to use system libraries for reading image formats,
 please see the Github repo of large_image to find out how to install it as a
