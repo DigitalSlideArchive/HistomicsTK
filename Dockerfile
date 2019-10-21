@@ -24,7 +24,7 @@ WORKDIR $htk_path
 RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
     pip install --no-cache-dir 'bokeh>=0.12.14' && \
     # Install large_image
-    pip install --no-cache-dir 'large-image[memcached,openslide,tiff,pil]' -f https://manthey.github.io/large_image_wheels && \
+    pip install --no-cache-dir 'large-image[memcached,openslide,tiff,pil]' -f https://girder.github.io/large_image_wheels && \
     pip install --no-cache-dir scikit-build setuptools-scm Cython cmake && \
     # Install HistomicsTK
     pip install . && \
