@@ -7,10 +7,10 @@ Created on Tue Oct 22 02:37:52 2019
 """
 import numpy as np
 from imageio import imread
-#from pandas import DataFrame, concat
+from pandas import DataFrame, concat, read_csv
 #from skimage.color import rgb2gray
 #from skimage.segmentation import slic
-#from skimage.transform import resize
+from skimage.transform import resize
 #from sklearn.mixture import GaussianMixture
 #from skimage.measure import regionprops
 #from matplotlib import cm
@@ -18,10 +18,13 @@ from PIL import Image
 
 from histomicstk.utils.general_utils import Base_HTK_Class
 from histomicstk.preprocessing.color_conversion import lab_mean_std
+from histomicstk.preprocessing.color_conversion import rgb_to_hsi
+from histomicstk.preprocessing.color_conversion import rgb_to_lab
 #from histomicstk.preprocessing.color_normalization import reinhard
 from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask,
-    get_tissue_boundary_annotation_documents)
+    get_tissue_boundary_annotation_documents,
+    threshold_multichannel, _get_largest_regions)
 #from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
 #    get_contours_from_mask, get_annotation_documents_from_contours)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
@@ -30,6 +33,7 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
 #    compute_intensity_features)
 #from histomicstk.features.compute_haralick_features import (
 #    compute_haralick_features)
+
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -90,12 +94,63 @@ class CDT_single_tissue_piece(object):
         resp = self.cdt.gc.get(getStr, jsonResp=False)
         self.tissue_rgb = get_image_from_htk_response(resp)
 
-        # TODO -- color normalization proper
-        # color normalization if desired
-        if 'main' in self.cdt.cnorm_params.keys():
-            raise Exception("NOT IMPLEMENTED YET!")
+    # =========================================================================
+
+    def initialize_labeled_mask(self):
+        """"Placeholder."""
+        # resize tissue mask to target mag
+        self.labeled = resize(
+            self.tissue_mask, output_shape=self.tissue_rgb.shape[:2],
+            order=0, preserve_range=True)
+        self.labeled[self.labeled > 0] = self.cdt.GTcodes.loc[
+            'not_specified', 'GT_code']
 
     # =========================================================================
+
+    def assign_components_by_thresholding(self):
+        """Placeholder."""
+        # get HSI and LAB images
+        tissue_hsi = rgb_to_hsi(self.tissue_rgb)
+        tissue_lab = rgb_to_lab(self.tissue_rgb)
+
+        # extract components using HSI/LAB thresholds
+
+        hsi_components = self.cdt.hsi_thresholds.keys()
+        lab_components = self.cdt.lab_thresholds.keys()
+
+        for component in self.cdt.ordered_components:
+
+            if component in hsi_components:
+                lab, _ = threshold_multichannel(
+                    tissue_hsi,
+                    channels=['hue', 'saturation', 'intensity'],
+                    thresholds=self.cdt.hsi_thresholds[component],
+                    just_threshold=False,
+                    get_tissue_mask_kwargs=self.cdt.get_tissue_mask_kwargs2)
+            elif component in lab_components:
+                lab, _ = threshold_multichannel(
+                    tissue_lab,
+                    channels=['l', 'a', 'b'],
+                    thresholds=self.cdt.lab_thresholds[component],
+                    just_threshold=True,
+                    get_tissue_mask_kwargs=self.get_tissue_mask_kwargs2)
+            else:
+                raise ValueError("Unknown component name.")
+
+            lab[self.labeled == 0] = 0  # restrict to tissue mask
+            self.labeled[lab > 0] = self.cdt.GTcodes.loc[component, 'GT_code']
+
+        # This deals with holes in tissue
+        self.labeled[self.labeled == 0] = self.cdt.GTcodes.loc[
+            'outside_tissue', 'GT_code']
+
+    # =========================================================================
+
+    def color_normalize_unspecified_components(self):
+        """"Placeholder."""
+        # TODO -- color normalization proper
+        if 'main' in self.cdt.cnorm_params.keys():
+            pass
 
 
 # %%===========================================================================
@@ -121,6 +176,29 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
                 'deconvolve_first': True, 'n_thresholding_steps': 1,
                 'sigma': 1.5, 'min_size': 500,
             },
+            'get_tissue_mask_kwargs2': {
+                'deconvolve_first': False, 'n_thresholding_steps': 1,
+                'sigma': 5.0, 'min_size': 50,
+            },
+            'hsi_thresholds': {
+                'whitespace': {
+                    'hue': {'min': 0, 'max': 1.0},
+                    'saturation': {'min': 0, 'max': 0.2},
+                    'intensity': {'min': 220, 'max': 255},
+                },
+            },
+            'lab_thresholds': {
+                'blue_sharpie': {
+                    'l': {'min': -1000, 'max': 1000},
+                    'a': {'min': -1000, 'max': 1000},
+                    'b': {'min': -1000, 'max': -0.02},
+                },
+                'blood': {
+                    'l': {'min': -1000, 'max': 1000},
+                    'a': {'min': 0.02, 'max': 1000},
+                    'b': {'min': -1000, 'max': 1000},
+                },
+            },
         }
         default_attr.update(kwargs)
         super(Cellularity_detector_thresholding, self).__init__(
@@ -129,6 +207,31 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         # set attribs
         self.gc = gc
         self.slide_id = slide_id
+        self.set_GTcodes()  # TODO -- fix me
+
+    # %% ======================================================================
+
+    def set_GTcodes(self):
+        """Placeholder."""
+
+        # TODO -- fix me!!!!
+
+        self.keep_components = [
+            'blue_sharpie',
+            'blood',
+            'whitespace',
+        ]
+
+        # read GT codes dataframe
+        self.GTcodes = read_csv('./saliency_GTcodes.csv')
+        self.GTcodes.sort_values('overlay_order', axis=0, inplace=True)
+        self.GTcodes.index = self.GTcodes.loc[:, "group"]
+        self.ordered_components = list(self.GTcodes.loc[:, "group"])
+
+        # only keep relevant components
+        for c in self.ordered_components.copy():
+            if c not in self.keep_components:
+                self.ordered_components.remove(c)
 
     # %% ======================================================================
 
@@ -203,11 +306,9 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             raise ValueError("No tissue detected!")
 
         if self.visualize_tissue_boundary:
-            annotation_docs = get_tissue_boundary_annotation_documents(
-                self.gc, slide_id=self.slide_id, labeled=labeled)
-            for doc in annotation_docs:
-                _ = self.gc.post(
-                    "/annotation?itemId=" + self.slide_id, json=doc)
+            # TODO -- instead, smoother visualization bounds (at MAG)
+            # possibly by integration with the visof tissue pieces
+            pass
 
         # Find size relative to WSI
         self.slide_info['F_tissue'] = self.slide_info[
