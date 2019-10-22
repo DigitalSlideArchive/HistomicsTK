@@ -12,7 +12,7 @@ import girder_client
 import numpy as np
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     delete_annotations_in_slide)
-from histomicstk.saliency.cellularity_detection import (
+from histomicstk.saliency.cellularity_detection_superpixels import (
     Cellularity_detector_superpixels)
 
 # %%===========================================================================
