@@ -39,7 +39,7 @@ RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
 # git clone install slicer_cli_web
 RUN mkdir -p /build && \
     cd /build && \
-    git clone https://github.com/girder/slicer_cli_web.git
+    git clone --branch 2.x-maintenance https://github.com/girder/slicer_cli_web.git
 
 # Show what was installed
 RUN pip freeze
