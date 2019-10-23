@@ -115,15 +115,17 @@ class Workflow_runner(Base_HTK_Class):
 
         for sno in range(self.n_slides):
 
-            slide_info = next(self.si)
-
-            monitorStr = "%s: slide %d of %d (%s)" % (
-                self.monitorPrefix, sno + 1, self.n_slides, slide_info['name'])
+            monitorStr = "%s: slide %d of %d" % (
+                self.monitorPrefix, sno + 1, self.n_slides)
 
             try:
+                slide_info = next(self.si)
+
+                monitorStr += " (%s)" % (slide_info['name'])
                 _ = self.workflow(
                     slide_id=slide_info['_id'], monitorPrefix=monitorStr,
                     **self.workflow_kwargs)
+
             except Exception as e:
                 self.logger.exception("%s: SEE EXCEPTIONS FILE: %s" % (
                     monitorStr, self.exception_path))
