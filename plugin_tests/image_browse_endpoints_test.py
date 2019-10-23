@@ -30,6 +30,7 @@ class ImageBrowseEndpointsTest(base.TestCase):
             }
             Item().save(item)
         self.nonimage = Item().createItem('non-image', creator=self.admin, folder=self.folder)
+        self.extraFolder = Folder().createFolder(self.folder, 'extra', creator=self.admin)
 
     def testGetNextImage(self):
         resp = self.request(path='/item/%s/next_image' % str(self.items[0]['_id']),
@@ -56,4 +57,33 @@ class ImageBrowseEndpointsTest(base.TestCase):
     def testGetNextImageException(self):
         resp = self.request(path='/item/%s/next_image' % str(self.nonimage['_id']),
                             user=self.admin)
+        self.assertStatus(resp, 404)
+
+    def testGetNextImageFolder(self):
+        folderId = str(self.folder['_id'])
+        resp = self.request(path='/item/%s/next_image' % str(self.items[0]['_id']),
+                            user=self.admin, params=dict(folderId=folderId))
+        self.assertStatusOk(resp)
+        self.assertEqual(resp.json['_id'], str(self.items[1]['_id']))
+
+        resp = self.request(path='/item/%s/next_image' % str(self.items[-1]['_id']),
+                            user=self.admin, params=dict(folderId=folderId))
+        self.assertStatusOk(resp)
+        self.assertEqual(resp.json['_id'], str(self.items[0]['_id']))
+
+    def testGetPreviousImageFolder(self):
+        folderId = str(self.folder['_id'])
+        resp = self.request(path='/item/%s/previous_image' % str(self.items[0]['_id']),
+                            user=self.admin, params=dict(folderId=folderId))
+        self.assertStatusOk(resp)
+        self.assertEqual(resp.json['_id'], str(self.items[-1]['_id']))
+
+        resp = self.request(path='/item/%s/previous_image' % str(self.items[-1]['_id']),
+                            user=self.admin, params=dict(folderId=folderId))
+        self.assertStatusOk(resp)
+        self.assertEqual(resp.json['_id'], str(self.items[-2]['_id']))
+
+    def testGetNextImageExceptionFolder(self):
+        resp = self.request(path='/item/%s/next_image' % str(self.items[0]['_id']),
+                            user=self.admin, params=dict(folderId=self.extraFolder['_id']))
         self.assertStatus(resp, 404)

@@ -139,6 +139,7 @@ const OpenAnnotatedImage = View.extend({
     _submit(evt) {
         const id = this.$(evt.currentTarget).data('id');
         router.setQuery('bounds', null, {trigger: false});
+        router.setQuery('folder', null, {trigger: false});
         router.setQuery('image', id, {trigger: true});
         this.$el.modal('hide');
     },
