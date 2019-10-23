@@ -28,6 +28,8 @@ from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask,
     get_tissue_boundary_annotation_documents,
     threshold_multichannel, _get_largest_regions)
+from histomicstk.features.compute_intensity_features import (
+    compute_intensity_features)
 #from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
 #    get_contours_from_mask, get_annotation_documents_from_contours)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (

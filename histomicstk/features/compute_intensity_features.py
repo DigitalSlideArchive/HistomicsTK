@@ -88,9 +88,7 @@ def compute_intensity_features(
 
     """
 
-    # List of feature names
-    if feature_list is None:
-        feature_list = [
+    default_feature_list = [
             'Intensity.Min',
             'Intensity.Max',
             'Intensity.Mean',
@@ -104,6 +102,13 @@ def compute_intensity_features(
             'Intensity.HistEnergy',
             'Intensity.HistEntropy',
         ]
+
+    # List of feature names
+    if feature_list is None:
+        feature_list = default_feature_list
+    else:
+        assert all(j in default_feature_list for j in feature_list), \
+            "Some feature names are not recognized."
 
     # compute object properties if not provided
     if rprops is None:
