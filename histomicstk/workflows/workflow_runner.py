@@ -66,7 +66,10 @@ class Slide_iterator(Base_HTK_Class):
     def run(self):
         """Yield information on one slide at a time."""
         for sname, sid in self.slide_ids.items():
-            slide_info = self.gc.get('item/%s/tiles' % sid)
+            try:
+                slide_info = self.gc.get('item/%s/tiles' % sid)
+            except:
+                slide_info = dict()
             slide_info['name'] = sname
             slide_info['_id'] = sid
             yield slide_info
@@ -120,14 +123,14 @@ class Workflow_runner(Base_HTK_Class):
 
             try:
                 slide_info = next(self.si)
-
                 monitorStr += " (%s)" % (slide_info['name'])
+                
                 _ = self.workflow(
                     slide_id=slide_info['_id'], monitorPrefix=monitorStr,
                     **self.workflow_kwargs)
 
             except Exception as e:
-                self.logger.exception("%s: SEE EXCEPTIONS FILE: %s" % (
+                self.cpr1.logger.exception("%s: SEE EXCEPTIONS FILE: %s" % (
                     monitorStr, self.exception_path))
                 with open(self.exception_path, 'a') as f:
                     print(e)
