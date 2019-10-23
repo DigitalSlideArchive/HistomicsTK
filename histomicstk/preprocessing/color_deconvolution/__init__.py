@@ -18,6 +18,7 @@ from .rgb_separate_stains_xu_snmf import rgb_separate_stains_xu_snmf
 from .color_deconvolution import color_deconvolution
 from .color_deconvolution import stain_unmixing_routine
 from .color_deconvolution import color_deconvolution_routine
+from .color_deconvolution import _reorder_stains
 
 #: A dictionary of names for reference stain vectors
 stain_color_map = _stain_color_map.stain_color_map
@@ -37,4 +38,5 @@ __all__ = (
     'rgb_separate_stains_macenko_pca',
     'rgb_separate_stains_xu_snmf',
     'stain_color_map',
+    '_reorder_stains',
 )

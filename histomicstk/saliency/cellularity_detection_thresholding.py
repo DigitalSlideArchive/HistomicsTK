@@ -20,7 +20,9 @@ from histomicstk.utils.general_utils import Base_HTK_Class
 from histomicstk.preprocessing.color_conversion import lab_mean_std
 from histomicstk.preprocessing.color_conversion import rgb_to_hsi
 from histomicstk.preprocessing.color_conversion import rgb_to_lab
-#from histomicstk.preprocessing.color_normalization import reinhard
+from histomicstk.preprocessing.color_normalization import reinhard
+from histomicstk.preprocessing.color_deconvolution import (
+    rgb_separate_stains_macenko_pca, _reorder_stains)
 from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask,
     get_tissue_boundary_annotation_documents,
@@ -152,6 +154,12 @@ class CDT_single_tissue_piece(object):
         if 'main' in self.cdt.cnorm_params.keys():
             pass
 
+    # =========================================================================
+
+
+
+
+
 
 # %%===========================================================================
 # =============================================================================
@@ -160,7 +168,7 @@ class CDT_single_tissue_piece(object):
 class Cellularity_detector_thresholding(Base_HTK_Class):
     """Placeholder."""
 
-    def __init__(self, gc, slide_id, **kwargs):
+    def __init__(self, gc, slide_id, GTcodes, **kwargs):
         """Placeholder."""
         default_attr = {
 
@@ -170,16 +178,44 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             # 'logging_savepath': None,
             # 'suppress_warnings': False,
 
-            'cnorm_params': dict(),
             'MAG': 3.0,
+            'color_normalization_method': 'macenko_pca',  # or 'reinhard'
+
+            # TCGA-A2-A3XS-DX1_xmin21421_ymin37486_.png, Amgad et al, 2019)
+            # is used as the target image for reinhard & macenko normalization
+
+            # for macenco (obtained using rgb_separate_stains_macenko_pca()
+            # and using reordered such that columns are the order:
+            # Hamtoxylin, Eosin, Null
+            'target_W_macenko': np.array([
+                [0.5807549,  0.08314027,  0.08213795],
+                [0.71681094,  0.90081588,  0.41999816],
+                [0.38588316,  0.42616716, -0.90380025]
+            ]),
+
+            # TCGA-A2-A3XS-DX1_xmin21421_ymin37486_.png, Amgad et al, 2019)
+            # Reinhard color norm. standard
+            'target_stats_reinhard': {
+                'mu': np.array([8.74108109, -0.12440419,  0.0444982]),
+                'sigma': np.array([0.6135447, 0.10989545, 0.0286032]),
+            },
+
+            # kwargs for getting masks for all tissue pieces (thumbnail)
             'get_tissue_mask_kwargs': {
                 'deconvolve_first': True, 'n_thresholding_steps': 1,
                 'sigma': 1.5, 'min_size': 500,
             },
+
+            # components to extract by HSI thresholding
+            'keep_components': ['blue_sharpie', 'blood', 'whitespace', ],
+
+            # kwargs for getting components masks
             'get_tissue_mask_kwargs2': {
                 'deconvolve_first': False, 'n_thresholding_steps': 1,
                 'sigma': 5.0, 'min_size': 50,
             },
+
+            # min/max thresholds for HSI and LAB
             'hsi_thresholds': {
                 'whitespace': {
                     'hue': {'min': 0, 'max': 1.0},
@@ -207,23 +243,14 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         # set attribs
         self.gc = gc
         self.slide_id = slide_id
-        self.set_GTcodes()  # TODO -- fix me
+        self.GTcodes = GTcodes
+
+        self.fix_GTcodes()
 
     # %% ======================================================================
 
-    def set_GTcodes(self):
+    def fix_GTcodes(self):
         """Placeholder."""
-
-        # TODO -- fix me!!!!
-
-        self.keep_components = [
-            'blue_sharpie',
-            'blood',
-            'whitespace',
-        ]
-
-        # read GT codes dataframe
-        self.GTcodes = read_csv('./saliency_GTcodes.csv')
         self.GTcodes.sort_values('overlay_order', axis=0, inplace=True)
         self.GTcodes.index = self.GTcodes.loc[:, "group"]
         self.ordered_components = list(self.GTcodes.loc[:, "group"])
@@ -264,24 +291,31 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
     # %% ======================================================================
 
-    def set_color_normalization_values(
-            self, mu=None, sigma=None, ref_image_path=None, what='main'):
-        """Set color normalization values for thumbnail or main image."""
+    def set_color_normalization_target(
+            self, ref_image_path, color_normalization_method='macenko_pca'):
+        """Set color normalization values to use from target image."""
 
-        # TODO -- incorporate masking and macenko!!
-        raise Exception("[WORK IN PROGRESS!!!!!!]")
+        # read input image
+        ref_im = np.array(imread(ref_image_path, pilmode='RGB'))
 
-        assert (
-            all([j is not None for j in (mu, sigma)])
-            or ref_image_path is not None), \
-            "You must provide mu & sigma values or ref. image to get them."
-        assert what in ('thumbnail', 'main')
+        # assign target values
 
-        if ref_image_path is not None:
-            ref_im = np.array(imread(ref_image_path, pilmode='RGB'))
+        if color_normalization_method == 'reinhard':
             mu, sigma = lab_mean_std(ref_im)
+            self.target_stats_reinhard['mu'] = mu
+            self.target_stats_reinhard['sigma'] = sigma
 
-        self.cnorm_params[what] = {'mu': mu, 'sigma': sigma}
+        elif color_normalization_method == 'macenko_pca':
+            self.target_W_macenko = _reorder_stains(
+                rgb_separate_stains_macenko_pca(ref_im, I_0=None),
+                stains=['hematoxylin', 'eosin'])
+
+        else:
+            raise ValueError(
+                "Unknown color_normalization_method: %s" %
+                (color_normalization_method))
+
+        self.color_normalization_method = color_normalization_method
 
     # %% ======================================================================
 
@@ -293,22 +327,12 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         # get tissue mask
         thumbnail_rgb = get_slide_thumbnail(self.gc, self.slide_id)
 
-        # color normalization if desired
-        if 'thumbnail' in self.cnorm_params.keys():
-            # TODO -- reinhard normalization of thumbnail!!
-            pass
-
         # get labeled tissue mask -- each unique value is one tissue piece
         labeled, _ = get_tissue_mask(
             thumbnail_rgb, **self.get_tissue_mask_kwargs)
 
         if len(np.unique(labeled)) < 2:
             raise ValueError("No tissue detected!")
-
-        if self.visualize_tissue_boundary:
-            # TODO -- instead, smoother visualization bounds (at MAG)
-            # possibly by integration with the visof tissue pieces
-            pass
 
         # Find size relative to WSI
         self.slide_info['F_tissue'] = self.slide_info[
@@ -317,3 +341,37 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         return labeled
 
 # %%===========================================================================
+
+# %%===========================================================================
+# =============================================================================
+
+import girder_client
+
+# %%
+
+# Constants & prep work
+
+APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
+SAMPLE_SLIDE_ID = "5d817f5abd4404c6b1f744bb"
+
+gc = girder_client.GirderClient(apiUrl=APIURL)
+# gc.authenticate(interactive=True)
+gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
+
+# read GT codes dataframe
+GTcodes = read_csv('./tests/saliency_GTcodes.csv')
+
+# %%
+
+cdt = Cellularity_detector_thresholding(
+    gc, slide_id=SAMPLE_SLIDE_ID, GTcodes=GTcodes)
+
+self = cdt
+# %%
+
+
+
+
+
+
+
