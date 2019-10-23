@@ -71,6 +71,11 @@ class CDT_single_tissue_piece(object):
         self.restrict_mask_to_single_tissue_piece()
         self.cdt._print2("%s: set_tissue_rgb()" % self.monitorPrefix)
         self.set_tissue_rgb()
+        self.cdt._print2("%s: initialize_labeled_mask()" % self.monitorPrefix)
+        self.initialize_labeled_mask()
+        self.cdt._print2(
+            "%s: assign_components_by_thresholding()" % self.monitorPrefix)
+        self.assign_components_by_thresholding()
 
     # =========================================================================
 
@@ -112,6 +117,8 @@ class CDT_single_tissue_piece(object):
     def assign_components_by_thresholding(self):
         """Placeholder."""
         # get HSI and LAB images
+        self.cdt._print2(
+            "%s: -- get HSI and LAB images ..." % self.monitorPrefix)
         tissue_hsi = rgb_to_hsi(self.tissue_rgb)
         tissue_lab = rgb_to_lab(self.tissue_rgb)
 
@@ -121,6 +128,9 @@ class CDT_single_tissue_piece(object):
         lab_components = self.cdt.lab_thresholds.keys()
 
         for component in self.cdt.ordered_components:
+
+            self.cdt._print2("%s: -- thresholding %s ..." % (
+                self.monitorPrefix, component))
 
             if component in hsi_components:
                 lab, _ = threshold_multichannel(
@@ -135,7 +145,7 @@ class CDT_single_tissue_piece(object):
                     channels=['l', 'a', 'b'],
                     thresholds=self.cdt.lab_thresholds[component],
                     just_threshold=True,
-                    get_tissue_mask_kwargs=self.get_tissue_mask_kwargs2)
+                    get_tissue_mask_kwargs=self.cdt.get_tissue_mask_kwargs2)
             else:
                 raise ValueError("Unknown component name.")
 
@@ -155,10 +165,6 @@ class CDT_single_tissue_piece(object):
             pass
 
     # =========================================================================
-
-
-
-
 
 
 # %%===========================================================================
@@ -364,7 +370,7 @@ GTcodes = read_csv('./tests/saliency_GTcodes.csv')
 # %%
 
 cdt = Cellularity_detector_thresholding(
-    gc, slide_id=SAMPLE_SLIDE_ID, GTcodes=GTcodes)
+    gc, slide_id=SAMPLE_SLIDE_ID, GTcodes=GTcodes, verbose=2)
 
 self = cdt
 # %%

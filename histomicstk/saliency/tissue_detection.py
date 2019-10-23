@@ -12,7 +12,7 @@ from pandas import DataFrame
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response)
 from histomicstk.preprocessing.color_deconvolution.color_deconvolution import (
-    color_deconvolution)
+    color_deconvolution_routine)
 from histomicstk.preprocessing.color_deconvolution.\
     rgb_separate_stains_macenko_pca import rgb_separate_stains_macenko_pca
 from histomicstk.preprocessing.color_deconvolution.find_stain_index import (
@@ -51,55 +51,25 @@ def get_slide_thumbnail(gc, slide_id):
 # %%===========================================================================
 
 
-def _deconv_color(im, stain_matrix_method="PCA"):
-    """Deconvolve using wrapper around color_deconvolution for H&E.
-
-    See tutorial at:  examples/color-deconvolution.html
-
-    Parameters
-    ------------
-    im : np array
-        rgb image
-    stain_matrix_method : str
-        Currently only PCA supported, but the original method supports others.
-
-    """
-    # Constant -- see documentation for color_deconvolution method
-    stain_color_map = {
-        'hematoxylin': [0.65, 0.70, 0.29],
-        'eosin':       [0.07, 0.99, 0.11],
-        'dab':         [0.27, 0.57, 0.78],
-        'null':        [0.0, 0.0, 0.0],
-        'HE_null':     [0.286, 0.105, 0],
-    }
-    I_0 = None
-    if stain_matrix_method == "PCA":  # Visually shows best results
-        W_est = rgb_separate_stains_macenko_pca(im, I_0)
-        Stains, _, _ = color_deconvolution(im_rgb=im, w=W_est, I_0=I_0)
-
-        # Unlike SNMF, we're not guaranteed the order of the different stains.
-        # find_stain_index guesses which one we want
-        channel = find_stain_index(stain_color_map['hematoxylin'], W_est)
-    else:
-        raise NotImplementedError(
-            """Not yet implemented here, but you can easily implement it
-            yourself if you follow this tutorial:
-            examples/color-deconvolution.html""")
-
-    return Stains, channel
+def _deconv_color(im, **kwargs):
+    """Wrap around color_deconvolution_routine (compatibility)."""
+    Stains, _, _ = color_deconvolution_routine(im, **kwargs)
+    return Stains, 0
 
 # %%===========================================================================
 
 
 def get_tissue_mask(
-        thumbnail_rgb, deconvolve_first=False, stain_matrix_method="PCA",
+        thumbnail_im,
+        deconvolve_first=False, stain_unmixing_routine_kwargs={},
         n_thresholding_steps=1, sigma=0., min_size=500):
     """Get binary tissue mask from slide thumbnail.
 
     Parameters
     -----------
-    thumbnail_rgb : np array
+    thumbnail_im : np array
         (m, n, 3) nd array of thumbnail RGB image
+        or (m, n) nd array of thumbnail grayscale image
     deconvolve_first : bool
         use hematoxylin channel to find cellular areas?
         This will make things ever-so-slightly slower but is better in
@@ -122,15 +92,20 @@ def get_tissue_mask(
         each unique value represents a unique tissue region
 
     """
-    if deconvolve_first:
+    if deconvolve_first and (len(thumbnail_im.shape) == 3):
         # deconvolvve to ge hematoxylin channel (cellular areas)
         # hematoxylin channel return shows MINIMA so we invert
-        Stains, channel = _deconv_color(
-            thumbnail_rgb, stain_matrix_method=stain_matrix_method)
-        thumbnail = 255 - Stains[..., channel]
-    else:
+        stain_unmixing_routine_kwargs['stains'] = ['hematoxylin', 'eosin']
+        Stains, _, _ = color_deconvolution_routine(
+            thumbnail_im, **stain_unmixing_routine_kwargs)
+        thumbnail = 255 - Stains[..., 0]
+
+    elif len(thumbnail_im.shape) == 3:
         # grayscale thumbnail (inverted)
-        thumbnail = 255 - cv2.cvtColor(thumbnail_rgb, cv2.COLOR_BGR2GRAY)
+        thumbnail = 255 - cv2.cvtColor(thumbnail_im, cv2.COLOR_BGR2GRAY)
+
+    else:
+        thumbnail = thumbnail_im
 
     for _ in range(n_thresholding_steps):
 
