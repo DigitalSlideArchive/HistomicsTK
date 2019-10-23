@@ -7,15 +7,9 @@ Created on Tue Oct 22 02:37:52 2019
 """
 import numpy as np
 from imageio import imread
-from pandas import DataFrame, concat, read_csv
-#from skimage.color import rgb2gray
-#from skimage.segmentation import slic
 from skimage.transform import resize
-#from sklearn.mixture import GaussianMixture
-#from skimage.measure import regionprops
-#from matplotlib import cm
 from PIL import Image
-from skimage.filters import threshold_otsu, gaussian
+from skimage.filters import gaussian
 from scipy import ndimage
 
 from histomicstk.utils.general_utils import Base_HTK_Class
@@ -29,19 +23,13 @@ from histomicstk.preprocessing.color_deconvolution import (
     color_deconvolution_routine)
 from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask,
-    get_tissue_boundary_annotation_documents,
     threshold_multichannel, _get_largest_regions)
 from histomicstk.features.compute_intensity_features import (
     compute_intensity_features)
-#from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-#    get_contours_from_mask, get_annotation_documents_from_contours)
+from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
+    get_contours_from_mask, get_annotation_documents_from_contours)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response)
-#from histomicstk.features.compute_intensity_features import (
-#    compute_intensity_features)
-#from histomicstk.features.compute_haralick_features import (
-#    compute_haralick_features)
-
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -91,6 +79,9 @@ class CDT_single_tissue_piece(object):
         self.cdt._print2(
             "%s: find_top_cellular_regions()" % self.monitorPrefix)
         self.find_top_cellular_regions()
+        if self.cdt.visualize:
+            self.cdt._print2("%s: visualize_results()" % self.monitorPrefix)
+            self.visualize_results()
 
     # =========================================================================
 
@@ -263,6 +254,36 @@ class CDT_single_tissue_piece(object):
 
     # =========================================================================
 
+    def visualize_results(self):
+        """Placeholder."""
+        # get contours
+        contours_df = get_contours_from_mask(
+            MASK=self.labeled, GTCodes_df=self.cdt.GTcodes.copy(),
+            get_roi_contour=True, roi_group='roi',
+            background_group='not_specified',
+            discard_nonenclosed_background=True,
+            MIN_SIZE=15, MAX_SIZE=None,
+            verbose=self.cdt.verbose == 3,
+            monitorPrefix=self.monitorPrefix + ": -- contours")
+
+        # get annotation docs
+        annprops = {
+            'F': self.cdt.slide_info['magnification'] / self.cdt.MAG,
+            'X_OFFSET': self.xmin,
+            'Y_OFFSET': self.ymin,
+            'opacity': self.cdt.opacity,
+            'lineWidth': self.cdt.lineWidth,
+        }
+        annotation_docs = get_annotation_documents_from_contours(
+            contours_df.copy(), separate_docs_by_group=True,
+            docnamePrefix='cdt', annprops=annprops,
+            verbose=self.cdt.verbose == 3,
+            monitorPrefix=self.monitorPrefix + ": -- annotation docs")
+
+        # post annotations to slide
+        for doc in annotation_docs:
+            _ = self.cdt.gc.post(
+                "/annotation?itemId=" + self.cdt.slide_id, json=doc)
 
 # %%===========================================================================
 # =============================================================================
@@ -340,17 +361,24 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
                     'b': {'min': -1000, 'max': 1000},
                 },
             },
+
             # for stain unmixing to deconvolove and/or color normalize
             'stain_unmixing_routine_params': {
                 'stains': ['hematoxylin', 'eosin'],
                 'stain_unmixing_method': 'macenko_pca',
             },
+
             # params for getting cellular regions
             'cellular_step1_sigma': 0.,
             'cellular_step1_min_size': 100,
             'cellular_step2_sigma': 1.5,
             'cellular_largest_n': 5,
             'cellular_top_n': 2,
+
+            # visualization params
+            'visualize': True,
+            'opacity': 0,
+            'lineWidth': 3.0,
         }
         default_attr.update(kwargs)
         super(Cellularity_detector_thresholding, self).__init__(
@@ -372,11 +400,23 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
     def fix_GTcodes(self):
         """Placeholder."""
-        self.GTcodes.sort_values('overlay_order', axis=0, inplace=True)
+        # validate
         self.GTcodes.index = self.GTcodes.loc[:, "group"]
+        necessary_indexes = self.keep_components + [
+            'outside_tissue', 'not_specified',
+            'maybe_cellular', 'top_cellular']
+        assert all(j in list(self.GTcodes.index) for j in necessary_indexes)
+
+        # Make sure the first things layed out are the "background" components
+        min_val = np.min(self.GTcodes.loc[:, 'overlay_order'])
+        self.GTcodes.loc['outside_tissue', 'overlay_order'] = min_val - 2
+        self.GTcodes.loc['not_specified', 'overlay_order'] = min_val - 1
+
+        # reorder in overlay order (important)
+        self.GTcodes.sort_values('overlay_order', axis=0, inplace=True)
         self.ordered_components = list(self.GTcodes.loc[:, "group"])
 
-        # only keep relevant components
+        # only keep relevant components (for HSI/LAB thresholding)
         for c in self.ordered_components.copy():
             if c not in self.keep_components:
                 self.ordered_components.remove(c)
@@ -400,7 +440,13 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             tissue_pieces[idx] = CDT_single_tissue_piece(
                 self, tissue_mask=labeled == tval, monitorPrefix=monitorPrefix)
             tissue_pieces[idx].run()
-            del tissue_pieces[idx].tissue_rgb  # too much space
+            # delete unnecessary attributes
+            del (
+                tissue_pieces[idx].tissue_rgb,  # too much space
+                tissue_pieces[idx].tissue_mask,  # already part of labeled
+                tissue_pieces[idx].maybe_cellular,  # already part of labeled
+                tissue_pieces[idx].tissue_htx,  # unnecessary
+            )
 
         return tissue_pieces
 
@@ -460,37 +506,4 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
 
 # %%===========================================================================
-
-# %%===========================================================================
 # =============================================================================
-
-import girder_client
-
-# %%
-
-# Constants & prep work
-
-APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-SAMPLE_SLIDE_ID = "5d817f5abd4404c6b1f744bb"
-
-gc = girder_client.GirderClient(apiUrl=APIURL)
-# gc.authenticate(interactive=True)
-gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
-
-# read GT codes dataframe
-GTcodes = read_csv('./tests/saliency_GTcodes.csv')
-
-# %%
-
-cdt = Cellularity_detector_thresholding(
-    gc, slide_id=SAMPLE_SLIDE_ID, GTcodes=GTcodes, verbose=2)
-
-self = cdt
-# %%
-
-
-
-
-
-
-

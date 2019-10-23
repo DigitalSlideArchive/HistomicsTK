@@ -1,5 +1,6 @@
 group,overlay_order,GT_code,is_roi,is_background_class,color,comments
 outside_tissue,-1,255,0,0,"rgb(40,40,40)",
+roi,0,254,0,0,"rgb(0,0,0)",
 not_specified,0,253,0,1,"rgb(255,50,255)",
 blue_sharpie,1,6,0,0,"rgb(50,250,20)",
 blood,2,7,0,0,"rgb(255,255,0)",
