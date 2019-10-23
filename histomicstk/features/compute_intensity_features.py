@@ -87,7 +87,6 @@ def compute_intensity_features(
        and statistics tables and formulae," Crc Press, 1999.
 
     """
-
     default_feature_list = [
             'Intensity.Min',
             'Intensity.Max',
