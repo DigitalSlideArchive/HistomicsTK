@@ -93,8 +93,7 @@ class Workflow_runner(Base_HTK_Class):
         kwargs : key-value pairs
             The following are already assigned defaults by Base_HTK_Class
             but can be passed here to override defaults
-            [verbose, monitorPrefix, logger, logging_savepath,
-            suppress_warnings]
+            [verbose, monitorPrefix, logging_savepath, suppress_warnings]
 
         """
         default_attr = dict()
