@@ -179,10 +179,8 @@ class CDT_single_tissue_piece(object):
                 self.tissue_rgb, W_target=self.cdt.target_W_macenko,
                 mask_out=self.labeled != GTcodes
                     .loc["not_specified", "GT_code"],
-                stain_unmixing_routine_params={
-                    'stains': ['hematoxylin', 'eosin'],
-                    'stain_unmixing_method': 'macenko_pca',
-                    }, )
+                stain_unmixing_routine_params=self.
+                cdt.stain_unmixing_routine_params)
         else:
             pass
 
@@ -264,6 +262,11 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
                     'a': {'min': 0.02, 'max': 1000},
                     'b': {'min': -1000, 'max': 1000},
                 },
+            },
+            # for stain unmixing to deconvolove and/or color normalize
+            'stain_unmixing_routine_params': {
+                'stains': ['hematoxylin', 'eosin'],
+                'stain_unmixing_method': 'macenko_pca',
             },
         }
         default_attr.update(kwargs)
@@ -369,6 +372,18 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             'sizeX'] / labeled.shape[1]
 
         return labeled
+
+    # %% ======================================================================
+
+    def find_potentially_cellular_regions(self):
+        """Set self.slide_info dict and self.labeled tissue mask."""
+
+        # deconvolvve to ge hematoxylin channel (cellular areas)
+        # hematoxylin channel return shows MINIMA so we invert
+        stain_unmixing_routine_kwargs['stains'] = ['hematoxylin', 'eosin']
+        Stains, _, _ = color_deconvolution_routine(
+            thumbnail_im, **stain_unmixing_routine_kwargs)
+        thumbnail = 255 - Stains[..., 0]
 
 # %%===========================================================================
 
