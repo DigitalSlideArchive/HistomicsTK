@@ -4,7 +4,7 @@ MAINTAINER David Manthey <david.manthey@kitware.com>
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get --yes --no-install-recommends -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade && \
-    apt-get install -y --no-install-recommends git python2.7-dev python-pip libssl-dev sudo net-tools vim locales apt-utils python-setuptools \
+    apt-get install -y --no-install-recommends git python2.7-dev python-pip libssl-dev sudo net-tools vim locales apt-utils python-setuptools nano \
     # Install packages for routing to mongodb
     iptables dnsutils \
     # Install some additional packages for convenience when testing with bash
