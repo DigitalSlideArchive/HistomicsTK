@@ -20,7 +20,8 @@ from histomicstk.utils.general_utils import Base_HTK_Class
 from histomicstk.preprocessing.color_conversion import lab_mean_std
 from histomicstk.preprocessing.color_conversion import rgb_to_hsi
 from histomicstk.preprocessing.color_conversion import rgb_to_lab
-from histomicstk.preprocessing.color_normalization import reinhard
+from histomicstk.preprocessing.color_normalization import (
+    reinhard, deconvolution_based_normalization)
 from histomicstk.preprocessing.color_deconvolution import (
     rgb_separate_stains_macenko_pca, _reorder_stains)
 from histomicstk.saliency.tissue_detection import (
@@ -67,7 +68,6 @@ class CDT_single_tissue_piece(object):
 
     def run(self):
         """Get cellularity and optionally visualize on DSA."""
-        # get tissue rgb and mask
         self.restrict_mask_to_single_tissue_piece()
         self.cdt._print2("%s: set_tissue_rgb()" % self.monitorPrefix)
         self.set_tissue_rgb()
@@ -76,6 +76,10 @@ class CDT_single_tissue_piece(object):
         self.cdt._print2(
             "%s: assign_components_by_thresholding()" % self.monitorPrefix)
         self.assign_components_by_thresholding()
+        self.cdt._print2(
+            "%s: color_normalize_unspecified_components()"
+            % self.monitorPrefix)
+        self.color_normalize_unspecified_components()
 
     # =========================================================================
 
@@ -160,8 +164,24 @@ class CDT_single_tissue_piece(object):
 
     def color_normalize_unspecified_components(self):
         """"Placeholder."""
-        # TODO -- color normalization proper
-        if 'main' in self.cdt.cnorm_params.keys():
+        if self.cdt.color_normalization_method == 'reinhard':
+            self.tissue_rgb = reinhard(
+                self.tissue_rgb,
+                target_mu=self.cdt.target_stats_reinhard['mu'],
+                target_sigma=self.cdt.target_stats_reinhard['sigma'],
+                mask_out=self.labeled != GTcodes
+                    .loc["not_specified", "GT_code"])
+
+        elif self.cdt.color_normalization_method == 'macenko_pca':
+            self.tissue_rgb = deconvolution_based_normalization(
+                self.tissue_rgb, W_target=self.cdt.target_W_macenko,
+                mask_out=self.labeled != GTcodes
+                    .loc["not_specified", "GT_code"],
+                stain_unmixing_routine_params={
+                    'stains': ['hematoxylin', 'eosin'],
+                    'stain_unmixing_method': 'macenko_pca',
+                    }, )
+        else:
             pass
 
     # =========================================================================
@@ -185,7 +205,9 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             # 'suppress_warnings': False,
 
             'MAG': 3.0,
-            'color_normalization_method': 'macenko_pca',  # or 'reinhard'
+
+            # Must be in ['reinhard', 'macenko_pca', 'none']
+            'color_normalization_method': 'macenko_pca',
 
             # TCGA-A2-A3XS-DX1_xmin21421_ymin37486_.png, Amgad et al, 2019)
             # is used as the target image for reinhard & macenko normalization
@@ -246,6 +268,11 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         super(Cellularity_detector_thresholding, self).__init__(
             default_attr=default_attr)
 
+        self.color_normalization_method = \
+            self.color_normalization_method.lower()
+        assert self.color_normalization_method in [
+            'reinhard', 'macenko_pca', 'none']
+
         # set attribs
         self.gc = gc
         self.slide_id = slide_id
@@ -270,12 +297,6 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
     def run(self):
         """Placeholder."""
-        if (len(self.cnorm_params) == 0) and (not self.suppress_warnings):
-            input("""
-                %s: WARNING!! Consider running set_color_normalization_values()
-                first, using what='thumbnail' and/or what='main' before running
-                this method. Continue anyway?""" % self.monitorPrefix)
-
         # get mask, each unique value is a single tissue piece
         self._print1(
             "%s: set_slide_info_and_get_tissue_mask()" % self.monitorPrefix)
@@ -306,6 +327,8 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
         # assign target values
 
+        color_normalization_method = color_normalization_method.lower()
+
         if color_normalization_method == 'reinhard':
             mu, sigma = lab_mean_std(ref_im)
             self.target_stats_reinhard['mu'] = mu
@@ -315,7 +338,6 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             self.target_W_macenko = _reorder_stains(
                 rgb_separate_stains_macenko_pca(ref_im, I_0=None),
                 stains=['hematoxylin', 'eosin'])
-
         else:
             raise ValueError(
                 "Unknown color_normalization_method: %s" %
