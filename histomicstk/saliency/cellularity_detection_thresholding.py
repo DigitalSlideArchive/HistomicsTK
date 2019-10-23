@@ -15,6 +15,8 @@ from skimage.transform import resize
 #from skimage.measure import regionprops
 #from matplotlib import cm
 from PIL import Image
+from skimage.filters import threshold_otsu, gaussian
+from scipy import ndimage
 
 from histomicstk.utils.general_utils import Base_HTK_Class
 from histomicstk.preprocessing.color_conversion import lab_mean_std
@@ -23,7 +25,8 @@ from histomicstk.preprocessing.color_conversion import rgb_to_lab
 from histomicstk.preprocessing.color_normalization import (
     reinhard, deconvolution_based_normalization)
 from histomicstk.preprocessing.color_deconvolution import (
-    rgb_separate_stains_macenko_pca, _reorder_stains)
+    rgb_separate_stains_macenko_pca, _reorder_stains,
+    color_deconvolution_routine)
 from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask,
     get_tissue_boundary_annotation_documents,
@@ -82,6 +85,12 @@ class CDT_single_tissue_piece(object):
             "%s: color_normalize_unspecified_components()"
             % self.monitorPrefix)
         self.color_normalize_unspecified_components()
+        self.cdt._print2(
+            "%s: find_potentially_cellular_regions()" % self.monitorPrefix)
+        self.find_potentially_cellular_regions()
+        self.cdt._print2(
+            "%s: find_top_cellular_regions()" % self.monitorPrefix)
+        self.find_top_cellular_regions()
 
     # =========================================================================
 
@@ -167,22 +176,90 @@ class CDT_single_tissue_piece(object):
     def color_normalize_unspecified_components(self):
         """"Placeholder."""
         if self.cdt.color_normalization_method == 'reinhard':
+            self.cdt._print2(
+                "%s: -- reinhard normalization ..." % self.monitorPrefix)
             self.tissue_rgb = reinhard(
                 self.tissue_rgb,
                 target_mu=self.cdt.target_stats_reinhard['mu'],
                 target_sigma=self.cdt.target_stats_reinhard['sigma'],
-                mask_out=self.labeled != GTcodes
+                mask_out=self.labeled != self.cdt.GTcodes
                     .loc["not_specified", "GT_code"])
 
         elif self.cdt.color_normalization_method == 'macenko_pca':
+            self.cdt._print2(
+                "%s: -- macenko normalization ..." % self.monitorPrefix)
             self.tissue_rgb = deconvolution_based_normalization(
                 self.tissue_rgb, W_target=self.cdt.target_W_macenko,
-                mask_out=self.labeled != GTcodes
+                mask_out=self.labeled != self.cdt.GTcodes
                     .loc["not_specified", "GT_code"],
                 stain_unmixing_routine_params=self.
                 cdt.stain_unmixing_routine_params)
         else:
-            pass
+            self.cdt._print2("%s: -- No normalization!" % self.monitorPrefix)
+
+    # =========================================================================
+
+    def find_potentially_cellular_regions(self):
+        """Set self.slide_info dict and self.labeled tissue mask."""
+
+        mask_out = self.labeled != self.cdt.GTcodes.loc[
+            "not_specified", "GT_code"]
+
+        # deconvolvve to ge hematoxylin channel (cellular areas)
+        # hematoxylin channel return shows MINIMA so we invert
+        self.tissue_htx, _, _ = color_deconvolution_routine(
+            self.tissue_rgb, **self.cdt.stain_unmixing_routine_params,
+            mask_out=mask_out)
+        self.tissue_htx = 255 - self.tissue_htx[..., 0]
+
+        # get cellular regions by threshold HTX stain channel
+        self.maybe_cellular, _ = get_tissue_mask(
+            self.tissue_htx.copy(), deconvolve_first=False,
+            n_thresholding_steps=1, sigma=self.cdt.cellular_step1_sigma,
+            min_size=self.cdt.cellular_step1_min_size)
+
+        # Second, low-pass filter to dilate and smooth a bit
+        self.maybe_cellular = gaussian(
+            0 + (self.maybe_cellular > 0), sigma=self.cdt.cellular_step2_sigma,
+            output=None, mode='nearest', preserve_range=True)
+
+        # find connected components
+        self.maybe_cellular, _ = ndimage.label(self.maybe_cellular)
+
+        # restrict cellular regions to not-otherwise-specified
+        self.maybe_cellular[mask_out] = 0
+
+        # assign to mask
+        self.labeled[self.maybe_cellular > 0] = self.cdt.GTcodes.loc[
+            'maybe_cellular', 'GT_code']
+
+    # =========================================================================
+
+    def find_top_cellular_regions(self):
+        """Set self.slide_info dict and self.labeled tissue mask."""
+
+        # keep only largest n regions regions
+        top_cellular_mask = _get_largest_regions(
+            self.maybe_cellular, top_n=self.cdt.cellular_largest_n)
+        top_cellular = self.maybe_cellular.copy()
+        top_cellular[top_cellular_mask == 0] = 0
+
+        # get intensity features of hematoxylin channel for each region
+        intensity_feats = compute_intensity_features(
+            im_label=top_cellular, im_intensity=self.tissue_htx,
+            feature_list=['Intensity.Mean'])
+        unique = np.unique(top_cellular[top_cellular > 0])
+        intensity_feats.index = unique
+
+        # get top n brightest regions from the largest areas
+        intensity_feats.sort_values("Intensity.Mean", axis=0, inplace=True)
+        discard = np.array(intensity_feats.index[:-self.cdt.cellular_top_n])
+        discard = np.in1d(top_cellular, discard).reshape(top_cellular.shape)
+        top_cellular[discard] = 0
+
+        # integrate into labeled mask
+        self.labeled[top_cellular > 0] = self.cdt.GTcodes.loc[
+            'top_cellular', 'GT_code']
 
     # =========================================================================
 
@@ -268,6 +345,12 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
                 'stains': ['hematoxylin', 'eosin'],
                 'stain_unmixing_method': 'macenko_pca',
             },
+            # params for getting cellular regions
+            'cellular_step1_sigma': 0.,
+            'cellular_step1_min_size': 100,
+            'cellular_step2_sigma': 1.5,
+            'cellular_largest_n': 5,
+            'cellular_top_n': 2,
         }
         default_attr.update(kwargs)
         super(Cellularity_detector_thresholding, self).__init__(
@@ -375,15 +458,6 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
     # %% ======================================================================
 
-    def find_potentially_cellular_regions(self):
-        """Set self.slide_info dict and self.labeled tissue mask."""
-
-        # deconvolvve to ge hematoxylin channel (cellular areas)
-        # hematoxylin channel return shows MINIMA so we invert
-        stain_unmixing_routine_kwargs['stains'] = ['hematoxylin', 'eosin']
-        Stains, _, _ = color_deconvolution_routine(
-            thumbnail_im, **stain_unmixing_routine_kwargs)
-        thumbnail = 255 - Stains[..., 0]
 
 # %%===========================================================================
 

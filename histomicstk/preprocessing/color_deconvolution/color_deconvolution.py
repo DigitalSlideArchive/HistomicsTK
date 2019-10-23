@@ -218,7 +218,8 @@ def stain_unmixing_routine(
     return W_source
 
 
-def color_deconvolution_routine(im_rgb, W_source=None, **kwargs):
+def color_deconvolution_routine(
+        im_rgb, W_source=None, mask_out=None, **kwargs):
     """Unmix stains mixing followed by deconvolution (wrapper).
 
     Parameters
@@ -231,6 +232,12 @@ def color_deconvolution_routine(im_rgb, W_source=None, **kwargs):
         if you know the stains matrix in advance (unlikely) and would
         like to perform supervised deconvolution. If this is not provided,
         stain_unmixing_routine() is used to estimate W_source.
+
+    mask_out : array_like, default is None
+        if not None, should be (m x n) boolean numpy array.
+        This parameter ensures exclusion of non-masked areas from calculations
+        and stain matrix. This is relevant because elements like blood,
+        sharpie marker, white space, cannot be modeled as a mix of two stains.
 
     kwargs : k,v pairs
         Passed as-is to stain_unmixing_routine() if W_source is None.
@@ -247,6 +254,15 @@ def color_deconvolution_routine(im_rgb, W_source=None, **kwargs):
     """
     # get W_source if not provided
     if W_source is None:
-        W_source = stain_unmixing_routine(im_rgb, **kwargs)
+        W_source = stain_unmixing_routine(im_rgb, mask_out=mask_out, **kwargs)
 
-    return color_deconvolution(im_rgb, w=W_source, I_0=None)
+    # deconvolve
+    Stains, StainsFloat, wc = color_deconvolution(im_rgb, w=W_source, I_0=None)
+
+    # mask out (keep in mind, image is inverted)
+    if mask_out is not None:
+        for i in range(3):
+            Stains[..., i][mask_out] = 255
+            StainsFloat[..., i][mask_out] = 255.
+
+    return Stains, StainsFloat, wc

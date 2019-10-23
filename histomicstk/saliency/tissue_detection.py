@@ -266,7 +266,9 @@ def threshold_multichannel(
 # %%===========================================================================
 
 
-def _get_largest_regions(labeled_im, top_n=10):
+def _get_largest_regions(labeled, top_n=10):
+
+    labeled_im = labeled.copy()
 
     unique, counts = np.unique(labeled_im[labeled_im > 0], return_counts=True)
 
@@ -279,26 +281,5 @@ def _get_largest_regions(labeled_im, top_n=10):
     labeled_im[mask == 0] = 0
 
     return labeled_im
-
-
-def _get_large_bright_regions(labeled_im, intensity_im, top_n=3):
-
-    unique = np.unique(labeled_im[labeled_im > 0])
-
-    total_brightness = []
-    for pxv in unique:
-        total_brightness.append(np.sum(intensity_im[labeled_im == pxv]))
-
-    keep = np.argsort(total_brightness)[::-1][:top_n]
-    keep = unique[keep]
-
-    mask = np.zeros(labeled_im.shape)
-    keep_pixels = np.in1d(labeled_im, keep)
-    keep_pixels = keep_pixels.reshape(labeled_im.shape)
-    mask[keep_pixels] = 1
-    labeled_im[mask == 0] = 0
-
-    return labeled_im
-
 
 # %%===========================================================================
