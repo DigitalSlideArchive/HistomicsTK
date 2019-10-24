@@ -63,16 +63,12 @@ var HeaderImageView = View.extend({
             restRequest({
                 url: `item/${model.id}/previous_image${folder}`
             }).done((previous) => {
-                if (previous._id !== model.id) {
-                    this._previousImage = previous._id;
-                }
+                this._previousImage = (previous._id !== model.id) ? previous._id : null;
             }),
             restRequest({
                 url: `item/${model.id}/next_image${folder}`
             }).done((next) => {
-                if (next._id !== model.id) {
-                    this._nextImage = next._id;
-                }
+                this._nextImage = (next._id !== model.id) ? next._id : null;
             })
         ).done(() => this.render());
     }
