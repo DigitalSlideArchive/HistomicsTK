@@ -1,6 +1,6 @@
-==============================================================
-HistomicsTK |build-status| |codecov-io| |code-health| |gitter|
-==============================================================
+================================================
+HistomicsTK |build-status| |codecov-io| |gitter|
+================================================
 
 .. |build-status| image:: https://travis-ci.org/DigitalSlideArchive/HistomicsTK.svg?branch=master
     :target: https://travis-ci.org/DigitalSlideArchive/HistomicsTK
@@ -9,10 +9,6 @@ HistomicsTK |build-status| |codecov-io| |code-health| |gitter|
 .. |codecov-io| image:: https://codecov.io/github/DigitalSlideArchive/HistomicsTK/coverage.svg?branch=master
     :target: https://codecov.io/github/DigitalSlideArchive/HistomicsTK?branch=master
     :alt: codecov.io
-
-.. |code-health| image:: https://landscape.io/github/DigitalSlideArchive/HistomicsTK/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/DigitalSlideArchive/HistomicsTK/master
-   :alt: Code Health
 
 .. |gitter| image:: https://badges.gitter.im/DigitalSlideArchive/HistomicsTK.svg
    :target: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
