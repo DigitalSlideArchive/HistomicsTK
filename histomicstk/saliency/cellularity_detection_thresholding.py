@@ -290,10 +290,178 @@ class CDT_single_tissue_piece(object):
 
 
 class Cellularity_detector_thresholding(Base_HTK_Class):
-    """Placeholder."""
+    """Detect cellular regions in a slide using thresholding.
+
+    This uses a thresholding and stain unmixing based pipeline
+    to detect highly-cellular regions in a slide. The run()
+    method of the CDT_single_tissue_piece() class has the key
+    steps of the pipeline. In summary, here are the steps
+    involved...
+
+    1. Detect tissue from background using the RGB slide
+    thumbnail. Each "tissue piece" is analysed independently
+    from here onwards. The tissue_detection modeule is used
+    for this step. A high sensitivity, low specificity setting
+    is used here.
+
+    2. Fetch the RGB image of tissue at target magnification. A
+    low magnification (default is 3.0) is used and is sufficient.
+
+    3. The image is converted to HSI and LAB spaces. Thresholding
+    is performed to detect various non-salient components that
+    often throw-off the color normalization and deconvolution
+    algorithms. Thresholding includes both minimum and maximum
+    values. The user can set whichever thresholds of components
+    they would like. The development of this workflow was focused
+    on breast cancer so the thresholded components by default
+    are whote space (or adipose tissue), dark blue/green blotches
+    (sharpie, inking at margin, etc), and blood. Whitespace
+    is obtained by thresholding the saturation and intensity,
+    while other components are obtained by thresholding LAB.
+
+    4. Now that we know where "actual" tissue is, we do a MASKED
+    color normalization to a prespecified standard. The masking
+    ensures the normalization routine is not thrown off by non-
+    tissue components.
+
+    5. Perform masked stain unmixing/deconvolution to obtain the
+    hematoxylin stain channel.
+
+    6. Smooth and threshold the hematoxylin channel. Then
+    perform connected component analysis to find contiguous
+    potentially-cellular regions.
+
+    7. Keep the n largest potentially-cellular regions. Then
+    from those large regions, keep the m brightest regions
+    (using hematoxylin channel brightness) as the final
+    salient/cellular regions.
+
+    """
 
     def __init__(self, gc, slide_id, GTcodes, **kwargs):
-        """Placeholder."""
+        """Init Cellularity_Detector_Superpixels object.
+
+        Arguments:
+        -----------
+        gc : object
+            girder client object
+
+        slide_id : str
+            girder ID of slide
+
+        GTcodes : pandas Dataframe
+            the ground truth codes and information dataframe.
+            WARNING: Modified indide this method so pass a copy.
+            This is a dataframe that is indexed by the annotation group name
+            and has the following columns...
+
+            group: str
+                group name of annotation, eg. mostly_tumor
+            overlay_order: int
+                how early to place the annotation in the
+                mask. Larger values means this annotation group is overlayed
+                last and overwrites whatever overlaps it.
+            GT_code: int
+                desired ground truth code (in the mask).
+                Pixels of this value belong to corresponding group (class)
+            is_roi: bool
+                whether this group encodes an ROI
+            is_background_class: bool
+                whether this group is the default fill value inside the ROI.
+                For example, you may descide that any pixel inside the ROI
+                is considered stroma.
+            color: str
+                rgb format. eg. rgb(255,0,0)
+
+            The following indexes must be present...
+            outside_tissue, not_specified, maybe_cellular, top_cellular
+
+        verbose : int
+            0 - Do not print to screen
+            1 - Print only key messages
+            2 - Print everything to screen
+            3 - print everything including from inner functions
+        
+        monitorPrefix : str
+            text to prepend to printed statements
+        
+        logging_savepath : str or None
+            where to save run logs
+        
+        suppress_warnings : bool
+            whether to suppress warnings
+        
+        MAG : float
+            magnification at which to detect cellularity
+
+        color_normalization_method : str
+            Must be in ['reinhard', 'macenko_pca', 'none']
+
+        target_W_macenko : np array
+            3 by 3 stain matrix for macenko normalizatino
+            obtained using rgb_separate_stains_macenko_pca()
+            and reordered such that hematoxylin and eosin are
+            the first and second channels, respectively.
+
+        target_stats_reinhard : dict
+            must contains the keys mu and sigma. Mean and sigma
+            of target image in LAB space for reinhard normalization.
+
+        get_tissue_mask_kwargs : dict
+            kwargs for the get_tissue_mask() method. This is used
+            to detect tissue from the slide thumbnail.
+
+        keep_components : list
+            list of strings. Names of components to exclude by
+            HSI thresholding. These much be present in the index
+            of the GTcodes dataframe
+
+        get_tissue_mask_kwargs2 : dict
+            kwargs for get_tissue_mask() used for iterative smoothing
+            and thresholding the component masks after initial
+            thresholding using the user-defined HSI/LAB thresholds.
+
+        hsi_thresholds : dict
+            each entry is a dict containing the keys hue, saturation
+            and intensity. Each of these is in turn also a dict
+            containing the keys min and max. See default value below
+            for an example.
+        
+        lab_thresholds : dict
+            each entry is a dict containing the keys l, a, and b.
+            Each of these is in turn also a dict containing the keys
+            min and max. See default value below for an example.
+
+        stain_unmixing_routine_params : dict
+            kwargs passed as the stain_unmixing_routine_params
+            argument to the deconvolution_based_normalization method
+
+        cellular_step1_sigma : float
+            sigma of gaussian smoothing for first cellularity step
+
+        cellular_step1_min_size : int
+            minimum contiguous size for first cellularity step
+
+        cellular_step2_sigma : float
+            sigma of gaussian smoothing for second cellularity step
+
+        cellular_largest_n : int
+            Number of large continugous cellular regions to keep
+
+        cellular_top_n : int
+            Number of final "top" cellular regions to keep
+        
+        visualize : bool
+            whether to visualize results in DSA
+        
+        opacity : float
+            opacity of superpixel polygons when posted to DSA.
+            0 (no opacity) is more efficient to render.
+        
+        lineWidth : float
+            width of line when displaying region boundaries.
+        
+        """
         default_attr = {
 
             # The following are already assigned defaults by Base_HTK_Class
@@ -399,7 +567,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
     # %% ======================================================================
 
     def fix_GTcodes(self):
-        """Placeholder."""
+        """Fix self.GTcodes (important!)."""
         # validate
         self.GTcodes.index = self.GTcodes.loc[:, "group"]
         necessary_indexes = self.keep_components + [
@@ -424,7 +592,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
     # %% ======================================================================
 
     def run(self):
-        """Placeholder."""
+        """Run full pipeline to detect cellular regions."""
         # get mask, each unique value is a single tissue piece
         self._print1(
             "%s: set_slide_info_and_get_tissue_mask()" % self.monitorPrefix)
