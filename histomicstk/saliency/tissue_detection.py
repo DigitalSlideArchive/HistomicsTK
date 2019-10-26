@@ -13,10 +13,6 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response)
 from histomicstk.preprocessing.color_deconvolution.color_deconvolution import (
     color_deconvolution_routine)
-from histomicstk.preprocessing.color_deconvolution.\
-    rgb_separate_stains_macenko_pca import rgb_separate_stains_macenko_pca
-from histomicstk.preprocessing.color_deconvolution.find_stain_index import (
-    find_stain_index)
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     get_contours_from_mask, get_annotation_documents_from_contours)
 import cv2

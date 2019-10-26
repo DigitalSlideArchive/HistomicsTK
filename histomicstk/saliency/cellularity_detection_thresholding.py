@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Oct 22 02:37:52 2019
+Created on Tue Oct 22 02:37:52 2019.
 
 @author: mtageld
 """
@@ -110,7 +110,7 @@ class CDT_single_tissue_piece(object):
     # =========================================================================
 
     def initialize_labeled_mask(self):
-        """"Initialize labeled components mask."""
+        """Initialize labeled components mask."""
         # resize tissue mask to target mag
         self.labeled = resize(
             self.tissue_mask, output_shape=self.tissue_rgb.shape[:2],
@@ -165,7 +165,7 @@ class CDT_single_tissue_piece(object):
     # =========================================================================
 
     def color_normalize_unspecified_components(self):
-        """"Color normalize "true" tissue components."""
+        """Color normalize "true" tissue components."""
         if self.cdt.color_normalization_method == 'reinhard':
             self.cdt._print2(
                 "%s: -- reinhard normalization ..." % self.monitorPrefix)
@@ -192,7 +192,6 @@ class CDT_single_tissue_piece(object):
 
     def find_potentially_cellular_regions(self):
         """Find regions that are potentially cellular."""
-
         mask_out = self.labeled != self.cdt.GTcodes.loc[
             "not_specified", "GT_code"]
 
@@ -228,7 +227,6 @@ class CDT_single_tissue_piece(object):
 
     def find_top_cellular_regions(self):
         """Keep largest and most cellular regions."""
-
         # keep only largest n regions regions
         top_cellular_mask = _get_largest_regions(
             self.maybe_cellular, top_n=self.cdt.cellular_largest_n)
@@ -623,7 +621,6 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
     def set_color_normalization_target(
             self, ref_image_path, color_normalization_method='macenko_pca'):
         """Set color normalization values to use from target image."""
-
         # read input image
         ref_im = np.array(imread(ref_image_path, pilmode='RGB'))
 

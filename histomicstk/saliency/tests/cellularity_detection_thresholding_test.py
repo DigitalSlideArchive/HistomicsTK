@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 23 09:47:52 2019
+Created on Wed Oct 23 09:47:52 2019.
 
 @author: mtageld
 """

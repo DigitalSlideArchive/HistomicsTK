@@ -1,3 +1,4 @@
+"""Compute intensity features in labeled image."""
 import numpy as np
 import pandas as pd
 import scipy.stats
@@ -7,8 +8,7 @@ from skimage.measure import regionprops
 def compute_intensity_features(
         im_label, im_intensity, num_hist_bins=10,
         rprops=None, feature_list=None):
-    """
-    Calculates intensity features from an intensity image.
+    """Calculate intensity features from an intensity image.
 
     Parameters
     ----------
@@ -88,19 +88,19 @@ def compute_intensity_features(
 
     """
     default_feature_list = [
-            'Intensity.Min',
-            'Intensity.Max',
-            'Intensity.Mean',
-            'Intensity.Median',
-            'Intensity.MeanMedianDiff',
-            'Intensity.Std',
-            'Intensity.IQR',
-            'Intensity.MAD',
-            'Intensity.Skewness',
-            'Intensity.Kurtosis',
-            'Intensity.HistEnergy',
-            'Intensity.HistEntropy',
-        ]
+        'Intensity.Min',
+        'Intensity.Max',
+        'Intensity.Mean',
+        'Intensity.Median',
+        'Intensity.MeanMedianDiff',
+        'Intensity.Std',
+        'Intensity.IQR',
+        'Intensity.MAD',
+        'Intensity.Skewness',
+        'Intensity.Kurtosis',
+        'Intensity.HistEnergy',
+        'Intensity.HistEntropy',
+    ]
 
     # List of feature names
     if feature_list is None:
