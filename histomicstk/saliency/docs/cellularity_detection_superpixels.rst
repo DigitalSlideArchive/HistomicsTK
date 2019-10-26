@@ -1,4 +1,6 @@
-# Cellularity Detection module
+
+Cellularity Detection module
+============================
 
 **Overview:** 
 
@@ -28,25 +30,29 @@ using one's preferred colormap.
 
 These slides are used as a test examples:
 
-[TCGA-A2-A0YE-01Z-00-DX1](http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d586d76bd4404c6b1f286ae)
+`TCGA-A2-A0YE-01Z-00-DX1 <http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d586d76bd4404c6b1f286ae>`_
 and
-[TCGA-A1-A0SK-01Z-00-DX1](http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d817f5abd4404c6b1f744bb)
+`TCGA-A1-A0SK-01Z-00-DX1 <http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d817f5abd4404c6b1f744bb>`_
 
 **Here's the result:**
 
 From left to right: Slide thumbnail, superpixel classifications, contiguous cellular/acellular regions
 
-![cdetection](https://user-images.githubusercontent.com/22067552/65730355-7e92b600-e08f-11e9-918a-507f117f6d77.png)
+
+.. image:: https://user-images.githubusercontent.com/22067552/65730355-7e92b600-e08f-11e9-918a-507f117f6d77.png
+   :target: https://user-images.githubusercontent.com/22067552/65730355-7e92b600-e08f-11e9-918a-507f117f6d77.png
+   :alt: cdetection
+
 
 **Where to look?**
 
-```
-|_ histomicstk/
-|   |_saliency/
-|      |_cellularity_detection.py 
-|      |_tests/
-|         |_cellularity_detection_test.py
-|_ docs/
-    |_examples/
-       |_cellularity_detection.ipynb
-```
+.. code-block::
+
+   |_ histomicstk/
+   |   |_saliency/
+   |      |_cellularity_detection.py 
+   |      |_tests/
+   |         |_cellularity_detection_test.py
+   |_ docs/
+       |_examples/
+          |_cellularity_detection.ipynb
