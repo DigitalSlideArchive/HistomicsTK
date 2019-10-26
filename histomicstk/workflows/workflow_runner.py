@@ -68,7 +68,8 @@ class Slide_iterator(Base_HTK_Class):
         for sname, sid in self.slide_ids.items():
             try:
                 slide_info = self.gc.get('item/%s/tiles' % sid)
-            except:
+            except Exception as e:
+                print(str(e))
                 slide_info = dict()
             slide_info['name'] = sname
             slide_info['_id'] = sid
@@ -124,7 +125,7 @@ class Workflow_runner(Base_HTK_Class):
             try:
                 slide_info = next(self.si)
                 monitorStr += " (%s)" % (slide_info['name'])
-                
+
                 _ = self.workflow(
                     slide_id=slide_info['_id'], monitorPrefix=monitorStr,
                     **self.workflow_kwargs)

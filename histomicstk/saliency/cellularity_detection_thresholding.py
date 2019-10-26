@@ -110,7 +110,7 @@ class CDT_single_tissue_piece(object):
     # =========================================================================
 
     def initialize_labeled_mask(self):
-        """"Placeholder."""
+        """"Initialize labeled components mask."""
         # resize tissue mask to target mag
         self.labeled = resize(
             self.tissue_mask, output_shape=self.tissue_rgb.shape[:2],
@@ -121,7 +121,7 @@ class CDT_single_tissue_piece(object):
     # =========================================================================
 
     def assign_components_by_thresholding(self):
-        """Placeholder."""
+        """Get components by thresholding in HSI and LAB spaces."""
         # get HSI and LAB images
         self.cdt._print2(
             "%s: -- get HSI and LAB images ..." % self.monitorPrefix)
@@ -165,7 +165,7 @@ class CDT_single_tissue_piece(object):
     # =========================================================================
 
     def color_normalize_unspecified_components(self):
-        """"Placeholder."""
+        """"Color normalize "true" tissue components."""
         if self.cdt.color_normalization_method == 'reinhard':
             self.cdt._print2(
                 "%s: -- reinhard normalization ..." % self.monitorPrefix)
@@ -191,7 +191,7 @@ class CDT_single_tissue_piece(object):
     # =========================================================================
 
     def find_potentially_cellular_regions(self):
-        """Set self.slide_info dict and self.labeled tissue mask."""
+        """Find regions that are potentially cellular."""
 
         mask_out = self.labeled != self.cdt.GTcodes.loc[
             "not_specified", "GT_code"]
@@ -227,7 +227,7 @@ class CDT_single_tissue_piece(object):
     # =========================================================================
 
     def find_top_cellular_regions(self):
-        """Set self.slide_info dict and self.labeled tissue mask."""
+        """Keep largest and most cellular regions."""
 
         # keep only largest n regions regions
         top_cellular_mask = _get_largest_regions(
@@ -255,7 +255,7 @@ class CDT_single_tissue_piece(object):
     # =========================================================================
 
     def visualize_results(self):
-        """Placeholder."""
+        """Visualize results in DSA."""
         # get contours
         contours_df = get_contours_from_mask(
             MASK=self.labeled, GTCodes_df=self.cdt.GTcodes.copy(),
@@ -381,16 +381,16 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             1 - Print only key messages
             2 - Print everything to screen
             3 - print everything including from inner functions
-        
+
         monitorPrefix : str
             text to prepend to printed statements
-        
+
         logging_savepath : str or None
             where to save run logs
-        
+
         suppress_warnings : bool
             whether to suppress warnings
-        
+
         MAG : float
             magnification at which to detect cellularity
 
@@ -426,7 +426,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             and intensity. Each of these is in turn also a dict
             containing the keys min and max. See default value below
             for an example.
-        
+
         lab_thresholds : dict
             each entry is a dict containing the keys l, a, and b.
             Each of these is in turn also a dict containing the keys
@@ -450,17 +450,17 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
         cellular_top_n : int
             Number of final "top" cellular regions to keep
-        
+
         visualize : bool
             whether to visualize results in DSA
-        
+
         opacity : float
             opacity of superpixel polygons when posted to DSA.
             0 (no opacity) is more efficient to render.
-        
+
         lineWidth : float
             width of line when displaying region boundaries.
-        
+
         """
         default_attr = {
 
