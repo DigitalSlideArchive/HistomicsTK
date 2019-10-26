@@ -28,13 +28,38 @@ HistomicsTK can be used in two ways:
   researchers to use and/or extend the analytics functionality within
   HistomicsTK in Python. HistomicsTK provides algorithms for fundamental
   image analysis tasks such as color normalization, color deconvolution,
-  cell-nuclei segmentation, and feature extraction. HistomicsTK also provides
-  functionality for parsing annotations into masks and vice versa and various
-  GIS-type polygon functionality. Additionally, various modules are included
-  for basic computational pathology tasks like detecting tissue regions.
-  Please see the
-  :doc:`api-docs <api-docs>` and :doc:`examples <examples>` for more
-  information.
+  cell-nuclei segmentation, and feature extraction. Please see the
+  `api-docs <https://digitalslidearchive.github.io/HistomicsTK/api-docs.html>`__
+  and `examples <https://digitalslidearchive.github.io/HistomicsTK/examples.html>`__
+  for more information.
+  
+  Installation instructions on Linux:
+  
+  *To install HistomicsTK using PyPI*::
+  
+  $ python -m pip install histomicstk
+  
+  *To install HistomicsTK from source*::
+  
+  $ git clone https://github.com/DigitalSlideArchive/HistomicsTK/
+  $ cd HistomicsTK/
+  $ python -m pip install setuptools-scm Cython>=1.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
+  $ python -m pip install -e .
+
+  HistomicsTK uses the `large_image`_ library to read and various microscopy
+  image formats.  Depending on your exact system, installing the necessary 
+  libraries to support these formats can be complex.  There are some
+  non-official prebuilt libraries available for Linux that can be included as
+  part of the installation by specifying 
+  ``pip install histomicstk --find-links https://girder.github.io/large_image_wheels``.
+  Note that if you previously installed HistomicsTK or large_image without
+  these, you may need to add ``--force-reinstall --no-cache-dir`` to the
+  ``pip install`` command to force it to use the find-links option.
+
+  The system version of various libraries are used if the ``--find-links``
+  option is not specified.  You will need to use your package manager to
+  install appropriate libraries (on Ubuntu, for instance, you'll need 
+  ``libopenslide-dev`` and ``libtiff-dev``).
 
 - **As a server-side Girder plugin for web-based analysis**: This is intended
   to allow pathologists/biologists to apply analysis modules/pipelines
@@ -49,22 +74,14 @@ HistomicsTK can be used in two ways:
   building server-side analytics apps. To inherit all these capabilities,
   HistomicsTK is being developed to act also as a Girder plugin in addition
   to its use as a pure Python package. To further support web-based analysis,
-  HistomicsTK depends on three other Girder plugins:
+  HistomicsTK depends on three other Girder plugins: (i) girder_worker_ for
+  distributed task execution and monitoring, (ii) large_image_ for displaying,
+  serving, and reading large multi-resolution images produced by whole-slide
+  imaging systems, and (iii) slicer_cli_web_ to provide web-based RESTFul
+  access to image analysis pipelines developed as `slicer execution model`_
+  CLIs and containerized using Docker.
 
-  - girder_worker_: A Girder plugin for distributed task execution.
-  - large_image_: A Girder plugin to create/serve/display large
-    multi-resolution images produced by whole-slide imaging systems and a
-    stand-alone Python package for reading these images.
-  - slicer_cli_web_: A Girder plugin for providing web-based RESTFul access
-    to image analysis pipelines developed as `slicer execution model`_
-    CLIs and containerized using Docker.
-
-  HistomicsTK uses Girder's configuration files for some settings under the
-  `histomicstk` section:
-
-  - `restrict_downloads`: if True, Girder's standard download endpoints and
-    large_image's `item/{id}/tiles/images/{image}` endpoint are only
-    available to logged-in users.
+Please refer to https://digitalslidearchive.github.io/HistomicsTK/ for more information.
 
 For questions, comments, or to get in touch with the maintainers, head to our
 `Discourse forum`_, or use our `Gitter Chatroom`_.
