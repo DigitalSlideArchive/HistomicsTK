@@ -29,8 +29,14 @@ function createDialog() {
         if (!model) {
             return;
         }
+        let folderId = null;
+        if (widget.root && widget.root.attributes.isVirtual) {
+            // in case of a virtual parent folder keep the folder in the loop
+            folderId = widget.root.id;
+        }
         // reset image bounds when opening a new image
-        router.setQuery('bounds', null, {trigger: false});
+        router.setQuery('bounds', null, { trigger: false });
+        router.setQuery('folder', folderId, { trigger: false });
         router.setQuery('image', model.id, {trigger: true});
         $('.modal').girderModal('close');
     });

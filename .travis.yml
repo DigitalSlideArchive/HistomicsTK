@@ -78,7 +78,7 @@ before_install:
     - GIRDER_VERSION=2.x-maintenance
     - GIRDER_WORKER_VERSION=v0.5.1
     - LARGE_IMAGE_VERSION=2.x-maintenance
-    - SLICER_CLI_WEB_VERSION=master
+    - SLICER_CLI_WEB_VERSION=2.x-maintenance
     - main_path=$PWD
     - build_path=$HOME/build
     - mkdir -p $build_path

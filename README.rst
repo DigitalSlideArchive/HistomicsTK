@@ -1,6 +1,6 @@
-==============================================================
-HistomicsTK |build-status| |codecov-io| |code-health| |gitter|
-==============================================================
+================================================
+HistomicsTK |build-status| |codecov-io| |gitter|
+================================================
 
 .. |build-status| image:: https://travis-ci.org/DigitalSlideArchive/HistomicsTK.svg?branch=master
     :target: https://travis-ci.org/DigitalSlideArchive/HistomicsTK
@@ -9,10 +9,6 @@ HistomicsTK |build-status| |codecov-io| |code-health| |gitter|
 .. |codecov-io| image:: https://codecov.io/github/DigitalSlideArchive/HistomicsTK/coverage.svg?branch=master
     :target: https://codecov.io/github/DigitalSlideArchive/HistomicsTK?branch=master
     :alt: codecov.io
-
-.. |code-health| image:: https://landscape.io/github/DigitalSlideArchive/HistomicsTK/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/DigitalSlideArchive/HistomicsTK/master
-   :alt: Code Health
 
 .. |gitter| image:: https://badges.gitter.im/DigitalSlideArchive/HistomicsTK.svg
    :target: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
@@ -68,7 +64,7 @@ HistomicsTK can be used in two ways:
   libraries to support these formats can be complex.  There are some
   non-official prebuilt libraries available for Linux that can be included as
   part of the installation by specifying 
-  ``pip install histomicstk --find-links https://manthey.github.io/large_image_wheels``.
+  ``pip install histomicstk --find-links https://girder.github.io/large_image_wheels``.
   Note that if you previously installed HistomicsTK or large_image without
   these, you may need to add ``--force-reinstall --no-cache-dir`` to the
   ``pip install`` command to force it to use the find-links option.
