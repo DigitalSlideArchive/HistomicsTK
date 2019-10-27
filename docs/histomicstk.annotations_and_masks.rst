@@ -13,3 +13,4 @@ histomicstk.annotations_and_masks
     Masks to annotations <histomicstk.annotations_and_masks.masks_to_annotations_handler.rst>
     Annotation and mask utilities <histomicstk.annotations_and_masks.annotation_and_mask_utils.rst>
     Polygon merger <histomicstk.annotations_and_masks.polygon_merger.rst>
+    Tips for scalable annotation rendering for developers <Tips_for_scalable_annotation_rendering_for_developers.rst>
