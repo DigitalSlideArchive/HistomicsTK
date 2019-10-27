@@ -27,9 +27,6 @@ This slide used as a test example:
    :target: https://user-images.githubusercontent.com/22067552/63630235-866dbf00-c5e6-11e9-94d4-02d736e06f15.png
    :alt: image
 
-
-----
-
 Polygon merger (version 1 - from tiled masks)
 ===============================================
 
