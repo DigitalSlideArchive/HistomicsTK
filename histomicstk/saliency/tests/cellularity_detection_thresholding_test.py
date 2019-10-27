@@ -21,8 +21,8 @@ from histomicstk.saliency.cellularity_detection_thresholding import (
 
 APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
 # SAMPLE_SLIDE_ID = "5d586d76bd4404c6b1f286ae"
-# SAMPLE_SLIDE_ID = "5d8c296cbd4404c6b1fa5572"
-SAMPLE_SLIDE_ID = "5d94ee48bd4404c6b1fb0b40"
+SAMPLE_SLIDE_ID = "5d8c296cbd4404c6b1fa5572"
+# SAMPLE_SLIDE_ID = "5d94ee48bd4404c6b1fb0b40"
 
 gc = girder_client.GirderClient(apiUrl=APIURL)
 gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
