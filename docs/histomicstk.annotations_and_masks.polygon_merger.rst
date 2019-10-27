@@ -1,4 +1,3 @@
-
 Polygon merger
 ==============
 
