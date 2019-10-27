@@ -12,5 +12,4 @@ histomicstk.annotations_and_masks
     Annotations to masks <histomicstk.annotations_and_masks.annotations_to_masks_handler.rst>
     Masks to annotations <histomicstk.annotations_and_masks.masks_to_annotations_handler.rst>
     Annotation and mask utilities <histomicstk.annotations_and_masks.annotation_and_mask_utils.rst>
-    Polygon merger (from tiled masks) <histomicstk.annotations_and_masks.polygon_merger.rst>
-    Polygon merger v2 (from annotations directly) <histomicstk.annotations_and_masks.polygon_merger_v2.rst>
+    Polygon merger <histomicstk.annotations_and_masks.polygon_merger.rst>
