@@ -1,5 +1,5 @@
-Polygon merger
-==============
+Polygon merger (overview)
+===========================
 
 There are two versions, depending on the user's requirements: ``polygon_merger`` and ``polygon_merger_v2``. ``polygon_merger`` deals with the situation when you have tiled masks and want to fuse the contours from tiled edges. ``polygon_merger_v2`` is a more general version that does not need masks. In brief, here is when it is appropriate to use either workflow. If you have:
 
@@ -30,8 +30,8 @@ This slide used as a test example:
 
 ----
 
-Polygon merger (version 1)
-==========================
+Polygon merger (version 1 - from tiled masks)
+===============================================
 
 **Overview:**
 
@@ -84,8 +84,8 @@ This initial set of "vetting" steps ensures that the complexity is ``<< O(n^2)``
     :undoc-members:
     :show-inheritance:
 
-Polygon merger (version 2)
-==========================
+Polygon merger (version 2- general)
+=====================================
 
 **Overview:**
 
