@@ -622,14 +622,12 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             self, ref_image_path, color_normalization_method='macenko_pca'):
         """Set color normalization values to use from target image.
 
-        Arguments:
-        -----------
-        ref_image_path : str
-            path to target (reference) image
-
-        color_normalization_method : str
-            color normalization method to use. Currently, only
-            'reinhard' and 'macenko_pca' are accepted.
+        Arguments
+        ref_image_path, str
+        >    path to target (reference) image
+        color_normalization_method, str
+        >    color normalization method to use. Currently, only
+        >    reinhard and macenko_pca are accepted.
 
         """
         # read input image

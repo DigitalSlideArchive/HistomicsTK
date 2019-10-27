@@ -101,8 +101,9 @@ class Workflow_runner_Test(unittest.TestCase):
         workflow_runner = Workflow_runner(
             slide_iterator=Slide_iterator(
                 gc, source_folder_id=SAMPLE_SOURCE_FOLDER_ID,
-                keep_slides=['TCGA-A1-A0SK-01Z-00-DX1_POST.svs', ]),
-                # keep_slides=None),
+                keep_slides=['TCGA-A1-A0SK-01Z-00-DX1_POST.svs', ],
+                # keep_slides=None,
+            ),
             workflow=cellularity_detection_workflow,
             workflow_kwargs={
                 'gc': gc,
