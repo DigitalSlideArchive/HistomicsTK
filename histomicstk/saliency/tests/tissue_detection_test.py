@@ -105,3 +105,5 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner(failfast=True)
     runner.run(suite())
+    # cleanup
+    shutil.rmtree(savepath)

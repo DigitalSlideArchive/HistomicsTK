@@ -16,4 +16,6 @@ Examples
    examples/polygon_merger.ipynb
    examples/polygon_merger_v2.ipynb
    examples/tissue_detection.ipynb
-   examples/cellularity_detection.ipynb
+   examples/cellularity_detection_thresholding.ipynb
+   examples/cellularity_detection_superpixels.ipynb
+   examples/workflows.ipynb
