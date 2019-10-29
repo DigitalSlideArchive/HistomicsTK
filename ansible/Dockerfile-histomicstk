@@ -1,6 +1,6 @@
 # 18.04 also works
 FROM ubuntu:16.04
-MAINTAINER David Manthey <david.manthey@kitware.com>
+MAINTAINER Kitware, Inc. <kitware@kitware.com>
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get --yes --no-install-recommends -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade && \

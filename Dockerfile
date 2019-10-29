@@ -5,7 +5,7 @@
 # All plugins of HistomicsTK should derive from this docker image
 
 FROM dsarchive/base_docker_image
-MAINTAINER Deepak Chittajallu <deepak.chittajallu@kitware.com>
+MAINTAINER Kitware, Inc. <kitware@kitware.com>
 
 # copy HistomicsTK files
 ENV htk_path=$PWD/HistomicsTK
