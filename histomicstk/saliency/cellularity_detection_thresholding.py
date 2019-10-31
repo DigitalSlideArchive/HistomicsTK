@@ -198,8 +198,8 @@ class CDT_single_tissue_piece(object):
         # deconvolvve to ge hematoxylin channel (cellular areas)
         # hematoxylin channel return shows MINIMA so we invert
         self.tissue_htx, _, _ = color_deconvolution_routine(
-            self.tissue_rgb, **self.cdt.stain_unmixing_routine_params,
-            mask_out=mask_out)
+            self.tissue_rgb, mask_out=mask_out,
+            **self.cdt.stain_unmixing_routine_params)
         self.tissue_htx = 255 - self.tissue_htx[..., 0]
 
         # get cellular regions by threshold HTX stain channel
