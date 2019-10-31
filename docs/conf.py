@@ -71,7 +71,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'HistomicsTK'
-copyright = u'2015, Kitware, Inc.'
+copyright = u'Kitware, Inc.'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -295,4 +295,3 @@ intersphinx_mapping = {"http://docs.python.org/": None,
                        "http://docs.scipy.org/doc/numpy/": None,
                        "http://docs.scipy.org/doc/scipy/reference": None}
 intersphinx_cache_limit = 10     # days to keep the cached inventories
-
