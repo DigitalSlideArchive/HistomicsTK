@@ -145,7 +145,8 @@ class FeatureExtractionTest(unittest.TestCase):
             TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'),
             index_col=None)
 
-        pd.testing.assert_frame_equal(fdata, fdata_gtruth)
+        pd.testing.assert_frame_equal(
+            fdata, fdata_gtruth, check_less_precise=2)
 
     def test_compute_haralick_features(self):
 
@@ -191,7 +192,8 @@ class FeatureExtractionTest(unittest.TestCase):
         fdata_gtruth = pd.read_csv(os.path.join(
             TEST_DATA_DIR, 'Easy1_nuclei_haralick_features.csv'))
 
-        pd.testing.assert_frame_equal(fdata, fdata_gtruth)
+        pd.testing.assert_frame_equal(
+            fdata, fdata_gtruth, check_less_precise=2)
 
     def test_compute_gradient_features(self):
 
@@ -228,7 +230,8 @@ class FeatureExtractionTest(unittest.TestCase):
             TEST_DATA_DIR, 'Easy1_nuclei_gradient_features.csv'),
             index_col=None)
 
-        pd.testing.assert_frame_equal(fdata, fdata_gtruth)
+        pd.testing.assert_frame_equal(
+            fdata, fdata_gtruth, check_less_precise=2)
 
     def test_compute_morphometry_features(self):
 
@@ -261,7 +264,8 @@ class FeatureExtractionTest(unittest.TestCase):
         fdata_gtruth = pd.read_csv(os.path.join(
             TEST_DATA_DIR, 'Easy1_nuclei_morphometry_features.csv'))
 
-        pd.testing.assert_frame_equal(fdata, fdata_gtruth)
+        pd.testing.assert_frame_equal(
+            fdata, fdata_gtruth, check_less_precise=2)
 
     def test_compute_fsd_features(self):
 
@@ -284,4 +288,5 @@ class FeatureExtractionTest(unittest.TestCase):
         fdata_gtruth = pd.read_csv(os.path.join(
             TEST_DATA_DIR, 'Easy1_nuclei_fsd_features.csv'))
 
-        pd.testing.assert_frame_equal(fdata, fdata_gtruth)
+        pd.testing.assert_frame_equal(
+            fdata, fdata_gtruth, check_less_precise=2)
