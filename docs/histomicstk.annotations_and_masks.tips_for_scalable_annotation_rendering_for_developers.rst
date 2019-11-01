@@ -32,7 +32,7 @@ Yes! If the number of elements in the documents is more than 2,000,000 then the 
 
 The basic types of elements include: point, rectangle, polygon, and line. The most efficient elements to render are, in order of increasing render efficiency: 
 
-.. code-block::
+::
 
    Filled polygon -> Unfilled polygon (no opacity) -> Rectangle -> Line -> Point
 

@@ -45,7 +45,7 @@ From left to right: Slide thumbnail, superpixel classifications, contiguous cell
 
 **Where to look?**
 
-.. code-block::
+::
 
    |_ histomicstk/
    |   |_saliency/

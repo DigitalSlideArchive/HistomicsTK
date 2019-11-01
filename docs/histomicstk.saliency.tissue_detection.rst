@@ -21,7 +21,7 @@ From left to right: Slide thumbnail, Tissue regions, Largest tissue region
 
 **Where to look?**
 
-.. code-block::
+::
 
    |_ histomicstk/
    |   |_saliency/

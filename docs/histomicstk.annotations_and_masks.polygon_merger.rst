@@ -61,7 +61,7 @@ This initial set of "vetting" steps ensures that the complexity is ``<< O(n^2)``
 
 **Where to look?**
 
-.. code-block::
+::
 
    |_ histomicstk/
    |   |_annotations_and_masks/
@@ -112,7 +112,7 @@ This process ensures that the number of comparisons is ``<< n^2``. This is very 
 
 **Where to look?**
 
-.. code-block::
+::
 
    |_ histomicstk/
    |   |_annotations_and_masks/

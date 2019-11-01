@@ -63,7 +63,7 @@ and
 
 **Where to look?**
 
-.. code-block::
+::
 
    |_ histomicstk/
    |   |_saliency/

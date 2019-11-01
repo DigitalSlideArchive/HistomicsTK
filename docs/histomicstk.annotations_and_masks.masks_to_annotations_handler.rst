@@ -23,7 +23,7 @@ This slide used as a test example:
 
 **Where to look?**
 
-.. code-block::
+::
 
    |_ histomicstk/
    |   |_annotations_and_masks/

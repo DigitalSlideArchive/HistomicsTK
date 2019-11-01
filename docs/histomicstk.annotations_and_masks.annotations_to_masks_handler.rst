@@ -43,7 +43,7 @@ The code added here handles the following complex situations:
 
 **Where to look?**
 
-.. code-block::
+::
 
    |_ histomicstk/
    |   |_annotations_and_masks/
