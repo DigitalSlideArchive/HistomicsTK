@@ -16,7 +16,7 @@ from histomicstk.preprocessing.color_deconvolution import (
 
 def perturb_stain_concentration(
         StainsFloat, W, I_0=None, mask_out=None, sigma1=0.9, sigma2=0.9):
-    """Perturb stain concentrations in SDA space and return augmented image.
+    u"""Perturb stain concentrations in SDA space and return augmented image.
 
     This is an implementeation of the method described in Tellez et
     al, 2018 (see below). The SDA matrix is perturbed by multiplying each
