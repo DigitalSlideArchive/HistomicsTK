@@ -216,7 +216,7 @@ class HistomicsTKCoreTest(base.TestCase):
         resp = self.request(
             path='/HistomicsTK/HistomicsTK/docker_image',
             user=self.admin, method='PUT',
-            params={'name': '"girder/slicer_cli_web:small"'})
+            params={'name': '"girder/slicer_cli_web:small-2.x"'})
         self.assertStatusOk(resp)
         endTime = time.time() + 180  # maxTimeout
         while time.time() < endTime:
