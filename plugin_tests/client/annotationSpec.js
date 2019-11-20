@@ -1086,6 +1086,7 @@ $(function () {
                     $('#h-annotation-context-menu .h-remove-elements').click();
                     expect($('#h-annotation-context-menu').hasClass('hidden')).toBe(true);
                 });
+                girderTest.waitForLoad();
             });
 
             it('open a different image', function () {

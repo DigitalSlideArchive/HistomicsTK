@@ -176,7 +176,11 @@ var AnnotationSelector = Panel.extend({
                     model.unset('displayed');
                     model.unset('highlight');
                     this.collection.remove(model);
-                    model.destroy();
+                    if (model._saving) {
+                        model._saveAgain = 'delete';
+                    } else {
+                        model.destroy();
+                    }
                 }
             });
         }
@@ -206,6 +210,15 @@ var AnnotationSelector = Panel.extend({
 
     _refreshAnnotations() {
         if (!this.parentItem || !this.parentItem.id) {
+            return;
+        }
+        // if any annotations are saving, defer this
+        if (!this.viewer._saving) {
+            this.viewer._saving = {};
+        }
+        delete this.viewer._saving.refresh;
+        if (Object.keys(this.viewer._saving).length) {
+            this.viewer._saving.refresh = true;
             return;
         }
         var models = this.collection.indexBy(_.property('id'));
@@ -346,12 +359,60 @@ var AnnotationSelector = Panel.extend({
     },
 
     _saveAnnotation(annotation) {
+        if (!this.viewer._saving) {
+            this.viewer._saving = {};
+        }
         if (!annotation._saving && !annotation._inFetch && !annotation.get('loading')) {
+            this.viewer._saving[annotation.id] = true;
+            this.$el.addClass('saving');
+            let lastSaveAgain = annotation._saveAgain;
             annotation._saving = true;
+            annotation._saveAgain = false;
             this.trigger('h:redraw', annotation);
-            annotation.save().always(() => {
+            annotation.save().fail(() => {
+                /* If we fail to save (possible because the server didn't
+                 * respond), try again, gradually backing off the frequency
+                 * of retries. */
+                annotation._saveAgain = Math.min(lastSaveAgain ? lastSaveAgain * 2 : 5, 300);
+            }).always(() => {
+                delete this.viewer._saving[annotation.id];
                 annotation._saving = false;
+                if (annotation._saveAgain !== undefined && annotation._saveAgain !== false) {
+                    if (annotation._saveAgain === 'delete') {
+                        annotation.destroy();
+                    } else if (!annotation._saveAgain) {
+                        this._saveAnnotation(annotation);
+                    } else {
+                        this.viewer._saving[annotation.id] = true;
+                        window.setTimeout(() => {
+                            if (annotation._saveAgain !== undefined && annotation._saveAgain !== false) {
+                                this._saveAnnotation(annotation);
+                            }
+                        }, annotation._saveAgain * 1000);
+                    }
+                }
+                if (Object.keys(this.viewer._saving).length === 1 && this.viewer._saving.refresh) {
+                    this._refreshAnnotations();
+                }
+                if (!Object.keys(this.viewer._saving).length || (Object.keys(this.viewer._saving).length === 1 && this.viewer._saving.refresh)) {
+                    this.$el.removeClass('saving');
+                }
             });
+        } else if (!annotation._inFetch && !annotation.get('loading')) {
+            /* if we are saving, flag that we need to save again after we
+             * finish as there are newer changes. */
+            if (annotation._saveAgain !== 'delete') {
+                annotation._saveAgain = 0;
+            }
+        } else {
+            annotation._saveAgain = false;
+            delete this.viewer._saving[annotation.id];
+            if (Object.keys(this.viewer._saving).length === 1 && this.viewer._saving.refresh) {
+                this._refreshAnnotations();
+            }
+            if (!Object.keys(this.viewer._saving).length || (Object.keys(this.viewer._saving).length === 1 && this.viewer._saving.refresh)) {
+                this.$el.removeClass('saving');
+            }
         }
     },
 
