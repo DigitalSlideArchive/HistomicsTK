@@ -114,7 +114,7 @@ class CDT_single_tissue_piece(object):
         # resize tissue mask to target mag
         self.labeled = resize(
             self.tissue_mask, output_shape=self.tissue_rgb.shape[:2],
-            order=0, preserve_range=True)
+            order=0, preserve_range=True, anti_aliasing=False)
         self.labeled[self.labeled > 0] = self.cdt.GTcodes.loc[
             'not_specified', 'GT_code']
 

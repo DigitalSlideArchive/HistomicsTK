@@ -144,7 +144,7 @@ class CD_single_tissue_piece(object):
         # restrict to tissue mask
         tmask = resize(
             self.tissue_mask, output_shape=self.spixel_mask.shape,
-            order=0, preserve_range=True)
+            order=0, preserve_range=True, anti_aliasing=False)
         self.spixel_mask[tmask == 0] = 0
 
     # =========================================================================
