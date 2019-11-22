@@ -4,7 +4,7 @@
   <title>Positive Pixel Count</title>
   <description>Counts different types of positive pixels based on values in the HSI color space</description>
   <version>0.1.0</version>
-  <documentation-url>https://histomicstk.readthedocs.org/en/latest/</documentation-url>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK</documentation-url>
   <license>Apache 2.0</license>
   <contributor>Neal Siekierski (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>

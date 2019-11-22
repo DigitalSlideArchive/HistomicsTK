@@ -108,17 +108,20 @@ var SaveAnnotation = View.extend({
         // all valid
 
         if (setFillColor || setLineColor || setLineWidth) {
-            this.annotation.get('annotation').elements.forEach((element) => {
+            this.annotation.elements().each((element) => { /* eslint-disable backbone/no-silent */
                 if (setFillColor) {
-                    element.fillColor = fillColor;
+                    element.set('fillColor', fillColor, {silent: true});
                 }
                 if (setLineColor) {
-                    element.lineColor = lineColor;
+                    element.set('lineColor', lineColor, {silent: true});
                 }
                 if (setLineWidth) {
-                    element.lineWidth = lineWidth;
+                    element.set('lineWidth', lineWidth, {silent: true});
                 }
             });
+            const annotationData = _.extend({}, this.annotation.get('annotation'));
+            annotationData.elements = this.annotation.elements().toJSON();
+            this.annotation.set('annotation', annotationData);
         }
 
         _.extend(this.annotation.get('annotation'), {
