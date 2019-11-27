@@ -19,5 +19,5 @@ def rgb_to_hsi(im):
                        2 * im[0] - im[1] - im[2]) / (2 * np.pi)) % 1
     intensities = im.mean(0)
     saturations = np.where(
-        intensities, 1 - im.min(0) / (intensities + 1e-10), 0)
+        intensities, 1 - im.min(0) / np.maximum(intensities, 1e-10), 0)
     return np.stack([hues, saturations, intensities], -1)

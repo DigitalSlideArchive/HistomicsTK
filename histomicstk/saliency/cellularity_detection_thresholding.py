@@ -349,7 +349,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
         GTcodes : pandas Dataframe
             the ground truth codes and information dataframe.
-            WARNING: Modified indide this method so pass a copy.
+            WARNING: Modified inside this method so pass a copy.
             This is a dataframe that is indexed by the annotation group name
             and has the following columns...
 
@@ -366,7 +366,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
                 whether this group encodes an ROI
             is_background_class: bool
                 whether this group is the default fill value inside the ROI.
-                For example, you may descide that any pixel inside the ROI
+                For example, you may decide that any pixel inside the ROI
                 is considered stroma.
             color: str
                 rgb format. eg. rgb(255,0,0)
@@ -396,7 +396,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             Must be in ['reinhard', 'macenko_pca', 'none']
 
         target_W_macenko : np array
-            3 by 3 stain matrix for macenko normalizatino
+            3 by 3 stain matrix for macenko normalization
             obtained using rgb_separate_stains_macenko_pca()
             and reordered such that hematoxylin and eosin are
             the first and second channels, respectively.
@@ -583,7 +583,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         self.ordered_components = list(self.GTcodes.loc[:, "group"])
 
         # only keep relevant components (for HSI/LAB thresholding)
-        for c in self.ordered_components.copy():
+        for c in self.ordered_components[:]:
             if c not in self.keep_components:
                 self.ordered_components.remove(c)
 

@@ -103,10 +103,10 @@ This algorithm fuses polygon clusters in coordinate (not mask) space, which mean
   Starting from the bottom of the tree, merge all polygons from leafs that belong to the same nodes.
 
 * 
-  Move one level up the hierarchy, each time incoporated merged polygons from nodes that share a common parent. Do this until you get one merged polygon at the root node. The polygons are first dilated a bit to make sure any small gaps are covered, then they are merged and eroded. Note that ``shapely`` allows us to simply "combine" polygons into a "multi-polygon" object, which means we do not need to check if the polygons actually are within merger threshold. Instead, all polygons hierarchically combined until we arrive at a single "multi-polygon" object at the root node.
+  Move one level up the hierarchy, each time incorporated merged polygons from nodes that share a common parent. Do this until you get one merged polygon at the root node. The polygons are first dilated a bit to make sure any small gaps are covered, then they are merged and eroded. Note that ``shapely`` allows us to simply "combine" polygons into a "multi-polygon" object, which means we do not need to check if the polygons actually are within merger threshold. Instead, all polygons hierarchically combined until we arrive at a single "multi-polygon" object at the root node.
 
 * 
-  Save the coordinares from each polygon on the multi-polygon object in a new pandas DataFrame. 
+  Save the coordinates from each polygon on the multi-polygon object in a new pandas DataFrame. 
 
 This process ensures that the number of comparisons is ``<< n^2``. This is very important since algorithm complexity plays a key role as whole slide images may contain tens of thousands of objects.
 

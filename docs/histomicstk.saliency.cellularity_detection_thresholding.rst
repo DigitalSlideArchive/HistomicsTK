@@ -12,7 +12,7 @@ steps of the pipeline.
 
 1. Detect tissue from background using the RGB slide
 thumbnail. Each "tissue piece" is analysed independently
-from here onwards. The tissue_detection modeule is used
+from here onwards. The tissue_detection module is used
 for this step. A high sensitivity, low specificity setting
 is used here.
 

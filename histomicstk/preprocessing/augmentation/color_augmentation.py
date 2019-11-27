@@ -18,9 +18,9 @@ def perturb_stain_concentration(
         StainsFloat, W, I_0=None, mask_out=None, sigma1=0.9, sigma2=0.9):
     u"""Perturb stain concentrations in SDA space and return augmented image.
 
-    This is an implementeation of the method described in Tellez et
+    This is an implementation of the method described in Tellez et
     al, 2018 (see below). The SDA matrix is perturbed by multiplying each
-    channel independently by a value choosen from a random uniform distribution
+    channel independently by a value chosen from a random uniform distribution
     in the range [1 - sigma1, 1 + sigma1], then add a value chosed from another
     random uniform distribution in the range [-sigma2, sigma2].
 
@@ -119,7 +119,7 @@ def rgb_perturb_stain_concentration(
     Parameters
     ------------
     im_rgb : array_like
-        An RGB image (m x n x 3) to colro normalize
+        An RGB image (m x n x 3) to color normalize
 
     stain_unmixing_routine_params : dict
         kwargs to pass as-is to the color_deconvolution_routine().

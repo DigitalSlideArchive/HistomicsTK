@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Placeholder."""
+"""Compute statistics for reinhard normalization."""
 
 ###############################################################################
 #  Copyright Kitware Inc.

@@ -225,7 +225,7 @@ def color_deconvolution_routine(
     Parameters
     ------------
     im_rgb : array_like
-        An RGB image (m x n x 3) to colro normalize
+        An RGB image (m x n x 3) to color normalize
 
     W_source : np array, default is None
         A 3x3 matrix of source stain column vectors. Only provide this
