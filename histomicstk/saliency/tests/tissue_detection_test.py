@@ -83,6 +83,7 @@ class TissueDetectionTest(unittest.TestCase):
         for doc in annotation_docs:
             _ = gc.post("/annotation?itemId=" + SAMPLE_SLIDE_ID, json=doc)
 
+
 def suite():
     """Run chained unit tests in desired order.
 
