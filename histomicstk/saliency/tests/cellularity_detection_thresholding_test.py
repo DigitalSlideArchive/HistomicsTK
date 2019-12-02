@@ -5,6 +5,7 @@ Created on Wed Oct 23 09:47:52 2019.
 
 @author: mtageld
 """
+import os
 import unittest
 import tempfile
 import shutil
@@ -28,7 +29,8 @@ gc = girder_client.GirderClient(apiUrl=APIURL)
 gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 # read GT codes dataframe
-GTcodes = read_csv('./saliency_GTcodes.csv')
+GTcodes = read_csv(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                'saliency_GTcodes.csv'))
 
 logging_savepath = tempfile.mkdtemp()
 

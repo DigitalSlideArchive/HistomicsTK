@@ -5,6 +5,7 @@ Created on Mon Sep 30 18:12:48 2019.
 
 @author: mtageld
 """
+import os
 import unittest
 import shutil
 import tempfile
@@ -37,7 +38,8 @@ logging_savepath = tempfile.mkdtemp()
 # params for cellularity thresholding
 cdt_params = {
     'gc': gc, 'slide_id': '',
-    'GTcodes': read_csv('../../saliency/tests/saliency_GTcodes.csv'),
+    'GTcodes': read_csv(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                     '../../saliency/tests/saliency_GTcodes.csv')),
     'MAG': 3.0,
     'visualize': True,
     'verbose': 2,
