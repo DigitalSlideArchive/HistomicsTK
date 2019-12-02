@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Compute statistics for reinhard normalization."""
+
 ###############################################################################
 #  Copyright Kitware Inc.
 #
@@ -22,15 +24,20 @@ import numpy as np
 from .rgb_to_lab import rgb_to_lab
 
 
-def lab_mean_std(im_input):
-    """Computes the mean and standard deviation of the intensities of each
-    channel of the given RGB image in LAB color space. The outputs of this
-    function are needed for reinhard color normalization.
+def lab_mean_std(im_input, mask_out=None):
+    """Compute the mean and standard deviation of the intensities.
+
+    ... of each channel of the given RGB image in LAB color space.
+    The outputs of this function is for reinhard normalization.
 
     Parameters
     ----------
     im_input : array_like
         An RGB image
+
+    mask_out : array_like
+        if not None, uses numpy masked array functionality to only keep
+        non-masked areas when calculating mean and standard deviation.
 
     Returns
     -------
@@ -41,6 +48,16 @@ def lab_mean_std(im_input):
     std_lab : array_like
         A 3-element array containing the standard deviation of each channel
         of the input RGB in LAB color space.
+
+    mask_out : array_like, default is None
+        if not None, should be (m, n) boolean numpy array.
+        This method uses numpy masked array functionality to only use
+        non-masked areas in calculations. This is relevant because elements
+        like blood, sharpie marker, white space, etc would throw off the
+        reinhard normalization by affecting the mean and stdev. Ideally, you
+        want to exclude these elements from both the target image (from which
+        you calculate target_mu and target_sigma) and from the source image
+        to be normalized.
 
     See Also
     --------
@@ -59,11 +76,13 @@ def lab_mean_std(im_input):
     """
     im_lab = rgb_to_lab(im_input)
 
-    mean_lab = np.zeros(3)
-    std_lab = np.zeros(3)
+    # mask out irrelevant tissue / whitespace / etc
+    if mask_out is not None:
+        mask_out = mask_out[..., None]
+        im_lab = np.ma.masked_array(
+            im_lab, mask=np.tile(mask_out, (1, 1, 3)))
 
-    for i in range(3):
-        mean_lab[i] = im_lab[:, :, i].mean()
-        std_lab[i] = (im_lab[:, :, i] - mean_lab[i]).std()
+    mean_lab = np.array([im_lab[..., i].mean() for i in range(3)])
+    std_lab = np.array([im_lab[..., i].std() for i in range(3)])
 
     return mean_lab, std_lab

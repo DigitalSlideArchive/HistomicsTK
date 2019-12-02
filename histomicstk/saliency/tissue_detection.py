@@ -12,11 +12,7 @@ from pandas import DataFrame
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response)
 from histomicstk.preprocessing.color_deconvolution.color_deconvolution import (
-    color_deconvolution)
-from histomicstk.preprocessing.color_deconvolution.\
-    rgb_separate_stains_macenko_pca import rgb_separate_stains_macenko_pca
-from histomicstk.preprocessing.color_deconvolution.find_stain_index import (
-    find_stain_index)
+    color_deconvolution_routine)
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     get_contours_from_mask, get_annotation_documents_from_contours)
 import cv2
@@ -51,55 +47,25 @@ def get_slide_thumbnail(gc, slide_id):
 # %%===========================================================================
 
 
-def _deconv_color(im, stain_matrix_method="PCA"):
-    """Deconvolve using wrapper around color_deconvolution for H&E.
-
-    See tutorial at:  examples/color-deconvolution.html
-
-    Parameters
-    ------------
-    im : np array
-        rgb image
-    stain_matrix_method : str
-        Currently only PCA supported, but the original method supports others.
-
-    """
-    # Constant -- see documentation for color_deconvolution method
-    stain_color_map = {
-        'hematoxylin': [0.65, 0.70, 0.29],
-        'eosin':       [0.07, 0.99, 0.11],
-        'dab':         [0.27, 0.57, 0.78],
-        'null':        [0.0, 0.0, 0.0],
-        'HE_null':     [0.286, 0.105, 0],
-    }
-    I_0 = None
-    if stain_matrix_method == "PCA":  # Visually shows best results
-        W_est = rgb_separate_stains_macenko_pca(im, I_0)
-        Stains, _, _ = color_deconvolution(im_rgb=im, w=W_est, I_0=I_0)
-
-        # Unlike SNMF, we're not guaranteed the order of the different stains.
-        # find_stain_index guesses which one we want
-        channel = find_stain_index(stain_color_map['hematoxylin'], W_est)
-    else:
-        raise NotImplementedError(
-            """Not yet implemented here, but you can easily implement it
-            yourself if you follow this tutorial:
-            examples/color-deconvolution.html""")
-
-    return Stains, channel
+def _deconv_color(im, **kwargs):
+    """Wrap around color_deconvolution_routine (compatibility)."""
+    Stains, _, _ = color_deconvolution_routine(im, **kwargs)
+    return Stains, 0
 
 # %%===========================================================================
 
 
 def get_tissue_mask(
-        thumbnail_rgb, deconvolve_first=False, stain_matrix_method="PCA",
+        thumbnail_im,
+        deconvolve_first=False, stain_unmixing_routine_kwargs={},
         n_thresholding_steps=1, sigma=0., min_size=500):
     """Get binary tissue mask from slide thumbnail.
 
     Parameters
     -----------
-    thumbnail_rgb : np array
+    thumbnail_im : np array
         (m, n, 3) nd array of thumbnail RGB image
+        or (m, n) nd array of thumbnail grayscale image
     deconvolve_first : bool
         use hematoxylin channel to find cellular areas?
         This will make things ever-so-slightly slower but is better in
@@ -122,15 +88,20 @@ def get_tissue_mask(
         each unique value represents a unique tissue region
 
     """
-    if deconvolve_first:
+    if deconvolve_first and (len(thumbnail_im.shape) == 3):
         # deconvolvve to ge hematoxylin channel (cellular areas)
         # hematoxylin channel return shows MINIMA so we invert
-        Stains, channel = _deconv_color(
-            thumbnail_rgb, stain_matrix_method=stain_matrix_method)
-        thumbnail = 255 - Stains[..., channel]
-    else:
+        stain_unmixing_routine_kwargs['stains'] = ['hematoxylin', 'eosin']
+        Stains, _, _ = color_deconvolution_routine(
+            thumbnail_im, **stain_unmixing_routine_kwargs)
+        thumbnail = 255 - Stains[..., 0]
+
+    elif len(thumbnail_im.shape) == 3:
         # grayscale thumbnail (inverted)
-        thumbnail = 255 - cv2.cvtColor(thumbnail_rgb, cv2.COLOR_BGR2GRAY)
+        thumbnail = 255 - cv2.cvtColor(thumbnail_im, cv2.COLOR_BGR2GRAY)
+
+    else:
+        thumbnail = thumbnail_im
 
     for _ in range(n_thresholding_steps):
 
@@ -227,5 +198,84 @@ def get_tissue_boundary_annotation_documents(
         verbose=False, monitorPrefix="tissue : annotation docs")
 
     return annotation_docs
+
+# %%===========================================================================
+
+
+def threshold_multichannel(
+        im, thresholds, channels=['hue', 'saturation', 'intensity'],
+        just_threshold=False, get_tissue_mask_kwargs=None):
+    """Threshold a multi-channel image (eg. HSI image) to get tissue.
+
+    The relies on the fact that oftentimes some slide elements (eg blood
+    or whitespace) have a characteristic hue/saturation/intensity. This
+    thresholds along each HSI channel, then optionally uses the
+    get_tissue_mask() method (gaussian smoothing, otsu thresholding,
+    connected components) to get each contiguous tissue piece.
+
+    Parameters
+    -----------
+    im : np array
+        (m, n, 3) array of Hue, Saturation, Intensity (in this order)
+    thresholds : dict
+        Each entry is a dict containing the keys min and max
+    channels : list
+        names of channels, in order (eg. hue, saturation, intensity)
+    just_threshold : bool
+        if Fase, get_tissue_mask() is used to smooth result and get regions.
+    get_tissue_mask_kwargs : dict
+        key-value pairs of parameters to pass to get_tissue_mask()
+
+    Returns
+    --------
+    np int32 array
+        if not just_threshold, unique values represent unique tissue regions
+    np bool array
+        if not just_threshold, largest contiguous tissue region.
+
+    """
+    if get_tissue_mask_kwargs is None:
+        get_tissue_mask_kwargs = {
+            'n_thresholding_steps': 1,
+            'sigma': 5.0,
+            'min_size': 10,
+        }
+
+    # threshold each channel
+    mask = np.ones(im.shape[:2])
+    for ax, ch in enumerate(channels):
+
+        channel = im[..., ax].copy()
+
+        mask[channel < thresholds[ch]['min']] = 0
+        mask[channel >= thresholds[ch]['max']] = 0
+
+    # smoothing, otsu thresholding then connected components
+    if just_threshold or (np.unique(mask).shape[0] < 1):
+        labeled = mask
+    else:
+        get_tissue_mask_kwargs['deconvolve_first'] = False
+        labeled, mask = get_tissue_mask(mask, **get_tissue_mask_kwargs)
+
+    return labeled, mask
+
+# %%===========================================================================
+
+
+def _get_largest_regions(labeled, top_n=10):
+
+    labeled_im = labeled.copy()
+
+    unique, counts = np.unique(labeled_im[labeled_im > 0], return_counts=True)
+
+    keep = unique[np.argsort(counts)[-top_n:]]
+
+    mask = np.zeros(labeled_im.shape)
+    keep_pixels = np.in1d(labeled_im, keep)
+    keep_pixels = keep_pixels.reshape(labeled_im.shape)
+    mask[keep_pixels] = 1
+    labeled_im[mask == 0] = 0
+
+    return labeled_im
 
 # %%===========================================================================

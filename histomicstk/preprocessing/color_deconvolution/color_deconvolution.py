@@ -1,13 +1,23 @@
+"""Placeholder."""
 from histomicstk.preprocessing import color_conversion
 import histomicstk.utils as utils
 from ._linalg import normalize
 from .complement_stain_matrix import complement_stain_matrix
 import collections
-import numpy
+import numpy as np
+from histomicstk.preprocessing.color_deconvolution.stain_color_map import (
+    stain_color_map)
+from histomicstk.preprocessing.color_deconvolution.find_stain_index import (
+    find_stain_index)
+from histomicstk.preprocessing.color_deconvolution.\
+    rgb_separate_stains_macenko_pca import rgb_separate_stains_macenko_pca
+from histomicstk.preprocessing.color_deconvolution.\
+    rgb_separate_stains_xu_snmf import rgb_separate_stains_xu_snmf
 
 
 def color_deconvolution(im_rgb, w, I_0=None):
-    """Performs color deconvolution.
+    """Perform color deconvolution.
+
     The given RGB Image `I` is first first transformed into optical density
     space, and then projected onto the stain vectors in the columns of the
     3x3 stain matrix `W`.
@@ -54,9 +64,8 @@ def color_deconvolution(im_rgb, w, I_0=None):
     histomicstk.preprocessing.color_conversion.sda_to_rgb
 
     """
-
     # complement stain matrix if needed
-    if numpy.linalg.norm(w[:, 2]) <= 1e-16:
+    if np.linalg.norm(w[:, 2]) <= 1e-16:
         wc = complement_stain_matrix(w)
     else:
         wc = w
@@ -65,7 +74,7 @@ def color_deconvolution(im_rgb, w, I_0=None):
     wc = normalize(wc)
 
     # invert stain matrix
-    Q = numpy.linalg.inv(wc)
+    Q = np.linalg.inv(wc)
 
     # transform 3D input image to 2D RGB matrix format
     m = utils.convert_image_to_matrix(im_rgb)[:3]
@@ -73,7 +82,7 @@ def color_deconvolution(im_rgb, w, I_0=None):
     # transform input RGB to optical density values and deconvolve,
     # tfm back to RGB
     sda_fwd = color_conversion.rgb_to_sda(m, I_0)
-    sda_deconv = numpy.dot(Q, sda_fwd)
+    sda_deconv = np.dot(Q, sda_fwd)
     sda_inv = color_conversion.sda_to_rgb(sda_deconv,
                                           255 if I_0 is not None else None)
 
@@ -81,7 +90,7 @@ def color_deconvolution(im_rgb, w, I_0=None):
     StainsFloat = utils.convert_matrix_to_image(sda_inv, im_rgb.shape)
 
     # transform type
-    Stains = StainsFloat.clip(0, 255).astype(numpy.uint8)
+    Stains = StainsFloat.clip(0, 255).astype(np.uint8)
 
     # return
     Unmixed = collections.namedtuple('Unmixed',
@@ -89,3 +98,171 @@ def color_deconvolution(im_rgb, w, I_0=None):
     Output = Unmixed(Stains, StainsFloat, wc)
 
     return Output
+
+
+def _reorder_stains(W, stains=['hematoxylin', 'eosin']):
+    """Reorder stains in a stain matrix to a specific order.
+
+    This is particularly relevant in macenco where the order of stains is not
+    preserved during stain unmixing, so this method uses
+    histomicstk.preprocessing.color_deconvolution.find_stain_index
+    to reorder the stains matrix to the order provided by this parameter
+
+    Parameters
+    ------------
+    W : np array
+        A 3x3 matrix of stain column vectors.
+    stains : list, optional
+        List of stain names (order is important). Default is H&E.
+
+    Returns
+    ------------
+    np array
+        A re-ordered 3x3 matrix of stain column vectors.
+
+    """
+    assert len(stains) == 2, "Only two-stain matrices are supported for now."
+
+    def _get_channel_order(W):
+        first = find_stain_index(stain_color_map[stains[0]], W)
+        second = 1 - first
+        # If 2 stains, third "stain" is cross product of 1st 2 channels
+        # calculated using complement_stain_matrix()
+        third = 2
+        return first, second, third
+
+    def _ordered_stack(mat, order):
+        return np.stack([mat[..., j] for j in order], -1)
+
+    return _ordered_stack(W, _get_channel_order(W))
+
+
+def stain_unmixing_routine(
+        im_rgb, stains=['hematoxylin', 'eosin'],
+        stain_unmixing_method='macenko_pca',
+        stain_unmixing_params={}, mask_out=None):
+    """Perform stain unmixing using the method of choice (wrapper).
+
+    Parameters
+    ------------
+    im_rgb : array_like
+        An RGB image (m x n x 3) to unmix.
+
+    stains : list, optional
+        List of stain names (order is important). Default is H&E. This is
+        particularly relevant in macenco where the order of stains is not
+        preserved during stain unmixing, so this method uses
+        histomicstk.preprocessing.color_deconvolution.find_stain_index
+        to reorder the stains matrix to the order provided by this parameter
+
+    stain_unmixing_method : str, default is 'macenko_pca'
+        stain unmixing method to use. It should be one of the following
+        'macenko_pca', or 'xu_snmf'.
+
+    stain_unmixing_params : dict, default is an empty dict
+        kwargs to pass as-is to the stain unmixing method.
+
+    mask_out : array_like, default is None
+        if not None, should be (m x n) boolean numpy array.
+        This parameter ensures exclusion of non-masked areas from calculations
+        and normalization. This is relevant because elements like blood,
+        sharpie marker, white space, etc may throw off the normalization.
+
+    Returns
+    --------
+    Wc : array_like
+        A 3x3 complemented stain matrix.
+
+    See Also
+    --------
+    histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca
+    histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf
+
+    References
+    ----------
+    .. [#] Macenko, M., Niethammer, M., Marron, J. S., Borland, D.,
+           Woosley, J. T., Guan, X., ... & Thomas, N. E. (2009, June).
+           A method for normalizing histology slides for quantitative analysis.
+           In Biomedical Imaging: From Nano to Macro, 2009.  ISBI'09.
+           IEEE International Symposium on (pp. 1107-1110). IEEE.
+    .. [#] Xu, J., Xiang, L., Wang, G., Ganesan, S., Feldman, M., Shih, N. N.,
+           ...& Madabhushi, A. (2015). Sparse Non-negative Matrix Factorization
+           (SNMF) based color unmixing for breast histopathological image
+           analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.
+
+    """
+    stain_unmixing_method = stain_unmixing_method.lower()
+
+    if stain_unmixing_method == 'macenko_pca':
+        stain_deconvolution = rgb_separate_stains_macenko_pca
+        stain_unmixing_params['I_0'] = None
+        stain_unmixing_params['mask_out'] = mask_out
+
+    elif stain_unmixing_method == 'xu_snmf':
+        stain_deconvolution = rgb_separate_stains_xu_snmf
+        stain_unmixing_params['I_0'] = None
+        assert mask_out is None, "Masking is not yet implemented in xu_snmf."
+
+    else:
+        raise ValueError("Unknown/Unimplemented deconvolution method.")
+
+    # get W_source
+    W_source = stain_deconvolution(im_rgb, **stain_unmixing_params)
+
+    # If Macenco method, reorder channels in W_target and W_source as desired.
+    # This is actually a necessary step in macenko's method since we're
+    # not guaranteed the order of the different stains.
+    if stain_unmixing_method == 'macenko_pca':
+        W_source = _reorder_stains(W_source, stains=stains)
+
+    return W_source
+
+
+def color_deconvolution_routine(
+        im_rgb, W_source=None, mask_out=None, **kwargs):
+    """Unmix stains mixing followed by deconvolution (wrapper).
+
+    Parameters
+    ------------
+    im_rgb : array_like
+        An RGB image (m x n x 3) to color normalize
+
+    W_source : np array, default is None
+        A 3x3 matrix of source stain column vectors. Only provide this
+        if you know the stains matrix in advance (unlikely) and would
+        like to perform supervised deconvolution. If this is not provided,
+        stain_unmixing_routine() is used to estimate W_source.
+
+    mask_out : array_like, default is None
+        if not None, should be (m x n) boolean numpy array.
+        This parameter ensures exclusion of non-masked areas from calculations
+        and stain matrix. This is relevant because elements like blood,
+        sharpie marker, white space, cannot be modeled as a mix of two stains.
+
+    kwargs : k,v pairs
+        Passed as-is to stain_unmixing_routine() if W_source is None.
+
+    Returns
+    --------
+    Output from color_deconvolution()
+
+    See Also
+    --------
+    histomicstk.preprocessing.color_deconvolution.stain_unmixing_routine
+    histomicstk.preprocessing.color_deconvolution.color_deconvolution
+
+    """
+    # get W_source if not provided
+    if W_source is None:
+        W_source = stain_unmixing_routine(im_rgb, mask_out=mask_out, **kwargs)
+
+    # deconvolve
+    Stains, StainsFloat, wc = color_deconvolution(im_rgb, w=W_source, I_0=None)
+
+    # mask out (keep in mind, image is inverted)
+    if mask_out is not None:
+        for i in range(3):
+            Stains[..., i][mask_out] = 255
+            StainsFloat[..., i][mask_out] = 255.
+
+    return Stains, StainsFloat, wc

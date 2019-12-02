@@ -1,3 +1,4 @@
+"""Placeholder."""
 import histomicstk.utils as utils
 from . import _linalg as linalg
 from .complement_stain_matrix import complement_stain_matrix
@@ -5,11 +6,10 @@ from .complement_stain_matrix import complement_stain_matrix
 import numpy
 
 
-def separate_stains_macenko_pca(im_sda, minimum_magnitude=16,
-                                min_angle_percentile=0.01,
-                                max_angle_percentile=0.99):
-    """Compute the stain matrix for color deconvolution with the PCA-based
-    "Macenko" method.
+def separate_stains_macenko_pca(
+        im_sda, minimum_magnitude=16, min_angle_percentile=0.01,
+        max_angle_percentile=0.99, mask_out=None):
+    """Compute the stain matrix for color deconvolution with the Macenko method.
 
     For a two-stain image or matrix in SDA space, this method works by
     computing a best-fit plane with PCA, wherein it selects the stain
@@ -24,14 +24,19 @@ def separate_stains_macenko_pca(im_sda, minimum_magnitude=16,
         The magnitude below which vectors will be excluded from the computation
         of the angle distribution.
 
-        The default is based on the paper value of 0.15, adjusted for our method
-        of calculating SDA, thus 0.15 * 255 * log(10)/log(255)
+        The default is based on the paper value of 0.15, adjusted for our
+        method of calculating SDA, thus 0.15 * 255 * log(10)/log(255)
     min_angle_percentile : float
         The smaller percentile of one of the vectors to pick from the angle
         distribution
     max_angle_percentile : float
         The larger percentile of one of the vectors to pick from the angle
         distribution
+    mask_out : array_like
+        if not None, should be (m, n) boolean numpy array.
+        This parameter ensures exclusion of non-masked areas from calculations.
+        This is relevant because elements like blood, sharpie marker,
+        white space, etc may throw off the normalization somewhat.
 
     Returns
     -------
@@ -62,7 +67,18 @@ def separate_stains_macenko_pca(im_sda, minimum_magnitude=16,
 
     """
     # Image matrix
-    m = utils.exclude_nonfinite(utils.convert_image_to_matrix(im_sda))
+    m = utils.convert_image_to_matrix(im_sda)
+
+    # mask out irrelevant values
+    if mask_out is not None:
+        keep_mask = numpy.equal(mask_out[..., None], False)
+        keep_mask = numpy.tile(keep_mask, (1, 1, 3))
+        keep_mask = utils.convert_image_to_matrix(keep_mask)
+        m = m[:, keep_mask.all(axis=0)]
+
+    # get rid of NANs and infinities
+    m = utils.exclude_nonfinite(m)
+
     # Principal components matrix
     pcs = linalg.get_principal_components(m)
     # Input pixels projected into the PCA plane
@@ -81,14 +97,15 @@ def separate_stains_macenko_pca(im_sda, minimum_magnitude=16,
     max_v = get_percentile_vector(max_angle_percentile)
 
     # The stain matrix
-    w = complement_stain_matrix(linalg.normalize(numpy.array([min_v, max_v]).T))
+    w = complement_stain_matrix(linalg.normalize(
+        numpy.array([min_v, max_v]).T))
     return w
 
 
 def _get_angles(m):
-    """Take a 2xN matrix of vectors and return a length-N array of an
-    angle-like quantity.
+    """Take a 2xN matrix of vectors and return a length-N array of an.
 
+    ... angle-like quantity.
     Since this is an internal function, we assume that the values
     result from PCA, and so the second element of the vectors captures
     secondary variation -- and thus is the one that takes on both
@@ -101,10 +118,7 @@ def _get_angles(m):
 
 
 def argpercentile(arr, p):
-    """Calculate the index in arr of the element nearest the pth
-    percentile.
-
-    """
+    """Calculate index in arr of element nearest the pth percentile."""
     # Index corresponding to percentile
     i = int(p * arr.size + 0.5)
     return numpy.argpartition(arr, i)[i]
