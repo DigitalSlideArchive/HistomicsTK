@@ -187,6 +187,14 @@
   with_items:
     - requirements_dev.txt
 
+# Downgrade cheroot
+- name: Downgrade cheroot version to work with older CherryPy.
+  pip:
+    name: "cheroot<8"
+    state: present
+  become: true
+
+
 # Always have a build directory
 - name: Ensure build directory exists
   file:
