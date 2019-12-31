@@ -35,4 +35,4 @@ RUN cd $htk_path && \
     done && \
     ls -l /io/wheelhouse && \
     mkdir /io/wheels && \
-    cp /io/wheelhouse/histomicstk*many* /io/wheels/. 
+    cp /io/wheelhouse/histomicstk*many*2010* /io/wheels/.
