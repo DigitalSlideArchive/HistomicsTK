@@ -21,14 +21,14 @@
     extra_args: --force-reinstall --ignore-installed --no-cache-dir -f https://girder.github.io/large_image_wheels
   become: true
 
-- name: Allow bundled executables to be run directly
-  shell: "ln -s `python -c 'import os,sys,{{ item }};sys.stdout.write(os.path.dirname({{ item }}.__file__))'`/bin/* /usr/local/bin/."
-  loop:
-    - libtiff
-    - glymur
-    - openslide
-    - osgeo
-    - mapnik
-    - pyvips
-    - pyproj
-  become: true
+# - name: Allow bundled executables to be run directly
+#   shell: "ln -s `python -c 'import os,sys,{{ item }};sys.stdout.write(os.path.dirname({{ item }}.__file__))'`/bin/* /usr/local/bin/."
+#   loop:
+#     - libtiff
+#     - glymur
+#     - openslide
+#     - osgeo
+#     - mapnik
+#     - pyvips
+#     - pyproj
+#   become: true

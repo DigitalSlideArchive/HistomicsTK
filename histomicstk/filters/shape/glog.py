@@ -4,7 +4,7 @@ from skimage import morphology
 
 
 def glog(im_input, alpha=1,
-         range=np.linspace(1.5, 3, np.round((3 - 1.5) / 0.2) + 1),
+         range=np.linspace(1.5, 3, int(np.round((3 - 1.5) / 0.2)) + 1),
          theta=np.pi/4, tau=0.6, eps=0.6):
     """Performs generalized Laplacian of Gaussian blob detection.
 
