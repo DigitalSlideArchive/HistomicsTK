@@ -22,6 +22,13 @@ pathologists/biologists interested in using state-of-the-art algorithms
 to analyze their data, and algorithm researchers interested in developing
 new/improved algorithms and disseminate them for wider use by the community.
 
+You may view the following introductory videos for more information about
+DSA and HistomicsTK:
+
+- General overview: https://www.youtube.com/watch?v=NenUKZaT--k
+
+- Simple annotation and data management tutorial: https://www.youtube.com/watch?v=HTvLMyKYyGs
+
 HistomicsTK can be used in two ways:
 
 - **As a pure Python package**: This is intended to enable algorithm
