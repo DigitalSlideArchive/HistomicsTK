@@ -73,18 +73,23 @@ var DrawWidget = Panel.extend({
         this.$('[data-toggle="tooltip"]').tooltip('destroy');
         if (!this.viewer) {
             this.$el.empty();
+            delete this._skipRenderHTML;
             return;
         }
         const name = (this.annotation.get('annotation') || {}).name || 'Untitled';
         this.trigger('h:redraw', this.annotation);
-        this.$el.html(drawWidget({
-            title: 'Draw',
-            elements: this.collection.models,
-            groups: this._groups,
-            style: this._style.id,
-            highlighted: this._highlighted,
-            name
-        }));
+        if (this._skipRenderHTML) {
+            delete this._skipRenderHTML;
+        } else {
+            this.$el.html(drawWidget({
+                title: 'Draw',
+                elements: this.collection.models,
+                groups: this._groups,
+                style: this._style.id,
+                highlighted: this._highlighted,
+                name
+            }));
+        }
         if (this._drawingType) {
             this.$('button.h-draw[data-type="' + this._drawingType + '"]').addClass('active');
             this.drawElement(undefined, this._drawingType);
@@ -143,7 +148,16 @@ var DrawWidget = Panel.extend({
      * the EditAnnotation modal dialog.
      */
     editElement(evt) {
-        editElement(this.collection.get(this._getId(evt)));
+        var dialog = editElement(this.collection.get(this._getId(evt)));
+        this.listenTo(dialog, 'h:editElement', (obj) => {
+            // update the html immediately instead of rerendering it
+            let id = obj.element.id,
+                label = (obj.data.label || {}).value,
+                elemType = obj.element.get('type');
+            label = label || (elemType === 'polyline' ? (obj.element.get('closed') ? 'polygon' : 'line') : elemType);
+            this.$(`.h-element[data-id="${id}"] .h-element-label`).text(label).attr('title', label);
+            this._skipRenderHTML = true;
+        });
     },
 
     /**
@@ -151,7 +165,10 @@ var DrawWidget = Panel.extend({
      * the element from the element collection.
      */
     deleteElement(evt) {
-        this.collection.remove(this._getId(evt));
+        let id = this._getId(evt);
+        this.$(`.h-element[data-id="${id}"]`).remove();
+        this._skipRenderHTML = true;
+        this.collection.remove(id);
     },
 
     /**

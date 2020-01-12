@@ -12,7 +12,7 @@ hash_alg: "bcrypt"
 bcrypt_rounds: 12
 
 [database]
-uri: "mongodb://{{ mongo_private_ip }}:27017/{{ mongo_girder_database }}"
+uri: "mongodb://{{ mongo_private_ip }}:27017/{{ mongo_girder_database }}?socketTimeoutMS=3600000"
 replica_set: None
 
 [server]

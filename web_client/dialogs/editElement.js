@@ -65,6 +65,7 @@ var EditElement = View.extend({
             return;
         }
 
+        this.trigger('h:editElement', {element: this.annotationElement, data: data});
         this.annotationElement.set(data);
         this.$el.modal('hide');
     },
