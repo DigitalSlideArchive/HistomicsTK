@@ -15,7 +15,7 @@ HistomicsTK |build-status| |codecov-io| |gitter|
    :alt: Join the chat at https://gitter.im/DigitalSlideArchive/HistomicsTK
 
 HistomicsTK is a Python and REST API for the analysis of Histopathology images
-in association with clinical and genomic data.
+in association with clinical and genomic data. 
 
 Histopathology, which involves the examination of thin-slices of diseased
 tissue at a cellular resolution using a microscope, is regarded as the gold
@@ -34,6 +34,13 @@ Developed in coordination with the `Digital Slide Archive`_ and
 pathologists/biologists interested in using state-of-the-art algorithms
 to analyze their data, and algorithm researchers interested in developing
 new/improved algorithms and disseminate them for wider use by the community.
+
+You may view the following introductory videos for more information about
+DSA and HistomicsTK:
+
+- General overview: https://www.youtube.com/watch?v=NenUKZaT--k
+
+- Simple annotation and data management tutorial: https://www.youtube.com/watch?v=HTvLMyKYyGs
 
 HistomicsTK can be used in two ways:
 
