@@ -419,6 +419,75 @@ def _visualize_annotations_on_rgb(rgb, ROI, contours_list, linewidth=0.2):
 # %% =====================================================================
 
 
+def _get_roi_bounds_by_run_mode(
+        gc, slide_id, mode, element_infos, idx_for_roi, sf):
+
+    if mode == 'polygonal_bounds':
+        # get bounds based on specified polygonal/rotated roi
+        elinfo = element_infos.loc[idx_for_roi]
+        bounds = {
+            'XMIN': int(elinfo['xmin'] / sf),
+            'XMAX': int(elinfo['xmax'] / sf),
+            'YMIN': int(elinfo['ymin'] / sf),
+            'YMAX': int(elinfo['ymax'] / sf),
+        }
+
+    elif mode == 'manual_bounds':
+        assert (bounds['XMAX'] > bounds['XMIN']) and (
+            bounds['YMAX'] > bounds['YMIN'])
+
+    elif mode == 'min_bounding_box':
+        # get minimum box for all annotations in slide
+        bounds = {
+            'XMIN': int(np.min(element_infos.xmin) / sf),
+            'YMIN': int(np.min(element_infos.ymin) / sf),
+            'XMAX': int(np.max(element_infos.xmax) / sf),
+            'YMAX': int(np.max(element_infos.ymax) / sf),
+        }
+    else:
+        # get scaled up/down version of mask of whole slide
+        slide_info = gc.get("/item/%s/tiles" % slide_id)
+        bounds = {
+            'XMIN': 0,
+            'XMAX': slide_info['sizeX'],
+            'YMIN': 0,
+            'YMAX': slide_info['sizeY'],
+        }
+
+    return bounds
+
+
+def _get_rgb_and_pad_roi(gc, slide_id, bounds, appendStr, ROI):
+
+    getStr = \
+        "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
+        % (slide_id,
+           bounds['XMIN'], bounds['XMAX'],
+           bounds['YMIN'], bounds['YMAX'])
+    getStr += appendStr
+    resp = gc.get(getStr, jsonResp=False)
+    rgb = get_image_from_htk_response(resp)
+
+    # sometimes there's a couple of pixel difference d.t. rounding, so pad
+    pad_y = rgb.shape[0] - ROI.shape[0]
+    pad_x = rgb.shape[1] - ROI.shape[1]
+    assert all([np.abs(j) < 4 for j in (pad_y, pad_x)]), \
+        "too much difference in size between image and mask."\
+        "something is wrong!"
+
+    if pad_y > 0:
+        ROI = np.pad(ROI, pad_width=((0, pad_y), (0, 0)), mode='constant')
+    elif pad_y < 0:
+        ROI = ROI[:pad_y, :]
+
+    if pad_x > 0:
+        ROI = np.pad(ROI, pad_width=((0, 0), (0, pad_x)), mode='constant')
+    elif pad_x < 0:
+        ROI = ROI[:, :pad_x]
+
+    return rgb, ROI
+
+
 def get_image_and_mask_from_slide(
         gc, slide_id, GTCodes_dict,
         MPP=5.0, MAG=None, mode='min_bounding_box',
@@ -576,39 +645,9 @@ def get_image_and_mask_from_slide(
     # Detemine get region based on run mode, keeping in mind that it
     # must be at BASE MAGNIFICATION coordinates before it is passed
     # on to get_mask_from_slide()
-
-    if mode == 'polygonal_bounds':
-        # get bounds based on specified polygonal/rotated roi
-        elinfo = element_infos.loc[idx_for_roi]
-        bounds = {
-            'XMIN': int(elinfo['xmin'] / sf),
-            'XMAX': int(elinfo['xmax'] / sf),
-            'YMIN': int(elinfo['ymin'] / sf),
-            'YMAX': int(elinfo['ymax'] / sf),
-        }
-
-    elif mode == 'manual_bounds':
-        assert (bounds['XMAX'] > bounds['XMIN']) and (
-            bounds['YMAX'] > bounds['YMIN'])
-
-    elif mode == 'min_bounding_box':
-        # get minimum box for all annotations in slide
-        bounds = {
-            'XMIN': int(np.min(element_infos.xmin) / sf),
-            'YMIN': int(np.min(element_infos.ymin) / sf),
-            'XMAX': int(np.max(element_infos.xmax) / sf),
-            'YMAX': int(np.max(element_infos.ymax) / sf),
-        }
-    else:
-        # get scaled up/down version of mask of whole slide
-        slide_info = gc.get("/item/%s/tiles" % slide_id)
-        bounds = {
-            'XMIN': 0,
-            'XMAX': slide_info['sizeX'],
-            'YMIN': 0,
-            'YMAX': slide_info['sizeY'],
-        }
-
+    bounds = _get_roi_bounds_by_run_mode(
+        gc=gc, slide_id=slide_id, mode=mode, element_infos=element_infos,
+        idx_for_roi=idx_for_roi, sf=sf)
     result = {'bounds': bounds, }
 
     # get mask for specified area
@@ -627,36 +666,13 @@ def get_image_and_mask_from_slide(
 
     # get RGB
     if get_rgb:
-        getStr = \
-            "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
-            % (slide_id,
-               bounds['XMIN'], bounds['XMAX'],
-               bounds['YMIN'], bounds['YMAX'])
-        getStr += appendStr
-        resp = gc.get(getStr, jsonResp=False)
-        rgb = get_image_from_htk_response(resp)
-
-        # sometimes there's a couple of pixel difference d.t. rounding, so pad
-        pad_y = rgb.shape[0] - ROI.shape[0]
-        pad_x = rgb.shape[1] - ROI.shape[1]
-        assert all([np.abs(j) < 4 for j in (pad_y, pad_x)]), \
-            "too much difference in size between image and mask."\
-            "something is wrong!"
-
-        if pad_y > 0:
-            ROI = np.pad(ROI, pad_width=((0, pad_y), (0, 0)), mode='constant')
-        elif pad_y < 0:
-            ROI = ROI[:pad_y, :]
-
-        if pad_x > 0:
-            ROI = np.pad(ROI, pad_width=((0, 0), (0, pad_x)), mode='constant')
-        elif pad_x < 0:
-            ROI = ROI[:, :pad_x]
-
-    # pack result
-    result['ROI'] = ROI
-    if get_rgb:
+        rgb, ROI = _get_rgb_and_pad_roi(
+            gc=gc, slide_id=slide_id, bounds=bounds,
+            appendStr=appendStr, ROI=ROI)
         result['rgb'] = rgb
+
+    # pack result (we have to do it here in case of padding)
+    result['ROI'] = ROI
 
     # get contours
     if get_contours:
