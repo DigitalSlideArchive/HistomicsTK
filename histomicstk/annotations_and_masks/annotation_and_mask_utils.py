@@ -56,6 +56,9 @@ def scale_slide_annotations(slide_annotations, sf):
     ---------
     list of dicts
     """
+    if sf == 1.0:
+        return slide_annotations
+
     for annidx, ann in enumerate(slide_annotations):
         for elementidx, element in enumerate(ann['annotation']['elements']):
             for key in element.keys():

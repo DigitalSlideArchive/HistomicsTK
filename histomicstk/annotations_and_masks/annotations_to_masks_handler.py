@@ -419,6 +419,47 @@ def _visualize_annotations_on_rgb(rgb, ROI, contours_list, linewidth=0.2):
 # %% =====================================================================
 
 
+def _sanity_checks(
+        MPP, MAG, mode, bounds, idx_for_roi, get_roi_mask_kwargs,
+        get_rgb, get_contours, get_visualization):
+
+    # MPP precedes MAG
+    if all([j is not None for j in (MPP, MAG)]):
+        MAG = None
+
+    # some sanity checks
+
+    for mf in (MPP, MAG):
+        if mf is not None:
+            assert mf > 0, "MPP or MAG must be positive."
+
+    if mode in ['wsi', 'min_bounding_box']:
+        bounds = None
+        idx_for_roi = None
+
+    if idx_for_roi is not None:
+        mode = 'polygonal_bounds'
+    elif bounds is not None:
+        mode = 'manual_bounds'
+
+    assert mode in [
+        'wsi', 'min_bounding_box', 'manual_bounds', 'polygonal_bounds'], \
+        "mode %s not recognized" % mode
+
+    if get_visualization:
+        get_contours = True
+        assert get_rgb, "cannot get visualization without rgb."
+
+    if not get_roi_mask_kwargs['crop_to_roi']:
+        assert ((not get_rgb) and (not get_visualization)), \
+            "Handling overflowing annotations while also getting RGB is" \
+            "not currently supported."
+
+    return (
+        MPP, MAG, mode, bounds, idx_for_roi, get_roi_mask_kwargs,
+        get_rgb, get_contours, get_visualization)
+
+
 def _get_roi_bounds_by_run_mode(
         gc, slide_id, mode, bounds, element_infos, idx_for_roi, sf):
 
@@ -592,37 +633,11 @@ def get_image_and_mask_from_slide(
         - visualization: (mxnx3 np array) visualization overlay
 
     """
-    # MPP precedes MAG
-    if all([j is not None for j in (MPP, MAG)]):
-        MAG = None
-
-    # some sanity checks
-
-    for mf in (MPP, MAG):
-        if mf is not None:
-            assert mf > 0, "MPP or MAG must be positive."
-
-    if mode in ['wsi', 'min_bounding_box']:
-        bounds = None
-        idx_for_roi = None
-
-    if idx_for_roi is not None:
-        mode = 'polygonal_bounds'
-    elif bounds is not None:
-        mode = 'manual_bounds'
-
-    assert mode in [
-        'wsi', 'min_bounding_box', 'manual_bounds', 'polygonal_bounds'], \
-        "mode %s not recognized" % mode
-
-    if get_visualization:
-        get_contours = True
-        assert get_rgb, "cannot get visualization without rgb."
-
-    if not get_roi_mask_kwargs['crop_to_roi']:
-        assert ((not get_rgb) and (not get_visualization)), \
-            "Handling overflowing annotations while also getting RGB is" \
-            "not currently supported."
+    # important sanity checks
+    (MPP, MAG, mode, bounds, idx_for_roi, get_roi_mask_kwargs,
+     get_rgb, get_contours, get_visualization) = _sanity_checks(
+             MPP, MAG, mode, bounds, idx_for_roi, get_roi_mask_kwargs,
+             get_rgb, get_contours, get_visualization)
 
     # calculate the scale factor
     sf, appendStr = get_scale_factor_and_appendStr(
@@ -635,9 +650,7 @@ def get_image_and_mask_from_slide(
         slide_annotations = gc.get('/annotation/item/' + slide_id)
 
         # scale up/down annotations by a factor
-        if sf != 1.0:
-            slide_annotations = scale_slide_annotations(
-                    slide_annotations, sf=sf)
+        slide_annotations = scale_slide_annotations(slide_annotations, sf=sf)
 
         # get bounding box information for all annotations -> scaled by sf
         element_infos = get_bboxes_from_slide_annotations(slide_annotations)
