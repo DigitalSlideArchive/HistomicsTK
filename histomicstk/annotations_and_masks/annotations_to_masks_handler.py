@@ -527,6 +527,7 @@ def get_image_and_mask_from_slide(
         MAG = None
 
     # some sanity checks
+
     for mf in (MPP, MAG):
         if mf is not None:
             assert mf > 0, "MPP or MAG must be positive."
@@ -547,6 +548,11 @@ def get_image_and_mask_from_slide(
     if get_visualization:
         get_contours = True
         assert get_rgb, "cannot get visualization without rgb."
+
+    if not get_roi_mask_kwargs['crop_to_roi']:
+        assert ((not get_rgb) and (not get_visualization)), \
+            "Handling overflowing annotations while also getting RGB is" \
+            "not currently supported."
 
     # calculate the scale factor
     sf, appendStr = get_scale_factor_and_appendStr(
