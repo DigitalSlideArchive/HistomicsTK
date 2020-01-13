@@ -8,7 +8,7 @@ Created on Mon Aug 12 18:33:48 2019.
 
 import os
 import numpy as np
-from pandas import read_csv, DataFrame
+from pandas import DataFrame
 from imageio import imwrite
 from shapely.geometry.polygon import Polygon
 import matplotlib.pylab as plt
@@ -208,6 +208,7 @@ def get_roi_mask(
     return ROI, roiinfo
 
 # %% =====================================================================
+
 
 def get_mask_from_slide(
         gc, slide_id, GTCodes_dict, roiinfo, slide_annotations,
