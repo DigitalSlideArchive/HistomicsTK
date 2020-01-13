@@ -166,13 +166,6 @@ add_histomicstk_python_test(annotation_and_mask_utils BIND_SERVER
   "plugins/HistomicsTK/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs_annotations.json"
 )
 
-add_histomicstk_python_test(annotations_to_masks_handler BIND_SERVER
-  # Work around CMake bug when using the same image multiple times
-  # EXTERNAL_DATA
-  # "plugins/HistomicsTK/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs"
-  # "plugins/HistomicsTK/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs_annotations.json"
-)
-
 # front-end tests
 
 add_web_client_test(
