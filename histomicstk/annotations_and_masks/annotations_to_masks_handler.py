@@ -420,7 +420,7 @@ def _visualize_annotations_on_rgb(rgb, ROI, contours_list, linewidth=0.2):
 
 
 def _get_roi_bounds_by_run_mode(
-        gc, slide_id, mode, element_infos, idx_for_roi, sf):
+        gc, slide_id, mode, bounds, element_infos, idx_for_roi, sf):
 
     if mode == 'polygonal_bounds':
         # get bounds based on specified polygonal/rotated roi
@@ -646,8 +646,8 @@ def get_image_and_mask_from_slide(
     # must be at BASE MAGNIFICATION coordinates before it is passed
     # on to get_mask_from_slide()
     bounds = _get_roi_bounds_by_run_mode(
-        gc=gc, slide_id=slide_id, mode=mode, element_infos=element_infos,
-        idx_for_roi=idx_for_roi, sf=sf)
+        gc=gc, slide_id=slide_id, mode=mode, bounds=bounds,
+        element_infos=element_infos, idx_for_roi=idx_for_roi, sf=sf)
     result = {'bounds': bounds, }
 
     # get mask for specified area
