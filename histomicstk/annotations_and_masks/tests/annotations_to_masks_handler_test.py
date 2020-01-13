@@ -164,7 +164,7 @@ class GetSlideRegion(unittest.TestCase):
 
         # get specified region -- without providing scaled annotations
         roi_out_1 = get_image_and_mask_from_slide(
-                mode='manual_bounds', **get_kwargs)
+            mode='manual_bounds', **get_kwargs)
 
         # get specified region -- with providing scaled annotations
         roi_out_2 = get_image_and_mask_from_slide(

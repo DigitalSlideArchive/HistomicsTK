@@ -214,6 +214,7 @@ def get_mask_from_slide(
         gc, slide_id, GTCodes_dict, roiinfo, slide_annotations,
         element_infos, sf=1.0, get_roi_mask_kwargs=dict()):
     """Parse region from the slide and get its corresponding labeled mask.
+
     This is a wrapper around get_roi_mask() which should be referred to for
     implementation details. If roiinfo is None, all annotations in the slide
     are parsed into labeled image (mask) form. Otherwise, the bounding box
@@ -537,6 +538,7 @@ def get_image_and_mask_from_slide(
         get_roi_mask_kwargs=dict(), get_contours_kwargs=dict(), linewidth=0.2,
         get_rgb=True, get_contours=True, get_visualization=True):
     """Parse region from the slide and get its corresponding labeled mask.
+
     This is a wrapper around get_roi_mask() which should be referred to for
     implementation details.
 
@@ -636,8 +638,8 @@ def get_image_and_mask_from_slide(
     # important sanity checks
     (MPP, MAG, mode, bounds, idx_for_roi, get_roi_mask_kwargs,
      get_rgb, get_contours, get_visualization) = _sanity_checks(
-             MPP, MAG, mode, bounds, idx_for_roi, get_roi_mask_kwargs,
-             get_rgb, get_contours, get_visualization)
+        MPP, MAG, mode, bounds, idx_for_roi, get_roi_mask_kwargs,
+        get_rgb, get_contours, get_visualization)
 
     # calculate the scale factor
     sf, appendStr = get_scale_factor_and_appendStr(

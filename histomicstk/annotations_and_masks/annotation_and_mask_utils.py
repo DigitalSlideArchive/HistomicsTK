@@ -55,6 +55,7 @@ def scale_slide_annotations(slide_annotations, sf):
     Returns
     ---------
     list of dicts
+
     """
     if sf == 1.0:
         return slide_annotations
