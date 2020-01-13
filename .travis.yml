@@ -148,7 +148,7 @@ script:
   - make -j 5
   - JASMINE_TIMEOUT=15000 ctest -VV -j 3
   - cd $main_path
-  - travis-sphinx build --source=$main_path/docs
+  - if [ ${TRAVIS_PYTHON_VERSION:0:3} == "3.6" ]; then travis-sphinx build --source=$main_path/docs; fi
 
 after_failure:
   # On failures, show the worker output and other information
