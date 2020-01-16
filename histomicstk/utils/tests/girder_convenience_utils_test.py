@@ -5,7 +5,7 @@ import tempfile
 import shutil
 
 from histomicstk.utils.girder_convenience_utils import (
-    connect_to_api, get_items, backup_annotation_jsons)
+    connect_to_api, backup_annotation_jsons)
 
 # %%===========================================================================
 # Constants & prep work
