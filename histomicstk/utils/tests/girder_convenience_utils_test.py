@@ -11,7 +11,7 @@ from histomicstk.utils.girder_convenience_utils import (
 # Constants & prep work
 
 APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-APIKEY ='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb'
+APIKEY = 'kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb'
 
 SAMPLE_FOLDER_ID = "5d9246f6bd4404c6b1faaa89"
 SAMPLE_SLIDE_ID = '5d586d57bd4404c6b1f28640'
