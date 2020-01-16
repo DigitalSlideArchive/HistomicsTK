@@ -61,8 +61,6 @@ format_to_dtype = {
 # and let vips expand as it adds images.
 # Something like here: https://github.com/libvips/pyvips/issues/109
 
-
-
 n_tiles = len(TILE_PATHS)
 n_mosaics = int(np.ceil(n_tiles / (TILES_PER_ROW * TILES_PER_COLUMN)))
 
