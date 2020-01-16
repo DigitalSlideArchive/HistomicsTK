@@ -30,7 +30,6 @@ def backup_annotation_jsons(gc, folderid, local):
 
     Parameters
     -----------
-
     gc : object
         girder client object
 
@@ -39,6 +38,7 @@ def backup_annotation_jsons(gc, folderid, local):
 
     local : str
         local path to dump annotations
+
     """
     print("\n== Dumping results to:", local, " ==\n")
 
