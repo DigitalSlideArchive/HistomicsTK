@@ -93,4 +93,6 @@ def backup_annotation_jsons(
         os.mkdir(new_folder)
 
         # call self
-        backup_annotation_jsons(gc, folder['_id'], new_folder)
+        backup_annotation_jsons(
+            gc, folder['_id'], new_folder,
+            callback=callback, callback_kwargs=callback_kwargs)
