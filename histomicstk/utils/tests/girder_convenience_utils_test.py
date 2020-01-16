@@ -32,7 +32,13 @@ class GirderConvenienceTest(unittest.TestCase):
         gc = connect_to_api(APIURL, apikey=APIKEY)
 
         savepath = tempfile.mkdtemp()
-        backup_annotation_jsons(gc, folderid=SAMPLE_FOLDER_ID, local=savepath)
+
+        def dummy(annotations, local, printme=''):
+            print(printme)
+
+        backup_annotation_jsons(
+            gc, folderid=SAMPLE_FOLDER_ID, local=savepath,
+            callback=dummy, callback_kwargs={'printme': "callback works!"})
 
         self.assertGreater(len(os.listdir(savepath)), 0)
 
