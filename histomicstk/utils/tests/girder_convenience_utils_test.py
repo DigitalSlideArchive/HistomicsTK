@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import unittest
-# import os
-# import girder_client
+import os
+import tempfile
+import shutil
 
 from histomicstk.utils.girder_convenience_utils import (
     connect_to_api, get_items, backup_annotation_jsons)
@@ -9,8 +10,10 @@ from histomicstk.utils.girder_convenience_utils import (
 # %%===========================================================================
 # Constants & prep work
 
-APIURL = 'http://candygram5.neurology.emory.edu:8080/api/v1/'
-SAMPLE_FOLDER_ID = "59a5c4e692ca9a00174d77d7"
+APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
+APIKEY ='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb'
+
+SAMPLE_FOLDER_ID = "5d9246f6bd4404c6b1faaa89"
 SAMPLE_SLIDE_ID = '5d586d57bd4404c6b1f28640'
 
 # %%===========================================================================
@@ -21,11 +24,23 @@ class GirderConvenienceTest(unittest.TestCase):
 
     def test_connect_to_api(self):
         """Test get_image_from_htk_response."""
-        pass
+        gc = connect_to_api(APIURL, apikey=APIKEY)
+        self.assertEqual(gc.urlBase, APIURL)
+
+    def backup_annotation_jsons(self):
+        """Test get_image_from_htk_response."""
+        gc = connect_to_api(APIURL, apikey=APIKEY)
+
+        savepath = tempfile.mkdtemp()
+        backup_annotation_jsons(gc, folderid=SAMPLE_FOLDER_ID, local=savepath)
+
+        self.assertGreater(len(os.listdir(savepath)), 0)
+
+        # cleanup
+        shutil.rmtree(savepath)
 
 # %%===========================================================================
 
 
-# if __name__ =
-# = '__main__':
-#     unittest.main()
+if __name__ == '__main__':
+    unittest.main()
