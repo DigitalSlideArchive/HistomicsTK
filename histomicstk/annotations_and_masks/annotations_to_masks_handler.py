@@ -343,7 +343,10 @@ def get_mask_from_slide(
     roi_codes = list(GTCodes.loc[GTCodes.loc[:, 'is_roi'] == 1, "GT_code"])
     bck_code = GTCodes.loc[
         GTCodes.loc[:, 'is_background_class'] == 1, "GT_code"]
-    bck_code = int(bck_code.iloc[0])
+    if bck_code.shape[0] > 0:
+        bck_code = int(bck_code.iloc[0])
+    else:
+        bck_code = 0
 
     # add to gtcodes dataframe
     assert np.max(GTCodes.loc[:, 'GT_code']) < 255
