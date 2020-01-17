@@ -226,10 +226,10 @@ def parse_slide_annotations_into_tables(slide_annotations):
         - element_details
 
     Pandas DataFrame
-        The columns annidx and elementidx encode the
-        dict index of annotation document and element, respectively, in the
-        original slide_annotations list of dictionaries. It has the
-        following columns:
+        The individual annotation elements (polygons, points, rectangles).
+        The columns annidx and elementidx encode the dict index of annotation
+        document and element, respectively, in the original slide_annotations
+        list of dictionaries. It has the following columns:
         - annidx
         - annotation_girder_id
         - elementidx
@@ -296,7 +296,7 @@ def parse_slide_annotations_into_tables(slide_annotations):
             element_infos.loc[elno, 'annotation_girder_id'] = ann['_id']
             element_infos.loc[elno, 'elementidx'] = elementidx
             element_infos.loc[elno, 'element_girder_id'] = element['id']
-            element_infos.loc[elno, 'color'] = element['lineColor']
+            element_infos.loc[elno, 'color'] = str(element['lineColor'])
 
             # get bounds
             if element['type'] == 'polyline':
@@ -333,15 +333,16 @@ def parse_slide_annotations_into_tables(slide_annotations):
 
             # add group or infer from label
             if 'group' in element.keys():
-                element_infos.loc[elno, 'group'] = element['group']
+                element_infos.loc[elno, 'group'] = str(element['group'])
             elif 'label' in element.keys():
-                element_infos.loc[elno, 'group'] = element['label']['value']
+                element_infos.loc[elno, 'group'] = str(
+                    element['label']['value'])
 
-            element_infos.loc[elno, 'type'] = element['type']
-            element_infos.loc[elno, 'xmin'] = xmin
-            element_infos.loc[elno, 'xmax'] = xmax
-            element_infos.loc[elno, 'ymin'] = ymin
-            element_infos.loc[elno, 'ymax'] = ymax
+            element_infos.loc[elno, 'type'] = str(element['type'])
+            element_infos.loc[elno, 'xmin'] = int(xmin)
+            element_infos.loc[elno, 'xmax'] = int(xmax)
+            element_infos.loc[elno, 'ymin'] = int(ymin)
+            element_infos.loc[elno, 'ymax'] = int(ymax)
             element_infos.loc[elno, 'bbox_area'] = int(
                 (ymax - ymin) * (xmax - xmin))
             element_infos.loc[elno, 'coords_x'] = x_coords
