@@ -195,7 +195,7 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 # %%===========================================================================
 
 
-def parse_slide_annotations_into_table(slide_annotations):
+def parse_slide_annotations_into_tables(slide_annotations):
     """Given a slide annotation list, parse into convenient tabular format.
 
     If the annotation is a point, then it is just treated as if it is a
@@ -210,15 +210,56 @@ def parse_slide_annotations_into_table(slide_annotations):
     Returns
     ---------
     Pandas DataFrame
+        Summary of key properties of the annotation documents. It has the
+        following columns:
+        - annotation_girder_id
+        - _modelType
+        - _version
+        - itemId
+        - created
+        - creatorId
+        - public
+        - updated
+        - updatedId
+        - groups
+        - element_count
+        - element_details
+
+    Pandas DataFrame
         The columns annidx and elementidx encode the
         dict index of annotation document and element, respectively, in the
-        original slide_annotations list of dictionaries
+        original slide_annotations list of dictionaries. It has the
+        following columns:
+        - annidx
+        - annotation_girder_id
+        - elementidx
+        - element_girder_id
+        - type
+        - group
+        - color
+        - xmin
+        - xmax
+        - ymin
+        - ymax
+        - bbox_area
+        - coords_x
+        - coords_y
 
     """
+    annotation_infos = DataFrame(columns=[
+        'annotation_girder_id', '_modelType', '_version',
+        'itemId', 'created', 'creatorId',
+        'public', 'updated', 'updatedId',
+        'groups', 'element_count', 'element_details',
+    ])
+
     element_infos = DataFrame(columns=[
-        'annidx', 'elementidx', 'type', 'group', 'color',
+        'annidx', 'annotation_girder_id',
+        'elementidx', 'element_girder_id',
+        'type', 'group', 'color',
         'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
-        'coords_x', 'coords_y'])
+        'coords_x', 'coords_y'
+    ])
 
     def _parse_coords_to_str(coords):
         return (
@@ -226,11 +267,35 @@ def parse_slide_annotations_into_table(slide_annotations):
             ",".join(str(j) for j in coords[:, 1]))
 
     for annidx, ann in enumerate(slide_annotations):
+
+        annno = annotation_infos.shape[0]
+
+        # Add annotation document info to annotations dataframe
+
+        annotation_infos.loc[annno, 'annotation_girder_id'] = ann['_id']
+
+        for key in [
+                '_modelType', '_version',
+                'itemId', 'created', 'creatorId',
+                'public', 'updated', 'updatedId', ]:
+            annotation_infos.loc[annno, key] = ann[key]
+
+        annotation_infos.loc[annno, 'groups'] = str(ann['groups'])
+        annotation_infos.loc[annno, 'element_count'] = ann[
+            '_elementQuery']['count']
+        annotation_infos.loc[annno, 'element_details'] = ann[
+            '_elementQuery']['details']
+
         for elementidx, element in enumerate(ann['annotation']['elements']):
 
             elno = element_infos.shape[0]
+
+            # Add element information to element dataframe
+
             element_infos.loc[elno, 'annidx'] = annidx
+            element_infos.loc[elno, 'annotation_girder_id'] = ann['_id']
             element_infos.loc[elno, 'elementidx'] = elementidx
+            element_infos.loc[elno, 'element_girder_id'] = element['id']
             element_infos.loc[elno, 'color'] = element['lineColor']
 
             # get bounds
@@ -238,7 +303,6 @@ def parse_slide_annotations_into_table(slide_annotations):
                 coords = np.int32(element['points'])[:, :-1]
                 xmin, ymin = [int(j) for j in np.min(coords, axis=0)]
                 xmax, ymax = [int(j) for j in np.max(coords, axis=0)]
-                x_coords, y_coords = _parse_coords_to_str(coords)
 
             elif element['type'] == 'rectangle':
                 roiinfo = get_rotated_rectangular_coords(
@@ -251,16 +315,21 @@ def parse_slide_annotations_into_table(slide_annotations):
                 coords = np.array(
                     [(xmin, ymin), (xmax, ymin), (xmax, ymax),
                      (xmin, ymax), (xmin, ymin)], dtype='int32')
-                x_coords, y_coords = _parse_coords_to_str(coords)
                 if element['rotation'] != 0:
                     element['type'] = 'polyline'
 
             elif element['type'] == 'point':
                 xmin = xmax = int(element['center'][0])
                 ymin = ymax = int(element['center'][1])
+                coords = np.array(
+                    [(xmin, ymin), (xmax, ymin), (xmax, ymax),
+                     (xmin, ymax), (xmin, ymin)], dtype='int32')
 
             else:
                 continue
+
+            # parse to string for inclusion in pd dataframe
+            x_coords, y_coords = _parse_coords_to_str(coords)
 
             # add group or infer from label
             if 'group' in element.keys():
@@ -278,7 +347,7 @@ def parse_slide_annotations_into_table(slide_annotations):
             element_infos.loc[elno, 'coords_x'] = x_coords
             element_infos.loc[elno, 'coords_y'] = y_coords
 
-    return element_infos
+    return annotation_infos, element_infos
 
 
 # %%===========================================================================
@@ -379,7 +448,7 @@ def create_mask_from_coords(coords):
 
     Parameters
     -----------
-    vertices : np arrray
+    coords : np arrray
         must be in the form (e.g. ([x1,y1],[x2,y2],[x3,y3],.....,[xn,yn])),
         where xn and yn corresponds to the nth vertix coordinate.
 
@@ -428,6 +497,8 @@ def _get_element_mask(elinfo, slide_annotations):
             roi_center=element['center'], roi_width=element['width'],
             roi_height=element['height'], roi_rotation=element['rotation'])
         coords = infoDict['roi_corners']
+    else:
+        raise Exception("cannot create mask from point annotation!")
 
     mask = create_mask_from_coords(coords)
     return coords, mask
