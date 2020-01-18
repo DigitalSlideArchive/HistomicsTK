@@ -51,6 +51,7 @@ def dump_annotations_locally(
         kwargs to pass along to callback
 
     """
+    monitor = os.path.basename(local)
     # pull annotations for each slide in folder
     workflow_runner = Workflow_runner(
         slide_iterator=Slide_iterator(
@@ -66,7 +67,7 @@ def dump_annotations_locally(
             'callback': callback,
             'callback_kwargs': callback_kwargs,
         },
-        monitorPrefix=local)
+        monitorPrefix=monitor)
 
     workflow_runner.run()
 
@@ -75,7 +76,7 @@ def dump_annotations_locally(
     folder_info['folder_path'] = get_absolute_girder_folderpath(
         gc=gc, folder_info=folder_info)
     if save_json:
-        print("%s: save json" % local)
+        print("%s: save json" % monitor)
         savepath = os.path.join(local, folder_info['name'] + '.json')
         with open(savepath, 'w') as fout:
             json.dump(folder_info, fout)

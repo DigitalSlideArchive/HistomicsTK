@@ -119,7 +119,7 @@ def dump_annotations_workflow(
 
             # convert to table and sav, if relevant
             if save_csv:
-                print("%s: parse to tables" % local)
+                print("%s: parse to tables" % monitorPrefix)
                 annotation_docs, annotation_elements = \
                     parse_slide_annotations_into_tables(annotations)
                 annotation_docs.to_csv(savepath_base + '_docs.csv')
