@@ -14,7 +14,7 @@ from histomicstk.utils.girder_convenience_utils import (
 
 
 def dump_annotations_locally(
-        gc, folderid, local, save_json=True,
+        gc, folderid, local, save_json=True, save_csv=False,
         callback=None, callback_kwargs=dict()):
     """Dump annotations of folder and subfolders locally recursively.
 
@@ -34,6 +34,13 @@ def dump_annotations_locally(
 
     save_json : bool
         whether to dump annotations as json file
+
+    save_csv : bool
+        whether to use histomicstk.annotations_and_masks.annotation_and_mask.
+        parse_slide_annotations_into_tables() to get a tabular representation
+        (including some simple calculations like bounding box) and save
+        the output as two csv files, one representing the annotation documents
+        and the other representing the actual annotation elements (polygons).
 
     callback : function
         function to call that takes in AT LEAST the following params
@@ -55,6 +62,7 @@ def dump_annotations_locally(
             'gc': gc,
             'local': local,
             'save_json': save_json,
+            'save_csv': save_csv,
             'callback': callback,
             'callback_kwargs': callback_kwargs,
         },
@@ -79,7 +87,8 @@ def dump_annotations_locally(
         new_folder = os.path.join(local, folder['name'])
         os.mkdir(new_folder)
 
-        # call self
+        # call self with same prameters
         dump_annotations_locally(
-            gc, folder['_id'], new_folder,
+            gc=gc, folderid=folder['_id'], local=new_folder,
+            save_json=save_json, save_csv=save_csv,
             callback=callback, callback_kwargs=callback_kwargs)

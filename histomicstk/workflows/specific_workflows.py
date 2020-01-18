@@ -8,7 +8,7 @@ Created on Tue Oct  1 01:38:16 2019.
 import json
 import os
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    delete_annotations_in_slide)
+    delete_annotations_in_slide, parse_slide_annotations_into_tables)
 
 
 def cellularity_detection_workflow(
@@ -63,12 +63,9 @@ def cellularity_detection_workflow(
 
 
 def dump_annotations_workflow(
-        gc, slide_id, local, save_json=True, monitorPrefix='',
-        callback=None, callback_kwargs=dict()):
-    """Dump annotations of folder and subfolders locally recursively.
-
-    This reproduces this tiered structure locally and (possibly) dumps
-    annotations there. Adapted from Lee A.D. Cooper
+        gc, slide_id, local, save_json=True, save_csv=False,
+        monitorPrefix='', callback=None, callback_kwargs=dict()):
+    """Dump annotations for single slide into the local folder.
 
     Parameters
     -----------
@@ -86,6 +83,13 @@ def dump_annotations_workflow(
 
     save_json : bool
         whether to dump annotations as json file
+
+    save_csv : bool
+        whether to use histomicstk.annotations_and_masks.annotation_and_mask.
+        parse_slide_annotations_into_tables() to get a tabular representation
+        (including some simple calculations like bounding box) and save
+        the output as two csv files, one representing the annotation documents
+        and the other representing the actual annotation elements (polygons).
 
     callback : function
         function to call that takes in AT LEAST the following params
@@ -105,12 +109,21 @@ def dump_annotations_workflow(
 
         if annotations is not None:
 
+            savepath_base = os.path.join(local, item['name'])
+
             # dump to JSON in local folder
             if save_json:
                 print("%s: save json" % monitorPrefix)
-                savepath = os.path.join(local, item['name'] + '.json')
-                with open(savepath, 'w') as fout:
+                with open(savepath_base + '.json', 'w') as fout:
                     json.dump(annotations, fout)
+
+            # convert to table and sav, if relevant
+            if save_csv:
+                print("%s: parse to tables" % local)
+                annotation_docs, annotation_elements = \
+                    parse_slide_annotations_into_tables(annotations)
+                annotation_docs.to_csv(savepath_base + '_docs.csv')
+                annotation_elements.to_csv(savepath_base + '_elements.csv')
 
             # run callback
             if callback is not None:
