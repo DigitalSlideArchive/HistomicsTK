@@ -6,16 +6,53 @@ Created on Thu Dec 12 13:19:18 2019
 """
 import os
 import json
+import copy
 from pandas import DataFrame
 from sqlalchemy import create_engine
 from sqlalchemy.types import Integer, String, Boolean
-from histomicstk.workflows.specific_workflows import dump_annotations_workflow
 from histomicstk.workflows.workflow_runner import (
     Workflow_runner, Slide_iterator)
 from histomicstk.utils.girder_convenience_utils import (
     get_absolute_girder_folderpath)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     parse_slide_annotations_into_tables)
+
+
+# %%===========================================================================
+# Helper functions
+
+
+def _add_item_to_sqlite(dbcon, item):
+    # modify item info to prep for appending to sqlite table
+    item_info = copy.deepcopy(item)
+    item_info['largeImage'] = str(item_info['largeImage'])
+
+    item_info_dtypes = {
+        '_id': String(),
+        '_modelType': String(),
+        'baseParentId': String(),
+        'baseParentType': String(),
+        'copyOfItem': String(),
+        'created': String(),
+        'creatorId': String(),
+        'description': String(),
+        'folderId': String(),
+        'largeImage': String(),
+        'name': String(),
+        'size': Integer(),
+        'updated': String(),
+    }
+
+    # in case anything is not in the schema, drop it
+    item_info = {
+        k: v for k, v in item_info.items()
+        if k in item_info_dtypes.keys()}
+
+    # conver to df and add to items table
+    item_info_df = DataFrame.from_dict(item_info, orient='index').T
+    item_info_df.to_sql(
+        name='items', con=dbcon, if_exists='append',
+        dtype=item_info_dtypes, index=False)
 
 
 def _add_folder_to_sqlite(dbcon, folder_info):
@@ -148,6 +185,91 @@ def parse_annotations_to_local_tables(
         _add_annotation_docs_to_sqlite(dbcon, annotation_docs, item)
         _add_annotation_elements_to_sqlite(dbcon, annotation_elements)
 
+# %%===========================================================================
+# Workflow at a single slide level
+
+
+def dump_annotations_workflow(
+        gc, slide_id, local, monitorPrefix='',
+        save_json=True, save_sqlite=False, dbcon=None,
+        callback=None, callback_kwargs=dict()):
+    """Dump annotations for single slide into the local folder.
+
+    Parameters
+    -----------
+    gc : girder_client.GirderClient
+        authenticated girder client instance
+
+    slide_id : str
+        girder id of item (slide)
+
+    monitorPrefix : str
+        prefix to monitor string
+
+    local : str
+        local path to dump annotations
+
+    save_json : bool
+        whether to dump annotations as json file
+
+    save_sqlite : bool
+        whether to save the backup into an sqlite database
+
+    dbcon : sqlalchemy.create_engine.connect() object
+        IGNORE THIS PARAMETER!! This is used internally.
+
+    callback : function
+        function to call that takes in AT LEAST the following params
+        - item: girder response with item information
+        - annotations: loaded annotations
+        - local: local directory
+        - monitorPrefix: string
+
+    callback_kwargs : dict
+        kwargs to pass along to callback
+
+    """
+    try:
+        item = gc.get('/item/%s' % slide_id)
+
+        savepath_base = os.path.join(local, item['name'])
+
+        # dump item information json
+        if save_json:
+            print("%s: save item info" % monitorPrefix)
+            with open(savepath_base + '.json', 'w') as fout:
+                json.dump(item, fout)
+
+        # save folder info to sqlite
+        if save_sqlite:
+            _add_item_to_sqlite(dbcon, item)
+
+        # pull annotation
+        print("%s: load annotations" % monitorPrefix)
+        annotations = gc.get('/annotation/item/' + item['_id'])
+
+        if annotations is not None:
+
+            # dump annotations to JSON in local folder
+            if save_json:
+                print("%s: save annotations" % monitorPrefix)
+                with open(savepath_base + '_annotations.json', 'w') as fout:
+                    json.dump(annotations, fout)
+
+            # run callback
+            if callback is not None:
+                print("%s: run callback" % monitorPrefix)
+                callback(
+                    item=item, annotations=annotations, local=local,
+                    dbcon=dbcon, monitorPrefix=monitorPrefix,
+                    **callback_kwargs)
+
+    except Exception as e:
+        print(str(e))
+
+# %%===========================================================================
+# Main method
+
 
 def dump_annotations_locally(
         gc, folderid, local, save_json=True,
@@ -253,3 +375,5 @@ def dump_annotations_locally(
             gc=gc, folderid=folder['_id'], local=new_folder,
             save_json=save_json, save_sqlite=save_sqlite, dbcon=dbcon,
             callback=callback, callback_kwargs=callback_kwargs)
+
+# %%===========================================================================
