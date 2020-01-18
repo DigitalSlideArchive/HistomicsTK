@@ -164,7 +164,7 @@ class Polygon_merger(Base_HTK_Class):
             edge_contours[roiname] = contours_df.loc[edgeids, :].copy()
             ordinary_contours[roiname] = contours_df.drop(edgeids, axis=0)
 
-        self.maskpaths = [j for j in self.maskpaths if not j in to_remove]
+        self.maskpaths = [j for j in self.maskpaths if j not in to_remove]
 
         self.ordinary_contours = ordinary_contours
         self.edge_contours = edge_contours
