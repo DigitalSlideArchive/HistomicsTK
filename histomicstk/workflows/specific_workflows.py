@@ -97,7 +97,7 @@ def dump_annotations_workflow(
 
     """
     try:
-        item = gc.get('item/%s/tiles' % slide_id)
+        item = gc.get('/item/%s' % slide_id)
 
         # pull annotation
         print("%s: load annotations" % monitorPrefix)
@@ -121,3 +121,5 @@ def dump_annotations_workflow(
 
     except Exception as e:
         print(str(e))
+
+# %%===========================================================================
