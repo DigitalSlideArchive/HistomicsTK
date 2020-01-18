@@ -103,6 +103,13 @@ def dump_annotations_workflow(
     try:
         item = gc.get('/item/%s' % slide_id)
 
+        # dump item information json
+        if save_json:
+            print("%s: save item info" % monitorPrefix)
+        savepath = os.path.join(local, item['name'] + '.json')
+        with open(savepath, 'w') as fout:
+            json.dump(item, fout)
+
         # pull annotation
         print("%s: load annotations" % monitorPrefix)
         annotations = gc.get('/annotation/item/' + item['_id'])
@@ -111,10 +118,10 @@ def dump_annotations_workflow(
 
             savepath_base = os.path.join(local, item['name'])
 
-            # dump to JSON in local folder
+            # dump annotations to JSON in local folder
             if save_json:
-                print("%s: save json" % monitorPrefix)
-                with open(savepath_base + '.json', 'w') as fout:
+                print("%s: save annotations" % monitorPrefix)
+                with open(savepath_base + '_annotations.json', 'w') as fout:
                     json.dump(annotations, fout)
 
             # convert to table and sav, if relevant
