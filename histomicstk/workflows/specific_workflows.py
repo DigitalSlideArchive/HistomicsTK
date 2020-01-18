@@ -8,7 +8,7 @@ Created on Tue Oct  1 01:38:16 2019.
 import json
 import os
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    delete_annotations_in_slide, parse_slide_annotations_into_tables)
+    delete_annotations_in_slide)
 
 
 def cellularity_detection_workflow(
@@ -63,8 +63,8 @@ def cellularity_detection_workflow(
 
 
 def dump_annotations_workflow(
-        gc, slide_id, local, save_json=True, save_csv=False,
-        monitorPrefix='', callback=None, callback_kwargs=dict()):
+        gc, slide_id, local, save_json=True, monitorPrefix='',
+        callback=None, callback_kwargs=dict()):
     """Dump annotations for single slide into the local folder.
 
     Parameters
@@ -84,17 +84,12 @@ def dump_annotations_workflow(
     save_json : bool
         whether to dump annotations as json file
 
-    save_csv : bool
-        whether to use histomicstk.annotations_and_masks.annotation_and_mask.
-        parse_slide_annotations_into_tables() to get a tabular representation
-        (including some simple calculations like bounding box) and save
-        the output as two csv files, one representing the annotation documents
-        and the other representing the actual annotation elements (polygons).
-
     callback : function
         function to call that takes in AT LEAST the following params
+        - item: girder response with item information
         - annotations: loaded annotations
         - local: local directory
+        - monitorPrefix: string
 
     callback_kwargs : dict
         kwargs to pass along to callback
@@ -103,11 +98,12 @@ def dump_annotations_workflow(
     try:
         item = gc.get('/item/%s' % slide_id)
 
+        savepath_base = os.path.join(local, item['name'])
+
         # dump item information json
         if save_json:
             print("%s: save item info" % monitorPrefix)
-        savepath = os.path.join(local, item['name'] + '.json')
-        with open(savepath, 'w') as fout:
+        with open(savepath_base + '.json', 'w') as fout:
             json.dump(item, fout)
 
         # pull annotation
@@ -116,28 +112,18 @@ def dump_annotations_workflow(
 
         if annotations is not None:
 
-            savepath_base = os.path.join(local, item['name'])
-
             # dump annotations to JSON in local folder
             if save_json:
                 print("%s: save annotations" % monitorPrefix)
                 with open(savepath_base + '_annotations.json', 'w') as fout:
                     json.dump(annotations, fout)
 
-            # convert to table and sav, if relevant
-            if save_csv:
-                print("%s: parse to tables" % monitorPrefix)
-                annotation_docs, annotation_elements = \
-                    parse_slide_annotations_into_tables(annotations)
-                annotation_docs.to_csv(savepath_base + '_docs.csv')
-                annotation_elements.to_csv(savepath_base + '_elements.csv')
-
             # run callback
             if callback is not None:
                 print("%s: run callback" % monitorPrefix)
                 callback(
-                    annotations=annotations, local=local,
-                    **callback_kwargs)
+                    item=item, annotations=annotations, local=local,
+                    monitorPrefix=monitorPrefix, **callback_kwargs)
 
     except Exception as e:
         print(str(e))
