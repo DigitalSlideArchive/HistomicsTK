@@ -5,9 +5,12 @@ Created on Thu Dec 12 13:19:18 2019
 @author: tageldim
 """
 import os
+import json
 from histomicstk.workflows.specific_workflows import dump_annotations_workflow
 from histomicstk.workflows.workflow_runner import (
     Workflow_runner, Slide_iterator)
+from histomicstk.utils.girder_convenience_utils import (
+    get_absolute_girder_folderpath)
 
 
 def dump_annotations_locally(
@@ -59,7 +62,17 @@ def dump_annotations_locally(
 
     workflow_runner.run()
 
-    # for each folder, create a new folder in 'local' and call self
+    # dump folder information json
+    folder_info = gc.get("folder/%s" % folderid)
+    folder_info['folder_path'] = get_absolute_girder_folderpath(
+        gc=gc, folder_info=folder_info)
+    if save_json:
+        print("%s: save json" % local)
+        savepath = os.path.join(local, folder_info['name'] + '.json')
+        with open(savepath, 'w') as fout:
+            json.dump(folder_info, fout)
+
+    # for each subfolder, create a new folder locally and call self
     for folder in gc.listFolder(parentId=folderid):
 
         # create folder in local
