@@ -107,7 +107,9 @@ class Workflow_runner(Base_HTK_Class):
         # set attribs
         self.workflow = workflow
         self.workflow_kwargs = workflow_kwargs
-        self.exception_path = self.logname.replace('.log', '_EXCEPTIONS.log')
+        if self.keep_log:
+            self.exception_path = self.logname.replace(
+                '.log', '_EXCEPTIONS.log')
         self.slide_iterator = slide_iterator
         self.si = slide_iterator.run()
 
@@ -133,11 +135,12 @@ class Workflow_runner(Base_HTK_Class):
             except Exception as e:
                 self.cpr1.logger.exception("%s: SEE EXCEPTIONS FILE: %s" % (
                     monitorStr, self.exception_path))
-                with open(self.exception_path, 'a') as f:
-                    print(e)
-                    f.write("%s\n" % monitorStr)
-                    f.write(str(e))
-                    f.write("\n---------------------------------\n")
+                if self.keep_log:
+                    with open(self.exception_path, 'a') as f:
+                        print(str(e))
+                        f.write("%s\n" % monitorStr)
+                        f.write(str(e))
+                        f.write("\n---------------------------------\n")
 
 
 # %% ==========================================================================
