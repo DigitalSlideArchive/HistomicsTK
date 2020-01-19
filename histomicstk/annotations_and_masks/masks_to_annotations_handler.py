@@ -359,6 +359,7 @@ def get_contours_from_mask(
             vertix y coordinated comma-separated values
 
     """
+    assert(MASK.sum() > 2), "Mask is empty!!"
     cpr = Print_and_log(verbose=verbose)
     _print = cpr._print
     if groups_to_get is not None:
