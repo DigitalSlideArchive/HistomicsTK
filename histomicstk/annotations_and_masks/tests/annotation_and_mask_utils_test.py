@@ -11,7 +11,7 @@ import girder_client
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response, get_bboxes_from_slide_annotations,
-    parse_slide_annotations_into_table)
+    parse_slide_annotations_into_tables)
 
 # %%===========================================================================
 # Constants & prep work
@@ -64,13 +64,26 @@ class MaskUtilsTest(unittest.TestCase):
     def test_parse_slide_annotations_into_table(self):
         """Test parse_slide_annotations_into_table."""
         slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
-        element_infos = parse_slide_annotations_into_table(slide_annotations)
+        annotation_infos, element_infos = parse_slide_annotations_into_tables(
+            slide_annotations)
 
-        # self.assertTupleEqual(element_infos.shape, (76, 12))
+        self.assertSetEqual(
+            set(annotation_infos.columns),
+            {
+                'annotation_girder_id', '_modelType', '_version',
+                'itemId', 'created', 'creatorId',
+                'public', 'updated', 'updatedId',
+                'groups', 'element_count', 'element_details',
+            })
         self.assertSetEqual(
             set(element_infos.columns),
-            {'annidx', 'elementidx', 'type', 'group', 'xmin', 'xmax',
-             'ymin', 'ymax', 'bbox_area', 'coords_x', 'coords_y', 'color'})
+            {
+                'annidx', 'annotation_girder_id',
+                'elementidx', 'element_girder_id',
+                'type', 'group', 'color',
+                'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
+                'coords_x', 'coords_y'
+            })
         self.assertSetEqual(
             set(element_infos.loc[:, 'type']),
             {'polyline', 'rectangle', 'point'})

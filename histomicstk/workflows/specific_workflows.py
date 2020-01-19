@@ -28,7 +28,7 @@ def cellularity_detection_workflow(
         seems to be more robust, despite being simpler.
     slide_id : str
         girder id of slide on which workflow is done
-    monitoPrefix : str
+    monitorPrefix : str
         this will set the cds monitorPrefix attribute
     destination_folder_id : str or None
         if not None, copy slide to this girder folder and post results
