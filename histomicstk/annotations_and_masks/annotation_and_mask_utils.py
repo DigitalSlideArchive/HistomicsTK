@@ -316,10 +316,12 @@ def parse_slide_annotations_into_tables(slide_annotations):
         - element_details
 
     Pandas DataFrame
+
         The individual annotation elements (polygons, points, rectangles).
         The columns annidx and elementidx encode the dict index of annotation
         document and element, respectively, in the original slide_annotations
         list of dictionaries. It has the following columns:
+
         - annidx
         - annotation_girder_id
         - elementidx
