@@ -122,7 +122,8 @@ def get_roi_mask(
         (roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH']), dtype=np.uint8)
 
     # only parse if roi is polygonal or rectangular
-    assert elinfos_roi.loc[idx_for_roi, 'type'] != 'point'
+    if elinfos_roi.loc[idx_for_roi, 'type'] == 'point':
+        raise Exception("roi cannot be a point!")
 
     # make sure ROI is overlayed first & assigned background class if relevant
     roi_group = elinfos_roi.loc[idx_for_roi, 'group']
@@ -247,7 +248,8 @@ def get_all_roi_masks_for_slide(
     # read ground truth codes and information
     GTCodes = read_csv(GTCODE_PATH)
     GTCodes.index = GTCodes.loc[:, 'group']
-    assert all(GTCodes.loc[:, 'GT_code'] > 0), "All GT_code must be > 0"
+    if any(GTCodes.loc[:, 'GT_code'] <= 0):
+        raise Exception("All GT_code must be > 0")
 
     # get annotations for slide
     slide_annotations = gc.get('/annotation/item/' + slide_id)
