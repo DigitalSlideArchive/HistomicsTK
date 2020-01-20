@@ -30,3 +30,4 @@ def get_absolute_girder_folderpath(gc, folder_id=None, folder_info=None):
         [j['object']['name'] for j in fpath]
     ) + "/" + folder_info['name'] + "/"
     return fpath
+

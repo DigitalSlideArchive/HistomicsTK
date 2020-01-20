@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import unittest
-
 from histomicstk.utils.girder_convenience_utils import connect_to_api
 
 # %%===========================================================================
@@ -19,6 +18,7 @@ class GirderConvenienceTest(unittest.TestCase):
         """Test get_image_from_htk_response."""
         gc = connect_to_api(APIURL, apikey=APIKEY)
         self.assertEqual(gc.urlBase, APIURL)
+
 
 # %%===========================================================================
 
