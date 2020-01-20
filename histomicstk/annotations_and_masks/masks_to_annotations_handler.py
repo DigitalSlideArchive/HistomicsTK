@@ -101,7 +101,7 @@ def _add_contour_to_df(
     if MAX_SIZE is not None:
         if (nest_height > MAX_SIZE) or (nest_width > MAX_SIZE):
             raise Exception(
-                "%s: EXTREMELY LARGE NEST (%d x %d pixels) -- IGNORED" \
+                "%s: EXTREMELY LARGE NEST (%d x %d pixels) -- IGNORED"
                 % (monitorPrefix, nest_height, nest_width))
 
     # assign bounding box location
