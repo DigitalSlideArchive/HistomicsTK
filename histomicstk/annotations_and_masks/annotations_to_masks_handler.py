@@ -129,7 +129,8 @@ def get_roi_mask(
         (roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH']), dtype=np.uint8)
 
     # only parse if roi is polygonal or rectangular
-    assert elinfos_roi.loc[idx_for_roi, 'type'] != 'point'
+    if elinfos_roi.loc[idx_for_roi, 'type'] == 'point':
+        raise Exception("roi cannot be a point!")
 
     # make sure ROI is overlayed first & assigned background class if relevant
     roi_group = elinfos_roi.loc[idx_for_roi, 'group']
@@ -804,6 +805,11 @@ def get_all_rois_from_slide(
         if k not in kvp.keys():
             kvp[k] = v
 
+    # convert to df and sanity check
+    GTCodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
+    if any(GTCodes.loc[:, 'GT_code'] <= 0):
+        raise Exception("All GT_code must be > 0")
+
     # if not given, assign name of first file associated with girder item
     if slide_name is None:
         resp = gc.get('/item/%s/files' % slide_id)
@@ -821,8 +827,7 @@ def get_all_rois_from_slide(
     # get bounding box information for all annotations
     element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 
-    # get indices of rois
-    GTCodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
+    # get idx of all 'spacial' roi annotations
     idxs_for_all_rois = _get_idxs_for_all_rois(
         GTCodes=GTCodes_df, element_infos=element_infos)
 
