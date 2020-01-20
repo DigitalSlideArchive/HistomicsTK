@@ -179,7 +179,7 @@ class GetSlideRegion(unittest.TestCase):
             self.assertTupleEqual(roi_out['rgb'].shape, (200, 250, 3))
             self.assertTupleEqual(
                 roi_out['visualization'].shape, (200, 250, 3))
-            self.assertEqual(len(roi_out['contours']), 25)
+            self.assertEqual(len(roi_out['contours']), 29)
             self.assertSetEqual(
                 set(roi_out['contours'][0].keys()),
                 {'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
@@ -203,7 +203,7 @@ class GetSlideRegion(unittest.TestCase):
         self.assertTupleEqual(minbbox_out['rgb'].shape, (321, 351, 3))
         self.assertTupleEqual(
             minbbox_out['visualization'].shape, (321, 351, 3))
-        self.assertEqual(len(minbbox_out['contours']), 28)
+        self.assertEqual(len(minbbox_out['contours']), 29)
         self.assertSetEqual(
             set(minbbox_out['contours'][0].keys()),
             {'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
@@ -227,7 +227,7 @@ class GetSlideRegion(unittest.TestCase):
         self.assertTupleEqual(wsi_out['rgb'].shape, (4030, 6590, 3))
         self.assertTupleEqual(
             wsi_out['visualization'].shape, (4030, 6590, 3))
-        self.assertEqual(len(wsi_out['contours']), 28)
+        self.assertEqual(len(wsi_out['contours']), 30)
         self.assertSetEqual(
             set(wsi_out['contours'][0].keys()),
             {'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',

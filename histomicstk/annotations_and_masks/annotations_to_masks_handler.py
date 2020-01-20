@@ -807,7 +807,7 @@ def get_all_rois_from_slide(
 
     # convert to df and sanity check
     GTCodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
-    if any(GTCodes.loc[:, 'GT_code'] <= 0):
+    if any(GTCodes_df.loc[:, 'GT_code'] <= 0):
         raise Exception("All GT_code must be > 0")
 
     # if not given, assign name of first file associated with girder item
