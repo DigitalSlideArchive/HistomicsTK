@@ -1,3 +1,5 @@
+- var timestamp = moment().format('YYYY-MM-DD HH:mm')
+- var defaultName = 'Annotation '+ timestamp
 .modal-dialog(role='document')
   .modal-content
     form.modal-form(role='form')
@@ -9,7 +11,7 @@
         .form-group
           label(for='h-annotation-name') Name
           input#h-annotation-name.input-sm.form-control(
-            type='text', placeholder='Enter a name for the annotation', value=annotation.name)
+            type='text', placeholder='Enter a name for the annotation', value=annotation.name || defaultName)
         .form-group
           label(for='h-annotation-description') Description
           textarea#h-annotation-description.form-control.input-sm(

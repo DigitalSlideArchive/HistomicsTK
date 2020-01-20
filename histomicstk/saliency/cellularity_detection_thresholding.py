@@ -257,7 +257,8 @@ class CDT_single_tissue_piece(object):
         # get contours
         contours_df = get_contours_from_mask(
             MASK=self.labeled, GTCodes_df=self.cdt.GTcodes.copy(),
-            get_roi_contour=True, roi_group='roi',
+            groups_to_get=self.cdt.groups_to_visualize,
+            get_roi_contour=self.cdt.get_roi_contour, roi_group='roi',
             background_group='not_specified',
             discard_nonenclosed_background=True,
             MIN_SIZE=15, MAX_SIZE=None,
@@ -274,8 +275,8 @@ class CDT_single_tissue_piece(object):
         }
         annotation_docs = get_annotation_documents_from_contours(
             contours_df.copy(), separate_docs_by_group=True,
-            docnamePrefix='cdt', annprops=annprops,
-            verbose=self.cdt.verbose == 3,
+            docnamePrefix=self.cdt.docnameprefix,
+            annprops=annprops, verbose=self.cdt.verbose == 3,
             monitorPrefix=self.monitorPrefix + ": -- annotation docs")
 
         # post annotations to slide
@@ -459,6 +460,15 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         lineWidth : float
             width of line when displaying region boundaries.
 
+        docnameprefix : str
+            prefix to add to annotation document name
+
+        groups_to_visualize : list
+            which groups to visualize
+
+        get_roi_contour : bool
+            whether to get the contour of the roi
+
         """
         default_attr = {
 
@@ -545,6 +555,9 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             'visualize': True,
             'opacity': 0,
             'lineWidth': 3.0,
+            'docnameprefix': 'cdt',
+            'groups_to_visualize': None,  # everything
+            'get_roi_contour': True,
         }
         default_attr.update(kwargs)
         super(Cellularity_detector_thresholding, self).__init__(
