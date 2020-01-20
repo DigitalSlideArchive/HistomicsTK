@@ -415,7 +415,7 @@ def _visualize_annotations_on_rgb(rgb, ROI, contours_list, linewidth=0.2):
     buf = io.BytesIO()
     plt.savefig(buf, format='png', pad_inches=0, dpi=1000)
     buf.seek(0)
-    rgb_vis = np.uint8(Image.open(buf))[..., :3]
+    rgb_vis = np.flipud(np.uint8(Image.open(buf))[..., :3])
     plt.close()
 
     return rgb_vis
