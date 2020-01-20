@@ -33,7 +33,7 @@ class Polygon_merger(Base_HTK_Class):
             list of strings representing pathos to masks
         GTCodes_df : pandas DataFrame
             the ground truth codes and information dataframe.
-            This is a dataframe that is indexed by the annotation group name
+            This is a dataframe that MUST BE indexed by annotation group name
             and has the following columns.
 
             group: str
@@ -74,19 +74,28 @@ class Polygon_merger(Base_HTK_Class):
         self.maskpaths = maskpaths
         self.GTCodes_df = GTCodes_df
 
+        # must have an roi group color for merged polygon bbox
+        if 'roi' not in self.GTCodes_df.index:
+            self.GTCodes_df.loc['roi', 'color'] = 'rgb(0,0,0)'
+
         # see: https://stackoverflow.com/questions/8187082/how-can-you-set-...
         # class-attributes-from-variable-arguments-kwargs-in-python
+
+        contkwargs = {
+            'GTCodes_df': GTCodes_df,
+            'get_roi_contour': False,  # important
+            'discard_nonenclosed_background': False,  # important
+            'MIN_SIZE': 2,
+            'MAX_SIZE': None,
+        }
+        if 'contkwargs' in kwargs.keys():
+            contkwargs.update(kwargs['contkwargs'])
+        kwargs['contkwargs'] = contkwargs
+
         default_attr = {
             'verbose': 1,
             'monitorPrefix': "",
             'merge_thresh': 3,
-            'contkwargs': {
-                'GTCodes_df': GTCodes_df,
-                'get_roi_contour': False,  # important
-                'discard_nonenclosed_background': False,  # important
-                'MIN_SIZE': 2,
-                'MAX_SIZE': None,
-            },
             'discard_nonenclosed_background': False,
             'background_group': 'mostly_stroma',
             'roi_group': 'roi',
@@ -121,15 +130,29 @@ class Polygon_merger(Base_HTK_Class):
         ordinary_contours = dict()
         edge_contours = dict()
 
+        to_remove = []
+
         for midx, maskpath in enumerate(self.maskpaths):
 
-            # extract contours
+            # read mask
             MASK = imread(maskpath)
+
+            # mask is empty!
+            if MASK.sum() < 2:
+                to_remove.append(maskpath)
+                continue
+
+            # extract contours
             contours_df = get_contours_from_mask(
                 MASK=MASK,
                 monitorPrefix="%s: mask %d of %d" % (
                     monitorPrefix, midx, len(self.maskpaths)),
                 **self.contkwargs)
+
+            # no contours!
+            if contours_df.shape[0] < 1:
+                to_remove.append(maskpath)
+                continue
 
             # separate edge from non-edge contours
             edgeids = []
@@ -140,6 +163,8 @@ class Polygon_merger(Base_HTK_Class):
             roiname = os.path.split(maskpath)[1]
             edge_contours[roiname] = contours_df.loc[edgeids, :].copy()
             ordinary_contours[roiname] = contours_df.drop(edgeids, axis=0)
+
+        self.maskpaths = [j for j in self.maskpaths if j not in to_remove]
 
         self.ordinary_contours = ordinary_contours
         self.edge_contours = edge_contours
