@@ -33,7 +33,7 @@ class Polygon_merger(Base_HTK_Class):
             list of strings representing pathos to masks
         GTCodes_df : pandas DataFrame
             the ground truth codes and information dataframe.
-            This is a dataframe that is indexed by the annotation group name
+            This is a dataframe that MUST BE indexed by annotation group name
             and has the following columns.
 
             group: str
@@ -74,19 +74,28 @@ class Polygon_merger(Base_HTK_Class):
         self.maskpaths = maskpaths
         self.GTCodes_df = GTCodes_df
 
+        # must have an roi group color for merged polygon bbox
+        if 'roi' not in self.GTCodes_df.index:
+            self.GTCodes_df.loc['roi', 'color'] = 'rgb(0,0,0)'
+
         # see: https://stackoverflow.com/questions/8187082/how-can-you-set-...
         # class-attributes-from-variable-arguments-kwargs-in-python
+
+        contkwargs = {
+            'GTCodes_df': GTCodes_df,
+            'get_roi_contour': False,  # important
+            'discard_nonenclosed_background': False,  # important
+            'MIN_SIZE': 2,
+            'MAX_SIZE': None,
+        }
+        if 'contkwargs' in kwargs.keys():
+            contkwargs.update(kwargs['contkwargs'])
+        kwargs['contkwargs'] = contkwargs
+
         default_attr = {
             'verbose': 1,
             'monitorPrefix': "",
             'merge_thresh': 3,
-            'contkwargs': {
-                'GTCodes_df': GTCodes_df,
-                'get_roi_contour': False,  # important
-                'discard_nonenclosed_background': False,  # important
-                'MIN_SIZE': 2,
-                'MAX_SIZE': None,
-            },
             'discard_nonenclosed_background': False,
             'background_group': 'mostly_stroma',
             'roi_group': 'roi',
@@ -96,8 +105,8 @@ class Polygon_merger(Base_HTK_Class):
 
         # some sanity checks
         assert not (
-            self.contkwargs['get_roi_contour']
-            or self.contkwargs['discard_nonenclosed_background'])
+                self.contkwargs['get_roi_contour']
+                or self.contkwargs['discard_nonenclosed_background'])
         self.contkwargs['verbose'] = self.verbose > 1
 
     # %% =====================================================================
@@ -121,25 +130,41 @@ class Polygon_merger(Base_HTK_Class):
         ordinary_contours = dict()
         edge_contours = dict()
 
+        to_remove = []
+
         for midx, maskpath in enumerate(self.maskpaths):
 
-            # extract contours
+            # read mask
             MASK = imread(maskpath)
+
+            # mask is empty!
+            if MASK.sum() < 2:
+                to_remove.append(maskpath)
+                continue
+
+            # extract contours
             contours_df = get_contours_from_mask(
                 MASK=MASK,
                 monitorPrefix="%s: mask %d of %d" % (
                     monitorPrefix, midx, len(self.maskpaths)),
                 **self.contkwargs)
 
+            # no contours!
+            if contours_df.shape[0] < 1:
+                to_remove.append(maskpath)
+                continue
+
             # separate edge from non-edge contours
             edgeids = []
             for edge in ['top', 'left', 'bottom', 'right']:
                 edgeids.extend(list(contours_df.loc[contours_df.loc[
-                    :, 'touches_edge-%s' % edge] == 1, :].index))
+                                                    :, 'touches_edge-%s' % edge] == 1, :].index))
             edgeids = list(set(edgeids))
             roiname = os.path.split(maskpath)[1]
             edge_contours[roiname] = contours_df.loc[edgeids, :].copy()
             ordinary_contours[roiname] = contours_df.drop(edgeids, axis=0)
+
+        self.maskpaths = [j for j in self.maskpaths if j not in to_remove]
 
         self.ordinary_contours = ordinary_contours
         self.edge_contours = edge_contours
@@ -236,7 +261,7 @@ class Polygon_merger(Base_HTK_Class):
             for edgepair in edgepairs:
                 # check if they share bounds for one edge
                 if np.abs(
-                    self.roiinfos[roi1name][edgepair[0]]
+                        self.roiinfos[roi1name][edgepair[0]]
                         - self.roiinfos[roi2name][edgepair[1]]) < 2:
                     # ensure they overlap in location along other axis
                     if 'left' in edgepair:
@@ -251,10 +276,10 @@ class Polygon_merger(Base_HTK_Class):
                          self.roiinfos[roi2name][end]))
                     length = realEnd - realStart
                     nonoverlap_length = (
-                        self.roiinfos[roi1name][end]
-                        - self.roiinfos[roi1name][start]) + (
-                        self.roiinfos[roi2name][end]
-                        - self.roiinfos[roi2name][start])
+                                                self.roiinfos[roi1name][end]
+                                                - self.roiinfos[roi1name][start]) + (
+                                                self.roiinfos[roi2name][end]
+                                                - self.roiinfos[roi2name][start])
                     if length < nonoverlap_length:
                         shared_edges.loc[idx, 'roi1-name'] = roi1name
                         shared_edges.loc[idx, 'roi1-edge'] = edgepair[0]
@@ -435,7 +460,7 @@ class Polygon_merger(Base_HTK_Class):
         nest_polygons = []
         for nestinfo in cluster:
             nest = dict(self.edge_contours[nestinfo['roiname']].loc[
-                nestinfo['nid'], :])
+                        nestinfo['nid'], :])
             roitop = self.roiinfos[nestinfo['roiname']]['top']
             roileft = self.roiinfos[nestinfo['roiname']]['left']
             coords = _parse_annot_coords(
@@ -509,7 +534,7 @@ class Polygon_merger(Base_HTK_Class):
             for rid in [1, 2]:
                 neststr = 'nest%d' % rid
                 nids.extend(list(merge_df.loc[merge_df.loc[
-                    :, neststr + '-roiname'] == roiname, neststr + '-nid']))
+                                              :, neststr + '-roiname'] == roiname, neststr + '-nid']))
             self.edge_contours[roiname].drop(nids, axis=0, inplace=True)
 
     # %% =====================================================================
@@ -613,7 +638,7 @@ class Polygon_merger(Base_HTK_Class):
             "\n%s: Set contours from all masks" % self.monitorPrefix)
         self.set_contours_from_all_masks(
             monitorPrefix="%s: set_contours_from_all_masks" %
-            self.monitorPrefix)
+                          self.monitorPrefix)
         self._print1(
             "\n%s: Set ROI bounding boxes" % self.monitorPrefix)
         self.set_roi_bboxes()
@@ -635,7 +660,7 @@ class Polygon_merger(Base_HTK_Class):
                 all_contours, background_group=self.background_group,
                 verbose=self.verbose,
                 monitorPrefix="%s: _discard_nonenclosed_background_group" %
-                self.monitorPrefix)
+                              self.monitorPrefix)
         return all_contours
 
 # %% =====================================================================
