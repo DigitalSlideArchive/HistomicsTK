@@ -105,8 +105,8 @@ class Polygon_merger(Base_HTK_Class):
 
         # some sanity checks
         assert not (
-                self.contkwargs['get_roi_contour']
-                or self.contkwargs['discard_nonenclosed_background'])
+            self.contkwargs['get_roi_contour']
+            or self.contkwargs['discard_nonenclosed_background'])
         self.contkwargs['verbose'] = self.verbose > 1
 
     # %% =====================================================================
@@ -158,7 +158,7 @@ class Polygon_merger(Base_HTK_Class):
             edgeids = []
             for edge in ['top', 'left', 'bottom', 'right']:
                 edgeids.extend(list(contours_df.loc[contours_df.loc[
-                                                    :, 'touches_edge-%s' % edge] == 1, :].index))
+                    :, 'touches_edge-%s' % edge] == 1, :].index))
             edgeids = list(set(edgeids))
             roiname = os.path.split(maskpath)[1]
             edge_contours[roiname] = contours_df.loc[edgeids, :].copy()
@@ -261,7 +261,7 @@ class Polygon_merger(Base_HTK_Class):
             for edgepair in edgepairs:
                 # check if they share bounds for one edge
                 if np.abs(
-                        self.roiinfos[roi1name][edgepair[0]]
+                    self.roiinfos[roi1name][edgepair[0]]
                         - self.roiinfos[roi2name][edgepair[1]]) < 2:
                     # ensure they overlap in location along other axis
                     if 'left' in edgepair:
@@ -276,10 +276,10 @@ class Polygon_merger(Base_HTK_Class):
                          self.roiinfos[roi2name][end]))
                     length = realEnd - realStart
                     nonoverlap_length = (
-                                                self.roiinfos[roi1name][end]
-                                                - self.roiinfos[roi1name][start]) + (
-                                                self.roiinfos[roi2name][end]
-                                                - self.roiinfos[roi2name][start])
+                        self.roiinfos[roi1name][end]
+                        - self.roiinfos[roi1name][start]) + (
+                        self.roiinfos[roi2name][end]
+                        - self.roiinfos[roi2name][start])
                     if length < nonoverlap_length:
                         shared_edges.loc[idx, 'roi1-name'] = roi1name
                         shared_edges.loc[idx, 'roi1-edge'] = edgepair[0]
@@ -460,7 +460,7 @@ class Polygon_merger(Base_HTK_Class):
         nest_polygons = []
         for nestinfo in cluster:
             nest = dict(self.edge_contours[nestinfo['roiname']].loc[
-                        nestinfo['nid'], :])
+                nestinfo['nid'], :])
             roitop = self.roiinfos[nestinfo['roiname']]['top']
             roileft = self.roiinfos[nestinfo['roiname']]['left']
             coords = _parse_annot_coords(
@@ -534,7 +534,7 @@ class Polygon_merger(Base_HTK_Class):
             for rid in [1, 2]:
                 neststr = 'nest%d' % rid
                 nids.extend(list(merge_df.loc[merge_df.loc[
-                                              :, neststr + '-roiname'] == roiname, neststr + '-nid']))
+                    :, neststr + '-roiname'] == roiname, neststr + '-nid']))
             self.edge_contours[roiname].drop(nids, axis=0, inplace=True)
 
     # %% =====================================================================
@@ -638,7 +638,7 @@ class Polygon_merger(Base_HTK_Class):
             "\n%s: Set contours from all masks" % self.monitorPrefix)
         self.set_contours_from_all_masks(
             monitorPrefix="%s: set_contours_from_all_masks" %
-                          self.monitorPrefix)
+            self.monitorPrefix)
         self._print1(
             "\n%s: Set ROI bounding boxes" % self.monitorPrefix)
         self.set_roi_bboxes()
@@ -660,7 +660,7 @@ class Polygon_merger(Base_HTK_Class):
                 all_contours, background_group=self.background_group,
                 verbose=self.verbose,
                 monitorPrefix="%s: _discard_nonenclosed_background_group" %
-                              self.monitorPrefix)
+                self.monitorPrefix)
         return all_contours
 
 # %% =====================================================================
