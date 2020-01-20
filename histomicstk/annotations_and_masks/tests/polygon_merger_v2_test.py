@@ -16,7 +16,7 @@ from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     get_annotation_documents_from_contours,
     _discard_nonenclosed_background_group, )
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    parse_slide_annotations_into_tables, )
+    parse_slide_annotations_into_table, )
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     delete_annotations_in_slide)
 
@@ -34,7 +34,7 @@ gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 # get and parse slide annotations into dataframe
 slide_annotations = gc.get('/annotation/item/' + SOURCE_SLIDE_ID)
-_, contours_df = parse_slide_annotations_into_tables(slide_annotations)
+contours_df = parse_slide_annotations_into_table(slide_annotations)
 
 # %%===========================================================================
 # Main
