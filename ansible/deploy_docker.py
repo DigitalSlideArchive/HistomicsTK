@@ -475,7 +475,7 @@ def docker_client():
     docker-py and docker modules.
     """
     try:
-        client = docker.from_env(version='auto')
+        client = docker.from_env(version='auto', timeout=3600)
     except TypeError:
         # On older versions of docker-py (such as 1.9), version isn't a
         # parameter, so try without it
