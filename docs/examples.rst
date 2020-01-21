@@ -11,6 +11,7 @@ Examples
    examples/color-normalization-and-augmentation.ipynb
    examples/nuclei-segmentation.ipynb
    examples/positive-pixel-count.ipynb
+   examples/annotation_database_parser.ipynb
    examples/annotations_to_masks_handler.ipynb
    examples/masks_to_annotations_handler.ipynb
    examples/polygon_merger.ipynb
