@@ -307,7 +307,7 @@ def dump_annotations_locally(
         - local: local directory
         - monitorPrefix: string
         - dbcon: sqlalchemy.create_engine.connect() object
-        You can just add **kwargs at the end of your callback definition
+        You can just add kwargs at the end of your callback definition
         for simplicity.
 
     callback_kwargs : dict
