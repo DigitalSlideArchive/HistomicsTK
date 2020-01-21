@@ -29,7 +29,6 @@ class DatabaseParserTest(unittest.TestCase):
         """Test dump annotations locally."""
 
         savepath = tempfile.mkdtemp()
-        # savepath = '/home/mtageld/Desktop/tmp/sqlite/'
 
         # recursively save annotations -- JSONs + sqlite for folders/items
         dump_annotations_locally(
@@ -60,7 +59,6 @@ class DatabaseParserTest(unittest.TestCase):
         """Test dump annotations locally."""
 
         savepath = tempfile.mkdtemp()
-        # savepath = '/home/mtageld/Desktop/tmp/sqlite/'
 
         # recursively save annotations -- parse to csv + sqlite
         dump_annotations_locally(

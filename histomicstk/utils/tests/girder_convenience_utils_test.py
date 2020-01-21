@@ -19,7 +19,6 @@ class GirderConvenienceTest(unittest.TestCase):
         gc = connect_to_api(APIURL, apikey=APIKEY)
         self.assertEqual(gc.urlBase, APIURL)
 
-
 # %%===========================================================================
 
 
