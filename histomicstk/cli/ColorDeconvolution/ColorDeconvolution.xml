@@ -52,6 +52,7 @@
       <default>hematoxylin</default>
     </string-enumeration>
     <double-vector>
+      <name>stain_1_vector</name>
       <longflag>stain_1_vector</longflag>
       <label>stain-1 custom vector</label>
       <default>-1,-1,-1</default>
@@ -70,6 +71,7 @@
       <default>eosin</default>
     </string-enumeration>
     <double-vector>
+      <name>stain_2_vector</name>
       <longflag>stain_2_vector</longflag>
       <label>stain-2 custom vector</label>
       <default>-1,-1,-1</default>
@@ -89,6 +91,7 @@
       <default>null</default>
     </string-enumeration>
     <double-vector>
+      <name>stain_3_vector</name>
       <longflag>stain_3_vector</longflag>
       <label>stain-3 custom vector</label>
       <default>-1,-1,-1</default>
@@ -102,6 +105,7 @@
       <default>-1,-1,-1,-1</default>
     </region>
     <integer>
+      <name>maxRegionSize</name>
       <longflag>maxRegionSize</longflag>
       <label>Maximum region size</label>
       <description>Maximum width and height allowed when processing an image, in order to prevent accidentally running on too large a region.  Use -1 for no limit</description>
