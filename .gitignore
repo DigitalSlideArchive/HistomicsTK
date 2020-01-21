@@ -26,3 +26,4 @@ MANIFEST
 # cython output
 *.so
 wheels/
+dask-worker-space
