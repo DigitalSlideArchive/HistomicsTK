@@ -1,0 +1,116 @@
+docker ps: give you a list of docker containers
+
+docker exec -it histomicstk_histomicstk bash
+then
+ls: list the docker container that is running
+
+cat deploy.sh: allow you to see the text in the file
+
+cp build/test/artifacts/: see the screenshot that is generated in the container
+
+cp build/test/artifacts/screenshot_core_annotationSpec_2020-01-22T14.41.51.187Z.png /opt/histomicstk/HistomicsTK/ 
+: copy the screen shot to a local directory, or I can mount a directory with the name that makes sense to me and then put the screenshots there
+ 
+user tab+2 to compleate the things and save time
+
+devops/test.sh -V -R web_client_HistomicsTK.annotations(the name of the test case that I need to run): only run the test case that is failing to save time
+
+devops/test.sh -N : gives a list of test case names
+
+devops/test.sh --help : give you a list of command that you can do with test.sh
+git diff: quick way to see the code that I have changed/aded
+
+learn ctest and cmake
+
+rebuild the thing and then run the test cases
+
+
+
+
+window.location.reload(true); --> this is causing the problem but without the hack, the code won't work the way expected
+
+test case 36:
+devops/test.sh -V -R web_client_HistomicsTK.annotations
+
+ Created screenshot: build/test/artifacts/screenshot_core_annotationSpec_2020-01-22T16.31.25.462Z.png
+
+
+test case 37:
+devops/test.sh -V -R web_client_HistomicsTK.analysis
+Created screenshot: build/test/artifacts/screenshot_core_analysisSpec_2020-01-22T16.32.03.787Z.png
+
+
+
+
+
+
+
+/************Below is how to get the screenshots that is generated inside the docker container to a local directory*******************************
+
+jelly-local@jellylocal-Precision-M4800:~/HistomicsTK$ docker ps
+CONTAINER ID        IMAGE                               COMMAND                  CREATED             STATUS              PORTS                                                 NAMES
+4685a48132e8        dsarchive/histomicstk_main:latest   "/bin/sh -c 'sudo -E…"   7 days ago          Up About an hour    0.0.0.0:8080->8080/tcp                                histomicstk_histomicstk
+4d4b8ecfcc40        dsarchive/girder_worker:latest      "/bin/sh -c 'sudo -E…"   7 days ago          Up About an hour                                                          histomicstk_girder_worker
+79bcd115cc36        mongo:latest                        "docker-entrypoint.s…"   7 days ago          Up About an hour    27017/tcp                                             histomicstk_mongodb
+67fca62042a6        rabbitmq:management                 "docker-entrypoint.s…"   7 days ago          Up About an hour    4369/tcp, 5671-5672/tcp, 15671-15672/tcp, 25672/tcp   histomicstk_rmqex
+jelly-local@jellylocal-Precision-M4800:~/HistomicsTK$ docker exec -it
+"docker exec" requires at least 2 arguments.
+See 'docker exec --help'.
+
+Usage:  docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
+
+Run a command in a running container
+jelly-local@jellylocal-Precision-M4800:~/HistomicsTK$ docker exec -it histomicstk_histomicstk bash
+ubuntu@histomicstk:/opt/histomicstk/girder$ ls
+ansible.cfg    clients           devops              Dockerfile.py3  girder.egg-info  LICENSE      node_modules       plugins        requirements-dev.txt  setup.py  tox.ini
+build          CMakeLists.txt    docker-compose.yml  docs            Gruntfile.js     logs         package.json       pytest_girder  scripts               test      Vagrantfile
+CHANGELOG.rst  CONTRIBUTING.rst  Dockerfile          girder          grunt_tasks      MANIFEST.in  package-lock.json  README.rst     setup.cfg             tests
+ubuntu@histomicstk:/opt/histomicstk/girder$ exit
+exit
+jelly-local@jellylocal-Precision-M4800:~/HistomicsTK$ cd devops
+jelly-local@jellylocal-Precision-M4800:~/HistomicsTK/devops$ ls
+build.sh  configure.sh  connect.sh  deploy.sh  README.rst  test.sh
+jelly-local@jellylocal-Precision-M4800:~/HistomicsTK/devops$ cat deploy.sh
+#!/bin/bash
+
+# The following line does not work for symbolic link. Do not create a symbolic link
+# of this file to run it.
+HISTOMICS_SOURCE_FOLDER="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )/.."
+
+if [[ -z "$HISTOMICS_TESTDATA_FOLDER" ]]
+then
+  echo "Set environment variable HISTOMICS_TESTDATA_FOLDER to HistomicsTK source directory"
+  exit 1
+fi
+
+$HISTOMICS_SOURCE_FOLDER/ansible/deploy_docker.py --mount $HISTOMICS_SOURCE_FOLDER:/opt/histomicstk/HistomicsTK/ --mount $HISTOMICS_TESTDATA_FOLDER:/data/ $@
+jelly-local@jellylocal-Precision-M4800:~/HistomicsTK/devops$ docker exec -it histomicstk_histomicstk bash
+ubuntu@histomicstk:/opt/histomicstk/girder$ cp build/test/
+artifacts/ coverage/  
+ubuntu@histomicstk:/opt/histomicstk/girder$ cp build/test/artifacts/
+python_coverage/                                             screenshot_core_analysisSpec_2020-01-22T14.33.55.428Z.png    screenshot_core_annotationSpec_2020-01-21T21.16.33.806Z.png
+screenshot_core_analysisSpec_2020-01-21T20.30.12.296Z.png    screenshot_core_analysisSpec_2020-01-22T14.34.12.461Z.png    screenshot_core_annotationSpec_2020-01-21T21.50.01.573Z.png
+screenshot_core_analysisSpec_2020-01-21T20.41.23.613Z.png    screenshot_core_analysisSpec_2020-01-22T14.34.29.691Z.png    screenshot_core_annotationSpec_2020-01-21T21.50.18.522Z.png
+screenshot_core_analysisSpec_2020-01-21T20.55.16.639Z.png    screenshot_core_analysisSpec_2020-01-22T14.42.20.376Z.png    screenshot_core_annotationSpec_2020-01-21T21.50.35.492Z.png
+screenshot_core_analysisSpec_2020-01-21T21.09.29.767Z.png    screenshot_core_analysisSpec_2020-01-22T14.42.37.150Z.png    screenshot_core_annotationSpec_2020-01-21T22.00.37.606Z.png
+screenshot_core_analysisSpec_2020-01-21T21.17.31.889Z.png    screenshot_core_analysisSpec_2020-01-22T14.42.53.945Z.png    screenshot_core_annotationSpec_2020-01-21T22.00.54.563Z.png
+screenshot_core_analysisSpec_2020-01-21T21.29.08.683Z.png    screenshot_core_analysisSpec_error.png                       screenshot_core_annotationSpec_2020-01-21T22.01.11.615Z.png
+screenshot_core_analysisSpec_2020-01-21T21.29.25.724Z.png    screenshot_core_annotationSpec_2020-01-15T15.24.34.004Z.png  screenshot_core_annotationSpec_2020-01-21T22.39.06.762Z.png
+screenshot_core_analysisSpec_2020-01-21T21.29.42.818Z.png    screenshot_core_annotationSpec_2020-01-15T15.34.40.031Z.png  screenshot_core_annotationSpec_2020-01-21T22.39.23.545Z.png
+screenshot_core_analysisSpec_2020-01-21T21.51.04.801Z.png    screenshot_core_annotationSpec_2020-01-16T15.57.35.389Z.png  screenshot_core_annotationSpec_2020-01-21T22.39.40.589Z.png
+screenshot_core_analysisSpec_2020-01-21T21.51.21.865Z.png    screenshot_core_annotationSpec_2020-01-16T16.07.25.913Z.png  screenshot_core_annotationSpec_2020-01-22T14.07.06.699Z.png
+screenshot_core_analysisSpec_2020-01-21T21.51.39.159Z.png    screenshot_core_annotationSpec_2020-01-16T16.16.55.805Z.png  screenshot_core_annotationSpec_2020-01-22T14.07.23.722Z.png
+screenshot_core_analysisSpec_2020-01-21T22.01.41.395Z.png    screenshot_core_annotationSpec_2020-01-16T16.35.52.667Z.png  screenshot_core_annotationSpec_2020-01-22T14.07.41.120Z.png
+screenshot_core_analysisSpec_2020-01-21T22.01.58.361Z.png    screenshot_core_annotationSpec_2020-01-16T22.14.33.320Z.png  screenshot_core_annotationSpec_2020-01-22T14.32.52.250Z.png
+screenshot_core_analysisSpec_2020-01-21T22.02.15.541Z.png    screenshot_core_annotationSpec_2020-01-16T22.23.56.741Z.png  screenshot_core_annotationSpec_2020-01-22T14.33.09.026Z.png
+screenshot_core_analysisSpec_2020-01-21T22.40.10.005Z.png    screenshot_core_annotationSpec_2020-01-16T22.31.28.006Z.png  screenshot_core_annotationSpec_2020-01-22T14.33.25.943Z.png
+screenshot_core_analysisSpec_2020-01-21T22.40.27.314Z.png    screenshot_core_annotationSpec_2020-01-16T22.38.15.258Z.png  screenshot_core_annotationSpec_2020-01-22T14.41.17.336Z.png
+screenshot_core_analysisSpec_2020-01-21T22.40.44.619Z.png    screenshot_core_annotationSpec_2020-01-17T22.01.46.314Z.png  screenshot_core_annotationSpec_2020-01-22T14.41.34.215Z.png
+screenshot_core_analysisSpec_2020-01-22T14.08.10.482Z.png    screenshot_core_annotationSpec_2020-01-17T22.10.39.781Z.png  screenshot_core_annotationSpec_2020-01-22T14.41.51.187Z.png
+screenshot_core_analysisSpec_2020-01-22T14.08.27.574Z.png    screenshot_core_annotationSpec_2020-01-17T22.29.45.625Z.png  screenshot_core_annotationSpec_error.png
+screenshot_core_analysisSpec_2020-01-22T14.08.44.603Z.png    screenshot_core_annotationSpec_2020-01-21T20.54.47.366Z.png  web_coverage/
+ubuntu@histomicstk:/opt/histomicstk/girder$ cp build/test/artifacts/screenshot_core_annotationSpec_2020-01-22T14.41.51.187Z.png /opt/histomicstk/HistomicsTK/.
+ubuntu@histomicstk:/opt/histomicstk/girder$ 
+
+
+*******************************************/

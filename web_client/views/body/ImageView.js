@@ -108,6 +108,7 @@ var ImageView = View.extend({
         this.listenTo(events, 's:widgetChanged:region', this.widgetRegion);
         this.listenTo(events, 'g:login g:logout.success g:logout.error', () => {
             this._openId = null;
+            this.model.set({ _id: null });
         });
         $(document).on('mousedown.h-image-view', (evt) => {
             // let the context menu close itself
@@ -246,6 +247,9 @@ var ImageView = View.extend({
         return View.prototype.destroy.apply(this, arguments);
     },
     openImage(id) {
+        /* eslint-disable backbone/no-silent */
+        this.model.clear({silent: true});
+        delete this.model.parent;
         if (id) {
             this.model.set({ _id: id }).fetch().then(() => {
                 this._setImageInput();

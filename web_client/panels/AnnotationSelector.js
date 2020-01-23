@@ -67,32 +67,37 @@ var AnnotationSelector = Panel.extend({
 
     render() {
         this._debounceRenderRequest = null;
-        const annotationGroups = this._getAnnotationGroups();
-        this.$('[data-toggle="tooltip"]').tooltip('destroy');
-        if (!this.viewer) {
-            this.$el.empty();
-            return;
-        }
-        this.$el.html(annotationSelectorWidget({
-            id: 'annotation-panel-container',
-            title: 'Annotations',
-            activeAnnotation: this._activeAnnotation ? this._activeAnnotation.id : '',
-            showLabels: this._showLabels,
-            user: getCurrentUser() || {},
-            writeAccess: this._writeAccess,
-            opacity: this._opacity,
-            fillOpacity: this._fillOpacity,
-            interactiveMode: this._interactiveMode,
-            expandedGroups: this._expandedGroups,
-            annotationGroups,
-            _
-        }));
-        this.$('.s-panel-content').collapse({toggle: false});
-        this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
-        this._changeGlobalOpacity();
-        this._changeGlobalFillOpacity();
-        if (this._showAllAnnotationsState) {
-            this.showAllAnnotations();
+        if (this.parentItem && this.parentItem.id) {
+            this.parentItem.getAccessLevel((imageAccessLevel) => {
+                const annotationGroups = this._getAnnotationGroups();
+                this.$('[data-toggle="tooltip"]').tooltip('destroy');
+                if (!this.viewer) {
+                    this.$el.empty();
+                    return;
+                }
+                this.$el.html(annotationSelectorWidget({
+                    id: 'annotation-panel-container',
+                    title: 'Annotations',
+                    activeAnnotation: this._activeAnnotation ? this._activeAnnotation.id : '',
+                    showLabels: this._showLabels,
+                    user: getCurrentUser() || {},
+                    accessLevel: imageAccessLevel,
+                    writeAccess: this._writeAccess,
+                    opacity: this._opacity,
+                    fillOpacity: this._fillOpacity,
+                    interactiveMode: this._interactiveMode,
+                    expandedGroups: this._expandedGroups,
+                    annotationGroups,
+                    _
+                }));
+                this.$('.s-panel-content').collapse({toggle: false});
+                this.$('[data-toggle="tooltip"]').tooltip({container: 'body'});
+                this._changeGlobalOpacity();
+                this._changeGlobalFillOpacity();
+                if (this._showAllAnnotationsState) {
+                    this.showAllAnnotations();
+                }
+            });
         }
         return this;
     },
@@ -116,7 +121,6 @@ var AnnotationSelector = Panel.extend({
         if (this._parentId === item.id) {
             return;
         }
-
         this.parentItem = item;
         this._parentId = item.id;
 
