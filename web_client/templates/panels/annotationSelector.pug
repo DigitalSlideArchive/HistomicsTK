@@ -75,8 +75,7 @@ block content
     label(title='Highlight annotations when hovering with the mouse.')
       input#h-toggle-interactive(type='checkbox', checked=interactiveMode)
       | Interactive
-    if user && user.get 
-      if accessLevel > 0
-        button.btn.btn-sm.btn-primary.h-create-annotation
-          | #[span.icon-plus-squared] New        
+    if accessLevel >= writeAccessLevel
+      button.btn.btn-sm.btn-primary.h-create-annotation
+        | #[span.icon-plus-squared] New        
     .clearfix

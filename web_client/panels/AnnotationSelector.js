@@ -82,6 +82,7 @@ var AnnotationSelector = Panel.extend({
                     showLabels: this._showLabels,
                     user: getCurrentUser() || {},
                     accessLevel: imageAccessLevel,
+                    writeAccessLevel: AccessType.WRITE,
                     writeAccess: this._writeAccess,
                     opacity: this._opacity,
                     fillOpacity: this._fillOpacity,
