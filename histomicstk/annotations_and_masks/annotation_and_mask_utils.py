@@ -39,6 +39,96 @@ def get_image_from_htk_response(resp):
 # %%===========================================================================
 
 
+def scale_slide_annotations(slide_annotations, sf):
+    """Scales up or down annotations in a slide.
+
+    Works in place, but returns slide_annotations anyways.
+
+    Parameters
+    -----------
+    slide_annotations : list of dicts
+        response from server request
+
+    sf : float
+        scale factor to multiply coordinates
+
+    Returns
+    ---------
+    list of dicts
+
+    """
+    if sf == 1.0:
+        return slide_annotations
+
+    for annidx, ann in enumerate(slide_annotations):
+        for elementidx, element in enumerate(ann['annotation']['elements']):
+            for key in element.keys():
+
+                if key in ['height', 'width']:
+                    slide_annotations[annidx]['annotation'][
+                        'elements'][elementidx][key] = \
+                        int(slide_annotations[annidx]['annotation'][
+                            'elements'][elementidx][key] * sf)
+
+                elif key in ['center', 'points']:
+                    slide_annotations[annidx]['annotation'][
+                        'elements'][elementidx][key] = \
+                        (np.array(slide_annotations[annidx]['annotation'][
+                            'elements'][elementidx][key]) * sf).astype(
+                            int).tolist()
+    return slide_annotations
+
+# %%===========================================================================
+
+
+def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
+    """Get how much is request region smaller than base.
+
+    This also gets the string to append to server request for getting rgb.
+
+    Parameters
+    -----------
+    gc : Girder client instance
+        gc should be authoenticated.
+    slide_id : str
+        girder id of slide
+    MPP : float or None
+        Microns-per-pixel -- best use this as it's more well-defined than
+        magnification which is more scanner/manufacturer specific.
+        MPP of 0.25 often roughly translates to 40x
+    MAG : float or None
+        If you prefer to use whatever magnification is reported in slide.
+        If neither MPP or MAG is provided, everything is retrieved without
+        scaling at base (scan) magnification.
+
+    Returns
+    ----------
+    float
+        how much smaller (0.1 means 10x smaller) is requested image
+        compared to scan magnification (slide coordinates)
+    str
+        string to appnd to server request for getting slide region
+
+    """
+    slide_info = gc.get("/item/%s/tiles" % slide_id)
+
+    if MPP is not None:
+        mm = 0.001 * MPP
+        sf = slide_info['mm_x'] / mm
+        appendStr = "&mm_x=%.4f&mm_y=%.8f" % (mm, mm)
+
+    elif MAG is not None:
+        sf = MAG / slide_info['magnification']
+        appendStr = "&magnification=%.8f" % MAG
+    else:
+        sf = 1.0
+        appendStr = ""
+
+    return sf, appendStr
+
+# %%===========================================================================
+
+
 def rotate_point_list(point_list, rotation, center=(0, 0)):
     """Rotate a certain point list around a central point. Modified from.
 
@@ -83,8 +173,8 @@ def get_rotated_rectangular_coords(
         roi_center, roi_width, roi_height, roi_rotation=0):
     """Given data on rectangular ROI center/width/height/rotation.
 
-    Get the unrotated abounding box coordinates around rotated ROI. This of course is
-    applicable to any rotated rectangular annotation.
+    Get the unrotated abounding box coordinates around rotated ROI. This
+    of course is applicable to any rotated rectangular annotation.
 
     Parameters
     -----------
@@ -115,7 +205,7 @@ def get_rotated_rectangular_coords(
     roi_corners = rotate_point_list(roi_corners_false,
                                     rotation=roi_rotation,
                                     center=roi_center)
-    roi_corners = np.array(roi_corners)
+    roi_corners = np.array(roi_corners, dtype=np.int32)
 
     # pack into dict
     roi_info = {
@@ -195,7 +285,8 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 # %%===========================================================================
 
 
-def parse_slide_annotations_into_tables(slide_annotations):
+def parse_slide_annotations_into_tables(
+        slide_annotations, x_offset=0, y_offset=0):
     """Given a slide annotation list, parse into convenient tabular format.
 
     If the annotation is a point, then it is just treated as if it is a
@@ -206,6 +297,12 @@ def parse_slide_annotations_into_tables(slide_annotations):
     -----------
     slide_annotations : list of dicts
         response from server request
+
+    x_offset : int
+        offset to deduct from x coordinates
+
+    y_offset : int
+        offset to deduct from y coordinates
 
     Returns
     ---------
@@ -314,9 +411,7 @@ def parse_slide_annotations_into_tables(slide_annotations):
                     roi_rotation=element['rotation'])
                 xmin, ymin = roiinfo['x_min'], roiinfo['y_min']
                 xmax, ymax = roiinfo['x_max'], roiinfo['y_max']
-                coords = np.array(
-                    [(xmin, ymin), (xmax, ymin), (xmax, ymax),
-                     (xmin, ymax), (xmin, ymin)], dtype='int32')
+                coords = roiinfo['roi_corners']  # for rotated rectangles
                 if element['rotation'] != 0:
                     element['type'] = 'polyline'
 
@@ -329,6 +424,15 @@ def parse_slide_annotations_into_tables(slide_annotations):
 
             else:
                 continue
+
+            # account for user-specified offset if any
+            if (x_offset != 0) or (y_offset != 0):
+                coords[:, 0] = coords[:, 0] - x_offset
+                coords[:, 1] = coords[:, 1] - y_offset
+                xmin -= x_offset
+                xmax -= x_offset
+                ymin -= y_offset
+                ymax -= y_offset
 
             # parse to string for inclusion in pd dataframe
             x_coords, y_coords = _parse_coords_to_str(coords)
@@ -435,9 +539,9 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
         dtype='int')
     iou = np_vec_no_jit_iou(bboxes[idx_for_roi, :][None, ...], bboxes2=bboxes)
     iou = np.concatenate((np.arange(iou.shape[1])[None, ...], iou))
-    iou = iou[:, iou[1, :] > iou_thresh]
+    iou = iou[:, iou[1, :] > iou_thresh].astype(int)
 
-    overlaps = set([int(j) for j in iou[0, :]]) - {idx_for_roi}
+    overlaps = set(iou[0, :].tolist()) - {idx_for_roi}
 
     return list(overlaps)
 

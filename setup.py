@@ -73,6 +73,7 @@ setup(
         'imageio>=2.3.0',
         'shapely[vectorized]',
         'opencv-python',
+        'matplotlib',
         'sqlalchemy',
         # deep learning packages
         'h5py>=2.7.1',
