@@ -370,7 +370,8 @@ def get_mask_from_slide(
 # %% =====================================================================
 
 
-def _visualize_annotations_on_rgb(rgb, contours_list, linewidth=0.2):
+def _visualize_annotations_on_rgb(
+        rgb, contours_list, linewidth=0.2, x_offset=0, y_offset=0):
 
     fig = plt.figure(
         figsize=(rgb.shape[1] / 1000, rgb.shape[0] / 1000), dpi=100)
@@ -385,10 +386,13 @@ def _visualize_annotations_on_rgb(rgb, contours_list, linewidth=0.2):
     patches = []
 
     for idx, ann in enumerate(contours_list):
+        xy = np.array([
+            [int(j) for j in ann[k].split(",")]
+            for k in ('coords_x', 'coords_y')]).T
+        xy[:, 0] = xy[:, 0] + x_offset
+        xy[:, 1] = xy[:, 1] + y_offset
         polygon = mpPolygon(
-            xy=np.array([
-                [int(j) for j in ann[k].split(",")]
-                for k in ('coords_x', 'coords_y')]).T,
+            xy=xy,
             color=[int(j) / 255 for j in ann['color'].split(
                 'rgb(')[1][:-1].split(',')],
             closed=True, fill=False,

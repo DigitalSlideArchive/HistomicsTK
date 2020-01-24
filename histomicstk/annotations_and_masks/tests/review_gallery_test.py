@@ -3,18 +3,20 @@ import unittest
 
 import os
 import girder_client
+import matplotlib.pylab as plt
 from pandas import read_csv
 import tempfile
 import shutil
+import numpy as np
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois,
     scale_slide_annotations, get_scale_factor_and_appendStr,
-    get_idxs_for_annots_overlapping_roi_by_bbox)
+    get_idxs_for_annots_overlapping_roi_by_bbox, get_image_from_htk_response,
+    parse_slide_annotations_into_tables)
 
 from histomicstk.annotations_and_masks.annotations_to_masks_handler import \
-    _get_roi_bounds_by_run_mode
-import numpy as np
+    _get_roi_bounds_by_run_mode, _visualize_annotations_on_rgb
 
 # %%===========================================================================
 # Constants & prep work
@@ -189,12 +191,72 @@ def _keep_relevant_elements_for_roi(
 
 # %%===========================================================================
 
+# only keep relevale elements and get updated bounds
 elinfos_roi, bounds = _keep_relevant_elements_for_roi(
     element_infos, mode=mode, idx_for_roi=idx_for_roi,
     iou_thresh=iou_thresh, roiinfo=copy.deepcopy(bounds))
 
 # %%===========================================================================
 
+# get RGB
+if get_rgb:
+    getStr = \
+        "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
+        % (slide_id,
+           bounds['XMIN'], bounds['XMAX'],
+           bounds['YMIN'], bounds['YMAX'])
+    getStr += appendStr
+    resp = gc.get(getStr, jsonResp=False)
+    rgb = get_image_from_htk_response(resp)
+    result['rgb'] = rgb
 
+
+# %%===========================================================================
+
+
+def _trim_slide_annotations_to_roi(slide_annotations, elinfos_roi):
+
+    annotations = copy.deepcopy(slide_annotations)
+
+    # unique relevent annotation document indices
+    unique_annidxs = np.int32(np.unique(elinfos_roi.loc[:, "annidx"]))
+
+    # unique relevant element indixes in each annotation document
+    unique_elementidxs = []
+    for annidx in unique_annidxs:
+        eleidxs = elinfos_roi.loc[
+            elinfos_roi.loc[:, 'annidx'] == annidx, 'elementidx']
+        unique_elementidxs.append(np.int32(np.unique(eleidxs)))
+
+    # now slice as needed
+    annotations_slice = np.array(annotations)[unique_annidxs].tolist()
+    for annidx in range(len(annotations_slice)):
+        elements_original = annotations_slice[annidx]['annotation']['elements']
+        annotations_slice[annidx]['annotation']['elements'] = np.array(
+            elements_original)[unique_elementidxs[annidx]].tolist()
+
+    return annotations_slice
+
+
+# %%===========================================================================
+
+# find relevant portion from slide annotations to use
+annotations_slice = _trim_slide_annotations_to_roi(
+    slide_annotations, elinfos_roi=elinfos_roi)
+
+# tabularize to use contours
+_, contours_list = parse_slide_annotations_into_tables(
+    annotations_slice)
+contours_list = contours_list.to_dict(orient='records')
+result['contours'] = contours_list
+
+
+# get visualization of annotations on RGB
+if get_visualization:
+    result['visualization'] = _visualize_annotations_on_rgb(
+        rgb=rgb, contours_list=contours_list, linewidth=linewidth,
+        x_offset=int(bounds['XMIN'] * sf),
+        y_offset=int(bounds['YMIN'] * sf),
+    )
 
 
