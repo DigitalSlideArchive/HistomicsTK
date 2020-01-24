@@ -212,8 +212,8 @@ def get_roi_mask(
 
 
 def get_mask_from_slide(
-        gc, slide_id, GTCodes_dict, roiinfo, slide_annotations,
-        element_infos, sf=1.0, get_roi_mask_kwargs=dict()):
+        GTCodes_dict, roiinfo, slide_annotations,
+        element_infos, sf=1.0, get_roi_mask_kwargs=None):
     """Parse region from the slide and get its corresponding labeled mask.
 
     This is a wrapper around get_roi_mask() which should be referred to for
@@ -223,14 +223,6 @@ def get_mask_from_slide(
 
     Parameters
     -----------
-    gc : object
-        girder client object to make requests, for example:
-        gc = girder_client.GirderClient(apiUrl = APIURL)
-        gc.authenticate(interactive=True)
-
-    slide_id : str
-        girder id for item (slide)
-
     GTCodes_dict : dict
         the ground truth codes and information dict.
         This is a dict that is indexed by the annotation group name and
@@ -253,13 +245,6 @@ def get_mask_from_slide(
 
     sf : float
         scale factor to multiple coordinates (eg 0.5 would halve size)
-
-    mode : str
-        one of must be in ['wsi', 'min_bounding_box', 'manual_bounds']
-        this specifies which part of the slide to get the mask from. If it
-        - wsi: get scaled up/down version of mask of whole slide
-        - min_bounding_box: get minimum box for all annotations in slide
-        - manual_bounds: use given ROI bounds provided in roiinfo
 
     slide_annotations : list
         Make sure you have used
@@ -289,6 +274,8 @@ def get_mask_from_slide(
 
     """
     # convert from dict to required dataframe
+    if get_roi_mask_kwargs is None:
+        get_roi_mask_kwargs = dict()
     GTCodes = DataFrame.from_dict(GTCodes_dict, orient='index')
 
     # some sanity checks
@@ -383,7 +370,7 @@ def get_mask_from_slide(
 # %% =====================================================================
 
 
-def _visualize_annotations_on_rgb(rgb, ROI, contours_list, linewidth=0.2):
+def _visualize_annotations_on_rgb(rgb, contours_list, linewidth=0.2):
 
     fig = plt.figure(
         figsize=(rgb.shape[1] / 1000, rgb.shape[0] / 1000), dpi=100)
@@ -456,7 +443,7 @@ def _sanity_checks(
         assert get_rgb, "cannot get visualization without rgb."
 
     if not get_roi_mask_kwargs['crop_to_roi']:
-        assert ((not get_rgb) and (not get_visualization)), \
+        assert (not get_rgb) and (not get_visualization), \
             "Handling overflowing annotations while also getting RGB is" \
             "not currently supported."
 
@@ -678,10 +665,9 @@ def get_image_and_mask_from_slide(
             idx_for_roi=idx_for_roi, **get_roi_mask_kwargs)
     else:
         ROI, _ = get_mask_from_slide(
-            gc=gc, slide_id=slide_id, GTCodes_dict=GTCodes_dict,
-            roiinfo=copy.deepcopy(bounds), sf=sf,
+            GTCodes_dict=GTCodes_dict, roiinfo=copy.deepcopy(bounds),
             slide_annotations=slide_annotations, element_infos=element_infos,
-            get_roi_mask_kwargs=get_roi_mask_kwargs)
+            sf=sf, get_roi_mask_kwargs=get_roi_mask_kwargs)
 
     # get RGB
     if get_rgb:
@@ -705,8 +691,7 @@ def get_image_and_mask_from_slide(
     # get visualization of annotations on RGB
     if get_visualization:
         result['visualization'] = _visualize_annotations_on_rgb(
-            rgb=rgb, ROI=ROI, contours_list=contours_list,
-            linewidth=linewidth)
+            rgb=rgb, contours_list=contours_list, linewidth=linewidth)
 
     return result
 
@@ -807,7 +792,7 @@ def get_all_rois_from_slide(
 
     # convert to df and sanity check
     GTCodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
-    if any(GTCodes.loc[:, 'GT_code'] <= 0):
+    if any(GTCodes_df.loc[:, 'GT_code'] <= 0):
         raise Exception("All GT_code must be > 0")
 
     # if not given, assign name of first file associated with girder item
