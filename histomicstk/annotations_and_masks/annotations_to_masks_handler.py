@@ -212,7 +212,7 @@ def get_roi_mask(
 
 
 def get_mask_from_slide(
-        gc, slide_id, GTCodes_dict, roiinfo, slide_annotations,
+        GTCodes_dict, roiinfo, slide_annotations,
         element_infos, sf=1.0, get_roi_mask_kwargs=dict()):
     """Parse region from the slide and get its corresponding labeled mask.
 
@@ -223,14 +223,6 @@ def get_mask_from_slide(
 
     Parameters
     -----------
-    gc : object
-        girder client object to make requests, for example:
-        gc = girder_client.GirderClient(apiUrl = APIURL)
-        gc.authenticate(interactive=True)
-
-    slide_id : str
-        girder id for item (slide)
-
     GTCodes_dict : dict
         the ground truth codes and information dict.
         This is a dict that is indexed by the annotation group name and
@@ -383,7 +375,7 @@ def get_mask_from_slide(
 # %% =====================================================================
 
 
-def _visualize_annotations_on_rgb(rgb, ROI, contours_list, linewidth=0.2):
+def _visualize_annotations_on_rgb(rgb, contours_list, linewidth=0.2):
 
     fig = plt.figure(
         figsize=(rgb.shape[1] / 1000, rgb.shape[0] / 1000), dpi=100)
@@ -678,10 +670,9 @@ def get_image_and_mask_from_slide(
             idx_for_roi=idx_for_roi, **get_roi_mask_kwargs)
     else:
         ROI, _ = get_mask_from_slide(
-            gc=gc, slide_id=slide_id, GTCodes_dict=GTCodes_dict,
-            roiinfo=copy.deepcopy(bounds), sf=sf,
+            GTCodes_dict=GTCodes_dict, roiinfo=copy.deepcopy(bounds),
             slide_annotations=slide_annotations, element_infos=element_infos,
-            get_roi_mask_kwargs=get_roi_mask_kwargs)
+            sf=sf, get_roi_mask_kwargs=get_roi_mask_kwargs)
 
     # get RGB
     if get_rgb:
@@ -705,8 +696,7 @@ def get_image_and_mask_from_slide(
     # get visualization of annotations on RGB
     if get_visualization:
         result['visualization'] = _visualize_annotations_on_rgb(
-            rgb=rgb, ROI=ROI, contours_list=contours_list,
-            linewidth=linewidth)
+            rgb=rgb, contours_list=contours_list, linewidth=linewidth)
 
     return result
 
