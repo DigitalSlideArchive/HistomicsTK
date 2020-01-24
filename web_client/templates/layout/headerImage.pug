@@ -21,19 +21,16 @@ if parentChain
       li
         span.g-item-breadcrumb-link(data-id=image.id, data-type='item')
           = image.name()
-
 button.btn.btn-default.navbar-btn.h-open-annotated-image(type='button')
   | #[span.icon-list] Annotated images...
 button.btn.btn-default.navbar-btn.h-open-image(type='button')
   | #[span.icon-picture] Open image...
-
 if !previousImageLink || !nextImageLink
   - var titlePre=' '
   - var titleNext=' '
 else
   - var titlePre='Previous image - '+previousImageName
   - var titleNext='Next image - '+nextImageName
-
 span.h-links
   a.h-previous-image.btn.btn-default(href=previousImageLink, title=titlePre, disabled=!previousImageLink)
     i.icon-left-open
