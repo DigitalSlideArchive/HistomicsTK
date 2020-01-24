@@ -30,17 +30,16 @@ gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 # just a temp directory to save masks for now
 # BASE_SAVEPATH = tempfile.mkdtemp()
-BASE_SAVEPATH = "/home/mtageld/Desktop/tmp/"
-SAVEPATHS = {
-    'rgb': os.path.join(BASE_SAVEPATH, 'rgbs'),
-    'contours': os.path.join(BASE_SAVEPATH, 'contours'),
-    'visualization': os.path.join(BASE_SAVEPATH, 'vis'),
-}
-for _, savepath in SAVEPATHS.items():
-    os.mkdir(savepath)
+# SAVEPATHS = {
+#     'rgb': os.path.join(BASE_SAVEPATH, 'rgbs'),
+#     'contours': os.path.join(BASE_SAVEPATH, 'contours'),
+#     'visualization': os.path.join(BASE_SAVEPATH, 'vis'),
+# }
+# for _, savepath in SAVEPATHS.items():
+#     os.mkdir(savepath)
 
 # Microns-per-pixel / Magnification (either or)
-MPP = 5.0
+MPP = 2.5  # 5.0
 MAG = None
 
 # # get annotations for slide

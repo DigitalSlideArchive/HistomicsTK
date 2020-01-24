@@ -205,7 +205,7 @@ def get_rotated_rectangular_coords(
     roi_corners = rotate_point_list(roi_corners_false,
                                     rotation=roi_rotation,
                                     center=roi_center)
-    roi_corners = np.array(roi_corners)
+    roi_corners = np.array(roi_corners, dtype=np.int32)
 
     # pack into dict
     roi_info = {
@@ -404,9 +404,7 @@ def parse_slide_annotations_into_tables(slide_annotations):
                     roi_rotation=element['rotation'])
                 xmin, ymin = roiinfo['x_min'], roiinfo['y_min']
                 xmax, ymax = roiinfo['x_max'], roiinfo['y_max']
-                coords = np.array(
-                    [(xmin, ymin), (xmax, ymin), (xmax, ymax),
-                     (xmin, ymax), (xmin, ymin)], dtype='int32')
+                coords = roiinfo['roi_corners']  # for rotated rectangles
                 if element['rotation'] != 0:
                     element['type'] = 'polyline'
 

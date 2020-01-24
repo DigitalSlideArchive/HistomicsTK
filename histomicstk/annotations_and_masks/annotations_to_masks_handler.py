@@ -389,8 +389,8 @@ def _visualize_annotations_on_rgb(
         xy = np.array([
             [int(j) for j in ann[k].split(",")]
             for k in ('coords_x', 'coords_y')]).T
-        xy[:, 0] = xy[:, 0] + x_offset
-        xy[:, 1] = xy[:, 1] + y_offset
+        xy[:, 0] = xy[:, 0] - x_offset
+        xy[:, 1] = xy[:, 1] - y_offset
         polygon = mpPolygon(
             xy=xy,
             color=[int(j) / 255 for j in ann['color'].split(
