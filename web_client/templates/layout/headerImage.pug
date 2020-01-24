@@ -25,8 +25,16 @@ button.btn.btn-default.navbar-btn.h-open-annotated-image(type='button')
   | #[span.icon-list] Annotated images...
 button.btn.btn-default.navbar-btn.h-open-image(type='button')
   | #[span.icon-picture] Open image...
+
+-
+  var titlePre = '', titleNext = '';
+  if (previousImageLink && nextImageLink) {
+    titlePre = 'Previous image - ' + previousImageName;
+    titleNext ='Next image - ' + nextImageName;
+  }
+
 span.h-links
-  a.h-previous-image.btn.btn-default(href=previousImageLink, title='Previous image', disabled=!previousImageLink)
+  a.h-previous-image.btn.btn-default(href=previousImageLink, title=titlePre, disabled=!previousImageLink)
     i.icon-left-open
-  a.h-next-image.btn.btn-default(href=nextImageLink, title='Next image', disabled=!nextImageLink)
+  a.h-next-image.btn.btn-default(href=nextImageLink, title=titleNext, disabled=!nextImageLink)
     i.icon-right-open
