@@ -10,8 +10,8 @@ import tempfile
 import shutil
 import girder_client
 import numpy as np
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    delete_annotations_in_slide)
+# from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+#     delete_annotations_in_slide)
 from histomicstk.saliency.cellularity_detection_superpixels import (
     Cellularity_detector_superpixels)
 
@@ -19,8 +19,8 @@ from histomicstk.saliency.cellularity_detection_superpixels import (
 # Constants & prep work
 
 APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
-SAMPLE_SLIDE_ID = "5d586d76bd4404c6b1f286ae"
-# SAMPLE_SLIDE_ID = "5d8c296cbd4404c6b1fa5572"
+# SAMPLE_SLIDE_ID = "5d586d76bd4404c6b1f286ae"
+SAMPLE_SLIDE_ID = "5d8c296cbd4404c6b1fa5572"
 
 gc = girder_client.GirderClient(apiUrl=APIURL)
 gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
@@ -46,8 +46,8 @@ class CellularityDetectionTest(unittest.TestCase):
 
     def test_Cellularity_detector_superpixels(self):
         """Test Cellularity_detector_superpixels()."""
-        # deleting existing annotations in target slide (if any)
-        delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)
+        # # deleting existing annotations in target slide (if any)
+        # delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)
 
         # run cellularity detector
         cds = Cellularity_detector_superpixels(

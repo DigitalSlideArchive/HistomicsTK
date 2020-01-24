@@ -12,8 +12,8 @@ import shutil
 import girder_client
 # import numpy as np
 from pandas import read_csv
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    delete_annotations_in_slide)
+# from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+#     delete_annotations_in_slide)
 from histomicstk.saliency.cellularity_detection_thresholding import (
     Cellularity_detector_thresholding)
 
@@ -42,8 +42,8 @@ class CellularityDetectionThresholdingTest(unittest.TestCase):
 
     def test_cellularity_detection_thresholding(self):
         """Test Cellularity_detector_thresholding()."""
-        # deleting existing annotations in target slide (if any)
-        delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)
+        # # deleting existing annotations in target slide (if any)
+        # delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)
 
         # run cellularity detector
         cdt = Cellularity_detector_thresholding(

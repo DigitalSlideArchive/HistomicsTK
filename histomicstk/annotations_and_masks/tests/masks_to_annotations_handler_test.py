@@ -14,8 +14,8 @@ from imageio import imread
 
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     get_contours_from_mask, get_annotation_documents_from_contours)
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    delete_annotations_in_slide)
+# from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+#     delete_annotations_in_slide)
 
 # %%===========================================================================
 # Constants & prep work
@@ -112,14 +112,17 @@ class MasksToAnnotationsTest(unittest.TestCase):
             }
         )
 
-        # deleting existing annotations in target slide (if any)
-        delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)
-
-        # post annotations to slide -- make sure it posts without errors
-        resp = gc.post(
-            "/annotation?itemId=" + SAMPLE_SLIDE_ID,
-            json=annotation_docs[0])
-        self.assertTrue('annotation' in resp.keys())
+        # Uncommented this deleting/posting code because I removed
+        # the girder token edit permissions for security reasons
+        #
+        # # deleting existing annotations in target slide (if any)
+        # delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)
+        #
+        # # post annotations to slide -- make sure it posts without errors
+        # resp = gc.post(
+        #     "/annotation?itemId=" + SAMPLE_SLIDE_ID,
+        #     json=annotation_docs[0])
+        # self.assertTrue('annotation' in resp.keys())
 
 # %%===========================================================================
 
