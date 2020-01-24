@@ -51,7 +51,7 @@ def _sanity_checks(
 
 def _keep_relevant_elements_for_roi(
         element_infos, sf, mode='manual_bounds',
-        idx_for_roi=None, iou_thresh=0.0, roiinfo=None):
+        idx_for_roi=None, roiinfo=None):
 
     # This stores information about the ROI like bounds, slide_name, etc
     # Allows passing many parameters and good forward/backward compatibility
@@ -70,7 +70,7 @@ def _keep_relevant_elements_for_roi(
 
     # isolate annotations that potentially overlap roi
     overlaps = get_idxs_for_annots_overlapping_roi_by_bbox(
-        element_infos, idx_for_roi=idx_for_roi, iou_thresh=iou_thresh)
+        element_infos, idx_for_roi=idx_for_roi)
     elinfos_roi = element_infos.loc[overlaps, :]
 
     # update roiinfo -- remember, annotation elements can be
@@ -78,9 +78,7 @@ def _keep_relevant_elements_for_roi(
     # since we're not parsing the polygons into mask form here, and
     # therefore we're not 'cropping' the polygons to the requested bounds,
     # we extend the requested bounds themselves to accomodate the overflowing
-    # annotations. Alternatively, if this behavior is not desired, the user
-    # can pass iou_thresh = 1.0 and only keep annotations that are fully
-    # enclosed within the requested bounds
+    # annotations.
     roiinfo['XMIN'] = int(np.min(elinfos_roi.xmin))
     roiinfo['YMIN'] = int(np.min(elinfos_roi.ymin))
     roiinfo['XMAX'] = int(np.max(elinfos_roi.xmax))
@@ -121,12 +119,10 @@ def _trim_slide_annotations_to_roi(slide_annotations, elinfos_roi):
 
 
 def annotations_to_contours_no_mask(
-        gc, slide_id, MPP=5.0, MAG=None,
-        mode='min_bounding_box',
+        gc, slide_id, MPP=5.0, MAG=None, mode='min_bounding_box',
         bounds=None, idx_for_roi=None,
         slide_annotations=None, element_infos=None,
-        iou_thresh=0.0, linewidth=0.2,
-        get_rgb=True, get_visualization=True):
+        linewidth=0.2, get_rgb=True, get_visualization=True):
 
     MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization = \
         _sanity_checks(
@@ -159,7 +155,7 @@ def annotations_to_contours_no_mask(
     # only keep relevale elements and get updated bounds
     elinfos_roi, bounds = _keep_relevant_elements_for_roi(
         element_infos, sf=sf, mode=mode, idx_for_roi=idx_for_roi,
-        iou_thresh=iou_thresh, roiinfo=copy.deepcopy(bounds))
+        roiinfo=copy.deepcopy(bounds))
 
     # get RGB
     if get_rgb:
@@ -188,5 +184,7 @@ def annotations_to_contours_no_mask(
     if get_visualization:
         result['visualization'] = _visualize_annotations_on_rgb(
             rgb=rgb, contours_list=contours_list, linewidth=linewidth)
+
+    return result
 
 # %%===========================================================================
