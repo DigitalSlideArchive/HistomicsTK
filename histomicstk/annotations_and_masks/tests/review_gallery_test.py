@@ -245,17 +245,14 @@ annotations_slice = _trim_slide_annotations_to_roi(
 
 # tabularize to use contours
 _, contours_list = parse_slide_annotations_into_tables(
-    annotations_slice)
+    annotations_slice, x_offset=int(bounds['XMIN'] * sf),
+    y_offset=int(bounds['YMIN'] * sf),)
 contours_list = contours_list.to_dict(orient='records')
 result['contours'] = contours_list
-
 
 # get visualization of annotations on RGB
 if get_visualization:
     result['visualization'] = _visualize_annotations_on_rgb(
-        rgb=rgb, contours_list=contours_list, linewidth=linewidth,
-        x_offset=int(bounds['XMIN'] * sf),
-        y_offset=int(bounds['YMIN'] * sf),
-    )
+        rgb=rgb, contours_list=contours_list, linewidth=linewidth)
 
-
+# %%===========================================================================
