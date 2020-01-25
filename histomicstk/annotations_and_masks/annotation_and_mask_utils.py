@@ -286,7 +286,7 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 
 
 def parse_slide_annotations_into_tables(
-        slide_annotations, x_offset=0, y_offset=0):
+        slide_annotations, x_offset=0, y_offset=0, cropping_bounds=None):
     """Given a slide annotation list, parse into convenient tabular format.
 
     If the annotation is a point, then it is just treated as if it is a
@@ -303,6 +303,10 @@ def parse_slide_annotations_into_tables(
 
     y_offset : int
         offset to deduct from y coordinates
+
+    cropping_bounds : dict or None
+        if given, must have keys XMIN, XMAX, YMIN, YMAX. These are the
+        bounds to which the polygons will be cropped using shapely.
 
     Returns
     ---------
@@ -359,6 +363,34 @@ def parse_slide_annotations_into_tables(
         'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
         'coords_x', 'coords_y'
     ])
+
+    if cropping_bounds is not None:
+        cropping_bounds['XMIN'] -= x_offset
+        cropping_bounds['XMAX'] -= x_offset
+        cropping_bounds['YMIN'] -= y_offset
+        cropping_bounds['YMAX'] -= y_offset
+        xmin, xmax, ymin, ymax = (
+            cropping_bounds['XMIN'], cropping_bounds['XMAX'],
+            cropping_bounds['YMIN'], cropping_bounds['YMAX'])
+        bounds_polygon = Polygon(np.array([
+            (xmin, ymin), (xmax, ymin),
+            (xmax, ymax), (xmin, ymax), (xmin, ymin),
+        ], dtype='int32'))
+        # bounds_polygon = Polygon(np.array(bounds_polygon.exterior.xy).T)
+        # bounds_polygon = bounds_polygon.buffer(0)
+
+    def _conditional_crop(coords):
+        """Crop bounds to desired area using shapely polygons."""
+        if cropping_bounds is not None:
+            try:
+                # elpoly = Polygon(np.array(Polygon(coords).exterior.xy).T)
+                elpoly = Polygon(coords)
+                polygon = bounds_polygon.intersection(elpoly)
+                coords = np.array(polygon.exterior.xy, dtype=np.int32).T
+            except Exception as e:
+                # weird shapely errors, so we just dont crop
+                print(str(e))
+        return coords
 
     def _parse_coords_to_str(coords):
         return (
@@ -433,6 +465,9 @@ def parse_slide_annotations_into_tables(
                 xmax -= x_offset
                 ymin -= y_offset
                 ymax -= y_offset
+
+            # crop using shapely to desired bounds if needed
+            coords = _conditional_crop(coords)
 
             # parse to string for inclusion in pd dataframe
             x_coords, y_coords = _parse_coords_to_str(coords)

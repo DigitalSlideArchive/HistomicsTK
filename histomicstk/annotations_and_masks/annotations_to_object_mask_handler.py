@@ -122,7 +122,8 @@ def annotations_to_contours_no_mask(
         gc, slide_id, MPP=5.0, MAG=None, mode='min_bounding_box',
         bounds=None, idx_for_roi=None,
         slide_annotations=None, element_infos=None,
-        linewidth=0.2, get_rgb=True, get_visualization=True):
+        linewidth=0.2, crop_to_roi=True,
+        get_rgb=True, get_visualization=True):
 
     MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization = \
         _sanity_checks(
@@ -174,9 +175,14 @@ def annotations_to_contours_no_mask(
         slide_annotations, elinfos_roi=elinfos_roi)
 
     # tabularize to use contours
+    if crop_to_roi:
+        cropping_bounds = {k: int(v * sf) for k, v in bounds.items()}
+    else:
+        cropping_bounds = None
+
     _, contours_list = parse_slide_annotations_into_tables(
         annotations_slice, x_offset=int(bounds['XMIN'] * sf),
-        y_offset=int(bounds['YMIN'] * sf),)
+        y_offset=int(bounds['YMIN'] * sf), cropping_bounds=cropping_bounds)
     contours_list = contours_list.to_dict(orient='records')
     result['contours'] = contours_list
 

@@ -19,7 +19,7 @@ gc = girder_client.GirderClient(apiUrl=APIURL)
 gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 # Microns-per-pixel / Magnification (either or)
-MPP = 5.0
+MPP = 2.5  # 5.0
 MAG = None
 
 # get annotations for slide
@@ -43,7 +43,7 @@ get_kwargs = {
     'bounds': {
         'XMIN': 58000, 'XMAX': 63000,
         'YMIN': 35000, 'YMAX': 39000},
-    'linewidth': 0.2,
+    'linewidth': 0.2, 'crop_to_roi': True,
     'get_rgb': True, 'get_visualization': True,
 }
 
