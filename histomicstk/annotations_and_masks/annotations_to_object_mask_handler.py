@@ -167,30 +167,15 @@ def annotations_to_contours_no_mask(
         cropping_bounds = {k: int(v * sf) for k, v in bounds.items()}
     else:
         cropping_bounds = None
-    x_offset = int(uncropped_bounds['XMIN'] * sf)
-    y_offset = int(uncropped_bounds['YMIN'] * sf)
     _, contours_df = parse_slide_annotations_into_tables(
-        annotations_slice, x_offset=x_offset, y_offset=y_offset,
-        cropping_bounds=cropping_bounds)
+        annotations_slice, cropping_bounds=cropping_bounds)
     contours_list = contours_df.to_dict(orient='records')
 
-    # Final bounds (relative to slide) are determined by the contours
-    # regardless of anything. This is because some contours are successfully
-    # cropped to the ROI boundary while others are not due to polygon
-    # invalidity or other issues
-    bounds = {
-        'XMIN': np.min(contours_df.loc[:, "xmin"]) + x_offset,
-        'XMAX': np.max(contours_df.loc[:, "xmax"]) + x_offset,
-        'YMIN': np.min(contours_df.loc[:, "ymin"]) + y_offset,
-        'YMAX': np.max(contours_df.loc[:, "ymax"]) + y_offset,
-    }
-    bounds = {k: int(v / sf) for k, v in bounds.items()}
+    # Final bounds (relative to slide at base magnification)
+    if crop_to_roi:
+        bounds = {k: int(v / sf) for k, v in cropping_bounds.items()}
 
-    # Assign to results
-    result = {
-        'contours': contours_list,
-        'bounds': bounds,
-    }
+    result = dict()
 
     # get RGB
     if get_rgb:
@@ -204,15 +189,16 @@ def annotations_to_contours_no_mask(
         rgb = get_image_from_htk_response(resp)
         result['rgb'] = rgb
 
+    # Assign to results
+    result.update({
+        'contours': contours_list,
+        'bounds': bounds,
+    })
+
     # get visualization of annotations on RGB
     if get_visualization:
         result['visualization'] = _visualize_annotations_on_rgb(
-            rgb=rgb, contours_list=contours_list, linewidth=linewidth,
-            x_offset=np.min(contours_df.loc[:, "xmin"]),
-            y_offset=np.min(contours_df.loc[:, "ymin"]),
-        )
-
-    tmp = 1
+            rgb=rgb, contours_list=contours_list, linewidth=linewidth)
 
     return result
 

@@ -286,7 +286,7 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 
 
 def parse_slide_annotations_into_tables(
-        slide_annotations, x_offset=0, y_offset=0, cropping_bounds=None):
+        slide_annotations, cropping_bounds=None):
     """Given a slide annotation list, parse into convenient tabular format.
 
     If the annotation is a point, then it is just treated as if it is a
@@ -297,12 +297,6 @@ def parse_slide_annotations_into_tables(
     -----------
     slide_annotations : list of dicts
         response from server request
-
-    x_offset : int
-        offset to deduct from x coordinates
-
-    y_offset : int
-        offset to deduct from y coordinates
 
     cropping_bounds : dict or None
         if given, must have keys XMIN, XMAX, YMIN, YMAX. These are the
@@ -365,10 +359,6 @@ def parse_slide_annotations_into_tables(
     ])
 
     if cropping_bounds is not None:
-        cropping_bounds['XMIN'] -= x_offset
-        cropping_bounds['XMAX'] -= x_offset
-        cropping_bounds['YMIN'] -= y_offset
-        cropping_bounds['YMAX'] -= y_offset
         xmin, xmax, ymin, ymax = (
             cropping_bounds['XMIN'], cropping_bounds['XMAX'],
             cropping_bounds['YMIN'], cropping_bounds['YMAX'])
@@ -381,7 +371,6 @@ def parse_slide_annotations_into_tables(
         """Crop bounds to desired area using shapely polygons."""
         if (cropping_bounds is not None) and (eltype != 'point'):
             try:
-                # elpoly = Polygon(np.array(Polygon(coords).exterior.xy).T)
                 elpoly = Polygon(vertices).buffer(0)
                 polygon = bounds_polygon.intersection(elpoly)
                 if polygon.geom_type != 'Polygon':
@@ -393,8 +382,9 @@ def parse_slide_annotations_into_tables(
                 if polygon.area > 2:
                     vertices = np.array(polygon.exterior.xy, dtype=np.int32).T
             except Exception as e:
-                # weird shapely errors, so we just dont crop
+                # weird shapely errors --> ignore this polygon
                 print(str(e))
+                return None
         return vertices
 
     def _parse_coords_to_str(vertices):
@@ -458,13 +448,22 @@ def parse_slide_annotations_into_tables(
             else:
                 continue
 
-            # account for user-specified offset if any
-            if (x_offset != 0) or (y_offset != 0):
-                coords[:, 0] = coords[:, 0] - x_offset
-                coords[:, 1] = coords[:, 1] - y_offset
-
             # crop using shapely to desired bounds if needed
+            # IMPORTANT: everything till this point needs to be
+            # relative to the whole slide image
             coords = _conditional_crop(coords, element['type'])
+
+            # if the element cannot be cropped, just keep going
+            if coords is None:
+                continue
+
+            # Now we can add offset to ensure coordinates are relative to the
+            # cropped bounds (i.e. they would correspond to an RGB image
+            # of the same region and could be used to create a mask or
+            # to encode object boundaries etc
+            if cropping_bounds is not None:
+                coords[:, 0] = coords[:, 0] - cropping_bounds['XMIN']
+                coords[:, 1] = coords[:, 1] - cropping_bounds['YMIN']
 
             # get bounds for this polygon. Remember, these may have been
             # changed after it was cropped using shapely
