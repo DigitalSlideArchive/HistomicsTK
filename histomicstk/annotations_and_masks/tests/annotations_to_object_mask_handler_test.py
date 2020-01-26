@@ -1,4 +1,4 @@
-# import unittest
+import unittest
 
 # import os
 import matplotlib.pylab as plt
@@ -20,7 +20,7 @@ gc = girder_client.GirderClient(apiUrl=APIURL)
 gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 # Microns-per-pixel / Magnification (either or)
-MPP = 2.5  # 5.0
+MPP = 5.0
 MAG = None
 
 # get annotations for slide
@@ -50,49 +50,92 @@ get_kwargs = {
 
 # %%===========================================================================
 
-roi_out = annotations_to_contours_no_mask(
-    mode='manual_bounds', **get_kwargs)
+
+class GetSlideRegionNoMask(unittest.TestCase):
+    """Test methods for getting ROI contours from annotations."""
+
+    def test_annotations_to_contours_no_mask_1(self):
+        """Test annotations_to_contours_no_mask()."""
+        print("test_annotations_to_contours_no_mask_1()")
+
+        # get specified region -- without providing scaled annotations
+        roi_out_1 = annotations_to_contours_no_mask(
+            mode='manual_bounds', **get_kwargs)
+
+        # get specified region -- with providing scaled annotations
+        roi_out_2 = annotations_to_contours_no_mask(
+            mode='manual_bounds', slide_annotations=slide_annotations,
+            element_infos=element_infos, **get_kwargs)
+
+        for roi_out in (roi_out_1, roi_out_2):
+            self.assertSetEqual(
+                set(roi_out.keys()),
+                {'bounds', 'rgb', 'contours', 'visualization'})
+            self.assertTupleEqual(roi_out['rgb'].shape, (200, 251, 3))
+            self.assertTupleEqual(
+                roi_out['visualization'].shape, (200, 251, 3))
+            self.assertAlmostEqual(len(roi_out['contours']) * 0.01, 0.64, 1)
+            self.assertSetEqual(
+                set(roi_out['contours'][0].keys()),
+                {'annidx', 'elementidx', 'element_girder_id', 'type',
+                 'annotation_girder_id', 'bbox_area', 'group', 'color',
+                 'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
+
+    def test_annotations_to_contours_no_mask_2(self):
+        """Test get_image_and_mask_from_slide()."""
+        print("test_get_image_and_mask_from_slide_2()")
+
+        # get ROI bounding everything
+        minbbox_out = annotations_to_contours_no_mask(
+            mode='min_bounding_box', slide_annotations=slide_annotations,
+            element_infos=element_infos, **get_kwargs)
+
+        self.assertSetEqual(
+            set(minbbox_out.keys()),
+            {'bounds', 'ROI', 'rgb', 'contours', 'visualization'})
+        self.assertTupleEqual(minbbox_out['ROI'].shape, (321, 351))
+        self.assertTupleEqual(minbbox_out['rgb'].shape, (321, 351, 3))
+        self.assertTupleEqual(
+            minbbox_out['visualization'].shape, (321, 351, 3))
+        self.assertAlmostEqual(len(minbbox_out['contours']) * 0.01, 0.28, 1)
+        self.assertSetEqual(
+            set(minbbox_out['contours'][0].keys()),
+            {'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
+             'has_holes', 'touches_edge-top', 'touches_edge-left',
+             'touches_edge-bottom', 'touches_edge-right', 'coords_x',
+             'coords_y'})
+
+    def test_annotations_to_contours_no_mask_3(self):
+        """Test get_image_and_mask_from_slide()."""
+        print("test_get_image_and_mask_from_slide_3()")
+
+        # get entire wsi region
+        wsi_out = annotations_to_contours_no_mask(
+            mode='wsi', slide_annotations=slide_annotations,
+            element_infos=element_infos, **get_kwargs)
+
+        self.assertSetEqual(
+            set(wsi_out.keys()),
+            {'bounds', 'ROI', 'rgb', 'contours', 'visualization'})
+        self.assertTupleEqual(wsi_out['ROI'].shape, (4030, 6590))
+        self.assertTupleEqual(wsi_out['rgb'].shape, (4030, 6590, 3))
+        self.assertTupleEqual(
+            wsi_out['visualization'].shape, (4030, 6590, 3))
+        self.assertAlmostEqual(len(wsi_out['contours']) * 0.01, 0.28, 1)
+        self.assertSetEqual(
+            set(wsi_out['contours'][0].keys()),
+            {'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
+             'has_holes', 'touches_edge-top', 'touches_edge-left',
+             'touches_edge-bottom', 'touches_edge-right', 'coords_x',
+             'coords_y'})
 
 
 # %%===========================================================================
+
+
+# if __name__ == '__main__':
 #
-# class GetSlideRegionNoMask(unittest.TestCase):
-#     """Test methods for getting ROI contours from annotations."""
-#
-#     def test_annotations_to_contours_no_mask_1(self):
-#         """Test annotations_to_contours_no_mask()."""
-#         print("test_annotations_to_contours_no_mask_1()")
-#
-#         # get specified region -- without providing scaled annotations
-#         roi_out_1 = annotations_to_contours_no_mask(
-#             mode='manual_bounds', **get_kwargs)
-#
-#         # get specified region -- with providing scaled annotations
-#         roi_out_2 = annotations_to_contours_no_mask(
-#             mode='manual_bounds', slide_annotations=slide_annotations,
-#             element_infos=element_infos, **get_kwargs)
-#
-#         for roi_out in (roi_out_1, roi_out_2):
-#             self.assertSetEqual(
-#                 set(roi_out.keys()),
-#                 {'bounds', 'rgb', 'contours', 'visualization'})
-#             self.assertTupleEqual(roi_out['rgb'].shape, (321, 351, 3))
-#             self.assertTupleEqual(
-#                 roi_out['visualization'].shape, (200, 250, 3))
-#             self.assertAlmostEqual(len(roi_out['contours']) * 0.01, 0.25, 1)
-#             self.assertSetEqual(
-#                 set(roi_out['contours'][0].keys()),
-#                 {'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
-#                  'has_holes', 'touches_edge-top', 'touches_edge-left',
-#                  'touches_edge-bottom', 'touches_edge-right', 'coords_x',
-#                  'coords_y'})
-#
-#
-#
-# # %%===========================================================================
-#
-#
-#
-#
-#
-#
+#     unittest.main()
+
+    # # cleanup
+    # shutil.rmtree(BASE_SAVEPATH)
