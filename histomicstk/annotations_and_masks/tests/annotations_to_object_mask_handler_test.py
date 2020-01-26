@@ -1,7 +1,7 @@
 import unittest
 
 # import os
-import matplotlib.pylab as plt
+# import matplotlib.pylab as plt
 import girder_client
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_scale_factor_and_appendStr, scale_slide_annotations, \
@@ -44,7 +44,7 @@ get_kwargs = {
     'bounds': {
         'XMIN': 58000, 'XMAX': 63000,
         'YMIN': 35000, 'YMAX': 39000},
-    'linewidth': 0.2, 'crop_to_roi': True,
+    'linewidth': 0.2,
     'get_rgb': True, 'get_visualization': True,
 }
 
@@ -92,18 +92,16 @@ class GetSlideRegionNoMask(unittest.TestCase):
 
         self.assertSetEqual(
             set(minbbox_out.keys()),
-            {'bounds', 'ROI', 'rgb', 'contours', 'visualization'})
-        self.assertTupleEqual(minbbox_out['ROI'].shape, (321, 351))
+            {'bounds', 'rgb', 'contours', 'visualization'})
         self.assertTupleEqual(minbbox_out['rgb'].shape, (321, 351, 3))
         self.assertTupleEqual(
             minbbox_out['visualization'].shape, (321, 351, 3))
-        self.assertAlmostEqual(len(minbbox_out['contours']) * 0.01, 0.28, 1)
+        self.assertAlmostEqual(len(minbbox_out['contours']) * 0.01, 0.76, 1)
         self.assertSetEqual(
             set(minbbox_out['contours'][0].keys()),
-            {'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
-             'has_holes', 'touches_edge-top', 'touches_edge-left',
-             'touches_edge-bottom', 'touches_edge-right', 'coords_x',
-             'coords_y'})
+            {'annidx', 'elementidx', 'element_girder_id', 'type',
+             'annotation_girder_id', 'bbox_area', 'group', 'color',
+             'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
 
     def test_annotations_to_contours_no_mask_3(self):
         """Test get_image_and_mask_from_slide()."""
@@ -116,26 +114,21 @@ class GetSlideRegionNoMask(unittest.TestCase):
 
         self.assertSetEqual(
             set(wsi_out.keys()),
-            {'bounds', 'ROI', 'rgb', 'contours', 'visualization'})
-        self.assertTupleEqual(wsi_out['ROI'].shape, (4030, 6590))
-        self.assertTupleEqual(wsi_out['rgb'].shape, (4030, 6590, 3))
+            {'bounds', 'rgb', 'contours', 'visualization'})
+        self.assertTupleEqual(wsi_out['rgb'].shape, (4030, 6589, 3))
         self.assertTupleEqual(
-            wsi_out['visualization'].shape, (4030, 6590, 3))
-        self.assertAlmostEqual(len(wsi_out['contours']) * 0.01, 0.28, 1)
+            wsi_out['visualization'].shape, (4030, 6589, 3))
+        self.assertAlmostEqual(len(wsi_out['contours']) * 0.01, 0.76, 1)
         self.assertSetEqual(
             set(wsi_out['contours'][0].keys()),
-            {'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
-             'has_holes', 'touches_edge-top', 'touches_edge-left',
-             'touches_edge-bottom', 'touches_edge-right', 'coords_x',
-             'coords_y'})
+            {'annidx', 'elementidx', 'element_girder_id', 'type',
+             'annotation_girder_id', 'bbox_area', 'group', 'color',
+             'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
 
 
 # %%===========================================================================
 
 
-# if __name__ == '__main__':
-#
-#     unittest.main()
+if __name__ == '__main__':
 
-    # # cleanup
-    # shutil.rmtree(BASE_SAVEPATH)
+    unittest.main()

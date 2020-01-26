@@ -18,8 +18,7 @@ from histomicstk.annotations_and_masks.annotations_to_masks_handler import \
 
 
 def _sanity_checks(
-        MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization,
-        crop_to_roi):
+        MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization):
 
     # MPP precedes MAG
     if all([j is not None for j in (MPP, MAG)]):
@@ -34,7 +33,6 @@ def _sanity_checks(
     if mode in ['wsi', 'min_bounding_box']:
         bounds = None
         idx_for_roi = None
-        crop_to_roi = False
 
     if idx_for_roi is not None:
         mode = 'polygonal_bounds'
@@ -48,9 +46,7 @@ def _sanity_checks(
     if get_visualization:
         assert get_rgb, "cannot get visualization without rgb."
 
-    return (
-        MPP, MAG, mode, bounds, idx_for_roi,
-        get_rgb, get_visualization, crop_to_roi)
+    return MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization
 
 
 def _keep_relevant_elements_for_roi(
@@ -126,14 +122,12 @@ def annotations_to_contours_no_mask(
         gc, slide_id, MPP=5.0, MAG=None, mode='min_bounding_box',
         bounds=None, idx_for_roi=None,
         slide_annotations=None, element_infos=None,
-        linewidth=0.2, crop_to_roi=False,
-        get_rgb=True, get_visualization=True):
+        linewidth=0.2, get_rgb=True, get_visualization=True):
 
-    (MPP, MAG, mode, bounds, idx_for_roi,
-     get_rgb, get_visualization, crop_to_roi) = \
+    MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization = \
         _sanity_checks(
             MPP, MAG, mode, bounds, idx_for_roi,
-            get_rgb, get_visualization, crop_to_roi)
+            get_rgb, get_visualization)
 
     # calculate the scale factor
     sf, appendStr = get_scale_factor_and_appendStr(
@@ -169,18 +163,15 @@ def annotations_to_contours_no_mask(
         slide_annotations, elinfos_roi=elinfos_roi)
 
     # tabularize to use contours
-    if crop_to_roi:
-        cropping_bounds = {k: int(v * sf) for k, v in bounds.items()}
-    else:
-        cropping_bounds = None
+    cropping_bounds = {k: int(v * sf) for k, v in bounds.items()}
     _, contours_df = parse_slide_annotations_into_tables(
-        annotations_slice, cropping_bounds=cropping_bounds)
+        annotations_slice, cropping_bounds=cropping_bounds,
+        use_shapely=mode == 'manual_bounds',
+    )
     contours_list = contours_df.to_dict(orient='records')
 
     # Final bounds (relative to slide at base magnification)
-    if crop_to_roi:
-        bounds = {k: int(v / sf) for k, v in cropping_bounds.items()}
-
+    bounds = {k: int(v / sf) for k, v in cropping_bounds.items()}
     result = dict()
 
     # get RGB

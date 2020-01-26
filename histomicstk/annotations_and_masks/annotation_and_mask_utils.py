@@ -326,7 +326,7 @@ def _maybe_crop_polygon(vertices, bounds_polygon):
 
 
 def parse_slide_annotations_into_tables(
-        slide_annotations, cropping_bounds=None):
+        slide_annotations, cropping_bounds=None, use_shapely=False):
     """Given a slide annotation list, parse into convenient tabular format.
 
     If the annotation is a point, then it is just treated as if it is a
@@ -340,7 +340,13 @@ def parse_slide_annotations_into_tables(
 
     cropping_bounds : dict or None
         if given, must have keys XMIN, XMAX, YMIN, YMAX. These are the
-        bounds to which the polygons will be cropped using shapely.
+        bounds to which the polygons may be cropped using shapely,
+        if the param use_shapely is True. Otherwise, the polygon
+        coordinates are just shifted relative to these bounds without
+        actually cropping.
+
+    use_shapely : bool
+        see cropping_bounds description.
 
     Returns
     ---------
@@ -429,7 +435,7 @@ def parse_slide_annotations_into_tables(
         element_infos.loc[elno, 'color'] = str(element['lineColor'])
 
         # Now we can add offset to ensure coordinates are relative to the
-        # cropped bounds (i.e. they would correspond to an RGB image
+        # cropping bounds (i.e. they would correspond to an RGB image
         # of the same region and could be used to create a mask or
         # to encode object boundaries etc
         if cropping_bounds is not None:
@@ -511,7 +517,9 @@ def parse_slide_annotations_into_tables(
             # crop using shapely to desired bounds if needed
             # IMPORTANT: everything till this point needs to be
             # relative to the whole slide image
-            if (cropping_bounds is None) or (element['type'] == 'point'):
+            if (cropping_bounds is None) \
+                    or (element['type'] == 'point') \
+                    or (not use_shapely):
                 all_coords = [coords, ]
             else:
                 all_coords = _maybe_crop_polygon(coords, bounds_polygon)
