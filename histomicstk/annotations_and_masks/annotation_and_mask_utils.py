@@ -285,6 +285,46 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 # %%===========================================================================
 
 
+def _maybe_crop_polygon(vertices, bounds_polygon):
+    """Crop bounds to desired area using shapely polygons."""
+    all_vertices = []
+
+    # First, we get the polygon or polygons which result from
+    # intersection. Keep in mind that a particular annotation may
+    # "ecit then enter" the cropping ROI, so it may be split into
+    # two or more polygons by the splitting process. That's which
+    # this method's input is one set of vertices, but after cropping
+    # it may return one or more sets of vertices
+    try:
+        elpoly = Polygon(vertices).buffer(0)
+        polygon = bounds_polygon.intersection(elpoly)
+
+        if polygon.geom_type == 'Polygon':
+            polygons_to_add = [polygon, ]
+        else:
+            polygons_to_add = [
+                p for p in polygon if p.geom_type == 'Polygon']
+
+    except Exception as e:
+        # if weird shapely errors -->
+        # ignore this polygon collection altogether
+        print(str(e))
+        return all_vertices
+
+    # Second, once we have the shapely polygons, assuming no errors,
+    # we parse into usable coordinates that we can add to the table
+    for poly in polygons_to_add:
+        try:
+            if polygon.area > 2:
+                all_vertices.append(np.array(
+                    poly.exterior.xy, dtype=np.int32).T)
+        except Exception as e:
+            # weird shapely errors --> ignore this polygon
+            print(str(e))
+
+    return all_vertices
+
+
 def parse_slide_annotations_into_tables(
         slide_annotations, cropping_bounds=None):
     """Given a slide annotation list, parse into convenient tabular format.
@@ -367,31 +407,61 @@ def parse_slide_annotations_into_tables(
             (xmax, ymax), (xmin, ymax), (xmin, ymin),
         ], dtype='int32'))
 
-    def _conditional_crop(vertices, eltype):
-        """Crop bounds to desired area using shapely polygons."""
-        if (cropping_bounds is not None) and (eltype != 'point'):
-            try:
-                elpoly = Polygon(vertices).buffer(0)
-                polygon = bounds_polygon.intersection(elpoly)
-                if polygon.geom_type != 'Polygon':
-                    pids = [
-                        pid for pid, p in enumerate(polygon)
-                        if p.geom_type == 'Polygon']
-                    if len(pids) > 0:
-                        polygon = polygon[pids[0]]
-                if polygon.area > 2:
-                    vertices = np.array(polygon.exterior.xy, dtype=np.int32).T
-            except Exception as e:
-                # weird shapely errors --> ignore this polygon
-                print(str(e))
-                return None
-        return vertices
-
     def _parse_coords_to_str(vertices):
         return (
             ",".join(str(j) for j in vertices[:, 0]),
             ",".join(str(j) for j in vertices[:, 1]))
 
+    def _add_element_to_final_df(vertices):
+        """Add a single element to the final dataframe.
+
+        Note that we wrap this into a method so that when (if) we split an
+        annotation element into multiple polygons, we can add these
+        separately.
+        """
+        elno = element_infos.shape[0]
+
+        # Add element information to element dataframe
+        element_infos.loc[elno, 'annidx'] = annidx
+        element_infos.loc[elno, 'annotation_girder_id'] = ann['_id']
+        element_infos.loc[elno, 'elementidx'] = elementidx
+        element_infos.loc[elno, 'element_girder_id'] = element['id']
+        element_infos.loc[elno, 'color'] = str(element['lineColor'])
+
+        # Now we can add offset to ensure coordinates are relative to the
+        # cropped bounds (i.e. they would correspond to an RGB image
+        # of the same region and could be used to create a mask or
+        # to encode object boundaries etc
+        if cropping_bounds is not None:
+            vertices[:, 0] = vertices[:, 0] - cropping_bounds['XMIN']
+            vertices[:, 1] = vertices[:, 1] - cropping_bounds['YMIN']
+
+        # get bounds for this polygon. Remember, these may have been
+        # changed after it was cropped using shapely
+        xmin, ymin = np.min(vertices, axis=0)
+        xmax, ymax = np.max(vertices, axis=0)
+
+        # parse to string for inclusion in pd dataframe
+        x_coords, y_coords = _parse_coords_to_str(coords)
+
+        # add group or infer from label
+        if 'group' in element.keys():
+            element_infos.loc[elno, 'group'] = str(element['group'])
+        elif 'label' in element.keys():
+            element_infos.loc[elno, 'group'] = str(
+                element['label']['value'])
+
+        element_infos.loc[elno, 'type'] = str(element['type'])
+        element_infos.loc[elno, 'xmin'] = int(xmin)
+        element_infos.loc[elno, 'xmax'] = int(xmax)
+        element_infos.loc[elno, 'ymin'] = int(ymin)
+        element_infos.loc[elno, 'ymax'] = int(ymax)
+        element_infos.loc[elno, 'bbox_area'] = int(
+            (ymax - ymin) * (xmax - xmin))
+        element_infos.loc[elno, 'coords_x'] = x_coords
+        element_infos.loc[elno, 'coords_y'] = y_coords
+
+    # go through annotation elements and add as needed
     for annidx, ann in enumerate(slide_annotations):
 
         annno = annotation_infos.shape[0]
@@ -413,16 +483,6 @@ def parse_slide_annotations_into_tables(
             '_elementQuery']['details']
 
         for elementidx, element in enumerate(ann['annotation']['elements']):
-
-            elno = element_infos.shape[0]
-
-            # Add element information to element dataframe
-
-            element_infos.loc[elno, 'annidx'] = annidx
-            element_infos.loc[elno, 'annotation_girder_id'] = ann['_id']
-            element_infos.loc[elno, 'elementidx'] = elementidx
-            element_infos.loc[elno, 'element_girder_id'] = element['id']
-            element_infos.loc[elno, 'color'] = str(element['lineColor'])
 
             # get bounds
             if element['type'] == 'polyline':
@@ -451,44 +511,14 @@ def parse_slide_annotations_into_tables(
             # crop using shapely to desired bounds if needed
             # IMPORTANT: everything till this point needs to be
             # relative to the whole slide image
-            coords = _conditional_crop(coords, element['type'])
+            if (cropping_bounds is None) or (element['type'] == 'point'):
+                all_coords = [coords, ]
+            else:
+                all_coords = _maybe_crop_polygon(coords, bounds_polygon)
 
-            # if the element cannot be cropped, just keep going
-            if coords is None:
-                continue
-
-            # Now we can add offset to ensure coordinates are relative to the
-            # cropped bounds (i.e. they would correspond to an RGB image
-            # of the same region and could be used to create a mask or
-            # to encode object boundaries etc
-            if cropping_bounds is not None:
-                coords[:, 0] = coords[:, 0] - cropping_bounds['XMIN']
-                coords[:, 1] = coords[:, 1] - cropping_bounds['YMIN']
-
-            # get bounds for this polygon. Remember, these may have been
-            # changed after it was cropped using shapely
-            xmin, ymin = np.min(coords, axis=0)
-            xmax, ymax = np.max(coords, axis=0)
-
-            # parse to string for inclusion in pd dataframe
-            x_coords, y_coords = _parse_coords_to_str(coords)
-
-            # add group or infer from label
-            if 'group' in element.keys():
-                element_infos.loc[elno, 'group'] = str(element['group'])
-            elif 'label' in element.keys():
-                element_infos.loc[elno, 'group'] = str(
-                    element['label']['value'])
-
-            element_infos.loc[elno, 'type'] = str(element['type'])
-            element_infos.loc[elno, 'xmin'] = int(xmin)
-            element_infos.loc[elno, 'xmax'] = int(xmax)
-            element_infos.loc[elno, 'ymin'] = int(ymin)
-            element_infos.loc[elno, 'ymax'] = int(ymax)
-            element_infos.loc[elno, 'bbox_area'] = int(
-                (ymax - ymin) * (xmax - xmin))
-            element_infos.loc[elno, 'coords_x'] = x_coords
-            element_infos.loc[elno, 'coords_y'] = y_coords
+            # now add polygons one by one
+            for coords in all_coords:
+                _add_element_to_final_df(coords)
 
     return annotation_infos, element_infos
 
