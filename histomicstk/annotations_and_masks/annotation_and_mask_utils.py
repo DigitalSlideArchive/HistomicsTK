@@ -376,26 +376,31 @@ def parse_slide_annotations_into_tables(
             (xmin, ymin), (xmax, ymin),
             (xmax, ymax), (xmin, ymax), (xmin, ymin),
         ], dtype='int32'))
-        # bounds_polygon = Polygon(np.array(bounds_polygon.exterior.xy).T)
-        # bounds_polygon = bounds_polygon.buffer(0)
 
-    def _conditional_crop(coords):
+    def _conditional_crop(vertices, eltype):
         """Crop bounds to desired area using shapely polygons."""
-        if cropping_bounds is not None:
+        if (cropping_bounds is not None) and (eltype != 'point'):
             try:
                 # elpoly = Polygon(np.array(Polygon(coords).exterior.xy).T)
-                elpoly = Polygon(coords)
+                elpoly = Polygon(vertices).buffer(0)
                 polygon = bounds_polygon.intersection(elpoly)
-                coords = np.array(polygon.exterior.xy, dtype=np.int32).T
+                if polygon.geom_type != 'Polygon':
+                    pids = [
+                        pid for pid, p in enumerate(polygon)
+                        if p.geom_type == 'Polygon']
+                    if len(pids) > 0:
+                        polygon = polygon[pids[0]]
+                if polygon.area > 2:
+                    vertices = np.array(polygon.exterior.xy, dtype=np.int32).T
             except Exception as e:
                 # weird shapely errors, so we just dont crop
                 print(str(e))
-        return coords
+        return vertices
 
-    def _parse_coords_to_str(coords):
+    def _parse_coords_to_str(vertices):
         return (
-            ",".join(str(j) for j in coords[:, 0]),
-            ",".join(str(j) for j in coords[:, 1]))
+            ",".join(str(j) for j in vertices[:, 0]),
+            ",".join(str(j) for j in vertices[:, 1]))
 
     for annidx, ann in enumerate(slide_annotations):
 
@@ -432,8 +437,6 @@ def parse_slide_annotations_into_tables(
             # get bounds
             if element['type'] == 'polyline':
                 coords = np.int32(element['points'])[:, :-1]
-                xmin, ymin = [int(j) for j in np.min(coords, axis=0)]
-                xmax, ymax = [int(j) for j in np.max(coords, axis=0)]
 
             elif element['type'] == 'rectangle':
                 roiinfo = get_rotated_rectangular_coords(
@@ -441,8 +444,6 @@ def parse_slide_annotations_into_tables(
                     roi_width=element['width'],
                     roi_height=element['height'],
                     roi_rotation=element['rotation'])
-                xmin, ymin = roiinfo['x_min'], roiinfo['y_min']
-                xmax, ymax = roiinfo['x_max'], roiinfo['y_max']
                 coords = roiinfo['roi_corners']  # for rotated rectangles
                 if element['rotation'] != 0:
                     element['type'] = 'polyline'
@@ -461,13 +462,14 @@ def parse_slide_annotations_into_tables(
             if (x_offset != 0) or (y_offset != 0):
                 coords[:, 0] = coords[:, 0] - x_offset
                 coords[:, 1] = coords[:, 1] - y_offset
-                xmin -= x_offset
-                xmax -= x_offset
-                ymin -= y_offset
-                ymax -= y_offset
 
             # crop using shapely to desired bounds if needed
-            coords = _conditional_crop(coords)
+            coords = _conditional_crop(coords, element['type'])
+
+            # get bounds for this polygon. Remember, these may have been
+            # changed after it was cropped using shapely
+            xmin, ymin = np.min(coords, axis=0)
+            xmax, ymax = np.max(coords, axis=0)
 
             # parse to string for inclusion in pd dataframe
             x_coords, y_coords = _parse_coords_to_str(coords)

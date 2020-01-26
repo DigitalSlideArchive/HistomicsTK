@@ -1,6 +1,7 @@
-import unittest
+# import unittest
 
 # import os
+import matplotlib.pylab as plt
 import girder_client
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_scale_factor_and_appendStr, scale_slide_annotations, \

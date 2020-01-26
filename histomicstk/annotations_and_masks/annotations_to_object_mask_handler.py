@@ -145,18 +145,52 @@ def annotations_to_contours_no_mask(
         # get bounding box information for all annotations -> scaled by sf
         element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 
-    # Detemine get region based on run mode, keeping in mind that it
+    # Determine get region based on run mode, keeping in mind that it
     # must be at BASE MAGNIFICATION coordinates before it is passed
     # on to get_mask_from_slide()
     bounds = _get_roi_bounds_by_run_mode(
         gc=gc, slide_id=slide_id, mode=mode, bounds=bounds,
         element_infos=element_infos, idx_for_roi=idx_for_roi, sf=sf)
-    result = {'bounds': bounds, }
 
-    # only keep relevale elements and get updated bounds
-    elinfos_roi, bounds = _keep_relevant_elements_for_roi(
+    # only keep relevant elements and get uncropped bounds
+    elinfos_roi, uncropped_bounds = _keep_relevant_elements_for_roi(
         element_infos, sf=sf, mode=mode, idx_for_roi=idx_for_roi,
         roiinfo=copy.deepcopy(bounds))
+
+    # find relevant portion from slide annotations to use
+    # (with overflowing beyond edge)
+    annotations_slice = _trim_slide_annotations_to_roi(
+        slide_annotations, elinfos_roi=elinfos_roi)
+
+    # tabularize to use contours
+    if crop_to_roi:
+        cropping_bounds = {k: int(v * sf) for k, v in bounds.items()}
+    else:
+        cropping_bounds = None
+    x_offset = int(uncropped_bounds['XMIN'] * sf)
+    y_offset = int(uncropped_bounds['YMIN'] * sf)
+    _, contours_df = parse_slide_annotations_into_tables(
+        annotations_slice, x_offset=x_offset, y_offset=y_offset,
+        cropping_bounds=cropping_bounds)
+    contours_list = contours_df.to_dict(orient='records')
+
+    # Final bounds (relative to slide) are determined by the contours
+    # regardless of anything. This is because some contours are successfully
+    # cropped to the ROI boundary while others are not due to polygon
+    # invalidity or other issues
+    bounds = {
+        'XMIN': np.min(contours_df.loc[:, "xmin"]) + x_offset,
+        'XMAX': np.max(contours_df.loc[:, "xmax"]) + x_offset,
+        'YMIN': np.min(contours_df.loc[:, "ymin"]) + y_offset,
+        'YMAX': np.max(contours_df.loc[:, "ymax"]) + y_offset,
+    }
+    bounds = {k: int(v / sf) for k, v in bounds.items()}
+
+    # Assign to results
+    result = {
+        'contours': contours_list,
+        'bounds': bounds,
+    }
 
     # get RGB
     if get_rgb:
@@ -170,26 +204,15 @@ def annotations_to_contours_no_mask(
         rgb = get_image_from_htk_response(resp)
         result['rgb'] = rgb
 
-    # find relevant portion from slide annotations to use
-    annotations_slice = _trim_slide_annotations_to_roi(
-        slide_annotations, elinfos_roi=elinfos_roi)
-
-    # tabularize to use contours
-    if crop_to_roi:
-        cropping_bounds = {k: int(v * sf) for k, v in bounds.items()}
-    else:
-        cropping_bounds = None
-
-    _, contours_list = parse_slide_annotations_into_tables(
-        annotations_slice, x_offset=int(bounds['XMIN'] * sf),
-        y_offset=int(bounds['YMIN'] * sf), cropping_bounds=cropping_bounds)
-    contours_list = contours_list.to_dict(orient='records')
-    result['contours'] = contours_list
-
     # get visualization of annotations on RGB
     if get_visualization:
         result['visualization'] = _visualize_annotations_on_rgb(
-            rgb=rgb, contours_list=contours_list, linewidth=linewidth)
+            rgb=rgb, contours_list=contours_list, linewidth=linewidth,
+            x_offset=np.min(contours_df.loc[:, "xmin"]),
+            y_offset=np.min(contours_df.loc[:, "ymin"]),
+        )
+
+    tmp = 1
 
     return result
 
