@@ -34,8 +34,10 @@ class Print_and_log(object):
 class Base_HTK_Class(object):
     """Just a base class with preferred behavior to inherit."""
 
-    def __init__(self, default_attr={}, more_allowed_attr=[], **kwargs):
+    def __init__(self, default_attr=None, more_allowed_attr=None, **kwargs):
         """Init base HTK class."""
+        default_attr = {} if default_attr is None else default_attr
+        more_allowed_attr = [] if more_allowed_attr is None else more_allowed_attr
 
         da = {
             'verbose': 1,

@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def embed_boundaries(im_input, im_perim, color=[255, 0, 0]):
+def embed_boundaries(im_input, im_perim, color=None):
     """Embeds object boundaries into an RGB color, grayscale or binary
     image, returning a color rendering of the image and object
     boundaries.
@@ -35,6 +35,7 @@ def embed_boundaries(im_input, im_perim, color=[255, 0, 0]):
     histomicstk.segmentation.label.perimeter
 
     """
+    color = [255, 0, 0] if color is None else color
 
     # check for consistent shapes between 'im_input' and 'im_perim'
     if im_input.shape[0:2] != im_perim.shape[0:2]:

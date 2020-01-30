@@ -22,12 +22,14 @@ WORKDIR $htk_path
 #   Upgrade setuptools, as the version in Conda won't upgrade cleanly unless it
 # is ignored.
 RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
+    # Install bokeh to help debug dask
     pip install --no-cache-dir 'bokeh>=0.12.14' && \
-    # Install large_image
-    pip install --no-cache-dir 'large-image[memcached,openslide,tiff,pil]' -f https://girder.github.io/large_image_wheels && \
-    pip install --no-cache-dir scikit-build setuptools-scm Cython cmake && \
+    # Install large_image memcached extras
+    pip install --no-cache-dir --pre 'large-image[memcached]' --find-links https://girder.github.io/large_image_wheels && \
+    # Install girder-client
+    pip install --no-cache-dir girder-client && \
     # Install HistomicsTK
-    pip install . && \
+    pip install --no-cache-dir --pre . --find-links https://girder.github.io/large_image_wheels && \
     # Create separate virtual environments with CPU and GPU versions of tensorflow
     pip install --no-cache-dir 'virtualenv<16.4.0' && \
     virtualenv --system-site-packages /venv-gpu && \
@@ -36,26 +38,18 @@ RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
     # clean up
     rm -rf /root/.cache/pip/*
 
-# git clone install slicer_cli_web
-RUN mkdir -p /build && \
-    cd /build && \
-    git clone --branch 2.x-maintenance https://github.com/girder/slicer_cli_web.git
-
 # Show what was installed
 RUN pip freeze
 
 # pregenerate font cache
 RUN python -c "from matplotlib import pylab"
 
-# pregenerate libtiff wrapper.  This also tests libtiff for failures
-RUN python -c "import libtiff"
-
 # define entrypoint through which all CLIs can be run
 WORKDIR $htk_path/histomicstk/cli
 
 # Test our entrypoint.  If we have incompatible versions of numpy and
 # openslide, one of these will fail
-RUN python /build/slicer_cli_web/server/cli_list_entrypoint.py --list_cli
-RUN python /build/slicer_cli_web/server/cli_list_entrypoint.py ColorDeconvolution --help
+RUN python -m slicer_cli_web.cli_list_entrypoint --list_cli
+RUN python -m slicer_cli_web.cli_list_entrypoint ColorDeconvolution --help
 
 ENTRYPOINT ["/bin/bash", "docker-entrypoint.sh"]

@@ -96,8 +96,6 @@ Previous Versions
 
 This repository used to contain almost all of the Digital Slide Archive and HistomicsUI.  The deployment and installation code and instructions have moved to the `Digital Slide Archive`_ repository.  The user interface and annotation drawing code has moved to the `HistomicsUI`_ repository.
 
-The deployment and UI code will eventually be removed from the master branch of this repository; any new development on those topics should be done in those locations.
-
 This repository contains image-processing algorithms and tasks.
 
 Funding

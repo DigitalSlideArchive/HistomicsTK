@@ -18,8 +18,7 @@ from histomicstk.preprocessing.color_deconvolution import (
 
 def deconvolution_based_normalization(
         im_src, W_source=None, W_target=None, im_target=None,
-        stains=['hematoxylin', 'eosin'], mask_out=None,
-        stain_unmixing_routine_params={}):
+        stains=None, mask_out=None, stain_unmixing_routine_params=None):
     """Perform color normalization using color deconvolution to transform the.
 
     ... color characteristics of an image to a desired standard.
@@ -94,6 +93,10 @@ def deconvolution_based_normalization(
            analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.
 
     """
+    stains = ['hematoxylin', 'eosin'] if stains is None else stains
+    stain_unmixing_routine_params = (
+        {} if stain_unmixing_routine_params is None else
+        stain_unmixing_routine_params)
     for k in ['W_source', 'mask_out']:
         assert k not in stain_unmixing_routine_params.keys(), \
             "%s must be provided as a separate parameter." % k

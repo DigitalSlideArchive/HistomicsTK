@@ -11,7 +11,7 @@ RUN for PYBIN in /opt/python/*/bin; do \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \
-        ${PYBIN}/pip install --no-cache-dir -f https://girder.github.io/large_image_wheels large_image_source_tiff large_image_source_openslide large_image_source_pil; \
+        ${PYBIN}/pip install --no-cache-dir -f https://girder.github.io/large_image_wheels 'large_image[sources]' pyvips; \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \
@@ -30,6 +30,10 @@ ENV htk_path=/HistomicsTK
 RUN mkdir -p $htk_path
 
 COPY . $htk_path/
+
+RUN for PYBIN in /opt/python/*/bin; do \
+        ${PYBIN}/pip install -r "$htk_path/requirements-dev.txt" \
+    done
 
 ARG CIRCLE_BRANCH
 ENV CIRCLE_BRANCH=$CIRCLE_BRANCH

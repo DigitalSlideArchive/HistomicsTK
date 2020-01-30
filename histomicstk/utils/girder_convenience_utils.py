@@ -24,7 +24,7 @@ def connect_to_api(apiurl, apikey=None, interactive=True):
 
 def backup_annotation_jsons(
         gc, folderid, local, save_json=True,
-        callback=None, callback_kwargs=dict()):
+        callback=None, callback_kwargs=None):
     """Dump annotations of folder and subfolders locally recursively.
 
     This reproduces this tiered structure locally and (possibly) dumps
@@ -53,6 +53,8 @@ def backup_annotation_jsons(
         kwargs to pass along to callback
 
     """
+    callback_kwargs = {} if callback_kwargs is None else callback_kwargs
+
     print("\n== Dumping results to:", local, " ==\n")
 
     # pull annotations for each slide in folder 'id'

@@ -1,0 +1,15 @@
+# Needed by scikit-build (also needs to be in pyproject.toml)
+cmake
+ninja
+scikit-build>=0.8.1
+setuptools
+wheel
+# Also needed for installation
+cython
+numpy>=1.12.1
+setuptools-scm
+# Needed for tests
+docker
+docker-compose
+girder-client
+requests

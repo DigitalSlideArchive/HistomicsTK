@@ -1,5 +1,6 @@
 from argparse import Namespace
 from datetime import timedelta
+from slicer_cli_web import ctk_cli_adjustment  # noqa - imported for side effects
 from ctk_cli import CLIArgumentParser
 import psutil
 import numpy as np
@@ -9,7 +10,6 @@ import skimage.morphology
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.segmentation as htk_seg
 import histomicstk.utils as htk_utils
-from histomicstk.cli import ctk_cli_adjustment  # noqa - imported for side effects
 
 import large_image
 

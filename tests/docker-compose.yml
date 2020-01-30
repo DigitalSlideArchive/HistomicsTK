@@ -1,0 +1,16 @@
+---
+version: '3'
+services:
+  girder:
+    build:
+      context: .
+      dockerfile: Dockerfile-gc-tests
+    # ports:
+    #   - "8080:8080"
+    depends_on:
+      - mongodb
+    volumes:
+      - ../.tox/externaldata:/tests/externaldata
+  mongodb:
+    image: "circleci/mongo:4.2-ram"
+    command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]

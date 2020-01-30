@@ -1,8 +1,0 @@
----
-- name: Install rabbitmq system package
-  become: true
-  apt: update-cache=yes name=rabbitmq-server state=present
-
-- name: Enable rabbitmq-server to survive reboot
-  become: true
-  service: name=rabbitmq-server enabled=yes

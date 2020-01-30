@@ -1,0 +1,18 @@
+FROM python:3.7-slim
+
+LABEL HISTOMICSTK_GC_TEST=TRUE
+
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1
+
+RUN pip install --no-cache-dir -U pip
+
+# Only sources needed in the test are added.
+RUN pip install --pre --find-links https://girder.github.io/large_image_wheels \
+    histomicsui \
+    large-image-source-openslide \
+    pytest
+
+COPY . /tests
+
+CMD bash -c 'python /tests/docker_setup.py && girder serve -d mongodb://mongodb:27017/girder --host 0.0.0.0'
