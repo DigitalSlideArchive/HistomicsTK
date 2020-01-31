@@ -15,38 +15,38 @@ from histomicstk.annotations_and_masks.annotations_to_object_mask_handler import
 APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
 SAMPLE_SLIDE_ID = '5d586d57bd4404c6b1f28640'
 
-# gc = girder_client.GirderClient(apiUrl=APIURL)
-# # gc.authenticate(interactive=True)
-# gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
+gc = girder_client.GirderClient(apiUrl=APIURL)
+# gc.authenticate(interactive=True)
+gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
-# # Microns-per-pixel / Magnification (either or)
-# MPP = 5.0
-# MAG = None
+# Microns-per-pixel / Magnification (either or)
+MPP = 5.0
+MAG = None
 
-# # get annotations for slide
-# slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
-#
-# # scale up/down annotations by a factor
-# sf, _ = get_scale_factor_and_appendStr(
-#     gc=gc, slide_id=SAMPLE_SLIDE_ID, MPP=MPP, MAG=MAG)
-# slide_annotations = scale_slide_annotations(slide_annotations, sf=sf)
-#
-# # get bounding box information for all annotations
-# element_infos = get_bboxes_from_slide_annotations(slide_annotations)
+# get annotations for slide
+slide_annotations = gc.get('/annotation/item/' + SAMPLE_SLIDE_ID)
+
+# scale up/down annotations by a factor
+sf, _ = get_scale_factor_and_appendStr(
+    gc=gc, slide_id=SAMPLE_SLIDE_ID, MPP=MPP, MAG=MAG)
+slide_annotations = scale_slide_annotations(slide_annotations, sf=sf)
+
+# get bounding box information for all annotations
+element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 
 # %%===========================================================================
 
-# # params for annotations_to_contours_no_mask()
-# get_kwargs = {
-#     'gc': gc,
-#     'slide_id': SAMPLE_SLIDE_ID,
-#     'MPP': MPP, 'MAG': MAG,
-#     'bounds': {
-#         'XMIN': 58000, 'XMAX': 63000,
-#         'YMIN': 35000, 'YMAX': 39000},
-#     'linewidth': 0.2,
-#     'get_rgb': True, 'get_visualization': True,
-# }
+# params for annotations_to_contours_no_mask()
+get_kwargs = {
+    'gc': gc,
+    'slide_id': SAMPLE_SLIDE_ID,
+    'MPP': MPP, 'MAG': MAG,
+    'bounds': {
+        'XMIN': 58000, 'XMAX': 63000,
+        'YMIN': 35000, 'YMAX': 39000},
+    'linewidth': 0.2,
+    'get_rgb': True, 'get_visualization': True,
+}
 
 # %%===========================================================================
 

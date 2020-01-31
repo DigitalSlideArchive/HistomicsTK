@@ -71,7 +71,9 @@ def _keep_relevant_elements_for_roi(
     # isolate annotations that potentially overlap roi
     overlaps = get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi=idx_for_roi)
-    elinfos_roi = element_infos.loc[overlaps + [idx_for_roi, ], :]
+    if mode == "polygonal_bounds":
+        overlaps = overlaps + [idx_for_roi, ]
+    elinfos_roi = element_infos.loc[overlaps, :]
 
     # update roiinfo -- remember, annotation elements can be
     # really large and extend beyond the bounds asked by the user.
