@@ -783,17 +783,20 @@ def delete_annotations_in_slide(gc, slide_id):
 
 
 def _simple_add_element_to_roi(
-        elinfo, ROI, roiinfo, GT_code, verbose=True, monitorPrefix=""):
+        elinfo, ROI, roiinfo, GT_code, element=None,
+        verbose=True, monitorPrefix=""):
     """Get element coords and mask and add to ROI (Internal)."""
-    element = None
 
     def _process_coords(k):
         return np.array([int(j) for j in elinfo[k].split(",")])[..., None]
 
     try:
-        coords = np.concatenate([
-            _process_coords(k) for k in ('coords_x', 'coords_y')], 1)
-        element_mask = create_mask_from_coords(coords)
+        if element is None:
+            coords = np.concatenate([
+                _process_coords(k) for k in ('coords_x', 'coords_y')], 1)
+            element_mask = create_mask_from_coords(coords)
+        else:
+            element_mask = element["mask"]
 
         # Add element to ROI mask
         ROI, element = _add_element_to_roi(

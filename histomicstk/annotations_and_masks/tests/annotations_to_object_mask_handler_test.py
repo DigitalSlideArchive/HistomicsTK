@@ -287,17 +287,13 @@ GTCodes_df = _process_gtcodes(GTCodes_df)
 
 # unique combinations of number to be multiplied (second & third channel)
 # to be able to reconstruct the object ID when image is re-read
-object_code_comb = list(combinations(range(1, 256), 2))
+object_code_comb = combinations(range(1, 256), 2)
 
 # Add annotations in overlay order
 overlay_orders = sorted(set(GTCodes_df.loc[:, 'overlay_order']))
 N_elements = contours.shape[0]
 
 # Make sure we don't run out of object encoding values.
-# The object segmentation saves a png where
-# - First channel: encodes label (can be used for semantic segmentation)
-# - Second & third channels: multiplication of second and third channel
-#       gives the object id (255 choose 2 = 32,385 max unique objects)
 if N_elements > 32358:
     raise Exception("Too many objects!!")
 
@@ -346,17 +342,41 @@ for overlay_level in overlay_orders:
         if verbose:
             print(elcountStr)
 
-        # now add element to ROI
+        # Add element to labels channel
         labels_channel, element = _simple_add_element_to_roi(
             elinfo=elinfo, ROI=labels_channel, roiinfo=roiinfo,
             GT_code=GTCodes_df.loc[elinfo['group'], 'GT_code'],
             verbose=verbose, monitorPrefix=elcountStr)
 
-        # a
+        if element is not None:
 
+            object_code = next(object_code_comb)
 
+            # Add element to object (instance) channel 1
+            objects_channel1, _ = _simple_add_element_to_roi(
+                elinfo=elinfo, ROI=objects_channel1, roiinfo=roiinfo,
+                GT_code=object_code[0], element=element,
+                verbose=verbose, monitorPrefix=elcountStr)
 
+            # Add element to object (instance) channel 2
+            objects_channel2, _ = _simple_add_element_to_roi(
+                elinfo=elinfo, ROI=objects_channel2, roiinfo=roiinfo,
+                GT_code=object_code[1], element=element,
+                verbose=verbose, monitorPrefix=elcountStr)
 
+# Now concat to get final product
+# The object segmentation saves a png where
+# - First channel: encodes label (can be used for semantic segmentation)
+# - Second & third channels: multiplication of second and third channel
+#       gives the object id (255 choose 2 = 32,385 max unique objects)
+
+labeled_object_mask = np.concatenate((
+    labels_channel[..., None],
+    objects_channel1[..., None],
+    objects_channel2[..., None],
+    ), -1)
+
+# %%===========================================================================
 
 
 
