@@ -256,10 +256,43 @@ for roino, idx_for_roi in enumerate(idxs_for_all_rois):
 #               OR pickle (no restrictions)
 # The semantic segmentation mode ALWAYS saves pngs
 
-contours = roi_out['contours']
+contours = DataFrame(roi_out['contours'])
+# GTCodes_df
 
 
+# %%===========================================================================
 
+# make sure ROI is overlayed first & assigned background class if relevant
+roi_group = elinfos_roi.loc[idx_for_roi, 'group']
+GTCodes_df.loc[roi_group, 'overlay_order'] = np.min(
+    GTCodes_df.loc[:, 'overlay_order']) - 1
+bck_classes = GTCodes_df.loc[
+    GTCodes_df.loc[:, 'is_background_class'] == 1, :]
+if bck_classes.shape[0] > 0:
+    GTCodes_df.loc[
+        roi_group, 'GT_code'] = bck_classes.iloc[0, :]['GT_code']
+
+# Add annotations in overlay order
+overlay_orders = sorted(set(GTCodes_df.loc[:, 'overlay_order']))
+N_elements = elinfos_roi.shape[0]
+elNo = 0
+for overlay_level in overlay_orders:
+
+    # get indices of relevant groups
+    relevant_groups = list(GTCodes_df.loc[
+        GTCodes_df.loc[:, 'overlay_order'] == overlay_level, 'group'])
+    relIdxs = []
+    for group_name in relevant_groups:
+        relIdxs.extend(list(elinfos_roi.loc[
+            elinfos_roi.group == group_name, :].index))
+
+    # get relevnt infos and sort from largest to smallest (by bbox area)
+    # so that the smaller elements are layered last. This helps partially
+    # address issues describe in:
+    # https://github.com/DigitalSlideArchive/HistomicsTK/issues/675
+    elinfos_relevant = elinfos_roi.loc[relIdxs, :].copy()
+    elinfos_relevant.sort_values(
+        'bbox_area', axis=0, ascending=False, inplace=True)
 
 
 

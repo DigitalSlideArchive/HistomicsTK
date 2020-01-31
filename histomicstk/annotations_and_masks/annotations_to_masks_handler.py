@@ -383,8 +383,6 @@ def _visualize_annotations_on_rgb(
     ax.set_xlim(0.0, rgb.shape[1])
     ax.set_ylim(0.0, rgb.shape[0])
 
-    patches = []
-
     for idx, ann in enumerate(contours_list):
         xy = np.array([
             [int(j) for j in ann[k].split(",")]
@@ -399,7 +397,6 @@ def _visualize_annotations_on_rgb(
             linewidth=linewidth,
         )
         ax.add_patch(polygon)
-        patches.append(polygon)
 
     ax.axis('off')
     fig.subplots_adjust(bottom=0, top=1, left=0, right=1)

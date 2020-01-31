@@ -5,7 +5,7 @@ Created on Sun Aug 11 22:30:06 2019.
 @author: tageldim
 
 """
-
+import copy
 from io import BytesIO
 from PIL import Image, ImageDraw
 from shapely.geometry.polygon import Polygon
@@ -535,7 +535,7 @@ def parse_slide_annotations_into_tables(
 
         for elementidx, element in enumerate(ann['annotation']['elements']):
 
-            coords = _get_coords_from_element(element)
+            coords = _get_coords_from_element(copy.deepcopy(element))
 
             # crop using shapely to desired bounds if needed
             # IMPORTANT: everything till this point needs to be

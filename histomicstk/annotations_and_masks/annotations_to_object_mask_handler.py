@@ -71,7 +71,7 @@ def _keep_relevant_elements_for_roi(
     # isolate annotations that potentially overlap roi
     overlaps = get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi=idx_for_roi)
-    elinfos_roi = element_infos.loc[overlaps, :]
+    elinfos_roi = element_infos.loc[overlaps + [idx_for_roi, ], :]
 
     # update roiinfo -- remember, annotation elements can be
     # really large and extend beyond the bounds asked by the user.
@@ -92,26 +92,24 @@ def _keep_relevant_elements_for_roi(
     return elinfos_roi, roiinfo
 
 
-def _trim_slide_annotations_to_roi(slide_annotations, elinfos_roi):
+def _trim_slide_annotations_to_roi(annotations, elinfos_roi):
 
-    annotations = copy.deepcopy(slide_annotations)
-
-    # unique relevent annotation document indices
+    # unique relevent annotation document indices & slice
     unique_annidxs = np.int32(np.unique(elinfos_roi.loc[:, "annidx"]))
-
-    # unique relevant element indixes in each annotation document
-    unique_elementidxs = []
-    for annidx in unique_annidxs:
-        eleidxs = elinfos_roi.loc[
-            elinfos_roi.loc[:, 'annidx'] == annidx, 'elementidx']
-        unique_elementidxs.append(np.int32(np.unique(eleidxs)))
-
-    # now slice as needed
     annotations_slice = np.array(annotations)[unique_annidxs].tolist()
-    for annidx in range(len(annotations_slice)):
-        elements_original = annotations_slice[annidx]['annotation']['elements']
-        annotations_slice[annidx]['annotation']['elements'] = np.array(
-            elements_original)[unique_elementidxs[annidx]].tolist()
+
+    # anno is index relative to unique_annidxs, while
+    # annidx is index relative to original slide annotations
+    for anno, annidx in enumerate(unique_annidxs):
+
+        # indices of relevant elements in this annotation doc
+        eleidxs = np.int32(elinfos_roi.loc[
+            elinfos_roi.loc[:, 'annidx'] == annidx, 'elementidx'])
+
+        # slice relevant elements
+        elements_original = annotations_slice[anno]['annotation']['elements']
+        annotations_slice[anno]['annotation']['elements'] = np.array(
+            elements_original)[eleidxs].tolist()
 
     return annotations_slice
 
@@ -166,11 +164,10 @@ def annotations_to_contours_no_mask(
     # get roi polygon vertices
     rescaled_bounds = {k: int(v * sf) for k, v in bounds.items()}
     if mode == 'polygonal_bounds':
-        roi_coords = _get_coords_from_element(
+        roi_coords = _get_coords_from_element(copy.deepcopy(
             slide_annotations[int(element_infos.loc[idx_for_roi, 'annidx'])]
             ['annotation']['elements']
-            [int(element_infos.loc[idx_for_roi, 'elementidx'])])
-        # roi_coords = roi_coords * sf
+            [int(element_infos.loc[idx_for_roi, 'elementidx'])]))
         cropping_bounds = None
     else:
         roi_coords = None
