@@ -234,7 +234,6 @@ for roino, idx_for_roi in enumerate(idxs_for_all_rois):
     roi_out = annotations_to_contours_no_mask(
         gc=gc, slide_id=slide_id,
         mode='polygonal_bounds', idx_for_roi=idx_for_roi,
-        # mode='min_bounding_box',
         slide_annotations=slide_annotations,
         element_infos=element_infos, **kvp)
 
@@ -246,4 +245,29 @@ for roino, idx_for_roi in enumerate(idxs_for_all_rois):
         roi_out['bounds']['XMAX'], roi_out['bounds']['YMAX'])
 
     # TEMP !!!!!
-    break
+    a
+
+# %%===========================================================================
+
+# Now for the contours to mask method
+# This has
+# - Two modes: semantic segmentation OR object segmentati
+# - Two savetypes: png (max 255 objects, overlap lost)
+#               OR pickle (no restrictions)
+# The semantic segmentation mode ALWAYS saves pngs
+
+contours = roi_out['contours']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
