@@ -285,6 +285,35 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 # %%===========================================================================
 
 
+def _get_coords_from_element(element):
+
+    # get bounds
+    if element['type'] == 'polyline':
+        coords = np.int32(element['points'])[:, :-1]
+
+    elif element['type'] == 'rectangle':
+        roiinfo = get_rotated_rectangular_coords(
+            roi_center=element['center'],
+            roi_width=element['width'],
+            roi_height=element['height'],
+            roi_rotation=element['rotation'])
+        coords = roiinfo['roi_corners']  # for rotated rectangles
+        if element['rotation'] != 0:
+            element['type'] = 'polyline'
+
+    elif element['type'] == 'point':
+        xmin = xmax = int(element['center'][0])
+        ymin = ymax = int(element['center'][1])
+        coords = np.array(
+            [(xmin, ymin), (xmax, ymin), (xmax, ymax),
+             (xmin, ymax), (xmin, ymin)], dtype='int32')
+
+    else:
+        raise Exception("Unsupported element type:", element['type'])
+
+    return coords
+
+
 def _maybe_crop_polygon(vertices, bounds_polygon):
     """Crop bounds to desired area using shapely polygons."""
     all_vertices = []
@@ -326,7 +355,8 @@ def _maybe_crop_polygon(vertices, bounds_polygon):
 
 
 def parse_slide_annotations_into_tables(
-        slide_annotations, cropping_bounds=None, use_shapely=False):
+        slide_annotations, cropping_bounds=None,
+        cropping_polygon_vertices=None, use_shapely=False):
     """Given a slide annotation list, parse into convenient tabular format.
 
     If the annotation is a point, then it is just treated as if it is a
@@ -341,6 +371,12 @@ def parse_slide_annotations_into_tables(
     cropping_bounds : dict or None
         if given, must have keys XMIN, XMAX, YMIN, YMAX. These are the
         bounds to which the polygons may be cropped using shapely,
+        if the param use_shapely is True. Otherwise, the polygon
+        coordinates are just shifted relative to these bounds without
+        actually cropping.
+
+    cropping_polygon_vertices : nd array or None
+        if given, is an (m, 2) nd array of vertices to crop bounds.
         if the param use_shapely is True. Otherwise, the polygon
         coordinates are just shifted relative to these bounds without
         actually cropping.
@@ -405,6 +441,8 @@ def parse_slide_annotations_into_tables(
     ])
 
     if cropping_bounds is not None:
+        assert cropping_polygon_vertices is None, \
+            "either give cropping bouns or vertices, not both"
         xmin, xmax, ymin, ymax = (
             cropping_bounds['XMIN'], cropping_bounds['XMAX'],
             cropping_bounds['YMIN'], cropping_bounds['YMAX'])
@@ -412,6 +450,12 @@ def parse_slide_annotations_into_tables(
             (xmin, ymin), (xmax, ymin),
             (xmax, ymax), (xmin, ymax), (xmin, ymin),
         ], dtype='int32'))
+        x_shift = xmin
+        y_shift = ymin
+
+    elif cropping_polygon_vertices is not None:
+        bounds_polygon = Polygon(np.int32(cropping_polygon_vertices))
+        x_shift, y_shift = np.min(cropping_polygon_vertices, 0)
 
     def _parse_coords_to_str(vertices):
         return (
@@ -438,9 +482,10 @@ def parse_slide_annotations_into_tables(
         # cropping bounds (i.e. they would correspond to an RGB image
         # of the same region and could be used to create a mask or
         # to encode object boundaries etc
-        if cropping_bounds is not None:
-            vertices[:, 0] = vertices[:, 0] - cropping_bounds['XMIN']
-            vertices[:, 1] = vertices[:, 1] - cropping_bounds['YMIN']
+        if (cropping_bounds is not None) or (
+                cropping_polygon_vertices is not None):
+            vertices[:, 0] = vertices[:, 0] - x_shift
+            vertices[:, 1] = vertices[:, 1] - y_shift
 
         # get bounds for this polygon. Remember, these may have been
         # changed after it was cropped using shapely
@@ -490,34 +535,13 @@ def parse_slide_annotations_into_tables(
 
         for elementidx, element in enumerate(ann['annotation']['elements']):
 
-            # get bounds
-            if element['type'] == 'polyline':
-                coords = np.int32(element['points'])[:, :-1]
-
-            elif element['type'] == 'rectangle':
-                roiinfo = get_rotated_rectangular_coords(
-                    roi_center=element['center'],
-                    roi_width=element['width'],
-                    roi_height=element['height'],
-                    roi_rotation=element['rotation'])
-                coords = roiinfo['roi_corners']  # for rotated rectangles
-                if element['rotation'] != 0:
-                    element['type'] = 'polyline'
-
-            elif element['type'] == 'point':
-                xmin = xmax = int(element['center'][0])
-                ymin = ymax = int(element['center'][1])
-                coords = np.array(
-                    [(xmin, ymin), (xmax, ymin), (xmax, ymax),
-                     (xmin, ymax), (xmin, ymin)], dtype='int32')
-
-            else:
-                continue
+            coords = _get_coords_from_element(element)
 
             # crop using shapely to desired bounds if needed
             # IMPORTANT: everything till this point needs to be
             # relative to the whole slide image
-            if (cropping_bounds is None) \
+            if ((cropping_bounds is None) and
+                    (cropping_polygon_vertices is None)) \
                     or (element['type'] == 'point') \
                     or (not use_shapely):
                 all_coords = [coords, ]

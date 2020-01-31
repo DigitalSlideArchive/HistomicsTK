@@ -10,7 +10,7 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_idxs_for_annots_overlapping_roi_by_bbox, \
     get_scale_factor_and_appendStr, scale_slide_annotations, \
     get_bboxes_from_slide_annotations, get_image_from_htk_response, \
-    parse_slide_annotations_into_tables
+    parse_slide_annotations_into_tables, _get_coords_from_element
 from histomicstk.annotations_and_masks.annotations_to_masks_handler import \
     _get_roi_bounds_by_run_mode, _visualize_annotations_on_rgb
 
@@ -148,6 +148,7 @@ def annotations_to_contours_no_mask(
     # Determine get region based on run mode, keeping in mind that it
     # must be at BASE MAGNIFICATION coordinates before it is passed
     # on to get_mask_from_slide()
+    # if mode != 'polygonal_bound':
     bounds = _get_roi_bounds_by_run_mode(
         gc=gc, slide_id=slide_id, mode=mode, bounds=bounds,
         element_infos=element_infos, idx_for_roi=idx_for_roi, sf=sf)
@@ -162,16 +163,29 @@ def annotations_to_contours_no_mask(
     annotations_slice = _trim_slide_annotations_to_roi(
         slide_annotations, elinfos_roi=elinfos_roi)
 
+    # get roi polygon vertices
+    rescaled_bounds = {k: int(v * sf) for k, v in bounds.items()}
+    if mode == 'polygonal_bounds':
+        roi_coords = _get_coords_from_element(
+            slide_annotations[int(element_infos.loc[idx_for_roi, 'annidx'])]
+            ['annotation']['elements']
+            [int(element_infos.loc[idx_for_roi, 'elementidx'])])
+        # roi_coords = roi_coords * sf
+        cropping_bounds = None
+    else:
+        roi_coords = None
+        cropping_bounds = rescaled_bounds
+
     # tabularize to use contours
-    cropping_bounds = {k: int(v * sf) for k, v in bounds.items()}
     _, contours_df = parse_slide_annotations_into_tables(
         annotations_slice, cropping_bounds=cropping_bounds,
-        use_shapely=mode == 'manual_bounds',
+        cropping_polygon_vertices=roi_coords,
+        use_shapely=mode in ('manual_bounds', 'polygonal_bounds'),
     )
     contours_list = contours_df.to_dict(orient='records')
 
     # Final bounds (relative to slide at base magnification)
-    bounds = {k: int(v / sf) for k, v in cropping_bounds.items()}
+    bounds = {k: int(v / sf) for k, v in rescaled_bounds.items()}
     result = dict()
 
     # get RGB

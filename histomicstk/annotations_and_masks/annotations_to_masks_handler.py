@@ -816,7 +816,7 @@ def get_all_rois_from_slide(
     # get bounding box information for all annotations
     element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 
-    # get idx of all 'spacial' roi annotations
+    # get idx of all 'special' roi annotations
     idxs_for_all_rois = _get_idxs_for_all_rois(
         GTCodes=GTCodes_df, element_infos=element_infos)
 
