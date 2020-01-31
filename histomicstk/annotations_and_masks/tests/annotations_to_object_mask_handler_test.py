@@ -136,10 +136,12 @@ class GetSlideRegionNoMask(unittest.TestCase):
 # %%===========================================================================
 
 import matplotlib.pylab as plt
+import numpy as np
 import os
 from pandas import DataFrame, read_csv
+from itertools import combinations
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
-    _get_idxs_for_all_rois
+    _get_idxs_for_all_rois, _simple_add_element_to_roi
 
 
 GTCODE_PATH = os.path.join(
@@ -245,36 +247,76 @@ for roino, idx_for_roi in enumerate(idxs_for_all_rois):
         roi_out['bounds']['XMAX'], roi_out['bounds']['YMAX'])
 
     # TEMP !!!!!
-    a
+    break
 
 # %%===========================================================================
 
 # Now for the contours to mask method
-# This has
-# - Two modes: semantic segmentation OR object segmentati
-# - Two savetypes: png (max 255 objects, overlap lost)
-#               OR pickle (no restrictions)
-# The semantic segmentation mode ALWAYS saves pngs
+# This has two modes: semantic segmentation OR object segmentati
+# The object segmentation saves a png where first channel
+# encodes label, and multiplcation of second and third channel
+# gives the object id (255 choose 2 = 32,385 max unique objects)
+# that way we can safely save as a 3-channel png for convenience
 
 contours = DataFrame(roi_out['contours'])
 # GTCodes_df
-
+monitorprefix = ""
 
 # %%===========================================================================
 
-# make sure ROI is overlayed first & assigned background class if relevant
-roi_group = elinfos_roi.loc[idx_for_roi, 'group']
-GTCodes_df.loc[roi_group, 'overlay_order'] = np.min(
-    GTCodes_df.loc[:, 'overlay_order']) - 1
-bck_classes = GTCodes_df.loc[
-    GTCodes_df.loc[:, 'is_background_class'] == 1, :]
-if bck_classes.shape[0] > 0:
-    GTCodes_df.loc[
-        roi_group, 'GT_code'] = bck_classes.iloc[0, :]['GT_code']
+
+def _process_gtcodes(GTCodes):
+    # make sure ROIs are overlayed first
+    # & assigned background class if relevant
+    roi_groups = list(GTCodes.loc[GTCodes.loc[:, 'is_roi'] == 1, "group"])
+    roi_order = np.min(GTCodes.loc[:, 'overlay_order']) - 1
+    bck_classes = GTCodes.loc[
+        GTCodes.loc[:, 'is_background_class'] == 1, :]
+    for roi_group in roi_groups:
+        GTCodes.loc[roi_group, 'overlay_order'] = roi_order
+        if bck_classes.shape[0] > 0:
+            GTCodes.loc[
+                roi_group, 'GT_code'] = bck_classes.iloc[0, :]['GT_code']
+    return GTCodes
+
+
+# make sure roi is overlayed first + other processing
+GTCodes_df = _process_gtcodes(GTCodes_df)
+
+# %%===========================================================================
+
+# unique combinations of number to be multiplied (second & third channel)
+# to be able to reconstruct the object ID when image is re-read
+object_code_comb = list(combinations(range(1, 256), 2))
 
 # Add annotations in overlay order
 overlay_orders = sorted(set(GTCodes_df.loc[:, 'overlay_order']))
-N_elements = elinfos_roi.shape[0]
+N_elements = contours.shape[0]
+
+# Make sure we don't run out of object encoding values.
+# The object segmentation saves a png where
+# - First channel: encodes label (can be used for semantic segmentation)
+# - Second & third channels: multiplication of second and third channel
+#       gives the object id (255 choose 2 = 32,385 max unique objects)
+if N_elements > 32358:
+    raise Exception("Too many objects!!")
+
+# Add roiinfo & init roi
+roiinfo = {
+    'XMIN': int(np.min(contours.xmin)),
+    'YMIN': int(np.min(contours.ymin)),
+    'XMAX': int(np.max(contours.xmax)),
+    'YMAX': int(np.max(contours.ymax)),
+}
+roiinfo['BBOX_WIDTH'] = roiinfo['XMAX'] - roiinfo['XMIN']
+roiinfo['BBOX_HEIGHT'] = roiinfo['YMAX'] - roiinfo['YMIN']
+
+# init channels
+labels_channel = np.zeros(
+        (roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH']), dtype=np.uint8)
+objects_channel1 = labels_channel.copy()
+objects_channel2 = labels_channel.copy()
+
 elNo = 0
 for overlay_level in overlay_orders:
 
@@ -283,16 +325,35 @@ for overlay_level in overlay_orders:
         GTCodes_df.loc[:, 'overlay_order'] == overlay_level, 'group'])
     relIdxs = []
     for group_name in relevant_groups:
-        relIdxs.extend(list(elinfos_roi.loc[
-            elinfos_roi.group == group_name, :].index))
+        relIdxs.extend(list(contours.loc[
+            contours.group == group_name, :].index))
 
     # get relevnt infos and sort from largest to smallest (by bbox area)
     # so that the smaller elements are layered last. This helps partially
     # address issues describe in:
     # https://github.com/DigitalSlideArchive/HistomicsTK/issues/675
-    elinfos_relevant = elinfos_roi.loc[relIdxs, :].copy()
+    elinfos_relevant = contours.loc[relIdxs, :].copy()
     elinfos_relevant.sort_values(
         'bbox_area', axis=0, ascending=False, inplace=True)
+
+    # Go through elements and add to ROI mask
+    for elId, elinfo in elinfos_relevant.iterrows():
+
+        elNo += 1
+        elcountStr = "%s: Overlay level %d: Element %d of %d: %s" % (
+            monitorprefix, overlay_level, elNo, N_elements,
+            elinfo['group'])
+        if verbose:
+            print(elcountStr)
+
+        # now add element to ROI
+        labels_channel, element = _simple_add_element_to_roi(
+            elinfo=elinfo, ROI=labels_channel, roiinfo=roiinfo,
+            GT_code=GTCodes_df.loc[elinfo['group'], 'GT_code'],
+            verbose=verbose, monitorPrefix=elcountStr)
+
+        # a
+
 
 
 

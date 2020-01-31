@@ -729,7 +729,13 @@ def _add_element_to_roi(elinfo, ROI, GT_code, element_mask, roiinfo):
     patch[element_mask > 0] = GT_code
     ROI[ymin:ymax, xmin:xmax] = patch.copy()
 
-    return ROI
+    element = {
+        'mask': element_mask,
+        'xmin': xmin, 'xmax': xmax,
+        'ymin': ymin, 'ymax': ymax,
+    }
+
+    return ROI, element
 
 # %%===========================================================================
 
@@ -754,7 +760,7 @@ def _get_and_add_element_to_roi(
 
         # Add element to ROI mask
         if ADD_TO_ROI:
-            ROI = _add_element_to_roi(
+            ROI, _ = _add_element_to_roi(
                 elinfo=elinfo, ROI=ROI, GT_code=GT_code,
                 element_mask=element_mask, roiinfo=roiinfo)
 
@@ -772,5 +778,32 @@ def delete_annotations_in_slide(gc, slide_id):
     existing_annotations = gc.get('/annotation/item/' + slide_id)
     for ann in existing_annotations:
         gc.delete('/annotation/%s' % ann['_id'])
+
+# %%===========================================================================
+
+
+def _simple_add_element_to_roi(
+        elinfo, ROI, roiinfo, GT_code, verbose=True, monitorPrefix=""):
+    """Get element coords and mask and add to ROI (Internal)."""
+    element = None
+
+    def _process_coords(k):
+        return np.array([int(j) for j in elinfo[k].split(",")])[..., None]
+
+    try:
+        coords = np.concatenate([
+            _process_coords(k) for k in ('coords_x', 'coords_y')], 1)
+        element_mask = create_mask_from_coords(coords)
+
+        # Add element to ROI mask
+        ROI, element = _add_element_to_roi(
+            elinfo=elinfo, ROI=ROI, GT_code=GT_code,
+            element_mask=element_mask, roiinfo=roiinfo)
+
+    except Exception as e:
+        if verbose:
+            print("%s: ERROR! (see below)" % monitorPrefix)
+            print(e)
+    return ROI, element
 
 # %%===========================================================================
