@@ -93,138 +93,133 @@ get_all_rois_kwargs = {
 }
 
 # %%===========================================================================
-#
-#
-# class GetSlideRegionNoMask(unittest.TestCase):
-#     """Test methods for getting ROI contours from annotations."""
-#
-#     def test_annotations_to_contours_no_mask_1(self):
-#         """Test annotations_to_contours_no_mask()."""
-#         print("test_annotations_to_contours_no_mask_1()")
-#
-#         # get specified region -- without providing scaled annotations
-#         roi_out_1 = annotations_to_contours_no_mask(
-#             mode='manual_bounds', **test_annots_to_contours_kwargs)
-#
-#         # get specified region -- with providing scaled annotations
-#         roi_out_2 = annotations_to_contours_no_mask(
-#             mode='manual_bounds', slide_annotations=slide_annotations,
-#             element_infos=element_infos, **test_annots_to_contours_kwargs)
-#
-#         for roi_out in (roi_out_1, roi_out_2):
-#             self.assertSetEqual(
-#                 set(roi_out.keys()),
-#                 {'bounds', 'rgb', 'contours', 'visualization'})
-#             self.assertTupleEqual(roi_out['rgb'].shape, (200, 251, 3))
-#             self.assertTupleEqual(
-#                 roi_out['visualization'].shape, (200, 251, 3))
-#             self.assertAlmostEqual(len(roi_out['contours']) * 0.01, 0.64, 1)
-#             self.assertSetEqual(
-#                 set(roi_out['contours'][0].keys()),
-#                 {'annidx', 'elementidx', 'element_girder_id', 'type',
-#                  'annotation_girder_id', 'bbox_area', 'group', 'color',
-#                  'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
-#
-#     def test_annotations_to_contours_no_mask_2(self):
-#         """Test get_image_and_mask_from_slide()."""
-#         print("test_get_image_and_mask_from_slide_2()")
-#
-#         # get ROI bounding everything
-#         minbbox_out = annotations_to_contours_no_mask(
-#             mode='min_bounding_box', slide_annotations=slide_annotations,
-#             element_infos=element_infos, **test_annots_to_contours_kwargs)
-#
-#         self.assertSetEqual(
-#             set(minbbox_out.keys()),
-#             {'bounds', 'rgb', 'contours', 'visualization'})
-#         self.assertTupleEqual(minbbox_out['rgb'].shape, (321, 351, 3))
-#         self.assertTupleEqual(
-#             minbbox_out['visualization'].shape, (321, 351, 3))
-#         self.assertAlmostEqual(len(minbbox_out['contours']) * 0.01, 0.76, 1)
-#         self.assertSetEqual(
-#             set(minbbox_out['contours'][0].keys()),
-#             {'annidx', 'elementidx', 'element_girder_id', 'type',
-#              'annotation_girder_id', 'bbox_area', 'group', 'color',
-#              'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
-#
-#     # def test_annotations_to_contours_no_mask_3(self):
-#     #     """Test get_image_and_mask_from_slide()."""
-#     #     print("test_get_image_and_mask_from_slide_3()")
-#     #
-#     #     # get entire wsi region
-#     #     wsi_out = annotations_to_contours_no_mask(
-#     #         mode='wsi', slide_annotations=slide_annotations,
-#     #         element_infos=element_infos,
-#     #         **test_annots_to_contours_kwargs)
-#     #
-#     #     self.assertSetEqual(
-#     #         set(wsi_out.keys()),
-#     #         {'bounds', 'rgb', 'contours', 'visualization'})
-#     #     self.assertTupleEqual(wsi_out['rgb'].shape, (4030, 6589, 3))
-#     #     self.assertTupleEqual(
-#     #         wsi_out['visualization'].shape, (4030, 6589, 3))
-#     #     self.assertAlmostEqual(len(wsi_out['contours']) * 0.01, 0.76, 1)
-#     #     self.assertSetEqual(
-#     #         set(wsi_out['contours'][0].keys()),
-#     #         {'annidx', 'elementidx', 'element_girder_id', 'type',
-#     #          'annotation_girder_id', 'bbox_area', 'group', 'color',
-#     #          'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
-#
-#
-# # %%===========================================================================
-#
-#
-# class GetSlideRoisNoMask(unittest.TestCase):
-#     """Test methods for getting all ROIs without intermediate masks."""
-#
-#     def test_get_all_rois_from_slide_v2(self):
-#         """Test get_all_rois_from_slide_v2()."""
-#         print("test_get_all_rois_from_slide_v2()")
-#
-#         # First we test the object segmentation mode
-#         get_all_rois_kwargs['mode'] = 'object'
-#         savenames = get_all_rois_from_slide_v2(**get_all_rois_kwargs)
-#
-#         # basic checks
-#         self.assertEqual(len(savenames), 3)
-#         self.assertSetEqual(
-#             set(savenames[0].keys()),
-#             {'mask', 'rgb', 'visualization', 'contours'})
-#         self.assertSetEqual(
-#             {'TCGA-A2-A0YE_left-57584_top-35788_bottom-59421_right-37425.png',
-#              'TCGA-A2-A0YE_left-58463_top-38203_bottom-60379_right-39760.png',
-#              'TCGA-A2-A0YE_left-59181_top-33473_bottom-63712_right-38043.png',
-#              },
-#             {os.path.basename(savename['mask']) for savename in savenames})
-#
-#         # shape check
-#         imname = 'TCGA-A2-A0YE_left-57584_top-35788_bottom-59421_right-37425'
-#         mask = imread(os.path.join(SAVEPATHS['mask'], imname + '.png'))
-#         self.assertTupleEqual(mask.shape, (82, 92, 3))
-#
-#         # Second, we test the semantic segmentation mode
-#         get_all_rois_kwargs['mode'] = 'semantic'
-#         savenames = get_all_rois_from_slide_v2(**get_all_rois_kwargs)
-#
-#         # shape check
-#         mask = imread(os.path.join(SAVEPATHS['mask'], imname + '.png'))
-#         self.assertTupleEqual(mask.shape, (82, 92))
-#
-# # %%===========================================================================
-#
-# # if __name__ == '__main__':
-# #
-# #     unittest.main()
-# #
-# #     # cleanup
-# #     shutil.rmtree(BASE_SAVEPATH)
-#
 
 
-# First we test the object segmentation mode
-get_all_rois_kwargs['mode'] = 'object'
-savenames = get_all_rois_from_slide_v2(**get_all_rois_kwargs)
+class GetSlideRegionNoMask(unittest.TestCase):
+    """Test methods for getting ROI contours from annotations."""
 
-# shape check
-imname = 'TCGA-A2-A0YE_left-57584_top-35788_bottom-59421_right-37425'
-mask = imread(os.path.join(SAVEPATHS['mask'], imname + '.png'))
+    def test_annotations_to_contours_no_mask_1(self):
+        """Test annotations_to_contours_no_mask()."""
+        print("test_annotations_to_contours_no_mask_1()")
+
+        # get specified region -- without providing scaled annotations
+        roi_out_1 = annotations_to_contours_no_mask(
+            mode='manual_bounds', **test_annots_to_contours_kwargs)
+
+        # get specified region -- with providing scaled annotations
+        roi_out_2 = annotations_to_contours_no_mask(
+            mode='manual_bounds', slide_annotations=slide_annotations,
+            element_infos=element_infos, **test_annots_to_contours_kwargs)
+
+        for roi_out in (roi_out_1, roi_out_2):
+            self.assertSetEqual(
+                set(roi_out.keys()),
+                {'bounds', 'rgb', 'contours', 'visualization'})
+            self.assertTupleEqual(roi_out['rgb'].shape, (200, 251, 3))
+            self.assertTupleEqual(
+                roi_out['visualization'].shape, (200, 251, 3))
+            self.assertAlmostEqual(len(roi_out['contours']) * 0.01, 0.64, 1)
+            self.assertSetEqual(
+                set(roi_out['contours'][0].keys()),
+                {'annidx', 'elementidx', 'element_girder_id', 'type',
+                 'annotation_girder_id', 'bbox_area', 'group', 'color',
+                 'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
+
+    def test_annotations_to_contours_no_mask_2(self):
+        """Test get_image_and_mask_from_slide()."""
+        print("test_get_image_and_mask_from_slide_2()")
+
+        # get ROI bounding everything
+        minbbox_out = annotations_to_contours_no_mask(
+            mode='min_bounding_box', slide_annotations=slide_annotations,
+            element_infos=element_infos, **test_annots_to_contours_kwargs)
+
+        self.assertSetEqual(
+            set(minbbox_out.keys()),
+            {'bounds', 'rgb', 'contours', 'visualization'})
+        self.assertTupleEqual(minbbox_out['rgb'].shape, (321, 351, 3))
+        self.assertTupleEqual(
+            minbbox_out['visualization'].shape, (321, 351, 3))
+        self.assertAlmostEqual(len(minbbox_out['contours']) * 0.01, 0.76, 1)
+        self.assertSetEqual(
+            set(minbbox_out['contours'][0].keys()),
+            {'annidx', 'elementidx', 'element_girder_id', 'type',
+             'annotation_girder_id', 'bbox_area', 'group', 'color',
+             'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
+
+    # def test_annotations_to_contours_no_mask_3(self):
+    #     """Test get_image_and_mask_from_slide()."""
+    #     print("test_get_image_and_mask_from_slide_3()")
+    #
+    #     # get entire wsi region
+    #     wsi_out = annotations_to_contours_no_mask(
+    #         mode='wsi', slide_annotations=slide_annotations,
+    #         element_infos=element_infos,
+    #         **test_annots_to_contours_kwargs)
+    #
+    #     self.assertSetEqual(
+    #         set(wsi_out.keys()),
+    #         {'bounds', 'rgb', 'contours', 'visualization'})
+    #     self.assertTupleEqual(wsi_out['rgb'].shape, (4030, 6589, 3))
+    #     self.assertTupleEqual(
+    #         wsi_out['visualization'].shape, (4030, 6589, 3))
+    #     self.assertAlmostEqual(len(wsi_out['contours']) * 0.01, 0.76, 1)
+    #     self.assertSetEqual(
+    #         set(wsi_out['contours'][0].keys()),
+    #         {'annidx', 'elementidx', 'element_girder_id', 'type',
+    #          'annotation_girder_id', 'bbox_area', 'group', 'color',
+    #          'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
+
+
+# %%===========================================================================
+
+
+class GetSlideRoisNoMask(unittest.TestCase):
+    """Test methods for getting all ROIs without intermediate masks."""
+
+    def test_get_all_rois_from_slide_v2(self):
+        """Test get_all_rois_from_slide_v2()."""
+        print("test_get_all_rois_from_slide_v2()")
+
+        # First we test the object segmentation mode
+        get_all_rois_kwargs['mode'] = 'object'
+        savenames = get_all_rois_from_slide_v2(**get_all_rois_kwargs)
+
+        # basic checks
+        self.assertEqual(len(savenames), 3)
+        self.assertSetEqual(
+            set(savenames[0].keys()),
+            {'mask', 'rgb', 'visualization', 'contours'})
+        self.assertSetEqual(
+            {'TCGA-A2-A0YE_left-57584_top-35788_bottom-59421_right-37425.png',
+             'TCGA-A2-A0YE_left-58463_top-38203_bottom-60379_right-39760.png',
+             'TCGA-A2-A0YE_left-59181_top-33473_bottom-63712_right-38043.png',
+             },
+            {os.path.basename(savename['mask']) for savename in savenames})
+
+        # shape & value check
+        imname = 'TCGA-A2-A0YE_left-57584_top-35788_bottom-59421_right-37425'
+        mask = imread(os.path.join(SAVEPATHS['mask'], imname + '.png'))
+        self.assertTupleEqual(mask.shape, (82, 92, 3))
+        self.assertSetEqual(set(np.unique(mask[..., 0])), {0, 1, 2, 7})
+        self.assertSetEqual(set(np.unique(mask[..., 1])), {0, 1})
+        self.assertSetEqual(
+            set(np.unique(mask[..., 2])),
+            {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
+
+        # Second, we test the semantic segmentation mode
+        get_all_rois_kwargs['mode'] = 'semantic'
+        savenames = get_all_rois_from_slide_v2(**get_all_rois_kwargs)
+
+        # shape check
+        mask = imread(os.path.join(SAVEPATHS['mask'], imname + '.png'))
+        self.assertTupleEqual(mask.shape, (82, 92))
+
+# %%===========================================================================
+
+if __name__ == '__main__':
+
+    unittest.main()
+
+    # cleanup
+    shutil.rmtree(BASE_SAVEPATH)

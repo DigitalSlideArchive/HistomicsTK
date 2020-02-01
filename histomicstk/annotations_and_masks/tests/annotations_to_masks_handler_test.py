@@ -213,29 +213,29 @@ class GetSlideRegion(unittest.TestCase):
              'touches_edge-bottom', 'touches_edge-right', 'coords_x',
              'coords_y'})
 
-    def test_get_image_and_mask_from_slide_3(self):
-        """Test get_image_and_mask_from_slide()."""
-        print("test_get_image_and_mask_from_slide_3()")
-
-        # get entire wsi region
-        wsi_out = get_image_and_mask_from_slide(
-            mode='wsi', slide_annotations=slide_annotations,
-            element_infos=element_infos, **get_kwargs)
-
-        self.assertSetEqual(
-            set(wsi_out.keys()),
-            {'bounds', 'ROI', 'rgb', 'contours', 'visualization'})
-        self.assertTupleEqual(wsi_out['ROI'].shape, (4030, 6590))
-        self.assertTupleEqual(wsi_out['rgb'].shape, (4030, 6590, 3))
-        self.assertTupleEqual(
-            wsi_out['visualization'].shape, (4030, 6590, 3))
-        self.assertAlmostEqual(len(wsi_out['contours']) * 0.01, 0.28, 1)
-        self.assertSetEqual(
-            set(wsi_out['contours'][0].keys()),
-            {'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
-             'has_holes', 'touches_edge-top', 'touches_edge-left',
-             'touches_edge-bottom', 'touches_edge-right', 'coords_x',
-             'coords_y'})
+    # def test_get_image_and_mask_from_slide_3(self):
+    #     """Test get_image_and_mask_from_slide()."""
+    #     print("test_get_image_and_mask_from_slide_3()")
+    #
+    #     # get entire wsi region
+    #     wsi_out = get_image_and_mask_from_slide(
+    #         mode='wsi', slide_annotations=slide_annotations,
+    #         element_infos=element_infos, **get_kwargs)
+    #
+    #     self.assertSetEqual(
+    #         set(wsi_out.keys()),
+    #         {'bounds', 'ROI', 'rgb', 'contours', 'visualization'})
+    #     self.assertTupleEqual(wsi_out['ROI'].shape, (4030, 6590))
+    #     self.assertTupleEqual(wsi_out['rgb'].shape, (4030, 6590, 3))
+    #     self.assertTupleEqual(
+    #         wsi_out['visualization'].shape, (4030, 6590, 3))
+    #     self.assertAlmostEqual(len(wsi_out['contours']) * 0.01, 0.28, 1)
+    #     self.assertSetEqual(
+    #         set(wsi_out['contours'][0].keys()),
+    #         {'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
+    #          'has_holes', 'touches_edge-top', 'touches_edge-left',
+    #          'touches_edge-bottom', 'touches_edge-right', 'coords_x',
+    #          'coords_y'})
 
 # %%===========================================================================
 
