@@ -6,11 +6,13 @@ Created on Fri Jan 24 2020
 """
 import copy
 import numpy as np
+from itertools import combinations
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_idxs_for_annots_overlapping_roi_by_bbox, \
     get_scale_factor_and_appendStr, scale_slide_annotations, \
     get_bboxes_from_slide_annotations, get_image_from_htk_response, \
-    parse_slide_annotations_into_tables, _get_coords_from_element
+    parse_slide_annotations_into_tables, _get_coords_from_element, \
+    _simple_add_element_to_roi
 from histomicstk.annotations_and_masks.annotations_to_masks_handler import \
     _get_roi_bounds_by_run_mode, _visualize_annotations_on_rgb
 
@@ -123,6 +125,27 @@ def annotations_to_contours_no_mask(
         bounds=None, idx_for_roi=None,
         slide_annotations=None, element_infos=None,
         linewidth=0.2, get_rgb=True, get_visualization=True):
+    """Process annotations to get RGB and contours without intermediate masks.
+
+    Parameters
+    ----------
+    gc
+    slide_id
+    MPP
+    MAG
+    mode
+    bounds
+    idx_for_roi
+    slide_annotations
+    element_infos
+    linewidth
+    get_rgb
+    get_visualization
+
+    Returns
+    -------
+
+    """
 
     MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization = \
         _sanity_checks(
@@ -211,5 +234,147 @@ def annotations_to_contours_no_mask(
             rgb=rgb, contours_list=contours_list, linewidth=linewidth)
 
     return result
+
+# %%===========================================================================
+
+
+def contours_to_labeled_object_mask(
+        contours, gtcodes, mode='object', verbose=False, monitorprefix=''):
+    """Process contours to get and object segmentation labeled mask.
+
+    Parameters
+    ----------
+    contours : DataFrame
+    gtcodes : DataFrame
+    mode : str
+    verbose : bool
+    monitorprefix : str
+
+    Returns
+    -------
+    np.array
+        An (m, n, 3) np array that can be saved as a png
+        - First channel: encodes label (can be used for semantic segmentation)
+        - Second & third channels: multiplication of second and third channel
+          gives the object id (255 choose 2 = 32,385 max unique objects)
+
+    """
+    def _process_gtcodes(gtcodesdf):
+        # make sure ROIs are overlayed first
+        # & assigned background class if relevant
+        roi_groups = list(
+            gtcodesdf.loc[gtcodesdf.loc[:, 'is_roi'] == 1, "group"])
+        roi_order = np.min(gtcodesdf.loc[:, 'overlay_order']) - 1
+        bck_classes = gtcodesdf.loc[
+            gtcodesdf.loc[:, 'is_background_class'] == 1, :]
+        for roi_group in roi_groups:
+            gtcodesdf.loc[roi_group, 'overlay_order'] = roi_order
+            if bck_classes.shape[0] > 0:
+                gtcodesdf.loc[
+                    roi_group, 'GT_code'] = bck_classes.iloc[0, :]['GT_code']
+        return gtcodesdf
+
+    if mode not in ['semantic', 'object']:
+        raise Exception("Unknown run mode:", mode)
+
+    # make sure roi is overlayed first + other processing
+    gtcodes = _process_gtcodes(gtcodes)
+
+    # unique combinations of number to be multiplied (second & third channel)
+    # to be able to reconstruct the object ID when image is re-read
+    object_code_comb = combinations(range(1, 256), 2)
+
+    # Add annotations in overlay order
+    overlay_orders = sorted(set(gtcodes.loc[:, 'overlay_order']))
+    N_elements = contours.shape[0]
+
+    # Make sure we don't run out of object encoding values.
+    if N_elements > 32358:
+        raise Exception("Too many objects!!")
+
+    # Add roiinfo & init roi
+    roiinfo = {
+        'XMIN': int(np.min(contours.xmin)),
+        'YMIN': int(np.min(contours.ymin)),
+        'XMAX': int(np.max(contours.xmax)),
+        'YMAX': int(np.max(contours.ymax)),
+    }
+    roiinfo['BBOX_WIDTH'] = roiinfo['XMAX'] - roiinfo['XMIN']
+    roiinfo['BBOX_HEIGHT'] = roiinfo['YMAX'] - roiinfo['YMIN']
+
+    # init channels
+    labels_channel = np.zeros(
+            (roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH']), dtype=np.uint8)
+    if mode == 'object':
+        objects_channel1 = labels_channel.copy()
+        objects_channel2 = labels_channel.copy()
+
+    elNo = 0
+    for overlay_level in overlay_orders:
+
+        # get indices of relevant groups
+        relevant_groups = list(gtcodes.loc[
+            gtcodes.loc[:, 'overlay_order'] == overlay_level, 'group'])
+        relIdxs = []
+        for group_name in relevant_groups:
+            relIdxs.extend(list(contours.loc[
+                contours.group == group_name, :].index))
+
+        # get relevnt infos and sort from largest to smallest (by bbox area)
+        # so that the smaller elements are layered last. This helps partially
+        # address issues describe in:
+        # https://github.com/DigitalSlideArchive/HistomicsTK/issues/675
+        elinfos_relevant = contours.loc[relIdxs, :].copy()
+        elinfos_relevant.sort_values(
+            'bbox_area', axis=0, ascending=False, inplace=True)
+
+        # Go through elements and add to ROI mask
+        for elId, elinfo in elinfos_relevant.iterrows():
+
+            elNo += 1
+            elcountStr = "%s: Overlay level %d: Element %d of %d: %s" % (
+                monitorprefix, overlay_level, elNo, N_elements,
+                elinfo['group'])
+            if verbose:
+                print(elcountStr)
+
+            # Add element to labels channel
+            labels_channel, element = _simple_add_element_to_roi(
+                elinfo=elinfo, ROI=labels_channel, roiinfo=roiinfo,
+                GT_code=gtcodes.loc[elinfo['group'], 'GT_code'],
+                verbose=verbose, monitorPrefix=elcountStr)
+
+            if (element is not None) and (mode == 'object'):
+
+                object_code = next(object_code_comb)
+
+                # Add element to object (instance) channel 1
+                objects_channel1, _ = _simple_add_element_to_roi(
+                    elinfo=elinfo, ROI=objects_channel1, roiinfo=roiinfo,
+                    GT_code=object_code[0], element=element,
+                    verbose=verbose, monitorPrefix=elcountStr)
+
+                # Add element to object (instance) channel 2
+                objects_channel2, _ = _simple_add_element_to_roi(
+                    elinfo=elinfo, ROI=objects_channel2, roiinfo=roiinfo,
+                    GT_code=object_code[1], element=element,
+                    verbose=verbose, monitorPrefix=elcountStr)
+
+    # Now concat to get final product
+    # If the mode is object segmentation, we get an np array where
+    # - First channel: encodes label (can be used for semantic segmentation)
+    # - Second & third channels: multiplication of second and third channel
+    #       gives the object id (255 choose 2 = 32,385 max unique objects)
+    # This enables us to later save these masks in convenient compact
+    # .png format
+
+    if mode == 'semantic':
+        return labels_channel
+    else:
+        return np.concatenate((
+            labels_channel[..., None],
+            objects_channel1[..., None],
+            objects_channel2[..., None],
+            ), -1)
 
 # %%===========================================================================

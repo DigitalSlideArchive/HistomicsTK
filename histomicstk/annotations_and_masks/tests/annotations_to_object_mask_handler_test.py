@@ -138,10 +138,12 @@ class GetSlideRegionNoMask(unittest.TestCase):
 import matplotlib.pylab as plt
 import numpy as np
 import os
+from imageio import imwrite
 from pandas import DataFrame, read_csv
-from itertools import combinations
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
-    _get_idxs_for_all_rois, _simple_add_element_to_roi
+    _get_idxs_for_all_rois
+from histomicstk.annotations_and_masks.annotations_to_object_mask_handler import \
+    annotations_to_contours_no_mask, contours_to_labeled_object_mask
 
 
 GTCODE_PATH = os.path.join(
@@ -151,10 +153,10 @@ GTCODE_PATH = os.path.join(
 # just a temp directory to save masks for now
 BASE_SAVEPATH = '/home/mtageld/Desktop/tmp/'
 SAVEPATHS = {
-    'ROI': os.path.join(BASE_SAVEPATH, 'masks'),
-    'rgb': os.path.join(BASE_SAVEPATH, 'rgbs'),
     'contours': os.path.join(BASE_SAVEPATH, 'contours'),
+    'rgb': os.path.join(BASE_SAVEPATH, 'rgbs'),
     'visualization': os.path.join(BASE_SAVEPATH, 'vis'),
+    'mask': os.path.join(BASE_SAVEPATH, 'masks'),
 }
 for _, savepath in SAVEPATHS.items():
     os.rmdir(savepath)
@@ -184,6 +186,7 @@ annotations_to_contours_kwargs = {
 slide_name = None
 verbose = True
 monitorprefix = ""
+mode = 'object'
 
 # %%===========================================================================
 
@@ -200,8 +203,8 @@ for k, v in default_keyvalues.items():
         kvp[k] = v
 
 # convert to df and sanity check
-GTCodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
-if any(GTCodes_df.loc[:, 'GT_code'] <= 0):
+gtcodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
+if any(gtcodes_df.loc[:, 'GT_code'] <= 0):
     raise Exception("All GT_code must be > 0")
 
 # if not given, assign name of first file associated with girder item
@@ -223,7 +226,7 @@ element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 
 # get idx of all 'special' roi annotations
 idxs_for_all_rois = _get_idxs_for_all_rois(
-    GTCodes=GTCodes_df, element_infos=element_infos)
+    GTCodes=gtcodes_df, element_infos=element_infos)
 
 savenames = []
 
@@ -239,149 +242,39 @@ for roino, idx_for_roi in enumerate(idxs_for_all_rois):
         slide_annotations=slide_annotations,
         element_infos=element_infos, **kvp)
 
-    # now save roi (rgb, contours, vis)
+    # get correponding mask (semantic or object)
+    roi_out['mask'] = contours_to_labeled_object_mask(
+        contours=DataFrame(roi_out['contours']),
+        gtcodes=gtcodes_df,
+        mode=mode, verbose=verbose, monitorprefix=roicountStr)
+
+    # now save roi (rgb, vis, mask)
+
     this_roi_savenames = dict()
     ROINAMESTR = "%s_left-%d_top-%d_bottom-%d_right-%d" % (
         slide_name,
         roi_out['bounds']['XMIN'], roi_out['bounds']['YMIN'],
         roi_out['bounds']['XMAX'], roi_out['bounds']['YMAX'])
 
-    # TEMP !!!!!
-    break
+    for imtype in ['mask', 'rgb', 'visualization']:
+        if imtype in roi_out.keys():
+            savename = os.path.join(
+                save_directories[imtype], ROINAMESTR + ".png")
+            if verbose:
+                print("%s: Saving %s\n" % (roicountStr, savename))
+            imwrite(im=roi_out[imtype], uri=savename)
+            this_roi_savenames[imtype] = savename
+
+    # save contours
+    savename = os.path.join(
+        save_directories['contours'], ROINAMESTR + ".csv")
+    if verbose:
+        print("%s: Saving %s\n" % (roicountStr, savename))
+    contours_df = DataFrame(roi_out['contours'])
+    contours_df.to_csv(savename)
+    this_roi_savenames['contours'] = savename
+
+    savenames.append(this_roi_savenames)
 
 # %%===========================================================================
-
-# Now for the contours to mask method
-# This has two modes: semantic segmentation OR object segmentati
-# The object segmentation saves a png where first channel
-# encodes label, and multiplcation of second and third channel
-# gives the object id (255 choose 2 = 32,385 max unique objects)
-# that way we can safely save as a 3-channel png for convenience
-
-contours = DataFrame(roi_out['contours'])
-# GTCodes_df
-monitorprefix = ""
-
-# %%===========================================================================
-
-
-def _process_gtcodes(GTCodes):
-    # make sure ROIs are overlayed first
-    # & assigned background class if relevant
-    roi_groups = list(GTCodes.loc[GTCodes.loc[:, 'is_roi'] == 1, "group"])
-    roi_order = np.min(GTCodes.loc[:, 'overlay_order']) - 1
-    bck_classes = GTCodes.loc[
-        GTCodes.loc[:, 'is_background_class'] == 1, :]
-    for roi_group in roi_groups:
-        GTCodes.loc[roi_group, 'overlay_order'] = roi_order
-        if bck_classes.shape[0] > 0:
-            GTCodes.loc[
-                roi_group, 'GT_code'] = bck_classes.iloc[0, :]['GT_code']
-    return GTCodes
-
-
-# make sure roi is overlayed first + other processing
-GTCodes_df = _process_gtcodes(GTCodes_df)
-
-# %%===========================================================================
-
-# unique combinations of number to be multiplied (second & third channel)
-# to be able to reconstruct the object ID when image is re-read
-object_code_comb = combinations(range(1, 256), 2)
-
-# Add annotations in overlay order
-overlay_orders = sorted(set(GTCodes_df.loc[:, 'overlay_order']))
-N_elements = contours.shape[0]
-
-# Make sure we don't run out of object encoding values.
-if N_elements > 32358:
-    raise Exception("Too many objects!!")
-
-# Add roiinfo & init roi
-roiinfo = {
-    'XMIN': int(np.min(contours.xmin)),
-    'YMIN': int(np.min(contours.ymin)),
-    'XMAX': int(np.max(contours.xmax)),
-    'YMAX': int(np.max(contours.ymax)),
-}
-roiinfo['BBOX_WIDTH'] = roiinfo['XMAX'] - roiinfo['XMIN']
-roiinfo['BBOX_HEIGHT'] = roiinfo['YMAX'] - roiinfo['YMIN']
-
-# init channels
-labels_channel = np.zeros(
-        (roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH']), dtype=np.uint8)
-objects_channel1 = labels_channel.copy()
-objects_channel2 = labels_channel.copy()
-
-elNo = 0
-for overlay_level in overlay_orders:
-
-    # get indices of relevant groups
-    relevant_groups = list(GTCodes_df.loc[
-        GTCodes_df.loc[:, 'overlay_order'] == overlay_level, 'group'])
-    relIdxs = []
-    for group_name in relevant_groups:
-        relIdxs.extend(list(contours.loc[
-            contours.group == group_name, :].index))
-
-    # get relevnt infos and sort from largest to smallest (by bbox area)
-    # so that the smaller elements are layered last. This helps partially
-    # address issues describe in:
-    # https://github.com/DigitalSlideArchive/HistomicsTK/issues/675
-    elinfos_relevant = contours.loc[relIdxs, :].copy()
-    elinfos_relevant.sort_values(
-        'bbox_area', axis=0, ascending=False, inplace=True)
-
-    # Go through elements and add to ROI mask
-    for elId, elinfo in elinfos_relevant.iterrows():
-
-        elNo += 1
-        elcountStr = "%s: Overlay level %d: Element %d of %d: %s" % (
-            monitorprefix, overlay_level, elNo, N_elements,
-            elinfo['group'])
-        if verbose:
-            print(elcountStr)
-
-        # Add element to labels channel
-        labels_channel, element = _simple_add_element_to_roi(
-            elinfo=elinfo, ROI=labels_channel, roiinfo=roiinfo,
-            GT_code=GTCodes_df.loc[elinfo['group'], 'GT_code'],
-            verbose=verbose, monitorPrefix=elcountStr)
-
-        if element is not None:
-
-            object_code = next(object_code_comb)
-
-            # Add element to object (instance) channel 1
-            objects_channel1, _ = _simple_add_element_to_roi(
-                elinfo=elinfo, ROI=objects_channel1, roiinfo=roiinfo,
-                GT_code=object_code[0], element=element,
-                verbose=verbose, monitorPrefix=elcountStr)
-
-            # Add element to object (instance) channel 2
-            objects_channel2, _ = _simple_add_element_to_roi(
-                elinfo=elinfo, ROI=objects_channel2, roiinfo=roiinfo,
-                GT_code=object_code[1], element=element,
-                verbose=verbose, monitorPrefix=elcountStr)
-
-# Now concat to get final product
-# The object segmentation saves a png where
-# - First channel: encodes label (can be used for semantic segmentation)
-# - Second & third channels: multiplication of second and third channel
-#       gives the object id (255 choose 2 = 32,385 max unique objects)
-
-labeled_object_mask = np.concatenate((
-    labels_channel[..., None],
-    objects_channel1[..., None],
-    objects_channel2[..., None],
-    ), -1)
-
-# %%===========================================================================
-
-
-
-
-
-
-
 
