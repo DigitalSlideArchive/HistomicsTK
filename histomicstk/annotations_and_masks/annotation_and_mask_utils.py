@@ -634,7 +634,7 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
     """
     bboxes = np.array(
         element_infos.loc[:, ['xmin', 'ymin', 'xmax', 'ymax']],
-        dtype='int')
+        dtype='float')
     iou = np_vec_no_jit_iou(bboxes[idx_for_roi, :][None, ...], bboxes2=bboxes)
     iou = np.concatenate((np.arange(iou.shape[1])[None, ...], iou))
     iou = iou[:, iou[1, :] > iou_thresh].astype(int)
