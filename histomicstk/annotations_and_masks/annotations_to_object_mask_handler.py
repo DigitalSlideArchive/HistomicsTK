@@ -5,14 +5,17 @@ Created on Fri Jan 24 2020
 @author: mtageld
 """
 import copy
+import os
 import numpy as np
 from itertools import combinations
+from imageio import imwrite
+from pandas import DataFrame
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_idxs_for_annots_overlapping_roi_by_bbox, \
     get_scale_factor_and_appendStr, scale_slide_annotations, \
     get_bboxes_from_slide_annotations, get_image_from_htk_response, \
     parse_slide_annotations_into_tables, _get_coords_from_element, \
-    _simple_add_element_to_roi
+    _simple_add_element_to_roi, _get_idxs_for_all_rois
 from histomicstk.annotations_and_masks.annotations_to_masks_handler import \
     _get_roi_bounds_by_run_mode, _visualize_annotations_on_rgb
 
@@ -370,10 +373,131 @@ def contours_to_labeled_object_mask(
     if mode == 'semantic':
         return labels_channel
     else:
-        return np.concatenate((
+        return np.uint8(np.concatenate((
             labels_channel[..., None],
             objects_channel1[..., None],
             objects_channel2[..., None],
-            ), -1)
+            ), -1))
+
+# %%===========================================================================
+
+
+def get_all_rois_from_slide_v2(
+        gc, slide_id, GTCodes_dict, save_directories,
+        mode='object', annotations_to_contours_kwargs=dict(),
+        slide_name=None, verbose=True, monitorprefix=""):
+    """Get all ROIs for a slide without an intermediate mask form.
+
+    This can be run in either the 'object' mode, whereby the saved masks
+    are a three-channel png where first channel encodes class label (i.e.
+    same as semantic segmentation) and the product of the values in the
+    second and third channel encodes the object ID. Otherwise, the user
+    may decide to run in the 'semantic' mode and the resultant mask would
+    consist of only one channel (semantic segmentation with no object
+    differentiation).
+
+    Parameters
+    ----------
+    gc
+    slide_id
+    GTCodes_dict
+    save_directories
+    mode
+    annotations_to_contours_kwargs
+    slide_name
+    verbose
+    monitorprefix
+
+    Returns
+    -------
+
+    """
+    default_keyvalues = {
+        'MPP': 5.0, 'MAG': None,
+        'linewidth': 0.2,
+        'get_rgb': True, 'get_visualization': True,
+    }
+
+    # assign defaults if nothing given
+    kvp = annotations_to_contours_kwargs  # for easy referencing
+    for k, v in default_keyvalues.items():
+        if k not in kvp.keys():
+            kvp[k] = v
+
+    # convert to df and sanity check
+    gtcodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
+    if any(gtcodes_df.loc[:, 'GT_code'] <= 0):
+        raise Exception("All GT_code must be > 0")
+
+    # if not given, assign name of first file associated with girder item
+    if slide_name is None:
+        resp = gc.get('/item/%s/files' % slide_id)
+        slide_name = resp[0]['name']
+        slide_name = slide_name[:slide_name.rfind('.')]
+
+    # get annotations for slide
+    slide_annotations = gc.get('/annotation/item/' + slide_id)
+
+    # scale up/down annotations by a factor
+    sf, _ = get_scale_factor_and_appendStr(
+        gc=gc, slide_id=slide_id, MPP=kvp['MPP'], MAG=kvp['MAG'])
+    slide_annotations = scale_slide_annotations(slide_annotations, sf=sf)
+
+    # get bounding box information for all annotations
+    element_infos = get_bboxes_from_slide_annotations(slide_annotations)
+
+    # get idx of all 'special' roi annotations
+    idxs_for_all_rois = _get_idxs_for_all_rois(
+        GTCodes=gtcodes_df, element_infos=element_infos)
+
+    savenames = []
+
+    for roino, idx_for_roi in enumerate(idxs_for_all_rois):
+
+        roicountStr = "%s: roi %d of %d" % (
+            monitorprefix, roino + 1, len(idxs_for_all_rois))
+
+        # get specified area
+        roi_out = annotations_to_contours_no_mask(
+            gc=gc, slide_id=slide_id,
+            mode='polygonal_bounds', idx_for_roi=idx_for_roi,
+            slide_annotations=slide_annotations,
+            element_infos=element_infos, **kvp)
+
+        # get correponding mask (semantic or object)
+        roi_out['mask'] = contours_to_labeled_object_mask(
+            contours=DataFrame(roi_out['contours']),
+            gtcodes=gtcodes_df,
+            mode=mode, verbose=verbose, monitorprefix=roicountStr)
+
+        # now save roi (rgb, vis, mask)
+
+        this_roi_savenames = dict()
+        ROINAMESTR = "%s_left-%d_top-%d_bottom-%d_right-%d" % (
+            slide_name,
+            roi_out['bounds']['XMIN'], roi_out['bounds']['YMIN'],
+            roi_out['bounds']['XMAX'], roi_out['bounds']['YMAX'])
+
+        for imtype in ['mask', 'rgb', 'visualization']:
+            if imtype in roi_out.keys():
+                savename = os.path.join(
+                    save_directories[imtype], ROINAMESTR + ".png")
+                if verbose:
+                    print("%s: Saving %s\n" % (roicountStr, savename))
+                imwrite(im=roi_out[imtype], uri=savename)
+                this_roi_savenames[imtype] = savename
+
+        # save contours
+        savename = os.path.join(
+            save_directories['contours'], ROINAMESTR + ".csv")
+        if verbose:
+            print("%s: Saving %s\n" % (roicountStr, savename))
+        contours_df = DataFrame(roi_out['contours'])
+        contours_df.to_csv(savename)
+        this_roi_savenames['contours'] = savename
+
+        savenames.append(this_roi_savenames)
+
+    return savenames
 
 # %%===========================================================================
