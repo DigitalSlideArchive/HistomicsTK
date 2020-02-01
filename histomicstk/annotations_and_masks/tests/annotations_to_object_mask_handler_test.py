@@ -159,8 +159,8 @@ SAVEPATHS = {
     'mask': os.path.join(BASE_SAVEPATH, 'masks'),
 }
 for _, savepath in SAVEPATHS.items():
-    os.rmdir(savepath)
-    os.mkdir(savepath)
+    if not os.path.exists(savepath):
+        os.mkdir(savepath)
 
 # %%===========================================================================
 
@@ -277,4 +277,3 @@ for roino, idx_for_roi in enumerate(idxs_for_all_rois):
     savenames.append(this_roi_savenames)
 
 # %%===========================================================================
-

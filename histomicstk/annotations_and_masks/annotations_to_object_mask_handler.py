@@ -146,7 +146,6 @@ def annotations_to_contours_no_mask(
     -------
 
     """
-
     MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization = \
         _sanity_checks(
             MPP, MAG, mode, bounds, idx_for_roi,
@@ -184,7 +183,7 @@ def annotations_to_contours_no_mask(
     # find relevant portion from slide annotations to use
     # (with overflowing beyond edge)
     annotations_slice = _trim_slide_annotations_to_roi(
-        slide_annotations, elinfos_roi=elinfos_roi)
+        copy.deepcopy(slide_annotations), elinfos_roi=elinfos_roi)
 
     # get roi polygon vertices
     rescaled_bounds = {k: int(v * sf) for k, v in bounds.items()}
