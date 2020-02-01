@@ -132,21 +132,70 @@ def annotations_to_contours_no_mask(
 
     Parameters
     ----------
-    gc
-    slide_id
-    MPP
-    MAG
-    mode
-    bounds
-    idx_for_roi
-    slide_annotations
-    element_infos
-    linewidth
-    get_rgb
-    get_visualization
+    gc : object
+        girder client object to make requests, for example:
+        gc = girder_client.GirderClient(apiUrl = APIURL)
+        gc.authenticate(interactive=True)
+
+    slide_id : str
+        girder id for item (slide)
+
+    MPP : float or None
+        Microns-per-pixel -- best use this as it's more well-defined than
+        magnification which is more scanner/manufacturer specific.
+        MPP of 0.25 often roughly translates to 40x
+
+    MAG : float or None
+        If you prefer to use whatever magnification is reported in slide.
+        If neither MPP or MAG is provided, everything is retrieved without
+        scaling at base (scan) magnification.
+
+    mode : str
+        This specifies which part of the slide to get the mask from. Allowed
+        modes include the following
+        - wsi: get scaled up/down version of mask of whole slide
+        - min_bounding_box: get minimum box for all annotations in slide
+        - manual_bounds: use given ROI bounds provided by the 'bounds' param
+        - polygonal_bounds: use the idx_for_roi param to get coordinates
+
+    bounds : dict or None
+        if not None, has keys 'XMIN', 'XMAX', 'YMIN', 'YMAX' for slide
+        region coordinates (AT BASE MAGNIFICATION) to get labeled image
+        (mask) for. Use this with the 'manual_bounds' run mode.
+
+    idx_for_roi : int
+        index of ROI within the element_infos dataframe.
+        Use this with the 'polygonal_bounds' run mode.
+
+    slide_annotations : list or None
+        Give this parameter to avoid re-getting slide annotations. If you do
+        provide the annotations, though, make sure you have used
+        scale_slide_annotations() to scale them up/down by sf BEFOREHAND.
+
+    element_infos : pandas DataFrame.
+        The columns annidx and elementidx
+        encode the dict index of annotation document and element,
+        respectively, in the original slide_annotations list of dictionaries.
+        This can be obained by get_bboxes_from_slide_annotations() method.
+        Make sure you have used scale_slide_annotations().
+
+    linewidth : float
+        visualization line width
+
+    get_rgb: bool
+        get rgb image?
+
+    get_visualization : bool
+        get overlayed annotation bounds over RGB for visualization
 
     Returns
-    -------
+    --------
+    dict
+        Results dict containing one or more of the following keys
+        - bounds: dict of bounds at scan magnification
+        - rgb: (mxnx3 np array) corresponding rgb image
+        - contours: dict
+        - visualization: (mxnx3 np array) visualization overlay
 
     """
     MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization = \
@@ -247,18 +296,68 @@ def contours_to_labeled_object_mask(
     Parameters
     ----------
     contours : DataFrame
+        contours corresponding to annotation elemeents from the slide.
+        All coordinates are relative to the mask that you want to output.
+        The following columns are expected.
+
+        group : str
+            annotation group (ground truth label).
+        ymin : int
+            minimun y coordinate
+        ymax : int
+            maximum y coordinate
+        xmin : int
+            minimum x coordinate
+        xmax : int
+            maximum x coordinate
+        coords_x : str
+            vertix x coordinates comma-separated values
+        coords_y
+            vertix y coordinated comma-separated values
+
     gtcodes : DataFrame
+        the ground truth codes and information dataframe.
+        This is a dataframe that is indexed by the annotation group name and
+        has the following columns.
+
+        group: str
+            group name of annotation, eg. mostly_tumor.
+        GT_code: int
+            desired ground truth code (in the mask). Pixels of this value
+            belong to corresponding group (class).
+        color: str
+            rgb format. eg. rgb(255,0,0).
+
     mode : str
+        run mode for getting masks. Must me in
+        - object: get 3-channel mask where first channel encodes label
+                  (tumor, stroma, etc) while product of second and third
+                  channel encodes the object ID (i.e. individual contours)
+                  This is useful for object localization and segmentation
+                  tasks.
+        - semantic: get a 1-channel mask corresponding to the first channel
+                  of the object mode.
+
     verbose : bool
     monitorprefix : str
 
     Returns
     -------
     np.array
-        An (m, n, 3) np array that can be saved as a png
+        If mode is 'object', this returns an (m, n, 3) np array
+        that can be saved as a png
         - First channel: encodes label (can be used for semantic segmentation)
         - Second & third channels: multiplication of second and third channel
-          gives the object id (255 choose 2 = 32,385 max unique objects)
+          gives the object id (255 choose 2 = 32,385 max unique objects).
+        This allows us to save into a convenient 3-channel png object labels
+        and segmentation masks, which is more compact than traditional
+        mask-rcnn save formats like having one channel per object and a
+        separate csv file for object labels. This is also more convenient
+        than simply saving things into pickled np array objects, and allows
+        compatibility with data loaders that expect an image or mask.
+
+        If mode is 'semantic' only the labels (corresponding to first
+        channel of the object mode) is output.
 
     """
     def _process_gtcodes(gtcodesdf):
@@ -388,6 +487,9 @@ def get_all_rois_from_slide_v2(
         slide_name=None, verbose=True, monitorprefix=""):
     """Get all ROIs for a slide without an intermediate mask form.
 
+    This mainly relies on contours_to_labeled_object_mask(), which should
+    be referred to for extra documentation.
+
     This can be run in either the 'object' mode, whereby the saved masks
     are a three-channel png where first channel encodes class label (i.e.
     same as semantic segmentation) and the product of the values in the
@@ -396,20 +498,89 @@ def get_all_rois_from_slide_v2(
     consist of only one channel (semantic segmentation with no object
     differentiation).
 
+    The difference between this and version 1, found at
+    histomicstk.annotations_and_masks.annotations_to_masks_handler.
+    get_all_rois_from_slide()
+    is that this (version 2) gets the contours first, including cropping
+    to wanted ROI boundaries and other processing using shapely, and THEN
+    parses these into masks. This enables us to differentiate various objects
+    to use the data for object localization/classification/segmentation
+    tasks. If you would like to get semantic segmentation masks, i.e. you do
+    not really care about individual objects, you can use either version 1
+    or this method. They re-use much of the same code-base, but some edge
+    cases maybe better handled by version 1. For example, since
+    this version uses shapely first to crop, some objects may be incorrectly
+    parsed by shapely. Version 1, using PIL.ImageDraw may not have these
+    problems.
+
+    Bottom line is: if you need semantic segmentation masks, it is probably
+    safer to use version 1, whereas if you need object segmentation masks,
+    this method should be used.
+
     Parameters
     ----------
-    gc
-    slide_id
-    GTCodes_dict
-    save_directories
-    mode
-    annotations_to_contours_kwargs
-    slide_name
-    verbose
-    monitorprefix
+    gc : object
+        girder client object to make requests, for example:
+        gc = girder_client.GirderClient(apiUrl = APIURL)
+        gc.authenticate(interactive=True)
+
+    slide_id : str
+        girder id for item (slide)
+
+    GTCodes_dict : dict
+        the ground truth codes and information dict.
+        This is a dict that is indexed by the annotation group name and
+        each entry is in turn a dict with the following keys:
+        - group: group name of annotation (string), eg. mostly_tumor
+        - overlay_order: int, how early to place the annotation in the
+        mask. Larger values means this annotation group is overlayed
+        last and overwrites whatever overlaps it.
+        - GT_code: int, desired ground truth code (in the mask)
+        Pixels of this value belong to corresponding group (class)
+        - is_roi: Flag for whether this group encodes an ROI
+        - is_background_class: Flag, whether this group is the default
+        fill value inside the ROI. For example, you may descide that
+        any pixel inside the ROI is considered stroma.
+
+    save_directories : dict
+        paths to directories to save data. Each entry is a string, and the
+        following keys are allowed
+        - ROI: path to save masks (labeled images)
+        - rgb: path to save rgb images
+        - contours: path to save annotation contours
+        - visualization: path to save rgb visualzation overlays
+
+    mode : str
+        run mode for getting masks. Must me in
+        - object: get 3-channel mask where first channel encodes label
+                  (tumor, stroma, etc) while product of second and third
+                  channel encodes the object ID (i.e. individual contours)
+                  This is useful for object localization and segmentation
+                  tasks.
+        - semantic: get a 1-channel mask corresponding to the first channel
+                  of the object mode.
+
+    annotations_to_contours_kwargs : dict
+        kwargs to pass to annotations_to_contours_no_mask()
+        default values are assigned if specific parameters are not given.
+
+    slide_name : str or None
+        If not given, it's inferred using a server request using girder client.
+
+    verbose : bool
+        Print progress to screen?
+
+    monitorprefix : str
+        text to prepend to printed statements
 
     Returns
-    -------
+    --------
+    list of dicts
+        each entry contains the following keys
+        - mask: path to saved mask
+        - rgb: path to saved rgb image
+        - contours: path to saved annotation contours
+        - visualization: path to saved rgb visualzation overlay
 
     """
     default_keyvalues = {
