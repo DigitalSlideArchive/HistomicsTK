@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jan 24 2020
+Created on Fri Jan 24 2020.
 
 @author: mtageld
 """
@@ -405,7 +405,7 @@ def contours_to_labeled_object_mask(
 
     # init channels
     labels_channel = np.zeros(
-            (roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH']), dtype=np.uint8)
+        (roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH']), dtype=np.uint8)
     if mode == 'object':
         objects_channel1 = labels_channel.copy()
         objects_channel2 = labels_channel.copy()
@@ -421,7 +421,7 @@ def contours_to_labeled_object_mask(
             relIdxs.extend(list(contours.loc[
                 contours.group == group_name, :].index))
 
-        # get relevnt infos and sort from largest to smallest (by bbox area)
+        # get relevant infos and sort from largest to smallest (by bbox area)
         # so that the smaller elements are layered last. This helps partially
         # address issues describe in:
         # https://github.com/DigitalSlideArchive/HistomicsTK/issues/675
