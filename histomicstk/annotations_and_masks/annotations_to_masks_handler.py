@@ -620,13 +620,12 @@ def get_image_and_mask_from_slide(
     --------
     dict
         Results dict containing one or more of the following keys
-        - bounds: dict of bounds at scan magnification
-        - ROI: (mxn) labeled image (mask)
-        - rgb: (mxnx3 np array) corresponding rgb image
-        - contours: list
-            each entry is a dict version of a row from the output
-            of masks_to_annotations_handler.get_contours_from_mask()
-        - visualization: (mxnx3 np array) visualization overlay
+        bounds: dict of bounds at scan magnification
+        ROI - (mxn) labeled image (mask)
+        rgb - (mxnx3 np array) corresponding rgb image
+        contours - list, each entry is a dict version of a row from the output
+        of masks_to_annotations_handler.get_contours_from_mask()
+        visualization - (mxnx3 np array) visualization overlay
 
     """
     # important sanity checks
