@@ -124,7 +124,7 @@ for imidx, imname in enumerate(imnames):
 rgb = imread(os.path.join(sd['rgb'], imname + '.png'))
 vis = imread(os.path.join(sd['visualization'], imname + '.png'))
 # conts = read_csv(
-#     os.path.join(sd['contours'], imname + '.csv'), nrows=1)
+#     os.path.join(sd['contours'], imname + '.csv'))
 
 slide_id = imname.split('_left')[0]
 
@@ -148,17 +148,29 @@ _, appendStr = get_scale_factor_and_appendStr(
     gc=gc, slide_id=slide_id, **getsf_kwargs)
 
 # now get low-magnification surrounding field
+x_margin = (bounds['right'] - bounds['left']) * zoomout / 2
+y_margin = (bounds['bottom'] - bounds['top']) * zoomout / 2
 getStr = \
     "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
     % (slide_id,
-       bounds['left'], bounds['right'],
-       bounds['top'], bounds['bottom'])
+       bounds['left'] - x_margin,
+       bounds['right'] + x_margin,
+       bounds['top'] - y_margin,
+       bounds['bottom'] + y_margin)
 getStr += appendStr
 resp = gc.get(getStr, jsonResp=False)
 rgb_zoomout = get_image_from_htk_response(resp)
 
+# %%===========================================================================
 
+xmin =
 
+contours_list = [{
+    'color': 'rgb(255,0,0)',
+    'coords_x': ,
+    'coords_y': ,
+}]
+vis_zoomout = _visualize_annotations_on_rgb(rgb_zoomout, contours_list)
 
 
 
