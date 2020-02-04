@@ -472,7 +472,8 @@ def contours_to_labeled_object_mask(
 
 def get_all_rois_from_slide_v2(
         gc, slide_id, GTCodes_dict, save_directories,
-        mode='object', annotations_to_contours_kwargs=dict(),
+        annotations_to_contours_kwargs=dict(),
+        mode='object', get_mask=True,
         slide_name=None, verbose=True, monitorprefix=""):
     """Get all ROIs for a slide without an intermediate mask form.
 
@@ -548,6 +549,11 @@ def get_all_rois_from_slide_v2(
         - semantic: get a 1-channel mask corresponding to the first channel
         of the object mode.
 
+    get_mask : bool
+        While the main purpose of this method IS to get object segmentation
+        masks, it is conceivable that some users might just want to get
+        the RGB and contours. Default is True.
+
     annotations_to_contours_kwargs : dict
         kwargs to pass to annotations_to_contours_no_mask()
         default values are assigned if specific parameters are not given.
@@ -572,7 +578,7 @@ def get_all_rois_from_slide_v2(
 
     """
     default_keyvalues = {
-        'MPP': 5.0, 'MAG': None,
+        'MPP': None, 'MAG': None,
         'linewidth': 0.2,
         'get_rgb': True, 'get_visualization': True,
     }
@@ -624,10 +630,11 @@ def get_all_rois_from_slide_v2(
             element_infos=element_infos, **kvp)
 
         # get correponding mask (semantic or object)
-        roi_out['mask'] = contours_to_labeled_object_mask(
-            contours=DataFrame(roi_out['contours']),
-            gtcodes=gtcodes_df,
-            mode=mode, verbose=verbose, monitorprefix=roicountStr)
+        if get_mask:
+            roi_out['mask'] = contours_to_labeled_object_mask(
+                contours=DataFrame(roi_out['contours']),
+                gtcodes=gtcodes_df,
+                mode=mode, verbose=verbose, monitorprefix=roicountStr)
 
         # now save roi (rgb, vis, mask)
 

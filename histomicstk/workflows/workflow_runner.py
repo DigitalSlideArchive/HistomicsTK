@@ -133,14 +133,18 @@ class Workflow_runner(Base_HTK_Class):
                     **self.workflow_kwargs)
 
             except Exception as e:
-                self.cpr1.logger.exception("%s: SEE EXCEPTIONS FILE: %s" % (
-                    monitorStr, self.exception_path))
+
                 if self.keep_log:
+                    self.cpr1.logger.exception(
+                        "%s: SEE EXCEPTIONS FILE: %s" % (
+                            monitorStr, self.exception_path))
                     with open(self.exception_path, 'a') as f:
                         print(str(e))
                         f.write("%s\n" % monitorStr)
-                        f.write(str(e))
+                        f.write(e.__repr__())
                         f.write("\n---------------------------------\n")
+                else:
+                    print(e.__repr__())
 
 
 # %% ==========================================================================
