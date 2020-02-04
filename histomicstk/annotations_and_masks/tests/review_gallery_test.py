@@ -54,6 +54,8 @@ from histomicstk.workflows.workflow_runner import (
     Workflow_runner, Slide_iterator)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_image_from_htk_response
+from histomicstk.annotations_and_masks.annotations_to_masks_handler import \
+    _visualize_annotations_on_rgb
 
 # %%===========================================================================
 
@@ -76,16 +78,16 @@ get_all_rois_kwargs = {
 
 monitor = 'test'
 
-# how much smaller should the "zoomed out" rgb be
-zoomout = 2
-
 # %%===========================================================================
 
 
 def _get_all_rois(slide_id, monitorPrefix, **kwargs):
+    sld = gc.get('/item/%s' % slide_id)
+    sldname = sld['name'][:sld['name'].find('.')]
     return get_all_rois_from_slide_v2(
         slide_id=slide_id, monitorprefix=monitorPrefix,
-        slide_name=slide_id,  # makes things easier later
+        # encoding slide id makes things easier later
+        slide_name="%s_id-%s" % (sldname, slide_id),
         **kwargs)
 
 
@@ -120,13 +122,18 @@ for imidx, imname in enumerate(imnames):
 
 # %%===========================================================================
 
+# how much smaller should the "zoomed out" rgb be
+zoomout = 4
+
+# %%===========================================================================
+
 # read fetched rgb and visualization
 rgb = imread(os.path.join(sd['rgb'], imname + '.png'))
 vis = imread(os.path.join(sd['visualization'], imname + '.png'))
 # conts = read_csv(
 #     os.path.join(sd['contours'], imname + '.csv'))
 
-slide_id = imname.split('_left')[0]
+slide_id = imname.split('_id-')[1].split('_')[0]
 
 # get ROI location from imname
 bounds = {
@@ -144,7 +151,7 @@ for k, v in get_all_rois_kwargs[
     elif (k == 'MPP') and (v is not None):
         getsf_kwargs[k] = v * zoomout
 
-_, appendStr = get_scale_factor_and_appendStr(
+sf, appendStr = get_scale_factor_and_appendStr(
     gc=gc, slide_id=slide_id, **getsf_kwargs)
 
 # now get low-magnification surrounding field
@@ -161,24 +168,56 @@ getStr += appendStr
 resp = gc.get(getStr, jsonResp=False)
 rgb_zoomout = get_image_from_htk_response(resp)
 
-# %%===========================================================================
-
-xmin =
-
+# plot a bounding box at the ROI region
+xmin = x_margin * sf
+xmax = xmin + (bounds['right'] - bounds['left']) * sf
+ymin = y_margin * sf
+ymax = ymin + (bounds['bottom'] - bounds['top']) * sf
+xmin, xmax, ymin, ymax = [str(int(j)) for j in (xmin, xmax, ymin, ymax)]
 contours_list = [{
     'color': 'rgb(255,0,0)',
-    'coords_x': ,
-    'coords_y': ,
+    'coords_x': ",".join([xmin, xmax, xmax, xmin, xmin]),
+    'coords_y': ",".join([ymin, ymin, ymax, ymax, ymin]),
 }]
 vis_zoomout = _visualize_annotations_on_rgb(rgb_zoomout, contours_list)
 
+# %============================================================================
+
+import io
+from PIL import Image
+
+# %============================================================================
+
+wmax = max(vis.shape[1], vis_zoomout.shape[1])
+hmax = max(vis.shape[0], vis_zoomout.shape[0])
+
+fig, ax = plt.subplots(
+    1, 3, dpi=100,
+    figsize=(3 * wmax / 1000, hmax / 1000),
+    gridspec_kw={'wspace': 0.01, 'hspace': 0}
+)
 
 
+ax[0].imshow(vis)
+ax[1].imshow(rgb)
+ax[2].imshow(vis_zoomout)
+
+# plt.axis('off')
+# ax = plt.gca()
+#
+# ax.set_xlim(0.0, rgb.shape[1])
+# ax.set_ylim(0.0, rgb.shape[0])
+
+for axis in ax:
+    axis.axis('off')
+fig.subplots_adjust(bottom=0, top=1, left=0, right=1)
+
+buf = io.BytesIO()
+plt.savefig(buf, format='png', pad_inches=0, dpi=1000)
+buf.seek(0)
+combined_vis = np.flipud(np.uint8(Image.open(buf))[..., :3])
+plt.close()
 
 
-
-
-
-
-
+plt.imshow(combined_vis)
 
