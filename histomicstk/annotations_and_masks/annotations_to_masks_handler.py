@@ -838,7 +838,7 @@ def get_all_rois_from_slide(
         ROINAMESTR = "%s_left-%d_top-%d_bottom-%d_right-%d" % (
             slide_name,
             roi_out['bounds']['XMIN'], roi_out['bounds']['YMIN'],
-            roi_out['bounds']['XMAX'], roi_out['bounds']['YMAX'])
+            roi_out['bounds']['YMAX'], roi_out['bounds']['XMAX'])
 
         for imtype in ['ROI', 'rgb', 'visualization']:
             if imtype in roi_out.keys():
