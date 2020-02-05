@@ -87,7 +87,7 @@ get_all_rois_kwargs = {
     'get_mask': False,
     'callback': _plot_rapid_review_vis,
     'callback_kwargs': {
-        'gallery_savepath': gallery_savepath,
+        'combinedvis_savepath': combinedvis_savepath,
         'zoomout': 4,
 
     },
@@ -96,13 +96,12 @@ get_all_rois_kwargs = {
 monitor = 'test'
 
 # %%===========================================================================
+
 # Get al rois to prep for gallery
 get_all_rois_from_folder_v2(
     gc=gc, folderid=folderid, get_all_rois_kwargs=get_all_rois_kwargs,
     monitor=monitor)
 
-
-a
 # %%===========================================================================
 
 # combinedvis_savepath
@@ -117,6 +116,7 @@ os.mkdir(gallery_savepath)
 padding = 25
 
 tiles_per_row = 2
+tiles_per_column = 5
 
 # %%===========================================================================
 
@@ -126,7 +126,6 @@ tile_paths = [
 tile_paths.sort()
 
 n_tiles = len(tile_paths)
-tiles_per_column = int(np.ceil(n_tiles / tiles_per_row))
 n_galleries = int(np.ceil(n_tiles / (tiles_per_row * tiles_per_column)))
 
 tileidx = 0
@@ -156,9 +155,11 @@ for galno in range(n_galleries):
 
             # insert tile into mosaic row
             row_im = row_im.insert(
-                tile[:3], row_im.width + padding, 0, expand=True)
+                tile[:3], row_im.width + padding, 0,
+                expand=True, background=255)
 
-        im = im.insert(row_im, 0, im.height + padding, expand=True)
+        im = im.insert(
+            row_im, 0, im.height + padding, expand=True, background=255)
 
     savepath = os.path.join(
         gallery_savepath, 'gallery-%d.tiff' % (galno + 1))

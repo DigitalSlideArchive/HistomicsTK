@@ -204,7 +204,7 @@ def _get_review_visualization(rgb, vis, vis_zoomout):
 
 def _plot_rapid_review_vis(
         roi_out, gc, slide_id, slide_name, MPP, MAG,
-        gallery_savepath, zoomout=4,
+        combinedvis_savepath, zoomout=4,
         verbose=False, monitorprefix=''):
     """Plot a visualization for rapid review of ROI.
 
@@ -218,7 +218,7 @@ def _plot_rapid_review_vis(
     slide_name
     MPP
     MAG
-    gallery_savepath
+    combinedvis_savepath
     zoomout
     verbose
     monitorprefix
@@ -237,7 +237,7 @@ def _plot_rapid_review_vis(
         slide_name,
         roi_out['bounds']['XMIN'], roi_out['bounds']['YMIN'],
         roi_out['bounds']['YMAX'], roi_out['bounds']['XMAX'])
-    savename = os.path.join(gallery_savepath, ROINAMESTR + ".png")
+    savename = os.path.join(combinedvis_savepath, ROINAMESTR + ".png")
     rapid_review_vis = _get_review_visualization(
         rgb=roi_out['rgb'], vis=roi_out['visualization'],
         vis_zoomout=vis_zoomout)
