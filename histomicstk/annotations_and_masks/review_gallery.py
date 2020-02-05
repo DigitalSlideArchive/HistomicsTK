@@ -230,7 +230,7 @@ def _plot_rapid_review_vis(
     # get rgb and visualization (fetched mag + lower mag)
     vis_zoomout = _get_visualization_zoomout(
         gc=gc, slide_id=slide_id, bounds=roi_out['bounds'],
-        zoomout=zoomout)
+        MPP=MPP, MAG=MAG, zoomout=zoomout)
 
     # combined everything in a neat visualization for rapid review
     ROINAMESTR = "%s_left-%d_top-%d_bottom-%d_right-%d" % (
