@@ -474,7 +474,8 @@ def get_all_rois_from_slide_v2(
         gc, slide_id, GTCodes_dict, save_directories,
         annotations_to_contours_kwargs=dict(),
         mode='object', get_mask=True,
-        slide_name=None, verbose=True, monitorprefix=""):
+        slide_name=None, verbose=True, monitorprefix="",
+        callback=None, callback_kwargs=None):
     """Get all ROIs for a slide without an intermediate mask form.
 
     This mainly relies on contours_to_labeled_object_mask(), which should
@@ -629,7 +630,7 @@ def get_all_rois_from_slide_v2(
             slide_annotations=slide_annotations,
             element_infos=element_infos, **kvp)
 
-        # get correponding mask (semantic or object)
+        # get corresponding mask (semantic or object)
         if get_mask:
             roi_out['mask'] = contours_to_labeled_object_mask(
                 contours=DataFrame(roi_out['contours']),
@@ -649,7 +650,7 @@ def get_all_rois_from_slide_v2(
                 savename = os.path.join(
                     save_directories[imtype], ROINAMESTR + ".png")
                 if verbose:
-                    print("%s: Saving %s\n" % (roicountStr, savename))
+                    print("%s: Saving %s" % (roicountStr, savename))
                 imwrite(im=roi_out[imtype], uri=savename)
                 this_roi_savenames[imtype] = savename
 
@@ -663,6 +664,21 @@ def get_all_rois_from_slide_v2(
         this_roi_savenames['contours'] = savename
 
         savenames.append(this_roi_savenames)
+
+        # now run callback on roi_out
+        if callback is not None:
+            # these are 'compulsory' kwargs for the callback
+            # since it will not have access to these otherwise
+            callback_kwargs.update({
+                'gc': gc,
+                'slide_id': slide_id,
+                'slide_name': slide_name,
+                'MPP': kvp['MPP'],
+                'MAG': kvp['MAG'],
+                'verbose': verbose,
+                'monitorprefix': roicountStr,
+            })
+            callback(roi_out, **callback_kwargs)
 
     return savenames
 

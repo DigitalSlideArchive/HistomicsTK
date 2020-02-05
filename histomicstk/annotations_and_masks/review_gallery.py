@@ -1,7 +1,10 @@
 import io
+import os
+
 import matplotlib.pylab as plt
 import numpy as np
 from PIL import Image
+from imageio import imwrite
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_scale_factor_and_appendStr, get_image_from_htk_response
@@ -97,68 +100,54 @@ def get_all_rois_from_folder_v2(
 
 
 def _get_visualization_zoomout(
-        gc, imname, get_all_rois_kwargs, zoomout=4):
+        gc, slide_id, bounds, MPP, MAG, zoomout=4):
     """Get a zoomed out visualization of ROI RGB and annotation overlay.
 
     Parameters
     ----------
     gc : girder_client.Girder_Client
         connected girder client
-    imname : str
-        save image name without extension. it must be in the format
-        %s_id-%s_left-%d_top-%d_right-%d_bottom-%d %
-        (slide_name, slide_id, left, right, top, bottom)
-        where coordinates are relative to slide at base magnification.
-    get_all_rois_kwargs : dict
-         kwargs that were passed to get_all_rois_from_slide_v2() in the
-         first place to get the ROI images and visualizations. Must contain
-         at least one of the keys "MAG" and "MPP".
-    zoomout
+    zoomout : float
+        how much to zoom out
 
     Returns
     -------
 
     """
-    slide_id = imname.split('_id-')[1].split('_')[0]
-
-    # get ROI location from imname
-    bounds = {
-        locstr: int(imname.split(locstr + '-')[1].split('_')[0])
-        for locstr in ('left', 'right', 'top', 'bottom')}
-
-    # get a lower-magnification surrounding field
-
     # get append string for server request
     getsf_kwargs = dict()
-    for k, v in get_all_rois_kwargs[
-            'annotations_to_contours_kwargs'].items():
-        if (k == 'MAG') and (v is not None):
-            getsf_kwargs[k] = v / zoomout
-        elif (k == 'MPP') and (v is not None):
-            getsf_kwargs[k] = v * zoomout
-
+    if MPP is not None:
+        getsf_kwargs = {
+            'MPP': MPP * zoomout,
+            'MAG': None,
+        }
+    else:
+        getsf_kwargs = {
+            'MPP': None,
+            'MAG': MAG / zoomout,
+        }
     sf, appendStr = get_scale_factor_and_appendStr(
         gc=gc, slide_id=slide_id, **getsf_kwargs)
 
     # now get low-magnification surrounding field
-    x_margin = (bounds['right'] - bounds['left']) * zoomout / 2
-    y_margin = (bounds['bottom'] - bounds['top']) * zoomout / 2
+    x_margin = (bounds['XMAX'] - bounds['XMIN']) * zoomout / 2
+    y_margin = (bounds['YMAX'] - bounds['YMIN']) * zoomout / 2
     getStr = \
         "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
         % (slide_id,
-           bounds['left'] - x_margin,
-           bounds['right'] + x_margin,
-           bounds['top'] - y_margin,
-           bounds['bottom'] + y_margin)
+           bounds['XMIN'] - x_margin,
+           bounds['XMAX'] + x_margin,
+           bounds['YMIN'] - y_margin,
+           bounds['YMAX'] + y_margin)
     getStr += appendStr
     resp = gc.get(getStr, jsonResp=False)
     rgb_zoomout = get_image_from_htk_response(resp)
 
     # plot a bounding box at the ROI region
     xmin = x_margin * sf
-    xmax = xmin + (bounds['right'] - bounds['left']) * sf
+    xmax = xmin + (bounds['XMAX'] - bounds['XMIN']) * sf
     ymin = y_margin * sf
-    ymax = ymin + (bounds['bottom'] - bounds['top']) * sf
+    ymax = ymin + (bounds['YMAX'] - bounds['YMIN']) * sf
     xmin, xmax, ymin, ymax = [str(int(j)) for j in (xmin, xmax, ymin, ymax)]
     contours_list = [{
         'color': 'rgb(255,0,0)',
@@ -211,3 +200,51 @@ def _get_review_visualization(rgb, vis, vis_zoomout):
     plt.close()
 
     return combined_vis
+
+
+def _plot_rapid_review_vis(
+        roi_out, gc, slide_id, slide_name, MPP, MAG,
+        gallery_savepath, zoomout=4,
+        verbose=False, monitorprefix=''):
+    """Plot a visualization for rapid review of ROI.
+
+    This is a callback to be called inside get_all_rois_from_slide_v2().
+
+    Parameters
+    ----------
+    roi_out
+    gc
+    slide_id
+    slide_name
+    MPP
+    MAG
+    gallery_savepath
+    zoomout
+    verbose
+    monitorprefix
+
+    Returns
+    -------
+
+    """
+    # get rgb and visualization (fetched mag + lower mag)
+    vis_zoomout = _get_visualization_zoomout(
+        gc=gc, slide_id=slide_id, bounds=roi_out['bounds'],
+        zoomout=zoomout)
+
+    # combined everything in a neat visualization for rapid review
+    ROINAMESTR = "%s_left-%d_top-%d_bottom-%d_right-%d" % (
+        slide_name,
+        roi_out['bounds']['XMIN'], roi_out['bounds']['YMIN'],
+        roi_out['bounds']['YMAX'], roi_out['bounds']['XMAX'])
+    savename = os.path.join(gallery_savepath, ROINAMESTR + ".png")
+    rapid_review_vis = _get_review_visualization(
+        rgb=roi_out['rgb'], vis=roi_out['visualization'],
+        vis_zoomout=vis_zoomout)
+
+    # save visualization for later use
+    if verbose:
+        print("%s: Saving %s" % (monitorprefix, savename))
+    imwrite(im=rapid_review_vis, uri=savename)
+
+# %============================================================================

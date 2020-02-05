@@ -42,10 +42,10 @@ SAVEPATHS = {
     'rgb': os.path.join(BASE_SAVEPATH, 'rgbs'),
     'visualization': os.path.join(BASE_SAVEPATH, 'vis'),
 }
-# for _, savepath in SAVEPATHS.items():
-#     if os.path.exists(savepath):
-#         shutil.rmtree(savepath)
-#     os.mkdir(savepath)
+for _, savepath in SAVEPATHS.items():
+    if os.path.exists(savepath):
+        shutil.rmtree(savepath)
+    os.mkdir(savepath)
 
 # %%===========================================================================
 # %%===========================================================================
@@ -155,22 +155,31 @@ for galno in range(n_galleries):
             print("Inserting tile %d of %d: %s" % (tileidx, n_tiles, imname))
             tileidx += 1
 
-            # get rgb and visualization (fetched mag + lower mag)
-            rgb = imread(os.path.join(sd['rgb'], imname + '.png'))
-            vis = imread(os.path.join(sd['visualization'], imname + '.png'))
-            vis_zoomout = _get_visualization_zoomout(
-                gc=gc, imname=imname, get_all_rois_kwargs=get_all_rois_kwargs,
-                zoomout=zoomout)
+            # @TODO - use callback inside get_all_rois_from_folder_v2()
+            #  to call things directly from disk !!!!!!
 
-            # combined everything in a neat visualization for rapid review
-            tileim = _get_review_visualization(
-                rgb=rgb, vis=vis, vis_zoomout=vis_zoomout)
+
+            # # get rgb and visualization (fetched mag + lower mag)
+            # rgb = imread(os.path.join(sd['rgb'], imname + '.png'))
+            # vis = imread(os.path.join(sd['visualization'], imname + '.png'))
+            # vis_zoomout = _get_visualization_zoomout(
+            #     gc=gc, imname=imname, get_all_rois_kwargs=get_all_rois_kwargs,
+            #     zoomout=zoomout)
+            #
+            # # combined everything in a neat visualization for rapid review
+            # tileim = _get_review_visualization(
+            #     rgb=rgb, vis=vis, vis_zoomout=vis_zoomout)
+
+            # # get tile from file
+            tile = pyvips.Image.new_from_file(tilepath, access="sequential")
+
+            # # get vips tile from image
+            # ydim, xdim, ch = tileim.shape
+            # linear = tileim.reshape(ydim * xdim * ch)
+            # tile = pyvips.Image.new_from_memory(
+            #     linear, xdim, ydim, 3, DTYPE_TO_FORMAT[str(linear.dtype)])
 
             # insert tile into mosaic row
-            ydim, xdim, ch = tileim.shape
-            linear = tileim.reshape(ydim * xdim * ch)
-            tile = pyvips.Image.new_from_memory(
-                linear, xdim, ydim, 3, DTYPE_TO_FORMAT[str(linear.dtype)])
             row_im = row_im.insert(tile[:3], row_im.width, 0, expand=True)
 
         im = im.insert(row_im, 0, im.height, expand=True)
