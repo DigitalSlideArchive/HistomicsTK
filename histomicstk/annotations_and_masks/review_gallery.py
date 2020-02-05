@@ -1,8 +1,10 @@
 import io
 import os
+import tempfile
 
 import matplotlib.pylab as plt
 import numpy as np
+import pyvips
 from PIL import Image
 from imageio import imwrite
 
@@ -246,5 +248,103 @@ def _plot_rapid_review_vis(
     if verbose:
         print("%s: Saving %s" % (monitorprefix, savename))
     imwrite(im=rapid_review_vis, uri=savename)
+
+# %============================================================================
+
+
+def create_review_galleries(
+        tilepath_base, upload_results=True, gc=None,
+        gallery_savepath=None, gallery_folderid=None,
+        padding=25, tiles_per_row=2, tiles_per_column=5):
+    """Create and or post review galleries for rapid review.
+
+    Parameters
+    ----------
+    tilepath_base
+    upload_results
+    gc
+    gallery_savepath
+    gallery_folderid
+    padding
+    tiles_per_row
+    tiles_per_column
+
+    Returns
+    -------
+
+    """
+    if upload_results:
+        for par in ('gc', 'gallery_folderid'):
+            if locals()[par] is None:
+                raise Exception(
+                    "%s cannot be None if upload_results!" % par)
+
+    if gallery_savepath is None:
+        gallery_savepath = tempfile.mkdtemp(prefix='gallery-')
+
+    savepaths = []
+    resps = []
+
+    tile_paths = [
+        os.path.join(tilepath_base, j) for j in
+        os.listdir(tilepath_base) if j.endswith('.png')]
+    tile_paths.sort()
+
+    n_tiles = len(tile_paths)
+    n_galleries = int(np.ceil(n_tiles / (tiles_per_row * tiles_per_column)))
+
+    tileidx = 0
+
+    for galno in range(n_galleries):
+
+        # this makes a 8-bit, mono image (initializes as 1x1x3 matrix)
+        im = pyvips.Image.black(1, 1, bands=3)
+
+        for row in range(tiles_per_column):
+
+            row_im = pyvips.Image.black(1, 1, bands=3)
+
+            for col in range(tiles_per_row):
+
+                if tileidx == n_tiles:
+                    break
+
+                tilepath = tile_paths[tileidx]
+
+                print("Inserting tile %d of %d: %s" % (
+                    tileidx, n_tiles, tilepath))
+                tileidx += 1
+
+                # # get tile from file
+                tile = pyvips.Image.new_from_file(
+                    tilepath, access="sequential")
+
+                # @TODO -- also return individual locations (bboxes)
+                # insert tile into mosaic row
+                row_im = row_im.insert(
+                    tile[:3], row_im.width + padding, 0,
+                    expand=True, background=255)
+
+            im = im.insert(
+                row_im, 0, im.height + padding, expand=True, background=255)
+
+        filename = 'gallery-%d' % (galno + 1)
+        savepath = os.path.join(gallery_savepath, filename + '.tiff')
+        print("Saving gallery %d of %d to %s" % (
+            galno + 1, n_galleries, savepath))
+
+        # save temporarily to disk to be uploaded
+        im.tiffsave(
+            savepath, tile=True, tile_width=256, tile_height=256, pyramid=True)
+
+        if upload_results:
+            resps.append(gc.uploadFileToFolder(
+                folderId=gallery_folderid, filepath=savepath,
+                filename=filename))
+            os.remove(savepath)
+        else:
+            savepaths.append(savepath)
+
+    return resps if upload_results else savepaths
 
 # %============================================================================
