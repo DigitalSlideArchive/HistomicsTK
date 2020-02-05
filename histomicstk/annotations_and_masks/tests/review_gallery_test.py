@@ -12,7 +12,8 @@ import girder_client
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_scale_factor_and_appendStr
 from histomicstk.annotations_and_masks.review_gallery import \
-    get_all_rois_from_folder_v2, _get_review_visualization
+    get_all_rois_from_folder_v2, _get_review_visualization, \
+    _get_visualization_zoomout
 
 # %%===========================================================================
 # Constants & prep work
@@ -104,16 +105,14 @@ zoomout = 4
 
 # %%===========================================================================
 
-# read fetched rgb and visualization
+# get rgb and visualization (fetched mag + lower mag)
 rgb = imread(os.path.join(sd['rgb'], imname + '.png'))
 vis = imread(os.path.join(sd['visualization'], imname + '.png'))
+vis_zoomout = _get_visualization_zoomout(
+    gc=gc, imname=imname, get_all_rois_kwargs=get_all_rois_kwargs,
+    zoomout=zoomout)
 
-slide_id = imname.split('_id-')[1].split('_')[0]
-
-
-
-# %============================================================================
-
+# combined everything in a neat visualization for rapid review
 combined_vis = _get_review_visualization(
     rgb=rgb, vis=vis, vis_zoomout=vis_zoomout)
 

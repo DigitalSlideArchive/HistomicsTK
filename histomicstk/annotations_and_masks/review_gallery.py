@@ -1,6 +1,11 @@
 import io
 import matplotlib.pylab as plt
 import numpy as np
+
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
+    get_scale_factor_and_appendStr, get_image_from_htk_response
+from histomicstk.annotations_and_masks.annotations_to_masks_handler import \
+    _visualize_annotations_on_rgb
 from histomicstk.annotations_and_masks.annotations_to_object_mask_handler \
     import get_all_rois_from_slide_v2
 from histomicstk.workflows.workflow_runner import Workflow_runner, \
@@ -52,7 +57,31 @@ def get_all_rois_from_folder_v2(
     workflow_runner.run()
 
 
-def _get_visualization_zoomout():
+def _get_visualization_zoomout(
+        gc, imname, get_all_rois_kwargs, zoomout=4):
+    """Get a zoomed out visualization of ROI RGB and annotation overlay.
+
+    Parameters
+    ----------
+    gc : girder_client.Girder_Client
+        connected girder client
+    imname : str
+        save image name without extension. it must be in the format
+        %s_id-%s_left-%d_top-%d_right-%d_bottom-%d %
+        (slide_name, slide_id, left, right, top, bottom)
+        where coordinates are relative to slide at base magnification.
+    get_all_rois_kwargs : dict
+         kwargs that were passed to get_all_rois_from_slide_v2() in the
+         first place to get the ROI images and visualizations. Must contain
+         at least one of the keys "MAG" and "MPP".
+    zoomout
+
+    Returns
+    -------
+
+    """
+    slide_id = imname.split('_id-')[1].split('_')[0]
+
     # get ROI location from imname
     bounds = {
         locstr: int(imname.split(locstr + '-')[1].split('_')[0])
@@ -97,7 +126,8 @@ def _get_visualization_zoomout():
         'coords_x': ",".join([xmin, xmax, xmax, xmin, xmin]),
         'coords_y': ",".join([ymin, ymin, ymax, ymax, ymin]),
     }]
-    vis_zoomout = _visualize_annotations_on_rgb(rgb_zoomout, contours_list)
+
+    return _visualize_annotations_on_rgb(rgb_zoomout, contours_list)
 
 
 def _get_review_visualization(rgb, vis, vis_zoomout):
