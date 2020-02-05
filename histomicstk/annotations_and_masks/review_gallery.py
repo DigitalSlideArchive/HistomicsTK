@@ -1,6 +1,7 @@
 import io
 import matplotlib.pylab as plt
 import numpy as np
+from PIL import Image
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_scale_factor_and_appendStr, get_image_from_htk_response
@@ -10,6 +11,44 @@ from histomicstk.annotations_and_masks.annotations_to_object_mask_handler \
     import get_all_rois_from_slide_v2
 from histomicstk.workflows.workflow_runner import Workflow_runner, \
     Slide_iterator
+
+# %============================================================================
+# CONSTANTS
+
+# source: https://libvips.github.io/libvips/API/current/Examples.md.html
+# source 2: https://libvips.github.io/libvips/API/current/Examples.md.html
+# source 3: https://github.com/libvips/pyvips/issues/109
+# source 4: https://github.com/libvips/libvips/issues/1254
+
+# map np dtypes to vips
+DTYPE_TO_FORMAT = {
+    'uint8': 'uchar',
+    'int8': 'char',
+    'uint16': 'ushort',
+    'int16': 'short',
+    'uint32': 'uint',
+    'int32': 'int',
+    'float32': 'float',
+    'float64': 'double',
+    'complex64': 'complex',
+    'complex128': 'dpcomplex',
+}
+
+# map vips formats to np dtypes
+FORMAT_TO_DTYPE = {
+    'uchar': np.uint8,
+    'char': np.int8,
+    'ushort': np.uint16,
+    'short': np.int16,
+    'uint': np.uint32,
+    'int': np.int32,
+    'float': np.float32,
+    'double': np.float64,
+    'complex': np.complex64,
+    'dpcomplex': np.complex128,
+}
+
+# %============================================================================
 
 
 def get_all_rois_from_folder_v2(
