@@ -398,6 +398,11 @@ def _visualize_annotations_on_rgb(
         )
         ax.add_patch(polygon)
 
+        # add label text
+        ax.text(
+            ann['xmin'], ann['ymin'] + 8, ann['group'][:5],
+            color='w', size=3, backgroundcolor="none")
+
     ax.axis('off')
     fig.subplots_adjust(bottom=0, top=1, left=0, right=1)
 
