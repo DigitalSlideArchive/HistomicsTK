@@ -42,16 +42,16 @@ SAVEPATHS = {
     'rgb': os.path.join(BASE_SAVEPATH, 'rgbs'),
     'visualization': os.path.join(BASE_SAVEPATH, 'vis'),
 }
-for _, savepath in SAVEPATHS.items():
-    if os.path.exists(savepath):
-        shutil.rmtree(savepath)
-    os.mkdir(savepath)
+# for _, savepath in SAVEPATHS.items():
+#     if os.path.exists(savepath):
+#         shutil.rmtree(savepath)
+#     os.mkdir(savepath)
 
 # where to save gallery
 combinedvis_savepath = "/home/mtageld/Desktop/tmp/combinedvis/"
-if os.path.exists(combinedvis_savepath):
-    shutil.rmtree(combinedvis_savepath)
-os.mkdir(combinedvis_savepath)
+# if os.path.exists(combinedvis_savepath):
+#     shutil.rmtree(combinedvis_savepath)
+# os.mkdir(combinedvis_savepath)
 
 # %%===========================================================================
 
@@ -94,9 +94,9 @@ create_review_galleries_kwargs = {
 # %%===========================================================================
 
 # Get al rois to prep for gallery
-get_all_rois_from_folder_v2(
-    gc=gc, folderid=folderid, get_all_rois_kwargs=get_all_rois_kwargs,
-    monitor=monitor)
+# get_all_rois_from_folder_v2(
+#     gc=gc, folderid=folderid, get_all_rois_kwargs=get_all_rois_kwargs,
+#     monitor=monitor)
 
 # create (+/- post) review gallery
 resps = create_review_galleries(**create_review_galleries_kwargs)

@@ -7,6 +7,7 @@ import numpy as np
 import pyvips
 from PIL import Image
 from imageio import imwrite
+from pandas import DataFrame
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_scale_factor_and_appendStr, get_image_from_htk_response
@@ -16,6 +17,8 @@ from histomicstk.annotations_and_masks.annotations_to_object_mask_handler \
     import get_all_rois_from_slide_v2
 from histomicstk.workflows.workflow_runner import Workflow_runner, \
     Slide_iterator
+from histomicstk.annotations_and_masks.masks_to_annotations_handler import \
+    get_annotation_documents_from_contours
 
 # %============================================================================
 # CONSTANTS
@@ -117,7 +120,6 @@ def _get_visualization_zoomout(
 
     """
     # get append string for server request
-    getsf_kwargs = dict()
     if MPP is not None:
         getsf_kwargs = {
             'MPP': MPP * zoomout,
@@ -255,7 +257,8 @@ def _plot_rapid_review_vis(
 def create_review_galleries(
         tilepath_base, upload_results=True, gc=None,
         gallery_savepath=None, gallery_folderid=None,
-        padding=25, tiles_per_row=2, tiles_per_column=5):
+        padding=25, tiles_per_row=2, tiles_per_column=5,
+        annprops=None):
     """Create and or post review galleries for rapid review.
 
     Parameters
@@ -268,6 +271,7 @@ def create_review_galleries(
     padding
     tiles_per_row
     tiles_per_column
+    annprops
 
     Returns
     -------
@@ -300,8 +304,14 @@ def create_review_galleries(
         # this makes a 8-bit, mono image (initializes as 1x1x3 matrix)
         im = pyvips.Image.black(1, 1, bands=3)
 
+        # this will store the roi contours
+        contours = []
+
         for row in range(tiles_per_column):
 
+            rowpos = im.height + padding
+
+            # initialize "row" strip image
             row_im = pyvips.Image.black(1, 1, bands=3)
 
             for col in range(tiles_per_row):
@@ -319,14 +329,30 @@ def create_review_galleries(
                 tile = pyvips.Image.new_from_file(
                     tilepath, access="sequential")
 
-                # @TODO -- also return individual locations (bboxes)
                 # insert tile into mosaic row
+                colpos = row_im.width + padding
                 row_im = row_im.insert(
-                    tile[:3], row_im.width + padding, 0,
-                    expand=True, background=255)
+                    tile[:3], colpos, 0, expand=True, background=255)
 
-            im = im.insert(
-                row_im, 0, im.height + padding, expand=True, background=255)
+                if upload_results:
+
+                    slide_name = os.path.basename(tilepath).split('_')[0]
+
+                    xmin = colpos
+                    ymin = rowpos
+                    xmax = xmin + tile.width
+                    ymax = ymin + tile.height
+                    xmin, xmax, ymin, ymax = [
+                        str(j) for j in (xmin, xmax, ymin, ymax)]
+                    contours.append({
+                        'group': slide_name,
+                        'color': 'rgb(0,0,0)',
+                        'coords_x': ",".join([xmin, xmax, xmax, xmin, xmin]),
+                        'coords_y': ",".join([ymin, ymin, ymax, ymax, ymin]),
+                    })
+
+            # insert row into main gallery
+            im = im.insert(row_im, 0, rowpos, expand=True, background=255)
 
         filename = 'gallery-%d' % (galno + 1)
         savepath = os.path.join(gallery_savepath, filename + '.tiff')
@@ -338,10 +364,19 @@ def create_review_galleries(
             savepath, tile=True, tile_width=256, tile_height=256, pyramid=True)
 
         if upload_results:
+            # upload the gallery to DSA
             resps.append(gc.uploadFileToFolder(
                 folderId=gallery_folderid, filepath=savepath,
                 filename=filename))
             os.remove(savepath)
+
+            # get and post FOV location annotations
+            annotation_docs = get_annotation_documents_from_contours(
+                DataFrame(contours), separate_docs_by_group=True,
+                annprops=annprops)
+            for doc in annotation_docs:
+                _ = gc.post(
+                    "/annotation?itemId=" + resps[-1]['itemId'], json=doc)
         else:
             savepaths.append(savepath)
 

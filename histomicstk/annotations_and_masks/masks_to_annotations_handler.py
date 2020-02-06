@@ -584,7 +584,7 @@ def get_annotation_documents_from_contours(
             'F': 1.0,
             'X_OFFSET': 0,
             'Y_OFFSET': 0,
-            'opacity': 0.3,
+            'opacity': 0,
             'lineWidth': 4.0,
         }
     if separate_docs_by_group:
