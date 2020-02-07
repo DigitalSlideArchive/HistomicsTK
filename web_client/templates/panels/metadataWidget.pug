@@ -1,0 +1,30 @@
+.s-panel-title-container
+  span.s-panel-controls
+    if collapsed
+      i.icon-down-open
+    else
+      i.icon-up-open
+
+if (accessLevel >= AccessType.WRITE)
+  .btn-group.pull-right
+    button.g-widget-metadata-add-button.btn.btn-sm.btn-primary.btn-default.dropdown-toggle(data-toggle="dropdown", title="Add Metadata")
+      i.icon-plus
+    ul.dropdown-menu.pull-right(role="menu")
+      li(role="presentation")
+        a.g-add-simple-metadata(role="menuitem")
+          | Simple
+      li(role="presentation")
+        a.g-add-json-metadata
+          | JSON
+.s-panel-title-container
+  span.s-panel-title.h-panel-title
+    i.icon-tags
+    block title
+      | #{title}
+  if(firstKey && firstValue)
+    span.g-widget-metadata-header-key-value #{firstKey+' '+firstValue+'  '}
+- var attrs = {}
+if !collapsed
+  - attrs.class = 'in'
+.s-panel-content.collapse&attributes(attrs)
+  .g-widget-metadata-container
