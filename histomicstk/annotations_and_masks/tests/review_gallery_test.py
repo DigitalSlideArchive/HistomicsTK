@@ -23,8 +23,8 @@ APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'
 SAMPLE_FOLDER_ID = '5e2a2da8ddda5f83986d18a2'
 
 gc = girder_client.GirderClient(apiUrl=APIURL)
-# gc.authenticate(interactive=True)
-gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
+gc.authenticate(interactive=True)
+# gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 
 # GT codes dict for parsing into label mask
 GTCODE_PATH = os.path.join(
@@ -99,6 +99,6 @@ get_all_rois_from_folder_v2(
     monitor=monitor)
 
 # create (+/- post) review gallery
-# resps = create_review_galleries(**create_review_galleries_kwargs)
+resps = create_review_galleries(**create_review_galleries_kwargs)
 
 # %%===========================================================================

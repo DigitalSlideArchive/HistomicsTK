@@ -154,7 +154,7 @@ def _get_visualization_zoomout(
     ymax = ymin + (bounds['YMAX'] - bounds['YMIN']) * sf
     xmin, xmax, ymin, ymax = [str(int(j)) for j in (xmin, xmax, ymin, ymax)]
     contours_list = [{
-        'color': 'rgb(255,0,0)',
+        'color': 'rgb(255,255,0)',
         'coords_x': ",".join([xmin, xmax, xmax, xmin, xmin]),
         'coords_y': ",".join([ymin, ymin, ymax, ymax, ymin]),
     }]
