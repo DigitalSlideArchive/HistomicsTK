@@ -510,7 +510,7 @@ def get_single_annotation_document_from_contours(
             "lineWidth": lineWidth,
             "closed": True,
             "points": coords,
-            "label": {'value': nest['group']},
+            "label": {'value': nest['label']},
         }
         if opacity > 0:
             annotation_style["fillColor"] = _get_fillColor(nest['color'])
@@ -591,6 +591,9 @@ def get_annotation_documents_from_contours(
         contours_df.loc[:, 'doc_group'] = contours_df.loc[:, 'group']
     else:
         contours_df.loc[:, 'doc_group'] = 'default'
+
+    if 'label' not in contours_df.columns:
+        contours_df.loc[:, 'label'] = contours_df.loc[:, 'group']
 
     # Each style goes to separate document(s) if sepate_docs_by_group
     annotation_docs = []

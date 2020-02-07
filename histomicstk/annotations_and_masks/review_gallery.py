@@ -258,7 +258,7 @@ def create_review_galleries(
         tilepath_base, upload_results=True, gc=None,
         gallery_savepath=None, gallery_folderid=None,
         padding=25, tiles_per_row=2, tiles_per_column=5,
-        annprops=None):
+        annprops=None, url=None):
     """Create and or post review galleries for rapid review.
 
     Parameters
@@ -272,13 +272,15 @@ def create_review_galleries(
     tiles_per_row
     tiles_per_column
     annprops
+    url : str
+        url of the Digital Slide Archive Instance
 
     Returns
     -------
 
     """
     if upload_results:
-        for par in ('gc', 'gallery_folderid'):
+        for par in ('gc', 'gallery_folderid', 'url'):
             if locals()[par] is None:
                 raise Exception(
                     "%s cannot be None if upload_results!" % par)
@@ -293,6 +295,22 @@ def create_review_galleries(
         os.path.join(tilepath_base, j) for j in
         os.listdir(tilepath_base) if j.endswith('.png')]
     tile_paths.sort()
+
+    def _parse_tilepath(tpath):
+        basename = os.path.basename(tpath)
+        basename = basename[:basename.rfind('.')]
+        tileinfo = {'slide_name': basename.split('_')[0]}
+        for attrib in ['id', 'left', 'top', 'bottom', 'right']:
+            tileinfo[attrib] = basename.split(
+                attrib + '-')[1].split('_')[0]
+
+        # add URL in histomicsTK
+        tileinfo['URL'] = url + \
+            "histomicstk#?image=%s&bounds=%s%%2C%s%%2C%s%%2C%s%%2C0" % (
+                tileinfo['id'],
+                tileinfo['left'], tileinfo['top'],
+                tileinfo['right'], tileinfo['bottom'])
+        return tileinfo
 
     n_tiles = len(tile_paths)
     n_galleries = int(np.ceil(n_tiles / (tiles_per_row * tiles_per_column)))
@@ -336,7 +354,7 @@ def create_review_galleries(
 
                 if upload_results:
 
-                    slide_name = os.path.basename(tilepath).split('_')[0]
+                    tileinfo = _parse_tilepath(tilepath)
 
                     xmin = colpos
                     ymin = rowpos
@@ -345,7 +363,8 @@ def create_review_galleries(
                     xmin, xmax, ymin, ymax = [
                         str(j) for j in (xmin, xmax, ymin, ymax)]
                     contours.append({
-                        'group': slide_name,
+                        'group': tileinfo['slide_name'],
+                        'label': tileinfo['URL'],
                         'color': 'rgb(0,0,0)',
                         'coords_x': ",".join([xmin, xmax, xmax, xmin, xmin]),
                         'coords_y': ",".join([ymin, ymin, ymax, ymax, ymin]),
