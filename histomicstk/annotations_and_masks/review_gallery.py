@@ -372,6 +372,21 @@ def create_review_galleries(
                         'coords_y': ",".join([ymin, ymin, ymax, ymax, ymin]),
                     })
 
+                    # Add a small contour so that when the pathologist
+                    # changes the label to approve or disapprove of the
+                    # FOV, the URL in THIS contour (a link to the original
+                    # FOV) can be used. We place it in the top right corner.
+                    boxsize = 25
+                    xmin = str(int(xmax) - boxsize)
+                    ymax = str(int(ymin) + boxsize)
+                    contours.append({
+                        'group': tileinfo['slide_name'],
+                        'label': tileinfo['URL'],
+                        'color': 'rgb(0,0,0)',
+                        'coords_x': ",".join([xmin, xmax, xmax, xmin, xmin]),
+                        'coords_y': ",".join([ymin, ymin, ymax, ymax, ymin]),
+                    })
+
             # insert row into main gallery
             im = im.insert(row_im, 0, rowpos, expand=True, background=255)
 
