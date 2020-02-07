@@ -127,7 +127,7 @@ def annotations_to_contours_no_mask(
         gc, slide_id, MPP=5.0, MAG=None, mode='min_bounding_box',
         bounds=None, idx_for_roi=None,
         slide_annotations=None, element_infos=None,
-        linewidth=0.2, get_rgb=True, get_visualization=True):
+        linewidth=0.2, get_rgb=True, get_visualization=True, text=True):
     """Process annotations to get RGB and contours without intermediate masks.
 
     Parameters
@@ -187,6 +187,9 @@ def annotations_to_contours_no_mask(
 
     get_visualization : bool
         get overlayed annotation bounds over RGB for visualization
+
+    text : bool
+        add text labels to visualization?
 
     Returns
     --------
@@ -282,7 +285,8 @@ def annotations_to_contours_no_mask(
     # get visualization of annotations on RGB
     if get_visualization:
         result['visualization'] = _visualize_annotations_on_rgb(
-            rgb=rgb, contours_list=contours_list, linewidth=linewidth)
+            rgb=rgb, contours_list=contours_list, linewidth=linewidth,
+            text=text)
 
     return result
 

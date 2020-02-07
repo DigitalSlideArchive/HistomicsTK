@@ -177,7 +177,7 @@ def _get_review_visualization(rgb, vis, vis_zoomout):
     Returns
     -------
     np.array
-        visualization to be used for galler
+        visualization to be used for gallery
 
     """
     wmax = max(vis.shape[1], vis_zoomout.shape[1])
@@ -200,7 +200,7 @@ def _get_review_visualization(rgb, vis, vis_zoomout):
     buf = io.BytesIO()
     plt.savefig(buf, format='png', pad_inches=0, dpi=1000)
     buf.seek(0)
-    combined_vis = np.flipud(np.uint8(Image.open(buf))[..., :3])
+    combined_vis = np.uint8(Image.open(buf))[..., :3]
     plt.close()
 
     return combined_vis

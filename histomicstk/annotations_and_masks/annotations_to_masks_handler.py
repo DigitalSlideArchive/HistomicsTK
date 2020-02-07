@@ -371,7 +371,11 @@ def get_mask_from_slide(
 
 
 def _visualize_annotations_on_rgb(
-        rgb, contours_list, linewidth=0.2, x_offset=0, y_offset=0):
+        rgb, contours_list, linewidth=0.2, x_offset=0, y_offset=0,
+        text=False):
+
+    # later on flipped by matplotlib for weird reason
+    rgb = np.flipud(rgb)
 
     fig = plt.figure(
         figsize=(rgb.shape[1] / 1000, rgb.shape[0] / 1000), dpi=100)
@@ -388,7 +392,7 @@ def _visualize_annotations_on_rgb(
             [int(j) for j in ann[k].split(",")]
             for k in ('coords_x', 'coords_y')]).T
         xy[:, 0] = xy[:, 0] - x_offset
-        xy[:, 1] = xy[:, 1] - y_offset
+        xy[:, 1] = rgb.shape[0] - (xy[:, 1] - y_offset) + 1
         polygon = mpPolygon(
             xy=xy,
             color=[int(j) / 255 for j in ann['color'].split(
@@ -399,9 +403,15 @@ def _visualize_annotations_on_rgb(
         ax.add_patch(polygon)
 
         # add label text
-        ax.text(
-            ann['xmin'], ann['ymin'] + 8, ann['group'][:5],
-            color='w', size=3, backgroundcolor="none")
+        if text:
+            txtshift = 0
+            size = 1e-4 * rgb.shape[1]
+            ax.text(
+                int(np.min(xy[:, 0])),
+                int(np.max(xy[:, 1])) - txtshift,
+                ann['group'][:5],
+                color='w', fontsize=size, backgroundcolor="none",
+            )
 
     ax.axis('off')
     fig.subplots_adjust(bottom=0, top=1, left=0, right=1)
@@ -409,7 +419,7 @@ def _visualize_annotations_on_rgb(
     buf = io.BytesIO()
     plt.savefig(buf, format='png', pad_inches=0, dpi=1000)
     buf.seek(0)
-    rgb_vis = np.flipud(np.uint8(Image.open(buf))[..., :3])
+    rgb_vis = np.uint8(Image.open(buf))[..., :3]
     plt.close()
 
     return rgb_vis
