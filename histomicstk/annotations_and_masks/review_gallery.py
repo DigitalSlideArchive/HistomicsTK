@@ -59,7 +59,7 @@ FORMAT_TO_DTYPE = {
 # %============================================================================
 
 
-def get_all_rois_from_folder_v2(
+def  get_all_rois_from_folder_v2(
         gc, folderid, get_all_rois_kwargs, monitor=''):
     """Get all rois in a girder folder using get_all_rois_from_slide_v2().
 

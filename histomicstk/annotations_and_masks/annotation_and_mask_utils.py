@@ -328,7 +328,7 @@ def _maybe_crop_polygon(vertices, bounds_polygon):
         elpoly = Polygon(vertices).buffer(0)
         polygon = bounds_polygon.intersection(elpoly)
 
-        if polygon.geom_type == 'Polygon':
+        if polygon.geom_type in ('Polygon', 'LineString'):
             polygons_to_add = [polygon, ]
         else:
             polygons_to_add = [
@@ -337,7 +337,7 @@ def _maybe_crop_polygon(vertices, bounds_polygon):
     except Exception as e:
         # if weird shapely errors -->
         # ignore this polygon collection altogether
-        print(str(e))
+        print(e.__repr__())
         return all_vertices
 
     # Second, once we have the shapely polygons, assuming no errors,
@@ -349,7 +349,7 @@ def _maybe_crop_polygon(vertices, bounds_polygon):
                     poly.exterior.xy, dtype=np.int32).T)
         except Exception as e:
             # weird shapely errors --> ignore this polygon
-            print(str(e))
+            print(e.__repr__())
 
     return all_vertices
 
