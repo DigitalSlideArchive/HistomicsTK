@@ -66,7 +66,7 @@ def get_all_rois_from_folder_v2(
     Parameters
     ----------
     gc : girder_client.Girder_Client
-        connected girder client
+        authenticated girder client
     folderid : str
         girder id of folder
     get_all_rois_kwargs : dict
@@ -113,12 +113,23 @@ def _get_visualization_zoomout(
     Parameters
     ----------
     gc : girder_client.Girder_Client
-        connected girder client
+        authenticated girder client
+    slide_id : str
+        girder ID of slide
+    bounds : dict
+        bounds of the region of interest. Must contain the keys
+        XMIN, XMAX, YMIN, YMAX
+    MPP : float
+        Microns per pixel.
+    MAG : float
+        Magnification. MPP overrides this.
     zoomout : float
         how much to zoom out
 
     Returns
     -------
+    np.array
+        Zoomed out visualization. Outpu from _visualize_annotations_on_rgb().
 
     """
     # get append string for server request
@@ -218,19 +229,30 @@ def _plot_rapid_review_vis(
 
     Parameters
     ----------
-    roi_out
-    gc
-    slide_id
-    slide_name
-    MPP
-    MAG
-    combinedvis_savepath
-    zoomout
-    verbose
-    monitorprefix
+    roi_out : dict
+        output from annotations_to_contours_no_mask()
+    gc : girder_client.Girder_Client
+        authenticated girder client
+    slide_id : str
+        girder slide id
+    slide_name : str
+        name of the slide
+    MPP : float
+        microns per pixel
+    MAG : float
+        magnification. superceded by MPP.
+    combinedvis_savepath : str
+        path to save the combined visualization
+    zoomout : float
+        how much to zoom out to get the gallery visualization
+    verbose : bool
+        print statements to screen
+    monitorprefix : str
+        text to prepent to printed statements
 
     Returns
     -------
+    None
 
     """
     # get rgb and visualization (fetched mag + lower mag)
@@ -265,20 +287,34 @@ def create_review_galleries(
 
     Parameters
     ----------
-    tilepath_base
-    upload_results
-    gc
-    gallery_savepath
-    gallery_folderid
-    padding
-    tiles_per_row
-    tiles_per_column
-    annprops
+    tilepath_base : str
+        directory where combined visualization.
+    upload_results : bool
+        upload results to DSA?
+    gc : girder_client.Girder_Client
+        authenticated girder client. Only needed upload_results.
+    gallery_savepath : str
+        directory to save gallery. Only if upload_results.
+    gallery_folderid : str
+        girder ID of folder to post galleries. Only if upload_result.
+    padding : int
+        padding in pixels between tiles in same gallery.
+    tiles_per_row : int
+        how many visualization tiles per row in gallery.
+    tiles_per_column : int
+        how many visualization tiles per column in gallery.
+    annprops : dict
+        properties of the annotations to be posted to DSA. Passed directly
+        as annprops to get_annotation_documents_from_contours()
     url : str
-        url of the Digital Slide Archive Instance
+        url of the Digital Slide Archive Instance. For example:
+        http://candygram.neurology.emory.edu:8080/
 
     Returns
     -------
+    list
+        each entry is a dict representing the response of the server
+        post request to upload the gallery to DSA.
 
     """
     if upload_results:
