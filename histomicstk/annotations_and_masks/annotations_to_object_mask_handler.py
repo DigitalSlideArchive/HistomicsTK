@@ -572,6 +572,16 @@ def get_all_rois_from_slide_v2(
     monitorprefix : str
         text to prepend to printed statements
 
+    callback : function
+        a callback function to run on the roi dictionary output. This is
+        internal, but if you really want to use this, make sure the callback
+        can accept the following keys and that you do NOT assign them yourself
+        gc, slide_id, slide_name, MPP, MAG, verbose, monitorprefix
+
+    callback_kwargs : dict
+        kwargs to pass to callback, not including the mandatory kwargs
+        that will be passed internally (mentioned earlier here).
+
     Returns
     --------
     list of dicts
