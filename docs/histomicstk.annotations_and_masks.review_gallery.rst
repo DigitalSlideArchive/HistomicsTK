@@ -26,7 +26,7 @@ to pan around it. See the demo video above for details.
           |_review_gallery.ipynb
 
 
-.. automodule:: histomicstk.annotations_and_masks.review_gallery
-    :members:
-    :undoc-members:
-    :show-inheritance:
+# .. automodule:: histomicstk.annotations_and_masks.review_gallery
+#     :members:
+#     :undoc-members:
+#     :show-inheritance:
