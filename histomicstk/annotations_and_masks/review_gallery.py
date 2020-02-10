@@ -81,7 +81,7 @@ def get_all_rois_from_folder_v2(
     """
     def _get_all_rois(slide_id, monitorPrefix, **kwargs):
         sld = gc.get('/item/%s' % slide_id)
-        sldname = sld['name'][:sld['name'].find('.')]
+        sldname = sld['name'][:sld['name'].find('.')].replace('/', '_#_')
         return get_all_rois_from_slide_v2(
             slide_id=slide_id, monitorprefix=monitorPrefix,
             # encoding slide id makes things easier later
