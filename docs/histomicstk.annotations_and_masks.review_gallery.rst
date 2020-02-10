@@ -1,5 +1,5 @@
 Annotation review gallery
-======================================
+==========================
 
 **Overview:**
 
@@ -15,6 +15,7 @@ to pan around it. See the demo video above for details.
 **Where to look:**
 
 ::
+
     |_histomicstk/
     |  |_annotations_and_masks/
     |     |_review_gallery.py
@@ -23,6 +24,7 @@ to pan around it. See the demo video above for details.
     |_ docs/
        |_examples/
           |_review_gallery.ipynb
+
 
 .. automodule:: histomicstk.annotations_and_masks.review_gallery
     :members:
