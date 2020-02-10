@@ -91,6 +91,7 @@ setup(
         'large-image-source-pil',
         # for interaction with girder
         'girder_client',
+        'pyvips',
     ],
     license='Apache Software License 2.0',
     keywords='histomicstk',
