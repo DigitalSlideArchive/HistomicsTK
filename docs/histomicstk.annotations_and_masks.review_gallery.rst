@@ -3,7 +3,7 @@ Annotation review gallery
 
 **Overview:**
 
-Feature demo: https://www.youtube.com/watch?v=1wvYV7i7OkQ
+Feature demo: https://youtu.be/H5JsC01_3jI
 
 This workflow takes a girder folder contains annotated slides, including
 special Region-of-Interest (ROI) annotations that enclose annotated regions.
