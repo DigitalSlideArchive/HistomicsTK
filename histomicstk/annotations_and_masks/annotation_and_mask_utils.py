@@ -415,6 +415,7 @@ def parse_slide_annotations_into_tables(
         - element_girder_id
         - type
         - group
+        - label
         - color
         - xmin
         - xmax
@@ -435,7 +436,7 @@ def parse_slide_annotations_into_tables(
     element_infos = DataFrame(columns=[
         'annidx', 'annotation_girder_id',
         'elementidx', 'element_girder_id',
-        'type', 'group', 'color',
+        'type', 'group', 'label', 'color',
         'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
         'coords_x', 'coords_y'
     ])
@@ -499,8 +500,13 @@ def parse_slide_annotations_into_tables(
         if 'group' in element.keys():
             element_infos.loc[elno, 'group'] = str(element['group'])
         elif 'label' in element.keys():
-            element_infos.loc[elno, 'group'] = str(
-                element['label']['value'])
+            element_infos.loc[elno, 'group'] = str(element['label']['value'])
+
+        # add label or infer from group
+        if 'label' in element.keys():
+            element_infos.loc[elno, 'label'] = str(element['label']['value'])
+        elif 'group' in element.keys():
+            element_infos.loc[elno, 'label'] = element_infos.loc[elno, 'group']
 
         element_infos.loc[elno, 'type'] = str(element['type'])
         element_infos.loc[elno, 'xmin'] = int(xmin)

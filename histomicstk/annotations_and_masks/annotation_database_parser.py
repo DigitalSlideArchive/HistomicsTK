@@ -126,6 +126,7 @@ def _add_annotation_elements_to_sqlite(dbcon, annotation_elements):
             'element_girder_id': String(),
             'type': String(),
             'group': String(),
+            'label': String(),
             'color': String(),
             'xmin': Integer(),
             'xmax': Integer(),

@@ -95,10 +95,10 @@ class DatabaseParserTest(unittest.TestCase):
 
         result = pd.read_sql_query(
             """SELECT * FROM 'annotation_elements';""", dbcon)
-        self.assertTupleEqual(result.shape, (230, 12))
+        self.assertTupleEqual(result.shape, (230, 13))
         self.assertSetEqual(set(result.columns), {
             'annotation_girder_id', 'bbox_area', 'color',
-            'coords_x', 'coords_y', 'element_girder_id', 'group',
+            'coords_x', 'coords_y', 'element_girder_id', 'group', 'label',
             'type', 'xmax', 'xmin', 'ymax', 'ymin'})
 
         # cleanup

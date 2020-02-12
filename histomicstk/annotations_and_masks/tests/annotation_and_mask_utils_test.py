@@ -80,7 +80,7 @@ class MaskUtilsTest(unittest.TestCase):
             {
                 'annidx', 'annotation_girder_id',
                 'elementidx', 'element_girder_id',
-                'type', 'group', 'color',
+                'type', 'group', 'label', 'color',
                 'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
                 'coords_x', 'coords_y'
             })
