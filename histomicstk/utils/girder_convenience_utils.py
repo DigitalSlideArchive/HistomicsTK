@@ -38,7 +38,7 @@ def get_absolute_girder_folderpath(gc, folder_id=None, folder_info=None):
 def update_permissions_for_annotation(
         gc, annotation_id,
         groups_to_add=[], replace_original_groups=False,
-        users_to_add=[], replace_original_users=False, admin_infos=[]):
+        users_to_add=[], replace_original_users=False):
     """Update permissions for a single annotation.
 
     Parameters
@@ -49,24 +49,15 @@ def update_permissions_for_annotation(
     replace_original_groups
     users_to_add
     replace_original_users
-    admin_infos
 
     Returns
     -------
 
     """
-    # admins can always edit
-    if replace_original_users:
-        if len(admin_infos) > 0:
-            users_to_add.extend(admin_infos)
-        else:
-            raise Exception("Must provide admin info!")
-
     # get current permissions
     current = gc.get('/annotation/%s/access' % annotation_id)
 
     # add or replace as needed
-
     if replace_original_groups:
         current['groups'] = []
 
@@ -101,13 +92,15 @@ def update_permissions_for_annotations_in_slide(
     # get annotations for slide
     slide_annotations = gc.get('/annotation/item/' + slide_id)
 
-    for ann in slide_annotations:
+    for annidx, ann in enumerate(slide_annotations):
+        print("%s: annotation %d of %d" % (
+            monitorPrefix, annidx, len(slide_annotations)))
         _ = update_permissions_for_annotation(
             gc=gc, annotation_id=ann['_id'], **kwargs)
 
 
 def update_permissions_for_annotations_in_folder(
-        gc, folderid, workflow_kwargs, monitor=''):
+        gc, folderid, workflow_kwargs, monitor='', verbose=True):
     """Update permissions for all annotations in a folder.
 
     Parameters
@@ -129,6 +122,7 @@ def update_permissions_for_annotations_in_folder(
         ),
         workflow=update_permissions_for_annotations_in_slide,
         workflow_kwargs=workflow_kwargs,
-        monitorPrefix=monitor
+        monitorPrefix=monitor,
+        verbose=verbose,
     )
     workflow_runner.run()
