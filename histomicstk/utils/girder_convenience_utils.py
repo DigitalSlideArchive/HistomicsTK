@@ -43,15 +43,33 @@ def update_permissions_for_annotation(
 
     Parameters
     ----------
-    gc
-    annotation_id
-    groups_to_add
-    replace_original_groups
-    users_to_add
+    gc : gider_client.GirderClient
+        authenticated girder client instance
+    annotation_id : str
+        girder id of annotation
+    groups_to_add : list
+        each entry is a dict containing the information about user groups
+        to add and their permission levels. A sample entry must have the
+        following keys
+        - level, int -> 0 (view), 1 (edit) or 2 (owner)
+        - name, str -> name of user group
+        - id, st -> girder id of user group
+    replace_original_groups : bool
+        whether to replace original groups or append to them
+    users_to_add : list
+        each entry is a dict containing the information about user
+        to add and their permission levels. A sample entry must have the
+        following keys
+        - level, int -> 0 (view), 1 (edit) or 2 (owner)
+        - login, str -> username of user
+        - id, st -> girder id of user
     replace_original_users
+        whether to replace original users or append to them
 
     Returns
     -------
+    dict
+        server response
 
     """
     # get current permissions
@@ -81,12 +99,18 @@ def update_permissions_for_annotations_in_slide(
 
     Parameters
     ----------
-    gc
-    slide_id
-    monitorPrefix
+    gc : girder_client.GirderClient
+        authenticated girder client
+    slide_id : str
+        girder id of slide
+    monitorPrefix : str
+        prefix to prepend to printed statements
+    kwargs
+        passed as-is to update_permissions_for_annotation()
 
     Returns
     -------
+    None
 
     """
     # get annotations for slide
@@ -105,13 +129,20 @@ def update_permissions_for_annotations_in_folder(
 
     Parameters
     ----------
-    gc
-    folderid
-    workflow_kwargs
-    monitor
+    gc : girder_client.GirderClient
+        authenticated girder client
+    folderid : str
+        girder id of folder
+    workflow_kwargs : dict
+        kwargs to pass to update_permissions_for_annotations_in_slide()
+    monitor : str
+        text to prepend to printed statements
+    verbose : bool
+        print statements to screen?
 
     Returns
     -------
+    None
 
     """
     workflow_kwargs.update({'gc': gc})
