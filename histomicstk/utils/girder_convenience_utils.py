@@ -5,6 +5,9 @@ Created on Thu Dec 12 13:19:18 2019
 @author: tageldim
 """
 import girder_client
+import json
+from histomicstk.workflows.workflow_runner import Workflow_runner, \
+    Slide_iterator
 
 
 def connect_to_api(apiurl, apikey=None, interactive=True):
