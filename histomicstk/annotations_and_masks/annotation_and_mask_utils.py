@@ -62,20 +62,14 @@ def scale_slide_annotations(slide_annotations, sf):
 
     for annidx, ann in enumerate(slide_annotations):
         for elementidx, element in enumerate(ann['annotation']['elements']):
-            for key in element.keys():
+            for key, entry in element.items():
 
-                if key in ['height', 'width']:
-                    slide_annotations[annidx]['annotation'][
-                        'elements'][elementidx][key] = \
-                        int(slide_annotations[annidx]['annotation'][
-                            'elements'][elementidx][key] * sf)
+                if key in {'height', 'width'}:
+                    element[key] = int(entry * sf)
 
-                elif key in ['center', 'points']:
-                    slide_annotations[annidx]['annotation'][
-                        'elements'][elementidx][key] = \
-                        (np.array(slide_annotations[annidx]['annotation'][
-                            'elements'][elementidx][key]) * sf).astype(
-                            int).tolist()
+                elif key in {'center', 'points'}:
+                    element[key] = (np.array(entry) * sf).astype(int).tolist()
+
     return slide_annotations
 
 # %%===========================================================================
@@ -107,7 +101,7 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
         how much smaller (0.1 means 10x smaller) is requested image
         compared to scan magnification (slide coordinates)
     str
-        string to appnd to server request for getting slide region
+        string to append to server request for getting slide region
 
     """
     slide_info = gc.get("/item/%s/tiles" % slide_id)
@@ -115,7 +109,7 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
     if MPP is not None:
         mm = 0.001 * MPP
         sf = slide_info['mm_x'] / mm
-        appendStr = "&mm_x=%.4f&mm_y=%.8f" % (mm, mm)
+        appendStr = "&mm_x=%.4f&mm_y=%.4f" % (mm, mm)
 
     elif MAG is not None:
         sf = MAG / slide_info['magnification']
