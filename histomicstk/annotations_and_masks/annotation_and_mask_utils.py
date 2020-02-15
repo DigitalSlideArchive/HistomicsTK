@@ -354,6 +354,71 @@ def _maybe_crop_polygon(vertices, bounds_polygon):
     return all_vertices
 
 
+def _parse_coords_to_str(vertices):
+    return (
+        ",".join(str(j) for j in vertices[:, 0]),
+        ",".join(str(j) for j in vertices[:, 1]))
+
+
+def _add_element_to_final_df(vertices, cfg):
+    """Add a single element to the final dataframe.
+
+    Note that we wrap this into a method so that when (if) we split an
+    annotation element into multiple polygons, we can add these
+    separately.
+    """
+    elno = cfg.element_infos.shape[0]
+
+    # Add element information to element dataframe
+    cfg.element_infos.loc[elno, 'annidx'] = cfg.annidx
+    cfg.element_infos.loc[elno, 'annotation_girder_id'] = cfg.ann['_id']
+    cfg.element_infos.loc[elno, 'elementidx'] = cfg.elementidx
+    cfg.element_infos.loc[elno, 'element_girder_id'] = cfg.element['id']
+    cfg.element_infos.loc[elno, 'color'] = str(cfg.element['lineColor'])
+
+    # Now we can add offset to ensure coordinates are relative to the
+    # cropping bounds (i.e. they would correspond to an RGB image
+    # of the same region and could be used to create a mask or
+    # to encode object boundaries etc
+    if (cfg.cropping_bounds is not None) or (
+            cfg.cropping_polygon_vertices is not None):
+        vertices[:, 0] = vertices[:, 0] - cfg.x_shift
+        vertices[:, 1] = vertices[:, 1] - cfg.y_shift
+
+    # get bounds for this polygon. Remember, these may have been
+    # changed after it was cropped using shapely
+    xmin, ymin = np.min(vertices, axis=0)
+    xmax, ymax = np.max(vertices, axis=0)
+
+    # parse to string for inclusion in pd dataframe
+    x_coords, y_coords = _parse_coords_to_str(vertices)
+
+    # add group or infer from label
+    if 'group' in cfg.element.keys():
+        cfg.element_infos.loc[elno, 'group'] = str(cfg.element['group'])
+    elif 'label' in cfg.element.keys():
+        cfg.element_infos.loc[elno, 'group'] = str(
+            cfg.element['label']['value'])
+
+    # add label or infer from group
+    if 'label' in cfg.element.keys():
+        cfg.element_infos.loc[elno, 'label'] = str(
+            cfg.element['label']['value'])
+    elif 'group' in cfg.element.keys():
+        cfg.element_infos.loc[elno, 'label'] = cfg.element_infos.loc[
+            elno, 'group']
+
+    cfg.element_infos.loc[elno, 'type'] = str(cfg.element['type'])
+    cfg.element_infos.loc[elno, 'xmin'] = int(xmin)
+    cfg.element_infos.loc[elno, 'xmax'] = int(xmax)
+    cfg.element_infos.loc[elno, 'ymin'] = int(ymin)
+    cfg.element_infos.loc[elno, 'ymax'] = int(ymax)
+    cfg.element_infos.loc[elno, 'bbox_area'] = int(
+        (ymax - ymin) * (xmax - xmin))
+    cfg.element_infos.loc[elno, 'coords_x'] = x_coords
+    cfg.element_infos.loc[elno, 'coords_y'] = y_coords
+
+
 def parse_slide_annotations_into_tables(
         slide_annotations, cropping_bounds=None,
         cropping_polygon_vertices=None, use_shapely=False):
@@ -426,14 +491,24 @@ def parse_slide_annotations_into_tables(
         - coords_y
 
     """
-    annotation_infos = DataFrame(columns=[
+    # we use this object to pass params to split method into sub-methods
+    # and avoid annoying linting ("method too complex") issue
+    class Cfg:
+        def __init__(self):
+            pass
+    cfg = Cfg()
+    cfg.cropping_bounds = cropping_bounds
+    cfg.cropping_polygon_vertices = cropping_polygon_vertices
+    cfg.use_shapely = use_shapely
+
+    cfg.annotation_infos = DataFrame(columns=[
         'annotation_girder_id', '_modelType', '_version',
         'itemId', 'created', 'creatorId',
         'public', 'updated', 'updatedId',
         'groups', 'element_count', 'element_details',
     ])
 
-    element_infos = DataFrame(columns=[
+    cfg.element_infos = DataFrame(columns=[
         'annidx', 'annotation_girder_id',
         'elementidx', 'element_girder_id',
         'type', 'group', 'label', 'color',
@@ -441,124 +516,66 @@ def parse_slide_annotations_into_tables(
         'coords_x', 'coords_y'
     ])
 
-    if cropping_bounds is not None:
-        assert cropping_polygon_vertices is None, \
+    if cfg.cropping_bounds is not None:
+        assert cfg.cropping_polygon_vertices is None, \
             "either give cropping bouns or vertices, not both"
         xmin, xmax, ymin, ymax = (
-            cropping_bounds['XMIN'], cropping_bounds['XMAX'],
-            cropping_bounds['YMIN'], cropping_bounds['YMAX'])
+            cfg.cropping_bounds['XMIN'], cfg.cropping_bounds['XMAX'],
+            cfg.cropping_bounds['YMIN'], cfg.cropping_bounds['YMAX'])
         bounds_polygon = Polygon(np.array([
             (xmin, ymin), (xmax, ymin),
             (xmax, ymax), (xmin, ymax), (xmin, ymin),
         ], dtype='int32'))
-        x_shift = xmin
-        y_shift = ymin
+        cfg.x_shift = xmin
+        cfg.y_shift = ymin
 
-    elif cropping_polygon_vertices is not None:
-        bounds_polygon = Polygon(np.int32(cropping_polygon_vertices))
-        x_shift, y_shift = np.min(cropping_polygon_vertices, 0)
-
-    def _parse_coords_to_str(vertices):
-        return (
-            ",".join(str(j) for j in vertices[:, 0]),
-            ",".join(str(j) for j in vertices[:, 1]))
-
-    def _add_element_to_final_df(vertices):
-        """Add a single element to the final dataframe.
-
-        Note that we wrap this into a method so that when (if) we split an
-        annotation element into multiple polygons, we can add these
-        separately.
-        """
-        elno = element_infos.shape[0]
-
-        # Add element information to element dataframe
-        element_infos.loc[elno, 'annidx'] = annidx
-        element_infos.loc[elno, 'annotation_girder_id'] = ann['_id']
-        element_infos.loc[elno, 'elementidx'] = elementidx
-        element_infos.loc[elno, 'element_girder_id'] = element['id']
-        element_infos.loc[elno, 'color'] = str(element['lineColor'])
-
-        # Now we can add offset to ensure coordinates are relative to the
-        # cropping bounds (i.e. they would correspond to an RGB image
-        # of the same region and could be used to create a mask or
-        # to encode object boundaries etc
-        if (cropping_bounds is not None) or (
-                cropping_polygon_vertices is not None):
-            vertices[:, 0] = vertices[:, 0] - x_shift
-            vertices[:, 1] = vertices[:, 1] - y_shift
-
-        # get bounds for this polygon. Remember, these may have been
-        # changed after it was cropped using shapely
-        xmin, ymin = np.min(vertices, axis=0)
-        xmax, ymax = np.max(vertices, axis=0)
-
-        # parse to string for inclusion in pd dataframe
-        x_coords, y_coords = _parse_coords_to_str(coords)
-
-        # add group or infer from label
-        if 'group' in element.keys():
-            element_infos.loc[elno, 'group'] = str(element['group'])
-        elif 'label' in element.keys():
-            element_infos.loc[elno, 'group'] = str(element['label']['value'])
-
-        # add label or infer from group
-        if 'label' in element.keys():
-            element_infos.loc[elno, 'label'] = str(element['label']['value'])
-        elif 'group' in element.keys():
-            element_infos.loc[elno, 'label'] = element_infos.loc[elno, 'group']
-
-        element_infos.loc[elno, 'type'] = str(element['type'])
-        element_infos.loc[elno, 'xmin'] = int(xmin)
-        element_infos.loc[elno, 'xmax'] = int(xmax)
-        element_infos.loc[elno, 'ymin'] = int(ymin)
-        element_infos.loc[elno, 'ymax'] = int(ymax)
-        element_infos.loc[elno, 'bbox_area'] = int(
-            (ymax - ymin) * (xmax - xmin))
-        element_infos.loc[elno, 'coords_x'] = x_coords
-        element_infos.loc[elno, 'coords_y'] = y_coords
+    elif cfg.cropping_polygon_vertices is not None:
+        bounds_polygon = Polygon(np.int32(cfg.cropping_polygon_vertices))
+        cfg.x_shift, cfg.y_shift = np.min(cfg.cropping_polygon_vertices, 0)
 
     # go through annotation elements and add as needed
-    for annidx, ann in enumerate(slide_annotations):
+    for cfg.annidx, cfg.ann in enumerate(slide_annotations):
 
-        annno = annotation_infos.shape[0]
+        annno = cfg.annotation_infos.shape[0]
 
         # Add annotation document info to annotations dataframe
 
-        annotation_infos.loc[annno, 'annotation_girder_id'] = ann['_id']
+        cfg.annotation_infos.loc[annno, 'annotation_girder_id'] = cfg.ann[
+            '_id']
 
         for key in [
                 '_modelType', '_version',
                 'itemId', 'created', 'creatorId',
                 'public', 'updated', 'updatedId', ]:
-            annotation_infos.loc[annno, key] = ann[key]
+            cfg.annotation_infos.loc[annno, key] = cfg.ann[key]
 
-        annotation_infos.loc[annno, 'groups'] = str(ann['groups'])
-        annotation_infos.loc[annno, 'element_count'] = ann[
+        cfg.annotation_infos.loc[annno, 'groups'] = str(cfg.ann['groups'])
+        cfg.annotation_infos.loc[annno, 'element_count'] = cfg.ann[
             '_elementQuery']['count']
-        annotation_infos.loc[annno, 'element_details'] = ann[
+        cfg.annotation_infos.loc[annno, 'element_details'] = cfg.ann[
             '_elementQuery']['details']
 
-        for elementidx, element in enumerate(ann['annotation']['elements']):
+        for cfg.elementidx, cfg.element in enumerate(
+                cfg.ann['annotation']['elements']):
 
-            coords = _get_coords_from_element(copy.deepcopy(element))
+            coords = _get_coords_from_element(copy.deepcopy(cfg.element))
 
             # crop using shapely to desired bounds if needed
             # IMPORTANT: everything till this point needs to be
             # relative to the whole slide image
-            if ((cropping_bounds is None) and
-                    (cropping_polygon_vertices is None)) \
-                    or (element['type'] == 'point') \
+            if ((cfg.cropping_bounds is None) and
+                    (cfg.cropping_polygon_vertices is None)) \
+                    or (cfg.element['type'] == 'point') \
                     or (not use_shapely):
                 all_coords = [coords, ]
             else:
                 all_coords = _maybe_crop_polygon(coords, bounds_polygon)
 
             # now add polygons one by one
-            for coords in all_coords:
-                _add_element_to_final_df(coords)
+            for vertices in all_coords:
+                _add_element_to_final_df(vertices, cfg=cfg)
 
-    return annotation_infos, element_infos
+    return cfg.annotation_infos, cfg.element_infos
 
 
 # %%===========================================================================
