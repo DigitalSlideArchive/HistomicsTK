@@ -39,6 +39,90 @@ def get_image_from_htk_response(resp):
 # %%===========================================================================
 
 
+def scale_slide_annotations(slide_annotations, sf):
+    """Scales up or down annotations in a slide.
+
+    Works in place, but returns slide_annotations anyways.
+
+    Parameters
+    -----------
+    slide_annotations : list of dicts
+        response from server request
+
+    sf : float
+        scale factor to multiply coordinates
+
+    Returns
+    ---------
+    list of dicts
+
+    """
+    if sf == 1.0:
+        return slide_annotations
+
+    for annidx, ann in enumerate(slide_annotations):
+        for elementidx, element in enumerate(ann['annotation']['elements']):
+            for key, entry in element.items():
+
+                if key in {'height', 'width'}:
+                    element[key] = int(entry * sf)
+
+                elif key in {'center', 'points'}:
+                    element[key] = (np.array(entry) * sf).astype(int).tolist()
+
+    return slide_annotations
+
+# %%===========================================================================
+
+
+def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
+    """Get how much is request region smaller than base.
+
+    This also gets the string to append to server request for getting rgb.
+
+    Parameters
+    -----------
+    gc : Girder client instance
+        gc should be authoenticated.
+    slide_id : str
+        girder id of slide
+    MPP : float or None
+        Microns-per-pixel -- best use this as it's more well-defined than
+        magnification which is more scanner/manufacturer specific.
+        MPP of 0.25 often roughly translates to 40x
+    MAG : float or None
+        If you prefer to use whatever magnification is reported in slide.
+        If neither MPP or MAG is provided, everything is retrieved without
+        scaling at base (scan) magnification.
+
+    Returns:
+    ----------
+    float
+        how much smaller (0.1 means 10x smaller) is requested image
+        compared to scan magnification (slide coordinates)
+    str
+        string to append to server request for getting slide region
+
+    """
+    slide_info = gc.get("/item/%s/tiles" % slide_id)
+
+    if MPP is not None:
+        mm = 0.001 * MPP
+        sf = slide_info['mm_x'] / mm
+        appendStr = "&mm_x=%.4f&mm_y=%.4f" % (mm, mm)
+
+    elif MAG is not None:
+        sf = MAG / slide_info['magnification']
+        appendStr = "&magnification=%.8f" % MAG
+    else:
+        sf = 1.0
+        appendStr = ""
+
+    return sf, appendStr
+
+# %%===========================================================================
+
+
 def rotate_point_list(point_list, rotation, center=(0, 0)):
     """Rotate a certain point list around a central point. Modified from.
 
@@ -83,8 +167,8 @@ def get_rotated_rectangular_coords(
         roi_center, roi_width, roi_height, roi_rotation=0):
     """Given data on rectangular ROI center/width/height/rotation.
 
-    Get the unrotated abounding box coordinates around rotated ROI. This of course is
-    applicable to any rotated rectangular annotation.
+    Get the unrotated abounding box coordinates around rotated ROI. This
+    of course is applicable to any rotated rectangular annotation.
 
     Parameters
     -----------
@@ -363,9 +447,9 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
         dtype='int')
     iou = np_vec_no_jit_iou(bboxes[idx_for_roi, :][None, ...], bboxes2=bboxes)
     iou = np.concatenate((np.arange(iou.shape[1])[None, ...], iou))
-    iou = iou[:, iou[1, :] > iou_thresh]
+    iou = iou[:, iou[1, :] > iou_thresh].astype(int)
 
-    overlaps = set([int(j) for j in iou[0, :]]) - {idx_for_roi}
+    overlaps = set(iou[0, :].tolist()) - {idx_for_roi}
 
     return list(overlaps)
 
