@@ -110,7 +110,8 @@ def update_permissions_for_annotations_in_slide(
 
     Returns
     -------
-    None
+    list
+        each entry is a dict of the server response.
 
     """
     # get annotations for slide
@@ -179,6 +180,8 @@ def update_styles_for_annotation(gc, ann, changes):
 
     Returns
     -------
+    dict
+        server response
 
     """
     # find out if annotation needs editing
@@ -212,7 +215,8 @@ def update_styles_for_annotations_in_slide(
 
     Returns
     -------
-    None
+    list
+        each entry is a dict of the server response.
 
     """
     # get annotations for slide
