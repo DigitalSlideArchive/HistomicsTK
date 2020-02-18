@@ -157,3 +157,96 @@ def update_permissions_for_annotations_in_folder(
         verbose=verbose,
     )
     workflow_runner.run()
+
+
+def update_styles_for_annotation(gc, ann, changes):
+    """
+
+    Parameters
+    ----------
+    gc
+    ann
+    changes
+
+    Returns
+    -------
+
+    """
+    # find out if annotation needs editing
+    if 'groups' not in ann.keys():
+        return
+    elif not any([g in changes.keys() for g in ann['groups']]):
+        return
+
+    # edit elements one by one
+    for el in ann['annotation']['elements']:
+        if el['group'] in changes.keys():
+            el.update(changes[el['group']])
+    print("  updating ...")
+    return gc.put("/annotation/%s" % ann['_id'], json=ann['annotation'])
+
+
+def update_styles_for_annotations_in_slide(
+        gc, slide_id, monitorPrefix='', **kwargs):
+    """Update styles for all annotations in a slide.
+
+    Parameters
+    ----------
+    gc : girder_client.GirderClient
+        authenticated girder client
+    slide_id : str
+        girder id of slide
+    monitorPrefix : str
+        prefix to prepend to printed statements
+    kwargs
+        passed as-is to update_styles_for_annotation()
+
+    Returns
+    -------
+    None
+
+    """
+    # get annotations for slide
+    slide_annotations = gc.get('/annotation/item/' + slide_id)
+
+    for annidx, ann in enumerate(slide_annotations):
+        print("%s: annotation %d of %d" % (
+            monitorPrefix, annidx, len(slide_annotations)))
+        _ = update_styles_for_annotation(
+            gc=gc, ann=ann, **kwargs)
+
+
+def update_styles_for_annotations_in_folder(
+        gc, folderid, workflow_kwargs, monitor='', verbose=True):
+    """Update styles for all annotations in a slide.
+
+    Parameters
+    ----------
+    gc : girder_client.GirderClient
+        authenticated girder client
+    folderid : str
+        girder id of folder
+    workflow_kwargs : dict
+        kwargs to pass to Update styles for all annotations in a slide()
+    monitor : str
+        text to prepend to printed statements
+    verbose : bool
+        print statements to screen?
+
+    Returns
+    -------
+    None
+
+    """
+    workflow_kwargs.update({'gc': gc})
+    workflow_runner = Workflow_runner(
+        slide_iterator=Slide_iterator(
+            gc, source_folder_id=folderid,
+            keep_slides=None,
+        ),
+        workflow=update_styles_for_annotations_in_slide,
+        workflow_kwargs=workflow_kwargs,
+        monitorPrefix=monitor,
+        verbose=verbose,
+    )
+    workflow_runner.run()
