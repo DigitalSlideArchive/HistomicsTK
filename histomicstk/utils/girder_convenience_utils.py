@@ -116,11 +116,14 @@ def update_permissions_for_annotations_in_slide(
     # get annotations for slide
     slide_annotations = gc.get('/annotation/item/' + slide_id)
 
+    resps = []
     for annidx, ann in enumerate(slide_annotations):
         print("%s: annotation %d of %d" % (
             monitorPrefix, annidx, len(slide_annotations)))
-        _ = update_permissions_for_annotation(
+        resp = update_permissions_for_annotation(
             gc=gc, annotation_id=ann['_id'], **kwargs)
+        resps.append(resp)
+    return resps
 
 
 def update_permissions_for_annotations_in_folder(
@@ -160,13 +163,19 @@ def update_permissions_for_annotations_in_folder(
 
 
 def update_styles_for_annotation(gc, ann, changes):
-    """
+    """Update styles for all relevant elements in an annotation.
 
     Parameters
     ----------
-    gc
-    ann
-    changes
+    gc : girder_client.GirderClient
+        authenticated girder client
+    ann : dict
+        annotation
+    changes : dict
+        indexed by current group name to be updated, and values are
+        the new styles. Each element in ann["annotation"]["elements"]
+        whose current "group" attribute is in this dict's keys is
+        updated according to the new style.
 
     Returns
     -------
@@ -209,11 +218,13 @@ def update_styles_for_annotations_in_slide(
     # get annotations for slide
     slide_annotations = gc.get('/annotation/item/' + slide_id)
 
+    resps = []
     for annidx, ann in enumerate(slide_annotations):
         print("%s: annotation %d of %d" % (
             monitorPrefix, annidx, len(slide_annotations)))
-        _ = update_styles_for_annotation(
-            gc=gc, ann=ann, **kwargs)
+        resp = update_styles_for_annotation(gc=gc, ann=ann, **kwargs)
+        resps.append(resp)
+    return resps
 
 
 def update_styles_for_annotations_in_folder(

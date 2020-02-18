@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 from histomicstk.utils.girder_convenience_utils import connect_to_api, \
-    update_permissions_for_annotation
+    update_permissions_for_annotation, update_styles_for_annotations_in_slide
 
 # %%===========================================================================
 # Constants & prep work
@@ -37,6 +37,19 @@ class GirderConvenienceTest(unittest.TestCase):
             resp['access']['users'],
             [{'flags': [], 'id': '59bc677892ca9a0017c2e855', 'level': 2},
              {'flags': [], 'id': '5d588370bd4404c6b1f28933', 'level': 0}]
+        )
+
+    def test_update_styles_for_annotations_in_slide(self):
+
+        resps = update_styles_for_annotations_in_slide(
+            gc=connect_to_api(APIURL, interactive=True),
+            slide_id='5e2a2d77ddda5f83986d135b', changes={
+                'fov_discordant': {
+                    'group': 'fov_discordant',
+                    'lineColor': 'rgb(131,181,255)',
+                    'fillColor': 'rgba(131,181,255,0.3)',
+                },
+            }, monitorPrefix='test',
         )
 
 
