@@ -135,13 +135,13 @@ def _get_visualization_zoomout(
     # get append string for server request
     if MPP is not None:
         getsf_kwargs = {
-            'MPP': MPP * zoomout,
+            'MPP': MPP * (zoomout + 1),
             'MAG': None,
         }
     else:
         getsf_kwargs = {
             'MPP': None,
-            'MAG': MAG / zoomout,
+            'MAG': MAG / (zoomout + 1),
         }
     sf, appendStr = get_scale_factor_and_appendStr(
         gc=gc, slide_id=slide_id, **getsf_kwargs)
