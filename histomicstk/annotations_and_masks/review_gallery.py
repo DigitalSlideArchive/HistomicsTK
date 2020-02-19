@@ -152,9 +152,9 @@ def _get_visualization_zoomout(
     getStr = \
         "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
         % (slide_id,
-           bounds['XMIN'] - x_margin,
+           max(0, bounds['XMIN'] - x_margin),
            bounds['XMAX'] + x_margin,
-           bounds['YMIN'] - y_margin,
+           max(0, bounds['YMIN'] - y_margin),
            bounds['YMAX'] + y_margin)
     getStr += appendStr
     resp = gc.get(getStr, jsonResp=False)
