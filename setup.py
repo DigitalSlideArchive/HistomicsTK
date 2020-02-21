@@ -82,6 +82,7 @@ setup(
         'distributed>=1.21.6',
         'tornado',
         'fsspec>=0.3.3;python_version>="3"',
+        'msgpack<1;python_version<"3.6"',
         # large image sources
         'large-image-source-tiff',
         'large-image-source-openslide',
