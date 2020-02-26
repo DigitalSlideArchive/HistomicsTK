@@ -252,7 +252,8 @@ def _plot_rapid_review_vis(
 
     Returns
     -------
-    None
+    dict
+        roi_out parameter whether or not it is modified
 
     """
     # get rgb and visualization (fetched mag + lower mag)
@@ -274,6 +275,8 @@ def _plot_rapid_review_vis(
     if verbose:
         print("%s: Saving %s" % (monitorprefix, savename))
     imwrite(im=rapid_review_vis, uri=savename)
+
+    return roi_out
 
 # %============================================================================
 

@@ -111,7 +111,7 @@ class ReviewGallery(unittest.TestCase):
         imname = 'TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b' \
             + '_left-10124_top-56533_bottom-56789_right-10380'
         cvis = imread(os.path.join(combinedvis_savepath, imname + '.png'))
-        self.assertTupleEqual(cvis.shape, (403, 1209, 3))
+        self.assertTupleEqual(cvis.shape, (322, 966, 3))
 
     def test_create_review_galleries(self):
         """Test create_review_galleries()."""
