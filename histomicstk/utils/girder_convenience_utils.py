@@ -199,7 +199,7 @@ def update_styles_for_annotation(gc, ann, changes):
 
 
 def update_styles_for_annotations_in_slide(
-        gc, slide_id, monitorPrefix='', **kwargs):
+        gc, slide_id, monitorPrefix='', callback=None, **kwargs):
     """Update styles for all annotations in a slide.
 
     Parameters
@@ -210,8 +210,14 @@ def update_styles_for_annotations_in_slide(
         girder id of slide
     monitorPrefix : str
         prefix to prepend to printed statements
+    callback : function
+        if None, update_styles_for_annotation() is used. Must be able to
+        accept the parameters
+        - gc - authenticated girder client
+        - ann - dict, annotation
+        and must return the a dictionary.
     kwargs
-        passed as-is to update_styles_for_annotation()
+        passed as-is to the callback
 
     Returns
     -------
@@ -222,11 +228,14 @@ def update_styles_for_annotations_in_slide(
     # get annotations for slide
     slide_annotations = gc.get('/annotation/item/' + slide_id)
 
+    if callback is None:
+        callback = update_styles_for_annotation
+
     resps = []
     for annidx, ann in enumerate(slide_annotations):
         print("%s: annotation %d of %d" % (
             monitorPrefix, annidx, len(slide_annotations)))
-        resp = update_styles_for_annotation(gc=gc, ann=ann, **kwargs)
+        resp = callback(gc=gc, ann=ann, **kwargs)
         resps.append(resp)
     return resps
 
