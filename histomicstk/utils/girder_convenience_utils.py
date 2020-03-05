@@ -4,6 +4,8 @@ Created on Thu Dec 12 13:19:18 2019
 
 @author: tageldim
 """
+import os
+
 import girder_client
 import json
 from histomicstk.workflows.workflow_runner import Workflow_runner, \
@@ -120,7 +122,7 @@ def update_permissions_for_annotations_in_slide(
     resps = []
     for annidx, ann in enumerate(slide_annotations):
         print("%s: annotation %d of %d" % (
-            monitorPrefix, annidx, len(slide_annotations)))
+            monitorPrefix, annidx + 1, len(slide_annotations)))
         resp = update_permissions_for_annotation(
             gc=gc, annotation_id=ann['_id'], **kwargs)
         resps.append(resp)
@@ -129,7 +131,7 @@ def update_permissions_for_annotations_in_slide(
 
 def update_permissions_for_annotations_in_folder(
         gc, folderid, workflow_kwargs, monitor='', verbose=True):
-    """Update permissions for all annotations in a folder.
+    """Update permissions for all annotations in a folder recursively.
 
     Parameters
     ----------
@@ -149,6 +151,7 @@ def update_permissions_for_annotations_in_folder(
     None
 
     """
+    # update permissions for each slide in folder
     workflow_kwargs.update({'gc': gc})
     workflow_runner = Workflow_runner(
         slide_iterator=Slide_iterator(
@@ -161,6 +164,12 @@ def update_permissions_for_annotations_in_folder(
         verbose=verbose,
     )
     workflow_runner.run()
+
+    # for each subfolder, call self
+    for folder in gc.listFolder(parentId=folderid):
+        update_permissions_for_annotations_in_folder(
+            gc=gc, folderid=folder['_id'], workflow_kwargs=workflow_kwargs,
+            monitor="%s: %s" % (monitor, folder['name']), verbose=verbose)
 
 
 def update_styles_for_annotation(gc, ann, changes):
@@ -199,7 +208,7 @@ def update_styles_for_annotation(gc, ann, changes):
 
 
 def update_styles_for_annotations_in_slide(
-        gc, slide_id, monitorPrefix='', **kwargs):
+        gc, slide_id, monitorPrefix='', callback=None, **kwargs):
     """Update styles for all annotations in a slide.
 
     Parameters
@@ -210,8 +219,14 @@ def update_styles_for_annotations_in_slide(
         girder id of slide
     monitorPrefix : str
         prefix to prepend to printed statements
+    callback : function
+        if None, update_styles_for_annotation() is used. Must be able to
+        accept the parameters
+        - gc - authenticated girder client
+        - ann - dict, annotation
+        and must return the a dictionary.
     kwargs
-        passed as-is to update_styles_for_annotation()
+        passed as-is to the callback
 
     Returns
     -------
@@ -222,18 +237,21 @@ def update_styles_for_annotations_in_slide(
     # get annotations for slide
     slide_annotations = gc.get('/annotation/item/' + slide_id)
 
+    if callback is None:
+        callback = update_styles_for_annotation
+
     resps = []
     for annidx, ann in enumerate(slide_annotations):
         print("%s: annotation %d of %d" % (
-            monitorPrefix, annidx, len(slide_annotations)))
-        resp = update_styles_for_annotation(gc=gc, ann=ann, **kwargs)
+            monitorPrefix, annidx + 1, len(slide_annotations)))
+        resp = callback(gc=gc, ann=ann, **kwargs)
         resps.append(resp)
     return resps
 
 
 def update_styles_for_annotations_in_folder(
         gc, folderid, workflow_kwargs, monitor='', verbose=True):
-    """Update styles for all annotations in a slide.
+    """Update styles for all annotations in a folder recursively.
 
     Parameters
     ----------
@@ -253,6 +271,7 @@ def update_styles_for_annotations_in_folder(
     None
 
     """
+    # update annotation styles
     workflow_kwargs.update({'gc': gc})
     workflow_runner = Workflow_runner(
         slide_iterator=Slide_iterator(
@@ -265,3 +284,9 @@ def update_styles_for_annotations_in_folder(
         verbose=verbose,
     )
     workflow_runner.run()
+
+    # for each subfolder, call self
+    for folder in gc.listFolder(parentId=folderid):
+        update_styles_for_annotations_in_folder(
+            gc=gc, folderid=folder['_id'], workflow_kwargs=workflow_kwargs,
+            monitor="%s: %s" % (monitor, folder['name']), verbose=verbose)
