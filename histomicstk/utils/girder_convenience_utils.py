@@ -130,7 +130,8 @@ def update_permissions_for_annotations_in_slide(
 
 
 def update_permissions_for_annotations_in_folder(
-        gc, folderid, workflow_kwargs, monitor='', verbose=True):
+        gc, folderid, workflow_kwargs, recursive=True,
+        monitor='', verbose=True):
     """Update permissions for all annotations in a folder recursively.
 
     Parameters
@@ -160,16 +161,17 @@ def update_permissions_for_annotations_in_folder(
         ),
         workflow=update_permissions_for_annotations_in_slide,
         workflow_kwargs=workflow_kwargs,
+        recursive=recursive,
         monitorPrefix=monitor,
         verbose=verbose,
     )
     workflow_runner.run()
 
-    # for each subfolder, call self
-    for folder in gc.listFolder(parentId=folderid):
-        update_permissions_for_annotations_in_folder(
-            gc=gc, folderid=folder['_id'], workflow_kwargs=workflow_kwargs,
-            monitor="%s: %s" % (monitor, folder['name']), verbose=verbose)
+    # # for each subfolder, call self
+    # for folder in gc.listFolder(parentId=folderid):
+    #     update_permissions_for_annotations_in_folder(
+    #         gc=gc, folderid=folder['_id'], workflow_kwargs=workflow_kwargs,
+    #         monitor="%s: %s" % (monitor, folder['name']), verbose=verbose)
 
 
 def update_styles_for_annotation(gc, ann, changes):

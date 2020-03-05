@@ -76,13 +76,14 @@ class Slide_iterator(Base_HTK_Class):
             yield slide_info
 
 # %% ==========================================================================
-# =============================================================================
 
 
 class Workflow_runner(Base_HTK_Class):
     """Run workflow for all slides in a girder folder."""
 
-    def __init__(self, slide_iterator, workflow, workflow_kwargs, **kwargs):
+    def __init__(
+            self, slide_iterator, workflow, workflow_kwargs,
+            recursive=False, **kwargs):
         """Init Workflow_runner object.
 
         Arguments
@@ -94,6 +95,8 @@ class Workflow_runner(Base_HTK_Class):
             which is called for each slide
         workflow_kwargs : dict
             keyword arguments for the workflow method
+        recursive : bool
+            whether to run the workflow recursively on all subfolders
         kwargs : key-value pairs
             The following are already assigned defaults by Base_HTK_Class
             but can be passed here to override defaults
@@ -107,6 +110,7 @@ class Workflow_runner(Base_HTK_Class):
         # set attribs
         self.workflow = workflow
         self.workflow_kwargs = workflow_kwargs
+        self.recursive = recursive
         if self.keep_log:
             self.exception_path = self.logname.replace(
                 '.log', '_EXCEPTIONS.log')
@@ -146,6 +150,19 @@ class Workflow_runner(Base_HTK_Class):
                 else:
                     print(e.__repr__())
 
+        if self.recursive:
+            # for each subfolder, call self
+            for folder in self.slide_iterator.gc.listFolder(
+                    parentId=self.slide_iterator.source_folder_id):
+
+                self.monitorPrefix += "/" + folder['name']
+
+                # update slide iterator for subfolder
+                self.slide_iterator.source_folder_id = folder['_id']
+                self.slide_iterator.set_slide_ids()
+                self.si = self.slide_iterator.run()
+
+                # recurse
+                self.run()
 
 # %% ==========================================================================
-# =============================================================================
