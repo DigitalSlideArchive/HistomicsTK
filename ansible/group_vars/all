@@ -1,8 +1,7 @@
 ---
-ctk_cli_version: master
 girder_version: 2.x-maintenance
 slicer_cli_web_version: 2.x-maintenance
-histomicstk_version: master
+histomicstk_version: 2.x-maintenance
 large_image_version: 2.x-maintenance
 dsa_version: 2.x-maintenance
 girder_worker_version: v0.5.1
