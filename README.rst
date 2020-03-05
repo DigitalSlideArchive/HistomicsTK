@@ -14,7 +14,7 @@ HistomicsTK |build-status| |codecov-io| |gitter|
    :target: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
    :alt: Join the chat at https://gitter.im/DigitalSlideArchive/HistomicsTK
 
-HistomicsTK is a Python and REST API for the analysis of Histopathology images
+HistomicsTK is a Python toolkit for the analysis of Histopathology images
 in association with clinical and genomic data. 
 
 Histopathology, which involves the examination of thin-slices of diseased
@@ -81,41 +81,37 @@ HistomicsTK can be used in two ways:
   install appropriate libraries (on Ubuntu, for instance, you'll need 
   ``libopenslide-dev`` and ``libtiff-dev``).
 
-- **As a server-side Girder plugin for web-based analysis**: This is intended
+- **As a image-processing task library for HistomicsUI and the Digital Slide Archive**: This is intended
   to allow pathologists/biologists to apply analysis modules/pipelines
-  containerized in HistomicsTK's docker plugins on data over the web. Girder_
-  is a Python-based framework (under active development by Kitware_) for
-  building web-applications that store, aggregate, and process scientific data.
-  It is built on CherryPy_ and provides functionality for authentication,
-  access control, customizable metadata association, easy upload/download of
-  data, an abstraction layer that exposes data stored on multiple backends
-  (e.g. Native file system, Amazon S3, MongoDB GridFS) through a uniform
-  RESTful API, and most importantly an extensible plugin framework for
-  building server-side analytics apps. To inherit all these capabilities,
-  HistomicsTK is being developed to act also as a Girder plugin in addition
-  to its use as a pure Python package. To further support web-based analysis,
-  HistomicsTK depends on three other Girder plugins: (i) girder_worker_ for
-  distributed task execution and monitoring, (ii) large_image_ for displaying,
-  serving, and reading large multi-resolution images produced by whole-slide
-  imaging systems, and (iii) slicer_cli_web_ to provide web-based RESTFul
-  access to image analysis pipelines developed as `slicer execution model`_
-  CLIs and containerized using Docker.
+  containerized in HistomicsTK's docker plugins on data over the web.  See the
+  `Digital Slide Archive`_ for installation instructions.
 
 Please refer to https://digitalslidearchive.github.io/HistomicsTK/ for more information.
 
 For questions, comments, or to get in touch with the maintainers, head to our
 `Discourse forum`_, or use our `Gitter Chatroom`_.
 
+Previous Versions
+-----------------
+
+This repository used to contain almost all of the Digital Slide Archive and HistomicsUI.  The deployment and installation code and instructions have moved to the `Digital Slide Archive`_ repository.  The user interface and annotation drawing code has moved to the `HistomicsUI`_ repository.
+
+The deployment and UI code will eventually be removed from the master branch of this repository; any new development on those topics should be done in those locations.
+
+This repository contains image-processing algorithms and tasks.
+
+Funding
+-------
+
 This work is funded by the NIH grant U24-CA194362-01_.
 
-.. _Digital Slide Archive: http://github.com/DigitalSlideArchive
+
+.. _Digital Slide Archive: http://github.com/DigitalSlideArchive/digital_slide_archive
+.. _HistomicsUI: http://github.com/DigitalSlideArchive/HistomicsUI
 .. _Docker: https://www.docker.com/
 .. _Kitware: http://www.kitware.com/
 .. _U24-CA194362-01: http://grantome.com/grant/NIH/U24-CA194362-01
 
-.. _CherryPy: http://www.cherrypy.org/
-.. _Girder: http://girder.readthedocs.io/en/latest/
-.. _girder_worker: http://girder-worker.readthedocs.io/en/latest/
 .. _large_image: https://github.com/girder/large_image
 .. _slicer_cli_web: https://github.com/girder/slicer_cli_web
 .. _slicer execution model: https://www.slicer.org/slicerWiki/index.php/Slicer3:Execution_Model_Documentation
