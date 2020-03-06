@@ -177,6 +177,12 @@ class Annotation_iterator(Base_HTK_Class):
             girder client object
         slide_id : str
             girder ID of slide (item)
+        callback : function
+            function to apply to each annotation. Must accept at least
+            the parameters "gc" and "annotation" and these will be passed
+            internally to it.
+        callback_kwargs : dict
+            kwargs to pass to the callback (other than gc and annotation)
         kwargs : key-value pairs
             The following are already assigned defaults by Base_HTK_Class
             but can be passed here to override defaults
@@ -203,21 +209,20 @@ class Annotation_iterator(Base_HTK_Class):
         """Yield callback output for one annotation at a time."""
         # yield one annotation at a time
         for annidx, ann in enumerate(self.slide_annotations):
-            print("%s: annotation %d of %d" % (
-                self.monitorPrefix, annidx + 1, self.n_annotations))
+            if self.verbose > 0:
+                print("%s: annotation %d of %d" % (
+                    self.monitorPrefix, annidx + 1, self.n_annotations))
             if self.callback is None:
                 yield ann
             else:
-                yield self.callback(ann, self.callback_kwargs)
+                yield self.callback(
+                    gc=self.gc, annotation=ann, **self.callback_kwargs)
 
     def apply_callback_to_all_annotations(self):
         """Apply callback to all annotations and resturn output list."""
         runner = self.yield_callback_output_for_annotation()
         outputs = []
         for annidx in range(self.n_annotations):
-            if self.verbose > 0:
-                print("%s: annotation %d of %d" % (
-                    self.monitorPrefix, annidx + 1, self.n_annotations))
             outputs.append(next(runner))
         return outputs
 

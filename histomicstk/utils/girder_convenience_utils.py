@@ -38,7 +38,7 @@ def get_absolute_girder_folderpath(gc, folder_id=None, folder_info=None):
 
 
 def update_permissions_for_annotation(
-        gc, annotation_id,
+        gc, annotation_id=None, annotation=None,
         groups_to_add=[], replace_original_groups=False,
         users_to_add=[], replace_original_users=False):
     """Update permissions for a single annotation.
@@ -49,6 +49,8 @@ def update_permissions_for_annotation(
         authenticated girder client instance
     annotation_id : str
         girder id of annotation
+    annotation : dict
+        overrides annotation_id if given
     groups_to_add : list
         each entry is a dict containing the information about user groups
         to add and their permission levels. A sample entry must have the
@@ -74,6 +76,12 @@ def update_permissions_for_annotation(
         server response
 
     """
+    if annotation is not None:
+        annotation_id = annotation['_id']
+    elif annotation_id is None:
+        raise Exception(
+            "You must provide either the annotation or its girder id.")
+
     # get current permissions
     current = gc.get('/annotation/%s/access' % annotation_id)
 
@@ -165,14 +173,14 @@ def update_permissions_for_annotations_in_folder(
     workflow_runner.run()
 
 
-def update_styles_for_annotation(gc, ann, changes):
+def update_styles_for_annotation(gc, annotation, changes):
     """Update styles for all relevant elements in an annotation.
 
     Parameters
     ----------
     gc : girder_client.GirderClient
         authenticated girder client
-    ann : dict
+    annotation : dict
         annotation
     changes : dict
         indexed by current group name to be updated, and values are
@@ -187,21 +195,22 @@ def update_styles_for_annotation(gc, ann, changes):
 
     """
     # find out if annotation needs editing
-    if 'groups' not in ann.keys():
+    if 'groups' not in annotation.keys():
         return
-    elif not any([g in changes.keys() for g in ann['groups']]):
+    elif not any([g in changes.keys() for g in annotation['groups']]):
         return
 
     # edit elements one by one
-    for el in ann['annotation']['elements']:
+    for el in annotation['annotation']['elements']:
         if el['group'] in changes.keys():
             el.update(changes[el['group']])
     print("  updating ...")
-    return gc.put("/annotation/%s" % ann['_id'], json=ann['annotation'])
+    return gc.put(
+        "/annotation/%s" % annotation['_id'], json=annotation['annotation'])
 
 
 def update_styles_for_annotations_in_slide(
-        gc, slide_id, monitorPrefix='', callback=None, **kwargs):
+        gc, slide_id, monitorPrefix='', **kwargs):
     """Update styles for all annotations in a slide.
 
     Parameters
@@ -212,14 +221,8 @@ def update_styles_for_annotations_in_slide(
         girder id of slide
     monitorPrefix : str
         prefix to prepend to printed statements
-    callback : function
-        if None, update_styles_for_annotation() is used. Must be able to
-        accept the parameters
-        - gc - authenticated girder client
-        - ann - dict, annotation
-        and must return the a dictionary.
     kwargs
-        passed as-is to the callback
+        passed as-is to the update_styles_for_annotation
 
     Returns
     -------
@@ -227,19 +230,12 @@ def update_styles_for_annotations_in_slide(
         each entry is a dict of the server response.
 
     """
-    # get annotations for slide
-    slide_annotations = gc.get('/annotation/item/' + slide_id)
-
-    if callback is None:
-        callback = update_styles_for_annotation
-
-    resps = []
-    for annidx, ann in enumerate(slide_annotations):
-        print("%s: annotation %d of %d" % (
-            monitorPrefix, annidx + 1, len(slide_annotations)))
-        resp = callback(gc=gc, ann=ann, **kwargs)
-        resps.append(resp)
-    return resps
+    anniter = Annotation_iterator(
+        gc=gc, slide_id=slide_id,
+        callback=update_styles_for_annotation,
+        callback_kwargs=kwargs,
+        monitorPrefix=monitorPrefix)
+    return anniter.apply_callback_to_all_annotations()
 
 
 def update_styles_for_annotations_in_folder(
