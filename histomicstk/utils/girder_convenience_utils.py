@@ -10,6 +10,9 @@ import girder_client
 import json
 from histomicstk.workflows.workflow_runner import Workflow_runner, \
     Slide_iterator, Annotation_iterator
+import warnings
+warnings.simplefilter('once', UserWarning)
+ASKTOCONTINUE = True
 
 
 def connect_to_api(apiurl, apikey=None, interactive=True):
@@ -76,6 +79,26 @@ def update_permissions_for_annotation(
         server response
 
     """
+    # TODO -- this is an especially damaging bug! Fix me!
+    GIRDERBUG = """
+    We've discovered a bug that causes the dangerous side effect of 
+    deleting annotation elements whent he access permissions are edited!
+    This behavior happens CONSISTENTLY when we APPEND to the existing
+    users of groups, and OCCASIONALLY when we replace the users or
+    groups with new ones. Until this bug is fixed, try to avoid 
+    changing annotation access permissions, and if you really do
+    have to do it, make SURE you replace existing users/groups
+    as opposed to appending to them."""
+    warnings.warn(GIRDERBUG, RuntimeWarning)
+
+    global ASKTOCONTINUE
+    if ASKTOCONTINUE:
+        warnings.warn("""
+        > Press any key to continue at your own risk, or.. 
+        > Press Control+C to stop.""")
+        input("")
+        ASKTOCONTINUE = False
+
     if annotation is not None:
         annotation_id = annotation['_id']
     elif annotation_id is None:
@@ -86,15 +109,6 @@ def update_permissions_for_annotation(
     current = gc.get('/annotation/%s/access' % annotation_id)
 
     # add or replace as needed
-
-    # TODO -- this is an especially damaging bug! Fix me!
-    GIRDERBUG = """
-    Currenly you MUST replace original groups due to
-    a girder bug. Until the bug is fixed, appending to existing
-    annotation has the dangerous side effect of deleting annotation
-    elements.
-    """
-
     if replace_original_groups:
         current['groups'] = []
     else:
