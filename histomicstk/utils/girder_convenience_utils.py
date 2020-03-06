@@ -39,8 +39,8 @@ def get_absolute_girder_folderpath(gc, folder_id=None, folder_info=None):
 
 def update_permissions_for_annotation(
         gc, annotation_id=None, annotation=None,
-        groups_to_add=[], replace_original_groups=False,
-        users_to_add=[], replace_original_users=False):
+        groups_to_add=[], replace_original_groups=True,
+        users_to_add=[], replace_original_users=True):
     """Update permissions for a single annotation.
 
     Parameters
@@ -86,11 +86,22 @@ def update_permissions_for_annotation(
     current = gc.get('/annotation/%s/access' % annotation_id)
 
     # add or replace as needed
+    GIRDERBUG = """
+    Currenly you MUST replace original groups due to
+    a girder bug. Until the bug is fixed, appending to existing
+    annotation has the dangerous side effect of deleting annotation
+    elements.
+    """
+
     if replace_original_groups:
         current['groups'] = []
+    else:
+        raise Exception(GIRDERBUG)
 
     if replace_original_users:
         current['users'] = []
+    else:
+        raise Exception(GIRDERBUG)
 
     for group in groups_to_add:
         current['groups'].append(group)
