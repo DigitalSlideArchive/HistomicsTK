@@ -152,9 +152,9 @@ def _get_visualization_zoomout(
     getStr = \
         "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
         % (slide_id,
-           bounds['XMIN'] - x_margin,
+           max(0, bounds['XMIN'] - x_margin),
            bounds['XMAX'] + x_margin,
-           bounds['YMIN'] - y_margin,
+           max(0, bounds['YMIN'] - y_margin),
            bounds['YMAX'] + y_margin)
     getStr += appendStr
     resp = gc.get(getStr, jsonResp=False)
@@ -252,7 +252,8 @@ def _plot_rapid_review_vis(
 
     Returns
     -------
-    None
+    dict
+        roi_out parameter whether or not it is modified
 
     """
     # get rgb and visualization (fetched mag + lower mag)
@@ -274,6 +275,8 @@ def _plot_rapid_review_vis(
     if verbose:
         print("%s: Saving %s" % (monitorprefix, savename))
     imwrite(im=rapid_review_vis, uri=savename)
+
+    return roi_out
 
 # %============================================================================
 

@@ -577,6 +577,9 @@ def get_all_rois_from_slide_v2(
         internal, but if you really want to use this, make sure the callback
         can accept the following keys and that you do NOT assign them yourself
         gc, slide_id, slide_name, MPP, MAG, verbose, monitorprefix
+        Also, this callback MUST *ONLY* return thr roi dictionary, whether
+        or not it is modified inside it. If it is modified inside the callback
+        then the modified version is the one that will be saved to disk.
 
     callback_kwargs : dict
         kwargs to pass to callback, not including the mandatory kwargs
@@ -651,6 +654,21 @@ def get_all_rois_from_slide_v2(
                 gtcodes=gtcodes_df,
                 mode=mode, verbose=verbose, monitorprefix=roicountStr)
 
+        # now run callback on roi_out
+        if callback is not None:
+            # these are 'compulsory' kwargs for the callback
+            # since it will not have access to these otherwise
+            callback_kwargs.update({
+                'gc': gc,
+                'slide_id': slide_id,
+                'slide_name': slide_name,
+                'MPP': kvp['MPP'],
+                'MAG': kvp['MAG'],
+                'verbose': verbose,
+                'monitorprefix': roicountStr,
+            })
+            callback(roi_out, **callback_kwargs)
+
         # now save roi (rgb, vis, mask)
 
         this_roi_savenames = dict()
@@ -678,21 +696,6 @@ def get_all_rois_from_slide_v2(
         this_roi_savenames['contours'] = savename
 
         savenames.append(this_roi_savenames)
-
-        # now run callback on roi_out
-        if callback is not None:
-            # these are 'compulsory' kwargs for the callback
-            # since it will not have access to these otherwise
-            callback_kwargs.update({
-                'gc': gc,
-                'slide_id': slide_id,
-                'slide_name': slide_name,
-                'MPP': kvp['MPP'],
-                'MAG': kvp['MAG'],
-                'verbose': verbose,
-                'monitorprefix': roicountStr,
-            })
-            callback(roi_out, **callback_kwargs)
 
     return savenames
 

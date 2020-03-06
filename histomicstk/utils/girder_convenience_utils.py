@@ -9,7 +9,7 @@ import os
 import girder_client
 import json
 from histomicstk.workflows.workflow_runner import Workflow_runner, \
-    Slide_iterator
+    Slide_iterator, Annotation_iterator
 
 
 def connect_to_api(apiurl, apikey=None, interactive=True):
@@ -38,9 +38,9 @@ def get_absolute_girder_folderpath(gc, folder_id=None, folder_info=None):
 
 
 def update_permissions_for_annotation(
-        gc, annotation_id,
-        groups_to_add=[], replace_original_groups=False,
-        users_to_add=[], replace_original_users=False):
+        gc, annotation_id=None, annotation=None,
+        groups_to_add=[], replace_original_groups=True,
+        users_to_add=[], replace_original_users=True):
     """Update permissions for a single annotation.
 
     Parameters
@@ -49,6 +49,8 @@ def update_permissions_for_annotation(
         authenticated girder client instance
     annotation_id : str
         girder id of annotation
+    annotation : dict
+        overrides annotation_id if given
     groups_to_add : list
         each entry is a dict containing the information about user groups
         to add and their permission levels. A sample entry must have the
@@ -74,15 +76,32 @@ def update_permissions_for_annotation(
         server response
 
     """
+    if annotation is not None:
+        annotation_id = annotation['_id']
+    elif annotation_id is None:
+        raise Exception(
+            "You must provide either the annotation or its girder id.")
+
     # get current permissions
     current = gc.get('/annotation/%s/access' % annotation_id)
 
     # add or replace as needed
+    GIRDERBUG = """
+    Currenly you MUST replace original groups due to
+    a girder bug. Until the bug is fixed, appending to existing
+    annotation has the dangerous side effect of deleting annotation
+    elements.
+    """
+
     if replace_original_groups:
         current['groups'] = []
+    else:
+        raise Exception(GIRDERBUG)
 
     if replace_original_users:
         current['users'] = []
+    else:
+        raise Exception(GIRDERBUG)
 
     for group in groups_to_add:
         current['groups'].append(group)
@@ -116,21 +135,17 @@ def update_permissions_for_annotations_in_slide(
         each entry is a dict of the server response.
 
     """
-    # get annotations for slide
-    slide_annotations = gc.get('/annotation/item/' + slide_id)
-
-    resps = []
-    for annidx, ann in enumerate(slide_annotations):
-        print("%s: annotation %d of %d" % (
-            monitorPrefix, annidx + 1, len(slide_annotations)))
-        resp = update_permissions_for_annotation(
-            gc=gc, annotation_id=ann['_id'], **kwargs)
-        resps.append(resp)
-    return resps
+    anniter = Annotation_iterator(
+        gc=gc, slide_id=slide_id,
+        callback=update_permissions_for_annotation,
+        callback_kwargs=kwargs,
+        monitorPrefix=monitorPrefix)
+    return anniter.apply_callback_to_all_annotations()
 
 
 def update_permissions_for_annotations_in_folder(
-        gc, folderid, workflow_kwargs, monitor='', verbose=True):
+        gc, folderid, workflow_kwargs, recursive=True,
+        monitor='', verbose=True):
     """Update permissions for all annotations in a folder recursively.
 
     Parameters
@@ -141,6 +156,8 @@ def update_permissions_for_annotations_in_folder(
         girder id of folder
     workflow_kwargs : dict
         kwargs to pass to update_permissions_for_annotations_in_slide()
+    recursive : bool
+        do this recursively for subfolders?
     monitor : str
         text to prepend to printed statements
     verbose : bool
@@ -160,26 +177,21 @@ def update_permissions_for_annotations_in_folder(
         ),
         workflow=update_permissions_for_annotations_in_slide,
         workflow_kwargs=workflow_kwargs,
+        recursive=recursive,
         monitorPrefix=monitor,
         verbose=verbose,
     )
     workflow_runner.run()
 
-    # for each subfolder, call self
-    for folder in gc.listFolder(parentId=folderid):
-        update_permissions_for_annotations_in_folder(
-            gc=gc, folderid=folder['_id'], workflow_kwargs=workflow_kwargs,
-            monitor="%s: %s" % (monitor, folder['name']), verbose=verbose)
 
-
-def update_styles_for_annotation(gc, ann, changes):
+def update_styles_for_annotation(gc, annotation, changes):
     """Update styles for all relevant elements in an annotation.
 
     Parameters
     ----------
     gc : girder_client.GirderClient
         authenticated girder client
-    ann : dict
+    annotation : dict
         annotation
     changes : dict
         indexed by current group name to be updated, and values are
@@ -194,21 +206,22 @@ def update_styles_for_annotation(gc, ann, changes):
 
     """
     # find out if annotation needs editing
-    if 'groups' not in ann.keys():
+    if 'groups' not in annotation.keys():
         return
-    elif not any([g in changes.keys() for g in ann['groups']]):
+    elif not any([g in changes.keys() for g in annotation['groups']]):
         return
 
     # edit elements one by one
-    for el in ann['annotation']['elements']:
+    for el in annotation['annotation']['elements']:
         if el['group'] in changes.keys():
             el.update(changes[el['group']])
     print("  updating ...")
-    return gc.put("/annotation/%s" % ann['_id'], json=ann['annotation'])
+    return gc.put(
+        "/annotation/%s" % annotation['_id'], json=annotation['annotation'])
 
 
 def update_styles_for_annotations_in_slide(
-        gc, slide_id, monitorPrefix='', callback=None, **kwargs):
+        gc, slide_id, monitorPrefix='', **kwargs):
     """Update styles for all annotations in a slide.
 
     Parameters
@@ -219,14 +232,8 @@ def update_styles_for_annotations_in_slide(
         girder id of slide
     monitorPrefix : str
         prefix to prepend to printed statements
-    callback : function
-        if None, update_styles_for_annotation() is used. Must be able to
-        accept the parameters
-        - gc - authenticated girder client
-        - ann - dict, annotation
-        and must return the a dictionary.
     kwargs
-        passed as-is to the callback
+        passed as-is to the update_styles_for_annotation
 
     Returns
     -------
@@ -234,23 +241,17 @@ def update_styles_for_annotations_in_slide(
         each entry is a dict of the server response.
 
     """
-    # get annotations for slide
-    slide_annotations = gc.get('/annotation/item/' + slide_id)
-
-    if callback is None:
-        callback = update_styles_for_annotation
-
-    resps = []
-    for annidx, ann in enumerate(slide_annotations):
-        print("%s: annotation %d of %d" % (
-            monitorPrefix, annidx + 1, len(slide_annotations)))
-        resp = callback(gc=gc, ann=ann, **kwargs)
-        resps.append(resp)
-    return resps
+    anniter = Annotation_iterator(
+        gc=gc, slide_id=slide_id,
+        callback=update_styles_for_annotation,
+        callback_kwargs=kwargs,
+        monitorPrefix=monitorPrefix)
+    return anniter.apply_callback_to_all_annotations()
 
 
 def update_styles_for_annotations_in_folder(
-        gc, folderid, workflow_kwargs, monitor='', verbose=True):
+        gc, folderid, workflow_kwargs, recursive=True,
+        monitor='', verbose=True):
     """Update styles for all annotations in a folder recursively.
 
     Parameters
@@ -261,6 +262,8 @@ def update_styles_for_annotations_in_folder(
         girder id of folder
     workflow_kwargs : dict
         kwargs to pass to Update styles for all annotations in a slide()
+    recursive : bool
+        do this recursively for subfolders?
     monitor : str
         text to prepend to printed statements
     verbose : bool
@@ -280,13 +283,8 @@ def update_styles_for_annotations_in_folder(
         ),
         workflow=update_styles_for_annotations_in_slide,
         workflow_kwargs=workflow_kwargs,
+        recursive=recursive,
         monitorPrefix=monitor,
         verbose=verbose,
     )
     workflow_runner.run()
-
-    # for each subfolder, call self
-    for folder in gc.listFolder(parentId=folderid):
-        update_styles_for_annotations_in_folder(
-            gc=gc, folderid=folder['_id'], workflow_kwargs=workflow_kwargs,
-            monitor="%s: %s" % (monitor, folder['name']), verbose=verbose)

@@ -121,7 +121,7 @@ class GetSlideRegionNoMask(unittest.TestCase):
             self.assertAlmostEqual(len(roi_out['contours']) * 0.01, 0.64, 1)
             self.assertSetEqual(
                 set(roi_out['contours'][0].keys()),
-                {'annidx', 'elementidx', 'element_girder_id', 'type',
+                {'annidx', 'elementidx', 'element_girder_id', 'type', 'label',
                  'annotation_girder_id', 'bbox_area', 'group', 'color',
                  'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
 
@@ -143,7 +143,7 @@ class GetSlideRegionNoMask(unittest.TestCase):
         self.assertAlmostEqual(len(minbbox_out['contours']) * 0.01, 0.76, 1)
         self.assertSetEqual(
             set(minbbox_out['contours'][0].keys()),
-            {'annidx', 'elementidx', 'element_girder_id', 'type',
+            {'annidx', 'elementidx', 'element_girder_id', 'type', 'label',
              'annotation_girder_id', 'bbox_area', 'group', 'color',
              'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
 
@@ -166,7 +166,7 @@ class GetSlideRegionNoMask(unittest.TestCase):
     #     self.assertAlmostEqual(len(wsi_out['contours']) * 0.01, 0.76, 1)
     #     self.assertSetEqual(
     #         set(wsi_out['contours'][0].keys()),
-    #         {'annidx', 'elementidx', 'element_girder_id', 'type',
+    #         {'annidx', 'elementidx', 'element_girder_id', 'type', 'label',
     #          'annotation_girder_id', 'bbox_area', 'group', 'color',
     #          'ymin', 'ymax', 'xmin', 'xmax', 'coords_x', 'coords_y'})
 
@@ -191,14 +191,14 @@ class GetSlideRoisNoMask(unittest.TestCase):
             set(savenames[0].keys()),
             {'mask', 'rgb', 'visualization', 'contours'})
         self.assertSetEqual(
-            {'TCGA-A2-A0YE_left-57584_top-35788_bottom-59421_right-37425.png',
-             'TCGA-A2-A0YE_left-58463_top-38203_bottom-60379_right-39760.png',
-             'TCGA-A2-A0YE_left-59181_top-33473_bottom-63712_right-38043.png',
+            {'TCGA-A2-A0YE_left-58463_top-38203_bottom-39760_right-60379.png',
+             'TCGA-A2-A0YE_left-59181_top-33473_bottom-38043_right-63712.png',
+             'TCGA-A2-A0YE_left-57584_top-35788_bottom-37425_right-59421.png',
              },
             {os.path.basename(savename['mask']) for savename in savenames})
 
         # shape & value check
-        imname = 'TCGA-A2-A0YE_left-57584_top-35788_bottom-59421_right-37425'
+        imname = 'TCGA-A2-A0YE_left-57584_top-35788_bottom-37425_right-59421'
         mask = imread(os.path.join(SAVEPATHS['mask'], imname + '.png'))
         self.assertTupleEqual(mask.shape, (82, 92, 3))
         self.assertSetEqual(set(np.unique(mask[..., 0])), {0, 1, 2, 7})
