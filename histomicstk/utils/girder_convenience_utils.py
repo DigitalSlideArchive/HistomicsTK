@@ -86,6 +86,8 @@ def update_permissions_for_annotation(
     current = gc.get('/annotation/%s/access' % annotation_id)
 
     # add or replace as needed
+
+    # TODO -- this is an especially damaging bug! Fix me!
     GIRDERBUG = """
     Currenly you MUST replace original groups due to
     a girder bug. Until the bug is fixed, appending to existing
@@ -282,6 +284,133 @@ def update_styles_for_annotations_in_folder(
             keep_slides=None,
         ),
         workflow=update_styles_for_annotations_in_slide,
+        workflow_kwargs=workflow_kwargs,
+        recursive=recursive,
+        monitorPrefix=monitor,
+        verbose=verbose,
+    )
+    workflow_runner.run()
+
+
+def revert_annotation(
+        gc, annotation_id=None, annotation=None, version=None,
+        revert_to_nonempty_elements=True):
+    """Revert an annotation to a previous version.
+
+    Parameters
+    ----------
+    gc : girder_client.GirderClient
+        authenticated girder client
+    annotation_id : str
+        girder id of annotation
+    annotation : dict
+        overrides annotation_id if given
+    version : int
+        versoin number for annotation. If None, and
+        not revert_to_nonempty_elements
+        the default behavior of the endpoint is evoked, which reverts the
+        annotation if it was deleted and if not, reverts to the last version.
+    revert_to_nonempty_elements : bool
+        if true, reverts to the most recent version of the annotation
+        with non-empty elements.
+
+    Returns
+    -------
+    dict
+        server response
+
+    """
+    if annotation is not None:
+        annotation_id = annotation['_id']
+    elif annotation_id is None:
+        raise Exception(
+            "You must provide either the annotation or its girder id.")
+
+    if (version is None) and revert_to_nonempty_elements:
+
+        history = gc.get("/annotation/%s/history" % annotation_id)
+
+        # NOTE: even though the "history" may show
+        # the elements as empty, the "groups" attribute is really the
+        # indication if the annotation version actually has some elements.
+        # TODO -- This is likely a bug (?); fix me!!!
+        for ver in history:
+            if len(ver["groups"]) > 0:
+                version = ver['_version']
+                break
+
+    ver = "" if version is None else "?version=%d" % version
+
+    if version is None:
+        print("    Reverting ...")
+    else:
+        print("    Reverting to version %d" % version)
+
+    return gc.put("/annotation/%s/history/revert%s" % (annotation_id, ver))
+
+
+def revert_annotations_in_slide(
+        gc, slide_id, monitorPrefix='', **kwargs):
+    """Revert all annotations in a slide to a previous version.
+
+    Parameters
+    ----------
+    gc : girder_client.GirderClient
+        authenticated girder client
+    slide_id : str
+        girder id of slide
+    monitorPrefix : str
+        prefix to prepend to printed statements
+    kwargs
+        passed as-is to the revert_annotation
+
+    Returns
+    -------
+    list
+        each entry is a dict of the server response.
+
+    """
+    anniter = Annotation_iterator(
+        gc=gc, slide_id=slide_id,
+        callback=revert_annotation,
+        callback_kwargs=kwargs,
+        monitorPrefix=monitorPrefix)
+    return anniter.apply_callback_to_all_annotations()
+
+
+def revert_annotations_in_folder(
+        gc, folderid, workflow_kwargs, recursive=True,
+        monitor='', verbose=True):
+    """Revert all annotations in a folder recursively.
+
+    Parameters
+    ----------
+    gc : girder_client.GirderClient
+        authenticated girder client
+    folderid : str
+        girder id of folder
+    workflow_kwargs : dict
+        kwargs to pass to revert_annotations_in_slide
+    recursive : bool
+        do this recursively for subfolders?
+    monitor : str
+        text to prepend to printed statements
+    verbose : bool
+        print statements to screen?
+
+    Returns
+    -------
+    None
+
+    """
+    # update annotation styles
+    workflow_kwargs.update({'gc': gc})
+    workflow_runner = Workflow_runner(
+        slide_iterator=Slide_iterator(
+            gc, source_folder_id=folderid,
+            keep_slides=None,
+        ),
+        workflow=revert_annotations_in_slide,
         workflow_kwargs=workflow_kwargs,
         recursive=recursive,
         monitorPrefix=monitor,
