@@ -326,10 +326,6 @@ def revert_annotation(
         raise Exception(
             "You must provide either the annotation or its girder id.")
 
-    # TEMP!!!
-    # if annotation_id == "5d97627846929b0471d3920c":
-    #     tmp = 1
-
     history = gc.get("/annotation/%s/history" % annotation_id)
 
     # no need to revert if empty
