@@ -9,7 +9,7 @@ import os
 import girder_client
 import json
 from histomicstk.workflows.workflow_runner import Workflow_runner, \
-    Slide_iterator
+    Slide_iterator, Annotation_iterator
 
 
 def connect_to_api(apiurl, apikey=None, interactive=True):
@@ -116,17 +116,12 @@ def update_permissions_for_annotations_in_slide(
         each entry is a dict of the server response.
 
     """
-    # get annotations for slide
-    slide_annotations = gc.get('/annotation/item/' + slide_id)
-
-    resps = []
-    for annidx, ann in enumerate(slide_annotations):
-        print("%s: annotation %d of %d" % (
-            monitorPrefix, annidx + 1, len(slide_annotations)))
-        resp = update_permissions_for_annotation(
-            gc=gc, annotation_id=ann['_id'], **kwargs)
-        resps.append(resp)
-    return resps
+    anniter = Annotation_iterator(
+        gc=gc, slide_id=slide_id,
+        callback=update_permissions_for_annotation,
+        callback_kwargs=kwargs,
+        monitorPrefix=monitorPrefix)
+    return anniter.apply_callback_to_all_annotations()
 
 
 def update_permissions_for_annotations_in_folder(
@@ -142,6 +137,8 @@ def update_permissions_for_annotations_in_folder(
         girder id of folder
     workflow_kwargs : dict
         kwargs to pass to update_permissions_for_annotations_in_slide()
+    recursive : bool
+        do this recursively for subfolders?
     monitor : str
         text to prepend to printed statements
     verbose : bool
@@ -166,12 +163,6 @@ def update_permissions_for_annotations_in_folder(
         verbose=verbose,
     )
     workflow_runner.run()
-
-    # # for each subfolder, call self
-    # for folder in gc.listFolder(parentId=folderid):
-    #     update_permissions_for_annotations_in_folder(
-    #         gc=gc, folderid=folder['_id'], workflow_kwargs=workflow_kwargs,
-    #         monitor="%s: %s" % (monitor, folder['name']), verbose=verbose)
 
 
 def update_styles_for_annotation(gc, ann, changes):
@@ -252,7 +243,8 @@ def update_styles_for_annotations_in_slide(
 
 
 def update_styles_for_annotations_in_folder(
-        gc, folderid, workflow_kwargs, monitor='', verbose=True):
+        gc, folderid, workflow_kwargs, recursive=True,
+        monitor='', verbose=True):
     """Update styles for all annotations in a folder recursively.
 
     Parameters
@@ -263,6 +255,8 @@ def update_styles_for_annotations_in_folder(
         girder id of folder
     workflow_kwargs : dict
         kwargs to pass to Update styles for all annotations in a slide()
+    recursive : bool
+        do this recursively for subfolders?
     monitor : str
         text to prepend to printed statements
     verbose : bool
@@ -282,13 +276,8 @@ def update_styles_for_annotations_in_folder(
         ),
         workflow=update_styles_for_annotations_in_slide,
         workflow_kwargs=workflow_kwargs,
+        recursive=recursive,
         monitorPrefix=monitor,
         verbose=verbose,
     )
     workflow_runner.run()
-
-    # for each subfolder, call self
-    for folder in gc.listFolder(parentId=folderid):
-        update_styles_for_annotations_in_folder(
-            gc=gc, folderid=folder['_id'], workflow_kwargs=workflow_kwargs,
-            monitor="%s: %s" % (monitor, folder['name']), verbose=verbose)

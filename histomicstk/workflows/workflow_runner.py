@@ -45,8 +45,6 @@ class Slide_iterator(Base_HTK_Class):
         self.source_folder_id = source_folder_id
         self.set_slide_ids()
 
-    # =========================================================================
-
     def set_slide_ids(self):
         """Get dict of slide idx, indexed by name."""
         resp = self.gc.get(
@@ -60,8 +58,6 @@ class Slide_iterator(Base_HTK_Class):
         # only keep what's relevant
         for sn in self.discard_slides:
             del self.slide_ids[sn]
-
-    # =========================================================================
 
     def run(self):
         """Yield information on one slide at a time."""
@@ -164,5 +160,65 @@ class Workflow_runner(Base_HTK_Class):
 
                 # recurse
                 self.run()
+
+# %% ==========================================================================
+
+
+class Annotation_iterator(Base_HTK_Class):
+    """Iterate through annotations in a girder item (slide)."""
+
+    def __init__(
+            self, gc, slide_id, callback=None, callback_kwargs=None, **kwargs):
+        """Init Annotation_iterator object.
+
+        Arguments
+        -----------
+        gc : object
+            girder client object
+        slide_id : str
+            girder ID of slide (item)
+        kwargs : key-value pairs
+            The following are already assigned defaults by Base_HTK_Class
+            but can be passed here to override defaults
+            [verbose, monitorPrefix, logger, logging_savepath,
+            suppress_warnings]
+
+        """
+        default_attr = dict()
+        default_attr.update(kwargs)
+        super(Annotation_iterator, self).__init__(default_attr=default_attr)
+
+        # set attribs
+        self.gc = gc
+        self.slide_id = slide_id
+        self.callback = callback
+        self.callback_kwargs = callback_kwargs
+
+        # get annotations for slide
+        self.slide_annotations = self.gc.get(
+            '/annotation/item/' + self.slide_id)
+        self.n_annotations = len(self.slide_annotations)
+
+    def yield_callback_output_for_annotation(self):
+        """Yield callback output for one annotation at a time."""
+        # yield one annotation at a time
+        for annidx, ann in enumerate(self.slide_annotations):
+            print("%s: annotation %d of %d" % (
+                self.monitorPrefix, annidx + 1, self.n_annotations))
+            if self.callback is None:
+                yield ann
+            else:
+                yield self.callback(ann, self.callback_kwargs)
+
+    def apply_callback_to_all_annotations(self):
+        """Apply callback to all annotations and resturn output list."""
+        runner = self.yield_callback_output_for_annotation()
+        outputs = []
+        for annidx in range(self.n_annotations):
+            if self.verbose > 0:
+                print("%s: annotation %d of %d" % (
+                    self.monitorPrefix, annidx + 1, self.n_annotations))
+            outputs.append(next(runner))
+        return outputs
 
 # %% ==========================================================================
