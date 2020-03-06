@@ -4,7 +4,7 @@ Created on Thu Dec 12 13:19:18 2019
 
 @author: tageldim
 """
-import os
+# import os
 
 import girder_client
 import json
@@ -294,7 +294,7 @@ def update_styles_for_annotations_in_folder(
 
 def revert_annotation(
         gc, annotation_id=None, annotation=None, version=None,
-        revert_to_nonempty_elements=True):
+        revert_to_nonempty_elements=False, only_revert_if_empty=True):
     """Revert an annotation to a previous version.
 
     Parameters
@@ -326,9 +326,17 @@ def revert_annotation(
         raise Exception(
             "You must provide either the annotation or its girder id.")
 
-    if (version is None) and revert_to_nonempty_elements:
+    # TEMP!!!
+    # if annotation_id == "5d97627846929b0471d3920c":
+    #     tmp = 1
 
-        history = gc.get("/annotation/%s/history" % annotation_id)
+    history = gc.get("/annotation/%s/history" % annotation_id)
+
+    # no need to revert if empty
+    if only_revert_if_empty and len(history[0]["groups"]) > 0:
+        return dict()
+
+    if (version is None) and revert_to_nonempty_elements:
 
         # NOTE: even though the "history" may show
         # the elements as empty, the "groups" attribute is really the

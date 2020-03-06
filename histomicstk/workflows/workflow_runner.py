@@ -111,7 +111,9 @@ class Workflow_runner(Base_HTK_Class):
             self.exception_path = self.logname.replace(
                 '.log', '_EXCEPTIONS.log')
         self.slide_iterator = slide_iterator
+        self.gc = self.slide_iterator.gc
         self.si = slide_iterator.run()
+        self.originalPrefix = self.monitorPrefix
 
     # =========================================================================
 
@@ -148,10 +150,15 @@ class Workflow_runner(Base_HTK_Class):
 
         if self.recursive:
             # for each subfolder, call self
-            for folder in self.slide_iterator.gc.listFolder(
+            for folder in self.gc.listFolder(
                     parentId=self.slide_iterator.source_folder_id):
 
-                self.monitorPrefix += "/" + folder['name']
+                fpath = self.gc.get('/folder/%s/rootpath' % folder['_id'])
+                fpath = "/".join(
+                    [j['object']['name'] for j in fpath]
+                ) + "/" + folder['name'] + "/"
+
+                self.monitorPrefix = "%s: %s" % (self.originalPrefix, fpath)
 
                 # update slide iterator for subfolder
                 self.slide_iterator.source_folder_id = folder['_id']
