@@ -127,8 +127,12 @@ def update_permissions_for_annotation(
         current['users'].append(user)
 
     # now update accordingly
-    return gc.put('/annotation/%s/access?access=%s' % (
-        annotation_id, json.dumps(current)))
+    # OLD WAY (BAD!!)
+    # return gc.put('/annotation/%s/access?access=%s' % (
+    #        annotation_id, json.dumps(current)))
+    # PROPER WAY
+    return gc.put('/annotation/%s/access' % annotation_id, data={
+        'access': json.dumps(current)})
 
 
 def update_permissions_for_annotations_in_slide(
