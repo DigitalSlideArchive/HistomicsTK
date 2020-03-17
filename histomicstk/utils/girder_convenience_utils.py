@@ -5,6 +5,7 @@ Created on Thu Dec 12 13:19:18 2019
 @author: tageldim
 """
 # import os
+import os
 
 import girder_client
 import json
@@ -435,3 +436,112 @@ def revert_annotations_in_folder(
         verbose=verbose,
     )
     workflow_runner.run()
+
+# %%===========================================================================
+
+
+def reproduce_annotations_workflow(
+        gc, folderid, annotation_jsonfile, monitorPrefix=''):
+    """Dump annotations into single slide from local folder.
+
+    Parameters
+    -----------
+    gc : girder_client.GirderClient
+        authenticated girder client instance
+
+    folderid : str
+        girder id of girder folder to post reproduced annotations.
+
+    annotation_jsonfile : str
+        path to annotation json file
+
+    monitorPrefix : str
+        prefix to monitor string
+
+    """
+    try:
+        # extract name + path
+        itemname = os.path.basename(annotation_jsonfile).replace(
+            '_annotations.json', '')
+        local = os.path.dirname(annotation_jsonfile)
+
+        # copy item without annotations
+        with open(os.path.join(local, itemname + '.json'), 'r') as jf:
+            source_item_info = json.load(jf)
+        print("%s: copy item" % monitorPrefix)
+        item = gc.post(
+            '/item/%s/copy?folderId=%s&name=%s&copyAnnotations=False'
+            % (source_item_info['_id'], folderid, itemname))
+
+        # load annotations
+        with open(annotation_jsonfile) as af:
+            annotations = json.load(af)
+
+        # now post
+        n_annotations = len(annotations)
+        for anno, annotation in enumerate(annotations):
+            try:
+                print("%s: post annotation %d of %d" % (
+                    monitorPrefix, anno, n_annotations))
+                _ = gc.post(
+                    "/annotation?itemId=" + item['_id'],
+                    json=annotation['annotation'])
+            except Exception as e:
+                print(e.__repr__())
+
+    except Exception as e:
+        print(e.__repr__())
+
+
+def reproduce_annotations_from_backup(gc, folderid, local):
+    """Reproduce annotations on HistomicsUI from local backup.
+
+    This is the reverse functionality to dump_annotations.locally().
+    This reproduces this tiered structure on HistomicsUI. The original
+    slides (items) must still be there in the folder from the backup was
+    made because these will be copied (without annotations) before the
+    local annotations (from JSON files) are posted to them.
+
+    Parameters
+    -----------
+    gc : girder_client.GirderClient
+        authenticated girder client instance
+
+    folderid : str
+        girder id of girder folder to post reproduced annotations.
+
+    local : str
+        local path to get subfolders/slides/annotations
+
+    """
+    monitor = os.path.basename(local)
+
+    # for each slide, copy it and post annotations
+    jsonfiles = [
+        os.path.join(local, j) for j in os.listdir(local)
+        if j.endswith('_annotations.json')]
+    for jsonfile in jsonfiles:
+        reproduce_annotations_workflow(
+            gc=gc, folderid=folderid, annotation_jsonfile=jsonfile,
+            monitorPrefix=monitor)
+
+    # for each subfolder, create a new folder on HistomicsUI and call self
+    subdirs = [
+        j for j in os.listdir(local) if os.path.isdir(os.path.join(local, j))]
+    for subdir in subdirs:
+        try:
+            # create folder in HistomicsUI
+            new_folder = gc.post('/folder?parentId=%s&name=%s' % (
+                folderid, subdir))
+
+            # call self with same prameters
+            reproduce_annotations_from_backup(
+                gc=gc, folderid=new_folder['_id'],
+                local=os.path.join(local, subdir))
+
+        except Exception as e:
+            print(e.__repr__())
+
+        tmp = 1
+
+# %%===========================================================================
