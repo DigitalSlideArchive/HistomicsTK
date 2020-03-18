@@ -546,6 +546,5 @@ def reproduce_annotations_from_backup(gc, folderid, local):
         except Exception as e:
             print(e.__repr__())
 
-        tmp = 1
 
 # %%===========================================================================
