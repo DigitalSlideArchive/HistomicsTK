@@ -242,7 +242,7 @@ def update_styles_for_annotation(gc, annotation, changes):
 
 
 def update_styles_for_annotations_in_slide(
-        gc, slide_id, monitorPrefix='', **kwargs):
+        gc, slide_id, monitorPrefix='', callback=None, **kwargs):
     """Update styles for all annotations in a slide.
 
     Parameters
@@ -262,9 +262,11 @@ def update_styles_for_annotations_in_slide(
         each entry is a dict of the server response.
 
     """
+    if callback is None:
+        callback = update_styles_for_annotation
     anniter = Annotation_iterator(
         gc=gc, slide_id=slide_id,
-        callback=update_styles_for_annotation,
+        callback=callback,
         callback_kwargs=kwargs,
         monitorPrefix=monitorPrefix)
     return anniter.apply_callback_to_all_annotations()
