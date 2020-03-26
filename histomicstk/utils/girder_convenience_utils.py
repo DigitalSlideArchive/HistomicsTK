@@ -11,9 +11,8 @@ import girder_client
 import json
 from histomicstk.workflows.workflow_runner import Workflow_runner, \
     Slide_iterator, Annotation_iterator
-import warnings
-warnings.simplefilter('once', UserWarning)
-ASKTOCONTINUE = True
+# import warnings
+# warnings.simplefilter('once', UserWarning)
 
 
 def connect_to_api(apiurl, apikey=None, interactive=True):
@@ -80,26 +79,6 @@ def update_permissions_for_annotation(
         server response
 
     """
-    # TODO -- this is an especially damaging bug! Fix me!
-    GIRDERBUG = """
-    We've discovered a bug that causes the dangerous side effect of 
-    deleting annotation elements whent he access permissions are edited!
-    This behavior happens CONSISTENTLY when we APPEND to the existing
-    users of groups, and OCCASIONALLY when we replace the users or
-    groups with new ones. Until this bug is fixed, try to avoid 
-    changing annotation access permissions, and if you really do
-    have to do it, make SURE you replace existing users/groups
-    as opposed to appending to them."""
-    warnings.warn(GIRDERBUG, RuntimeWarning)
-
-    global ASKTOCONTINUE
-    if ASKTOCONTINUE:
-        warnings.warn("""
-        > Press any key to continue at your own risk, or.. 
-        > Press Control+C to stop.""")
-        input("")
-        ASKTOCONTINUE = False
-
     if annotation is not None:
         annotation_id = annotation['_id']
     elif annotation_id is None:
@@ -112,19 +91,23 @@ def update_permissions_for_annotation(
     # add or replace as needed
     if replace_original_groups:
         current['groups'] = []
+        current_group_ids = []
     else:
-        raise Exception(GIRDERBUG)
+        current_group_ids = [j['id'] for j in current['groups']]
 
     if replace_original_users:
         current['users'] = []
+        current_user_ids = []
     else:
-        raise Exception(GIRDERBUG)
+        current_user_ids = [j['id'] for j in current['users']]
 
     for group in groups_to_add:
-        current['groups'].append(group)
+        if group['id'] not in current_group_ids:
+            current['groups'].append(group)
 
     for user in users_to_add:
-        current['users'].append(user)
+        if user['id'] not in current_user_ids:
+            current['users'].append(user)
 
     # now update accordingly
     # OLD WAY (BAD!!)
@@ -242,7 +225,7 @@ def update_styles_for_annotation(gc, annotation, changes):
 
 
 def update_styles_for_annotations_in_slide(
-        gc, slide_id, monitorPrefix='', **kwargs):
+        gc, slide_id, monitorPrefix='', callback=None, **kwargs):
     """Update styles for all annotations in a slide.
 
     Parameters
@@ -262,9 +245,11 @@ def update_styles_for_annotations_in_slide(
         each entry is a dict of the server response.
 
     """
+    if callback is None:
+        callback = update_styles_for_annotation
     anniter = Annotation_iterator(
         gc=gc, slide_id=slide_id,
-        callback=update_styles_for_annotation,
+        callback=callback,
         callback_kwargs=kwargs,
         monitorPrefix=monitorPrefix)
     return anniter.apply_callback_to_all_annotations()
