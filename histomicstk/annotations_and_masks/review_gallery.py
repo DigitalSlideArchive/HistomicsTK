@@ -285,7 +285,7 @@ def create_review_galleries(
         tilepath_base, upload_results=True, gc=None,
         gallery_savepath=None, gallery_folderid=None,
         padding=25, tiles_per_row=2, tiles_per_column=5,
-        annprops=None, url=None):
+        annprops=None, url=None, nameprefix=''):
     """Create and or post review galleries for rapid review.
 
     Parameters
@@ -429,7 +429,7 @@ def create_review_galleries(
             # insert row into main gallery
             im = im.insert(row_im, 0, rowpos, expand=True, background=255)
 
-        filename = 'gallery-%d' % (galno + 1)
+        filename = '%s_gallery-%d' % (nameprefix, galno + 1)
         savepath = os.path.join(gallery_savepath, filename + '.tiff')
         print("Saving gallery %d of %d to %s" % (
             galno + 1, n_galleries, savepath))
