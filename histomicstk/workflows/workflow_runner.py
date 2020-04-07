@@ -79,7 +79,7 @@ class Workflow_runner(Base_HTK_Class):
 
     def __init__(
             self, slide_iterator, workflow, workflow_kwargs,
-            recursive=False, **kwargs):
+            recursive=False, catch_exceptions=True, **kwargs):
         """Init Workflow_runner object.
 
         Arguments
@@ -93,6 +93,9 @@ class Workflow_runner(Base_HTK_Class):
             keyword arguments for the workflow method
         recursive : bool
             whether to run the workflow recursively on all subfolders
+        catch_exceptions : bool
+            whether to catch exceptions. You may want to set to false if
+            for example you want to run with a debugger
         kwargs : key-value pairs
             The following are already assigned defaults by Base_HTK_Class
             but can be passed here to override defaults
@@ -107,6 +110,7 @@ class Workflow_runner(Base_HTK_Class):
         self.workflow = workflow
         self.workflow_kwargs = workflow_kwargs
         self.recursive = recursive
+        self.catch_exceptions = catch_exceptions
         if self.keep_log:
             self.exception_path = self.logname.replace(
                 '.log', '_EXCEPTIONS.log')
@@ -121,32 +125,39 @@ class Workflow_runner(Base_HTK_Class):
         """Run workflow for all slides."""
         self.n_slides = len(self.slide_iterator.slide_ids)
 
+        def _run_slide(self, monitorStr):
+
+            slide_info = next(self.si)
+            monitorStr += " (%s)" % (slide_info['name'])
+
+            _ = self.workflow(
+                slide_id=slide_info['_id'], monitorPrefix=monitorStr,
+                **self.workflow_kwargs)
+
         for sno in range(self.n_slides):
 
             monitorStr = "%s: slide %d of %d" % (
                 self.monitorPrefix, sno + 1, self.n_slides)
 
-            try:
-                slide_info = next(self.si)
-                monitorStr += " (%s)" % (slide_info['name'])
+            if not self.catch_exceptions:
+                _run_slide(self, monitorStr)
+            else:
+                try:
+                    _run_slide(self, monitorStr)
 
-                _ = self.workflow(
-                    slide_id=slide_info['_id'], monitorPrefix=monitorStr,
-                    **self.workflow_kwargs)
+                except Exception as e:
 
-            except Exception as e:
-
-                if self.keep_log:
-                    self.cpr1.logger.exception(
-                        "%s: SEE EXCEPTIONS FILE: %s" % (
-                            monitorStr, self.exception_path))
-                    with open(self.exception_path, 'a') as f:
-                        print(str(e))
-                        f.write("%s\n" % monitorStr)
-                        f.write(e.__repr__())
-                        f.write("\n---------------------------------\n")
-                else:
-                    print(e.__repr__())
+                    if self.keep_log:
+                        self.cpr1.logger.exception(
+                            "%s: SEE EXCEPTIONS FILE: %s" % (
+                                monitorStr, self.exception_path))
+                        with open(self.exception_path, 'a') as f:
+                            print(str(e))
+                            f.write("%s\n" % monitorStr)
+                            f.write(e.__repr__())
+                            f.write("\n---------------------------------\n")
+                    else:
+                        print(e.__repr__())
 
         if self.recursive:
             # for each subfolder, call self
