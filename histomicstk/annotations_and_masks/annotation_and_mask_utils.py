@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw
 from shapely.geometry.polygon import Polygon
 import numpy as np
 from pandas import DataFrame
+import warnings
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -112,15 +113,19 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
     """
     slide_info = gc.get("/item/%s/tiles" % slide_id)
 
-    if MPP is not None:
+    if (MPP is not None) and (slide_info['mm_x'] is not None):
         mm = 0.001 * MPP
         sf = slide_info['mm_x'] / mm
         appendStr = "&mm_x=%.4f&mm_y=%.8f" % (mm, mm)
 
-    elif MAG is not None:
+    elif (MAG is not None) and (slide_info['magnification'] is not None):
         sf = MAG / slide_info['magnification']
         appendStr = "&magnification=%.8f" % MAG
+
     else:
+        warnings.warn(
+            "NO SLIDE MAGNIFICATION FOUND; BASE MAGNIFICATION USED!",
+            RuntimeWarning)
         sf = 1.0
         appendStr = ""
 

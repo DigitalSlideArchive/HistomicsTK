@@ -138,10 +138,15 @@ def _get_visualization_zoomout(
             'MPP': MPP * (zoomout + 1),
             'MAG': None,
         }
-    else:
+    elif MAG is not None:
         getsf_kwargs = {
             'MPP': None,
             'MAG': MAG / (zoomout + 1),
+        }
+    else:
+        getsf_kwargs = {
+            'MPP': None,
+            'MAG': None,
         }
     sf, appendStr = get_scale_factor_and_appendStr(
         gc=gc, slide_id=slide_id, **getsf_kwargs)
