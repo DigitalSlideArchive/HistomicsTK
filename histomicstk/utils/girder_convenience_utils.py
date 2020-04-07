@@ -257,7 +257,7 @@ def update_styles_for_annotations_in_slide(
 
 def update_styles_for_annotations_in_folder(
         gc, folderid, workflow_kwargs, recursive=True,
-        monitor='', verbose=True):
+        catch_exceptions=True, monitor='', verbose=True):
     """Update styles for all annotations in a folder recursively.
 
     Parameters
@@ -290,6 +290,7 @@ def update_styles_for_annotations_in_folder(
         workflow=update_styles_for_annotations_in_slide,
         workflow_kwargs=workflow_kwargs,
         recursive=recursive,
+        catch_exceptions=catch_exceptions,
         monitorPrefix=monitor,
         verbose=verbose,
     )
