@@ -57,7 +57,10 @@ class TestGetROIMasks(object):
             roiinfo['BBOX_HEIGHT'], roiinfo['BBOX_WIDTH'],
             roiinfo['XMIN'], roiinfo['XMAX'],
             roiinfo['YMIN'], roiinfo['YMAX']
-        ) == (4820, 7006, 59206, 66212, 33505, 38325)
+        ) in [
+            (4820, 7006, 59206, 66212, 33505, 38325),
+            (4595, 4543, 59206, 63749, 33505, 38100),
+        ]
 
     # %% ----------------------------------------------------------------------
 
@@ -65,7 +68,7 @@ class TestGetROIMasks(object):
     def test_get_all_roi_masks_for_slide(self, tmpdir, girderClient):  # noqa
         """Test get_all_roi_masks_for_slide()."""
         # just a temp directory to save masks for now
-        mask_savepath = tmpdir
+        mask_savepath = str(tmpdir)
 
         testDir = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')

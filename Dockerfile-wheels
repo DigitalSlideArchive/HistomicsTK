@@ -1,10 +1,10 @@
 FROM dockcross/manylinux2010-x64
 
-# Don't build python 3.4 wheels.
-RUN rm -r /opt/python/cp27-cp27m
-RUN rm -r /opt/python/cp34*
+# Don't build python 3.4 or 2.7m wheels.
+RUN rm -rf /opt/python/cp27-cp27m
+RUN rm -rf /opt/python/cp34*
 # We can't use Python 3.8 until tensorflow supports it
-RUN rm -r /opt/python/cp38*
+RUN rm -rf /opt/python/cp38*
 
 RUN for PYBIN in /opt/python/*/bin; do \
         ${PYBIN}/pip install --no-cache-dir --upgrade pip; \
@@ -32,7 +32,7 @@ RUN mkdir -p $htk_path
 COPY . $htk_path/
 
 RUN for PYBIN in /opt/python/*/bin; do \
-        ${PYBIN}/pip install -r "$htk_path/requirements-dev.txt" \
+        ${PYBIN}/pip install -r "$htk_path/requirements-dev.txt"; \
     done
 
 ARG CIRCLE_BRANCH
