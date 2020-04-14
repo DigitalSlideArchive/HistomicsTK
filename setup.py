@@ -70,11 +70,9 @@ setup(
         'pandas>=0.19.2',
         'scikit-image>=0.14.2',
         'scikit-learn>=0.18.1' + ('' if sys.version_info >= (3, ) else ',<0.21'),
-        'imageio>=2.3.0',
+        'imageio>=2.3.0' + ('' if sys.version_info >= (3, ) else ',<2.8'),
         'shapely[vectorized]',
         'opencv-python',
-        'matplotlib',
-        'sqlalchemy',
         # deep learning packages
         'h5py>=2.7.1',
         'keras>=2.0.8',
@@ -84,6 +82,7 @@ setup(
         'distributed>=1.21.6',
         'tornado',
         'fsspec>=0.3.3;python_version>="3"',
+        'msgpack<1;python_version<"3.6"',
         # large image sources
         'large-image-source-tiff',
         'large-image-source-openslide',
@@ -91,7 +90,6 @@ setup(
         'large-image-source-pil',
         # for interaction with girder
         'girder_client',
-        'pyvips',
     ],
     license='Apache Software License 2.0',
     keywords='histomicstk',

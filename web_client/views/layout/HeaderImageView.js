@@ -43,8 +43,10 @@ var HeaderImageView = View.extend({
         this.$el.html(headerImageTemplate({
             image: this.imageModel,
             parentChain: this.parentChain,
+            previousImageLink: previousImageLink,
+            previousImageName: this._previousName,
             nextImageLink: nextImageLink,
-            previousImageLink: previousImageLink
+            nextImageName: this._nextName
         }));
         return this;
     },
@@ -64,11 +66,13 @@ var HeaderImageView = View.extend({
                 url: `item/${model.id}/previous_image${folder}`
             }).done((previous) => {
                 this._previousImage = (previous._id !== model.id) ? previous._id : null;
+                this._previousName = previous.name;
             }),
             restRequest({
                 url: `item/${model.id}/next_image${folder}`
             }).done((next) => {
                 this._nextImage = (next._id !== model.id) ? next._id : null;
+                this._nextName = next.name;
             })
         ).done(() => this.render());
     }

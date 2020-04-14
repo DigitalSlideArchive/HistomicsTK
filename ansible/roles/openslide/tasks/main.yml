@@ -17,7 +17,7 @@
       - gdal
       - mapnik
       - pyproj
-      - glymur
+      - glymur<0.9
     extra_args: --force-reinstall --ignore-installed --no-cache-dir -f https://girder.github.io/large_image_wheels
   become: true
 
