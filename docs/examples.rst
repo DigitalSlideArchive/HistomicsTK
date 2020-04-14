@@ -15,6 +15,7 @@ Examples
    examples/annotations_to_masks_handler.ipynb
    examples/annotations_to_OBJECT_mask_handler.ipynb
    examples/masks_to_annotations_handler.ipynb
+   examples/tips_for_scalable_annotation_rendering.rst
    examples/review_gallery.ipynb
    examples/polygon_merger.ipynb
    examples/polygon_merger_v2.ipynb
