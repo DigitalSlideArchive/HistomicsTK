@@ -14,7 +14,7 @@ HistomicsTK |build-status| |codecov-io| |gitter|
    :target: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
    :alt: Join the chat at https://gitter.im/DigitalSlideArchive/HistomicsTK
 
-HistomicsTK is a Python toolkit for the analysis of Histopathology images
+`HistomicsTK`_ is a Python toolkit for the analysis of Histopathology images
 in association with clinical and genomic data. 
 
 Histopathology, which involves the examination of thin-slices of diseased
@@ -29,18 +29,11 @@ quantitative analysis of the massive and rapidly growing collections of
 data in the domain of digital pathology. This is precisely the gap that
 we aim to fill with the development of HistomicsTK.
 
-Developed in coordination with the `Digital Slide Archive`_ and
-`large_image`_, HistomicsTK aims to serve the needs of both
+Developed in coordination with the `Digital Slide Archive`_ (DSA) and
+`HistomicsUI`_, HistomicsTK aims to serve the needs of both
 pathologists/biologists interested in using state-of-the-art algorithms
 to analyze their data, and algorithm researchers interested in developing
 new/improved algorithms and disseminate them for wider use by the community.
-
-You may view the following introductory videos for more information about
-DSA and HistomicsTK:
-
-- General overview: https://www.youtube.com/watch?v=NenUKZaT--k
-
-- Simple annotation and data management tutorial: https://www.youtube.com/watch?v=HTvLMyKYyGs
 
 HistomicsTK can be used in two ways:
 
@@ -86,7 +79,7 @@ HistomicsTK can be used in two ways:
   containerized in HistomicsTK's docker plugins on data over the web.  See the
   `Digital Slide Archive`_ for installation instructions.
 
-Please refer to https://digitalslidearchive.github.io/HistomicsTK/ for more information.
+Please refer to `our website`_ for more information.
 
 For questions, comments, or to get in touch with the maintainers, head to our
 `Discourse forum`_, or use our `Gitter Chatroom`_.
@@ -105,9 +98,10 @@ Funding
 
 This work is funded by the NIH grant U24-CA194362-01_.
 
-
+.. _HistomicsTK: https://digitalslidearchive.github.io/digital_slide_archive/
 .. _Digital Slide Archive: http://github.com/DigitalSlideArchive/digital_slide_archive
 .. _HistomicsUI: http://github.com/DigitalSlideArchive/HistomicsUI
+.. _our website: https://digitalslidearchive.github.io/digital_slide_archive/
 .. _Docker: https://www.docker.com/
 .. _Kitware: http://www.kitware.com/
 .. _U24-CA194362-01: http://grantome.com/grant/NIH/U24-CA194362-01
@@ -117,4 +111,3 @@ This work is funded by the NIH grant U24-CA194362-01_.
 .. _slicer execution model: https://www.slicer.org/slicerWiki/index.php/Slicer3:Execution_Model_Documentation
 .. _Discourse forum: https://discourse.girder.org/c/histomicstk
 .. _Gitter Chatroom: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-
