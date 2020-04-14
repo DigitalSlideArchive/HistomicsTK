@@ -1,5 +1,9 @@
 .. include:: ../README.rst
 
+
+Navigation
+============
+
 .. toctree::
    :maxdepth: 2
 

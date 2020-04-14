@@ -17,10 +17,6 @@ This extends on some of the workflows described in Amgad et al, 2019:
 
 *Mohamed Amgad, Habiba Elfandy, Hagar Hussein, ..., Jonathan Beezley, Deepak R Chittajallu, David Manthey, David A Gutman, Lee A D Cooper, Structured crowdsourcing enables convolutional segmentation of histology images, Bioinformatics, 2019, btz083*
 
-This slide used as a test example:
-
-`TCGA-A2-A0YE-01Z-00-DX1 <http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d586d76bd4404c6b1f286ae&bounds=54743%2C32609%2C68828%2C39395%2C0>`_
-
 **Where to look?**
 
 ::
