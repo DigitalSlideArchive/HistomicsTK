@@ -1,5 +1,5 @@
-Creating mosaic annotation review galleries
-============================================
+Local backup and SQL querying of annotation data
+=================================================
 
 .. automodule:: histomicstk.annotations_and_masks.annotation_database_parser
     :members:
