@@ -5,11 +5,7 @@ Tissue Detection module
 **Overview:** 
 This includes tools to detect tissue from an item (slide) using its thumbnail. The basic functionality includes a series of gaussian smoothing and otsu thresholding steps to detect background versus foreground pixels. Optionally, an initial step is performed whereby color deconvolution is used to separate hematoxylin and eosin stains (assuming H&E stained slides) to make sure only cellular areas are segmented. This proves to be useful in getting rid of sharpie markers. A size threshold is used to keep only largest contiguous tissue regions.
 
-This slide used as a test example:
-
-`TCGA-A1-A0SK-01Z-00-DX1 <http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d817f5abd4404c6b1f744bb>`_
-
-**Here's the result:**
+**Here's an example:**
 
 From left to right: Slide thumbnail, Tissue regions, Largest tissue region
 

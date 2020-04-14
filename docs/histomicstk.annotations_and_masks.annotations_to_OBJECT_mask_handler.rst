@@ -13,10 +13,6 @@ This extends on some of the workflows described in Amgad et al, 2019:
 
 *Mohamed Amgad, Habiba Elfandy, Hagar Hussein, ..., Jonathan Beezley, Deepak R Chittajallu, David Manthey, David A Gutman, Lee A D Cooper, Structured crowdsourcing enables convolutional segmentation of histology images, Bioinformatics, , btz083, https://doi.org/10.1093/bioinformatics/btz083*
 
-This slide used as a test example:
-
-`TCGA-A2-A0YE-01Z-00-DX1 <http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d586d57bd4404c6b1f28640&bounds=53566%2C33193%2C68926%2C40593%2C0>`_
-
 The user uses a csv file like the one in
 ```histomicstk/annotations_and_masks/tests/test_files/sample_GTcodes.csv ```
 to control pixel values assigned to mask, overlay order of various annotation groups, which groups are considered to be ROIs, etc. Note that we use the girder definition of term "group" here, which is an annotation style indicating a certain class, such as "tumor" or "necrosis".
@@ -29,7 +25,7 @@ is that this (version 2) gets the contours first, including cropping to wanted R
 
 Bottom line is: if you need semantic segmentation masks, it is probably safer to use version 1 (annotations to masks handler), whereas if you need object segmentation masks, this handler should be used in object run mode.
 
-Be sure to checkout the annotations_to_OBJECT_mask_handler.ipynb jupyter notebook for implementation examples.
+Be sure to checkout the `annotations_to_OBJECT_mask_handler.ipynb` jupyter notebook for implementation examples.
 
 
 **Where to look?**

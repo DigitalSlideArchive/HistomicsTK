@@ -27,13 +27,7 @@ Additional functionality includes contour extraction to get the final
 segmentation boundaries of cellular regions and to visualize them in DSA
 using one's preferred colormap.
 
-These slides are used as a test examples:
-
-`TCGA-A2-A0YE-01Z-00-DX1 <http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d586d76bd4404c6b1f286ae>`_
-and
-`TCGA-A1-A0SK-01Z-00-DX1 <http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d817f5abd4404c6b1f744bb>`_
-
-**Here's the result:**
+**Here's a sample result:**
 
 From left to right: Slide thumbnail, superpixel classifications, contiguous cellular/acellular regions
 

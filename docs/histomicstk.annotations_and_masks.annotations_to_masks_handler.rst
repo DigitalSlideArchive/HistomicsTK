@@ -13,12 +13,8 @@ This extends on some of the workflows described in Amgad et al, 2019:
 
 *Mohamed Amgad, Habiba Elfandy, Hagar Hussein, ..., Jonathan Beezley, Deepak R Chittajallu, David Manthey, David A Gutman, Lee A D Cooper, Structured crowdsourcing enables convolutional segmentation of histology images, Bioinformatics, , btz083, https://doi.org/10.1093/bioinformatics/btz083*
 
-This slide used as a test example:
-
-`TCGA-A2-A0YE-01Z-00-DX1 <http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d586d57bd4404c6b1f28640&bounds=53566%2C33193%2C68926%2C40593%2C0>`_
-
 The user uses a csv file like the one in 
-```histomicstk/annotations_and_masks/tests/test_files/sample_GTcodes.csv ```
+``histomicstk/annotations_and_masks/tests/test_files/sample_GTcodes.csv``
 to control pixel values assigned to mask, overlay order of various annotation groups, which groups are considered to be ROIs, etc. Note that we use the girder definition of term "group" here, which is an annotation style indicating a certain class, such as "tumor" or "necrosis".
 
 This adds a lot of functionality on top of API endpoints that get annotations as a list of dictionaries, including handing the following complex situations:
@@ -61,7 +57,7 @@ Be sure to checkout the annotations_to_masks_handler.ipynb jupyter notebook for 
 
 **After**
 
-If the ```polygonal_bounds``` mode is used though its wrapper function (see jupyter), the result is saved mask files named something like: ```TCGA-A2-A0YE_left-59201_top-33493_bottom-63742_right-38093.png```
+If the ``polygonal_bounds`` mode is used though its wrapper function (see jupyter), the result is saved mask files named something like: ```TCGA-A2-A0YE_left-59201_top-33493_bottom-63742_right-38093.png```
 
 
 **Where to look?**

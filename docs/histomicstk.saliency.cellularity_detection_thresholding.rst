@@ -48,13 +48,7 @@ from those large regions, keep the m brightest regions
 (using hematoxylin channel brightness) as the final
 salient/cellular regions.
 
-These slides are used as a test examples:
-
-`TCGA-A2-A0YE-01Z-00-DX1 <http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d586d76bd4404c6b1f286ae>`_
-and
-`TCGA-A1-A0SK-01Z-00-DX1 <http://candygram.neurology.emory.edu:8080/histomicstk#?image=5d817f5abd4404c6b1f744bb>`_
-
-**Here's the result:**
+**Here's a sample result:**
 
 .. image:: https://user-images.githubusercontent.com/22067552/67629132-3dd1bc80-f848-11e9-8217-856ecf5b2801.png
    :target: https://user-images.githubusercontent.com/22067552/67629132-3dd1bc80-f848-11e9-8217-856ecf5b2801.png
