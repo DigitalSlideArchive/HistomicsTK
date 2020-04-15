@@ -65,7 +65,7 @@ setup(
         'shapely[vectorized]',
         'opencv-python',
         # dask packages
-        'dask>=1.1.0',
+        'dask[dataframe]>=1.1.0',
         'distributed>=1.21.6',
         # large image sources
         'large-image[sources]',
