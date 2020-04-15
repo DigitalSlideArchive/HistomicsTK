@@ -98,6 +98,11 @@ Funding
 
 This work is funded by the NIH grant U24-CA194362-01_.
 
+See Also
+---------
+
+A related project from Cooper Lab, `HistomicsML <https://histomicsml2.readthedocs.io/en/latest/>`_ enables fast and interactive development of deep learning classifiers from whole-slide imaging datasets. Scientists can use the browser-based interface of HistomicsML to train and validate classifiers for patterns like tumor infiltrating lymphocytes to support tissue-based studies. An approach called *active learning* guides users to label the most valuable training instances, producing more accurate classifiers with less time and effort.
+
 .. _HistomicsTK: https://digitalslidearchive.github.io/digital_slide_archive/
 .. _Digital Slide Archive: http://github.com/DigitalSlideArchive/digital_slide_archive
 .. _HistomicsUI: http://github.com/DigitalSlideArchive/HistomicsUI
