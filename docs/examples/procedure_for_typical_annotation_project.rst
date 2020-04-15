@@ -63,8 +63,8 @@ In our experience it is helpful to establish three groups to manage permissions 
 
 **Create an annotation protocol document**: Creating a written protocol instructing users how and what to annotate can improve consistency and reproducibility, and forces participants to consider and discuss project objectives. Here are two sample protocols we have used for our own semantic segmentation and cell detection / classification projects:
 
-- `Semantic segmentation + Nucleus centroids <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/docs/examples/samples/Modified HTT Annotation Protocol.pdf>`_: This protocol was developed for an FDA study of tumor-infiltrating lymphocytes in breast cancer.
-- `Nucleus detection / classification <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/docs/examples/samples/Modified Nucleus Annotation Protocol.pdf>`_: This protocol describes the process for annotating nuclei in breast cancer.
+- `Semantic segmentation + Nucleus centroids <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/docs/examples/doc_files/Modified HTT Annotation Protocol.pdf>`_: This protocol was developed for an FDA study of tumor-infiltrating lymphocytes in breast cancer.
+- `Nucleus detection / classification <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/docs/examples/doc_files/Modified Nucleus Annotation Protocol.pdf>`_: This protocol describes the process for annotating nuclei in breast cancer.
 
 To provide users with the best experience in your annotation projects we recommend that they:
 
