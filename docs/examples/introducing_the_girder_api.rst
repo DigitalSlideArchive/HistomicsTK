@@ -8,12 +8,15 @@ annotations through distributed multi-user studies. In this example we discuss
 the basic elements of the DSA database, describe the structure of annotations,
 and illustrate a variety of methods for making DSA API calls.
 
+The girder database
+--------------------
+
 DSA is built using `girder`_, an open source web-based data management
 platform developed by `Kitware`_. The DSA server uses a `MongoDB`_ database to
 organize images, image metadata, user accounts, and annotations. The DSA
 user interface allows basic interaction with this data through a web
 browser and can perform administrative tasks. Tasks requiring programmatic
-access can use the `girder python client`_, a RESTful API client that provides
+access can use the `girder python client`_, a `RESTful API`_ client that provides
 convenient endpoints for interacting with and managing data hosted on a DSA
 instance. The girder database contains the following elements that can be
 manipulated using the API:
@@ -30,6 +33,10 @@ over access to data and annotations as described
 `here <https://girder.readthedocs.io/en/stable/user-guide.html#permissions>`_.
 See *“Procedure for managing a typical annotation project”* for more details on
 the permissions model and its role in multi-user annotation studies.
+
+What is an annotation?
+------------------------
+
 The annotation schema used by HistomicsUI for image markup is provided by
 the `large_image`_ library and is `described here <https://github.com/girder/large_image/blob/master/girder_annotation/docs/annotations.md>`_.
 
@@ -38,6 +45,9 @@ An annotation document, or simply annotation, contains a set of elements (points
 .. image:: https://user-images.githubusercontent.com/22067552/67130235-abd60e00-f1ce-11e9-82c7-50aeeb978c83.png
 
 The distinction between annotation documents, elements and groups, is a bit confusing from a user standpoint, but is a useful abstraction for efficiency for developers.
+
+Using the girder API
+----------------------
 
 As a developer, most of your interaction with DSA will occur through the API
 using the `python client library and/or command-line interface <https://girder.readthedocs.io/en/stable/python-client.html#>`_.
@@ -110,6 +120,7 @@ of higher level methods we have to make your life easier. Here are some options:
     operations like `applying image analysis functions <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/histomicstk/workflows/workflow_runner.py>`_ to a set of remotely
     hosted slides, or for `handling annotations <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/histomicstk/utils/girder_convenience_utils.py>`_.
 
+.. _RESTful API: https://restfulapi.net/
 .. _girder: https://girder.readthedocs.io/en/stable/index.html
 .. _Kitware: https://www.kitware.com/
 .. _MongoDB: https://www.mongodb.com/
