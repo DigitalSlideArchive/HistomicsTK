@@ -14,10 +14,7 @@
 
 dist
 examples
-node_modules
 Testing
-plugin_tests
-web_client
 
 ### Vagrant template
 .vagrant/
@@ -215,3 +212,5 @@ web_main
 
 # Scikit-build
 _skbuild/
+
+wheels/

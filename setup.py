@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
-
 import os
 import sys
 
@@ -11,10 +9,11 @@ from setuptools import find_packages
 try:
     from skbuild import setup
 except ImportError:
-    print('scikit-build is required to build from source.', file=sys.stderr)
-    print('Please run:', file=sys.stderr)
-    print('', file=sys.stderr)
-    print('  python -m pip install scikit-build')
+    sys.stderr.write("""scikit-build is required to build from source or run tox.
+Please run:
+  python -m pip install scikit-build
+""")
+    # from setuptools import setup
     sys.exit(1)
 
 
@@ -48,20 +47,12 @@ setup(
     author='Kitware, Inc.',
     author_email='developers@digitalslidearchive.net',
     url='https://github.com/DigitalSlideArchive/HistomicsTK',
-    packages=find_packages(include=['histomicstk*']),
+    packages=find_packages(exclude=['tests', '*_test']),
     package_dir={
         'histomicstk': 'histomicstk',
     },
     include_package_data=True,
-    setup_requires=[
-        'setuptools-scm',
-        'Cython>=0.25.2',
-        'scikit-build>=0.8.1',
-        'cmake>=0.6.0',
-        'numpy>=1.12.1',
-    ],
     install_requires=[
-        'ctk-cli>=1.5',
         # scientific packages
         'nimfa>=1.3.2',
         'numpy>=1.12.1',
@@ -73,28 +64,19 @@ setup(
         'imageio>=2.3.0' + ('' if sys.version_info >= (3, ) else ',<2.8'),
         'shapely[vectorized]',
         'opencv-python',
-        # deep learning packages
-        'h5py>=2.7.1',
-        'keras>=2.0.8',
-        'tensorflow>=1.11',
         # dask packages
-        'dask>=1.1.0',
+        'dask[dataframe]>=1.1.0',
         'distributed>=1.21.6',
-        'tornado',
-        'fsspec>=0.3.3;python_version>="3"',
-        'msgpack<1;python_version<"3.6"',
         # large image sources
-        'large-image-source-tiff',
-        'large-image-source-openslide',
-        'large-image-source-ometiff',
-        'large-image-source-pil',
-        # for interaction with girder
-        'girder_client',
+        'large-image[sources]',
+        'girder-slicer-cli-web',
+        # cli
+        'ctk-cli',
     ],
     license='Apache Software License 2.0',
     keywords='histomicstk',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',

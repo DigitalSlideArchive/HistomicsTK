@@ -1,33 +1,142 @@
-version: 2
+version: 2.1
+commands:
+  tox:
+    description: "Run tox"
+    parameters:
+      env:
+        type: string
+    steps:
+      - run:
+          name: Upgrade pip
+          command: pip install -U pip
+      - run:
+          name: Upgrade virtualenv and tox
+          command: pip install -U virtualenv tox
+      - run:
+          name: Install scikit-build
+          command: pip install scikit-build
+      - run:
+          name: Run tests via tox
+          # Piping through cat does less buffering of the output but can
+          # consume the exit code
+          command: tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
+  coverage:
+    description: "Upload coverage"
+    steps:
+      - run:
+          name: Install Codecov client
+          command: pip install codecov
+      - run:
+          name: Upload coverage
+          # Retry as codecov can be flaky
+          command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; codecov --required --disable search pycov gcov --root project --file .tox/coverage/py_coverage.xml && s=0 && break || s=$?; done; (exit $s)
+
 jobs:
-  build:
+  # Because some of our tests use docker-compose as part of the test, we can't
+  # use a CircleCI docker environment, since those environments run sub dockers
+  # in a separate environment.  The 201808-01 machine environment has versions
+  # of Python 2.7, 3.5, 3.6, 3.7 with specific subversions.
+  py27:
+    working_directory: ~/project
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - checkout
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 2.7.12
+      - tox:
+          env: py27
+      - coverage
+  py35:
+    working_directory: ~/project
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - checkout
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.5.2
+      - tox:
+          env: py35
+      - coverage
+  py36:
+    working_directory: ~/project
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - checkout
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.6.5
+      - tox:
+          env: py36
+      - coverage
+  py37:
+    working_directory: ~/project
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - checkout
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.7.0
+      - tox:
+          env: py37
+      - coverage
+  lint_and_docs:
+    working_directory: ~/project
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - run:
+          name: install pandoc
+          command: sudo apt-get install -y pandoc pandoc-citeproc
+      - tox:
+          env: docs,flake8
+  docker:
+    working_directory: ~/project
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build HistomicsTK docker
+          command: docker build --force-rm -t dsarchive/histomicstk .
+  wheels:
     working_directory: ~/project
     docker:
       - image: circleci/python:3.6
-      - image: docker:17.05.0-ce-git
+      - image: docker:git
     steps:
       - checkout
       - setup_remote_docker
+      - run:
+          name: Setup virtual environment
+          command: |
+            if [ ! -d env ]; then python -m virtualenv env || python -m venv env; fi
+            echo ". $CIRCLE_WORKING_DIRECTORY/env/bin/activate" >> $BASH_ENV
+      - run:
+          name: Install python packages
+          command: pip install setuptools_scm twine
       - run:
           name: Build wheels
           command: ./build_wheels.sh
       - store_artifacts:
           path: wheels
-      # - run:
-      #     name: Run tests via tox
-      #     command: tox | cat
-      # - run:
-      #     name: Install Codecov client
-      #     command: pip install codecov
-      # - run:
-      #     name: Upload coverage
-      #     command: codecov --disable search pycov gcov --root project --file build/test/coverage/py_coverage.xml build/test/coverage/cobertura-coverage.xml
-
   release:
     working_directory: ~/project
     docker:
       - image: circleci/python:3.6
-      - image: docker:17.05.0-ce-git
+      - image: docker:git
     steps:
       - checkout
       - setup_remote_docker
@@ -50,13 +159,64 @@ workflows:
   version: 2
   ci:
     jobs:
-      - build:
+      - py27:
           filters:
             tags:
               only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py35:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py36:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py37:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - lint_and_docs:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - docker:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - wheels:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
       - release:
           requires:
-            - build
+            - py27
+            - py35
+            - py36
+            - py37
+            - lint_and_docs
+            - wheels
+            - docker
           filters:
             tags:
               only: /^v.*/

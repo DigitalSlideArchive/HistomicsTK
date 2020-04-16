@@ -109,7 +109,7 @@ plugin, there are two 'modes' of testing.
 * Ordinary unit testing:
 
   If your newly added method/function does not need to run on the server side
-  feel free to use python's ``unittest`` module to create unit tests that
+  feel free to use python's ``pytest`` module to create unit tests that
   ensure that your method works when used as a stand-alone python package.
   Use the standard ``your_python_file_test.py`` naming convention.
 
@@ -117,7 +117,7 @@ plugin, there are two 'modes' of testing.
 
   If your newly added method/function uses girder and is meant to be run
   on the server side, you will need to have unit tests that run on the
-  server side. To find examples for these, go to ``./plugin_tests/``.
+  server side. To find examples for these, go to ``./tests/``.
   Specifically, ``example_test.py`` provides a schema that you can use.
   If your tests require access to girder items (slide, JSON, etc), it would be
   ideal to refactor how the tests are done so that they download files from
@@ -125,10 +125,10 @@ plugin, there are two 'modes' of testing.
   to it, and then proceed with the girder_client calls.  This has the virtue
   that we would not need to have the credentials for an external girder instance.
   If you run the tests multiple times, it will only download the test files once.
-  For example, ckeck out ``./plugin_tests/annotations_to_masks_handler.py``,
-  and notice how ``GirderClientTestCase`` is used to provide access to the
+  For example, ckeck out ``.histomicstk/annotations_and_masks/tests/annotations_to_masks_handler.py``,
+  and notice how ``GirderClient`` is used to provide access to the
   slide and annotations, which are referenced using ``.sha512`` hash that
-  is present in ``./plugin_tests/data/``. Please contact the owners if you
+  is present in ``./tests/data/``. Please contact the owners if you
   have questions about this or need support on how to host your test data
   on ``data.kitware.com`` to make this work.
 

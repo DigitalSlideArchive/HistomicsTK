@@ -100,7 +100,7 @@ def color_deconvolution(im_rgb, w, I_0=None):
     return Output
 
 
-def _reorder_stains(W, stains=['hematoxylin', 'eosin']):
+def _reorder_stains(W, stains=None):
     """Reorder stains in a stain matrix to a specific order.
 
     This is particularly relevant in macenco where the order of stains is not
@@ -121,6 +121,8 @@ def _reorder_stains(W, stains=['hematoxylin', 'eosin']):
         A re-ordered 3x3 matrix of stain column vectors.
 
     """
+    stains = ['hematoxylin', 'eosin'] if stains is None else stains
+
     assert len(stains) == 2, "Only two-stain matrices are supported for now."
 
     def _get_channel_order(W):
@@ -138,9 +140,8 @@ def _reorder_stains(W, stains=['hematoxylin', 'eosin']):
 
 
 def stain_unmixing_routine(
-        im_rgb, stains=['hematoxylin', 'eosin'],
-        stain_unmixing_method='macenko_pca',
-        stain_unmixing_params={}, mask_out=None):
+        im_rgb, stains=None, stain_unmixing_method='macenko_pca',
+        stain_unmixing_params=None, mask_out=None):
     """Perform stain unmixing using the method of choice (wrapper).
 
     Parameters
@@ -191,6 +192,9 @@ def stain_unmixing_routine(
            analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.
 
     """
+    stains = ['hematoxylin', 'eosin'] if stains is None else stains
+    stain_unmixing_params = {} if stain_unmixing_params is None else stain_unmixing_params
+
     stain_unmixing_method = stain_unmixing_method.lower()
 
     if stain_unmixing_method == 'macenko_pca':

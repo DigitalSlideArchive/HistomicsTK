@@ -542,7 +542,7 @@ def get_annotation_documents_from_contours(
         using get_contours_from_mask(). If you have contours using some other
         method, just make sure the dataframe follows the same schema as the
         output from get_contours_from_mask(). You may find a sample dataframe
-        in thie repo at ./plugin_tests/test_files/sample_contours_df.tsv
+        in thie repo at ./tests/test_files/sample_contours_df.tsv
         The following columns are relevant for this method.
 
         group : str
@@ -608,11 +608,11 @@ def get_annotation_documents_from_contours(
         else:
             docbounds = [0, contours_df_slice.shape[0]]
 
-        for docidx in range(len(docbounds)-1):
+        for docidx in range(len(docbounds) - 1):
             docStr = "%s: %s: doc %d of %d" % (
-                monitorPrefix, doc_group, docidx+1, len(docbounds)-1)
+                monitorPrefix, doc_group, docidx + 1, len(docbounds) - 1)
             start = docbounds[docidx]
-            end = docbounds[docidx+1]
+            end = docbounds[docidx + 1]
             annotation_doc = get_single_annotation_document_from_contours(
                 contours_df_slice.iloc[start:end, :],
                 docname="%s_%s-%d" % (docnamePrefix, doc_group, docidx),

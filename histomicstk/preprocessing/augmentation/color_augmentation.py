@@ -109,11 +109,7 @@ def perturb_stain_concentration(
 
 
 def rgb_perturb_stain_concentration(
-        im_rgb,
-        stain_unmixing_routine_params={
-            'stains': ['hematoxylin', 'eosin'],
-            'stain_unmixing_method': 'macenko_pca',
-        }, **kwargs):
+        im_rgb, stain_unmixing_routine_params=None, **kwargs):
     """Apply wrapper that calls perturb_stain_concentration() on RGB.
 
     Parameters
@@ -133,6 +129,11 @@ def rgb_perturb_stain_concentration(
         Color augmented RGB image (m x n x 3)
 
     """
+    stain_unmixing_routine_params = {
+        'stains': ['hematoxylin', 'eosin'],
+        'stain_unmixing_method': 'macenko_pca',
+    } if stain_unmixing_routine_params is None else stain_unmixing_routine_params
+
     _, StainsFloat, W_source = color_deconvolution_routine(
         im_rgb, W_source=None, **stain_unmixing_routine_params)
 

@@ -1,0 +1,4 @@
+*.sw[op]
+*.py[oc]
+__pycache__
+

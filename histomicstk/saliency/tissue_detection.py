@@ -57,7 +57,7 @@ def _deconv_color(im, **kwargs):
 
 def get_tissue_mask(
         thumbnail_im,
-        deconvolve_first=False, stain_unmixing_routine_kwargs={},
+        deconvolve_first=False, stain_unmixing_routine_kwargs=None,
         n_thresholding_steps=1, sigma=0., min_size=500):
     """Get binary tissue mask from slide thumbnail.
 
@@ -88,6 +88,9 @@ def get_tissue_mask(
         each unique value represents a unique tissue region
 
     """
+    stain_unmixing_routine_kwargs = (
+        {} if stain_unmixing_routine_kwargs is None else stain_unmixing_routine_kwargs)
+
     if deconvolve_first and (len(thumbnail_im.shape) == 3):
         # deconvolvve to ge hematoxylin channel (cellular areas)
         # hematoxylin channel return shows MINIMA so we invert
@@ -203,7 +206,7 @@ def get_tissue_boundary_annotation_documents(
 
 
 def threshold_multichannel(
-        im, thresholds, channels=['hue', 'saturation', 'intensity'],
+        im, thresholds, channels=None,
         just_threshold=False, get_tissue_mask_kwargs=None):
     """Threshold a multi-channel image (eg. HSI image) to get tissue.
 
@@ -234,6 +237,8 @@ def threshold_multichannel(
         if not just_threshold, largest contiguous tissue region.
 
     """
+    channels = ['hue', 'saturation', 'intensity'] if channels is None else channels
+
     if get_tissue_mask_kwargs is None:
         get_tissue_mask_kwargs = {
             'n_thresholding_steps': 1,

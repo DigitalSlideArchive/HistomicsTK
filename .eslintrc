@@ -1,6 +1,0 @@
-{
-  "extends": "girder",
-  "globals": {
-    "girder": false
-  }
-}

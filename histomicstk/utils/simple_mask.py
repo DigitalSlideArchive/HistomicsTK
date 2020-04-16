@@ -1,6 +1,6 @@
 import numpy as np
 from skimage import color
-from sklearn.neighbors.kde import KernelDensity
+from sklearn.neighbors import KernelDensity
 from scipy.stats import norm
 from scipy.optimize import fmin_slsqp
 from scipy import signal
