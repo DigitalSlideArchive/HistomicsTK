@@ -1,7 +1,0 @@
-action: py36, msg: getenv
-cwd: /home/mtageld/Desktop/HistomicsTK/.tox
-cmd: /home/mtageld/anaconda3/envs/wsi/bin/python -m virtualenv --no-download --python /home/mtageld/anaconda3/envs/wsi/bin/python py36
-created virtual environment CPython3.6.10.final.0-64 in 132ms
-  creator CPython3Posix(dest=/home/mtageld/Desktop/HistomicsTK/.tox/py36, clear=False, global=False)
-  seeder FromAppData(download=False, pip=latest, setuptools=latest, wheel=latest, via=copy, app_data_dir=/home/mtageld/.local/share/virtualenv/seed-app-data/v1.0.1)
-  activators BashActivator,CShellActivator,FishActivator,PowerShellActivator,PythonActivator,XonshActivator
