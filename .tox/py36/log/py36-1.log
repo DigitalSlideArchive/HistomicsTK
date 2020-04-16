@@ -1,0 +1,259 @@
+action: py36, msg: getenv
+cwd: /home/mtageld/Desktop/HistomicsTK
+cmd: /home/mtageld/Desktop/HistomicsTK/.tox/py36/bin/pip install --upgrade --upgrade-strategy eager --find-links https://girder.github.io/large_image_wheels . coverage 'pytest>=3.6' 'pytest-cov>=2.6' pytest-xdist -rrequirements-dev.txt
+Looking in links: https://girder.github.io/large_image_wheels
+Processing /home/mtageld/Desktop/HistomicsTK
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+    Preparing wheel metadata: started
+    Preparing wheel metadata: finished with status 'done'
+Collecting coverage
+  Using cached coverage-5.1-cp36-cp36m-manylinux1_x86_64.whl (227 kB)
+Collecting pytest>=3.6
+  Using cached pytest-5.4.1-py3-none-any.whl (246 kB)
+Collecting pytest-cov>=2.6
+  Using cached pytest_cov-2.8.1-py2.py3-none-any.whl (18 kB)
+Collecting pytest-xdist
+  Using cached pytest_xdist-1.31.0-py2.py3-none-any.whl (36 kB)
+Collecting cmake
+  Using cached cmake-3.17.1-py3-none-manylinux1_x86_64.whl (17.6 MB)
+Collecting ninja
+  Using cached ninja-1.9.0.post1-py3-none-manylinux1_x86_64.whl (98 kB)
+Collecting scikit-build>=0.8.1
+  Using cached scikit_build-0.10.0-py2.py3-none-any.whl (66 kB)
+Requirement already up-to-date: setuptools in ./.tox/py36/lib/python3.6/site-packages (from -r requirements-dev.txt (line 5)) (46.1.3)
+Requirement already up-to-date: wheel in ./.tox/py36/lib/python3.6/site-packages (from -r requirements-dev.txt (line 6)) (0.34.2)
+Collecting cython
+  Using cached Cython-0.29.16-cp36-cp36m-manylinux1_x86_64.whl (2.1 MB)
+Collecting numpy>=1.12.1
+  Using cached numpy-1.18.2-cp36-cp36m-manylinux1_x86_64.whl (20.2 MB)
+Collecting setuptools-scm
+  Using cached setuptools_scm-3.5.0-py2.py3-none-any.whl (26 kB)
+Collecting docker
+  Using cached docker-4.2.0-py2.py3-none-any.whl (143 kB)
+Collecting docker-compose
+  Using cached docker_compose-1.25.5-py2.py3-none-any.whl (139 kB)
+Processing /home/mtageld/.cache/pip/wheels/22/3d/6e/4ed4ec8384a07046bf519114a8d4d30b5eb1ba63b019ca5482/girder_client-3.1.0-py3-none-any.whl
+Collecting requests
+  Using cached requests-2.23.0-py2.py3-none-any.whl (58 kB)
+Collecting scikit-image>=0.14.2
+  Using cached scikit_image-0.16.2-cp36-cp36m-manylinux1_x86_64.whl (26.5 MB)
+Processing /home/mtageld/.cache/pip/wheels/36/f5/77/dc65466f8f854e34016b294a69d13375fadf855589946d8b6e/girder_slicer_cli_web-1.0.1-py2.py3-none-any.whl
+Collecting ctk-cli
+  Using cached ctk_cli-1.5-py3-none-any.whl (10 kB)
+Collecting nimfa>=1.3.2
+  Using cached nimfa-1.4.0-py2.py3-none-any.whl (4.7 MB)
+Collecting Pillow>=3.2.0
+  Using cached Pillow-7.1.1-cp36-cp36m-manylinux1_x86_64.whl (2.1 MB)
+Collecting imageio>=2.3.0
+  Using cached imageio-2.8.0-py3-none-any.whl (3.3 MB)
+Processing /home/mtageld/.cache/pip/wheels/d5/ae/d9/539bc3995f3e009b3e23c7d9bd4cbc9126b939b56b1de01116/large_image-1.1.0-py2.py3-none-any.whl
+Collecting pandas>=0.19.2
+  Using cached pandas-1.0.3-cp36-cp36m-manylinux1_x86_64.whl (10.0 MB)
+Collecting scipy>=0.19.0
+  Using cached scipy-1.4.1-cp36-cp36m-manylinux1_x86_64.whl (26.1 MB)
+Collecting scikit-learn>=0.18.1
+  Using cached scikit_learn-0.22.2.post1-cp36-cp36m-manylinux1_x86_64.whl (7.1 MB)
+Collecting shapely[vectorized]
+  Using cached Shapely-1.7.0-cp36-cp36m-manylinux1_x86_64.whl (1.8 MB)
+Collecting opencv-python
+  Using cached opencv_python-4.2.0.34-cp36-cp36m-manylinux1_x86_64.whl (28.2 MB)
+Collecting dask[dataframe]>=1.1.0
+  Using cached dask-2.14.0-py3-none-any.whl (794 kB)
+Collecting distributed>=1.21.6
+  Using cached distributed-2.14.0-py3-none-any.whl (609 kB)
+Collecting pluggy<1.0,>=0.12
+  Using cached pluggy-0.13.1-py2.py3-none-any.whl (18 kB)
+Collecting more-itertools>=4.0.0
+  Using cached more_itertools-8.2.0-py3-none-any.whl (43 kB)
+Collecting wcwidth
+  Using cached wcwidth-0.1.9-py2.py3-none-any.whl (19 kB)
+Collecting py>=1.5.0
+  Using cached py-1.8.1-py2.py3-none-any.whl (83 kB)
+Collecting packaging
+  Using cached packaging-20.3-py2.py3-none-any.whl (37 kB)
+Collecting importlib-metadata>=0.12; python_version < "3.8"
+  Using cached importlib_metadata-1.6.0-py2.py3-none-any.whl (30 kB)
+Collecting attrs>=17.4.0
+  Using cached attrs-19.3.0-py2.py3-none-any.whl (39 kB)
+Collecting execnet>=1.1
+  Using cached execnet-1.7.1-py2.py3-none-any.whl (39 kB)
+Collecting pytest-forked
+  Using cached pytest_forked-1.1.3-py2.py3-none-any.whl (4.5 kB)
+Collecting six
+  Using cached six-1.14.0-py2.py3-none-any.whl (10 kB)
+Collecting websocket-client>=0.32.0
+  Using cached websocket_client-0.57.0-py2.py3-none-any.whl (200 kB)
+Collecting texttable<2,>=0.9.0
+  Using cached texttable-1.6.2-py2.py3-none-any.whl (10 kB)
+Collecting jsonschema<4,>=2.5.1
+  Using cached jsonschema-3.2.0-py2.py3-none-any.whl (56 kB)
+Collecting cached-property<2,>=1.2.0
+  Using cached cached_property-1.5.1-py2.py3-none-any.whl (6.0 kB)
+Processing /home/mtageld/.cache/pip/wheels/3f/2a/fa/4d7a888e69774d5e6e855d190a8a51b357d77cc05eb1c097c9/docopt-0.6.2-py2.py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/61/8f/e3/247046231ee138b48be905e4a748d570630e1f3ec24632b00b/dockerpty-0.4.1-py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/e5/9d/ad/2ee53cf262cba1ffd8afe1487eef788ea3f260b7e6232a80fc/PyYAML-5.3.1-cp36-cp36m-linux_x86_64.whl
+Collecting requests-toolbelt
+  Using cached requests_toolbelt-0.9.1-py2.py3-none-any.whl (54 kB)
+Collecting click>=6.7
+  Using cached click-7.1.1-py2.py3-none-any.whl (82 kB)
+Collecting diskcache
+  Using cached diskcache-4.1.0-py2.py3-none-any.whl (44 kB)
+Collecting urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1
+  Using cached urllib3-1.25.8-py2.py3-none-any.whl (125 kB)
+Collecting chardet<4,>=3.0.2
+  Using cached chardet-3.0.4-py2.py3-none-any.whl (133 kB)
+Collecting idna<3,>=2.5
+  Using cached idna-2.9-py2.py3-none-any.whl (58 kB)
+Collecting certifi>=2017.4.17
+  Using cached certifi-2020.4.5.1-py2.py3-none-any.whl (157 kB)
+Collecting matplotlib!=3.0.0,>=2.0.0
+  Using cached matplotlib-3.2.1-cp36-cp36m-manylinux1_x86_64.whl (12.4 MB)
+Collecting PyWavelets>=0.4.0
+  Using cached PyWavelets-1.1.1-cp36-cp36m-manylinux1_x86_64.whl (4.4 MB)
+Collecting networkx>=2.0
+  Using cached networkx-2.4-py3-none-any.whl (1.6 MB)
+Collecting psutil>=4.2.0
+  Using cached https://girder.github.io/large_image_wheels/psutil-5.7.0-cp36-cp36m-manylinux2010_x86_64.whl (209 kB)
+Collecting cachetools>=3.0.0
+  Using cached cachetools-4.1.0-py3-none-any.whl (10 kB)
+Processing /home/mtageld/.cache/pip/wheels/49/5d/86/fcd7f1d54775bde4237b04b2b9c26971461f2542f638a614fe/large_image_source_openjpeg-1.1.0-py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/51/4a/2e/9d7a27ac6058705bebf6444b0db95024a013daf5a4d78ce4ec/large_image_source_openslide-1.1.0-py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/c6/32/56/45a7379641e4ecc1ee2c713d46b18d2e6e318fd0649fe4e043/large_image_source_pil-1.1.0-py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/0e/07/a1/b97e843b6933b0145310633d8416f534f2373ba237a581386b/large_image_source_ometiff-1.1.0-py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/9b/40/8b/a08d9cdebd1387a2ea9dc8157793696133f3115db9a6218ec1/large_image_source_gdal-1.1.0-py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/df/c7/ca/f8832d87c45ebf17da37f8578d7f0c38638b4e2433791016bd/large_image_source_tiff-1.1.0-py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/9d/a8/e8/8e896f402e0f31b21b43392dfaea1d7e371963dbd3c2015502/large_image_source_dummy-1.1.0-py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/3e/68/14/cc99a2f5349f660a1defd58664dcb479d4e80f0bf8e0f0b810/large_image_source_test-1.1.0-py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/a1/ad/4e/e93e62e328d6a5453abfe3553a1b2d690753a14b3fcc306c0f/large_image_source_nd2-1.1.0-py3-none-any.whl
+Processing /home/mtageld/.cache/pip/wheels/aa/27/bc/7db6f309baf208ca856ad619ac626bb0994fccb24ebc6fc140/large_image_source_mapnik-1.1.0-py3-none-any.whl
+Collecting pytz>=2017.2
+  Using cached pytz-2019.3-py2.py3-none-any.whl (509 kB)
+Collecting python-dateutil>=2.6.1
+  Using cached python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Collecting joblib>=0.11
+  Using cached joblib-0.14.1-py2.py3-none-any.whl (294 kB)
+Collecting fsspec>=0.6.0; extra == "dataframe"
+  Using cached fsspec-0.7.2-py3-none-any.whl (67 kB)
+Collecting partd>=0.3.10; extra == "dataframe"
+  Using cached partd-1.1.0-py3-none-any.whl (19 kB)
+Processing /home/mtageld/.cache/pip/wheels/e1/8b/65/3294e5b727440250bda09e8c0153b7ba19d328f661605cb151/toolz-0.10.0-cp36-none-any.whl
+Collecting sortedcontainers!=2.0.0,!=2.0.1
+  Using cached sortedcontainers-2.1.0-py2.py3-none-any.whl (28 kB)
+Collecting cloudpickle>=0.2.2
+  Using cached cloudpickle-1.3.0-py2.py3-none-any.whl (26 kB)
+Processing /home/mtageld/.cache/pip/wheels/37/a7/db/2d592e44029ef817f3ef63ea991db34191cebaef087a96f505/tornado-6.0.4-cp36-cp36m-linux_x86_64.whl
+Collecting tblib>=1.6.0
+  Using cached tblib-1.6.0-py2.py3-none-any.whl (12 kB)
+Collecting zict>=0.1.3
+  Using cached zict-2.0.0-py3-none-any.whl (10 kB)
+Collecting msgpack>=0.6.0
+  Using cached msgpack-1.0.0-cp36-cp36m-manylinux1_x86_64.whl (274 kB)
+Collecting pyparsing>=2.0.2
+  Using cached pyparsing-2.4.7-py2.py3-none-any.whl (67 kB)
+Collecting zipp>=0.5
+  Using cached zipp-3.1.0-py3-none-any.whl (4.9 kB)
+Collecting apipkg>=1.4
+  Using cached apipkg-1.5-py2.py3-none-any.whl (4.9 kB)
+Processing /home/mtageld/.cache/pip/wheels/d1/8a/1c/32ab9017418a2c64e4fbaf503c08648bed2f8eb311b869a464/pyrsistent-0.16.0-cp36-cp36m-linux_x86_64.whl
+Collecting cycler>=0.10
+  Using cached cycler-0.10.0-py2.py3-none-any.whl (6.5 kB)
+Collecting kiwisolver>=1.0.1
+  Using cached kiwisolver-1.2.0-cp36-cp36m-manylinux1_x86_64.whl (88 kB)
+Collecting decorator>=4.3.0
+  Using cached decorator-4.4.2-py2.py3-none-any.whl (9.2 kB)
+Collecting glymur>=0.8.18; python_version >= "3.6"
+  Using cached https://girder.github.io/large_image_wheels/Glymur-0.9.1-cp36-cp36m-manylinux2010_x86_64.whl (4.4 MB)
+Collecting openslide-python>=1.1.0
+  Using cached https://girder.github.io/large_image_wheels/openslide_python-1.1.1-cp36-cp36m-manylinux2010_x86_64.whl (5.9 MB)
+Collecting palettable
+  Using cached palettable-3.3.0-py2.py3-none-any.whl (111 kB)
+Collecting pyproj>=2.2.0
+  Using cached pyproj-2.6.0-cp36-cp36m-manylinux2010_x86_64.whl (10.4 MB)
+Collecting gdal
+  Using cached https://girder.github.io/large_image_wheels/GDAL-3.1.0-cp36-cp36m-manylinux2010_x86_64.whl (66.0 MB)
+Collecting libtiff>=0.4.1
+  Using cached https://girder.github.io/large_image_wheels/libtiff-0.5.0-cp36-cp36m-manylinux2010_x86_64.whl (1.7 MB)
+Collecting nd2reader>=3.2
+  Using cached nd2reader-3.2.3-py2.py3-none-any.whl (34 kB)
+Collecting mapnik
+  Using cached https://girder.github.io/large_image_wheels/mapnik-4.0.0-cp36-cp36m-manylinux2010_x86_64.whl (78.3 MB)
+Processing /home/mtageld/.cache/pip/wheels/21/ca/95/1e41f9a9a7a06ba06874ad2bf0eac88e7ba02fe9a6ff26c77d/locket-0.2.0-py3-none-any.whl
+Collecting heapdict
+  Using cached HeapDict-1.0.1-py3-none-any.whl (3.9 kB)
+Collecting lxml
+  Using cached lxml-4.5.0-cp36-cp36m-manylinux1_x86_64.whl (5.8 MB)
+Collecting pims>=0.3.0
+  Using cached PIMS-0.4.1-py3-none-any.whl (81 kB)
+Collecting xmltodict>=0.9.2
+  Using cached xmltodict-0.12.0-py2.py3-none-any.whl (9.2 kB)
+Collecting slicerator>=0.9.7
+  Using cached slicerator-1.0.0-py3-none-any.whl (9.3 kB)
+Building wheels for collected packages: histomicstk
+  Building wheel for histomicstk (PEP 517): started
+  Building wheel for histomicstk (PEP 517): finished with status 'error'
+  ERROR: Command errored out with exit status 1:
+   command: /home/mtageld/Desktop/HistomicsTK/.tox/py36/bin/python /home/mtageld/Desktop/HistomicsTK/.tox/py36/lib/python3.6/site-packages/pip/_vendor/pep517/_in_process.py build_wheel /tmp/tmp_f8twmsm
+       cwd: /tmp/pip-req-build-is4wlo24
+  Complete output (55 lines):
+  Not searching for unused variables given on the command line.
+  -- The C compiler identification is GNU 7.5.0
+  -- Check for working C compiler: /usr/bin/cc
+  -- Check for working C compiler: /usr/bin/cc - works
+  -- Detecting C compiler ABI info
+  -- Detecting C compiler ABI info - done
+  -- Detecting C compile features
+  -- Detecting C compile features - done
+  -- The CXX compiler identification is GNU 7.5.0
+  -- Check for working CXX compiler: /usr/bin/c++
+  -- Check for working CXX compiler: /usr/bin/c++ - works
+  -- Detecting CXX compiler ABI info
+  -- Detecting CXX compiler ABI info - done
+  -- Detecting CXX compile features
+  -- Detecting CXX compile features - done
+  -- Configuring done
+  -- Generating done
+  -- Build files have been written to: /tmp/pip-req-build-is4wlo24/_cmake_test_compile/build
+  CMake Error: The current CMakeCache.txt directory /tmp/pip-req-build-is4wlo24/_skbuild/linux-x86_64-3.6/cmake-build/CMakeCache.txt is different than the directory /home/mtageld/Desktop/HistomicsTK/_skbuild/linux-x86_64-3.6/cmake-build where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
+  CMake Error: The source "/tmp/pip-req-build-is4wlo24/CMakeLists.txt" does not match the source "/home/mtageld/Desktop/HistomicsTK/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
+    File "/tmp/pip-build-env-up18snb_/overlay/lib/python3.6/site-packages/skbuild/setuptools_wrap.py", line 574, in setup
+      languages=cmake_languages
+    File "/tmp/pip-build-env-up18snb_/overlay/lib/python3.6/site-packages/skbuild/cmaker.py", line 232, in configure
+      os.path.abspath(CMAKE_BUILD_DIR())))
+  
+  
+  --------------------------------------------------------------------------------
+  -- Trying "Ninja" generator
+  --------------------------------
+  ---------------------------
+  ----------------------
+  -----------------
+  ------------
+  -------
+  --
+  --
+  -------
+  ------------
+  -----------------
+  ----------------------
+  ---------------------------
+  --------------------------------
+  -- Trying "Ninja" generator - success
+  --------------------------------------------------------------------------------
+  
+  Traceback (most recent call last):
+  
+  An error occurred while configuring with CMake.
+    Command:
+      "cmake" "/tmp/pip-req-build-is4wlo24" "-G" "Ninja" "-DCMAKE_INSTALL_PREFIX:PATH=/tmp/pip-req-build-is4wlo24/_skbuild/linux-x86_64-3.6/cmake-install" "-DPYTHON_EXECUTABLE:FILEPATH=/home/mtageld/Desktop/HistomicsTK/.tox/py36/bin/python" "-DPYTHON_VERSION_STRING:STRING=3.6.10" "-DPYTHON_INCLUDE_DIR:PATH=/home/mtageld/anaconda3/envs/wsi/include/python3.6m" "-DPYTHON_LIBRARY:FILEPATH=/home/mtageld/anaconda3/envs/wsi/lib/libpython3.6m.so" "-DSKBUILD:BOOL=TRUE" "-DCMAKE_MODULE_PATH:PATH=/tmp/pip-build-env-up18snb_/overlay/lib/python3.6/site-packages/skbuild/resources/cmake" "-DCMAKE_BUILD_TYPE:STRING=Release"
+    Source directory:
+      /tmp/pip-req-build-is4wlo24
+    Working directory:
+      /tmp/pip-req-build-is4wlo24/_skbuild/linux-x86_64-3.6/cmake-build
+  Please see CMake's output for more information.
+  ----------------------------------------
+  ERROR: Failed building wheel for histomicstk
+Failed to build histomicstk
+ERROR: Could not build wheels for histomicstk which use PEP 517 and cannot be installed directly

@@ -1,0 +1,641 @@
+action: GLOB, msg: packaging
+cwd: /home/mtageld/Desktop/HistomicsTK
+cmd: /home/mtageld/anaconda3/envs/wsi/bin/python setup.py sdist --formats=zip --dist-dir .tox/dist
+running sdist
+running generate_source_manifest
+running check
+reading manifest file 'MANIFEST'
+creating histomicstk-1.0.3.dev67+gba07a71
+creating histomicstk-1.0.3.dev67+gba07a71/.circleci
+creating histomicstk-1.0.3.dev67+gba07a71/docs
+creating histomicstk-1.0.3.dev67+gba07a71/docs/examples
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/pyrtree
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/img
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/BackgroundIntensity
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ColorDeconvolution
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ComputeNucleiFeatures
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiClassification
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiDetection
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/PositivePixelCount
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsMacenkoPCA
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsXuSnmf
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/edge
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/augmentation
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/tests
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tests
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/level_set
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/tests
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows
+creating histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows/tests
+creating histomicstk-1.0.3.dev67+gba07a71/sample_images
+creating histomicstk-1.0.3.dev67+gba07a71/tests
+creating histomicstk-1.0.3.dev67+gba07a71/tests/data
+creating histomicstk-1.0.3.dev67+gba07a71/tests/test_files
+copying files to histomicstk-1.0.3.dev67+gba07a71...
+copying .dockerignore -> histomicstk-1.0.3.dev67+gba07a71
+copying .gitignore -> histomicstk-1.0.3.dev67+gba07a71
+copying .travis.yml -> histomicstk-1.0.3.dev67+gba07a71
+copying AUTHORS.rst -> histomicstk-1.0.3.dev67+gba07a71
+copying CMakeLists.txt -> histomicstk-1.0.3.dev67+gba07a71
+copying CONTRIBUTING.rst -> histomicstk-1.0.3.dev67+gba07a71
+copying Dockerfile -> histomicstk-1.0.3.dev67+gba07a71
+copying Dockerfile-wheels -> histomicstk-1.0.3.dev67+gba07a71
+copying LICENSE -> histomicstk-1.0.3.dev67+gba07a71
+copying README.rst -> histomicstk-1.0.3.dev67+gba07a71
+copying build_wheels.sh -> histomicstk-1.0.3.dev67+gba07a71
+copying codecov.yml -> histomicstk-1.0.3.dev67+gba07a71
+copying pyproject.toml -> histomicstk-1.0.3.dev67+gba07a71
+copying requirements-dev.txt -> histomicstk-1.0.3.dev67+gba07a71
+copying setup.py -> histomicstk-1.0.3.dev67+gba07a71
+copying test_wheels.py -> histomicstk-1.0.3.dev67+gba07a71
+copying tox.ini -> histomicstk-1.0.3.dev67+gba07a71
+copying .circleci/config.yml -> histomicstk-1.0.3.dev67+gba07a71/.circleci
+copying docs/Makefile -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/api-docs.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/authors.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/conf.py -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/contributing.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/examples.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.annotations_and_masks.annotation_and_mask_utils.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.annotations_and_masks.annotations_to_masks_handler.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.annotations_and_masks.masks_to_annotations_handler.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.annotations_and_masks.polygon_merger.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.annotations_and_masks.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.annotations_and_masks.tips_for_scalable_annotation_rendering_for_developers.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.features.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.filters.edge.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.filters.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.filters.shape.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.preprocessing.augmentation.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.preprocessing.color_conversion.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.preprocessing.color_deconvolution.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.preprocessing.color_normalization.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.preprocessing.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.saliency.cellularity_detection_superpixels.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.saliency.cellularity_detection_thresholding.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.saliency.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.saliency.tissue_detection.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.segmentation.label.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.segmentation.level_set.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.segmentation.nuclear.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.segmentation.positive_pixel_count.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.segmentation.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.utils.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.workflows.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.workflows.specific_workflows.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/histomicstk.workflows.workflow_runner.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/index.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/installation.rst -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/make.bat -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/make_docs.sh -> histomicstk-1.0.3.dev67+gba07a71/docs
+copying docs/examples/annotations_to_masks_handler.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/cellularity_detection_superpixels.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/cellularity_detection_thresholding.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/color-deconvolution.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/color-normalization-and-augmentation.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/masks_to_annotations_handler.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/nuclei-segmentation.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/polygon_merger.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/polygon_merger_v2.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/positive-pixel-count.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/tissue_detection.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/workflows.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying docs/examples/wsi-io-using-large-image.ipynb -> histomicstk-1.0.3.dev67+gba07a71/docs/examples
+copying histomicstk/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk
+copying histomicstk/annotations_and_masks/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks
+copying histomicstk/annotations_and_masks/annotation_and_mask_utils.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks
+copying histomicstk/annotations_and_masks/annotations_to_masks_handler.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks
+copying histomicstk/annotations_and_masks/masks_to_annotations_handler.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks
+copying histomicstk/annotations_and_masks/polygon_merger.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks
+copying histomicstk/annotations_and_masks/polygon_merger_v2.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks
+copying histomicstk/annotations_and_masks/pyrtree/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/pyrtree
+copying histomicstk/annotations_and_masks/pyrtree/rect.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/pyrtree
+copying histomicstk/annotations_and_masks/pyrtree/rtree.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/pyrtree
+copying histomicstk/annotations_and_masks/tests/annotation_and_mask_utils_test.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests
+copying histomicstk/annotations_and_masks/tests/annotations_to_masks_handler_test.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests
+copying histomicstk/annotations_and_masks/tests/masks_to_annotations_handler_test.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests
+copying histomicstk/annotations_and_masks/tests/polygon_merger_test.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests
+copying histomicstk/annotations_and_masks/tests/polygon_merger_v2_test.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests
+copying histomicstk/annotations_and_masks/tests/test_files/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-59206_top-33505_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files
+copying histomicstk/annotations_and_masks/tests/test_files/sample_GTcodes.csv -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files
+copying histomicstk/annotations_and_masks/tests/test_files/sample_contours_df.tsv -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files
+copying histomicstk/annotations_and_masks/tests/test_files/img/polygon_merger_merged.JPG -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/img
+copying histomicstk/annotations_and_masks/tests/test_files/img/polygon_merger_unmerged.JPG -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/img
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44350_top-43750_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44350_top-44262_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44350_top-44774_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44350_top-45286_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44350_top-45798_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44862_top-43750_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44862_top-44262_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44862_top-44774_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44862_top-45286_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44862_top-45798_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45374_top-43750_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45374_top-44262_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45374_top-44774_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45374_top-45286_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45374_top-45798_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45886_top-43750_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45886_top-44262_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45886_top-44774_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45886_top-45286_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45886_top-45798_mag-BASE.png -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks
+copying histomicstk/cli/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli
+copying histomicstk/cli/docker-entrypoint.sh -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli
+copying histomicstk/cli/slicer_cli_list.json -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli
+copying histomicstk/cli/utils.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli
+copying histomicstk/cli/BackgroundIntensity/BackgroundIntensity.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/BackgroundIntensity
+copying histomicstk/cli/BackgroundIntensity/BackgroundIntensity.xml -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/BackgroundIntensity
+copying histomicstk/cli/BackgroundIntensity/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/BackgroundIntensity
+copying histomicstk/cli/ColorDeconvolution/ColorDeconvolution.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ColorDeconvolution
+copying histomicstk/cli/ColorDeconvolution/ColorDeconvolution.xml -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ColorDeconvolution
+copying histomicstk/cli/ColorDeconvolution/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ColorDeconvolution
+copying histomicstk/cli/ComputeNucleiFeatures/ComputeNucleiFeatures.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ComputeNucleiFeatures
+copying histomicstk/cli/ComputeNucleiFeatures/ComputeNucleiFeatures.xml -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ComputeNucleiFeatures
+copying histomicstk/cli/ComputeNucleiFeatures/README.md -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ComputeNucleiFeatures
+copying histomicstk/cli/ComputeNucleiFeatures/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ComputeNucleiFeatures
+copying histomicstk/cli/NucleiClassification/NucleiClassification.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiClassification
+copying histomicstk/cli/NucleiClassification/NucleiClassification.xml -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiClassification
+copying histomicstk/cli/NucleiClassification/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiClassification
+copying histomicstk/cli/NucleiDetection/NucleiDetection.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiDetection
+copying histomicstk/cli/NucleiDetection/NucleiDetection.xml -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiDetection
+copying histomicstk/cli/NucleiDetection/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiDetection
+copying histomicstk/cli/PositivePixelCount/PositivePixelCount.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/PositivePixelCount
+copying histomicstk/cli/PositivePixelCount/PositivePixelCount.xml -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/PositivePixelCount
+copying histomicstk/cli/PositivePixelCount/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/PositivePixelCount
+copying histomicstk/cli/SeparateStainsMacenkoPCA/SeparateStainsMacenkoPCA.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsMacenkoPCA
+copying histomicstk/cli/SeparateStainsMacenkoPCA/SeparateStainsMacenkoPCA.xml -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsMacenkoPCA
+copying histomicstk/cli/SeparateStainsMacenkoPCA/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsMacenkoPCA
+copying histomicstk/cli/SeparateStainsXuSnmf/SeparateStainsXuSnmf.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsXuSnmf
+copying histomicstk/cli/SeparateStainsXuSnmf/SeparateStainsXuSnmf.xml -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsXuSnmf
+copying histomicstk/cli/SeparateStainsXuSnmf/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsXuSnmf
+copying histomicstk/features/CMakeLists.txt -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/features/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/features/_compute_marginal_glcm_probs_cython.pyx -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/features/compute_fsd_features.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/features/compute_global_cell_graph_features.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/features/compute_gradient_features.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/features/compute_haralick_features.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/features/compute_intensity_features.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/features/compute_morphometry_features.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/features/compute_nuclei_features.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/features/graycomatrixext.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/features
+copying histomicstk/filters/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters
+copying histomicstk/filters/edge/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/edge
+copying histomicstk/filters/edge/gaussian_grad.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/edge
+copying histomicstk/filters/shape/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape
+copying histomicstk/filters/shape/cdog.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape
+copying histomicstk/filters/shape/clog.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape
+copying histomicstk/filters/shape/glog.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape
+copying histomicstk/filters/shape/vesselness.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape
+copying histomicstk/preprocessing/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing
+copying histomicstk/preprocessing/augmentation/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/augmentation
+copying histomicstk/preprocessing/augmentation/color_augmentation.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/augmentation
+copying histomicstk/preprocessing/color_conversion/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion
+copying histomicstk/preprocessing/color_conversion/lab_mean_std.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion
+copying histomicstk/preprocessing/color_conversion/lab_to_rgb.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion
+copying histomicstk/preprocessing/color_conversion/od_to_rgb.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion
+copying histomicstk/preprocessing/color_conversion/rgb_to_hsi.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion
+copying histomicstk/preprocessing/color_conversion/rgb_to_lab.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion
+copying histomicstk/preprocessing/color_conversion/rgb_to_od.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion
+copying histomicstk/preprocessing/color_conversion/rgb_to_sda.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion
+copying histomicstk/preprocessing/color_conversion/sda_to_rgb.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion
+copying histomicstk/preprocessing/color_deconvolution/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_deconvolution/_linalg.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_deconvolution/color_convolution.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_deconvolution/color_deconvolution.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_deconvolution/complement_stain_matrix.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_deconvolution/find_stain_index.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_deconvolution/rgb_separate_stains_macenko_pca.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_deconvolution/rgb_separate_stains_xu_snmf.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_deconvolution/separate_stains_macenko_pca.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_deconvolution/separate_stains_xu_snmf.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_deconvolution/stain_color_map.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution
+copying histomicstk/preprocessing/color_normalization/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization
+copying histomicstk/preprocessing/color_normalization/background_intensity.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization
+copying histomicstk/preprocessing/color_normalization/deconvolution_based_normalization.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization
+copying histomicstk/preprocessing/color_normalization/reinhard.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization
+copying histomicstk/preprocessing/color_normalization/reinhard_stats.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization
+copying histomicstk/preprocessing/tests/color_augmentation_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/tests
+copying histomicstk/preprocessing/tests/deconvolution_based_normalization_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/tests
+copying histomicstk/preprocessing/tests/reinhard_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/tests
+copying histomicstk/saliency/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency
+copying histomicstk/saliency/cellularity_detection_superpixels.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency
+copying histomicstk/saliency/cellularity_detection_thresholding.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency
+copying histomicstk/saliency/tissue_detection.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency
+copying histomicstk/saliency/tests/cellularity_detection_superpixels_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tests
+copying histomicstk/saliency/tests/cellularity_detection_thresholding_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tests
+copying histomicstk/saliency/tests/saliency_GTcodes.csv -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tests
+copying histomicstk/saliency/tests/tissue_detection_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tests
+copying histomicstk/segmentation/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation
+copying histomicstk/segmentation/embed_boundaries.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation
+copying histomicstk/segmentation/positive_pixel_count.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation
+copying histomicstk/segmentation/rag.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation
+copying histomicstk/segmentation/rag_add_layer.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation
+copying histomicstk/segmentation/rag_color.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation
+copying histomicstk/segmentation/label/CMakeLists.txt -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/_trace_object_boundaries_cython.pyx -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/area_open.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/compact.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/condense.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/delete.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/delete_border.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/dilate_xor.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/perimeter.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/shuffle.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/split.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/trace_object_boundaries.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/label/width_open.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label
+copying histomicstk/segmentation/level_set/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/level_set
+copying histomicstk/segmentation/level_set/chan_vese.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/level_set
+copying histomicstk/segmentation/level_set/reg_edge.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/level_set
+copying histomicstk/segmentation/nuclear/CMakeLists.txt -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear
+copying histomicstk/segmentation/nuclear/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear
+copying histomicstk/segmentation/nuclear/_max_clustering_cython.pyx -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear
+copying histomicstk/segmentation/nuclear/detect_nuclei_kofahi.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear
+copying histomicstk/segmentation/nuclear/gaussian_voting.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear
+copying histomicstk/segmentation/nuclear/gvf_tracking.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear
+copying histomicstk/segmentation/nuclear/max_clustering.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear
+copying histomicstk/segmentation/nuclear/min_model.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear
+copying histomicstk/utils/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/compute_tile_foreground_fraction.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/convert_image_to_matrix.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/convert_matrix_to_image.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/del2.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/eigen.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/exclude_nonfinite.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/fit_poisson_mixture.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/general_utils.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/girder_convenience_utils.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/gradient_diffusion.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/hessian.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/merge_colinear.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/sample_pixels.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/simple_mask.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils
+copying histomicstk/utils/tests/girder_convenience_utils_test.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/tests
+copying histomicstk/workflows/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows
+copying histomicstk/workflows/specific_workflows.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows
+copying histomicstk/workflows/workflow_runner.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows
+copying histomicstk/workflows/tests/workflow_runner_test.py -> histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows/tests
+copying sample_images/.gitignore -> histomicstk-1.0.3.dev67+gba07a71/sample_images
+copying tests/.dockerignore -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/Dockerfile-gc-tests -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/__init__.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/blob_detection_filters_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/cli_common_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/cli_results_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/color_conversion_test.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/color_deconvolution_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/color_normalization_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/docker-compose.yml -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/docker_setup.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/feature_extraction_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/glcm_test.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/global_cell_graph_features_test.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/htk_test_utilities.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/nuclei_segmentation_test_disable.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/segmentation_label_test.py -> histomicstk-1.0.3.dev67+gba07a71/tests
+copying tests/data/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs.sha512 -> histomicstk-1.0.3.dev67+gba07a71/tests/data
+copying tests/data/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs_annotations.json.sha512 -> histomicstk-1.0.3.dev67+gba07a71/tests/data
+copying tests/data/TCGA-A2-A0YE-01Z-00-DX1_GET_MergePolygons.svs_annotations.json.sha512 -> histomicstk-1.0.3.dev67+gba07a71/tests/data
+copying tests/test_files/sample_GTcodes.csv -> histomicstk-1.0.3.dev67+gba07a71/tests/test_files
+copied 270 files
+creating '.tox/dist/histomicstk-1.0.3.dev67+gba07a71' zip archive and adding 'histomicstk-1.0.3.dev67+gba07a71' to it
+creating '.tox/dist/histomicstk-1.0.3.dev67+gba07a71.zip' and adding 'histomicstk-1.0.3.dev67+gba07a71' to it
+adding 'histomicstk-1.0.3.dev67+gba07a71'
+adding 'histomicstk-1.0.3.dev67+gba07a71/.circleci'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests'
+adding 'histomicstk-1.0.3.dev67+gba07a71/sample_images'
+adding 'histomicstk-1.0.3.dev67+gba07a71/requirements-dev.txt'
+adding 'histomicstk-1.0.3.dev67+gba07a71/.travis.yml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/.dockerignore'
+adding 'histomicstk-1.0.3.dev67+gba07a71/build_wheels.sh'
+adding 'histomicstk-1.0.3.dev67+gba07a71/CMakeLists.txt'
+adding 'histomicstk-1.0.3.dev67+gba07a71/codecov.yml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/PKG-INFO'
+adding 'histomicstk-1.0.3.dev67+gba07a71/CONTRIBUTING.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/LICENSE'
+adding 'histomicstk-1.0.3.dev67+gba07a71/setup.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/pyproject.toml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/AUTHORS.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/README.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/Dockerfile-wheels'
+adding 'histomicstk-1.0.3.dev67+gba07a71/Dockerfile'
+adding 'histomicstk-1.0.3.dev67+gba07a71/.gitignore'
+adding 'histomicstk-1.0.3.dev67+gba07a71/test_wheels.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tox.ini'
+adding 'histomicstk-1.0.3.dev67+gba07a71/.circleci/config.yml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.saliency.cellularity_detection_superpixels.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.utils.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.segmentation.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/make_docs.sh'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.segmentation.positive_pixel_count.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.segmentation.nuclear.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.annotations_and_masks.annotation_and_mask_utils.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.preprocessing.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.saliency.cellularity_detection_thresholding.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.saliency.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.annotations_and_masks.annotations_to_masks_handler.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.preprocessing.color_conversion.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.annotations_and_masks.polygon_merger.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.workflows.specific_workflows.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.preprocessing.augmentation.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.workflows.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/authors.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.workflows.workflow_runner.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.filters.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.segmentation.label.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/index.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/Makefile'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.preprocessing.color_deconvolution.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.filters.edge.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.annotations_and_masks.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.filters.shape.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/contributing.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.preprocessing.color_normalization.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/conf.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/installation.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.annotations_and_masks.masks_to_annotations_handler.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.features.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.saliency.tissue_detection.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/api-docs.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.annotations_and_masks.tips_for_scalable_annotation_rendering_for_developers.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/make.bat'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/histomicstk.segmentation.level_set.rst'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/cellularity_detection_superpixels.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/nuclei-segmentation.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/color-normalization-and-augmentation.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/positive-pixel-count.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/wsi-io-using-large-image.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/polygon_merger_v2.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/workflows.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/cellularity_detection_thresholding.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/color-deconvolution.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/tissue_detection.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/polygon_merger.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/annotations_to_masks_handler.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/docs/examples/masks_to_annotations_handler.ipynb'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsXuSnmf'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsMacenkoPCA'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ColorDeconvolution'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/BackgroundIntensity'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/PositivePixelCount'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiClassification'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiDetection'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ComputeNucleiFeatures'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/docker-entrypoint.sh'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/slicer_cli_list.json'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/utils.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsXuSnmf/SeparateStainsXuSnmf.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsXuSnmf/SeparateStainsXuSnmf.xml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsXuSnmf/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsMacenkoPCA/SeparateStainsMacenkoPCA.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsMacenkoPCA/SeparateStainsMacenkoPCA.xml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/SeparateStainsMacenkoPCA/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ColorDeconvolution/ColorDeconvolution.xml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ColorDeconvolution/ColorDeconvolution.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ColorDeconvolution/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/BackgroundIntensity/BackgroundIntensity.xml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/BackgroundIntensity/BackgroundIntensity.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/BackgroundIntensity/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/PositivePixelCount/PositivePixelCount.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/PositivePixelCount/PositivePixelCount.xml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/PositivePixelCount/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiClassification/NucleiClassification.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiClassification/NucleiClassification.xml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiClassification/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiDetection/NucleiDetection.xml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiDetection/NucleiDetection.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/NucleiDetection/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ComputeNucleiFeatures/ComputeNucleiFeatures.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ComputeNucleiFeatures/README.md'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ComputeNucleiFeatures/ComputeNucleiFeatures.xml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/cli/ComputeNucleiFeatures/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/augmentation'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/tests'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/rgb_separate_stains_xu_snmf.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/color_deconvolution.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/rgb_separate_stains_macenko_pca.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/separate_stains_macenko_pca.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/find_stain_index.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/_linalg.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/color_convolution.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/separate_stains_xu_snmf.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/complement_stain_matrix.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/stain_color_map.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_deconvolution/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization/deconvolution_based_normalization.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization/reinhard.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization/reinhard_stats.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization/background_intensity.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_normalization/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion/lab_mean_std.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion/od_to_rgb.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion/rgb_to_hsi.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion/rgb_to_lab.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion/lab_to_rgb.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion/rgb_to_od.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion/sda_to_rgb.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion/rgb_to_sda.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/color_conversion/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/augmentation/color_augmentation.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/augmentation/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/tests/deconvolution_based_normalization_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/tests/reinhard_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/preprocessing/tests/color_augmentation_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tests'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/cellularity_detection_superpixels.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/cellularity_detection_thresholding.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tissue_detection.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tests/saliency_GTcodes.csv'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tests/cellularity_detection_thresholding_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tests/cellularity_detection_superpixels_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/saliency/tests/tissue_detection_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/edge'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape/vesselness.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape/clog.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape/glog.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape/cdog.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/shape/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/edge/gaussian_grad.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/filters/edge/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/tests'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/gradient_diffusion.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/hessian.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/convert_image_to_matrix.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/girder_convenience_utils.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/simple_mask.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/del2.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/exclude_nonfinite.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/eigen.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/fit_poisson_mixture.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/convert_matrix_to_image.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/sample_pixels.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/merge_colinear.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/general_utils.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/compute_tile_foreground_fraction.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/utils/tests/girder_convenience_utils_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/pyrtree'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/masks_to_annotations_handler.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/annotation_and_mask_utils.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/polygon_merger_v2.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/annotations_to_masks_handler.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/polygon_merger.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/pyrtree/rect.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/pyrtree/rtree.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/pyrtree/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/masks_to_annotations_handler_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/polygon_merger_v2_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/annotations_to_masks_handler_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/polygon_merger_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/annotation_and_mask_utils_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/img'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-59206_top-33505_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/sample_contours_df.tsv'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/sample_GTcodes.csv'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45886_top-43750_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44862_top-45286_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44862_top-44262_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45374_top-44262_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44350_top-44262_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45374_top-44774_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44350_top-43750_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44350_top-45286_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44862_top-45798_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45886_top-44262_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45374_top-45286_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45374_top-43750_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44862_top-44774_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45374_top-45798_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45886_top-44774_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44862_top-43750_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44350_top-45798_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-44350_top-44774_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45886_top-45798_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/polygon_merger_roi_masks/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_left-45886_top-45286_mag-BASE.png'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/img/polygon_merger_unmerged.JPG'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/annotations_and_masks/tests/test_files/img/polygon_merger_merged.JPG'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/level_set'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/rag_add_layer.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/rag.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/embed_boundaries.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/positive_pixel_count.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/rag_color.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/perimeter.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/_trace_object_boundaries_cython.pyx'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/CMakeLists.txt'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/area_open.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/delete.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/width_open.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/trace_object_boundaries.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/compact.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/condense.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/delete_border.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/split.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/dilate_xor.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/shuffle.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/label/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/level_set/chan_vese.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/level_set/reg_edge.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/level_set/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear/detect_nuclei_kofahi.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear/_max_clustering_cython.pyx'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear/CMakeLists.txt'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear/min_model.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear/gvf_tracking.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear/max_clustering.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear/gaussian_voting.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/segmentation/nuclear/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/compute_global_cell_graph_features.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/_compute_marginal_glcm_probs_cython.pyx'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/compute_morphometry_features.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/compute_fsd_features.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/CMakeLists.txt'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/compute_intensity_features.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/compute_nuclei_features.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/compute_gradient_features.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/graycomatrixext.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/compute_haralick_features.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/features/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows/tests'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows/specific_workflows.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows/workflow_runner.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/histomicstk/workflows/tests/workflow_runner_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/test_files'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/data'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/segmentation_label_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/global_cell_graph_features_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/docker-compose.yml'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/nuclei_segmentation_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/.dockerignore'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/Dockerfile-gc-tests'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/blob_detection_filters_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/feature_extraction_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/htk_test_utilities.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/cli_common_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/color_normalization_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/color_deconvolution_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/color_conversion_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/glcm_test.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/cli_results_test_disable.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/docker_setup.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/__init__.py'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/test_files/sample_GTcodes.csv'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/data/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs_annotations.json.sha512'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/data/TCGA-A2-A0YE-01Z-00-DX1_GET_MergePolygons.svs_annotations.json.sha512'
+adding 'histomicstk-1.0.3.dev67+gba07a71/tests/data/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs.sha512'
+adding 'histomicstk-1.0.3.dev67+gba07a71/sample_images/.gitignore'
+removing 'histomicstk-1.0.3.dev67+gba07a71' (and everything under it)
