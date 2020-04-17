@@ -11,3 +11,5 @@ popd
 # git clean -fxd .
 
 make html
+
+cp -r ../.circleci _build/html/.
