@@ -27,4 +27,4 @@ script:
 after_success:
   - pip install codecov
   - codecov --disable search pycov gcov --file build/test/coverage/py_coverage.xml
-  # - if [ ${TRAVIS_PYTHON_VERSION:0:3} == "3.7" ]; then pip install travis-sphinx; travis-sphinx -o docs/build -v deploy -b sphinx,master; fi
+  - if [ ${TRAVIS_PYTHON_VERSION:0:3} == "3.7" ]; then pip install travis-sphinx; travis-sphinx -o docs/_build/html -v deploy -b sphinx,master; fi
