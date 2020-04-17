@@ -6,6 +6,9 @@ import six
 import subprocess
 import tempfile
 import time
+import warnings
+import docker
+import girder_client
 
 
 _checkedPaths = {}
@@ -88,33 +91,37 @@ def externaldata(
     return destpath
 
 
-@pytest.fixture(scope='session')
-def girderClient():
-    """
-    Spin up a local girder server, load it with some initial data, and return
-    an authenticated girder client that points to the server.
-    """
-    import docker
-    import girder_client
+def _get_htk_ipaddr(dclient):
+    # search docker containers for a DSA docker container
+    # and fetch its IP address
+    return list(dclient.containers.list(
+        filters={'label': 'HISTOMICSTK_GC_TEST'})[0].attrs[
+                      'NetworkSettings']['Networks'].values())[0][
+        'IPAddress']
 
+
+def _connect_girder_client_to_local_dsa(ip):
+    # connect a girder client to the local DSA docker
+    apiUrl = 'http://%s:8080/api/v1' % ip
+    gc = girder_client.GirderClient(apiUrl=apiUrl)
+    gc.authenticate('admin', 'password')
+    return gc
+
+
+def _connect_to_existing_local_dsa():
+    client = docker.from_env(version='auto')
+    ipaddr = _get_htk_ipaddr(client)
+    return _connect_girder_client_to_local_dsa(ipaddr)
+
+
+def _create_and_connect_to_local_dsa():
+    # create a local dsa docker and connect to it
     cwd = os.getcwd()
     thisDir = os.path.dirname(os.path.realpath(__file__))
     os.chdir(thisDir)
-    outfilePath = os.path.join(tempfile.gettempdir(), 'histomicstk_test_girder_log.txt')
+    outfilePath = os.path.join(
+        tempfile.gettempdir(), 'histomicstk_test_girder_log.txt')
     with open(outfilePath, 'w') as outfile:
-
-        # DOES NOT WORK LOCALLY!!!
-        # 1- does not work inside pycharm, has to be ipython alone
-        # 2- When I try this approach of making a subprocess to run the docker
-        #    it's REEEEALLY slow and there's no way for me to know when the docker
-        #    has actually finished starting the local DSA server. It takes quite long
-        #    and the heuristic currently used (if I understand it) is based on
-        #    just waiting and having a timeout after a while!
-        # What I found to work better is to just start the DSA server in a separate
-        # terminal using docker compose-up --build and THEN to use the
-        # rest of the pipeline here once the server is up, by looking for the
-        # Histomics container and doind all sorts of stuff with it. Of course, make
-        # sure to use the yml file that David M provides.
 
         # build a DSA docker container locally
         proc = subprocess.Popen([
@@ -128,22 +135,57 @@ def girderClient():
         client = docker.from_env(version='auto')
         while time.time() < timeout:
             try:
-                # search docker containers for the newly created DSA docker
-                # container and fetch its IP address
-                ipaddr = list(client.containers.list(
-                    filters={'label': 'HISTOMICSTK_GC_TEST'})[0].attrs[
-                        'NetworkSettings']['Networks'].values())[0]['IPAddress']
+                ipaddr = _get_htk_ipaddr(client)
                 if ipaddr:
-                    # Now connect a girder client to the local DSA docker
-                    apiUrl = 'http://%s:8080/api/v1' % ipaddr
-                    gc = girder_client.GirderClient(apiUrl=apiUrl)
-                    gc.authenticate('admin', 'password')
+                    gc = _connect_girder_client_to_local_dsa(ipaddr)
                     break
             except Exception as e:
-                print(e.__repr__())
-                # Most likely the DSA docker it still initializing, so we wait
-                # a bit and then try again
+                warnings.warn(e.__repr__(), RuntimeWarning)
+                warnings.warn(
+                    "Looks like the local DSA docker image is still "
+                    "initializing. Will wait a few seconds and try again.",
+                    RuntimeWarning
+                )
                 time.sleep(0.1)
+
+    return gc, proc
+
+
+@pytest.fixture(scope='session')
+def girderClient():
+    """
+    Yield an authenticated girder client that points to the server.
+
+    If a local girder server docker is running, this will connect to it,
+    otherwise, this will spin up a local girder server, load it with some
+    initial data, and connect to it.
+
+    NOTE: If you are running tests locally with pytest, you will most likely
+    need to start the local girder server manually (don't worry, it's
+    just one command). This is because _create_and_connect_to_local_dsa()
+    sends a bash process from the python interpreter to create a DSA docker
+    image, and hence needs multi-thresding to work correctly. The simplest
+    workaround is to open a new bash terminal, navigate to the directory
+    where this file exists, and start the container. like this ..
+    $ cd HistomicsTK/tests/
+    $ docker-compose up --build
+    Of course, you need to have docker installed and to either
+    run this as sudo or be added to the docker group by the system admins.
+    """
+    try:
+        # First we try to connect to any existing local DSA docker
+        yield _connect_to_existing_local_dsa()
+
+    except Exception as e:
+        warnings.warn(e.__repr__(), RuntimeWarning)
+        warnings.warn(
+            "Looks like there's no existing local DSA docker running; "
+            "will create one now anf try again.",
+            RuntimeWarning
+        )
+        # create a local dsa docker and connect to it
+        gc, proc = _create_and_connect_to_local_dsa()
+
         yield gc
         proc.terminate()
         proc.wait()
