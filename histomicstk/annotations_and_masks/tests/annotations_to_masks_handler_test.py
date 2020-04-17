@@ -13,8 +13,8 @@ import pytest
 from pandas import read_csv
 from imageio import imread
 
-# import sys
-# sys.path.insert(0, '/home/mtageld/Desktop/HistomicsTK/tests/')
+import sys
+sys.path.insert(0, '/home/mtageld/Desktop/HistomicsTK/tests/')
 import htk_test_utilities as utilities
 from htk_test_utilities import girderClient  # noqa
 
