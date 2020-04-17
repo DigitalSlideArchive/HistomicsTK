@@ -31,3 +31,4 @@ py27/
 py36/
 py37/
 .package.lock
+tests/externaldata/
