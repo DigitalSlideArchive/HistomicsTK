@@ -20,7 +20,7 @@ Examples
    examples/annotations_to_object_segmentation_masks.ipynb
    examples/segmentation_masks_to_annotations.ipynb
    examples/polygon_merger_from_tiled_masks.ipynb
-   examples/polygon_merger_general_purpose.ipynb
+   examples/polygon_merger_using_rtree.ipynb
    examples/simple_tissue_detection.ipynb
    examples/semantic_segmentation_color_thresholding_approach.ipynb
    examples/semantic_segmentation_superpixel_approach.ipynb
