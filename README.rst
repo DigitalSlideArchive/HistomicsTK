@@ -62,25 +62,25 @@ This work is funded by the NIH grant U24-CA194362-01_.
 See Also
 ---------
 
-DSA/HistomicsTK project website:
+**DSA/HistomicsTK project website:**
+`Demos <https://digitalslidearchive.github.io/digital_slide_archive/demos-examples/>`_ |
+`Success stories <https://digitalslidearchive.github.io/digital_slide_archive/success-stories/>`_
 
-- Demos: https://digitalslidearchive.github.io/digital_slide_archive/demos-examples/
-- Success stories: https://digitalslidearchive.github.io/digital_slide_archive/success-stories/
+**Source repositories:** `Digital Slide Archive`_ | `HistomicsUI`_ | `large_image`_ | `slicer_cli_web`_
 
-Source repositories:
+**Discussion:** `Discourse forum`_ | `Gitter Chatroom`_
 
-- Digital Slide Archive: http://github.com/DigitalSlideArchive/digital_slide_archive
-- HistomicsUI: http://github.com/DigitalSlideArchive/HistomicsUI
-- large_image: https://github.com/girder/large_image
-- slicer_cli_web: https://github.com/girder/slicer_cli_web
-
-Discussion:
-
-- Discourse forum: https://discourse.girder.org/c/histomicstk
-- Gitter Chatroom: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-
+.. Links for everythign above (not rendered):
+.. _HistomicsTK: https://digitalslidearchive.github.io/digital_slide_archive/
+.. _Digital Slide Archive: http://github.com/DigitalSlideArchive/digital_slide_archive
+.. _HistomicsUI: http://github.com/DigitalSlideArchive/HistomicsUI
+.. _large_image: https://github.com/girder/large_image
+.. _our website: https://digitalslidearchive.github.io/digital_slide_archive/
 .. _slicer execution model: https://www.slicer.org/slicerWiki/index.php/Slicer3:Execution_Model_Documentation
+.. _slicer_cli_web: https://github.com/girder/slicer_cli_web
 .. _Docker: https://www.docker.com/
 .. _Kitware: http://www.kitware.com/
 .. _U24-CA194362-01: http://grantome.com/grant/NIH/U24-CA194362-01
+.. _Discourse forum: https://discourse.girder.org/c/histomicstk
+.. _Gitter Chatroom: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
