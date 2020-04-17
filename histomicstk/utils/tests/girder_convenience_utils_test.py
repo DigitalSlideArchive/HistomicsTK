@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-import unittest
+
+import tests.htk_test_utilities as utilities
+from tests.htk_test_utilities import girderClient  # noqa
 from histomicstk.utils.girder_convenience_utils import connect_to_api, \
     update_permissions_for_annotation, update_styles_for_annotations_in_slide
 
@@ -14,7 +16,7 @@ GC = connect_to_api(APIURL, interactive=True)  # for edit permissions
 # %%===========================================================================
 
 
-class GirderConvenienceTest(unittest.TestCase):
+class GirderConvenienceTest(object):
     """Test utilities for interaction with girder."""
 
     def test_connect_to_api(self):
