@@ -88,7 +88,7 @@ def externaldata(
     return destpath
 
 
-# @pytest.fixture(scope='session')
+@pytest.fixture(scope='session')
 def girderClient():
     """
     Spin up a local girder server, load it with some initial data, and return
@@ -122,7 +122,6 @@ def girderClient():
         os.chdir(cwd)
         timeout = time.time() + 1200
         client = docker.from_env(version='auto')
-        # client = docker.from_env()
         while time.time() < timeout:
             try:
                 ipaddr = list(client.containers.list(
@@ -140,5 +139,3 @@ def girderClient():
         proc.terminate()
         proc.wait()
 
-
-next(girderClient())
