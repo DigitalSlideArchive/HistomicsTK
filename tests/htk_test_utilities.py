@@ -115,25 +115,34 @@ def girderClient():
         # rest of the pipeline here once the server is up, by looking for the
         # Histomics container and doind all sorts of stuff with it. Of course, make
         # sure to use the yml file that David M provides.
+
+        # build a DSA docker container locally
         proc = subprocess.Popen([
             'docker-compose', 'up', '--build'],
             close_fds=True, stdout=outfile, stderr=outfile)
 
         os.chdir(cwd)
         timeout = time.time() + 1200
+
+        # connect to docker and take a look at all its containers
         client = docker.from_env(version='auto')
         while time.time() < timeout:
             try:
+                # search docker containers for the newly created DSA docker
+                # container and fetch its IP address
                 ipaddr = list(client.containers.list(
                     filters={'label': 'HISTOMICSTK_GC_TEST'})[0].attrs[
                         'NetworkSettings']['Networks'].values())[0]['IPAddress']
                 if ipaddr:
+                    # Now connect a girder client to the local DSA docker
                     apiUrl = 'http://%s:8080/api/v1' % ipaddr
                     gc = girder_client.GirderClient(apiUrl=apiUrl)
                     gc.authenticate('admin', 'password')
                     break
             except Exception as e:
                 print(e.__repr__())
+                # Most likely the DSA docker it still initializing, so we wait
+                # a bit and then try again
                 time.sleep(0.1)
         yield gc
         proc.terminate()
