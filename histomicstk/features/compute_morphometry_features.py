@@ -102,11 +102,11 @@ def compute_morphometry_features(im_label, rprops=None):
         # compute MajorAxisLength and MinorAxisLength
         # A bug in scikit-image could produce a (very slightly)
         # negative element in inertia_tensor_eigvals, so insert
-        # "max(0, )" call here before invoking sqrt().
+        # "max(0, )" call here before invoking np.sqrt().
         inertia_tensor_eigvals = rprops[i].inertia_tensor_eigvals
-        major_axis_length = 4 * sqrt(
+        major_axis_length = 4 * np.sqrt(
             max(inertia_tensor_eigvals[0], 0))
-        minor_axis_length = 4 * sqrt(
+        minor_axis_length = 4 * np.sqrt(
             max(inertia_tensor_eigvals[-1], 0))
 
         fdata.at[i, 'Size.MajorAxisLength'] = major_axis_length
