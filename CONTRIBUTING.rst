@@ -139,8 +139,8 @@ There are two 'types` of unit tests on HistomicsTK.
   need to start the local girder server manually (don't worry, it's
   just one command). Open a new bash terminal, and run this::
 
-      $ cd HistomicsTK/tests/
-      $ docker-compose up --build
+    $ cd HistomicsTK/tests/
+    $ docker-compose up --build
 
   Then you can run your tests as you would nornally, using something like::
 

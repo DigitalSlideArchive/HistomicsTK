@@ -189,4 +189,3 @@ def girderClient():
         yield gc
         proc.terminate()
         proc.wait()
-
