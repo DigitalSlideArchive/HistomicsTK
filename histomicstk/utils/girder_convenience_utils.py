@@ -16,7 +16,23 @@ from histomicstk.workflows.workflow_runner import Workflow_runner, \
 
 
 def connect_to_api(apiurl, apikey=None, interactive=True):
-    """Connect to a specific girder API"""
+    """Connect to a specific girder API.
+
+    Parameters
+    ----------
+    apiurl : str
+        URL to the AP to connect to.
+    apikey : str
+        API authentication token key
+    interactive : bool
+        Whether to use interactive mode instead.
+
+    Returns
+    -------
+    girder_client.GirderClient
+        Authenticated girder client.
+
+    """
     assert interactive or (apikey is not None)
     gc = girder_client.GirderClient(apiUrl=apiurl)
     if apikey is not None:
@@ -29,7 +45,23 @@ def connect_to_api(apiurl, apikey=None, interactive=True):
 
 
 def get_absolute_girder_folderpath(gc, folder_id=None, folder_info=None):
-    """Get absolute path for a girder folder."""
+    """Get absolute path for a girder folder.
+
+    Parameters
+    ----------
+    gc : girder_client.GirderClient
+        authenticated girder client
+    folder_id : str
+        girder id of folder
+    folder_info : dict
+        folder info from the girder server
+
+    Returns
+    -------
+    str
+        absolute path to folder in the girder server.
+
+    """
     assert any([j is not None for j in (folder_id, folder_info)])
     if folder_id is not None:
         folder_info = gc.get('/folder/%s' % folder_id)
@@ -42,8 +74,8 @@ def get_absolute_girder_folderpath(gc, folder_id=None, folder_info=None):
 
 def update_permissions_for_annotation(
         gc, annotation_id=None, annotation=None,
-        groups_to_add=[], replace_original_groups=True,
-        users_to_add=[], replace_original_users=True):
+        groups_to_add=None, replace_original_groups=True,
+        users_to_add=None, replace_original_users=True):
     """Update permissions for a single annotation.
 
     Parameters
@@ -79,6 +111,9 @@ def update_permissions_for_annotation(
         server response
 
     """
+    groups_to_add = [] if groups_to_add is None else groups_to_add
+    users_to_add = [] if users_to_add is None else users_to_add
+
     if annotation is not None:
         annotation_id = annotation['_id']
     elif annotation_id is None:
@@ -110,7 +145,7 @@ def update_permissions_for_annotation(
             current['users'].append(user)
 
     # now update accordingly
-    # OLD WAY (BAD!!)
+    # BAD WAY!! -- do NOT do this!
     # return gc.put('/annotation/%s/access?access=%s' % (
     #        annotation_id, json.dumps(current)))
     # PROPER WAY
@@ -236,6 +271,9 @@ def update_styles_for_annotations_in_slide(
         girder id of slide
     monitorPrefix : str
         prefix to prepend to printed statements
+    callback : function
+        if None, defaults to update_styles_for_annotation. Passed as-is
+        to histomicstk.workflows.workflow_runner.Annotation_iterator
     kwargs
         passed as-is to the update_styles_for_annotation
 
@@ -270,6 +308,8 @@ def update_styles_for_annotations_in_folder(
         kwargs to pass to Update styles for all annotations in a slide()
     recursive : bool
         do this recursively for subfolders?
+    catch_exceptions : bool
+        passed as-is to histomicstk.workflows.workflow_runner.Workflow_runner
     monitor : str
         text to prepend to printed statements
     verbose : bool
@@ -318,6 +358,8 @@ def revert_annotation(
     revert_to_nonempty_elements : bool
         if true, reverts to the most recent version of the annotation
         with non-empty elements.
+    only_revert_if_empty : bool
+        if true, only reverts annotation if it contains an empty element list
 
     Returns
     -------
