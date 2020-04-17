@@ -88,7 +88,7 @@ def externaldata(
     return destpath
 
 
-@pytest.fixture(scope='session')
+# @pytest.fixture(scope='session')
 def girderClient():
     """
     Spin up a local girder server, load it with some initial data, and return
@@ -102,12 +102,27 @@ def girderClient():
     os.chdir(thisDir)
     outfilePath = os.path.join(tempfile.gettempdir(), 'histomicstk_test_girder_log.txt')
     with open(outfilePath, 'w') as outfile:
+
+        # DOES NOT WORK LOCALLY!!!
+        # 1- does not work inside pycharm, has to be ipython alone
+        # 2- When I try this approach of making a subprocess to run the docker
+        #    it's REEEEALLY slow and there's no way for me to know when the docker
+        #    has actually finished starting the local DSA server. It takes quite long
+        #    and the heuristic currently used (if I understand it) is based on
+        #    just waiting and having a timeout after a while!
+        # What I found to work better is to just start the DSA server in a separate
+        # terminal using docker compose-up --build and THEN to use the
+        # rest of the pipeline here once the server is up, by looking for the
+        # Histomics container and doind all sorts of stuff with it. Of course, make
+        # sure to use the yml file that David M provides.
         proc = subprocess.Popen([
             'docker-compose', 'up', '--build'],
             close_fds=True, stdout=outfile, stderr=outfile)
+
         os.chdir(cwd)
         timeout = time.time() + 1200
         client = docker.from_env(version='auto')
+        # client = docker.from_env()
         while time.time() < timeout:
             try:
                 ipaddr = list(client.containers.list(
@@ -118,8 +133,12 @@ def girderClient():
                     gc = girder_client.GirderClient(apiUrl=apiUrl)
                     gc.authenticate('admin', 'password')
                     break
-            except Exception:
+            except Exception as e:
+                print(e.__repr__())
                 time.sleep(0.1)
         yield gc
         proc.terminate()
         proc.wait()
+
+
+next(girderClient())
