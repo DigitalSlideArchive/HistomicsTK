@@ -6,6 +6,9 @@ Examples
 .. toctree::
    :maxdepth: 1
 
+   examples/introducing_the_girder_api.rst
+   examples/procedure_for_typical_annotation_project.rst
+   examples/tips_for_scalable_annotation_rendering.rst
    examples/wsi-io-using-large-image.ipynb
    examples/color-deconvolution.ipynb
    examples/color-normalization-and-augmentation.ipynb
