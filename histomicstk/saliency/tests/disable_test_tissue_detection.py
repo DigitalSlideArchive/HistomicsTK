@@ -38,7 +38,7 @@ savepath = tempfile.mkdtemp()
 # Tests
 
 
-class TissueDetectionTest(unittest.TestCase):
+class TestTissueDetection(unittest.TestCase):
     """Test methods for getting ROI mask from annotations."""
 
     def test_get_tissue_mask(self):

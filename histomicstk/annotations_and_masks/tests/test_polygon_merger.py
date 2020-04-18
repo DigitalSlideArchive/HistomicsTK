@@ -19,7 +19,7 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     delete_annotations_in_slide)
 
 
-class PolygonMergerTest(object):
+class TestPolygonMerger(object):
     """Test methods for polygon merger."""
 
     @pytest.mark.usefixtures('girderClient')  # noqa

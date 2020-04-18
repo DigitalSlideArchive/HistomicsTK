@@ -28,7 +28,7 @@ from histomicstk.preprocessing import color_deconvolution as htk_dcv
 TEST_DATA_DIR = 'fixme'
 
 
-class MacenkoTest(unittest.TestCase):
+class TestMacenko(unittest.TestCase):
 
     def test_macenko(self):
         im_path = os.path.join(TEST_DATA_DIR, 'Easy1.png')
@@ -43,7 +43,7 @@ class MacenkoTest(unittest.TestCase):
         np.testing.assert_allclose(w, w_expected, atol=1e-6)
 
 
-class ColorDeconvolutionTest(unittest.TestCase):
+class TestColorDeconvolution(unittest.TestCase):
 
     def test_roundtrip(self):
         im_path = os.path.join(TEST_DATA_DIR, 'Easy1.png')

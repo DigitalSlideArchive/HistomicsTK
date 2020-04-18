@@ -72,7 +72,7 @@ def _configure():
 # %%===========================================================================
 
 
-class ColorAugmentationTest(unittest.TestCase):
+class TestColorAugmentation(unittest.TestCase):
     """Test color augmentation."""
 
     def test_rgb_perturb_stain_concentration(self):

@@ -26,7 +26,7 @@ import unittest
 from histomicstk.features import compute_global_cell_graph_features as cgcgf
 
 
-class GlobalCellGraphFeaturesTest(unittest.TestCase):
+class TestGlobalCellGraphFeatures(unittest.TestCase):
     def testSimple(self):
         data = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1], [-.5, -.5], [.5, .5]])
         actual = cgcgf(data, neighbor_distances=0.7 * np.arange(1, 6), neighbor_counts=(3, 5))

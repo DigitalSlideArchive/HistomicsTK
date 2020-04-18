@@ -23,7 +23,7 @@ import skimage.feature
 import unittest
 
 
-class GLCMMatrixGenerationTest(unittest.TestCase):
+class TestGLCMMatrixGeneration(unittest.TestCase):
 
     def test_graycomatrixext(self):
 

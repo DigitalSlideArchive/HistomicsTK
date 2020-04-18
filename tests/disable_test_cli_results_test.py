@@ -42,7 +42,7 @@ def tearDownModule():
     base.stopServer()
 
 
-class CliResultsTest(unittest.TestCase):
+class TestCliResults(unittest.TestCase):
     def _runTest(self, cli_args=(), cli_kwargs=None, outputs=None,  # noqa
                  contains=None, excludes=None):
         """

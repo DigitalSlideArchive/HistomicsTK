@@ -68,7 +68,7 @@ cdt_params = {
 # %%===========================================================================
 
 
-class Slide_iterator_Test(unittest.TestCase):
+class TestSlideIterator(unittest.TestCase):
     """Test slide iterator."""
 
     def test_Slide_iterator(self):
@@ -91,7 +91,7 @@ class Slide_iterator_Test(unittest.TestCase):
 # %%===========================================================================
 
 
-class Workflow_runner_Test(unittest.TestCase):
+class TestWorkflowRunner(unittest.TestCase):
     """Test workflow runner."""
 
     def test_runner_using_Cellularity_detector_thresholding(self):

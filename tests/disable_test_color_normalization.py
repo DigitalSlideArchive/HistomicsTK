@@ -32,7 +32,7 @@ from histomicstk.cli import utils as cli_utils
 TEST_DATA_DIR = 'fixme'
 
 
-class ReinhardNormalizationTest(unittest.TestCase):
+class TestReinhardNormalization(unittest.TestCase):
 
     def test_normalization(self):
 
@@ -91,7 +91,7 @@ class ReinhardNormalizationTest(unittest.TestCase):
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)
 
 
-class BackgroundIntensityTest(unittest.TestCase):
+class TestBackgroundIntensity(unittest.TestCase):
 
     def test_background_intensity(self):
         wsi_path = os.path.join(

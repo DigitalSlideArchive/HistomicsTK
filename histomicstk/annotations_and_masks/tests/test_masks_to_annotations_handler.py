@@ -18,7 +18,7 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     delete_annotations_in_slide)
 
 
-class TestMasksToAnnotationsTest(object):
+class TestMasksToAnnotations(object):
     """Test methods for getting ROI mask from annotations."""
 
     def _setup(self):

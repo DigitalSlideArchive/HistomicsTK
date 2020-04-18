@@ -31,7 +31,7 @@ import histomicstk.segmentation as htk_seg
 TEST_DATA_DIR = 'fixme'
 
 
-class NucleiSegmentationTest(unittest.TestCase):
+class TestNucleiSegmentation(unittest.TestCase):
 
     def test_segment_nuclei_kofahi(self):
 
