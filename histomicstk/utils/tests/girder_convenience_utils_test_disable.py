@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import tests.htk_test_utilities as utilities
+# import tests.htk_test_utilities as utilities
 from tests.htk_test_utilities import girderClient  # noqa
-from histomicstk.utils.girder_convenience_utils import connect_to_api, \
-    update_permissions_for_annotation, update_styles_for_annotations_in_slide
+from histomicstk.utils.girder_convenience_utils import \
+    update_permissions_for_annotation
 
 # %%===========================================================================
 
@@ -24,6 +24,7 @@ class GirderConvenienceTest(object):
             ],
             replace_original_users=True
         )
+        assert type(resp) == dict
         # self.assertListEqual(
         #     resp['access']['users'],
         #     [{'flags': [], 'id': '59bc677892ca9a0017c2e855', 'level': 2},

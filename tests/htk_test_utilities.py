@@ -81,7 +81,8 @@ def externaldata(
                         raise Exception('Download has wrong hash value - %s' % destpath)
                     break
                 raise Exception('Incomplete download (got %d of %d) of %s' % (
-                    os.path.getsize(destpath), int(request.headers['content-length'], destpath)))
+                    os.path.getsize(destpath),
+                    int(request.headers['content-length']), destpath))
             except Exception:
                 pass
             if os.path.exists(destpath):
@@ -96,8 +97,7 @@ def _get_htk_ipaddr(dclient):
     # and fetch its IP address
     return list(dclient.containers.list(
         filters={'label': 'HISTOMICSTK_GC_TEST'})[0].attrs[
-                      'NetworkSettings']['Networks'].values())[0][
-        'IPAddress']
+            'NetworkSettings']['Networks'].values())[0]['IPAddress']
 
 
 def _connect_girder_client_to_local_dsa(ip):
