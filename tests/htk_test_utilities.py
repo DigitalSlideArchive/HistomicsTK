@@ -160,12 +160,12 @@ def girderClient():
     otherwise, this will spin up a local girder server, load it with some
     initial data, and connect to it.
 
-    NOTE: If you are running tests locally with pytest, you will most likely
-    need to start the local girder server manually (don't worry, it's
-    just one command). This is because _create_and_connect_to_local_dsa()
-    sends a bash process from the python interpreter to create a DSA docker
-    image, and hence needs multi-thresding to work correctly. The simplest
-    workaround is to open a new bash terminal, navigate to the directory
+    NOTE: If you are running tests multiple locally with pytest, you may prefer
+    to start the local girder server manually (don't worry, it's
+    just one command). That way, the unit tests are faster because the DSA docker
+    container is only initialized once. This also has the added benefit of not
+    having to worry about unknown wait time till the local server is fully
+    initialized.To manually start a DSA docker image, navigate to the directory
     where this file exists, and start the container. like this ..
     $ cd HistomicsTK/tests/
     $ docker-compose up --build
@@ -180,7 +180,7 @@ def girderClient():
         warnings.warn(e.__repr__(), RuntimeWarning)
         warnings.warn(
             "Looks like there's no existing local DSA docker running; "
-            "will create one now anf try again.",
+            "will create one now and try again.",
             RuntimeWarning
         )
         # create a local dsa docker and connect to it

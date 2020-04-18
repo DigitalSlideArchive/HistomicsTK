@@ -62,20 +62,20 @@ Ready to contribute? Here's how to set up `HistomicsTK` for local development.
 1. Fork the `HistomicsTK` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/HistomicsTK.git
+   $ git clone git@github.com:your_name_here/HistomicsTK.git
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
 
-    $ mkvirtualenv HistomicsTK
-    $ cd HistomicsTK/
-    $ python -m pip install setuptools-scm Cython>=0.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
-    $ python setup.py develop
+   $ mkvirtualenv HistomicsTK
+   $ cd HistomicsTK/
+   $ python -m pip install setuptools-scm Cython>=0.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
+   $ python setup.py develop
     
 Of course, any type of virtual python environment will do. These instructions are equally applicable inside `conda` environments.
 
 4. Create a branch for local development::
 
-    $ git checkout -b name-of-your-bugfix-or-feature
+   $ git checkout -b name-of-your-bugfix-or-feature
 
    Now you can make your changes locally.
 
@@ -110,7 +110,7 @@ Unit Testing Notes
 
 There are two 'types` of unit tests on HistomicsTK.
 
-* Ordinary unit testing:
+* **Ordinary unit testing:**
 
   All unit testing uses the ``pytest`` module, and you should avoid using python's
   ``unittest`` module. Unit testing using dependency libraries such as ``numpy``
@@ -120,14 +120,14 @@ There are two 'types` of unit tests on HistomicsTK.
 
   You can run your tests using something like::
 
-    $ pytest your_python_file_test.py
+  $ pytest your_python_file_test.py
 
-* Server side testing:
+* **Server side testing:**
 
   Sometimes you need to write unit tests for features that use an authenticated
   girder client that is connected to a Digital Slide Archive server. For example,
   you may want to test a feature that fetches regions from a slide on the DSA server and
-  does some analysis with it. In that case, be sure to use the helpder methods provided
+  does some analysis with it. In that case, be sure to use the helper methods provided
   in ``./tests/htk_test_utilities.py``.
   The unit tests in ``./histomicstk/annotations_and_masks/tests/annotations_to_masks_handler_test.py``
   provide an example of how to handle these situations. Note that when access is need to
@@ -135,16 +135,20 @@ There are two 'types` of unit tests on HistomicsTK.
   slide and annotations, which are referenced using ``.sha512`` hash that
   is present in ``./tests/data/``.
 
-  *NOTE*: If you are running tests locally with ``pytest``, you will most likely
-  need to start the local girder server manually (don't worry, it's
-  just one command). Open a new bash terminal, and run this::
+  *NOTE*: If you are running tests locally with ``pytest``, you may prefer
+  to start the local girder server manually (don't worry, it's
+  just one command). That way, the unit tests are faster because the DSA docker
+  container is only initialized once. This also has the added benefit of not
+  having to worry about unknown wait time till the local server is fully
+  initialized. To manually start a DSA docker image, open a new bash terminal,
+  and run this::
 
-    $ cd HistomicsTK/tests/
-    $ docker-compose up --build
+  $ cd HistomicsTK/tests/
+  $ docker-compose up --build
 
   Then you can run your tests as you would nornally, using something like::
 
-    $ sudo pytest your_python_file_test.py
+  $ pytest your_python_file_test.py
 
   Of course, you need to have docker installed and to either
   run this as sudo or be added to the docker group by the system admins.

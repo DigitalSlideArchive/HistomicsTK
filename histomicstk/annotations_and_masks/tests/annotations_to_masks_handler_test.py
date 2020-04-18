@@ -5,23 +5,22 @@ Created on Mon Aug 12 18:47:34 2019.
 @author: tageldim
 
 """
-
 import json
 import os
 import pytest
-
 from pandas import read_csv
 from imageio import imread
-
-import sys
-sys.path.insert(0, '/home/mtageld/Desktop/HistomicsTK/tests/')
-import htk_test_utilities as utilities
-from htk_test_utilities import girderClient  # noqa
-
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois)
 from histomicstk.annotations_and_masks.annotations_to_masks_handler import (
     get_roi_mask, get_all_roi_masks_for_slide)
+
+import sys
+thisDir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
+
+import htk_test_utilities as utilities  # noqa
+from htk_test_utilities import girderClient  # noqa
 
 
 class TestGetROIMasks(object):
