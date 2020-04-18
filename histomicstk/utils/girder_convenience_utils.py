@@ -66,9 +66,10 @@ def get_absolute_girder_folderpath(gc, folder_id=None, folder_info=None):
     if folder_id is not None:
         folder_info = gc.get('/folder/%s' % folder_id)
     fpath = gc.get('/folder/%s/rootpath' % folder_info['_id'])
-    fpath = "/".join(
-        [j['object']['name'] for j in fpath]
-    ) + "/" + folder_info['name'] + "/"
+    fpath = "/".join([
+        j['object']['name'] for j in fpath
+        if j['object']['_modelType'] == 'folder'
+    ]) + "/" + folder_info['name'] + "/"
     return fpath
 
 
@@ -377,6 +378,10 @@ def revert_annotation(
 
     # no need to revert if empty
     if only_revert_if_empty and len(history[0]["groups"]) > 0:
+        return dict()
+
+    # cannot revert if only version
+    if len(history) < 2:
         return dict()
 
     if (version is None) and revert_to_nonempty_elements:
