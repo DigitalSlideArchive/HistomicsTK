@@ -114,12 +114,12 @@ There are two 'types` of unit tests on HistomicsTK.
 
   All unit testing uses the ``pytest`` module, and you should avoid using python's
   ``unittest`` module. Unit testing using dependency libraries such as ``numpy``
-  or ``pandas`` is allowed. Use the standard ``your_python_file_test.py``
+  or ``pandas`` is allowed. Use the standard ``test_python_file.py``
   naming convention. It is important that you check the
   `pytest naming convention <https://docs.pytest.org/en/latest/goodpractices.html#test-discovery>`_
   to make sure your discovered and actually run. Most of the unit tests are
   going to be stand-alone, and use data files that are small (e.g. csv files)
-    that are contained (or added to) this repository.
+  that are contained (or added to) this repository.
 
   You can run your tests using something like::
 
