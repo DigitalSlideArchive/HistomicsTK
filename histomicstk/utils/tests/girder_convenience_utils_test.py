@@ -18,7 +18,7 @@ from histomicstk.utils.girder_convenience_utils import \
 # %%
 
 
-class GirderConvenienceTest(object):
+class TestGirderConvenience(object):
     """Test utilities for interaction with girder."""
 
     @pytest.mark.usefixtures('girderClient')  # noqa
