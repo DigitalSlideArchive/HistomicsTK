@@ -138,20 +138,24 @@ There are two 'types` of unit tests on HistomicsTK.
   slide and annotations, which are referenced using ``.sha512`` hash that
   is present in ``./tests/data/``.
 
-  *NOTE*: If you are running tests locally with ``pytest``, you may prefer
-  to start the local girder server manually (don't worry, it's
-  just one command). That way, the unit tests are faster because the DSA docker
-  container is only initialized once. This also has the added benefit of not
-  having to worry about unknown wait time till the local server is fully
-  initialized. To manually start a DSA docker image, open a new bash terminal,
-  and run this::
+  *NOTE*: The default behavior initializes the docker image once and
+  re-uses it for all tests. This means whatever one unit test changes in
+  the DSA database is persistent for the next unit test. So if, for example,
+  you remove one annotation as part of the first unit test, the next unit
+  test will not have access to that annotation. Once all the unit tests are
+  done, the database is torn down.
+
+  If, instead, if you would like to run tests *repeatedly*
+  (i.e. prototyping), you may prefer to start the local server manually.
+  That way you won't have to worry about unknown wait time till the local
+  server is fully initialized. To manually start a DSA docker image::
 
   $ cd HistomicsTK/tests/
   $ docker-compose up --build
 
   Then you can run your tests as you would nornally, using something like::
 
-  $ pytest your_python_file_test.py
+  $ pytest test_python_file.py
 
   Of course, you need to have docker installed and to either
   run this as sudo or be added to the docker group by the system admins.

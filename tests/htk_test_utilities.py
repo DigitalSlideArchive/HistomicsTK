@@ -139,18 +139,18 @@ def _create_and_connect_to_local_dsa():
                 if ipaddr:
                     gc = _connect_girder_client_to_local_dsa(ipaddr)
                     break
-            except Exception as e:
-                warnings.warn(e.__repr__(), RuntimeWarning)
-                warnings.warn(
-                    "Looks like the local DSA docker image is still "
-                    "initializing. Will wait a few seconds and try again.",
-                    RuntimeWarning
-                )
+            except Exception:  # noqa
+                # warnings.warn(
+                #     "Looks like the local DSA docker image is still "
+                #     "initializing. Will wait a few seconds and try again.",
+                # )
                 time.sleep(0.1)
 
     return gc, proc
 
 
+# Note: We are using a scope='session' to create the DSA docker instance once.
+# See https://docs.pytest.org/en/latest/fixture.html
 @pytest.fixture(scope='session')
 def girderClient():
     """
@@ -160,28 +160,33 @@ def girderClient():
     otherwise, this will spin up a local girder server, load it with some
     initial data, and connect to it.
 
-    NOTE: If you are running tests multiple locally with pytest, you may prefer
-    to start the local girder server manually (don't worry, it's
-    just one command). That way, the unit tests are faster because the DSA docker
-    container is only initialized once. This also has the added benefit of not
-    having to worry about unknown wait time till the local server is fully
-    initialized.To manually start a DSA docker image, navigate to the directory
-    where this file exists, and start the container. like this ..
+    NOTE: The default behavior initializes the docker image once and
+    re-uses it for all tests. This means whatever one unit test changes in
+    the DSA database is persistent for the next unit test. So if, for example,
+    you remove one annotation as part of the first unit test, the next unit
+    test will not have access to that annotation. Once all the unit tests are
+    done, the database is torn down.
+
+    If, instead, if you would like to run tests *repeatedly*
+    (i.e. prototyping), you may prefer to start the local server manually.
+    That way you won't have to worry about unknown wait time till the local
+    server is fully initialized. To manually start a DSA docker image, navigate
+    to the directory where this file exists, and start the container:
     $ cd HistomicsTK/tests/
     $ docker-compose up --build
+
     Of course, you need to have docker installed and to either
     run this as sudo or be added to the docker group by the system admins.
     """
     try:
         # First we try to connect to any existing local DSA docker
-        yield _connect_to_existing_local_dsa()
+        return _connect_to_existing_local_dsa()
 
     except Exception as e:
-        warnings.warn(e.__repr__(), RuntimeWarning)
         warnings.warn(
+            e.__repr__() + "\n"
             "Looks like there's no existing local DSA docker running; "
             "will create one now and try again.",
-            RuntimeWarning
         )
         # create a local dsa docker and connect to it
         gc, proc = _create_and_connect_to_local_dsa()
