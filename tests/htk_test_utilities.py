@@ -193,7 +193,7 @@ def girderClient():
     """
     try:
         # First we try to connect to any existing local DSA docker
-        return _connect_to_existing_local_dsa()
+        yield _connect_to_existing_local_dsa()
 
     except Exception as e:
         warnings.warn(
