@@ -48,7 +48,7 @@ class TestPolygonMerger(object):
         contours_df = pm.run()
 
         # make sure it is what we expect
-        assert contours_df.shape == (17, 13)
+        assert contours_df.shape == (13, 13)
         assert set(contours_df.loc[:, 'group']) == {
             'roi', 'mostly_tumor', 'mostly_stroma',
             'mostly_lymphocytic_infiltrate'}

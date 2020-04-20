@@ -4,7 +4,6 @@ Created on Mon Aug 26 01:29:00 2019.
 
 @author: tageldim
 """
-
 import json
 
 import htk_test_utilities as utilities
@@ -15,7 +14,7 @@ from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     get_annotation_documents_from_contours,
     _discard_nonenclosed_background_group, )
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    parse_slide_annotations_into_table, )
+    parse_slide_annotations_into_tables, )
 
 
 class TestPolygonMerger_v2(object):
@@ -26,7 +25,7 @@ class TestPolygonMerger_v2(object):
         annotationPath = utilities.externaldata(
             'data/TCGA-A2-A0YE-01Z-00-DX1_GET_MergePolygons.svs_annotations.json.sha512')  # noqa
         slide_annotations = json.load(open(annotationPath))
-        contours_df = parse_slide_annotations_into_table(slide_annotations)
+        _, contours_df = parse_slide_annotations_into_tables(slide_annotations)
 
         # init & run polygon merger
         pm = Polygon_merger_v2(contours_df, verbose=0)
@@ -34,7 +33,7 @@ class TestPolygonMerger_v2(object):
         pm.run()
 
         # make sure it is what we expect
-        assert pm.new_contours.shape == (16, 13)
+        assert pm.new_contours.shape == (16, 15)
         assert set(pm.new_contours.loc[:, 'group']) == {
             'mostly_tumor', 'mostly_stroma', 'mostly_lymphocytic_infiltrate'}
 
