@@ -18,7 +18,7 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     delete_annotations_in_slide)
 
 
-class TestMasksToAnnotationsTest(object):
+class TestMasksToAnnotations(object):
     """Test methods for getting ROI mask from annotations."""
 
     def _setup(self):
@@ -31,7 +31,7 @@ class TestMasksToAnnotationsTest(object):
 
         # read sample contours_df dataframe to test against
         contoursDfPath = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), 'test_files', 'sample_contours_df.tsv')
+            os.path.dirname(os.path.realpath(__file__)), 'test_files', 'sample_contours_df.tsv')  # noqa
         self.CONTOURS_DF = read_csv(contoursDfPath, sep='\t', index_col=0)
 
         # read mask
@@ -72,7 +72,7 @@ class TestMasksToAnnotationsTest(object):
         """Test get_contours_from_bin_mask()."""
         self._setup()
         sampleSlideItem = girderClient.resourceLookup(
-            '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')
+            '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')  # noqa
         sampleSlideId = str(sampleSlideItem['_id'])
         # get list of annotation documents
         annprops = {

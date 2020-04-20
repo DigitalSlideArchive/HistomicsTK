@@ -37,7 +37,7 @@ logging_savepath = tempfile.mkdtemp()
 # %%===========================================================================
 
 
-class CellularityDetectionThresholdingTest(unittest.TestCase):
+class TestCellularityDetectionThresholding(unittest.TestCase):
     """Test methods for getting cellularity by thresholding."""
 
     def test_cellularity_detection_thresholding(self):

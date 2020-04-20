@@ -32,7 +32,7 @@ gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')
 # %%===========================================================================
 
 
-class GirderUtilsTest(unittest.TestCase):
+class TestGirderUtils(unittest.TestCase):
     """Test utilities for interaction with girder."""
 
     def test_get_image_from_htk_response(self):
@@ -47,7 +47,7 @@ class GirderUtilsTest(unittest.TestCase):
 # %%===========================================================================
 
 
-class MaskUtilsTest(unittest.TestCase):
+class TestMaskUtils(unittest.TestCase):
     """Test utilities for makign masks."""
 
     def test_get_bboxes_from_slide_annotations(self):

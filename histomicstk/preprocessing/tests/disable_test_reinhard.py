@@ -39,7 +39,7 @@ cnorm = {
 # %%===========================================================================
 
 
-class ReinhardTest(unittest.TestCase):
+class TestReinhard(unittest.TestCase):
     """Test reinhard normalization."""
 
     def test_reinhard(self):

@@ -4,10 +4,9 @@
 Installation
 ============
 
-As mentioned in the :doc:`index <index>`, HistomicsTK can be used both as a pure
-Python toolkit for algorithm development and as server-side Girder_ plugin
-for web-based analysis. Here, we describe how to install HistomicsTK for both
-these scenarios.
+HistomicsTK can be used both as a pure Python toolkit for algorithm development
+and as server-side Girder_ plugin for web-based analysis. Here, we describe how
+to install HistomicsTK for both these scenarios.
 
 Installing HistomicsTK as a Python toolkit
 ------------------------------------------
@@ -46,9 +45,6 @@ analysis, the following three Girder plugins need to be installed:
   CLIs and containerized using Docker.
 
 There are several methods that can be used to install HistomicsTK.  Each of these results in a fully deployed system.  Docker is often the easiest deployment.  Vagrant is the easiest development environment.
-
-.. include:: ../ansible/README.rst
-   :start-after: __methods
 
 Installing Slicer CLI Docker Images for Analysis
 ------------------------------------------------

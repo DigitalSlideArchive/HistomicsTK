@@ -24,7 +24,7 @@ from histomicstk.segmentation.label import trace_object_boundaries
 from histomicstk.segmentation.label import delete_border
 
 
-class TraceBoundaryTest(unittest.TestCase):
+class TestTraceBoundary(unittest.TestCase):
 
     def test_trace_boundary(self):
 
@@ -67,7 +67,7 @@ class TraceBoundaryTest(unittest.TestCase):
         np.testing.assert_allclose(ry_moore, y_moore[0])
 
 
-class DeleteBorderLabelTest(unittest.TestCase):
+class TestDeleteBorderLabel(unittest.TestCase):
 
     def test_delete_border(self):
 

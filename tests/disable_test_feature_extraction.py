@@ -16,7 +16,7 @@ import histomicstk.features as htk_features
 TEST_DATA_DIR = 'fixme'
 
 
-class FeatureExtractionTest(unittest.TestCase):
+class TestFeatureExtraction(unittest.TestCase):
 
     def setUp(self):
 

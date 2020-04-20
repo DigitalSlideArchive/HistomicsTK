@@ -72,7 +72,7 @@ def _configure():
 # %%===========================================================================
 
 
-class DeconvolutionBasedNormalizationTest(unittest.TestCase):
+class TestDeconvolutionBasedNormalization(unittest.TestCase):
     """Test deconvolution normalization."""
 
     def test_macenko_normalization(self):

@@ -41,7 +41,7 @@ cnorm_main = {
 # %%===========================================================================
 
 
-class CellularityDetectionTest(unittest.TestCase):
+class TestCellularityDetection(unittest.TestCase):
     """Test methods for getting ROI mask from annotations."""
 
     def test_Cellularity_detector_superpixels(self):

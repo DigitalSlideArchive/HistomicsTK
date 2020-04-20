@@ -41,7 +41,7 @@ from histomicstk.cli import utils as cli_utils
 TEST_DATA_DIR = 'fixme'
 
 
-class CliCommonTest(unittest.TestCase):
+class TestCliCommon(unittest.TestCase):
 
     def test_get_stain_matrix(self):
 

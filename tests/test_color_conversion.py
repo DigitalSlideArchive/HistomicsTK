@@ -27,7 +27,7 @@ from histomicstk.preprocessing.color_conversion import rgb_to_lab
 from histomicstk.preprocessing.color_conversion import lab_to_rgb
 
 
-class ColorConversionTest(unittest.TestCase):
+class TestColorConversion(unittest.TestCase):
 
     def test_rgb_to_od(self):
 
