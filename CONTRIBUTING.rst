@@ -138,22 +138,30 @@ There are two 'types` of unit tests on HistomicsTK.
   slide and annotations, which are referenced using ``.sha512`` hash that
   is present in ``./tests/data/``.
 
-  *NOTE*: The default behavior initializes the docker image once and
-  re-uses it for all tests. This means whatever one unit test changes in
-  the DSA database is persistent for the next unit test. So if, for example,
-  you remove one annotation as part of the first unit test, the next unit
-  test will not have access to that annotation. Once all the unit tests are
-  done, the database is torn down.
+  The ``pytest`` fixture ``girderClient``, defined in ``tests/htk_test_utilities.py``
+  yields an authenticated girder client that points to the server. If a local
+  girder server docker is running, this will connect to it, otherwise, it will
+  spin up a local girder server, load it with some initial data, and connect to it.
 
-  If, instead, if you would like to run tests *repeatedly*
-  (i.e. prototyping), you may prefer to start the local server manually.
-  That way you won't have to worry about unknown wait time till the local
-  server is fully initialized. To manually start a DSA docker image::
+    **NOTE:**
 
-  $ cd HistomicsTK/tests/
-  $ docker-compose up --build
+    The default behavior initializes the docker image once per module and
+    re-uses it for all tests. This means whatever one unit test changes in
+    the DSA database is persistent for the next unit test. So if, for example,
+    you remove one annotation as part of the first unit test, the next unit
+    test will not have access to that annotation. Once all the unit tests are
+    done, the database is torn down.
 
-  Then you can run your tests as you would nornally, using something like::
+    If, instead, if you would like to run tests *repeatedly* (i.e. prototyping),
+    or you would like the changes written by tests in one module to be
+    carried over to the next test module, you may prefer to start the server
+    manually. That way you won't worry about unknown wait time till the local
+    server is fully initialized. To manually start a DSA docker image::
+
+      $ cd HistomicsTK/tests/
+      $ docker-compose up --build
+
+  You can run your tests using something like::
 
   $ pytest test_python_file.py
 

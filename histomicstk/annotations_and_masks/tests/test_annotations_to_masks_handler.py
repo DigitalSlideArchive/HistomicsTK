@@ -36,7 +36,7 @@ class TestGetROIMasks(object):
 
         # read ground truth codes and information
         testDir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')
+            os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')  # noqa
         gtcodePath = os.path.join(testDir, 'test_files', 'sample_GTcodes.csv')
         GTCodes = read_csv(gtcodePath)
         GTCodes.index = GTCodes.loc[:, 'group']
@@ -72,10 +72,10 @@ class TestGetROIMasks(object):
         mask_savepath = str(tmpdir)
 
         testDir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')
+            os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')  # noqa
         gtcodePath = os.path.join(testDir, 'test_files', 'sample_GTcodes.csv')
         sampleSlideItem = girderClient.resourceLookup(
-            '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')
+            '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')  # noqa
         sampleSlideId = str(sampleSlideItem['_id'])
 
         get_all_roi_masks_for_slide(

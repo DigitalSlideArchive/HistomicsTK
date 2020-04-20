@@ -149,9 +149,21 @@ def _create_and_connect_to_local_dsa():
     return gc, proc
 
 
-# Note: We are using a scope='session' to create the DSA docker instance once.
+# TODO -- refactor to session scope by figuring out pytest issue (bug?)
 # See https://docs.pytest.org/en/latest/fixture.html
-@pytest.fixture(scope='session')
+# Note:
+#     We could use scope='session' to create the DSA docker instance once
+#     and reuse it for all test modules. However, pytest seems to have a
+#     bug when yield is used (as oppoed to return) and it does not run the
+#     teardown code properly. Instead, the girderClient fixture is called
+#     again between modules, causing a stopIteration error.
+#     Until this bug is fixed, we restrict the scope to the "module" level
+#     to ensure: 1. Safe teardown, and 2. That edits to the database
+#     done by one module do not carry over to the next module.
+#
+
+# @pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def girderClient():
     """
     Yield an authenticated girder client that points to the server.
@@ -160,16 +172,17 @@ def girderClient():
     otherwise, this will spin up a local girder server, load it with some
     initial data, and connect to it.
 
-    NOTE: The default behavior initializes the docker image once and
+    NOTE: The default behavior initializes the docker image once per module and
     re-uses it for all tests. This means whatever one unit test changes in
     the DSA database is persistent for the next unit test. So if, for example,
     you remove one annotation as part of the first unit test, the next unit
     test will not have access to that annotation. Once all the unit tests are
     done, the database is torn down.
 
-    If, instead, if you would like to run tests *repeatedly*
-    (i.e. prototyping), you may prefer to start the local server manually.
-    That way you won't have to worry about unknown wait time till the local
+    If, instead, if you would like to run tests *repeatedly* (i.e. prototyping)
+    , or you would like the changes written by tests in one module to be
+    carried over to the next test module, you may prefer to start the server
+    manually. That way you won't worry about unknown wait time till the local
     server is fully initialized. To manually start a DSA docker image, navigate
     to the directory where this file exists, and start the container:
     $ cd HistomicsTK/tests/

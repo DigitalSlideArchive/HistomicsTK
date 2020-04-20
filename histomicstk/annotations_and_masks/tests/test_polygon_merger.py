@@ -55,7 +55,7 @@ class TestPolygonMerger(object):
 
         # deleting existing annotations in target slide (if any)
         sampleSlideItem = girderClient.resourceLookup(
-            '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')
+            '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')  # noqa
         sampleSlideId = str(sampleSlideItem['_id'])
         delete_annotations_in_slide(girderClient, sampleSlideId)
 
