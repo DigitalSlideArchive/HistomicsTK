@@ -14,7 +14,7 @@ from pandas import read_csv
 from imageio import imread
 
 import htk_test_utilities as utilities
-from htk_test_utilities import girderClient  # noqa
+from htk_test_utilities import girderClient, getTestFilePath  # noqa
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois)
@@ -34,9 +34,7 @@ class TestGetROIMasks(object):
         element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 
         # read ground truth codes and information
-        testDir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')
-        gtcodePath = os.path.join(testDir, 'test_files', 'sample_GTcodes.csv')
+        gtcodePath = getTestFilePath('sample_GTcodes.csv')
         GTCodes = read_csv(gtcodePath)
         GTCodes.index = GTCodes.loc[:, 'group']
 
@@ -70,9 +68,7 @@ class TestGetROIMasks(object):
         # just a temp directory to save masks for now
         mask_savepath = str(tmpdir)
 
-        testDir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')
-        gtcodePath = os.path.join(testDir, 'test_files', 'sample_GTcodes.csv')
+        gtcodePath = getTestFilePath('sample_GTcodes.csv')
         sampleSlideItem = girderClient.resourceLookup(
             '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')
         sampleSlideId = str(sampleSlideItem['_id'])

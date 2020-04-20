@@ -10,7 +10,7 @@ import pytest
 from pandas import read_csv
 from imageio import imread
 
-from htk_test_utilities import girderClient  # noqa
+from htk_test_utilities import girderClient, getTestFilePath  # noqa
 
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     get_contours_from_mask, get_annotation_documents_from_contours)
@@ -23,9 +23,7 @@ class TestMasksToAnnotationsTest(object):
 
     def _setup(self):
         # read GTCodes dataframe
-        testDir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')
-        gtcodePath = os.path.join(testDir, 'test_files', 'sample_GTcodes.csv')
+        gtcodePath = getTestFilePath('sample_GTcodes.csv')
         self.GTCodes_df = read_csv(gtcodePath)
         self.GTCodes_df.index = self.GTCodes_df.loc[:, 'group']
 
