@@ -1,11 +1,13 @@
-import os
+import collections
 import numpy as np
+import os
 import pandas as pd
 import skimage.io
 import skimage.measure
+import tempfile
 import unittest
 
-import collections
+import htk_test_utilities as utilities
 
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
@@ -13,10 +15,11 @@ import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.features as htk_features
 
 
-TEST_DATA_DIR = 'fixme'
+# Enable to generate groundtruth files in the /tmp directory
+GENERATE_GROUNDTRUTH = False
 
 
-class TestFeatureExtraction(unittest.TestCase):
+class FeatureExtractionTest(unittest.TestCase):
 
     def setUp(self):
 
@@ -36,7 +39,7 @@ class TestFeatureExtraction(unittest.TestCase):
         args = collections.namedtuple('Parameters', args.keys())(**args)
 
         # read input image
-        input_image_file = os.path.join(TEST_DATA_DIR, 'Easy1.png')
+        input_image_file = utilities.externaldata('data/Easy1.png.sha512')
 
         im_input = skimage.io.imread(input_image_file)[:, :, :3]
 
@@ -136,13 +139,13 @@ class TestFeatureExtraction(unittest.TestCase):
                                 prefix='Cytoplasm.',
                                 match_feature_count=False)
 
-        # Uncomment to generate ground truth
-        # fdata.to_csv(os.path.join(
-        #     TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'),
-        #     index=False)
+        if GENERATE_GROUNDTRUTH:
+            fdata.to_csv(os.path.join(
+                tempfile.gettempdir(), 'Easy1_nuclei_intensity_features.csv'),
+                index=False)
 
-        fdata_gtruth = pd.read_csv(os.path.join(
-            TEST_DATA_DIR, 'Easy1_nuclei_intensity_features.csv'),
+        fdata_gtruth = pd.read_csv(
+            utilities.getTestFilePath('Easy1_nuclei_intensity_features.csv'),
             index_col=None)
 
         pd.testing.assert_frame_equal(
@@ -184,13 +187,13 @@ class TestFeatureExtraction(unittest.TestCase):
                                 prefix='Cytoplasm.',
                                 match_feature_count=False)
 
-        # Uncomment to generate ground truth
-        # fdata.to_csv(os.path.join(
-        #    TEST_DATA_DIR, 'Easy1_nuclei_haralick_features.csv'),
-        #     index=False)
+        if GENERATE_GROUNDTRUTH:
+            fdata.to_csv(os.path.join(
+                tempfile.gettempdir(), 'Easy1_nuclei_haralick_features.csv'),
+                index=False)
 
-        fdata_gtruth = pd.read_csv(os.path.join(
-            TEST_DATA_DIR, 'Easy1_nuclei_haralick_features.csv'))
+        fdata_gtruth = pd.read_csv(
+            utilities.getTestFilePath('Easy1_nuclei_haralick_features.csv'))
 
         pd.testing.assert_frame_equal(
             fdata, fdata_gtruth, check_less_precise=2)
@@ -221,13 +224,13 @@ class TestFeatureExtraction(unittest.TestCase):
                                 prefix='Cytoplasm.',
                                 match_feature_count=False)
 
-        # Uncomment to generate ground truth
-        # fdata.to_csv(os.path.join(
-        #    TEST_DATA_DIR, 'Easy1_nuclei_gradient_features.csv'),
-        #     index=False)
+        if GENERATE_GROUNDTRUTH:
+            fdata.to_csv(os.path.join(
+                tempfile.gettempdir(), 'Easy1_nuclei_gradient_features.csv'),
+                index=False)
 
-        fdata_gtruth = pd.read_csv(os.path.join(
-            TEST_DATA_DIR, 'Easy1_nuclei_gradient_features.csv'),
+        fdata_gtruth = pd.read_csv(
+            utilities.getTestFilePath('Easy1_nuclei_gradient_features.csv'),
             index_col=None)
 
         pd.testing.assert_frame_equal(
@@ -256,13 +259,13 @@ class TestFeatureExtraction(unittest.TestCase):
         self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
                                 match_feature_count=False)
 
-        # Uncomment to generate ground truth
-        # fdata.to_csv(os.path.join(
-        #   TEST_DATA_DIR, 'Easy1_nuclei_morphometry_features.csv'),
-        #    index=False)
+        if GENERATE_GROUNDTRUTH:
+            fdata.to_csv(os.path.join(
+                tempfile.gettempdir(), 'Easy1_nuclei_morphometry_features.csv'),
+                index=False)
 
-        fdata_gtruth = pd.read_csv(os.path.join(
-            TEST_DATA_DIR, 'Easy1_nuclei_morphometry_features.csv'))
+        fdata_gtruth = pd.read_csv(
+            utilities.getTestFilePath('Easy1_nuclei_morphometry_features.csv'))
 
         pd.testing.assert_frame_equal(
             fdata, fdata_gtruth, check_less_precise=2)
@@ -280,13 +283,13 @@ class TestFeatureExtraction(unittest.TestCase):
         self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
                                 match_feature_count=False)
 
-        # Uncomment to generate ground truth
-        # fdata.to_csv(os.path.join(
-        #   TEST_DATA_DIR, 'Easy1_nuclei_fsd_features.csv'),
-        #    index=False)
+        if GENERATE_GROUNDTRUTH:
+            fdata.to_csv(os.path.join(
+                tempfile.gettempdir(), 'Easy1_nuclei_fsd_features.csv'),
+                index=False)
 
-        fdata_gtruth = pd.read_csv(os.path.join(
-            TEST_DATA_DIR, 'Easy1_nuclei_fsd_features.csv'))
+        fdata_gtruth = pd.read_csv(
+            utilities.getTestFilePath('Easy1_nuclei_fsd_features.csv'))
 
         pd.testing.assert_frame_equal(
             fdata, fdata_gtruth, check_less_precise=2)
