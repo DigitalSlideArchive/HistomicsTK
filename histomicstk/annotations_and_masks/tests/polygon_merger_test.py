@@ -10,7 +10,7 @@ import pytest
 
 from pandas import read_csv
 
-from htk_test_utilities import girderClient  # noqa
+from htk_test_utilities import girderClient, getTestFilePath  # noqa
 
 from histomicstk.annotations_and_masks.polygon_merger import Polygon_merger
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
@@ -27,9 +27,7 @@ class PolygonMergerTest(object):
         """Test Polygon_merger.run()."""
 
         # read GTCodes dataframe
-        testDir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')
-        gtcodePath = os.path.join(testDir, 'test_files', 'sample_GTcodes.csv')
+        gtcodePath = getTestFilePath('sample_GTcodes.csv')
         GTCodes_df = read_csv(gtcodePath)
         GTCodes_df.index = GTCodes_df.loc[:, 'group']
 
