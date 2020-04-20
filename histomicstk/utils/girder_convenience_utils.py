@@ -155,7 +155,7 @@ def update_permissions_for_annotation(
 
 
 def update_permissions_for_annotations_in_slide(
-        gc, slide_id, monitorPrefix='', **kwargs):
+        gc, slide_id, verbose=0, monitorPrefix='', **kwargs):
     """Update permissions for all annotations in a slide.
 
     Parameters
@@ -164,6 +164,8 @@ def update_permissions_for_annotations_in_slide(
         authenticated girder client
     slide_id : str
         girder id of slide
+    verbose : int
+        level of verbosity
     monitorPrefix : str
         prefix to prepend to printed statements
     kwargs
@@ -179,7 +181,7 @@ def update_permissions_for_annotations_in_slide(
         gc=gc, slide_id=slide_id,
         callback=update_permissions_for_annotation,
         callback_kwargs=kwargs,
-        monitorPrefix=monitorPrefix)
+        verbose=verbose, monitorPrefix=monitorPrefix)
     return anniter.apply_callback_to_all_annotations()
 
 
@@ -255,13 +257,13 @@ def update_styles_for_annotation(gc, annotation, changes):
     for el in annotation['annotation']['elements']:
         if el['group'] in changes.keys():
             el.update(changes[el['group']])
-    print("  updating ...")
+    # print("  updating ...")
     return gc.put(
         "/annotation/%s" % annotation['_id'], json=annotation['annotation'])
 
 
 def update_styles_for_annotations_in_slide(
-        gc, slide_id, monitorPrefix='', callback=None, **kwargs):
+        gc, slide_id, verbose=0, monitorPrefix='', callback=None, **kwargs):
     """Update styles for all annotations in a slide.
 
     Parameters
@@ -270,6 +272,8 @@ def update_styles_for_annotations_in_slide(
         authenticated girder client
     slide_id : str
         girder id of slide
+    verbose : int
+        level of verbosity
     monitorPrefix : str
         prefix to prepend to printed statements
     callback : function
@@ -290,7 +294,7 @@ def update_styles_for_annotations_in_slide(
         gc=gc, slide_id=slide_id,
         callback=callback,
         callback_kwargs=kwargs,
-        monitorPrefix=monitorPrefix)
+        verbose=verbose, monitorPrefix=monitorPrefix)
     return anniter.apply_callback_to_all_annotations()
 
 
@@ -397,16 +401,16 @@ def revert_annotation(
 
     ver = "" if version is None else "?version=%d" % version
 
-    if version is None:
-        print("    Reverting ...")
-    else:
-        print("    Reverting to version %d" % version)
+    # if version is None:
+    #     print("    Reverting ...")
+    # else:
+    #     print("    Reverting to version %d" % version)
 
     return gc.put("/annotation/%s/history/revert%s" % (annotation_id, ver))
 
 
 def revert_annotations_in_slide(
-        gc, slide_id, monitorPrefix='', **kwargs):
+        gc, slide_id, verbose=0, monitorPrefix='', **kwargs):
     """Revert all annotations in a slide to a previous version.
 
     Parameters
@@ -415,6 +419,8 @@ def revert_annotations_in_slide(
         authenticated girder client
     slide_id : str
         girder id of slide
+    verbose : int
+        level of verbosity
     monitorPrefix : str
         prefix to prepend to printed statements
     kwargs
@@ -430,7 +436,7 @@ def revert_annotations_in_slide(
         gc=gc, slide_id=slide_id,
         callback=revert_annotation,
         callback_kwargs=kwargs,
-        monitorPrefix=monitorPrefix)
+        verbose=verbose, monitorPrefix=monitorPrefix)
     return anniter.apply_callback_to_all_annotations()
 
 

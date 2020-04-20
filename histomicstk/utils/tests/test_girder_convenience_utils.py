@@ -72,7 +72,7 @@ class TestGirderConvenience(object):
         }
         resps = update_permissions_for_annotations_in_slide(
             gc=gc, slide_id=iteminfo['_id'],
-            monitorPrefix='test_update_permissions_for_annotations_in_slide',
+            # monitorPrefix='test_update_permissions_for_annotations_in_slide',
             **update_params
         )
         assert len(resps) == 8
@@ -91,7 +91,7 @@ class TestGirderConvenience(object):
                     'fillColor': 'rgba(0,0,255,0.3)',
                 },
             },
-            monitorPrefix='test_update_styles_for_annotations_in_slide',
+            # monitorPrefix='test_update_styles_for_annotations_in_slide',
         )
         modified = [j for j in resps if j is not None]
         assert len(modified) == 3
@@ -109,7 +109,7 @@ class TestGirderConvenience(object):
             gc=gc, slide_id=iteminfo['_id'],
             revert_to_nonempty_elements=False,
             only_revert_if_empty=False,
-            monitorPrefix='test_revert_annotations_in_slide',
+            # monitorPrefix='test_revert_annotations_in_slide',
         )
         modified = [j for j in resps if len(j) > 0]
         assert len(modified) >= 1

@@ -83,8 +83,8 @@ class TestGetROIMasks(object):
             MASK_SAVEPATH=mask_savepath,
             get_roi_mask_kwargs={
                 'iou_thresh': 0.0, 'crop_to_roi': True, 'use_shapely': True,
-                'verbose': True},
-            verbose=True, monitorPrefix="test",
+                'verbose': False},
+            verbose=False, monitorPrefix="test",
         )
 
         left = 59206

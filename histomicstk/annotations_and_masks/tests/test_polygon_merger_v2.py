@@ -24,12 +24,12 @@ class TestPolygonMerger_v2(object):
     def test_polygon_merger_v2(self):
         """Test Polygon_merger_v2.run()."""
         annotationPath = utilities.externaldata(
-            'data/TCGA-A2-A0YE-01Z-00-DX1_GET_MergePolygons.svs_annotations.json.sha512')
+            'data/TCGA-A2-A0YE-01Z-00-DX1_GET_MergePolygons.svs_annotations.json.sha512')  # noqa
         slide_annotations = json.load(open(annotationPath))
         contours_df = parse_slide_annotations_into_table(slide_annotations)
 
         # init & run polygon merger
-        pm = Polygon_merger_v2(contours_df, verbose=1)
+        pm = Polygon_merger_v2(contours_df, verbose=0)
         pm.unique_groups.remove("roi")
         pm.run()
 
