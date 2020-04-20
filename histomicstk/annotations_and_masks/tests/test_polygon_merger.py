@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Aug 23 17:14:38 2019.
-
 @author: tageldim
 """
 
@@ -10,7 +9,7 @@ import pytest
 
 from pandas import read_csv
 
-from htk_test_utilities import girderClient  # noqa
+from htk_test_utilities import girderClient, getTestFilePath  # noqa
 
 from histomicstk.annotations_and_masks.polygon_merger import Polygon_merger
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
@@ -27,9 +26,7 @@ class TestPolygonMerger(object):
         """Test Polygon_merger.run()."""
 
         # read GTCodes dataframe
-        testDir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')
-        gtcodePath = os.path.join(testDir, 'test_files', 'sample_GTcodes.csv')
+        gtcodePath = getTestFilePath('sample_GTcodes.csv')
         GTCodes_df = read_csv(gtcodePath)
         GTCodes_df.index = GTCodes_df.loc[:, 'group']
 
@@ -48,7 +45,7 @@ class TestPolygonMerger(object):
         contours_df = pm.run()
 
         # make sure it is what we expect
-        assert contours_df.shape == (13, 13)
+        assert contours_df.shape == (17, 13)
         assert set(contours_df.loc[:, 'group']) == {
             'roi', 'mostly_tumor', 'mostly_stroma',
             'mostly_lymphocytic_infiltrate'}
