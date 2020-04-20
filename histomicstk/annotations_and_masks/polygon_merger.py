@@ -221,11 +221,13 @@ class Polygon_merger(Base_HTK_Class):
             # but just uses pillow to get its metadata. See:
             # https://stackoverflow.com/questions/15800704/ ...
             # ... get-image-size-without-loading-image-into-memory
-            mask_obj = Image.open(maskpath, mode='r')
-            width, height = mask_obj.size
-            maskname = os.path.split(maskpath)[1]
-            roiinfos[maskname]['right'] = roiinfos[maskname]['left'] + width
-            roiinfos[maskname]['bottom'] = roiinfos[maskname]['top'] + height
+            with Image.open(maskpath, mode='r') as mask_obj:
+                width, height = mask_obj.size
+                maskname = os.path.split(maskpath)[1]
+                roiinfos[maskname]['right'] = roiinfos[
+                    maskname]['left'] + width
+                roiinfos[maskname]['bottom'] = roiinfos[
+                    maskname]['top'] + height
 
         self.roiinfos = roiinfos
 
