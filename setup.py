@@ -65,6 +65,8 @@ setup(
         'shapely[vectorized]',
         'opencv-python',
         'sqlalchemy',
+        'matplotlib',
+        'pyvips',
         # dask packages
         'dask[dataframe]>=1.1.0',
         'distributed>=1.21.6',
