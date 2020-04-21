@@ -9,6 +9,8 @@ Examples
    examples/introducing_the_girder_api.rst
    examples/procedure_for_typical_annotation_project.rst
    examples/tips_for_scalable_annotation_rendering.rst
+   examples/annotation_database_backup_and_sql_parser.rst
+   examples/creating_gallery_images_review.rst
    examples/using_large_image.ipynb
    examples/color_deconvolution.ipynb
    examples/color_normalization_and_augmentation.ipynb
