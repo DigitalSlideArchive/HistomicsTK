@@ -9,13 +9,15 @@ import os
 import pytest
 from pandas import read_csv
 from imageio import imread
-
-from htk_test_utilities import girderClient  # noqa
-
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     get_contours_from_mask, get_annotation_documents_from_contours)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     delete_annotations_in_slide)
+
+import sys
+thisDir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
+from tests.htk_test_utilities import girderClient, getTestFilePath  # noqa
 
 
 class TestMasksToAnnotations(object):
@@ -23,15 +25,13 @@ class TestMasksToAnnotations(object):
 
     def _setup(self):
         # read GTCodes dataframe
-        testDir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'tests')
-        gtcodePath = os.path.join(testDir, 'test_files', 'sample_GTcodes.csv')
+        gtcodePath = getTestFilePath('sample_GTcodes.csv')
         self.GTCodes_df = read_csv(gtcodePath)
         self.GTCodes_df.index = self.GTCodes_df.loc[:, 'group']
 
         # read sample contours_df dataframe to test against
-        contoursDfPath = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), 'test_files', 'sample_contours_df.tsv')  # noqa
+        contoursDfPath = getTestFilePath(os.path.join(
+            'annotations_and_masks', 'sample_contours_df.tsv'))
         self.CONTOURS_DF = read_csv(contoursDfPath, sep='\t', index_col=0)
 
         # read mask
@@ -40,9 +40,8 @@ class TestMasksToAnnotations(object):
         self.MASKNAME = (
             'TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39_'
             'left-%d_top-%d_mag-BASE.png' % (self.X_OFFSET, self.Y_OFFSET))
-        MASKPATH = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'test_files', self.MASKNAME)
+        MASKPATH = getTestFilePath(os.path.join(
+            'annotations_and_masks', self.MASKNAME))
         self.MASK = imread(MASKPATH)
 
     def test_get_contours_from_mask(self):
@@ -53,7 +52,8 @@ class TestMasksToAnnotations(object):
         #     'mostly_tumor', 'mostly_stroma']
         groups_to_get = None
         contours_df = get_contours_from_mask(
-            MASK=self.MASK, GTCodes_df=self.GTCodes_df, groups_to_get=groups_to_get,
+            MASK=self.MASK, GTCodes_df=self.GTCodes_df,
+            groups_to_get=groups_to_get,
             get_roi_contour=True, roi_group='roi',
             discard_nonenclosed_background=True,
             background_group='mostly_stroma',
@@ -61,11 +61,8 @@ class TestMasksToAnnotations(object):
             monitorPrefix=self.MASKNAME[:12] + ": getting contours")
 
         # make sure it is what we expect
-        # self.assertTupleEqual(contours_df.shape, CONTOURS_DF.shape)
         assert set(contours_df.columns) == set(self.CONTOURS_DF.columns)
         assert all(contours_df.iloc[:10, :] == self.CONTOURS_DF.iloc[:10, :])
-
-    # %% ----------------------------------------------------------------------
 
     @pytest.mark.usefixtures('girderClient')  # noqa
     def test_get_annotation_documents_from_contours(self, girderClient):  # noqa
@@ -82,9 +79,10 @@ class TestMasksToAnnotations(object):
             'lineWidth': 4.0,
         }
         annotation_docs = get_annotation_documents_from_contours(
-            self.CONTOURS_DF.copy(), separate_docs_by_group=True, annots_per_doc=10,
-            docnamePrefix='test', annprops=annprops,
-            verbose=False, monitorPrefix=self.MASKNAME[:12] + ": annotation docs")
+            self.CONTOURS_DF.copy(), separate_docs_by_group=True,
+            annots_per_doc=10, docnamePrefix='test', annprops=annprops,
+            verbose=False,
+            monitorPrefix=self.MASKNAME[:12] + ": annotation docs")
 
         # make sure its what we expect
         assert len(annotation_docs) == 8

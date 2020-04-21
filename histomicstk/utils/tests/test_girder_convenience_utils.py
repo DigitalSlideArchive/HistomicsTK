@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 import pytest
 import os
-import sys
-thisDir = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, os.path.join(thisDir, '../../../'))
-
-# import tests.htk_test_utilities as utilities  # noqa
-from tests.htk_test_utilities import girderClient  # noqa
 from histomicstk.utils.girder_convenience_utils import \
     get_absolute_girder_folderpath, \
     update_styles_for_annotations_in_slide, \
     revert_annotations_in_slide, \
-    update_permissions_for_annotations_in_slide  # noqa
+    update_permissions_for_annotations_in_slide
+import sys
+thisDir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(thisDir, '../../../'))
+from tests.htk_test_utilities import girderClient  # noqa
 
 
 # # for protyping
@@ -43,7 +41,7 @@ class TestGirderConvenience(object):
             })
 
         # copy the item so that everythign we do here does not affect
-        # other unit tests that use that item
+        # other modules that use that item
         iteminfo = gc.post(
             "/item/%s/copy" % original_iteminfo['_id'], data={
                 'name': 'test_slide_gcutils',

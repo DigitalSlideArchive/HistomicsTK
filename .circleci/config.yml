@@ -103,6 +103,8 @@ jobs:
           command: sudo apt-get install -y pandoc pandoc-citeproc
       - tox:
           env: docs,flake8
+      - store_artifacts:
+          path: docs/_build/html
   docker:
     working_directory: ~/project
     machine: true

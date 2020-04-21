@@ -10,6 +10,7 @@ histomicstk.annotations_and_masks
     :maxdepth: 1
 
     Annotations to masks <histomicstk.annotations_and_masks.annotations_to_masks_handler.rst>
+    Annotations to OBJECT masks <histomicstk.annotations_and_masks.annotations_to_OBJECT_mask_handler.rst>
     Masks to annotations <histomicstk.annotations_and_masks.masks_to_annotations_handler.rst>
     Annotation and mask utilities <histomicstk.annotations_and_masks.annotation_and_mask_utils.rst>
     Polygon merger <histomicstk.annotations_and_masks.polygon_merger.rst>

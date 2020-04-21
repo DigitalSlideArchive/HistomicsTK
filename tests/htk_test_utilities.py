@@ -92,6 +92,16 @@ def externaldata(
     return destpath
 
 
+def getTestFilePath(name):
+    """
+    Return the path to a file in the tests/test_files directory.
+    :param name: The name of the file.
+    :returns: the path to the file.
+    """
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), 'test_files', name)
+
+
 def _get_htk_ipaddr(dclient):
     # search docker containers for a DSA docker container
     # and fetch its IP address
