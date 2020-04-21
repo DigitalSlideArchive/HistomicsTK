@@ -31,23 +31,9 @@ class TestAnnotAndMaskUtils(object):
     @pytest.mark.usefixtures('girderClient')  # noqa
     def test_prep(self, girderClient):  # noqa
         global gc, iteminfo, annotations
-
         gc = girderClient
-
         iteminfo = gc.get('/item', parameters={
             'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
-
-        # get original item
-        # original_iteminfo = gc.get('/item', parameters={
-        #     'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
-        # # copy the item so that everythign we do here does not affect
-        # # other modules that use that item
-        # iteminfo = gc.post(
-        #     "/item/%s/copy" % original_iteminfo['_id'], data={
-        #         'name': 'test_AnnotsMask_utils',
-        #         'copyAnnotations': True,
-        #     })
-
         annotations = gc.get('/annotation/item/' + iteminfo['_id'])
 
     def test_get_image_from_htk_response(self):
