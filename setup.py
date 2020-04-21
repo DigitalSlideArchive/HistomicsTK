@@ -64,6 +64,7 @@ setup(
         'imageio>=2.3.0' + ('' if sys.version_info >= (3, ) else ',<2.8'),
         'shapely[vectorized]',
         'opencv-python',
+        'sqlalchemy',
         # dask packages
         'dask[dataframe]>=1.1.0',
         'distributed>=1.21.6',
