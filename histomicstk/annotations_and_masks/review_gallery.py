@@ -81,6 +81,8 @@ def get_all_rois_from_folder_v2(
     """
     def _get_all_rois(slide_id, monitorPrefix, **kwargs):
         sld = gc.get('/item/%s' % slide_id)
+        if "." not in sld['name']:
+            sld['name'] += "."
         sldname = sld['name'][:sld['name'].find('.')].replace('/', '_#_')
         return get_all_rois_from_slide_v2(
             slide_id=slide_id, monitorprefix=monitorPrefix,
@@ -317,6 +319,8 @@ def create_review_galleries(
     url : str
         url of the Digital Slide Archive Instance. For example:
         http://candygram.neurology.emory.edu:8080/
+    nameprefix : str
+        prefix to prepend to gallery name
 
     Returns
     -------
