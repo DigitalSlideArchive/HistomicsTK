@@ -18,13 +18,13 @@ from tests.htk_test_utilities import girderClient, getTestFilePath  # noqa
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()
 
-global gc, folderid, URL, GTCodes_dict, BASE_SAVEPATH, SAVEPATHS, \
+global gc, URL, GTCodes_dict, BASE_SAVEPATH, SAVEPATHS, \
     combinedvis_savepath, folderid, post_folderid
 
 # pytest runs tests in the order they appear in the module
 @pytest.mark.usefixtures('girderClient')  # noqa
 def test_prep(girderClient):  # noqa
-    global gc, folderid, URL, GTCodes_dict, BASE_SAVEPATH, SAVEPATHS, \
+    global gc, URL, GTCodes_dict, BASE_SAVEPATH, SAVEPATHS, \
         combinedvis_savepath, folderid, post_folderid
 
     gc = girderClient
