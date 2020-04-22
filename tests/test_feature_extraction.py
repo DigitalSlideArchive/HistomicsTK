@@ -5,23 +5,30 @@ import pandas as pd
 import skimage.io
 import skimage.measure
 import tempfile
-import unittest
-
-import htk_test_utilities as utilities
-
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.features as htk_features
-
+import sys
+thisDir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, thisDir)
+import htk_test_utilities as utilities  # noqa
 
 # Enable to generate groundtruth files in the /tmp directory
 GENERATE_GROUNDTRUTH = False
 
 
-class FeatureExtractionTest(unittest.TestCase):
+class TestFeatureExtraction(object):
 
-    def setUp(self):
+    def __init__(self):
+        self.im_input = None
+        self.im_input_nmzd = None
+        self.im_nuclei_stain = None
+        self.im_nuclei_seg_mask = None
+        self.nuclei_rprops = None
+        self.fdata_nuclei = None
+
+    def test_setup(self):
 
         # define parameters
         args = {
@@ -92,7 +99,7 @@ class FeatureExtractionTest(unittest.TestCase):
     def check_fdata_sanity(self, fdata, expected_feature_list,
                            prefix='', match_feature_count=True):
 
-        self.assertEqual(len(self.nuclei_rprops), fdata.shape[0])
+        assert len(self.nuclei_rprops) == fdata.shape[0]
 
         if len(prefix) > 0:
 
@@ -104,10 +111,10 @@ class FeatureExtractionTest(unittest.TestCase):
             fcols = fdata.columns
 
         if match_feature_count:
-            self.assertEqual(len(fcols), len(expected_feature_list))
+            assert len(fcols) == len(expected_feature_list)
 
         for col in expected_feature_list:
-            self.assertEqual(prefix + col in fcols, True)
+            assert prefix + col in fcols
 
     def test_compute_intensity_features(self):
 
