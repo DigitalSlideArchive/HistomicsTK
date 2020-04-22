@@ -11,30 +11,38 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_bboxes_from_slide_annotations
 from histomicstk.annotations_and_masks.annotations_to_object_mask_handler \
     import annotations_to_contours_no_mask, get_all_rois_from_slide_v2
-
 import sys
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import htk_test_utilities as utilities  # noqa
 from htk_test_utilities import girderClient, getTestFilePath  # noqa
-
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()
 
-global gc, slide_annotations, element_infos, BASE_SAVEPATH, SAVEPATHS, \
-        test_annots_to_contours_kwargs, get_all_rois_kwargs, MPP, MAG
 
+class Cfg:
+    def __init__(self):
+        self.gc = None
+        self.slide_annotations = None
+        self.element_infos = None
+        self.BASE_SAVEPATH = None
+        self.SAVEPATHS = None
+        self.test_annots_to_contours_kwargs = None
+        self.get_all_rois_kwargs = None
+        self.MPP = None
+        self.MAG = None
+
+
+cfg = Cfg()
 
 # pytest runs tests in the order they appear in the module
 @pytest.mark.usefixtures('girderClient')  # noqa
 def test_prep(girderClient):  # noqa
-    global gc, slide_annotations, element_infos, BASE_SAVEPATH, SAVEPATHS, \
-        test_annots_to_contours_kwargs, get_all_rois_kwargs, MPP, MAG
 
-    gc = girderClient
+    cfg.gc = girderClient
 
-    iteminfo = gc.get('/item', parameters={
+    iteminfo = cfg.gc.get('/item', parameters={
         'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
 
     # read GTCodes dataframe
@@ -44,44 +52,44 @@ def test_prep(girderClient):  # noqa
     GTCodes_dict = GTCodes_dict.to_dict(orient='index')
 
     # just a temp directory to save masks for now
-    BASE_SAVEPATH = tempfile.mkdtemp()
-    SAVEPATHS = {
-        'contours': os.path.join(BASE_SAVEPATH, 'contours'),
-        'rgb': os.path.join(BASE_SAVEPATH, 'rgbs'),
-        'visualization': os.path.join(BASE_SAVEPATH, 'vis'),
-        'mask': os.path.join(BASE_SAVEPATH, 'masks'),
+    cfg.BASE_SAVEPATH = tempfile.mkdtemp()
+    cfg.SAVEPATHS = {
+        'contours': os.path.join(cfg.BASE_SAVEPATH, 'contours'),
+        'rgb': os.path.join(cfg.BASE_SAVEPATH, 'rgbs'),
+        'visualization': os.path.join(cfg.BASE_SAVEPATH, 'vis'),
+        'mask': os.path.join(cfg.BASE_SAVEPATH, 'masks'),
     }
-    for _, savepath in SAVEPATHS.items():
+    for _, savepath in cfg.SAVEPATHS.items():
         if not os.path.exists(savepath):
             os.mkdir(savepath)
 
     # Microns-per-pixel / Magnification (either or)
-    MPP = 5.0
-    MAG = None
+    cfg.MPP = 5.0
+    cfg.MAG = None
 
     # get annotations for slide
-    slide_annotations = gc.get('/annotation/item/' + iteminfo['_id'])
+    cfg.slide_annotations = cfg.gc.get('/annotation/item/' + iteminfo['_id'])
 
     # scale up/down annotations by a factor
     sf, _ = get_scale_factor_and_appendStr(
-        gc=gc, slide_id=iteminfo['_id'], MPP=MPP, MAG=MAG)
-    slide_annotations = scale_slide_annotations(slide_annotations, sf=sf)
+        gc=cfg.gc, slide_id=iteminfo['_id'], MPP=cfg.MPP, MAG=cfg.MAG)
+    cfg.slide_annotations = scale_slide_annotations(cfg.slide_annotations, sf=sf)
 
     # get bounding box information for all annotations
-    element_infos = get_bboxes_from_slide_annotations(slide_annotations)
+    cfg.element_infos = get_bboxes_from_slide_annotations(cfg.slide_annotations)
 
     # common params for annotations_to_contours_no_mask()
     annotations_to_contours_kwargs = {
-        'MPP': MPP, 'MAG': MAG,
+        'MPP': cfg.MPP, 'MAG': cfg.MAG,
         'linewidth': 0.2,
         'get_rgb': True, 'get_visualization': True,
     }
 
     # params for TESTING annotations_to_contours_no_mask()
-    test_annots_to_contours_kwargs = copy.deepcopy(
+    cfg.test_annots_to_contours_kwargs = copy.deepcopy(
         annotations_to_contours_kwargs)
-    test_annots_to_contours_kwargs.update({
-        'gc': gc,
+    cfg.test_annots_to_contours_kwargs.update({
+        'gc': cfg.gc,
         'slide_id': iteminfo['_id'],
         'bounds': {
             'XMIN': 58000, 'XMAX': 63000,
@@ -89,11 +97,11 @@ def test_prep(girderClient):  # noqa
         })
 
     # params for getting all rois for slide
-    get_all_rois_kwargs = {
-        'gc': gc,
+    cfg.get_all_rois_kwargs = {
+        'gc': cfg.gc,
         'slide_id': iteminfo['_id'],
         'GTCodes_dict': GTCodes_dict,
-        'save_directories': SAVEPATHS,
+        'save_directories': cfg.SAVEPATHS,
         'annotations_to_contours_kwargs': annotations_to_contours_kwargs,
         'slide_name': 'TCGA-A2-A0YE',
         'verbose': False,
@@ -110,12 +118,12 @@ class TestGetSlideRegionNoMask(object):
         """Test annotations_to_contours_no_mask()."""
         # get specified region -- without providing scaled annotations
         roi_out_1 = annotations_to_contours_no_mask(
-            mode='manual_bounds', **test_annots_to_contours_kwargs)
+            mode='manual_bounds', **cfg.test_annots_to_contours_kwargs)
 
         # get specified region -- with providing scaled annotations
         roi_out_2 = annotations_to_contours_no_mask(
-            mode='manual_bounds', slide_annotations=slide_annotations,
-            element_infos=element_infos, **test_annots_to_contours_kwargs)
+            mode='manual_bounds', slide_annotations=cfg.slide_annotations,
+            element_infos=cfg.element_infos, **cfg.test_annots_to_contours_kwargs)
 
         for roi_out in (roi_out_1, roi_out_2):
             assert set(roi_out.keys()) == {
@@ -134,8 +142,8 @@ class TestGetSlideRegionNoMask(object):
         """Test get_image_and_mask_from_slide()."""
         # get ROI bounding everything
         roi_out = annotations_to_contours_no_mask(
-            mode='min_bounding_box', slide_annotations=slide_annotations,
-            element_infos=element_infos, **test_annots_to_contours_kwargs)
+            mode='min_bounding_box', slide_annotations=cfg.slide_annotations,
+            element_infos=cfg.element_infos, **cfg.test_annots_to_contours_kwargs)
 
         assert set(roi_out.keys()) == {
             'bounds', 'rgb', 'contours', 'visualization'}
@@ -152,8 +160,8 @@ class TestGetSlideRegionNoMask(object):
     def test_get_all_rois_from_slide_v2(self):
         """Test get_all_rois_from_slide_v2()."""
         # First we test the object segmentation mode
-        get_all_rois_kwargs['mode'] = 'object'
-        savenames = get_all_rois_from_slide_v2(**get_all_rois_kwargs)
+        cfg.get_all_rois_kwargs['mode'] = 'object'
+        savenames = get_all_rois_from_slide_v2(**cfg.get_all_rois_kwargs)
 
         # basic checks
         assert len(savenames) == 3
@@ -167,7 +175,7 @@ class TestGetSlideRegionNoMask(object):
 
         # shape & value check
         imname = 'TCGA-A2-A0YE_left-57584_top-35788_bottom-37425_right-59421'
-        mask = imread(os.path.join(SAVEPATHS['mask'], imname + '.png'))
+        mask = imread(os.path.join(cfg.SAVEPATHS['mask'], imname + '.png'))
         assert mask.shape == (82, 92, 3)
         assert set(np.unique(mask[..., 0])) == {0, 1, 2, 7}
         assert set(np.unique(mask[..., 1])) == {0, 1}
@@ -175,13 +183,13 @@ class TestGetSlideRegionNoMask(object):
             0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
 
         # Second, we test the semantic segmentation mode
-        get_all_rois_kwargs['mode'] = 'semantic'
-        savenames = get_all_rois_from_slide_v2(**get_all_rois_kwargs)
+        cfg.get_all_rois_kwargs['mode'] = 'semantic'
+        savenames = get_all_rois_from_slide_v2(**cfg.get_all_rois_kwargs)
         assert len(savenames) == 3
 
         # shape check
-        mask = imread(os.path.join(SAVEPATHS['mask'], imname + '.png'))
+        mask = imread(os.path.join(cfg.SAVEPATHS['mask'], imname + '.png'))
         assert mask.shape == (82, 92)
 
         # cleanup
-        shutil.rmtree(BASE_SAVEPATH)
+        shutil.rmtree(cfg.BASE_SAVEPATH)

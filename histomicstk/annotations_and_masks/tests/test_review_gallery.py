@@ -2,81 +2,88 @@ import pytest
 import os
 import tempfile
 import shutil
-from imageio import imread
 from pandas import read_csv
 from histomicstk.annotations_and_masks.review_gallery import \
     get_all_rois_from_folder_v2, _plot_rapid_review_vis,\
     create_review_galleries
-
 import sys
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import tests.htk_test_utilities as utilities  # noqa
 from tests.htk_test_utilities import girderClient, getTestFilePath  # noqa
-
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()
 
-global gc, URL, GTCodes_dict, BASE_SAVEPATH, SAVEPATHS, \
-    combinedvis_savepath, folderid, post_folderid
+
+class Cfg:
+    def __init__(self):
+        self.gc = None
+        self.URL = None
+        self.GTCodes_dict = None
+        self.BASE_SAVEPATH = None
+        self.SAVEPATHS = None
+        self.combinedvis_savepath = None
+        self.folderid = None
+        self.post_folderid = None
+
+
+cfg = Cfg()
 
 # pytest runs tests in the order they appear in the module
 @pytest.mark.usefixtures('girderClient')  # noqa
 def test_prep(girderClient):  # noqa
-    global gc, URL, GTCodes_dict, BASE_SAVEPATH, SAVEPATHS, \
-        combinedvis_savepath, folderid, post_folderid
 
-    gc = girderClient
-    URL = 'http://localhost:8080/'
+    cfg.gc = girderClient
+    cfg.URL = 'http://localhost:8080/'
 
     # GT codes dict for parsing into label mask
     gtcodePath = getTestFilePath('sample_GTcodes.csv')
-    GTCodes_dict = read_csv(gtcodePath)
-    GTCodes_dict.index = GTCodes_dict.loc[:, 'group']
-    GTCodes_dict = GTCodes_dict.to_dict(orient='index')
+    cfg.GTCodes_dict = read_csv(gtcodePath)
+    cfg.GTCodes_dict.index = cfg.GTCodes_dict.loc[:, 'group']
+    cfg.GTCodes_dict = cfg.GTCodes_dict.to_dict(orient='index')
 
     # just a temp directory to save masks
-    BASE_SAVEPATH = tempfile.mkdtemp()
-    SAVEPATHS = {
-        'contours': os.path.join(BASE_SAVEPATH, 'contours'),
-        'rgb': os.path.join(BASE_SAVEPATH, 'rgbs'),
-        'visualization': os.path.join(BASE_SAVEPATH, 'vis'),
+    cfg.BASE_SAVEPATH = tempfile.mkdtemp()
+    cfg.SAVEPATHS = {
+        'contours': os.path.join(cfg.BASE_SAVEPATH, 'contours'),
+        'rgb': os.path.join(cfg.BASE_SAVEPATH, 'rgbs'),
+        'visualization': os.path.join(cfg.BASE_SAVEPATH, 'vis'),
     }
-    for _, savepath in SAVEPATHS.items():
+    for _, savepath in cfg.SAVEPATHS.items():
         os.mkdir(savepath)
 
     # where to save gallery
-    combinedvis_savepath = os.path.join(BASE_SAVEPATH, 'combinedvis')
-    os.mkdir(combinedvis_savepath)
+    cfg.combinedvis_savepath = os.path.join(cfg.BASE_SAVEPATH, 'combinedvis')
+    os.mkdir(cfg.combinedvis_savepath)
 
     # get original item
-    iteminfo = gc.get('/item', parameters={
+    iteminfo = cfg.gc.get('/item', parameters={
         'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
 
     # create the folder to parse its contents into galleries
-    folderinfo = gc.post(
+    folderinfo = cfg.gc.post(
         '/folder', data={
             'parentId': iteminfo['folderId'],
             'name': 'test'
         })
-    folderid = folderinfo['_id']
+    cfg.folderid = folderinfo['_id']
 
     # create girder folder to post resultant galleries
-    post_folderinfo = gc.post(
+    post_folderinfo = cfg.gc.post(
         '/folder', data={
             'parentId': iteminfo['folderId'],
             'name': 'test-post'
         })
-    post_folderid = post_folderinfo['_id']
+    cfg.post_folderid = post_folderinfo['_id']
 
     # copy the item multiple times to create dummy database
     for i in range(2):
-        _ = gc.post(
+        _ = cfg.gc.post(
             "/item/%s/copy" % iteminfo['_id'], data={
                 'name': 'testSlide%dForRevGal' % i,
                 'copyAnnotations': True,
-                'folderId': folderid,
+                'folderId': cfg.folderid,
             })
 
 
@@ -87,8 +94,8 @@ class TestReviewGallery(object):
         """Test get_all_rois_from_folder_v2()."""
         # params for getting all rois for slide
         get_all_rois_kwargs = {
-            'GTCodes_dict': GTCodes_dict,
-            'save_directories': SAVEPATHS,
+            'GTCodes_dict': cfg.GTCodes_dict,
+            'save_directories': cfg.SAVEPATHS,
             'annotations_to_contours_kwargs': {
                 'MPP': 5.0,
                 'linewidth': 0.2,
@@ -101,7 +108,7 @@ class TestReviewGallery(object):
             # of being used as input for create_review_galleries()
             'callback': _plot_rapid_review_vis,
             'callback_kwargs': {
-                'combinedvis_savepath': combinedvis_savepath,
+                'combinedvis_savepath': cfg.combinedvis_savepath,
                 'zoomout': 1.5,
 
             },
@@ -109,11 +116,11 @@ class TestReviewGallery(object):
 
         # Get al rois to prep for gallery
         get_all_rois_from_folder_v2(
-            gc=gc, folderid=folderid,
+            gc=cfg.gc, folderid=cfg.folderid,
             get_all_rois_kwargs=get_all_rois_kwargs, monitor='test')
 
         # a couple of checks
-        all_fovs = os.listdir(combinedvis_savepath)
+        all_fovs = os.listdir(cfg.combinedvis_savepath)
         fovdict = dict()
         for fov in all_fovs:
             slide = fov.split('_')[0]
@@ -138,11 +145,11 @@ class TestReviewGallery(object):
     def test_create_review_galleries(self):
         """Test create_review_galleries()."""
         create_review_galleries_kwargs = {
-            'tilepath_base': combinedvis_savepath,
+            'tilepath_base': cfg.combinedvis_savepath,
             'upload_results': True,
-            'gc': gc,
-            'url': URL,
-            'gallery_folderid': post_folderid,
+            'gc': cfg.gc,
+            'url': cfg.URL,
+            'gallery_folderid': cfg.post_folderid,
             'gallery_savepath': None,
             'padding': 25,
             'tiles_per_row': 2,
@@ -160,4 +167,4 @@ class TestReviewGallery(object):
         # to check that the visualizations and gallery make sense!
 
         # cleanup
-        shutil.rmtree(BASE_SAVEPATH)
+        shutil.rmtree(cfg.BASE_SAVEPATH)

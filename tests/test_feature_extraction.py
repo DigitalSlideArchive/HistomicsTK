@@ -23,10 +23,9 @@ class Cfg:
         self.nuclei_rprops = None
 
 
+cfg = Cfg()
 # Enable to generate groundtruth files in the /tmp directory
 GENERATE_GROUNDTRUTH = False
-# configurations object
-cfg = Cfg()
 
 
 def check_fdata_sanity(fdata, expected_feature_list,

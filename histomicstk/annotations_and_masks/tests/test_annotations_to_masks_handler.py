@@ -20,39 +20,49 @@ thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import htk_test_utilities as utilities  # noqa
 from htk_test_utilities import girderClient, getTestFilePath  # noqa
-
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()
 
-global gc, GTcodes, iteminfo, slide_annotations, element_infos, \
-    get_roi_mask_kwargs, get_contours_kwargs, get_kwargs, MPP, MAG
 
+class Cfg:
+    def __init__(self):
+        self.gc = None
+        self.GTcodes = None
+        self.iteminfo = None
+        self.slide_annotations = None
+        self.element_infos = None
+        self.get_roi_mask_kwargs = None
+        self.get_contours_kwargs = None
+        self.get_kwargs = None
+        self.MPP = None
+        self.MAG = None
+
+
+cfg = Cfg()
 
 # pytest runs tests in the order they appear in the module
 @pytest.mark.usefixtures('girderClient')  # noqa
 def test_prep(girderClient):  # noqa
-    global gc, GTCodes, iteminfo, slide_annotations, element_infos, \
-        get_roi_mask_kwargs, get_contours_kwargs, get_kwargs, MPP, MAG
 
-    gc = girderClient
+    cfg.gc = girderClient
 
-    iteminfo = gc.get('/item', parameters={
+    cfg.iteminfo = cfg.gc.get('/item', parameters={
         'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
 
     # read GTCodes dataframe
     gtcodePath = getTestFilePath('sample_GTcodes.csv')
-    GTCodes = read_csv(gtcodePath)
-    GTCodes.index = GTCodes.loc[:, 'group']
+    cfg.GTcodes = read_csv(gtcodePath)
+    cfg.GTcodes.index = cfg.GTcodes.loc[:, 'group']
 
     # other params
-    get_roi_mask_kwargs = {
+    cfg.get_roi_mask_kwargs = {
         'iou_thresh': 0.0,
         'crop_to_roi': True,
         'use_shapely': True,
         'verbose': False
     }
-    get_contours_kwargs = {
+    cfg.get_contours_kwargs = {
         'groups_to_get': None,
         'roi_group': 'roi',
         'get_roi_contour': True,
@@ -63,31 +73,31 @@ def test_prep(girderClient):  # noqa
     }
 
     # Microns-per-pixel / Magnification (either or)
-    MPP = 5.0
-    MAG = None
+    cfg.MPP = 5.0
+    cfg.MAG = None
 
     # get annotations for slide
-    slide_annotations = gc.get('/annotation/item/' + iteminfo['_id'])
+    cfg.slide_annotations = cfg.gc.get('/annotation/item/' + cfg.iteminfo['_id'])
 
     # scale up/down annotations by a factor
     sf, _ = get_scale_factor_and_appendStr(
-        gc=gc, slide_id=iteminfo['_id'], MPP=MPP, MAG=MAG)
-    slide_annotations = scale_slide_annotations(slide_annotations, sf=sf)
+        gc=cfg.gc, slide_id=cfg.iteminfo['_id'], MPP=cfg.MPP, MAG=cfg.MAG)
+    cfg.slide_annotations = scale_slide_annotations(cfg.slide_annotations, sf=sf)
 
     # get bounding box information for all annotations
-    element_infos = get_bboxes_from_slide_annotations(slide_annotations)
+    cfg.element_infos = get_bboxes_from_slide_annotations(cfg.slide_annotations)
 
     # params for get_image_and_mask_from_slide()
-    get_kwargs = {
-        'gc': gc, 'slide_id': iteminfo['_id'],
-        'GTCodes_dict': GTCodes.T.to_dict(),
+    cfg.get_kwargs = {
+        'gc': cfg.gc, 'slide_id': cfg.iteminfo['_id'],
+        'GTCodes_dict': cfg.GTcodes.T.to_dict(),
         'bounds': {
             'XMIN': 58000, 'XMAX': 63000,
             'YMIN': 35000, 'YMAX': 39000},
-        'MPP': MPP,
-        'MAG': MAG,
-        'get_roi_mask_kwargs': get_roi_mask_kwargs,
-        'get_contours_kwargs': get_contours_kwargs,
+        'MPP': cfg.MPP,
+        'MAG': cfg.MAG,
+        'get_roi_mask_kwargs': cfg.get_roi_mask_kwargs,
+        'get_contours_kwargs': cfg.get_contours_kwargs,
         'get_rgb': True,
         'get_contours': True,
         'get_visualization': True,
@@ -101,15 +111,15 @@ class TestGetROIMasks(object):
         """Test get_roi_mask()."""
         # get indices of rois
         idxs_for_all_rois = _get_idxs_for_all_rois(
-            GTCodes=GTCodes, element_infos=element_infos.copy())
+            GTCodes=cfg.GTcodes, element_infos=cfg.element_infos.copy())
 
         # get roi mask and info
         ROI, roiinfo = get_roi_mask(
-            slide_annotations=copy.deepcopy(slide_annotations),
-            element_infos=element_infos.copy(),
-            GTCodes_df=GTCodes.copy(),
+            slide_annotations=copy.deepcopy(cfg.slide_annotations),
+            element_infos=cfg.element_infos.copy(),
+            GTCodes_df=cfg.GTcodes.copy(),
             idx_for_roi=idxs_for_all_rois[0],  # <- let's focus on first ROI,
-            roiinfo=None, **get_roi_mask_kwargs)
+            roiinfo=None, **cfg.get_roi_mask_kwargs)
 
         assert ROI.shape == (228, 226)
         assert (
@@ -132,18 +142,18 @@ class TestGetROIMasks(object):
             os.mkdir(savepath)
 
         detailed_kwargs = {
-            'MPP': MPP,
+            'MPP': cfg.MPP,
             'MAG': None,
-            'get_roi_mask_kwargs': get_roi_mask_kwargs,
-            'get_contours_kwargs': get_contours_kwargs,
+            'get_roi_mask_kwargs': cfg.get_roi_mask_kwargs,
+            'get_contours_kwargs': cfg.get_contours_kwargs,
             'get_rgb': True,
             'get_contours': True,
             'get_visualization': True,
         }
 
         savenames = get_all_rois_from_slide(
-            gc=gc, slide_id=iteminfo['_id'],
-            GTCodes_dict=GTCodes.T.to_dict(), save_directories=savepaths,
+            gc=cfg.gc, slide_id=cfg.iteminfo['_id'],
+            GTCodes_dict=cfg.GTcodes.T.to_dict(), save_directories=savepaths,
             get_image_and_mask_from_slide_kwargs=detailed_kwargs,
             slide_name='TCGA-A2-A0YE', verbose=False)
 
@@ -160,13 +170,13 @@ class TestGetROIMasks(object):
         """Test get_image_and_mask_from_slide()."""
         # get specified region -- without providing scaled annotations
         roi_out_1 = get_image_and_mask_from_slide(
-            mode='manual_bounds', **get_kwargs)
+            mode='manual_bounds', **cfg.get_kwargs)
 
         # get specified region -- with providing scaled annotations
         roi_out_2 = get_image_and_mask_from_slide(
             mode='manual_bounds',
-            slide_annotations=copy.deepcopy(slide_annotations),
-            element_infos=element_infos.copy(), **get_kwargs)
+            slide_annotations=copy.deepcopy(cfg.slide_annotations),
+            element_infos=cfg.element_infos.copy(), **cfg.get_kwargs)
 
         for roi_out in (roi_out_1, roi_out_2):
             assert set(roi_out.keys()) == {
@@ -188,8 +198,8 @@ class TestGetROIMasks(object):
         # get ROI bounding everything
         roi_out = get_image_and_mask_from_slide(
             mode='min_bounding_box',
-            slide_annotations=copy.deepcopy(slide_annotations),
-            element_infos=element_infos.copy(), **get_kwargs)
+            slide_annotations=copy.deepcopy(cfg.slide_annotations),
+            element_infos=cfg.element_infos.copy(), **cfg.get_kwargs)
 
         assert set(roi_out.keys()) == {
             'bounds', 'ROI', 'rgb', 'contours', 'visualization'}

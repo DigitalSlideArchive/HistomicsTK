@@ -13,43 +13,48 @@ thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import htk_test_utilities as utilities  # noqa
 from htk_test_utilities import girderClient, getTestFilePath  # noqa
-
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()
 
-global gc, folderid
+
+class Cfg:
+    def __init__(self):
+        self.gc = None
+        self.folderid = None
+
+
+cfg = Cfg()
 
 # pytest runs tests in the order they appear in the module
 @pytest.mark.usefixtures('girderClient')  # noqa
 def test_prep(girderClient):  # noqa
-    global gc, folderid
 
-    gc = girderClient
+    cfg.gc = girderClient
 
     # get original item
-    iteminfo = gc.get('/item', parameters={
+    iteminfo = cfg.gc.get('/item', parameters={
         'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
 
     # create the folder to "back up"
-    folderinfo = gc.post(
+    folderinfo = cfg.gc.post(
         '/folder', data={
             'parentId': iteminfo['folderId'],
             'name': 'test'
         })
-    folderid = folderinfo['_id']
+    cfg.folderid = folderinfo['_id']
 
     # create subfolder to test recursion
-    subf = gc.post(
+    subf = cfg.gc.post(
         '/folder', data={
-            'parentId': folderid,
+            'parentId': cfg.folderid,
             'name': 'test_sub'
         })
 
     # copy the item multiple times to create dummy database
     for i in range(2):
-        for fid in (folderid, subf['_id']):
-            _ = gc.post(
+        for fid in (cfg.folderid, subf['_id']):
+            _ = cfg.gc.post(
                 "/item/%s/copy" % iteminfo['_id'], data={
                     'name': 'test_dbsqlite-%d' % i,
                     'copyAnnotations': True,
@@ -67,7 +72,7 @@ class TestDatabaseParser(object):
 
         # recursively save annotations -- JSONs + sqlite for folders/items
         dump_annotations_locally(
-            gc, folderid=folderid, local=savepath,
+            cfg.gc, folderid=cfg.folderid, local=savepath,
             save_json=True, save_sqlite=True)
 
         assert set(os.listdir(savepath)) == {
@@ -100,7 +105,7 @@ class TestDatabaseParser(object):
 
         # recursively save annotations -- parse to csv + sqlite
         dump_annotations_locally(
-            gc, folderid=folderid, local=savepath,
+            cfg.gc, folderid=cfg.folderid, local=savepath,
             save_json=False, save_sqlite=True,
             callback=parse_annotations_to_local_tables,
             callback_kwargs={
