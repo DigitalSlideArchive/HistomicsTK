@@ -128,6 +128,9 @@ def _create_and_connect_to_local_dsa():
     # create a local dsa docker and connect to it
     cwd = os.getcwd()
     thisDir = os.path.dirname(os.path.realpath(__file__))
+    externdatadir = os.path.join(thisDir, '..', '.tox', 'externaldata')
+    if not os.path.exists(externdatadir):
+        os.makedirs(externdatadir)
     os.chdir(thisDir)
     outfilePath = os.path.join(
         tempfile.gettempdir(), 'histomicstk_test_girder_log.txt')
