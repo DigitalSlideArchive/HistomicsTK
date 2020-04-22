@@ -7,7 +7,7 @@ Created on Thu Dec 12 13:19:18 2019
 # import os
 import os
 
-import girder_client
+# import girder_client
 import json
 from histomicstk.workflows.workflow_runner import Workflow_runner, \
     Slide_iterator, Annotation_iterator
@@ -33,6 +33,7 @@ def connect_to_api(apiurl, apikey=None, interactive=True):
         Authenticated girder client.
 
     """
+    import girder_client
     assert interactive or (apikey is not None)
     gc = girder_client.GirderClient(apiUrl=apiurl)
     if apikey is not None:
