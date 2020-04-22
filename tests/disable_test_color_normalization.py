@@ -20,44 +20,14 @@
 import collections
 import numpy as np
 import os
-import skimage.io
-import unittest
-
-from histomicstk.preprocessing import color_conversion as htk_cvt
 from histomicstk.preprocessing import color_normalization as htk_cn
-
 from histomicstk.cli import utils as cli_utils
 
 
 TEST_DATA_DIR = 'fixme'
 
 
-class TestReinhardNormalization(unittest.TestCase):
-
-    def test_normalization(self):
-
-        input_image_file = os.path.join(TEST_DATA_DIR, 'L1.png')
-
-        ref_image_file = os.path.join(TEST_DATA_DIR, 'Easy1.png')
-
-        # read input image
-        im_input = skimage.io.imread(input_image_file)[:, :, :3]
-
-        # read reference image
-        im_reference = skimage.io.imread(ref_image_file)[:, :, :3]
-
-        # get mean and stddev of reference image in lab space
-        mean_ref, std_ref = htk_cvt.lab_mean_std(im_reference)
-
-        # perform color normalization
-        im_nmzd = htk_cn.reinhard(im_input, mean_ref, std_ref)
-
-        # transform normalized image to LAB color space
-        mean_nmzd, std_nmzd = htk_cvt.lab_mean_std(im_nmzd)
-
-        # check if mean and stddev of normalized and reference images are equal
-        np.testing.assert_allclose(mean_nmzd, mean_ref, atol=1e-1)
-        np.testing.assert_allclose(std_nmzd, std_ref, atol=1e-1)
+class TestReinhardNormalization(object):
 
     def test_reinhard_stats(self):
 
@@ -91,7 +61,7 @@ class TestReinhardNormalization(unittest.TestCase):
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)
 
 
-class TestBackgroundIntensity(unittest.TestCase):
+class TestBackgroundIntensity(object):
 
     def test_background_intensity(self):
         wsi_path = os.path.join(

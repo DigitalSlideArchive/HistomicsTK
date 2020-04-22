@@ -24,13 +24,9 @@ from argparse import Namespace
 import os
 import json
 import collections
-import unittest
-
 import numpy as np
 import skimage.io
-
 import large_image
-
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.nuclear as htk_nuclear
@@ -41,7 +37,7 @@ from histomicstk.cli import utils as cli_utils
 TEST_DATA_DIR = 'fixme'
 
 
-class TestCliCommon(unittest.TestCase):
+class TestCliCommon(object):
 
     def test_get_stain_matrix(self):
 
@@ -235,8 +231,7 @@ class TestCliCommon(unittest.TestCase):
 
         # Check that nuclei_bbox_annot_list is nearly equal to
         # nuclei_bbox_annot_list_gtruth
-        self.assertEqual(len(nuclei_bbox_annot_list),
-                         len(nuclei_bbox_annot_list_gtruth))
+        assert len(nuclei_bbox_annot_list) == len(nuclei_bbox_annot_list_gtruth)
         for pos in range(len(nuclei_bbox_annot_list)):
             np.testing.assert_array_almost_equal(
                 nuclei_bbox_annot_list[pos]['center'],
@@ -258,8 +253,7 @@ class TestCliCommon(unittest.TestCase):
             nuclei_bndry_annot_list_gtruth = json.load(
                 fbndry_annot)['elements']
 
-        self.assertEqual(len(nuclei_bndry_annot_list),
-                         len(nuclei_bndry_annot_list_gtruth))
+        assert len(nuclei_bndry_annot_list) == len(nuclei_bndry_annot_list_gtruth)
 
         for pos in range(len(nuclei_bndry_annot_list)):
 
@@ -276,7 +270,7 @@ class TestCliCommon(unittest.TestCase):
             c_a=5,
         )
         split = cli_utils.splitArgs(args)
-        self.assertEqual(split, Namespace(
+        assert split == Namespace(
             a=1,
             b=Namespace(
                 a=2,
@@ -286,4 +280,4 @@ class TestCliCommon(unittest.TestCase):
             c=Namespace(
                 a=5,
             ),
-        ))
+        )

@@ -20,10 +20,9 @@
 import histomicstk as htk
 import numpy as np
 import skimage.feature
-import unittest
 
 
-class TestGLCMMatrixGeneration(unittest.TestCase):
+class TestGLCMMatrixGeneration(object):
 
     def test_graycomatrixext(self):
 

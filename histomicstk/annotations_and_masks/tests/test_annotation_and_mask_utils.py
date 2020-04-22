@@ -15,13 +15,19 @@ import sys
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
 from tests.htk_test_utilities import girderClient  # noqa
-
-
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()
 
-global gc, iteminfo, annotations
+
+class Cfg:
+    def __init__(self):
+        self.gc = None
+        self.iteminfo = None
+        self.annotations = None
+
+
+cfg = Cfg()
 
 
 class TestAnnotAndMaskUtils(object):
@@ -30,17 +36,16 @@ class TestAnnotAndMaskUtils(object):
     # pytest runs tests in the order they appear in the module
     @pytest.mark.usefixtures('girderClient')  # noqa
     def test_prep(self, girderClient):  # noqa
-        global gc, iteminfo, annotations
-        gc = girderClient
-        iteminfo = gc.get('/item', parameters={
+        cfg.gc = girderClient
+        cfg.iteminfo = cfg.gc.get('/item', parameters={
             'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
-        annotations = gc.get('/annotation/item/' + iteminfo['_id'])
+        cfg.annotations = cfg.gc.get('/annotation/item/' + cfg.iteminfo['_id'])
 
     def test_get_image_from_htk_response(self):
         """Test get_image_from_htk_response."""
         getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
-            iteminfo['_id'], 59000, 59100, 35000, 35100)
-        resp = gc.get(getStr, jsonResp=False)
+            cfg.iteminfo['_id'], 59000, 59100, 35000, 35100)
+        resp = cfg.gc.get(getStr, jsonResp=False)
         rgb = get_image_from_htk_response(resp)
 
         assert rgb.shape == (100, 100, 3)
@@ -49,7 +54,7 @@ class TestAnnotAndMaskUtils(object):
         """Test get_bboxes_from_slide_annotations."""
 
         element_infos = get_bboxes_from_slide_annotations(
-            copy.deepcopy(annotations))
+            copy.deepcopy(cfg.annotations))
 
         assert element_infos.shape == (76, 9)
         assert set(element_infos.columns) == {
@@ -59,7 +64,7 @@ class TestAnnotAndMaskUtils(object):
     def test_parse_slide_annotations_into_tables(self):
         """Test parse_slide_annotations_into_tables."""
         annotation_infos, element_infos = parse_slide_annotations_into_tables(
-            copy.deepcopy(annotations))
+            copy.deepcopy(cfg.annotations))
 
         assert set(annotation_infos.columns) == {
                 'annotation_girder_id', '_modelType', '_version',
@@ -80,10 +85,10 @@ class TestAnnotAndMaskUtils(object):
         """test scale_slide_annotations."""
         for sf in (0.5, 1.0):
             modified = scale_slide_annotations(
-                copy.deepcopy(annotations), sf=sf)
+                copy.deepcopy(cfg.annotations), sf=sf)
             assert modified[0]['annotation']['elements'][0]['center'] == [
                 int(sf * j) for j in
-                annotations[0]['annotation']['elements'][0]['center']]
+                cfg.annotations[0]['annotation']['elements'][0]['center']]
 
     def test_get_scale_factor_and_appendStr(self):
         """test get_scale_factor_and_appendStr."""
@@ -94,6 +99,6 @@ class TestAnnotAndMaskUtils(object):
         ]
         for (MPP, MAG), (sftrue, apstr) in in_out:
             sf, appendStr = get_scale_factor_and_appendStr(
-                gc=gc, slide_id=iteminfo['_id'], MPP=MPP, MAG=MAG)
+                gc=cfg.gc, slide_id=cfg.iteminfo['_id'], MPP=MPP, MAG=MAG)
             assert sf == sftrue
             assert appendStr == apstr

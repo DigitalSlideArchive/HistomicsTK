@@ -4,7 +4,6 @@ Created on Tue Aug 20 18:13:37 2019.
 
 @author: tageldim
 """
-
 import os
 import pytest
 from pandas import read_csv
@@ -13,7 +12,6 @@ from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     get_contours_from_mask, get_annotation_documents_from_contours)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     delete_annotations_in_slide)
-
 import sys
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))

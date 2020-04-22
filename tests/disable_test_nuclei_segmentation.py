@@ -18,11 +18,8 @@
 ###############################################################################
 
 import os
-import unittest
-
 import numpy as np
 import skimage.io
-
 import histomicstk.preprocessing.color_conversion as htk_cvt
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
@@ -31,7 +28,7 @@ import histomicstk.segmentation as htk_seg
 TEST_DATA_DIR = 'fixme'
 
 
-class TestNucleiSegmentation(unittest.TestCase):
+class TestNucleiSegmentation(object):
 
     def test_segment_nuclei_kofahi(self):
 
@@ -84,7 +81,7 @@ class TestNucleiSegmentation(unittest.TestCase):
 
         num_nuclei_gtruth = len(np.unique(im_gtruth_mask)) - 1
 
-        self.assertEqual(num_nuclei, num_nuclei_gtruth)
+        assert num_nuclei == num_nuclei_gtruth
 
         np.testing.assert_allclose(im_nuclei_seg_mask, im_gtruth_mask)
 
@@ -97,4 +94,4 @@ class TestNucleiSegmentation(unittest.TestCase):
 
         num_nuclei = len(np.unique(im_nuclei_seg_mask)) - 1
 
-        self.assertEqual(num_nuclei, 0)
+        assert num_nuclei == 0
