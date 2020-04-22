@@ -109,6 +109,9 @@ def girderClient():
 
     cwd = os.getcwd()
     thisDir = os.path.dirname(os.path.realpath(__file__))
+    externdatadir = os.path.join(thisDir, '..', '.tox', 'externaldata')
+    if not os.path.exists(externdatadir):
+        os.makedirs(externdatadir)
     os.chdir(thisDir)
     outfilePath = os.path.join(tempfile.gettempdir(), 'histomicstk_test_girder_log.txt')
     with open(outfilePath, 'w') as outfile:
