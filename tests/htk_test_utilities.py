@@ -66,25 +66,25 @@ def externaldata(
     deleteIfWrongHash(destpath, hashvalue)
     if not os.path.exists(destpath):
         for source in sources:
-            try:
-                request = requests.get(source.format(hashvalue=hashvalue), stream=True)
-                request.raise_for_status()
-                if not os.path.exists(realdestdir):
-                    os.makedirs(realdestdir)
-                sha512 = hashlib.sha512()
-                with open(destpath, 'wb') as out:
-                    for buf in request.iter_content(65536):
-                        out.write(buf)
-                        sha512.update(buf)
-                if os.path.getsize(destpath) == int(request.headers['content-length']):
-                    if hashvalue and sha512.hexdigest() != hashvalue:
-                        raise Exception('Download has wrong hash value - %s' % destpath)
-                    break
-                raise Exception('Incomplete download (got %d of %d) of %s' % (
-                    os.path.getsize(destpath),
-                    int(request.headers['content-length']), destpath))
-            except Exception:
-                pass
+            # try:
+            request = requests.get(source.format(hashvalue=hashvalue), stream=True)
+            request.raise_for_status()
+            if not os.path.exists(realdestdir):
+                os.makedirs(realdestdir)
+            sha512 = hashlib.sha512()
+            with open(destpath, 'wb') as out:
+                for buf in request.iter_content(65536):
+                    out.write(buf)
+                    sha512.update(buf)
+            if os.path.getsize(destpath) == int(request.headers['content-length']):
+                if hashvalue and sha512.hexdigest() != hashvalue:
+                    raise Exception('Download has wrong hash value - %s' % destpath)
+            #     break
+            # raise Exception('Incomplete download (got %d of %d) of %s' % (
+            #     os.path.getsize(destpath),
+            #     int(request.headers['content-length']), destpath))
+            # except Exception:
+            #     pass
             if os.path.exists(destpath):
                 os.unlink(destpath)
     if not os.path.exists(destpath):
