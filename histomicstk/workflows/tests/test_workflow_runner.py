@@ -14,16 +14,19 @@ from histomicstk.utils.girder_convenience_utils import \
     update_styles_for_annotations_in_folder
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
-
-# import tests.htk_test_utilities as utilities  # noqa
 from tests.htk_test_utilities import girderClient  # noqa
-
-
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()
 
-global gc, iteminfo, posted_folder
+
+class Cfg:
+    def __init__(self):
+        self.gc = None
+        self.posted_folder = None
+
+
+cfg = Cfg()
 
 
 class TestWorkflows(object):
@@ -32,16 +35,15 @@ class TestWorkflows(object):
     # pytest runs tests in the order they appear in the module
     @pytest.mark.usefixtures('girderClient')  # noqa
     def test_prep(self, girderClient):  # noqa
-        global gc, posted_folder
 
-        gc = girderClient
+        cfg.gc = girderClient
 
         # get original item
-        original_iteminfo = gc.get('/item', parameters={
+        original_iteminfo = cfg.gc.get('/item', parameters={
             'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
 
         # create a sample folder
-        posted_folder = gc.post(
+        cfg.posted_folder = cfg.gc.post(
             '/folder', data={
                 'parentId': original_iteminfo['folderId'],
                 'name': 'test'
@@ -49,17 +51,17 @@ class TestWorkflows(object):
 
         # copy the item a couple of times
         for i in range(2):
-            _ = gc.post(
+            _ = cfg.gc.post(
                 "/item/%s/copy" % original_iteminfo['_id'], data={
                     'name': 'TCGA-A2-A0YE_copy-%d' % i,
                     'copyAnnotations': True,
-                    'folderId': posted_folder['_id'],
+                    'folderId': cfg.posted_folder['_id'],
                 })
 
     def test_Slide_iterator(self):
         """Test Slide_iterator.run()."""
         slide_iterator = Slide_iterator(
-            gc, source_folder_id=posted_folder['_id'])
+            cfg.gc, source_folder_id=cfg.posted_folder['_id'])
 
         assert len(slide_iterator.slide_ids) == 2
 
@@ -74,7 +76,7 @@ class TestWorkflows(object):
     def test_runner_using_annotation_style_update(self):
         """Test workflow runner for cellularity detection."""
         update_styles_for_annotations_in_folder(
-            gc, folderid=posted_folder['_id'],
+            cfg.gc, folderid=cfg.posted_folder['_id'],
             workflow_kwargs={
                 'changes': {
                     'roi': {

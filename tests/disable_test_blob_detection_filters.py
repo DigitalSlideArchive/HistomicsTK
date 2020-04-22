@@ -18,10 +18,7 @@
 ###############################################################################
 
 import os
-import unittest
-
 import numpy as np
-
 from histomicstk.filters.shape import clog, cdog
 from skimage.feature import peak_local_max
 
@@ -75,7 +72,7 @@ def compare_maxima(input_im, gtruth_im, min_distance=10, threshold_abs=20):
     np.testing.assert_array_equal(gtruth_coordinates, input_coordinates)
 
 
-class TestBlobDetectionFilters(unittest.TestCase):
+class TestBlobDetectionFilters(object):
 
     def test_clog(self):
 

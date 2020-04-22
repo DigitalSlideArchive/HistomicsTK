@@ -26,7 +26,6 @@ import shutil
 import six
 import sys
 import tempfile
-import unittest
 
 TEST_DATA_DIR = 'fixme'
 base = None
@@ -42,7 +41,7 @@ def tearDownModule():
     base.stopServer()
 
 
-class TestCliResults(unittest.TestCase):
+class TestCliResults(object):
     def _runTest(self, cli_args=(), cli_kwargs=None, outputs=None,  # noqa
                  contains=None, excludes=None):
         """
@@ -103,26 +102,26 @@ class TestCliResults(unittest.TestCase):
                     run_name='__main__',
                 )
             except SystemExit as e:
-                self.assertIn(e.code, {0, None})
+                assert e.code in {0, None}
             finally:
                 stdout = sys.stdout.getvalue()
                 sys.argv[:] = old_sys_argv
                 sys.stdout, sys.stderr = old_stdout, old_stderr
                 os.chdir(old_cwd)
             for entry in contains:
-                self.assertIn(entry, stdout)
+                assert entry in stdout
             for entry in excludes:
-                self.assertNotIn(entry, stdout)
+                assert entry not in stdout
             for outpath, options in six.iteritems(outputs):
                 if outpath.startswith('tmp_'):
                     outpath = os.path.join(tmppath, outpath)
-                self.assertTrue(os.path.isfile(outpath))
+                assert os.path.isfile(outpath)
                 if 'hash' in options:
                     sha = hashlib.sha256()
                     # For png test files, take a hash of the decoded image
                     # rather than the file.
                     if outpath.endswith('.png'):
-                        sha.update(PIL.Image.open(outpath).convert('RGBA').tobytes())
+                        sha.update(PIL.Image.open(outpath).convert('RGBA').tobytes())  # noqa
                     else:
                         with open(outpath, 'rb') as fptr:
                             while True:
@@ -132,14 +131,14 @@ class TestCliResults(unittest.TestCase):
                                 sha.update(data)
                     hashval = sha.hexdigest()
                     try:
-                        self.assertEqual(options['hash'], hashval)
+                        assert options['hash'] == hashval
                     except Exception:
                         sys.stderr.write('File hash mismatch: %s\n' % outpath)
                         raise
                 if 'contains' in options:
                     data = open(outpath, 'rt').read(chunkSize)
                     for entry in options['contains']:
-                        self.assertIn(entry, data)
+                        assert entry in data
         except Exception:
             sys.stderr.write('CMD (cwd %s):\n%r\n' % (cwd, cmd))
             sys.stderr.write('STDOUT:\n%s\n' % stdout.rstrip())
@@ -160,7 +159,7 @@ class TestCliResults(unittest.TestCase):
         cli_args = (os.environ['CLI_LIST_ENTRYPOINT'], '--list_cli',)
         cli_list = self._runTest(cli_args, contains=['"NucleiDetection"'])
         cli_list = json.loads(cli_list)
-        self.assertIn('NucleiDetection', cli_list)
+        assert 'NucleiDetection' in cli_list
         for cli in cli_list:
             cli_args = (cli, '--help')
             # Each cli's help must mention usage, its own name, and that you
@@ -193,7 +192,7 @@ class TestCliResults(unittest.TestCase):
         self._runTest(cli_args, cli_kwargs, outputs={
             'tmp_1.anot': {
                 'contains': ['elements'],
-                # 'hash': '02b240586412c87ad5cbf349b7c22f80f1df31eef54ed8ee4ad1fd3624a89fa2',
+                # 'hash': '02b240586412c87ad5cbf349b7c22f80f1df31eef54ed8ee4ad1fd3624a89fa2',  # noqa
             },
         })
 
@@ -204,7 +203,7 @@ class TestCliResults(unittest.TestCase):
         self._runTest(cli_args, cli_kwargs, outputs={
             'tmp_1.anot': {
                 'contains': ['elements'],
-                # 'hash': '02b240586412c87ad5cbf349b7c22f80f1df31eef54ed8ee4ad1fd3624a89fa2',
+                # 'hash': '02b240586412c87ad5cbf349b7c22f80f1df31eef54ed8ee4ad1fd3624a89fa2',  # noqa
             },
         })
 
@@ -216,7 +215,7 @@ class TestCliResults(unittest.TestCase):
             ] + ['tmp_out_{}.png'.format(i) for i in (1, 2, 3)],
             outputs={
                 'tmp_out_1.png': dict(
-                    hash='b91d961b7eba8c02a1c067da91fced315fa3922db73f489202a296f4c2304b94',
+                    hash='b91d961b7eba8c02a1c067da91fced315fa3922db73f489202a296f4c2304b94',  # noqa
                 ),
             },
         )

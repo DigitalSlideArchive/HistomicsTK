@@ -20,18 +20,17 @@
 import numpy as np
 import os
 import skimage.io
-import unittest
-
 from histomicstk.preprocessing import color_deconvolution as htk_dcv
+import sys
+thisDir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, thisDir)
+import htk_test_utilities as utilities  # noqa
 
 
-TEST_DATA_DIR = 'fixme'
-
-
-class TestMacenko(unittest.TestCase):
+class TestMacenko(object):
 
     def test_macenko(self):
-        im_path = os.path.join(TEST_DATA_DIR, 'Easy1.png')
+        im_path = utilities.externaldata('data/Easy1.png.sha512')
         im = skimage.io.imread(im_path)[..., :3]
 
         w = htk_dcv.rgb_separate_stains_macenko_pca(im, 255)
@@ -43,10 +42,10 @@ class TestMacenko(unittest.TestCase):
         np.testing.assert_allclose(w, w_expected, atol=1e-6)
 
 
-class TestColorDeconvolution(unittest.TestCase):
+class TestColorDeconvolution(object):
 
     def test_roundtrip(self):
-        im_path = os.path.join(TEST_DATA_DIR, 'Easy1.png')
+        im_path = utilities.externaldata('data/Easy1.png.sha512')
         im = skimage.io.imread(im_path)[..., :3]
 
         w = np.array([[0.650, 0.072, 0],

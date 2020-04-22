@@ -21,18 +21,15 @@ import collections
 import numpy as np
 import os
 import skimage.io
-import unittest
-
 from histomicstk.preprocessing import color_conversion as htk_cvt
 from histomicstk.preprocessing import color_normalization as htk_cn
-
 from histomicstk.cli import utils as cli_utils
 
 
 TEST_DATA_DIR = 'fixme'
 
 
-class TestReinhardNormalization(unittest.TestCase):
+class TestReinhardNormalization(object):
 
     def test_normalization(self):
 
@@ -91,7 +88,7 @@ class TestReinhardNormalization(unittest.TestCase):
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)
 
 
-class TestBackgroundIntensity(unittest.TestCase):
+class TestBackgroundIntensity(object):
 
     def test_background_intensity(self):
         wsi_path = os.path.join(
