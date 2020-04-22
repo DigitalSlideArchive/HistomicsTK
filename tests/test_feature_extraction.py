@@ -14,25 +14,44 @@ thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, thisDir)
 import htk_test_utilities as utilities  # noqa
 
-# Enable to generate groundtruth files in the /tmp directory
-GENERATE_GROUNDTRUTH = False
 
-
-class TestFeatureExtraction(object):
-
+class Cfg:
     def __init__(self):
-        self.im_input = None
-        self.im_input_nmzd = None
+        self.fdata_nuclei = None
         self.im_nuclei_stain = None
         self.im_nuclei_seg_mask = None
         self.nuclei_rprops = None
-        self.fdata_nuclei = None
+
+
+# Enable to generate groundtruth files in the /tmp directory
+GENERATE_GROUNDTRUTH = False
+# configurations object
+cfg = Cfg()
+
+
+def check_fdata_sanity(fdata, expected_feature_list,
+                       prefix='', match_feature_count=True):
+
+    assert len(cfg.nuclei_rprops) == fdata.shape[0]
+
+    if len(prefix) > 0:
+        fcols = [col for col in fdata.columns if col.startswith(prefix)]
+    else:
+        fcols = fdata.columns
+
+    if match_feature_count:
+        assert len(fcols) == len(expected_feature_list)
+
+    for col in expected_feature_list:
+        assert prefix + col in fcols
+
+
+class TestFeatureExtraction(object):
 
     def test_setup(self):
 
         # define parameters
         args = {
-
             'reference_mu_lab': [8.63234435, -0.11501964, 0.03868433],
             'reference_std_lab': [0.57506023, 0.10403329, 0.01364062],
 
@@ -89,32 +108,12 @@ class TestFeatureExtraction(object):
             im_nuclei_seg_mask, im_nuclei_stain,
             im_cytoplasm=im_cytoplasm_stain)
 
-        self.im_input = im_input
-        self.im_input_nmzd = im_input_nmzd
-        self.im_nuclei_stain = im_nuclei_stain
-        self.im_nuclei_seg_mask = im_nuclei_seg_mask
-        self.nuclei_rprops = nuclei_rprops
-        self.fdata_nuclei = fdata_nuclei
-
-    def check_fdata_sanity(self, fdata, expected_feature_list,
-                           prefix='', match_feature_count=True):
-
-        assert len(self.nuclei_rprops) == fdata.shape[0]
-
-        if len(prefix) > 0:
-
-            fcols = [col
-                     for col in fdata.columns if col.startswith(prefix)]
-
-        else:
-
-            fcols = fdata.columns
-
-        if match_feature_count:
-            assert len(fcols) == len(expected_feature_list)
-
-        for col in expected_feature_list:
-            assert prefix + col in fcols
+        cfg.im_input = im_input
+        cfg.im_input_nmzd = im_input_nmzd
+        cfg.im_nuclei_stain = im_nuclei_stain
+        cfg.im_nuclei_seg_mask = im_nuclei_seg_mask
+        cfg.nuclei_rprops = nuclei_rprops
+        cfg.fdata_nuclei = fdata_nuclei
 
     def test_compute_intensity_features(self):
 
@@ -134,17 +133,17 @@ class TestFeatureExtraction(object):
         ]
 
         fdata = htk_features.compute_intensity_features(
-            self.im_nuclei_seg_mask, self.im_nuclei_stain)
+            cfg.im_nuclei_seg_mask, cfg.im_nuclei_stain)
 
-        self.check_fdata_sanity(fdata, expected_feature_list)
+        check_fdata_sanity(fdata, expected_feature_list)
 
-        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
-                                prefix='Nucleus.',
-                                match_feature_count=False)
+        check_fdata_sanity(
+            cfg.fdata_nuclei, expected_feature_list,
+            prefix='Nucleus.', match_feature_count=False)
 
-        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
-                                prefix='Cytoplasm.',
-                                match_feature_count=False)
+        check_fdata_sanity(
+            cfg.fdata_nuclei, expected_feature_list,
+            prefix='Cytoplasm.', match_feature_count=False)
 
         if GENERATE_GROUNDTRUTH:
             fdata.to_csv(os.path.join(
@@ -182,17 +181,17 @@ class TestFeatureExtraction(object):
             expected_feature_list.append(col + '.Range')
 
         fdata = htk_features.compute_haralick_features(
-            self.im_nuclei_seg_mask, self.im_nuclei_stain)
+            cfg.im_nuclei_seg_mask, cfg.im_nuclei_stain)
 
-        self.check_fdata_sanity(fdata, expected_feature_list)
+        check_fdata_sanity(fdata, expected_feature_list)
 
-        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
-                                prefix='Nucleus.',
-                                match_feature_count=False)
+        check_fdata_sanity(
+            cfg.fdata_nuclei, expected_feature_list,
+            prefix='Nucleus.', match_feature_count=False)
 
-        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
-                                prefix='Cytoplasm.',
-                                match_feature_count=False)
+        check_fdata_sanity(
+            cfg.fdata_nuclei, expected_feature_list,
+            prefix='Cytoplasm.', match_feature_count=False)
 
         if GENERATE_GROUNDTRUTH:
             fdata.to_csv(os.path.join(
@@ -219,17 +218,17 @@ class TestFeatureExtraction(object):
         ]
 
         fdata = htk_features.compute_gradient_features(
-            self.im_nuclei_seg_mask, self.im_nuclei_stain)
+            cfg.im_nuclei_seg_mask, cfg.im_nuclei_stain)
 
-        self.check_fdata_sanity(fdata, expected_feature_list)
+        check_fdata_sanity(fdata, expected_feature_list)
 
-        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
-                                prefix='Nucleus.',
-                                match_feature_count=False)
+        check_fdata_sanity(
+            cfg.fdata_nuclei, expected_feature_list,
+            prefix='Nucleus.', match_feature_count=False)
 
-        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
-                                prefix='Cytoplasm.',
-                                match_feature_count=False)
+        check_fdata_sanity(
+            cfg.fdata_nuclei, expected_feature_list,
+            prefix='Cytoplasm.', match_feature_count=False)
 
         if GENERATE_GROUNDTRUTH:
             fdata.to_csv(os.path.join(
@@ -259,16 +258,17 @@ class TestFeatureExtraction(object):
         ]
 
         fdata = htk_features.compute_morphometry_features(
-            self.im_nuclei_seg_mask)
+            cfg.im_nuclei_seg_mask)
 
-        self.check_fdata_sanity(fdata, expected_feature_list)
+        check_fdata_sanity(fdata, expected_feature_list)
 
-        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
-                                match_feature_count=False)
+        check_fdata_sanity(
+            cfg.fdata_nuclei, expected_feature_list, match_feature_count=False)
 
         if GENERATE_GROUNDTRUTH:
             fdata.to_csv(os.path.join(
-                tempfile.gettempdir(), 'Easy1_nuclei_morphometry_features.csv'),
+                tempfile.gettempdir(),
+                'Easy1_nuclei_morphometry_features.csv'),
                 index=False)
 
         fdata_gtruth = pd.read_csv(
@@ -283,12 +283,12 @@ class TestFeatureExtraction(object):
         expected_feature_list = ['Shape.FSD' + str(i + 1) for i in range(Fs)]
 
         fdata = htk_features.compute_fsd_features(
-            self.im_nuclei_seg_mask, Fs=Fs)
+            cfg.im_nuclei_seg_mask, Fs=Fs)
 
-        self.check_fdata_sanity(fdata, expected_feature_list)
+        check_fdata_sanity(fdata, expected_feature_list)
 
-        self.check_fdata_sanity(self.fdata_nuclei, expected_feature_list,
-                                match_feature_count=False)
+        check_fdata_sanity(
+            cfg.fdata_nuclei, expected_feature_list, match_feature_count=False)
 
         if GENERATE_GROUNDTRUTH:
             fdata.to_csv(os.path.join(
