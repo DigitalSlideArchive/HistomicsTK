@@ -63,7 +63,7 @@ HistomicsTK can be used in two ways:
   
   $ git clone https://github.com/DigitalSlideArchive/HistomicsTK/
   $ cd HistomicsTK/
-  $ python -m pip install setuptools-scm Cython>=1.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
+  $ python -m pip install setuptools-scm Cython>=0.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
   $ python -m pip install -e .
 
   HistomicsTK uses the `large_image`_ library to read and various microscopy
