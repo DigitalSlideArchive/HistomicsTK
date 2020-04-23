@@ -63,8 +63,8 @@ In our experience it is helpful to establish three groups to manage permissions 
 
 **Create an annotation protocol document**: Creating a written protocol instructing users how and what to annotate can improve consistency and reproducibility, and forces participants to consider and discuss project objectives. Here are two sample protocols we have used for our own semantic segmentation and cell detection / classification projects:
 
-- `Semantic segmentation + Nucleus centroids <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/docs/examples/doc_files/Modified HTT Annotation Protocol.pdf>`_: This protocol was developed for an FDA study of tumor-infiltrating lymphocytes in breast cancer.
-- `Nucleus detection / classification <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/docs/examples/doc_files/Modified Nucleus Annotation Protocol.pdf>`_: This protocol describes the process for annotating nuclei in breast cancer.
+- `Semantic segmentation + Nucleus centroids <https://ndownloader.figshare.com/files/22394667>`_: This protocol was developed for an FDA study of tumor-infiltrating lymphocytes in breast cancer.
+- `Nucleus detection / classification <https://ndownloader.figshare.com/files/22394670>`_: This protocol describes the process for annotating nuclei in breast cancer.
 
 To provide users with the best experience in your annotation projects we recommend that they:
 
@@ -86,12 +86,12 @@ To provide users with the best experience in your annotation projects we recomme
 - Multiple users annotating the same ROI to measure inter-observer variability
     Same procedure as above, except that slides are copied after ROI creation instead of moved, and user folder permissions are set up to blind users from each other.
 
-**Backup data regularly**: The topic `“Local backup and SQL querying of annotation data” <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/docs/examples/annotation_database_parser.ipynb>`_ provides details on how to back up the database. Using the SQLite backup option enables you to conveniently query the database and to monitor annotation progress.
+**Backup data regularly**: The topic `“Local backup and SQL querying of annotation data” <annotation_database_backup_and_sql_parser.ipynb>`_ provides details on how to back up the database. Using the SQLite backup option enables you to conveniently query the database and to monitor annotation progress.
 
     **Note**: Running out of AssetStore space (disk space) will corrupt your annotation database. If your project involves users uploading whole slide images (WSI), make sure to setup user upload quotas. Keep in mind that a typical WSI is often multiple Gigabytes in size. Backup your annotations often.
 
 **Freeze annotations**: At some point you need to freeze all annotations and create a static version of the database for processing. Freezing annotations can be accomplished by changing group permissions to view.
 
-**Generating galleries for annotation review**: Study coordinators can review and/or correct annotations directly through the HistomicsUI interface. In some studies where annotations are sparsely spread throughout a slide, it may be helpful to create review galleries for quality control and review. More details on this are provided in `“Creating mosaic galleries for rapid annotation review” <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/docs/examples/review_gallery.ipynb>`_.
+**Generating galleries for annotation review**: Study coordinators can review and/or correct annotations directly through the HistomicsUI interface. In some studies where annotations are sparsely spread throughout a slide, it may be helpful to create review galleries for quality control and review. More details on this are provided in `“Creating mosaic galleries for rapid annotation review” <creating_gallery_images_review.ipynb>`_.
 
-**Preparing annotations for analysis including machine learning**: HistomicsTK provides tools for converting annotations into mask and label image formats. See `“Converting annotations to semantic segmentation mask images” <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/docs/examples/annotations_to_masks_handler.ipynb>`_ and `"Converting annotations to object segmentation mask images" <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/docs/examples/annotations_to_OBJECT_mask_handler.ipynb>`_ for more details.
+**Preparing annotations for analysis including machine learning**: HistomicsTK provides tools for converting annotations into mask and label image formats. See `“Converting annotations to semantic segmentation mask images” <annotations_to_semantic_segmentation_masks.ipynb>`_ and `"Converting annotations to object segmentation mask images" <annotations_to_object_segmentation_masks.ipynb>`_ for more details.

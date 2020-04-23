@@ -117,8 +117,8 @@ of higher level methods we have to make your life easier. Here are some options:
 - Using HistomicsTK functions with the girder client
 
     HistomicsTK contains methods that use the girder client to perform
-    operations like `applying image analysis functions <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/histomicstk/workflows/workflow_runner.py>`_ to a set of remotely
-    hosted slides, or for `handling annotations <https://github.com/DigitalSlideArchive/HistomicsTK/blob/mtageld-dev-02092020/histomicstk/utils/girder_convenience_utils.py>`_.
+    operations like `applying image analysis functions <workflows.ipynb>`_ to a set of remotely
+    hosted slides, or for `handling annotations <procedure_for_typical_annotation_project.rst>`_.
 
 .. _RESTful API: https://restfulapi.net/
 .. _girder: https://girder.readthedocs.io/en/stable/index.html
