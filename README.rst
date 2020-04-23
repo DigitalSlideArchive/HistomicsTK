@@ -51,13 +51,13 @@ HistomicsTK can be used in two ways:
   
   2- Run ``pip install libtiff``
   
-  2- Replace ``large-image[sources]`` with ``large-image[pil,tiff]`` in ``setup.py``.
+  3- Replace ``large-image[sources]`` with ``large-image[pil,tiff]`` in ``setup.py``.
   
-  3- Install Visual Studio 15 2017 `Community Version <https://my.visualstudio.com/Downloads?q=visual%20studio%202017&wt.mc_id=o~msft~vscom~older-downloads>`_ 
+  4- Install Visual Studio 15 2017 `Community Version <https://my.visualstudio.com/Downloads?q=visual%20studio%202017&wt.mc_id=o~msft~vscom~older-downloads>`_ 
   
-  4- Install C++ build tools. Under Tools > Get Tools and Features ... > Desktop Development with C++, ensure that the first 8 boxes are checked.
+  5- Install C++ build tools. Under Tools > Get Tools and Features ... > Desktop Development with C++, ensure that the first 8 boxes are checked.
 
-  5- Run this::
+  6- Run this::
   
   $ python -m pip install -e .
   $ pip install girder-client
