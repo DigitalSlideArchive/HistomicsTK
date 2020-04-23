@@ -35,7 +35,7 @@ cfg = Cfg()
 def test_prep(girderClient):  # noqa
 
     cfg.gc = girderClient
-    cfg.URL = 'http://localhost:8080/'
+    cfg.URL = cfg.gc.urlBase.replace('api/v1/', '')
 
     # GT codes dict for parsing into label mask
     gtcodePath = getTestFilePath('sample_GTcodes.csv')

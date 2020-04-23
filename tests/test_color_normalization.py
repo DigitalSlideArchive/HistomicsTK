@@ -22,19 +22,19 @@ import numpy as np
 import os
 from histomicstk.preprocessing import color_normalization as htk_cn
 from histomicstk.cli import utils as cli_utils
-
-
-TEST_DATA_DIR = 'fixme'
+import sys
+thisDir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, thisDir)
+import htk_test_utilities as utilities  # noqa
 
 
 class TestReinhardNormalization(object):
 
     def test_reinhard_stats(self):
 
-        wsi_path = os.path.join(
-            TEST_DATA_DIR,
-            'sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs'  # noqa
-        )
+        wsi_path = os.path.join(utilities.externaldata(
+            'data/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs.sha512'  # noqa
+        ))
 
         np.random.seed(1)
 
@@ -64,10 +64,9 @@ class TestReinhardNormalization(object):
 class TestBackgroundIntensity(object):
 
     def test_background_intensity(self):
-        wsi_path = os.path.join(
-            TEST_DATA_DIR,
-            'sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs'  # noqa
-        )
+        wsi_path = os.path.join(utilities.externaldata(
+            'data/sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs.sha512'  # noqa
+        ))
 
         np.random.seed(1)
 
