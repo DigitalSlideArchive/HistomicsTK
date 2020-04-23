@@ -22,7 +22,7 @@ HistomicsTK can be used in two ways:
 
 - **As a pure Python package**: enables application of image analysis algorithms to data independent of the `Digital Slide Archive`_ (DSA). HistomicsTK provides a collection of fundamental algorithms for tasks such as color normalization, color deconvolution, nuclei segmentation, and feature extraction. Read more about these capabilities here:  `api-docs <https://digitalslidearchive.github.io/HistomicsTK/api-docs.html>`__ and `examples <https://digitalslidearchive.github.io/HistomicsTK/examples.html>`__ for more information.
   
-  Installation instructions on Linux:
+  **Installation instructions on Linux:**
   
   *To install HistomicsTK using PyPI*::
   
@@ -38,6 +38,28 @@ HistomicsTK can be used in two ways:
   HistomicsTK uses the `large_image`_ library to read content from whole-slide and microscopy image formats. Depending on your exact system, installing the necessary libraries to support these formats can be complex.  There are some non-official prebuilt libraries available for Linux that can be included as part of the installation by specifying ``pip install histomicstk --find-links https://girder.github.io/large_image_wheels``. Note that if you previously installed HistomicsTK or large_image without these, you may need to add ``--force-reinstall --no-cache-dir`` to the ``pip install`` command to force it to use the find-links option.
 
   The system version of various libraries are used if the ``--find-links`` option is not specified.  You will need to use your package manager to install appropriate libraries (on Ubuntu, for instance, you'll need ``libopenslide-dev`` and ``libtiff-dev``).
+  
+  **To install from source on Windows**:
+  
+  1- Run the following::
+  
+  $ pip install large-image
+  $ pip install cmake
+  $ git clone https://github.com/DigitalSlideArchive/HistomicsTK/
+  $ cd HistomicsTK/
+  $ python -m pip install setuptools-scm Cython>=0.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
+  
+  2- Comment out ``large-image[sources]`` in ``setup.py``.
+  
+  3- Install Visual Studio 15 2017 `Community Version <https://my.visualstudio.com/Downloads?q=visual%20studio%202017&wt.mc_id=o~msft~vscom~older-downloads>`_ 
+  
+  4- Install C++ build tools. Under Tools > Get Tools and Features ... > Desktop Development with C++, ensure that the first 8 boxes are checked.
+
+  5- Run this::
+  
+  $ python -m pip install -e .
+  $ pip install girder-client
+
 
 - **As a image-processing task library for HistomicsUI and the Digital Slide Archive**: This allows end users to apply containerized analysis modules/pipelines over the web. See the `Digital Slide Archive`_ for installation instructions.
 
