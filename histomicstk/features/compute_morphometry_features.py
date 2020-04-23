@@ -100,8 +100,17 @@ def compute_morphometry_features(im_label, rprops=None):
         fdata.at[i, 'Size.Area'] = rprops[i].area
 
         # compute MajorAxisLength and MinorAxisLength
-        fdata.at[i, 'Size.MajorAxisLength'] = rprops[i].major_axis_length
-        fdata.at[i, 'Size.MinorAxisLength'] = rprops[i].minor_axis_length
+        # A bug in scikit-image could produce a (very slightly)
+        # negative element in inertia_tensor_eigvals, so insert
+        # "max(0, )" call here before invoking np.sqrt().
+        inertia_tensor_eigvals = rprops[i].inertia_tensor_eigvals
+        major_axis_length = 4 * np.sqrt(
+            max(inertia_tensor_eigvals[0], 0))
+        minor_axis_length = 4 * np.sqrt(
+            max(inertia_tensor_eigvals[-1], 0))
+
+        fdata.at[i, 'Size.MajorAxisLength'] = major_axis_length
+        fdata.at[i, 'Size.MinorAxisLength'] = minor_axis_length
 
         # compute Perimeter
         fdata.at[i, 'Size.Perimeter'] = rprops[i].perimeter
@@ -124,9 +133,9 @@ def compute_morphometry_features(im_label, rprops=None):
         fdata.at[i, 'Shape.Extent'] = rprops[i].extent
 
         # compute Minor to Major axis ratio
-        if rprops[i].major_axis_length > 0:
+        if major_axis_length > 0:
             fdata.at[i, 'Shape.MinorMajorAxisRatio'] = \
-                rprops[i].minor_axis_length / rprops[i].major_axis_length
+                minor_axis_length / major_axis_length
         else:
             fdata.at[i, 'Shape.MinorMajorAxisRatio'] = 1
 
