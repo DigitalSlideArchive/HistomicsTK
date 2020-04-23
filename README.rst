@@ -49,7 +49,9 @@ HistomicsTK can be used in two ways:
   $ cd HistomicsTK/
   $ python -m pip install setuptools-scm Cython>=0.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
   
-  2- Comment out ``large-image[sources]`` in ``setup.py``.
+  2- Run ``pip install libtiff``
+  
+  2- Replace ``large-image[sources]`` with ``large-image[pil,tiff]`` in ``setup.py``.
   
   3- Install Visual Studio 15 2017 `Community Version <https://my.visualstudio.com/Downloads?q=visual%20studio%202017&wt.mc_id=o~msft~vscom~older-downloads>`_ 
   
