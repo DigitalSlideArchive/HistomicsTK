@@ -26,8 +26,10 @@ import shutil
 import six
 import sys
 import tempfile
+thisDir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, thisDir)
+import htk_test_utilities as utilities  # noqa
 
-TEST_DATA_DIR = 'fixme'
 base = None
 
 
@@ -211,7 +213,7 @@ class TestCliResults(object):
         self._runTest(
             cli_args=[
                 'ColorDeconvolution',
-                os.path.join(TEST_DATA_DIR, 'Easy1.png'),
+                utilities.externaldata('data/Easy1.png.sha512'),
             ] + ['tmp_out_{}.png'.format(i) for i in (1, 2, 3)],
             outputs={
                 'tmp_out_1.png': dict(
