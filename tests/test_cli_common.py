@@ -31,10 +31,11 @@ import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.utils as htk_utils
-
 from histomicstk.cli import utils as cli_utils
-
-TEST_DATA_DIR = 'fixme'
+import sys
+thisDir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, thisDir)
+import htk_test_utilities as utilities  # noqa
 
 
 class TestCliCommon(object):
@@ -54,8 +55,8 @@ class TestCliCommon(object):
 
     def test_get_region_dict(self):
 
-        ts = large_image.getTileSource(os.path.join(TEST_DATA_DIR,
-                                                    'Easy1.png'))
+        ts = large_image.getTileSource(os.path.join(
+            utilities.externaldata('data/Easy1.png.sha512')))
 
         result = cli_utils.get_region_dict([-1, -1, -1, -1], 2000, ts)
         expected = {}
@@ -70,10 +71,9 @@ class TestCliCommon(object):
     def test_segment_wsi_foreground_at_low_res(self):
         np.random.seed(0)
 
-        wsi_path = os.path.join(
-            TEST_DATA_DIR,
-            'TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs'
-        )
+        wsi_path = os.path.join(utilities.externaldata(
+            'data/TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs.sha512'  # noqa
+        ))
 
         ts = large_image.getTileSource(wsi_path)
 
@@ -82,10 +82,8 @@ class TestCliCommon(object):
 
         np.testing.assert_equal(fgnd_seg_scale['magnification'], 2.5)
 
-        fgnd_mask_gtruth_file = os.path.join(
-            TEST_DATA_DIR,
-            'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png'
-        )
+        fgnd_mask_gtruth_file = os.path.join(utilities.externaldata(
+            'data/TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png.sha512'))
 
         im_fgnd_mask_lres_gtruth = skimage.io.imread(
             fgnd_mask_gtruth_file) > 0
@@ -95,10 +93,9 @@ class TestCliCommon(object):
 
     def test_create_tile_nuclei_annotations(self):
 
-        wsi_path = os.path.join(
-            TEST_DATA_DIR,
-            'TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs'
-        )
+        wsi_path = os.path.join(utilities.externaldata(
+            'data/TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs.sha512'  # noqa
+        ))
 
         # define parameters
         args = {
@@ -221,10 +218,9 @@ class TestCliCommon(object):
             nuclei_bndry_annot_list.extend(cur_bndry_annot_list)
 
         # compare nuclei bbox annotations with gtruth
-        nuclei_bbox_annot_gtruth_file = os.path.join(
-            TEST_DATA_DIR,
-            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot'  # noqa
-        )
+        nuclei_bbox_annot_gtruth_file = os.path.join(utilities.externaldata(
+            'data/TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot.sha512'  # noqa
+        ))
 
         with open(nuclei_bbox_annot_gtruth_file, 'r') as fbbox_annot:
             nuclei_bbox_annot_list_gtruth = json.load(fbbox_annot)['elements']
@@ -244,10 +240,9 @@ class TestCliCommon(object):
                 nuclei_bbox_annot_list_gtruth[pos]['height'], 1)
 
         # compare nuclei boundary annotations with gtruth
-        nuclei_bndry_annot_gtruth_file = os.path.join(
-            TEST_DATA_DIR,
-            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot'  # noqa
-        )
+        nuclei_bndry_annot_gtruth_file = os.path.join(utilities.externaldata(
+            'data/TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot.sha512'  # noqa
+        ))
 
         with open(nuclei_bndry_annot_gtruth_file, 'r') as fbndry_annot:
             nuclei_bndry_annot_list_gtruth = json.load(
