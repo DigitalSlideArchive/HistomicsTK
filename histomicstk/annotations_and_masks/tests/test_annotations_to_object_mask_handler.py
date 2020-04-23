@@ -150,7 +150,7 @@ class TestGetSlideRegionNoMask(object):
         assert roi_out['rgb'].shape == (321, 351, 3)
         assert roi_out['visualization'].shape == (321, 351, 3)
         assert len(roi_out['contours']) > 72 and (
-                len(roi_out['contours']) < 80)
+            len(roi_out['contours']) < 80)
         assert set(roi_out['contours'][0].keys()) == {
             'annidx', 'elementidx', 'element_girder_id', 'type', 'label',
             'annotation_girder_id', 'bbox_area', 'group', 'color',

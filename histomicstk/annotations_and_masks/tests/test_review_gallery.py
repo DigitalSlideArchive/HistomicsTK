@@ -132,13 +132,13 @@ class TestReviewGallery(object):
             'testSlide0ForRevGal', 'testSlide1ForRevGal'}
 
         assert set([
-                j.split('_left-')[1] for j in fovdict['testSlide0ForRevGal']
+            j.split('_left-')[1] for j in fovdict['testSlide0ForRevGal']
             ]) == {
                 '%d_top-%d_bottom-%d_right-%d'
                 % (l, t, b, r) for (l, t, b, r) in [
-                      (57584, 35788, 37425, 59421),
-                      (58463, 38203, 39760, 60379),
-                      (59181, 33473, 38043, 63712),
+                    (57584, 35788, 37425, 59421),
+                    (58463, 38203, 39760, 60379),
+                    (59181, 33473, 38043, 63712),
                 ]
             }
 

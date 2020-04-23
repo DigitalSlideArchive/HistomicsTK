@@ -98,7 +98,7 @@ def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
     return Label
 
 
-def seed_contours(I, Delta=0.3):
+def seed_contours(I, Delta=0.3):  # noqa
     """Detects seed pixels for contour tracing by finding max-gradient points
     between local minima and maxima in an intensity image.
 
@@ -191,7 +191,7 @@ def seed_contours(I, Delta=0.3):
 
                     # increment transition point to beyond current maxima
                     while (TranPos < Transitions.size) & \
-                           (Transitions[TranPos] <= Maxima[MaxPos]):
+                            (Transitions[TranPos] <= Maxima[MaxPos]):
                         TranPos += 1
 
                     # add minima to current maxima until transition is reached
@@ -216,7 +216,7 @@ def seed_contours(I, Delta=0.3):
             Close = ((Minima - Maxima) < 2).nonzero()
             Maxima = np.delete(Maxima, Close)
             Minima = np.delete(Minima, Close)
-            
+
             # skip to next row if no min/max pairs exist after location filter
             if (Minima.size == 0) | (Maxima.size == 0):
                 continue

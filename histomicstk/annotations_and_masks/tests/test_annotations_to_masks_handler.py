@@ -207,7 +207,7 @@ class TestGetROIMasks(object):
         assert roi_out['rgb'].shape == (321, 351, 3)
         assert roi_out['visualization'].shape == (321, 351, 3)
         assert len(roi_out['contours']) > 26 and (
-                len(roi_out['contours']) < 32)
+            len(roi_out['contours']) < 32)
         assert set(roi_out['contours'][0].keys()) == {
             'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
             'has_holes', 'touches_edge-top', 'touches_edge-left',
