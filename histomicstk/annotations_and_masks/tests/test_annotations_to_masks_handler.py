@@ -130,6 +130,8 @@ class TestGetROIMasks(object):
 
     def test_get_all_rois_from_slide(self, tmpdir):  # noqa
         """Test get_all_roi_masks_for_slide()."""
+        if sys.version_info < (3, ):
+            return
         # just a temp directory to save masks for now
         base_savepath = str(tmpdir)
         savepaths = {
@@ -168,6 +170,8 @@ class TestGetROIMasks(object):
 
     def test_get_image_and_mask_manual_bounds(self):
         """Test get_image_and_mask_from_slide()."""
+        if sys.version_info < (3, ):
+            return
         # get specified region -- without providing scaled annotations
         roi_out_1 = get_image_and_mask_from_slide(
             mode='manual_bounds', **cfg.get_kwargs)
@@ -195,6 +199,8 @@ class TestGetROIMasks(object):
 
     def test_get_image_and_mask_minbbox(self):
         """Test get_image_and_mask_from_slide()."""
+        if sys.version_info < (3, ):
+            return
         # get ROI bounding everything
         roi_out = get_image_and_mask_from_slide(
             mode='min_bounding_box',

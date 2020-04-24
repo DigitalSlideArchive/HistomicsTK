@@ -2,7 +2,10 @@ import io
 import os
 import tempfile
 
-import matplotlib.pylab as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    pass
 import numpy as np
 import pyvips
 from PIL import Image
