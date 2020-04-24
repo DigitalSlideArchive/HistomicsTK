@@ -82,7 +82,7 @@ class TestAnnotAndMaskUtils(object):
         assert set(element_infos.loc[:, 'type']) == {'polyline', 'rectangle'}
 
     def test_scale_slide_annotations(self):
-        """test scale_slide_annotations."""
+        """Test scale_slide_annotations."""
         for sf in (0.5, 1.0):
             modified = scale_slide_annotations(
                 copy.deepcopy(cfg.annotations), sf=sf)
@@ -91,7 +91,7 @@ class TestAnnotAndMaskUtils(object):
                 cfg.annotations[0]['annotation']['elements'][0]['center']]
 
     def test_get_scale_factor_and_appendStr(self):
-        """test get_scale_factor_and_appendStr."""
+        """Test get_scale_factor_and_appendStr."""
         in_out = [
             [(0.2, None), (1.2525, "&mm_x=0.0002&mm_y=0.00020000")],
             [(None, 10.), (0.25, "&magnification=10.00000000")],

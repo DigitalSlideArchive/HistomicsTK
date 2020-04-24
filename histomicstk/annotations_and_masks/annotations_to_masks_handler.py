@@ -542,7 +542,7 @@ def get_image_and_mask_from_slide(
         MPP=5.0, MAG=None, mode='min_bounding_box',
         bounds=None, idx_for_roi=None,
         slide_annotations=None, element_infos=None,
-        get_roi_mask_kwargs=dict(), get_contours_kwargs=dict(), linewidth=0.2,
+        get_roi_mask_kwargs=None, get_contours_kwargs=None, linewidth=0.2,
         get_rgb=True, get_contours=True, get_visualization=True):
     """Parse region from the slide and get its corresponding labeled mask.
 
@@ -643,6 +643,8 @@ def get_image_and_mask_from_slide(
         visualization - (mxnx3 np array) visualization overlay
 
     """
+    get_roi_mask_kwargs = get_roi_mask_kwargs or {}
+    get_contours_kwargs = get_contours_kwargs or {}
     # important sanity checks
     (MPP, MAG, mode, bounds, idx_for_roi, get_roi_mask_kwargs,
      get_rgb, get_contours, get_visualization) = _sanity_checks(
@@ -717,7 +719,7 @@ def get_image_and_mask_from_slide(
 
 def get_all_rois_from_slide(
         gc, slide_id, GTCodes_dict, save_directories,
-        get_image_and_mask_from_slide_kwargs=dict(),
+        get_image_and_mask_from_slide_kwargs=None,
         slide_name=None, verbose=True, monitorPrefix="", ):
     """Parse annotations and saves ground truth masks for ALL ROIs.
 
@@ -802,7 +804,7 @@ def get_all_rois_from_slide(
         'get_visualization': True,
     }
 
-    kvp = get_image_and_mask_from_slide_kwargs  # for easy referencing
+    kvp = get_image_and_mask_from_slide_kwargs or {}  # for easy referencing
     for k, v in default_keyvalues.items():
         if k not in kvp.keys():
             kvp[k] = v
