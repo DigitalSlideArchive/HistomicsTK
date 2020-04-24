@@ -92,6 +92,8 @@ class TestReviewGallery(object):
 
     def test_get_all_rois_from_folder_v2(self):
         """Test get_all_rois_from_folder_v2()."""
+        if sys.version_info < (3, ):
+            return
         # params for getting all rois for slide
         get_all_rois_kwargs = {
             'GTCodes_dict': cfg.GTCodes_dict,
@@ -144,6 +146,8 @@ class TestReviewGallery(object):
 
     def test_create_review_galleries(self):
         """Test create_review_galleries()."""
+        if sys.version_info < (3, ):
+            return
         create_review_galleries_kwargs = {
             'tilepath_base': cfg.combinedvis_savepath,
             'upload_results': True,

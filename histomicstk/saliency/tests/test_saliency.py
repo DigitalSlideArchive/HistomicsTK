@@ -11,7 +11,6 @@ import numpy as np
 import tempfile
 import shutil
 from pandas import read_csv
-# from matplotlib import pylab as plt
 from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask,
     get_tissue_boundary_annotation_documents)

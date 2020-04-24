@@ -116,6 +116,8 @@ class TestGetSlideRegionNoMask(object):
 
     def test_annotations_to_contours_no_mask_1(self):
         """Test annotations_to_contours_no_mask()."""
+        if sys.version_info < (3, ):
+            return
         # get specified region -- without providing scaled annotations
         roi_out_1 = annotations_to_contours_no_mask(
             mode='manual_bounds', **cfg.test_annots_to_contours_kwargs)
@@ -140,6 +142,8 @@ class TestGetSlideRegionNoMask(object):
 
     def test_annotations_to_contours_no_mask_2(self):
         """Test get_image_and_mask_from_slide()."""
+        if sys.version_info < (3, ):
+            return
         # get ROI bounding everything
         roi_out = annotations_to_contours_no_mask(
             mode='min_bounding_box', slide_annotations=cfg.slide_annotations,
@@ -159,6 +163,8 @@ class TestGetSlideRegionNoMask(object):
 
     def test_get_all_rois_from_slide_v2(self):
         """Test get_all_rois_from_slide_v2()."""
+        if sys.version_info < (3, ):
+            return
         # First we test the object segmentation mode
         cfg.get_all_rois_kwargs['mode'] = 'object'
         savenames = get_all_rois_from_slide_v2(**cfg.get_all_rois_kwargs)

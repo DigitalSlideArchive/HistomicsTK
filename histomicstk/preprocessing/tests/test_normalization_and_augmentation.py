@@ -8,7 +8,6 @@ Created on Sun Oct 20 00:14:03 2019.
 import pytest
 import numpy as np
 from skimage.transform import resize
-# from matplotlib import pylab as plt
 from histomicstk.saliency.tissue_detection import get_tissue_mask
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_image_from_htk_response)

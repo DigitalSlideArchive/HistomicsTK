@@ -11,7 +11,10 @@ import numpy as np
 from pandas import DataFrame
 from imageio import imwrite
 from shapely.geometry.polygon import Polygon
-import matplotlib.pylab as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    pass
 from matplotlib.patches import Polygon as mpPolygon
 import io
 from PIL import Image
