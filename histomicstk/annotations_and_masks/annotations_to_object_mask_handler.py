@@ -476,7 +476,7 @@ def contours_to_labeled_object_mask(
 
 def get_all_rois_from_slide_v2(
         gc, slide_id, GTCodes_dict, save_directories,
-        annotations_to_contours_kwargs=dict(),
+        annotations_to_contours_kwargs=None,
         mode='object', get_mask=True,
         slide_name=None, verbose=True, monitorprefix="",
         callback=None, callback_kwargs=None):
@@ -602,7 +602,7 @@ def get_all_rois_from_slide_v2(
     }
 
     # assign defaults if nothing given
-    kvp = annotations_to_contours_kwargs  # for easy referencing
+    kvp = annotations_to_contours_kwargs or {}  # for easy referencing
     for k, v in default_keyvalues.items():
         if k not in kvp.keys():
             kvp[k] = v

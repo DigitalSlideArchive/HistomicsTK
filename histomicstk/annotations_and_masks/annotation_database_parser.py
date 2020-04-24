@@ -193,7 +193,7 @@ def parse_annotations_to_local_tables(
 def dump_annotations_workflow(
         gc, slide_id, local, monitorPrefix='',
         save_json=True, save_sqlite=False, dbcon=None,
-        callback=None, callback_kwargs=dict()):
+        callback=None, callback_kwargs=None):
     """Dump annotations for single slide into the local folder.
 
     Parameters
@@ -230,6 +230,7 @@ def dump_annotations_workflow(
         kwargs to pass along to callback
 
     """
+    callback_kwargs = callback_kwargs or {}
     try:
         item = gc.get('/item/%s' % slide_id)
 
@@ -275,7 +276,7 @@ def dump_annotations_workflow(
 def dump_annotations_locally(
         gc, folderid, local, save_json=True,
         save_sqlite=False, dbcon=None,
-        callback=None, callback_kwargs=dict()):
+        callback=None, callback_kwargs=None):
     """Dump annotations of folder and subfolders locally recursively.
 
     This reproduces this tiered structure locally and (possibly) dumps
@@ -319,6 +320,7 @@ def dump_annotations_locally(
         an example of a callback and the unir test of this function.
 
     """
+    callback_kwargs = callback_kwargs or {}
     assert(save_json or save_sqlite), "must save results somehow!"
     monitor = os.path.basename(local)
 
