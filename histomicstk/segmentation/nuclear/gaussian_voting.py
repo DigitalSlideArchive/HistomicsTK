@@ -89,10 +89,10 @@ def gaussian_voting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
             dMag[Voting[0][i]][Voting[1][i]]
 
     # create voting kernel
-    x = np.linspace(0, 2*3*vSigma, 2*3*vSigma + 1)  # independent variables
-    y = np.linspace(0, 2*3*vSigma, 2*3*vSigma + 1)
-    x -= 2*3*vSigma/2  # center at zero
-    y -= 2*3*vSigma/2
+    x = np.linspace(0, np.ceil(2*3*vSigma), int(np.ceil(2*3*vSigma) + 1))
+    y = np.linspace(0, np.ceil(2*3*vSigma), int(np.ceil(2*3*vSigma) + 1))
+    x -= np.ceil(2*3*vSigma)/2  # center at zero
+    y -= np.ceil(2*3*vSigma)/2
     x = np.reshape(x, (1, x.size))  # reshape to 2D row and column vectors
     y = np.reshape(y, (y.size, 1))
     xK = np.exp(-x**2 / (2 * vSigma**2)) / (sSigma * (2 * np.pi) ** 0.5)
