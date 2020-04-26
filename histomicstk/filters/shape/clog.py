@@ -70,7 +70,7 @@ def clog(im_input, im_mask, sigma_min, sigma_max):
     sigma_end = np.ceil(sigma_max)
 
     sigma_list = np.linspace(sigma_start, sigma_end,
-                             sigma_end - sigma_start + 1)
+                             int(sigma_end - sigma_start + 1))
 
     for sigma in sigma_list:
 
