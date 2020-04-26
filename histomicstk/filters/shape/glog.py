@@ -79,7 +79,7 @@ def glog(im_input, alpha=1, range=None, theta=np.pi/4, tau=0.6, eps=0.6):
     SigmaX = np.exp(range[XRange])
 
     # define rotation angles
-    Thetas = np.linspace(0, np.pi - theta, np.round(np.pi / theta))
+    Thetas = np.linspace(0, np.pi - theta, int(np.round(np.pi / theta)))
 
     # loop over SigmaX, SigmaY and then angle, summing up filter responses
     Rsum = np.zeros(im_input.shape)
@@ -108,8 +108,8 @@ def glog(im_input, alpha=1, range=None, theta=np.pi/4, tau=0.6, eps=0.6):
 def glogkernel(sigma_x, sigma_y, theta):
 
     N = np.ceil(2 * 3 * sigma_x)
-    X, Y = np.meshgrid(np.linspace(0, N, N + 1) - N / 2,
-                       np.linspace(0, N, N + 1) - N / 2)
+    X, Y = np.meshgrid(np.linspace(0, N, int(N + 1)) - N / 2,
+                       np.linspace(0, N, int(N + 1)) - N / 2)
     a = np.cos(theta) ** 2 / (2 * sigma_x ** 2) + \
         np.sin(theta) ** 2 / (2 * sigma_y ** 2)
     b = -np.sin(2 * theta) / (4 * sigma_x ** 2) + \
