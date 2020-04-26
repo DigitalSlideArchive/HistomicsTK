@@ -30,10 +30,10 @@ def gaussian_grad(im_input, sigma):
     """
 
     # generate separable gaussian derivative kernels
-    x = np.linspace(0, 2 * 3 * sigma, 2 * 3 * sigma + 1)
-    y = np.linspace(0, 2 * 3 * sigma, 2 * 3 * sigma + 1)
-    x -= 2 * 3 * sigma / 2  # center independent variables at zero
-    y -= 2 * 3 * sigma / 2
+    x = np.linspace(0, np.ceil(2 * 3 * sigma), int(np.ceil(2 * 3 * sigma) + 1))
+    y = np.linspace(0, np.ceil(2 * 3 * sigma), int(np.ceil(2 * 3 * sigma) + 1))
+    x -= np.ceil(2 * 3 * sigma) / 2  # center independent variables at zero
+    y -= np.ceil(2 * 3 * sigma) / 2
     x = np.reshape(x, (1, x.size))  # reshape to 2D row and column vectors
     y = np.reshape(y, (y.size, 1))
     xGx = 2 * x / (sigma ** 2) * np.exp(-x ** 2 / (2 * sigma ** 2)) \
