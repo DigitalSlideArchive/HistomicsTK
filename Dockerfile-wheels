@@ -43,6 +43,8 @@ RUN cd $htk_path && \
     strip --strip-unneeded /usr/local/lib{,64}/*.{so,a} || true && \
     for PYBIN in /opt/python/*/bin; do \
         ${PYBIN}/pip install --no-cache-dir . && \
+        # Remove any previous build artifacts && \
+        git clean -fxd && \
         ${PYBIN}/pip wheel . --no-deps -w /io/wheelhouse/; \
     done && \
     for WHL in /io/wheelhouse/histomicstk*.whl; do \
