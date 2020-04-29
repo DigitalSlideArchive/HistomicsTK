@@ -53,9 +53,6 @@ setup(
     },
     include_package_data=True,
     install_requires=[
-        # for tests that require a local DSA instance
-        'requests',
-        'girder_client',
         # scientific packages
         'nimfa>=1.3.2',
         'numpy>=1.12.1',
@@ -70,7 +67,6 @@ setup(
         'sqlalchemy',
         'matplotlib',
         'pyvips',
-        'docker',
         # dask packages
         'dask[dataframe]>=1.1.0',
         'distributed>=1.21.6',
