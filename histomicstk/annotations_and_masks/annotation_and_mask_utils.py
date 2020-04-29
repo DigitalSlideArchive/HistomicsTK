@@ -62,21 +62,14 @@ def scale_slide_annotations(slide_annotations, sf):
         return slide_annotations
 
     for annidx, ann in enumerate(slide_annotations):
-        for elementidx, element in enumerate(ann['annotation']['elements']):
+        for element in ann['annotation']['elements']:
             for key in element.keys():
 
                 if key in ['height', 'width']:
-                    slide_annotations[annidx]['annotation'][
-                        'elements'][elementidx][key] = \
-                        int(slide_annotations[annidx]['annotation'][
-                            'elements'][elementidx][key] * sf)
+                    element[key] = int(element[key] * sf)
 
                 elif key in ['center', 'points']:
-                    slide_annotations[annidx]['annotation'][
-                        'elements'][elementidx][key] = \
-                        (np.array(slide_annotations[annidx]['annotation'][
-                            'elements'][elementidx][key]) * sf).astype(
-                            int).tolist()
+                    element[key] = (np.array(element[key]) * sf).astype(int).tolist()
     return slide_annotations
 
 # %%===========================================================================
