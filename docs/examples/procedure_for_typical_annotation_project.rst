@@ -1,7 +1,7 @@
 Procedure for managing a typical annotation project
 ======================================================
 
-onducting an annotation project requires careful planning and familiarity with
+Conducting an annotation project requires careful planning and familiarity with
 how to manage users, data, and annotations in DSA. Here we describe considerations
 in planning for a successful annotation project and provide an overview of steps
 to start a project.
