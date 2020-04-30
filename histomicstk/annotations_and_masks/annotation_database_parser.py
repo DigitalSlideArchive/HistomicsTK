@@ -48,7 +48,7 @@ def _add_item_to_sqlite(dbcon, item):
         k: v for k, v in item_info.items()
         if k in item_info_dtypes.keys()}
 
-    # conver to df and add to items table
+    # convert to df and add to items table
     item_info_df = DataFrame.from_dict(item_info, orient='index').T
     item_info_df.to_sql(
         name='items', con=dbcon, if_exists='append',
@@ -80,7 +80,7 @@ def _add_folder_to_sqlite(dbcon, folder_info):
         k: v for k, v in folder_info.items()
         if k in folder_info_dtypes.keys()}
 
-    # conver to df and add to items table
+    # convert to df and add to items table
     folder_info_df = DataFrame.from_dict(folder_info, orient='index').T
     folder_info_df.to_sql(
         name='folders', con=dbcon, if_exists='append',
