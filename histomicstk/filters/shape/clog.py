@@ -66,8 +66,8 @@ def clog(im_input, im_mask, sigma_min, sigma_max):
     im_sigma_max = np.zeros_like(im_input)
 
     # Compute maximal LoG filter response across the scale space
-    sigma_start = np.floor(sigma_min)
-    sigma_end = np.ceil(sigma_max)
+    sigma_start = int(np.floor(sigma_min))
+    sigma_end = int(np.ceil(sigma_max))
 
     sigma_list = np.linspace(sigma_start, sigma_end,
                              int(sigma_end - sigma_start + 1))

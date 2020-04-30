@@ -32,7 +32,7 @@ is open to whoever wants to implement it.
 Implement Features
 ~~~~~~~~~~~~~~~~~~
 
-Look through the GitHub issues for features. Anything tagged with "feature"
+Look through the GitHub issues for features. Anything tagged with "enhancement"
 is open to whoever wants to implement it.
 
 Write Documentation
@@ -62,20 +62,20 @@ Ready to contribute? Here's how to set up `HistomicsTK` for local development.
 1. Fork the `HistomicsTK` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/HistomicsTK.git
+   $ git clone git@github.com:your_name_here/HistomicsTK.git
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
 
-    $ mkvirtualenv HistomicsTK
-    $ cd HistomicsTK/
-    $ python -m pip install setuptools-scm Cython>=0.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
-    $ python setup.py develop
+   $ mkvirtualenv HistomicsTK
+   $ cd HistomicsTK/
+   $ python -m pip install setuptools-scm Cython>=0.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
+   $ python setup.py develop
     
 Of course, any type of virtual python environment will do. These instructions are equally applicable inside `conda` environments.
 
 4. Create a branch for local development::
 
-    $ git checkout -b name-of-your-bugfix-or-feature
+   $ git checkout -b name-of-your-bugfix-or-feature
 
    Now you can make your changes locally.
 
@@ -92,45 +92,84 @@ Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1. The pull request should include tests (see notes below).
+1. The pull request should include unit tests (see notes below).
 2. If the pull request adds functionality, the docs should be updated. Put
-   your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
-3. The pull request should work for Python 2.6, 2.7, and for PyPy. Check
+   your new functionality into a function with a docstring, and make sure
+   your feature is reflected in one of the `.rst` files under `./docs/`.
+   If an existing module exists and your feature is appended to it,
+   then you can ignore this step as Sphinx will render it automatically.
+   Otherwise, create a new `.rst` file.
+3. **(Optional)** Create a Jupyter Notebook or a detailed documentation `.rst`
+   under `./docs/examples/` to explain exactly how the feature should be used.
+4. The pull request should work for Python 2.7, 3.5, 3.6, and 3.7. Check
    https://travis-ci.org/DigitalSlideArchive/HistomicsTK/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 Unit Testing Notes
 ----------------------------
 
-HistomicsTK can be used in two ways: as a pure python package and as a server-side
-plugin, there are two 'modes' of testing. 
+There are two 'types` of unit tests on HistomicsTK.
 
-* Ordinary unit testing:
+* **Ordinary unit testing:**
 
-  If your newly added method/function does not need to run on the server side
-  feel free to use python's ``pytest`` module to create unit tests that
-  ensure that your method works when used as a stand-alone python package.
-  Use the standard ``your_python_file_test.py`` naming convention.
+  All unit testing uses the ``pytest`` module, and you should avoid using python's
+  ``unittest`` module. Unit testing using dependency libraries such as ``numpy``
+  or ``pandas`` is allowed. Use the standard ``test_python_file.py``
+  naming convention. It is important that you check the
+  `pytest naming convention <https://docs.pytest.org/en/latest/goodpractices.html#test-discovery>`_
+  to make sure your discovered and actually run. Most of the unit tests are
+  going to be stand-alone, and use data files that are small (e.g. csv files)
+  that are contained (or added to) this repository.
 
-* Server side testing:
+  You can run your tests using something like::
 
-  If your newly added method/function uses girder and is meant to be run
-  on the server side, you will need to have unit tests that run on the
-  server side. To find examples for these, go to ``./tests/``.
-  Specifically, ``example_test.py`` provides a schema that you can use.
-  If your tests require access to girder items (slide, JSON, etc), it would be
-  ideal to refactor how the tests are done so that they download files from
-  ``data.kitware.com``, then start a test instance of Girder, upload the files
-  to it, and then proceed with the girder_client calls.  This has the virtue
-  that we would not need to have the credentials for an external girder instance.
-  If you run the tests multiple times, it will only download the test files once.
-  For example, ckeck out ``.histomicstk/annotations_and_masks/tests/annotations_to_masks_handler.py``,
-  and notice how ``GirderClient`` is used to provide access to the
+  $ pytest your_python_file_test.py
+
+* **Server side testing:**
+
+  Sometimes you need to write unit tests for features that use an authenticated
+  girder client that is connected to a Digital Slide Archive server. For example,
+  you may want to test a feature that fetches regions from a slide on the DSA server and
+  does some analysis with it. In that case, be sure to use the helper methods provided
+  in ``./tests/htk_test_utilities.py``.
+  The unit tests in ``./histomicstk/annotations_and_masks/tests/annotations_to_masks_handler_test.py``
+  provide an example of how to handle these situations. Note that when access is need to
+  a very large whole-slide image, ``GirderClient`` is used to provide access to the
   slide and annotations, which are referenced using ``.sha512`` hash that
-  is present in ``./tests/data/``. Please contact the owners if you
-  have questions about this or need support on how to host your test data
-  on ``data.kitware.com`` to make this work.
+  is present in ``./tests/data/``.
+
+  The ``pytest`` fixture ``girderClient``, defined in ``tests/htk_test_utilities.py``
+  yields an authenticated girder client that points to the server. If a local
+  girder server docker is running, this will connect to it, otherwise, it will
+  spin up a local girder server, load it with some initial data, and connect to it.
+
+    **NOTE:**
+
+    The default behavior initializes the docker image once per module and
+    re-uses it for all tests. This means whatever one unit test changes in
+    the DSA database is persistent for the next unit test. So if, for example,
+    you remove one annotation as part of the first unit test, the next unit
+    test will not have access to that annotation. Once all the unit tests are
+    done, the database is torn down.
+
+    If, instead, if you would like to run tests *repeatedly* (i.e. prototyping),
+    or you would like the changes written by tests in one module to be
+    carried over to the next test module, you may prefer to start the server
+    manually. That way you won't worry about unknown wait time till the local
+    server is fully initialized. To manually start a DSA docker image::
+
+      $ cd HistomicsTK/tests/
+      $ docker-compose up --build
+
+  You can run your tests using something like::
+
+  $ pytest test_python_file.py
+
+  Of course, you need to have docker installed and to either
+  run this as sudo or be added to the docker group by the system admins.
+
+  Please contact the owners if you have questions about this or need support on how to
+  host your test data on ``data.kitware.com`` to make this work.
 
 
 Travis Integration Notes

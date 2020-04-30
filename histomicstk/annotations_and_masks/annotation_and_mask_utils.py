@@ -5,12 +5,13 @@ Created on Sun Aug 11 22:30:06 2019.
 @author: tageldim
 
 """
-
+import copy
 from io import BytesIO
 from PIL import Image, ImageDraw
 from shapely.geometry.polygon import Polygon
 import numpy as np
 from pandas import DataFrame
+import warnings
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -61,15 +62,14 @@ def scale_slide_annotations(slide_annotations, sf):
         return slide_annotations
 
     for annidx, ann in enumerate(slide_annotations):
-        for elementidx, element in enumerate(ann['annotation']['elements']):
-            for key, entry in element.items():
+        for element in ann['annotation']['elements']:
+            for key in element.keys():
 
-                if key in {'height', 'width'}:
-                    element[key] = int(entry * sf)
+                if key in ['height', 'width']:
+                    element[key] = int(element[key] * sf)
 
-                elif key in {'center', 'points'}:
-                    element[key] = (np.array(entry) * sf).astype(int).tolist()
-
+                elif key in ['center', 'points']:
+                    element[key] = (np.array(element[key]) * sf).astype(int).tolist()
     return slide_annotations
 
 # %%===========================================================================
@@ -95,26 +95,30 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
         If neither MPP or MAG is provided, everything is retrieved without
         scaling at base (scan) magnification.
 
-    Returns:
+    Returns
     ----------
     float
         how much smaller (0.1 means 10x smaller) is requested image
         compared to scan magnification (slide coordinates)
     str
-        string to append to server request for getting slide region
+        string to appnd to server request for getting slide region
 
     """
     slide_info = gc.get("/item/%s/tiles" % slide_id)
 
-    if MPP is not None:
+    if (MPP is not None) and (slide_info['mm_x'] is not None):
         mm = 0.001 * MPP
         sf = slide_info['mm_x'] / mm
-        appendStr = "&mm_x=%.4f&mm_y=%.4f" % (mm, mm)
+        appendStr = "&mm_x=%.4f&mm_y=%.8f" % (mm, mm)
 
-    elif MAG is not None:
+    elif (MAG is not None) and (slide_info['magnification'] is not None):
         sf = MAG / slide_info['magnification']
         appendStr = "&magnification=%.8f" % MAG
+
     else:
+        warnings.warn(
+            "NO SLIDE MAGNIFICATION FOUND; BASE MAGNIFICATION USED!",
+            RuntimeWarning)
         sf = 1.0
         appendStr = ""
 
@@ -199,7 +203,7 @@ def get_rotated_rectangular_coords(
     roi_corners = rotate_point_list(roi_corners_false,
                                     rotation=roi_rotation,
                                     center=roi_center)
-    roi_corners = np.array(roi_corners)
+    roi_corners = np.array(roi_corners, dtype=np.int32)
 
     # pack into dict
     roi_info = {
@@ -279,7 +283,143 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 # %%===========================================================================
 
 
-def parse_slide_annotations_into_table(slide_annotations):
+def _get_coords_from_element(element):
+
+    # get bounds
+    if element['type'] == 'polyline':
+        coords = np.int32(element['points'])[:, :-1]
+
+    elif element['type'] == 'rectangle':
+        roiinfo = get_rotated_rectangular_coords(
+            roi_center=element['center'],
+            roi_width=element['width'],
+            roi_height=element['height'],
+            roi_rotation=element['rotation'])
+        coords = roiinfo['roi_corners']  # for rotated rectangles
+        if element['rotation'] != 0:
+            element['type'] = 'polyline'
+
+    elif element['type'] == 'point':
+        xmin = xmax = int(element['center'][0])
+        ymin = ymax = int(element['center'][1])
+        coords = np.array(
+            [(xmin, ymin), (xmax, ymin), (xmax, ymax),
+             (xmin, ymax), (xmin, ymin)], dtype='int32')
+
+    else:
+        raise Exception("Unsupported element type:", element['type'])
+
+    return coords
+
+
+def _maybe_crop_polygon(vertices, bounds_polygon):
+    """Crop bounds to desired area using shapely polygons."""
+    all_vertices = []
+
+    # First, we get the polygon or polygons which result from
+    # intersection. Keep in mind that a particular annotation may
+    # "ecit then enter" the cropping ROI, so it may be split into
+    # two or more polygons by the splitting process. That's which
+    # this method's input is one set of vertices, but after cropping
+    # it may return one or more sets of vertices
+    try:
+        elpoly = Polygon(vertices).buffer(0)
+        polygon = bounds_polygon.intersection(elpoly)
+
+        if polygon.geom_type in ('Polygon', 'LineString'):
+            polygons_to_add = [polygon, ]
+        else:
+            polygons_to_add = [
+                p for p in polygon if p.geom_type == 'Polygon']
+
+    except Exception as e:
+        # if weird shapely errors -->
+        # ignore this polygon collection altogether
+        print(e.__repr__())
+        return all_vertices
+
+    # Second, once we have the shapely polygons, assuming no errors,
+    # we parse into usable coordinates that we can add to the table
+    for poly in polygons_to_add:
+        try:
+            if polygon.area > 2:
+                all_vertices.append(np.array(
+                    poly.exterior.xy, dtype=np.int32).T)
+        except Exception as e:
+            # weird shapely errors --> ignore this polygon
+            print(e.__repr__())
+
+    return all_vertices
+
+
+def _parse_coords_to_str(vertices):
+    return (
+        ",".join(str(j) for j in vertices[:, 0]),
+        ",".join(str(j) for j in vertices[:, 1]))
+
+
+def _add_element_to_final_df(vertices, cfg):
+    """Add a single element to the final dataframe.
+
+    Note that we wrap this into a method so that when (if) we split an
+    annotation element into multiple polygons, we can add these
+    separately.
+    """
+    elno = cfg.element_infos.shape[0]
+
+    # Add element information to element dataframe
+    cfg.element_infos.loc[elno, 'annidx'] = cfg.annidx
+    cfg.element_infos.loc[elno, 'annotation_girder_id'] = cfg.ann['_id']
+    cfg.element_infos.loc[elno, 'elementidx'] = cfg.elementidx
+    cfg.element_infos.loc[elno, 'element_girder_id'] = cfg.element['id']
+    cfg.element_infos.loc[elno, 'color'] = str(cfg.element['lineColor'])
+
+    # Now we can add offset to ensure coordinates are relative to the
+    # cropping bounds (i.e. they would correspond to an RGB image
+    # of the same region and could be used to create a mask or
+    # to encode object boundaries etc
+    if (cfg.cropping_bounds is not None) or (
+            cfg.cropping_polygon_vertices is not None):
+        vertices[:, 0] = vertices[:, 0] - cfg.x_shift
+        vertices[:, 1] = vertices[:, 1] - cfg.y_shift
+
+    # get bounds for this polygon. Remember, these may have been
+    # changed after it was cropped using shapely
+    xmin, ymin = np.min(vertices, axis=0)
+    xmax, ymax = np.max(vertices, axis=0)
+
+    # parse to string for inclusion in pd dataframe
+    x_coords, y_coords = _parse_coords_to_str(vertices)
+
+    # add group or infer from label
+    if 'group' in cfg.element.keys():
+        cfg.element_infos.loc[elno, 'group'] = str(cfg.element['group'])
+    elif 'label' in cfg.element.keys():
+        cfg.element_infos.loc[elno, 'group'] = str(
+            cfg.element['label']['value'])
+
+    # add label or infer from group
+    if 'label' in cfg.element.keys():
+        cfg.element_infos.loc[elno, 'label'] = str(
+            cfg.element['label']['value'])
+    elif 'group' in cfg.element.keys():
+        cfg.element_infos.loc[elno, 'label'] = cfg.element_infos.loc[
+            elno, 'group']
+
+    cfg.element_infos.loc[elno, 'type'] = str(cfg.element['type'])
+    cfg.element_infos.loc[elno, 'xmin'] = int(xmin)
+    cfg.element_infos.loc[elno, 'xmax'] = int(xmax)
+    cfg.element_infos.loc[elno, 'ymin'] = int(ymin)
+    cfg.element_infos.loc[elno, 'ymax'] = int(ymax)
+    cfg.element_infos.loc[elno, 'bbox_area'] = int(
+        (ymax - ymin) * (xmax - xmin))
+    cfg.element_infos.loc[elno, 'coords_x'] = x_coords
+    cfg.element_infos.loc[elno, 'coords_y'] = y_coords
+
+
+def parse_slide_annotations_into_tables(
+        slide_annotations, cropping_bounds=None,
+        cropping_polygon_vertices=None, use_shapely=False):
     """Given a slide annotation list, parse into convenient tabular format.
 
     If the annotation is a point, then it is just treated as if it is a
@@ -291,78 +431,149 @@ def parse_slide_annotations_into_table(slide_annotations):
     slide_annotations : list of dicts
         response from server request
 
+    cropping_bounds : dict or None
+        if given, must have keys XMIN, XMAX, YMIN, YMAX. These are the
+        bounds to which the polygons may be cropped using shapely,
+        if the param use_shapely is True. Otherwise, the polygon
+        coordinates are just shifted relative to these bounds without
+        actually cropping.
+
+    cropping_polygon_vertices : nd array or None
+        if given, is an (m, 2) nd array of vertices to crop bounds.
+        if the param use_shapely is True. Otherwise, the polygon
+        coordinates are just shifted relative to these bounds without
+        actually cropping.
+
+    use_shapely : bool
+        see cropping_bounds description.
+
     Returns
     ---------
     Pandas DataFrame
-        The columns annidx and elementidx encode the
-        dict index of annotation document and element, respectively, in the
-        original slide_annotations list of dictionaries
+        Summary of key properties of the annotation documents. It has the
+        following columns:
+        - annotation_girder_id
+        - _modelType
+        - _version
+        - itemId
+        - created
+        - creatorId
+        - public
+        - updated
+        - updatedId
+        - groups
+        - element_count
+        - element_details
+
+    Pandas DataFrame
+
+        The individual annotation elements (polygons, points, rectangles).
+        The columns annidx and elementidx encode the dict index of annotation
+        document and element, respectively, in the original slide_annotations
+        list of dictionaries. It has the following columns:
+
+        - annidx
+        - annotation_girder_id
+        - elementidx
+        - element_girder_id
+        - type
+        - group
+        - label
+        - color
+        - xmin
+        - xmax
+        - ymin
+        - ymax
+        - bbox_area
+        - coords_x
+        - coords_y
 
     """
-    element_infos = DataFrame(columns=[
-        'annidx', 'elementidx', 'type', 'group', 'color',
+    # we use this object to pass params to split method into sub-methods
+    # and avoid annoying linting ("method too complex") issue
+    class Cfg:
+        def __init__(self):
+            pass
+    cfg = Cfg()
+    cfg.cropping_bounds = cropping_bounds
+    cfg.cropping_polygon_vertices = cropping_polygon_vertices
+    cfg.use_shapely = use_shapely
+
+    cfg.annotation_infos = DataFrame(columns=[
+        'annotation_girder_id', '_modelType', '_version',
+        'itemId', 'created', 'creatorId',
+        'public', 'updated', 'updatedId',
+        'groups', 'element_count', 'element_details',
+    ])
+
+    cfg.element_infos = DataFrame(columns=[
+        'annidx', 'annotation_girder_id',
+        'elementidx', 'element_girder_id',
+        'type', 'group', 'label', 'color',
         'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
-        'coords_x', 'coords_y'])
+        'coords_x', 'coords_y'
+    ])
 
-    def _parse_coords_to_str(coords):
-        return (
-            ",".join(str(j) for j in coords[:, 0]),
-            ",".join(str(j) for j in coords[:, 1]))
+    if cfg.cropping_bounds is not None:
+        assert cfg.cropping_polygon_vertices is None, \
+            "either give cropping bouns or vertices, not both"
+        xmin, xmax, ymin, ymax = (
+            cfg.cropping_bounds['XMIN'], cfg.cropping_bounds['XMAX'],
+            cfg.cropping_bounds['YMIN'], cfg.cropping_bounds['YMAX'])
+        bounds_polygon = Polygon(np.array([
+            (xmin, ymin), (xmax, ymin),
+            (xmax, ymax), (xmin, ymax), (xmin, ymin),
+        ], dtype='int32'))
+        cfg.x_shift = xmin
+        cfg.y_shift = ymin
 
-    for annidx, ann in enumerate(slide_annotations):
-        for elementidx, element in enumerate(ann['annotation']['elements']):
+    elif cfg.cropping_polygon_vertices is not None:
+        bounds_polygon = Polygon(np.int32(cfg.cropping_polygon_vertices))
+        cfg.x_shift, cfg.y_shift = np.min(cfg.cropping_polygon_vertices, 0)
 
-            elno = element_infos.shape[0]
-            element_infos.loc[elno, 'annidx'] = annidx
-            element_infos.loc[elno, 'elementidx'] = elementidx
-            element_infos.loc[elno, 'color'] = element['lineColor']
+    # go through annotation elements and add as needed
+    for cfg.annidx, cfg.ann in enumerate(slide_annotations):
 
-            # get bounds
-            if element['type'] == 'polyline':
-                coords = np.int32(element['points'])[:, :-1]
-                xmin, ymin = [int(j) for j in np.min(coords, axis=0)]
-                xmax, ymax = [int(j) for j in np.max(coords, axis=0)]
-                x_coords, y_coords = _parse_coords_to_str(coords)
+        annno = cfg.annotation_infos.shape[0]
 
-            elif element['type'] == 'rectangle':
-                roiinfo = get_rotated_rectangular_coords(
-                    roi_center=element['center'],
-                    roi_width=element['width'],
-                    roi_height=element['height'],
-                    roi_rotation=element['rotation'])
-                xmin, ymin = roiinfo['x_min'], roiinfo['y_min']
-                xmax, ymax = roiinfo['x_max'], roiinfo['y_max']
-                coords = np.array(
-                    [(xmin, ymin), (xmax, ymin), (xmax, ymax),
-                     (xmin, ymax), (xmin, ymin)], dtype='int32')
-                x_coords, y_coords = _parse_coords_to_str(coords)
-                if element['rotation'] != 0:
-                    element['type'] = 'polyline'
+        # Add annotation document info to annotations dataframe
 
-            elif element['type'] == 'point':
-                xmin = xmax = int(element['center'][0])
-                ymin = ymax = int(element['center'][1])
+        cfg.annotation_infos.loc[annno, 'annotation_girder_id'] = cfg.ann[
+            '_id']
 
+        for key in [
+                '_modelType', '_version',
+                'itemId', 'created', 'creatorId',
+                'public', 'updated', 'updatedId', ]:
+            cfg.annotation_infos.loc[annno, key] = cfg.ann[key]
+
+        cfg.annotation_infos.loc[annno, 'groups'] = str(cfg.ann['groups'])
+        cfg.annotation_infos.loc[annno, 'element_count'] = cfg.ann[
+            '_elementQuery']['count']
+        cfg.annotation_infos.loc[annno, 'element_details'] = cfg.ann[
+            '_elementQuery']['details']
+
+        for cfg.elementidx, cfg.element in enumerate(
+                cfg.ann['annotation']['elements']):
+
+            coords = _get_coords_from_element(copy.deepcopy(cfg.element))
+
+            # crop using shapely to desired bounds if needed
+            # IMPORTANT: everything till this point needs to be
+            # relative to the whole slide image
+            if ((cfg.cropping_bounds is None) and
+                    (cfg.cropping_polygon_vertices is None)) \
+                    or (cfg.element['type'] == 'point') \
+                    or (not use_shapely):
+                all_coords = [coords, ]
             else:
-                continue
+                all_coords = _maybe_crop_polygon(coords, bounds_polygon)
 
-            # add group or infer from label
-            if 'group' in element.keys():
-                element_infos.loc[elno, 'group'] = element['group']
-            elif 'label' in element.keys():
-                element_infos.loc[elno, 'group'] = element['label']['value']
+            # now add polygons one by one
+            for vertices in all_coords:
+                _add_element_to_final_df(vertices, cfg=cfg)
 
-            element_infos.loc[elno, 'type'] = element['type']
-            element_infos.loc[elno, 'xmin'] = xmin
-            element_infos.loc[elno, 'xmax'] = xmax
-            element_infos.loc[elno, 'ymin'] = ymin
-            element_infos.loc[elno, 'ymax'] = ymax
-            element_infos.loc[elno, 'bbox_area'] = int(
-                (ymax - ymin) * (xmax - xmin))
-            element_infos.loc[elno, 'coords_x'] = x_coords
-            element_infos.loc[elno, 'coords_y'] = y_coords
-
-    return element_infos
+    return cfg.annotation_infos, cfg.element_infos
 
 
 # %%===========================================================================
@@ -444,7 +655,7 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
     """
     bboxes = np.array(
         element_infos.loc[:, ['xmin', 'ymin', 'xmax', 'ymax']],
-        dtype='int')
+        dtype='float')
     iou = np_vec_no_jit_iou(bboxes[idx_for_roi, :][None, ...], bboxes2=bboxes)
     iou = np.concatenate((np.arange(iou.shape[1])[None, ...], iou))
     iou = iou[:, iou[1, :] > iou_thresh].astype(int)
@@ -463,7 +674,7 @@ def create_mask_from_coords(coords):
 
     Parameters
     -----------
-    vertices : np arrray
+    coords : np arrray
         must be in the form (e.g. ([x1,y1],[x2,y2],[x3,y3],.....,[xn,yn])),
         where xn and yn corresponds to the nth vertix coordinate.
 
@@ -512,6 +723,8 @@ def _get_element_mask(elinfo, slide_annotations):
             roi_center=element['center'], roi_width=element['width'],
             roi_height=element['height'], roi_rotation=element['rotation'])
         coords = infoDict['roi_corners']
+    else:
+        raise Exception("cannot create mask from point annotation!")
 
     mask = create_mask_from_coords(coords)
     return coords, mask
@@ -537,7 +750,13 @@ def _add_element_to_roi(elinfo, ROI, GT_code, element_mask, roiinfo):
     patch[element_mask > 0] = GT_code
     ROI[ymin:ymax, xmin:xmax] = patch.copy()
 
-    return ROI
+    element = {
+        'mask': element_mask,
+        'xmin': xmin, 'xmax': xmax,
+        'ymin': ymin, 'ymax': ymax,
+    }
+
+    return ROI, element
 
 # %%===========================================================================
 
@@ -562,7 +781,7 @@ def _get_and_add_element_to_roi(
 
         # Add element to ROI mask
         if ADD_TO_ROI:
-            ROI = _add_element_to_roi(
+            ROI, _ = _add_element_to_roi(
                 elinfo=elinfo, ROI=ROI, GT_code=GT_code,
                 element_mask=element_mask, roiinfo=roiinfo)
 
@@ -580,5 +799,35 @@ def delete_annotations_in_slide(gc, slide_id):
     existing_annotations = gc.get('/annotation/item/' + slide_id)
     for ann in existing_annotations:
         gc.delete('/annotation/%s' % ann['_id'])
+
+# %%===========================================================================
+
+
+def _simple_add_element_to_roi(
+        elinfo, ROI, roiinfo, GT_code, element=None,
+        verbose=True, monitorPrefix=""):
+    """Get element coords and mask and add to ROI (Internal)."""
+
+    def _process_coords(k):
+        return np.array([int(j) for j in elinfo[k].split(",")])[..., None]
+
+    try:
+        if element is None:
+            coords = np.concatenate([
+                _process_coords(k) for k in ('coords_x', 'coords_y')], 1)
+            element_mask = create_mask_from_coords(coords)
+        else:
+            element_mask = element["mask"]
+
+        # Add element to ROI mask
+        ROI, element = _add_element_to_roi(
+            elinfo=elinfo, ROI=ROI, GT_code=GT_code,
+            element_mask=element_mask, roiinfo=roiinfo)
+
+    except Exception as e:
+        if verbose:
+            print("%s: ERROR! (see below)" % monitorPrefix)
+            print(e)
+    return ROI, element
 
 # %%===========================================================================

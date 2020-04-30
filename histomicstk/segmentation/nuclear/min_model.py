@@ -98,7 +98,7 @@ def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
     return Label
 
 
-def seed_contours(I, Delta=0.3):
+def seed_contours(I, Delta=0.3):  # noqa
     """Detects seed pixels for contour tracing by finding max-gradient points
     between local minima and maxima in an intensity image.
 
@@ -166,7 +166,7 @@ def seed_contours(I, Delta=0.3):
                   (I[i, 1:-1] <= I[i, 2:])).nonzero()[0] + 1
 
         # identify transitions - start of intervals of monotonic non-increase
-        dI = np.sign(I[i, 1:] - I[i, 0:-1])
+        dI = np.sign(I[i, 1:].astype(np.float) - I[i, 0:-1].astype(np.float))
         dI = np.hstack((dI, dI[-1]))
         Transitions = np.nonzero(dI == 1)[0]
         Transitions = np.hstack((Transitions, I.shape[1]-1))
@@ -190,8 +190,8 @@ def seed_contours(I, Delta=0.3):
                     MinPos = Index[0]
 
                     # increment transition point to beyond current maxima
-                    while ((TranPos < Transitions.size) &
-                           (Transitions[TranPos] < Maxima[MaxPos])):
+                    while (TranPos < Transitions.size) & \
+                            (Transitions[TranPos] <= Maxima[MaxPos]):
                         TranPos += 1
 
                     # add minima to current maxima until transition is reached
@@ -208,37 +208,45 @@ def seed_contours(I, Delta=0.3):
                 else:  # no minima beyond current maxima - quit
                     break
 
-        # convert maxima/minima pairs to numpy arrays
-        Maxima = np.asarray(MaxPair)
-        Minima = np.asarray(MinPair)
+            # convert maxima/minima pairs to numpy arrays
+            Maxima = np.asarray(MaxPair)
+            Minima = np.asarray(MinPair)
 
-        # remove pairs that do not have at least one pixel between them
-        Close = ((Minima - Maxima) < 2).nonzero()
-        Maxima = np.delete(Maxima, Close)
-        Minima = np.delete(Minima, Close)
+            # remove pairs that do not have at least one pixel between them
+            Close = ((Minima - Maxima) < 2).nonzero()
+            Maxima = np.delete(Maxima, Close)
+            Minima = np.delete(Minima, Close)
 
-        # remove pairs that do not have sufficient intensity transitions
-        if(Delta is not None):
-            if np.issubdtype(I.dtype, np.integer):
-                Range = Delta * 255.0
-            elif np.issubdtype(I.dtype, np.float):
-                Range = Delta * 1.0
-            Shallow = ((I[i, Maxima] - I[i, Minima] < Range)).nonzero()
-            Maxima = np.delete(Maxima, Shallow)
-            Minima = np.delete(Minima, Shallow)
+            # skip to next row if no min/max pairs exist after location filter
+            if (Minima.size == 0) | (Maxima.size == 0):
+                continue
 
-        # identify max gradient locations within paired maxima/minima
-        MinGrad = np.zeros(Maxima.shape, dtype=int)
-        for j in np.arange(Maxima.size):
-            MinGrad[j] = np.argmin(Gradient[Maxima[j]+1:Minima[j]]) + \
-                Maxima[j]+1
+            # remove pairs that do not have sufficient intensity transitions
+            if(Delta is not None):
+                if np.issubdtype(I.dtype, np.integer):
+                    Range = Delta * 255.0
+                elif np.issubdtype(I.dtype, np.float):
+                    Range = Delta * 1.0
+                Shallow = ((I[i, Maxima] - I[i, Minima] < Range)).nonzero()
+                Maxima = np.delete(Maxima, Shallow)
+                Minima = np.delete(Minima, Shallow)
 
-        # capture min, max values and add to list with seed coordinates
-        if(Maxima.size > 0):
-            X.extend(MinGrad)
-            Y.extend(i * np.ones((Maxima.size)))
-            Min.extend(I[i, Minima])
-            Max.extend(I[i, MinGrad])
+            # skip to next row if no min/max pairs exist after intensity filter
+            if (Minima.size == 0) | (Maxima.size == 0):
+                continue
+
+            # identify max gradient locations within paired maxima/minima
+            MinGrad = np.zeros(Maxima.shape, dtype=int)
+            for j in np.arange(Maxima.size):
+                MinGrad[j] = np.argmin(Gradient[Maxima[j]+1:Minima[j]]) + \
+                    Maxima[j]+1
+
+            # capture min, max values and add to list with seed coordinates
+            if(Maxima.size > 0):
+                X.extend(MinGrad)
+                Y.extend(i * np.ones((Maxima.size)))
+                Min.extend(I[i, Minima])
+                Max.extend(I[i, MinGrad])
 
     # convert outputs from lists to numpy arrays
     X = np.array(X, dtype=np.uint)

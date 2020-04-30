@@ -20,8 +20,13 @@ import os
 # directory, add these directories to sys.path here. If the directory is
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
+
 docs_dir = os.path.dirname(__file__)
-sys.path.insert(0, os.path.abspath(os.path.join(docs_dir, '..')))
+try:
+    import histomicstk  # noqa
+    sys.path.insert(0, os.path.abspath(sys.modules['histomicstk'].__path__))
+except Exception:
+    sys.path.insert(0, os.path.abspath(os.path.join(docs_dir, '..')))
 
 # on_rtd is whether we are on readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
