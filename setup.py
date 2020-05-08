@@ -63,7 +63,7 @@ setup(
         'scikit-learn>=0.18.1' + ('' if sys.version_info >= (3, ) else ',<0.21'),
         'imageio>=2.3.0' + ('' if sys.version_info >= (3, ) else ',<2.8'),
         'shapely[vectorized]',
-        'opencv-python',
+        'opencv-python-headless',
         'sqlalchemy',
         'matplotlib',
         'pyvips',
@@ -71,7 +71,11 @@ setup(
         'dask[dataframe]>=1.1.0',
         'distributed>=1.21.6',
         # large image sources
-        'large-image[sources]',
+        'large-image-source-tiff',
+        'large-image-source-openslide',
+        'large-image-source-ometiff',
+        'large-image-source-pil',
+        'large-image-source-openjpeg',
         'girder-slicer-cli-web',
         # cli
         'ctk-cli',
