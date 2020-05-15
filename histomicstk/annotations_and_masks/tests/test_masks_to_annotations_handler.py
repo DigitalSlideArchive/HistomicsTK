@@ -62,6 +62,52 @@ class TestMasksToAnnotations(object):
         assert set(contours_df.columns) == set(self.CONTOURS_DF.columns)
         assert all(contours_df.iloc[:10, :] == self.CONTOURS_DF.iloc[:10, :])
 
+    def test_get_contours_from_mask_with_groups(self):
+        """Test get_contours_from_mask()."""
+        self._setup()
+        # get contours from mask
+        groups_to_get = [
+            'mostly_tumor', 'mostly_stroma']
+        contours_df = get_contours_from_mask(
+            MASK=self.MASK, GTCodes_df=self.GTCodes_df,
+            groups_to_get=groups_to_get,
+            get_roi_contour=True, roi_group='roi',
+            discard_nonenclosed_background=True,
+            background_group='mostly_stroma',
+            MIN_SIZE=30, MAX_SIZE=None, verbose=False,
+            monitorPrefix=self.MASKNAME[:12] + ": getting contours")
+
+        # make sure it is what we expect
+        assert set(contours_df.columns) == set(self.CONTOURS_DF.columns)
+        assert all(contours_df.iloc[:10, :] == self.CONTOURS_DF.iloc[:10, :])
+        assert len(contours_df) == 26
+
+    def test_get_contours_from_mask_with_zeroes(self):
+        """Test get_contours_from_mask()."""
+        self._setup()
+        groups_to_get = None
+        gtcodes = self.GTCodes_df.append({
+            'group': 'zeroes',
+            'overlay_order': 4,
+            'GT_code': 0,
+            'is_roi': 0,
+            'is_background_class': 0,
+            'color': 'rgb(0,128,0)',
+            'comments': 'zeroes'}, ignore_index=True)
+        gtcodes.index = gtcodes.loc[:, 'group']
+        contours_df = get_contours_from_mask(
+            MASK=self.MASK, GTCodes_df=gtcodes,
+            groups_to_get=groups_to_get,
+            get_roi_contour=True, roi_group='roi',
+            discard_nonenclosed_background=True,
+            background_group='mostly_stroma',
+            MIN_SIZE=30, MAX_SIZE=None)
+
+        # make sure it is what we expect
+        assert set(contours_df.columns) == set(self.CONTOURS_DF.columns)
+        assert all(contours_df.iloc[:10, :] == self.CONTOURS_DF.iloc[:10, :])
+        assert len(contours_df) == 49
+
     @pytest.mark.usefixtures('girderClient')  # noqa
     def test_get_annotation_documents_from_contours(self, girderClient):  # noqa
         """Test get_contours_from_bin_mask()."""
