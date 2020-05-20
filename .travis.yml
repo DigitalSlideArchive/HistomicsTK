@@ -13,9 +13,8 @@ addons:
       - pandoc-citeproc
 install:
   - pip install --upgrade pip
-  - pip install --upgrade virtualenv
-  - if [ ${TRAVIS_PYTHON_VERSION:0:3} == "2.7" ]; then pip install virtualenv==20.0.5; fi
   - pip install tox-travis
+  - pip install --upgrade 'virtualenv<=20.0.18'
   - pip install scikit-build
   # If the last tag is more than 50 commits away, we need to fetch more for
   # the scm_version module to determine the version.

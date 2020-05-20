@@ -145,12 +145,20 @@ def _get_contours_df(
 
     # pad with zeros to be able to detect edge contours later
     pad_margin = 50
-    MASK = np.pad(MASK, pad_margin, 'constant')
+    pad_value = 0
+    while (GTCodes_df.GT_code == pad_value).any():
+        pad_value += 1
+    MASK = np.pad(MASK, pad_margin, 'constant', constant_values=pad_value)
 
     # Go through unique groups one by one -- each group (i.e. GTCode)
     # is extracted separately by binarizing the multi-class mask
     if groups_to_get is None:
         groups_to_get = list(GTCodes_df.index)
+    else:
+        groups_to_get = [
+            GTCodes_df[GTCodes_df.group == group].head(1).index[0]
+            if (GTCodes_df.group == group).any() else group
+            for group in groups_to_get]
     contours_df = DataFrame()
 
     for nestgroup in groups_to_get:
@@ -291,7 +299,7 @@ def get_contours_from_mask(
             rgb format. eg. rgb(255,0,0).
     groups_to_get : None
         if None (default) then all groups (ground truth labels) will be
-        extracted. Otherwise pass a list fo strings like ['mostly_tumor',].
+        extracted. Otherwise pass a list of strings like ['mostly_tumor',].
     MIN_SIZE : int
         minimum bounding box size of contour
     MAX_SIZE : None
