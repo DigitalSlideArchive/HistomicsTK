@@ -11,7 +11,7 @@ commands:
           command: pip install -U pip
       - run:
           name: Upgrade virtualenv and tox
-          command: pip install -U 'virtualenv<=20.0.18' tox
+          command: pip install -U virtualenv tox
       - run:
           name: Install scikit-build
           command: pip install scikit-build
