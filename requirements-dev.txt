@@ -11,5 +11,4 @@ setuptools-scm
 # Needed for tests
 docker
 docker-compose
-girder-client
 requests
