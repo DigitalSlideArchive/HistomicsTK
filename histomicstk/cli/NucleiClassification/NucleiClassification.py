@@ -4,7 +4,11 @@ import colorsys
 
 import numpy as np
 import pandas as pd
-from sklearn.externals import joblib
+try:
+    import joblib
+except ImportError:
+    # Versions of scikit-learn before 0.21 had joblib internally
+    from sklearn.externals import joblib
 import dask.dataframe as dd
 
 from histomicstk.cli.utils import CLIArgumentParser
