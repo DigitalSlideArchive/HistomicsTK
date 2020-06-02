@@ -172,6 +172,18 @@ jobs:
       - run:
           name: Build HistomicsTK docker
           command: docker build --force-rm -t dsarchive/histomicstk .
+      - run:
+          name: Get xml for each cli
+          command: |
+            docker run --rm dsarchive/histomicstk:latest --list_cli
+            docker run --rm dsarchive/histomicstk:latest BackgroundIntensity --xml
+            docker run --rm dsarchive/histomicstk:latest ColorDeconvolution --xml
+            docker run --rm dsarchive/histomicstk:latest ComputeNucleiFeatures --xml
+            docker run --rm dsarchive/histomicstk:latest NucleiClassification --xml
+            docker run --rm dsarchive/histomicstk:latest NucleiDetection --xml
+            docker run --rm dsarchive/histomicstk:latest PositivePixelCount --xml
+            docker run --rm dsarchive/histomicstk:latest SeparateStainsMacenkoPCA --xml
+            docker run --rm dsarchive/histomicstk:latest SeparateStainsXuSnmf --xml
   wheels:
     working_directory: ~/project
     docker:
