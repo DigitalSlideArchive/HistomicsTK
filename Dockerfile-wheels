@@ -3,8 +3,6 @@ FROM dockcross/manylinux2010-x64
 # Don't build python 3.4 or 2.7m wheels.
 RUN rm -rf /opt/python/cp27-cp27m
 RUN rm -rf /opt/python/cp34*
-# We can't use Python 3.8 until tensorflow supports it
-RUN rm -rf /opt/python/cp38*
 
 RUN for PYBIN in /opt/python/*/bin; do \
         ${PYBIN}/pip install --no-cache-dir --upgrade pip; \
