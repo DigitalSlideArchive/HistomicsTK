@@ -61,8 +61,10 @@ setup(
         'Pillow>=3.2.0',
         'pandas>=0.19.2',
         'scikit-image>=0.14.2',
-        'scikit-learn>=0.18.1' + ('' if sys.version_info >= (3, ) else ',<0.21'),
-        'imageio>=2.3.0' + ('' if sys.version_info >= (3, ) else ',<2.8'),
+        'scikit-learn>=0.18.1,<0.21;python_version<"3"',
+        'scikit-learn>=0.18.1;python_version>="3"',
+        'imageio>=2.3.0,<2.8;python_version<"3"',
+        'imageio>=2.3.0;python_version>="3"',
         'shapely[vectorized]',
         'opencv-python',
         'sqlalchemy',
@@ -71,8 +73,11 @@ setup(
         # dask packages
         'dask[dataframe]>=1.1.0',
         'distributed>=1.21.6',
-        # large image sources
-        'large-image[sources]',
+        # large image; for non-linux systems only install the PIL tile source
+        # by default.
+        'large-image[sources];sys.platform=="linux"',
+        'large-image[sources];sys.platform=="linux2"',
+        'large-image[pil];sys.platform!="linux" and sys.platform!="linux2"',
         'girder-slicer-cli-web',
         # cli
         'ctk-cli',
