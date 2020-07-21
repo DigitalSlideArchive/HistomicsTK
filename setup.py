@@ -66,7 +66,7 @@ setup(
         'imageio>=2.3.0,<2.8;python_version<"3"',
         'imageio>=2.3.0;python_version>="3"',
         'shapely[vectorized]',
-        'opencv-python',
+        'opencv-python-headless',
         'sqlalchemy',
         'matplotlib',
         'pyvips',
