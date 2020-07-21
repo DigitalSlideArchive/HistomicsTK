@@ -72,11 +72,7 @@ setup(
         'dask[dataframe]>=1.1.0',
         'distributed>=1.21.6',
         # large image sources
-        'large-image-source-tiff',
-        'large-image-source-openslide',
-        'large-image-source-ometiff',
-        'large-image-source-pil',
-        'large-image-source-openjpeg',
+        'large-image[sources]',
         'girder-slicer-cli-web',
         # cli
         'ctk-cli',
