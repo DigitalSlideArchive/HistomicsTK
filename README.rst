@@ -26,7 +26,7 @@ HistomicsTK can be used in two ways:
   
   *To install HistomicsTK using PyPI*::
   
-  $ python -m pip install histomicstk
+  $ python -m pip install histomicstk --find-links https://girder.github.io/large_image_wheels
   
   *To install HistomicsTK from source*::
   
@@ -39,7 +39,7 @@ HistomicsTK can be used in two ways:
 
   The system version of various libraries are used if the ``--find-links`` option is not specified.  You will need to use your package manager to install appropriate libraries (on Ubuntu, for instance, you'll need ``libopenslide-dev`` and ``libtiff-dev``).
   
-  **To install from source on Windows**:
+  **To install from source on Windows:**
   
   1- Run the following::
   
@@ -51,7 +51,7 @@ HistomicsTK can be used in two ways:
   
   2- Run ``pip install libtiff``
   
-  3- Replace ``large-image[sources]`` with ``large-image[pil,tiff]`` in ``setup.py``.
+  3- Run ``pip install large-image-source-tiff`` to install typical tile sources.  You may need other sources, which would require other libraries.
   
   4- Install Visual Studio 15 2017 `Community Version <https://my.visualstudio.com/Downloads?q=visual%20studio%202017&wt.mc_id=o~msft~vscom~older-downloads>`_ 
   
@@ -63,6 +63,17 @@ HistomicsTK can be used in two ways:
   $ pip install girder-client
 
 
+  **To install from source on OSX:**
+
+  Note: This needs to be confirmed and expanded by an OSX user.  There are probably assumptions made about available libraries.
+
+  Use homebrew to install libtiff and openslide or other libraries depending on your desired tile sources.
+
+  Run::
+
+  $ python -m pip install histomicstk large-image-source-tiff large-image-source-openslide
+
+  
 - **As a image-processing task library for HistomicsUI and the Digital Slide Archive**: This allows end users to apply containerized analysis modules/pipelines over the web. See the `Digital Slide Archive`_ for installation instructions.
 
 Refer to `our website`_ for more information.
