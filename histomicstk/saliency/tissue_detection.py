@@ -82,10 +82,10 @@ def get_tissue_mask(
 
     Returns
     --------
-    np bool array
-        largest contiguous tissue region.
     np int32 array
         each unique value represents a unique tissue region
+    np bool array
+        largest contiguous tissue region.
 
     """
     stain_unmixing_routine_kwargs = (
