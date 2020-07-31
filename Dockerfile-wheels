@@ -1,8 +1,9 @@
 FROM dockcross/manylinux2010-x64
 
-# Don't build python 3.4 or 2.7m wheels.
+# Don't build python 2.7m, 3.4, or 3.9 wheels.
 RUN rm -rf /opt/python/cp27-cp27m
 RUN rm -rf /opt/python/cp34*
+RUN rm -rf /opt/python/cp39*
 
 RUN for PYBIN in /opt/python/*/bin; do \
         ${PYBIN}/pip install --no-cache-dir --upgrade pip; \

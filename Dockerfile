@@ -4,42 +4,78 @@
 #
 # All plugins of HistomicsTK should derive from this docker image
 
-FROM dsarchive/base_docker_image
+FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
 LABEL maintainer="Kitware, Inc. <kitware@kitware.com>"
+
+RUN apt-get update && \
+    # We need software-properties-common for add-apt-repository \
+    apt-get install --yes --no-install-recommends software-properties-common && \
+    # Add python repos \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install --yes --no-install-recommends \
+    # Specific version of python \
+    python3.8-dev \
+    python3.8-distutils \
+    # For installing pip \
+    curl \
+    ca-certificates \
+    # For versioning \
+    git \
+    # for convenience \
+    wget \
+    # libcurl4-openssl-dev \
+    # libssl-dev \
+    # Needed for building \
+    build-essential \
+    # pkg-config \
+    # needed for supporting CUDA \
+    libcupti-dev \
+    # can speed up large_image caching \
+    memcached && \
+    # Clean up to reduce docker size \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Make a specific version of python the default and install pip
+RUN rm -f /usr/bin/python && \
+    rm -f /usr/bin/python3 && \
+    ln `which python3.8` /usr/bin/python && \
+    ln `which python3.8` /usr/bin/python3 && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python get-pip.py && \
+    rm get-pip.py && \
+    ln `which pip3` /usr/bin/pip && \
+    python --version
 
 # copy HistomicsTK files
 ENV htk_path=$PWD/HistomicsTK
 RUN mkdir -p $htk_path
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends memcached && \
-    apt-get autoremove && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 COPY . $htk_path/
 WORKDIR $htk_path
 
 # Install HistomicsTK and its dependencies
-#   Upgrade setuptools, as the version in Conda won't upgrade cleanly unless it
-# is ignored.
-RUN pip install --no-cache-dir --upgrade --ignore-installed pip setuptools && \
-    # Install bokeh to help debug dask
+RUN pip install --no-cache-dir --upgrade pip setuptools && \
+    # Install bokeh to help debug dask \
     pip install --no-cache-dir 'bokeh>=0.12.14' && \
-    # Install large_image memcached extras
+    # Install large_image memcached extras \
     pip install --no-cache-dir --pre 'large-image[memcached]' --find-links https://girder.github.io/large_image_wheels && \
-    # Install girder-client
+    # Install girder-client \
     pip install --no-cache-dir girder-client && \
-    # Install HistomicsTK
+    # Install HistomicsTK \
     pip install --no-cache-dir --pre . --find-links https://girder.github.io/large_image_wheels && \
-    # Create separate virtual environments with CPU and GPU versions of tensorflow
-    pip install --no-cache-dir 'virtualenv<16.4.0' && \
+    # Create separate virtual environments with CPU and GPU versions of tensorflow \
+    pip install --no-cache-dir virtualenv && \
     virtualenv --system-site-packages /venv-gpu && \
     chmod +x /venv-gpu/bin/activate && \
     /venv-gpu/bin/pip install --no-cache-dir 'tensorflow-gpu>=1.3.0' && \
-    # clean up
+    # clean up \
     rm -rf /root/.cache/pip/*
 
 # Show what was installed
-RUN pip freeze
+RUN pip freeze && \
+    /venv-gpu/bin/pip freeze
 
 # pregenerate font cache
 RUN python -c "from matplotlib import pylab"
