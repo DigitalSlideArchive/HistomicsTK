@@ -9,6 +9,7 @@ RUN pip install --no-cache-dir -U pip
 
 # Only sources needed in the test are added.
 RUN pip install --pre --find-links https://girder.github.io/large_image_wheels \
+    'celery<5' \
     histomicsui \
     large-image-source-openslide \
     pytest
