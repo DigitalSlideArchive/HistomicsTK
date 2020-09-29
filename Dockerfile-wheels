@@ -41,10 +41,13 @@ RUN cd $htk_path && \
     # Strip libraries before building any wheels \
     strip --strip-unneeded /usr/local/lib{,64}/*.{so,a} || true && \
     for PYBIN in /opt/python/*/bin; do \
+        # Anything newer requires manylinux2014 \
+        ${PYBIN}/pip install 'opencv-python-headless<4.3' && \
         ${PYBIN}/pip install --no-cache-dir . && \
         # Remove any previous build artifacts && \
         git clean -fxd && \
-        ${PYBIN}/pip wheel . --no-deps -w /io/wheelhouse/; \
+        ${PYBIN}/pip wheel . --no-deps -w /io/wheelhouse/ && \
+        rm -rf build; \
     done && \
     for WHL in /io/wheelhouse/histomicstk*.whl; do \
       auditwheel repair "${WHL}" -w /io/wheelhouse/; \
