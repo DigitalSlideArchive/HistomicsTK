@@ -21,29 +21,20 @@ def merge_colinear(x, y):
 
     """
 
-    # compute boundary differences
-    dX = np.diff(x)
-    dY = np.diff(y)
+    # detect and delete points that are the same as the following point.
+    Repeats = np.argwhere((np.diff(x) == 0) & (np.diff(y) == 0))
+    xout = np.delete(x, Repeats)
+    yout = np.delete(y, Repeats)
 
-    # detect and delete stationary repeats
-    Repeats = np.argwhere((dX == 0) & (dY == 0))
-    np.delete(x, Repeats)
-    np.delete(y, Repeats)
-    np.delete(dX, Repeats)
-    np.delete(dY, Repeats)
-
-    # calculate slope transitions
-    slope = dY / dX
-
-    # find transitions
-    dslope = np.diff(slope)
-    dslope[np.isnan(dslope)] = 0
-    transitions = np.argwhere(dslope != 0)
-
-    # construct merged sequences
-    xout = np.append(x[0], x[transitions + 1])
-    yout = np.append(y[0], y[transitions + 1])
-    xout = np.append(xout, x[-1])
-    yout = np.append(yout, y[-1])
+    # Calculating the slope for each transition could involve division by
+    # zero, so we instead detect colinearity by noting that two non-zero
+    # vectors are colinear if and only if the cross product of the vectors
+    # is zero.  We convert to signed floats for two reasons: (1) in case
+    # the inputs are unsigned values, in case the cross product is large.
+    dX = np.diff(xout.astype(np.float64))
+    dY = np.diff(yout.astype(np.float64))
+    colinear = np.argwhere(dX[:-1] * dY[1:] == dX[1:] * dY[:-1]) + 1
+    xout = np.delete(xout, colinear)
+    yout = np.delete(yout, colinear)
 
     return xout, yout
