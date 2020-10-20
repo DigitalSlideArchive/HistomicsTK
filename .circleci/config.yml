@@ -60,7 +60,7 @@ commands:
     steps:
       - run:
           name: Install Codecov client
-          command: pip install codecov
+          command: pip install codecov==2.1.9
       - run:
           name: Upload coverage
           # Retry as codecov can be flaky
