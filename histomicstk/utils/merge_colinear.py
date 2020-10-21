@@ -30,7 +30,8 @@ def merge_colinear(x, y):
     # zero, so we instead detect colinearity by noting that two non-zero
     # vectors are colinear if and only if the cross product of the vectors
     # is zero.  We convert to signed floats for two reasons: (1) in case
-    # the inputs are unsigned values, in case the cross product is large.
+    # the inputs are unsigned values, (2) in case the cross product is
+    # large.
     dX = np.diff(xout.astype(np.float64))
     dY = np.diff(yout.astype(np.float64))
     colinear = np.argwhere(dX[:-1] * dY[1:] == dX[1:] * dY[:-1]) + 1
