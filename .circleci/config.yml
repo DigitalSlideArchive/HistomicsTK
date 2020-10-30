@@ -142,14 +142,30 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.8.3
+          version: 3.8.6
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.8.3
+            pyenv global 3.8.6
       - tox:
           env: py38
+      - coverage
+  py39:
+    working_directory: ~/project
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - checkout
+      - upgradepython:
+          version: 3.9.1
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.9.1
+      - tox:
+          env: py39
       - coverage
   lint_and_docs:
     working_directory: ~/project
@@ -303,6 +319,13 @@ workflows:
             branches:
               ignore:
                 - gh-pages
+      - py39:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
       - lint_and_docs:
           filters:
             tags:
@@ -331,6 +354,7 @@ workflows:
             - py36
             - py37
             - py38
+            - py39
             - lint_and_docs
             - wheels
             - docker
@@ -346,6 +370,7 @@ workflows:
             - py36
             - py37
             - py38
+            - py39
             - lint_and_docs
             - wheels
             - docker

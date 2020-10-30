@@ -1,9 +1,8 @@
-FROM dockcross/manylinux2010-x64
+FROM dockcross/manylinux2014-x64
 
-# Don't build python 2.7m, 3.4, or 3.9 wheels.
+# Don't build python 2.7m, or 3.4 wheels.
 RUN rm -rf /opt/python/cp27-cp27m
 RUN rm -rf /opt/python/cp34*
-RUN rm -rf /opt/python/cp39*
 
 RUN for PYBIN in /opt/python/*/bin; do \
         ${PYBIN}/pip install --no-cache-dir --upgrade pip; \
@@ -14,7 +13,9 @@ RUN for PYBIN in /opt/python/*/bin; do \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \
-      if [[ "${PYBIN}" =~ "38" ]]; then \
+      if [[ "${PYBIN}" =~ "39" ]]; then \
+        export VERSIONS="numpy==1.19.*"; \
+      elif [[ "${PYBIN}" =~ "38" ]]; then \
         export VERSIONS="numpy==1.17.*"; \
       elif [[ "${PYBIN}" =~ "37" ]]; then \
         export VERSIONS="numpy==1.14.*"; \
@@ -54,4 +55,4 @@ RUN cd $htk_path && \
     done && \
     ls -l /io/wheelhouse && \
     mkdir /io/wheels && \
-    cp /io/wheelhouse/histomicstk*many*2010* /io/wheels/.
+    cp /io/wheelhouse/histomicstk*many*2014* /io/wheels/.
