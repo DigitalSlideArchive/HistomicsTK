@@ -509,7 +509,7 @@ def _get_roi_bounds_by_run_mode(
     return bounds
 
 
-def _get_rgb_and_pad_roi(gc, slide_id, bounds, appendStr, ROI):
+def _get_rgb_and_pad_roi(gc, slide_id, bounds, appendStr, ROI, tau=10):
 
     getStr = \
         "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
@@ -523,7 +523,7 @@ def _get_rgb_and_pad_roi(gc, slide_id, bounds, appendStr, ROI):
     # sometimes there's a couple of pixel difference d.t. rounding, so pad
     pad_y = rgb.shape[0] - ROI.shape[0]
     pad_x = rgb.shape[1] - ROI.shape[1]
-    assert all([np.abs(j) < 4 for j in (pad_y, pad_x)]), \
+    assert all([np.abs(j) < tau for j in (pad_y, pad_x)]), \
         "too much difference in size between image and mask."\
         "something is wrong!"
 
