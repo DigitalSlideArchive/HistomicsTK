@@ -93,7 +93,7 @@ class TestAnnotAndMaskUtils(object):
     def test_get_scale_factor_and_appendStr(self):
         """Test get_scale_factor_and_appendStr."""
         in_out = [
-            [(0.2, None), (1.2525, "&mm_x=0.0002&mm_y=0.00020000")],
+            [(0.2, None), (1.2525, "&mm_x=0.00020000&mm_y=0.00020000")],
             [(None, 10.), (0.25, "&magnification=10.00000000")],
             [(None, None), (1.0, "")],
         ]

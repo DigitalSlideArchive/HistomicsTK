@@ -124,7 +124,7 @@ class TestColorNormalization():
             stain_unmixing_routine_params=stain_unmixing_routine_params)
         assert tuple(
             [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]
-            ) == (182, 121, 211)
+            ) == (183, 121, 212)
 
         # Macenko - Unmasked, using W_target from good image
         tissue_rgb_normalized = deconvolution_based_normalization(
@@ -155,7 +155,7 @@ class TestColorAugmentation(object):
         augmented_rgb = rgb_perturb_stain_concentration(cfg.tissue_rgb)
         assert tuple(
             [int(augmented_rgb[..., i].mean()) for i in range(3)]
-            ) == (177, 114, 154)
+            ) == (178, 115, 154)
 
         # Masked
         augmented_rgb = rgb_perturb_stain_concentration(
