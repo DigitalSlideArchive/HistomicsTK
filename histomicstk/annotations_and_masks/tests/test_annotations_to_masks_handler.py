@@ -129,7 +129,7 @@ class TestGetROIMasks(object):
             242, 351, 2966, 3317, 1678, 1920)
 
     def test_get_all_rois_from_slide(self, tmpdir):  # noqa
-        """Test get_all_roi_masks_for_slide()."""
+        """Test get_all_roi_masks_for_slide() as-is without tiling."""
         if sys.version_info < (3, ):
             return
         # just a temp directory to save masks for now
@@ -157,6 +157,7 @@ class TestGetROIMasks(object):
             gc=cfg.gc, slide_id=cfg.iteminfo['_id'],
             GTCodes_dict=cfg.GTcodes.T.to_dict(), save_directories=savepaths,
             get_image_and_mask_from_slide_kwargs=detailed_kwargs,
+            max_roiside=None,
             slide_name='TCGA-A2-A0YE', verbose=False)
 
         assert len(savenames) == 3
@@ -166,6 +167,50 @@ class TestGetROIMasks(object):
             'TCGA-A2-A0YE_left-57604_top-35808_bottom-37445_right-59441.png',
             'TCGA-A2-A0YE_left-58483_top-38223_bottom-39780_right-60399.png',
             'TCGA-A2-A0YE_left-59201_top-33493_bottom-38063_right-63732.png'
+        } == {os.path.basename(savename['ROI']) for savename in savenames}
+
+
+    def test_get_all_rois_from_slide_tiled(self, tmpdir):  # noqa
+        """Test get_all_roi_masks_for_slide() with tiling."""
+        if sys.version_info < (3, ):
+            return
+        # just a temp directory to save masks for now
+        base_savepath = str(tmpdir)
+        savepaths = {
+            'ROI': os.path.join(base_savepath, 'masks'),
+            'rgb': os.path.join(base_savepath, 'rgbs'),
+            'contours': os.path.join(base_savepath, 'contours'),
+            'visualization': os.path.join(base_savepath, 'vis'),
+        }
+        for _, savepath in savepaths.items():
+            os.mkdir(savepath)
+
+        detailed_kwargs = {
+            'MPP': cfg.MPP,
+            'MAG': None,
+            'get_roi_mask_kwargs': cfg.get_roi_mask_kwargs,
+            'get_contours_kwargs': None,
+            'get_rgb': False,
+            'get_contours': False,
+            'get_visualization': False,
+        }
+
+        savenames = get_all_rois_from_slide(
+            gc=cfg.gc, slide_id=cfg.iteminfo['_id'],
+            GTCodes_dict=cfg.GTcodes.T.to_dict(), save_directories=savepaths,
+            get_image_and_mask_from_slide_kwargs=detailed_kwargs,
+            max_roiside=256,
+            slide_name='TCGA-A2-A0YE', verbose=False)
+
+        assert len(savenames) == 6
+        assert set(savenames[0].keys()) == {'ROI'}
+        assert {
+            'TCGA-A2-A0YE_left-59201_top-33493_bottom-36047_right-61756.png',
+            'TCGA-A2-A0YE_left-59201_top-36047_bottom-38063_right-61756.png',
+            'TCGA-A2-A0YE_left-61756_top-33493_bottom-36047_right-63732.png',
+            'TCGA-A2-A0YE_left-61756_top-36047_bottom-38063_right-63732.png',
+            'TCGA-A2-A0YE_left-58483_top-38223_bottom-39780_right-60399.png',
+            'TCGA-A2-A0YE_left-57604_top-35808_bottom-37445_right-59441.png',
         } == {os.path.basename(savename['ROI']) for savename in savenames}
 
     def test_get_image_and_mask_manual_bounds(self):

@@ -762,7 +762,8 @@ def _roi_getter_asis(
 
 
 def _roi_getter_tiled(
-        slide_annotations, element_infos, sf, max_roiside,
+        gc, slide_id, GTCodes_dict, slide_annotations, element_infos,
+        sf, max_roiside,
         get_kwargs, monitor="", verbose=False):
     """Download special ROI regions in a tiled fasion."""
     # isolate rois
@@ -805,6 +806,7 @@ def _roi_getter_tiled(
                 }
                 try:
                     roi_out = get_image_and_mask_from_slide(
+                        gc=gc, slide_id=slide_id, GTCodes_dict=GTCodes_dict,
                         mode='manual_bounds',
                         slide_annotations=slide_annotations,
                         element_infos=element_infos,
@@ -950,6 +952,7 @@ def get_all_rois_from_slide(
         )
     else:
         roig = _roi_getter_tiled(
+            gc=gc, slide_id=slide_id, GTCodes_dict=GTCodes_dict,
             slide_annotations=slide_annotations, element_infos=element_infos,
             sf=sf, max_roiside=max_roiside,
             get_kwargs=kvp, monitor=monitorPrefix, verbose=verbose,
@@ -964,6 +967,10 @@ def get_all_rois_from_slide(
             roi_out = next(roig)
         except StopIteration:
             break
+
+        # if something went wrong, just move on
+        if roi_out is None:
+            continue
 
         # now save roi (mask, rgb, contours, vis)
 
