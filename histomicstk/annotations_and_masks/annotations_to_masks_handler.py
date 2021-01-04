@@ -546,7 +546,7 @@ def get_image_and_mask_from_slide(
         bounds=None, idx_for_roi=None,
         slide_annotations=None, element_infos=None,
         get_roi_mask_kwargs=None, get_contours_kwargs=None, linewidth=0.2,
-        get_rgb=True, get_contours=True, get_visualization=True):
+        get_rgb=True, get_contours=True, get_visualization=True, tau=10):
     """Parse region from the slide and get its corresponding labeled mask.
 
     This is a wrapper around get_roi_mask() which should be referred to for
@@ -634,6 +634,13 @@ def get_image_and_mask_from_slide(
     get_visualization : bool
         get overlayed annotation bounds over RGB for visualization
 
+    tau : int
+        maximum difference (in pixels) between fetched image and mask allowed.
+        Above this threshold, an error is raised indicating you may have some
+        problem in your parameters or elsewhere. If the difference is less then
+        tau, the rgb image and mask are resized to match each other before
+        being returned
+
     Returns
     --------
     dict
@@ -695,7 +702,7 @@ def get_image_and_mask_from_slide(
     if get_rgb:
         rgb, ROI = _get_rgb_and_pad_roi(
             gc=gc, slide_id=slide_id, bounds=bounds,
-            appendStr=appendStr, ROI=ROI)
+            appendStr=appendStr, ROI=ROI, tau=tau)
         result['rgb'] = rgb
 
     # pack result (we have to do it here in case of padding)
