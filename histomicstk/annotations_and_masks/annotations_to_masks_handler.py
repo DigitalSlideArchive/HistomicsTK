@@ -824,7 +824,7 @@ def _roi_getter_tiled(
 def get_all_rois_from_slide(
         gc, slide_id, GTCodes_dict, save_directories,
         get_image_and_mask_from_slide_kwargs=None, max_roiside=None,
-        slide_name=None, verbose=True, monitorPrefix="", ):
+        slide_name=None, verbose=True, monitorPrefix="", ):  # noqa: C901
     """Parse annotations and saves ground truth masks for ALL ROIs.
 
     Get all ROIs in a single slide. This is mainly uses
