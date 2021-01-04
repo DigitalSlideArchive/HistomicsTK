@@ -871,7 +871,7 @@ def get_all_rois_from_slide(
     max_roiside : int or None
         If int, this is the maximum allowed side for a downloaded region. If
         a region-of-interest is larger than this size, then it is tiled into
-        non-overlapping regions who maximal side is max_roiside and downloaded.
+        non-overlapping regions whose maximal side is max_roiside.
         If None, the ROI is downloaded as-is, even if it was extremely large.
         If you know your slides have very large ROI annotations, the safer
         option is to set a max_roiside. A good value may be 5000-8000 pixels.
