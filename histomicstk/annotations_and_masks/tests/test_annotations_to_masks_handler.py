@@ -199,7 +199,7 @@ class TestGetROIMasks(object):
             gc=cfg.gc, slide_id=cfg.iteminfo['_id'],
             GTCodes_dict=cfg.GTcodes.T.to_dict(), save_directories=savepaths,
             get_image_and_mask_from_slide_kwargs=detailed_kwargs,
-            max_roiside=256,
+            max_roiside=128,
             slide_name='TCGA-A2-A0YE', verbose=False)
 
         assert len(savenames) == 6
