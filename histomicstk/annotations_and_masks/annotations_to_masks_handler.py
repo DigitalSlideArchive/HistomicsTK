@@ -512,7 +512,7 @@ def _get_roi_bounds_by_run_mode(
 def _get_rgb_and_pad_roi(gc, slide_id, bounds, appendStr, ROI):
 
     getStr = \
-        "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
+        "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" \
         % (slide_id,
            bounds['XMIN'], bounds['XMAX'],
            bounds['YMIN'], bounds['YMAX'])
