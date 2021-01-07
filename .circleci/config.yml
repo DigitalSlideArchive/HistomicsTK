@@ -157,13 +157,13 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - run:
-          name: install pandoc
-          command: sudo apt-get install -y pandoc pandoc-citeproc
       - tox:
           env: docs,flake8
       - store_artifacts:
           path: docs/_build/html
+      - persist_to_workspace:
+          root: docs/_build
+          paths: html
   docker:
     working_directory: ~/project
     machine: true
@@ -219,7 +219,7 @@ jobs:
   release:
     working_directory: ~/project
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.7
       - image: docker:git
     steps:
       - checkout
@@ -238,6 +238,31 @@ jobs:
       - run:
           name: Release to PyPi
           command: twine upload --verbose wheels/*
+  docs-deploy:
+    working_directory: ~/project
+    docker:
+      - image: node
+    steps:
+      - checkout
+      - attach_workspace:
+          at: docs/_build
+      - run:
+          name: Disable jekyll builds
+          command: touch docs/_build/html/.nojekyll
+      - run:
+          name: Install and configure dependencies
+          command: |
+            npm install -g --silent gh-pages
+            git config user.email "ci-build@kitware.com"
+            git config user.name "ci-build"
+      - add_ssh_keys:
+          fingerprints:
+            - "aa:85:57:31:5c:82:aa:6b:52:69:de:e7:ed:74:0f:86"
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: |
+            touch package.json
+            gh-pages --dotfiles --message "[skip ci] Update documentation" --dist docs/_build/html --no-history
 
 workflows:
   version: 2
@@ -314,3 +339,20 @@ workflows:
               only: /^v.*/
             branches:
               only: master
+      - docs-deploy:
+          requires:
+            - py27
+            - py35
+            - py36
+            - py37
+            - py38
+            - lint_and_docs
+            - wheels
+            - docker
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only:
+                - master
+                - sphinx
