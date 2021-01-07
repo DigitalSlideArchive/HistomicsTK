@@ -267,7 +267,7 @@ def annotations_to_contours_no_mask(
     # get RGB
     if get_rgb:
         getStr = \
-            "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
+            "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" \
             % (slide_id,
                bounds['XMIN'], bounds['XMAX'],
                bounds['YMIN'], bounds['YMAX'])

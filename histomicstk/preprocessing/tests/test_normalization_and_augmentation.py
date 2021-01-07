@@ -48,7 +48,7 @@ def test_prep(girderClient):  # noqa
 
     # get RGB region at a small magnification
     MAG = 1.5
-    getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
+    getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
         iteminfo['_id'], 46890, 50000, 40350, 43000
         ) + "&magnification=%.2f" % MAG
     cfg.tissue_rgb = get_image_from_htk_response(
@@ -124,7 +124,7 @@ class TestColorNormalization():
             stain_unmixing_routine_params=stain_unmixing_routine_params)
         assert tuple(
             [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]
-            ) == (182, 121, 211)
+            ) == (183, 121, 212)
 
         # Macenko - Unmasked, using W_target from good image
         tissue_rgb_normalized = deconvolution_based_normalization(
@@ -132,7 +132,7 @@ class TestColorNormalization():
             stain_unmixing_routine_params=stain_unmixing_routine_params)
         assert tuple(
             [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]
-            ) == (187, 124, 175)
+            ) == (188, 125, 175)
 
         # Macenko - Masked, using W_target from good image
         tissue_rgb_normalized = deconvolution_based_normalization(
@@ -140,7 +140,7 @@ class TestColorNormalization():
             stain_unmixing_routine_params=stain_unmixing_routine_params)
         assert tuple(
             [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]
-            ) == (187, 125, 174)
+            ) == (188, 125, 175)
 
 
 class TestColorAugmentation(object):
@@ -155,11 +155,11 @@ class TestColorAugmentation(object):
         augmented_rgb = rgb_perturb_stain_concentration(cfg.tissue_rgb)
         assert tuple(
             [int(augmented_rgb[..., i].mean()) for i in range(3)]
-            ) == (177, 114, 154)
+            ) == (178, 115, 154)
 
         # Masked
         augmented_rgb = rgb_perturb_stain_concentration(
             cfg.tissue_rgb, mask_out=cfg.mask_out)
         assert tuple(
             [int(augmented_rgb[..., i].mean()) for i in range(3)]
-            ) == (174, 100, 139)
+            ) == (174, 101, 139)

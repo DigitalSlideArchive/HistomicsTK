@@ -35,6 +35,7 @@ def get_image_from_htk_response(resp):
     image_content = BytesIO(resp.content)
     image_content.seek(0)
     image = Image.open(image_content)
+    image = image.convert('RGB')
     return np.uint8(image)
 
 # %%===========================================================================
