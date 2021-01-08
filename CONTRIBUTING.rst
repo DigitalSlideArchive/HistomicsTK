@@ -101,9 +101,8 @@ Before you submit a pull request, check that it meets these guidelines:
    Otherwise, create a new `.rst` file.
 3. **(Optional)** Create a Jupyter Notebook or a detailed documentation `.rst`
    under `./docs/examples/` to explain exactly how the feature should be used.
-4. The pull request should work for Python 2.7, 3.5, 3.6, and 3.7. Check
-   https://travis-ci.org/DigitalSlideArchive/HistomicsTK/pull_requests
-   and make sure that the tests pass for all supported Python versions.
+4. The pull request should work for Python 3.6, 3.7, 3.8, and 3.9. Check that
+   the tests pass on the pull request for all supported Python versions.
 
 Unit Testing Notes
 ----------------------------
