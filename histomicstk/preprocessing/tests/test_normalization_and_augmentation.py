@@ -48,7 +48,7 @@ def test_prep(girderClient):  # noqa
 
     # get RGB region at a small magnification
     MAG = 1.5
-    getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
+    getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
         iteminfo['_id'], 46890, 50000, 40350, 43000
         ) + "&magnification=%.2f" % MAG
     cfg.tissue_rgb = get_image_from_htk_response(
@@ -163,3 +163,4 @@ class TestColorAugmentation(object):
         assert tuple(
             [int(augmented_rgb[..., i].mean()) for i in range(3)]
             ) == (175, 101, 140)
+

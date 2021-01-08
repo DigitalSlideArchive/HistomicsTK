@@ -106,7 +106,7 @@ class CD_single_tissue_piece(object):
     def set_tissue_rgb(self):
         """Load RGB from server for single tissue piece."""
         # load RGB for this tissue piece at saliency magnification
-        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
+        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
             self.cd.slide_id, self.xmin, self.xmax, self.ymin, self.ymax
             ) + "&magnification=%d" % self.cd.MAG
         resp = self.cd.gc.get(getStr, jsonResp=False)

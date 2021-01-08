@@ -1,6 +1,7 @@
 import collections
 import numpy as np
 import os
+import packaging.version
 import pandas as pd
 import skimage.io
 import skimage.measure
@@ -270,8 +271,11 @@ class TestFeatureExtraction(object):
                 'Easy1_nuclei_morphometry_features.csv'),
                 index=False)
 
-        fdata_gtruth = pd.read_csv(
-            utilities.getTestFilePath('Easy1_nuclei_morphometry_features.csv'))
+        if packaging.version.parse(skimage.__version__) < packaging.version.parse('0.18'):
+            fdata_file = 'Easy1_nuclei_morphometry_features.csv'
+        else:
+            fdata_file = 'Easy1_nuclei_morphometry_features_2.csv'
+        fdata_gtruth = pd.read_csv(utilities.getTestFilePath(fdata_file), index_col=None)
 
         pd.testing.assert_frame_equal(
             fdata, fdata_gtruth, check_less_precise=2)

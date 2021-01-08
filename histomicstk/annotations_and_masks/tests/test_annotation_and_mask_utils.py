@@ -43,7 +43,7 @@ class TestAnnotAndMaskUtils(object):
 
     def test_get_image_from_htk_response(self):
         """Test get_image_from_htk_response."""
-        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" % (
+        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
             cfg.iteminfo['_id'], 59000, 59100, 35000, 35100)
         resp = cfg.gc.get(getStr, jsonResp=False)
         rgb = get_image_from_htk_response(resp)
