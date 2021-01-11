@@ -19,11 +19,10 @@ python "$CLIPATH/NucleiDetection/NucleiDetection.py" tcga.svs sample.anot \\
 true"""
 
 containers = [
-    'python:2.7',
-    'python:3.5',
     'python:3.6',
     'python:3.7',
-    'centos/python-27-centos7',
+    'python:3.8',
+    'python:3.9',
     # 'centos/python-35-centos7',
     'centos/python-36-centos7',
 ]
