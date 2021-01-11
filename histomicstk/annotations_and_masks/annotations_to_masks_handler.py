@@ -19,6 +19,7 @@ from matplotlib.patches import Polygon as mpPolygon
 import io
 from PIL import Image
 import copy
+from warnings import warn
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
     get_bboxes_from_slide_annotations, _get_idxs_for_all_rois,
@@ -509,7 +510,7 @@ def _get_roi_bounds_by_run_mode(
     return bounds
 
 
-def _get_rgb_and_pad_roi(gc, slide_id, bounds, appendStr, ROI):
+def _get_rgb_and_pad_roi(gc, slide_id, bounds, appendStr, ROI, tau=10):
 
     getStr = \
         "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" \
@@ -523,7 +524,7 @@ def _get_rgb_and_pad_roi(gc, slide_id, bounds, appendStr, ROI):
     # sometimes there's a couple of pixel difference d.t. rounding, so pad
     pad_y = rgb.shape[0] - ROI.shape[0]
     pad_x = rgb.shape[1] - ROI.shape[1]
-    assert all([np.abs(j) < 4 for j in (pad_y, pad_x)]), \
+    assert all([np.abs(j) < tau for j in (pad_y, pad_x)]), \
         "too much difference in size between image and mask."\
         "something is wrong!"
 
@@ -546,7 +547,7 @@ def get_image_and_mask_from_slide(
         bounds=None, idx_for_roi=None,
         slide_annotations=None, element_infos=None,
         get_roi_mask_kwargs=None, get_contours_kwargs=None, linewidth=0.2,
-        get_rgb=True, get_contours=True, get_visualization=True):
+        get_rgb=True, get_contours=True, get_visualization=True, tau=10):
     """Parse region from the slide and get its corresponding labeled mask.
 
     This is a wrapper around get_roi_mask() which should be referred to for
@@ -634,6 +635,13 @@ def get_image_and_mask_from_slide(
     get_visualization : bool
         get overlayed annotation bounds over RGB for visualization
 
+    tau : int
+        maximum difference (in pixels) between fetched image and mask allowed.
+        Above this threshold, an error is raised indicating you may have some
+        problem in your parameters or elsewhere. If the difference is less then
+        tau, the rgb image and mask are resized to match each other before
+        being returned
+
     Returns
     --------
     dict
@@ -695,7 +703,7 @@ def get_image_and_mask_from_slide(
     if get_rgb:
         rgb, ROI = _get_rgb_and_pad_roi(
             gc=gc, slide_id=slide_id, bounds=bounds,
-            appendStr=appendStr, ROI=ROI)
+            appendStr=appendStr, ROI=ROI, tau=tau)
         result['rgb'] = rgb
 
     # pack result (we have to do it here in case of padding)
@@ -720,9 +728,102 @@ def get_image_and_mask_from_slide(
 # %% =====================================================================
 
 
-def get_all_rois_from_slide(
+def _roi_getter_asis(
+        gc, slide_id, GTCodes_dict, slide_annotations, element_infos,
+        get_kwargs, monitor="", verbose=False):
+    """Download special ROI regions as-is, even if they are very large."""
+    # get idx of all 'special' roi annotations
+    GTCodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
+    idxs_for_all_rois = _get_idxs_for_all_rois(
+        GTCodes=GTCodes_df, element_infos=element_infos)
+
+    # go through rois and download as-is
+    for roino, idx_for_roi in enumerate(idxs_for_all_rois):
+
+        roistr = "%s: roi %d of %d" % (
+            monitor, roino + 1, len(idxs_for_all_rois))
+        if verbose:
+            print(roistr)
+
+        try:
+            roi_out = get_image_and_mask_from_slide(
+                gc=gc, slide_id=slide_id, GTCodes_dict=GTCodes_dict,
+                mode='polygonal_bounds', idx_for_roi=idx_for_roi,
+                slide_annotations=slide_annotations,
+                element_infos=element_infos, **get_kwargs)
+        except Exception as e:
+            problem = '\n   '
+            problem += e.__repr__()
+            problem += '\n'
+            warn(problem)
+            roi_out = None
+
+        yield roi_out
+
+
+def _roi_getter_tiled(
+        gc, slide_id, GTCodes_dict, slide_annotations, element_infos,
+        sf, max_roiside,
+        get_kwargs, monitor="", verbose=False):
+    """Download special ROI regions in a tiled fasion."""
+    # isolate rois
+    rois = element_infos.loc[element_infos.loc[:, 'group'] == 'roi', :].copy()
+
+    # split ROIs into max_roiside tiled regions
+    for roidx, roi in rois.iterrows():
+
+        # bounds for tiled sub-rois
+        xbounds = list(np.arange(roi['xmin'], roi['xmax'], max_roiside))
+        xbounds.append(roi['xmax'])
+        ybounds = list(np.arange(roi['ymin'], roi['ymax'], max_roiside))
+        ybounds.append(roi['ymax'])
+
+        roidx += 1
+        roistr = f"{monitor}: roi {roidx} of {rois.shape[0]}"
+        if verbose:
+            print(roistr)
+
+        subroidx = 0
+        nsubrois = (len(xbounds) - 1) * (len(ybounds) - 1)
+
+        # go through tiled sub-rois
+        for xi, xmin in enumerate(xbounds[:-1]):
+            xmax = xbounds[xi + 1]
+            for yi, ymin in enumerate(ybounds[:-1]):
+                ymax = ybounds[yi + 1]
+
+                subroidx += 1
+                subroistr = f"{roistr}: sub-roi {subroidx} of {nsubrois}"
+                if verbose:
+                    print(subroistr)
+
+                # get specified region
+                get_kwargs['bounds'] = {
+                    'XMIN': xmin / sf,
+                    'XMAX': xmax / sf,
+                    'YMIN': ymin / sf,
+                    'YMAX': ymax / sf,
+                }
+                try:
+                    roi_out = get_image_and_mask_from_slide(
+                        gc=gc, slide_id=slide_id, GTCodes_dict=GTCodes_dict,
+                        mode='manual_bounds',
+                        slide_annotations=slide_annotations,
+                        element_infos=element_infos,
+                        **get_kwargs)
+                except Exception as e:
+                    problem = '\n'
+                    problem += e.__repr__()
+                    problem += '\n'
+                    warn(problem)
+                    roi_out = None
+
+                yield roi_out
+
+
+def get_all_rois_from_slide(  # noqa: C901
         gc, slide_id, GTCodes_dict, save_directories,
-        get_image_and_mask_from_slide_kwargs=None,
+        get_image_and_mask_from_slide_kwargs=None, max_roiside=None,
         slide_name=None, verbose=True, monitorPrefix="", ):
     """Parse annotations and saves ground truth masks for ALL ROIs.
 
@@ -766,6 +867,14 @@ def get_all_rois_from_slide(
     get_image_and_mask_from_slide_kwargs : dict
         kwargs to pass to get_image_and_mask_from_slide()
         default values are assigned if speceific parameters are not given.
+
+    max_roiside : int or None
+        If int, this is the maximum allowed side for a downloaded region. If
+        a region-of-interest is larger than this size, then it is tiled into
+        non-overlapping regions whose maximal side is max_roiside.
+        If None, the ROI is downloaded as-is, even if it was extremely large.
+        If you know your slides have very large ROI annotations, the safer
+        option is to set a max_roiside. A good value may be 5000-8000 pixels.
 
     slide_name : str or None
         If not given, it's inferred using a server request using girder client.
@@ -834,23 +943,28 @@ def get_all_rois_from_slide(
     # get bounding box information for all annotations
     element_infos = get_bboxes_from_slide_annotations(slide_annotations)
 
-    # get idx of all 'special' roi annotations
-    idxs_for_all_rois = _get_idxs_for_all_rois(
-        GTCodes=GTCodes_df, element_infos=element_infos)
+    # define roi_getter, which yields one roi at a time
+    if max_roiside is None:
+        roig = _roi_getter_asis(
+            gc=gc, slide_id=slide_id, GTCodes_dict=GTCodes_dict,
+            slide_annotations=slide_annotations, element_infos=element_infos,
+            get_kwargs=kvp, monitor=monitorPrefix, verbose=verbose,
+        )
+    else:
+        roig = _roi_getter_tiled(
+            gc=gc, slide_id=slide_id, GTCodes_dict=GTCodes_dict,
+            slide_annotations=slide_annotations, element_infos=element_infos,
+            sf=sf, max_roiside=max_roiside,
+            get_kwargs=kvp, monitor=monitorPrefix, verbose=verbose,
+        )
 
     savenames = []
 
-    for roino, idx_for_roi in enumerate(idxs_for_all_rois):
+    for roi_out in roig:
 
-        roicountStr = "%s: roi %d of %d" % (
-            monitorPrefix, roino + 1, len(idxs_for_all_rois))
-
-        # get specified area
-        roi_out = get_image_and_mask_from_slide(
-            gc=gc, slide_id=slide_id, GTCodes_dict=GTCodes_dict,
-            mode='polygonal_bounds', idx_for_roi=idx_for_roi,
-            slide_annotations=slide_annotations,
-            element_infos=element_infos, **kvp)
+        # if something went wrong, just move on
+        if roi_out is None:
+            continue
 
         # now save roi (mask, rgb, contours, vis)
 
@@ -865,7 +979,7 @@ def get_all_rois_from_slide(
                 savename = os.path.join(
                     save_directories[imtype], ROINAMESTR + ".png")
                 if verbose:
-                    print("%s: Saving %s\n" % (roicountStr, savename))
+                    print("   Saving %s\n" % savename)
                 imwrite(im=roi_out[imtype], uri=savename)
                 this_roi_savenames[imtype] = savename
 
@@ -873,7 +987,7 @@ def get_all_rois_from_slide(
             savename = os.path.join(
                 save_directories['contours'], ROINAMESTR + ".csv")
             if verbose:
-                print("%s: Saving %s\n" % (roicountStr, savename))
+                print("   Saving %s\n" % savename)
             contours_df = DataFrame(roi_out['contours'])
             contours_df.to_csv(savename)
             this_roi_savenames['contours'] = savename

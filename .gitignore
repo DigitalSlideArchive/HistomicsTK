@@ -138,3 +138,9 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# pycharm
+.idea/
+
+# temporary downloaded data when doing unit testing locally
+tests/externaldata/
