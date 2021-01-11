@@ -960,13 +960,7 @@ def get_all_rois_from_slide(  # noqa: C901
 
     savenames = []
 
-    while True:
-
-        # get specified area
-        try:
-            roi_out = next(roig)
-        except StopIteration:
-            break
+    for roi_out in roig:
 
         # if something went wrong, just move on
         if roi_out is None:
