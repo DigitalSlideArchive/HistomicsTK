@@ -71,38 +71,6 @@ jobs:
   # use a CircleCI docker environment, since those environments run sub dockers
   # in a separate environment.  The 201808-01 machine environment has versions
   # of Python 2.7, 3.5, 3.6, 3.7 with specific subversions.
-  py27:
-    working_directory: ~/project
-    machine:
-      image: circleci/classic:201808-01
-    steps:
-      - checkout
-      # - upgradepython:
-      #     version: python2.7
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 2.7.12
-      - tox:
-          env: py27
-      - coverage
-  py35:
-    working_directory: ~/project
-    machine:
-      image: circleci/classic:201808-01
-    steps:
-      - checkout
-      # - upgradepython:
-      #     version: python3.5
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.5.2
-      - tox:
-          env: py35
-      - coverage
   py36:
     working_directory: ~/project
     machine:
@@ -284,20 +252,6 @@ workflows:
   version: 2
   ci:
     jobs:
-      - py27:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
-      - py35:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
       - py36:
           filters:
             tags:
@@ -349,8 +303,6 @@ workflows:
                 - gh-pages
       - release:
           requires:
-            - py27
-            - py35
             - py36
             - py37
             - py38
@@ -365,8 +317,6 @@ workflows:
               only: master
       - docs-deploy:
           requires:
-            - py27
-            - py35
             - py36
             - py37
             - py38
@@ -391,8 +341,6 @@ workflows:
               only:
                 - master
     jobs:
-      - py27
-      - py35
       - py36
       - py37
       - py38
