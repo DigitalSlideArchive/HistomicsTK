@@ -162,5 +162,4 @@ class TestColorAugmentation(object):
             cfg.tissue_rgb, mask_out=cfg.mask_out)
         assert tuple(
             [int(augmented_rgb[..., i].mean()) for i in range(3)]
-            ) == (175, 101, 140)
-
+            ) == (174, 101, 139)
