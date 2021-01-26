@@ -221,7 +221,7 @@ jobs:
           command: ./build_wheels.sh
       - run:
           name: Release to PyPi
-          command: twine upload --verbose wheels/*
+          command: twine upload --verbose wheels/* dist/*
   docs-deploy:
     working_directory: ~/project
     docker:
