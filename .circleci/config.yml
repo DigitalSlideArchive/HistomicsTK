@@ -189,6 +189,8 @@ jobs:
           command: ./build_wheels.sh
       - store_artifacts:
           path: wheels
+      - store_artifacts:
+          path: dist
       - run:
           name: List built wheels
           command: |
