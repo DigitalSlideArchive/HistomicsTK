@@ -1,0 +1,354 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>histomicstk.features.compute_morphometry_features &mdash; HistomicsTK 0.1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> HistomicsTK
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>histomicstk.features.compute_morphometry_features</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for histomicstk.features.compute_morphometry_features</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">skimage.measure</span> <span class="kn">import</span> <span class="n">regionprops</span>
+
+
+<div class="viewcode-block" id="compute_morphometry_features"><a class="viewcode-back" href="../../../histomicstk.features.html#histomicstk.features.compute_morphometry_features">[docs]</a><span class="k">def</span> <span class="nf">compute_morphometry_features</span><span class="p">(</span><span class="n">im_label</span><span class="p">,</span> <span class="n">rprops</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates morphometry features for each object</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_label : array_like</span>
+<span class="sd">        A labeled mask image wherein intensity of a pixel is the ID of the</span>
+<span class="sd">        object it belongs to. Non-zero values are considered to be foreground</span>
+<span class="sd">        objects.</span>
+
+<span class="sd">    rprops : output of skimage.measure.regionprops, optional</span>
+<span class="sd">        rprops = skimage.measure.regionprops( im_label ). If rprops is not</span>
+<span class="sd">        passed then it will be computed inside which will increase the</span>
+<span class="sd">        computation time.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fdata: pandas.DataFrame</span>
+<span class="sd">        A pandas dataframe containing the morphometry features for each</span>
+<span class="sd">        object/label listed below.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    List of morphometry features computed by this function:</span>
+
+<span class="sd">    Size.Area : int</span>
+<span class="sd">        Number of pixels the object occupies.</span>
+
+<span class="sd">    Size.MajorAxisLength : float</span>
+<span class="sd">        The length of the major axis of the ellipse that has the same</span>
+<span class="sd">        normalized second central moments as the object.</span>
+
+<span class="sd">    Size.MinorAxisLength : float</span>
+<span class="sd">        The length of the minor axis of the ellipse that has the same</span>
+<span class="sd">        normalized second central moments as the region.</span>
+
+<span class="sd">    Size.Perimeter : float</span>
+<span class="sd">        Perimeter of object which approximates the contour as a line</span>
+<span class="sd">        through the centers of border pixels using a 4-connectivity.</span>
+
+<span class="sd">    Shape.Circularity: float</span>
+<span class="sd">        A measure of how similar the shape of an object is to the circle</span>
+
+<span class="sd">    Shape.Eccentricity : float</span>
+<span class="sd">        A measure of aspect ratio computed to be the eccentricity of the</span>
+<span class="sd">        ellipse that has the same second-moments as the object region.</span>
+<span class="sd">        Eccentricity of an ellipse is the ratio of the focal distance</span>
+<span class="sd">        (distance between focal points) over the major axis length. The value</span>
+<span class="sd">        is in the interval [0, 1). When it is 0, the ellipse becomes a circle.</span>
+
+<span class="sd">    Shape.EquivalentDiameter : float</span>
+<span class="sd">        The diameter of a circle with the same area as the object.</span>
+
+<span class="sd">    Shape.Extent : float</span>
+<span class="sd">        Ratio of area of the object to its axis-aligned bounding box.</span>
+
+<span class="sd">    Shape.MinorMajorAxisRatio : float</span>
+<span class="sd">        A measure of aspect ratio. Ratio of minor to major axis of the ellipse</span>
+<span class="sd">        that has the same second-moments as the object region</span>
+
+<span class="sd">    Shape.Solidity : float</span>
+<span class="sd">        A measure of convexity computed as the ratio of the number of pixels</span>
+<span class="sd">        in the object to that of its convex hull.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># List of feature names in alphabetical order</span>
+    <span class="n">feature_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;Size.Area&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Size.MajorAxisLength&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Size.MinorAxisLength&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Size.Perimeter&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Shape.Circularity&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Shape.Eccentricity&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Shape.EquivalentDiameter&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Shape.Extent&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Shape.MinorMajorAxisRatio&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Shape.Solidity&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1"># compute object properties if not provided</span>
+    <span class="k">if</span> <span class="n">rprops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rprops</span> <span class="o">=</span> <span class="n">regionprops</span><span class="p">(</span><span class="n">im_label</span><span class="p">)</span>
+
+    <span class="c1"># create pandas data frame containing the features for each object</span>
+    <span class="n">numFeatures</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_list</span><span class="p">)</span>
+    <span class="n">numLabels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rprops</span><span class="p">)</span>
+    <span class="n">fdata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">numLabels</span><span class="p">,</span> <span class="n">numFeatures</span><span class="p">)),</span>
+                         <span class="n">columns</span><span class="o">=</span><span class="n">feature_list</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numLabels</span><span class="p">):</span>
+
+        <span class="c1"># compute Area</span>
+        <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Size.Area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">area</span>
+
+        <span class="c1"># compute MajorAxisLength and MinorAxisLength</span>
+        <span class="c1"># A bug in scikit-image could produce a (very slightly)</span>
+        <span class="c1"># negative element in inertia_tensor_eigvals, so insert</span>
+        <span class="c1"># &quot;max(0, )&quot; call here before invoking np.sqrt().</span>
+        <span class="n">inertia_tensor_eigvals</span> <span class="o">=</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">inertia_tensor_eigvals</span>
+        <span class="n">major_axis_length</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="nb">max</span><span class="p">(</span><span class="n">inertia_tensor_eigvals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">minor_axis_length</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="nb">max</span><span class="p">(</span><span class="n">inertia_tensor_eigvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>
+
+        <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Size.MajorAxisLength&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">major_axis_length</span>
+        <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Size.MinorAxisLength&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">minor_axis_length</span>
+
+        <span class="c1"># compute Perimeter</span>
+        <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Size.Perimeter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">perimeter</span>
+
+        <span class="c1"># compute Circularity</span>
+        <span class="n">numerator</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">area</span>
+        <span class="n">denominator</span> <span class="o">=</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">perimeter</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">if</span> <span class="n">denominator</span><span class="p">:</span>
+            <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Shape.Circularity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Shape.Circularity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># should this be NaN?</span>
+
+        <span class="c1"># compute Eccentricity</span>
+        <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Shape.Eccentricity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">eccentricity</span>
+
+        <span class="c1"># compute EquivalentDiameter</span>
+        <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Shape.EquivalentDiameter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">equivalent_diameter</span>
+
+        <span class="c1"># compute Extent</span>
+        <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Shape.Extent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">extent</span>
+
+        <span class="c1"># compute Minor to Major axis ratio</span>
+        <span class="k">if</span> <span class="n">major_axis_length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Shape.MinorMajorAxisRatio&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">minor_axis_length</span> <span class="o">/</span> <span class="n">major_axis_length</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Shape.MinorMajorAxisRatio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># compute Solidity</span>
+        <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;Shape.Solidity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">solidity</span>
+
+    <span class="k">return</span> <span class="n">fdata</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Kitware, Inc..
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

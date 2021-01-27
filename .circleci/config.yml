@@ -1,0 +1,352 @@
+version: 2.1
+commands:
+  tox:
+    description: "Run tox"
+    parameters:
+      env:
+        type: string
+    steps:
+      - run:
+          name: Upgrade pip
+          command: pip install -U pip
+      - run:
+          name: Upgrade virtualenv and tox
+          command: pip install -U virtualenv tox
+      - run:
+          name: Install scikit-build
+          command: pip install scikit-build
+      - run:
+          name: Run tests via tox
+          # Piping through cat does less buffering of the output but can
+          # consume the exit code
+          command: tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
+  upgradepython:
+    description: "Upgrade python"
+    parameters:
+      version:
+        type: string
+    steps:
+      - run:
+          name: Upgrade pyenv
+          command: |
+            rm -rf /opt/circleci/.pyenv
+            curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+            pyenv install --list list
+      - run:
+          name: Use pyenv to install python
+          command: |
+            pyenv install << parameters.version >>
+      #      sudo systemctl stop apt-daily.timer
+      #      sudo systemctl stop apt-daily-upgrade.timer
+      #      sudo rm -rf /usr/lib/apt/apt.systemd.daily
+      #      sudo add-apt-repository -y ppa:deadsnakes/ppa
+      #      while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do sleep 1; done
+      #      sudo apt-get update || true
+      #- run:
+      #    name: Update python
+      #    command: |
+      #      while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do sleep 1; done
+      #      sudo apt-get install -y << parameters.version >>
+      # - run:
+      #     name: Disable preinstalled pyenv
+      #     command: |
+      #       rm /opt/circleci/.pyenv/shims/*3*
+      # - run:
+      #     name: Check python version
+      #     command: |
+      #       which << parameters.version >>
+  coverage:
+    description: "Upload coverage"
+    steps:
+      - run:
+          name: Install Codecov client
+          command: pip install codecov==2.1.9
+      - run:
+          name: Upload coverage
+          # Retry as codecov can be flaky
+          command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; codecov --required --disable search pycov gcov --root project --file .tox/coverage/py_coverage.xml && s=0 && break || s=$?; done; (exit $s)
+
+jobs:
+  # Because some of our tests use docker-compose as part of the test, we can't
+  # use a CircleCI docker environment, since those environments run sub dockers
+  # in a separate environment.  The 201808-01 machine environment has versions
+  # of Python 2.7, 3.5, 3.6, 3.7 with specific subversions.
+  py36:
+    working_directory: ~/project
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - checkout
+      - upgradepython:
+          version: 3.6.10
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.6.10
+      - tox:
+          env: py36
+      - coverage
+  py37:
+    working_directory: ~/project
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - checkout
+      - upgradepython:
+          version: 3.7.7
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.7.7
+      - tox:
+          env: py37
+      - coverage
+  py38:
+    working_directory: ~/project
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - checkout
+      - upgradepython:
+          version: 3.8.6
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.8.6
+      - tox:
+          env: py38
+      - coverage
+  py39:
+    working_directory: ~/project
+    machine:
+      image: circleci/classic:201808-01
+    steps:
+      - checkout
+      - upgradepython:
+          version: 3.9.1
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.9.1
+      - tox:
+          env: py39
+      - coverage
+  lint_and_docs:
+    working_directory: ~/project
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - tox:
+          env: docs,flake8
+      - store_artifacts:
+          path: docs/_build/html
+      - persist_to_workspace:
+          root: docs/_build
+          paths: html
+  docker:
+    working_directory: ~/project
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build HistomicsTK docker
+          command: docker build --force-rm -t dsarchive/histomicstk .
+      - run:
+          name: Get xml for each cli
+          command: |
+            docker run --rm dsarchive/histomicstk:latest --list_cli
+            docker run --rm dsarchive/histomicstk:latest BackgroundIntensity --xml
+            docker run --rm dsarchive/histomicstk:latest ColorDeconvolution --xml
+            docker run --rm dsarchive/histomicstk:latest ComputeNucleiFeatures --xml
+            docker run --rm dsarchive/histomicstk:latest NucleiClassification --xml
+            docker run --rm dsarchive/histomicstk:latest NucleiDetection --xml
+            docker run --rm dsarchive/histomicstk:latest PositivePixelCount --xml
+            docker run --rm dsarchive/histomicstk:latest SeparateStainsMacenkoPCA --xml
+            docker run --rm dsarchive/histomicstk:latest SeparateStainsXuSnmf --xml
+  wheels:
+    working_directory: ~/project
+    docker:
+      - image: circleci/python:3.6
+      - image: docker:git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Setup virtual environment
+          command: |
+            if [ ! -d env ]; then python -m virtualenv env || python -m venv env; fi
+            echo ". $CIRCLE_WORKING_DIRECTORY/env/bin/activate" >> $BASH_ENV
+      - run:
+          name: Install python packages
+          command: pip install setuptools_scm twine
+      - run:
+          name: Build wheels
+          command: ./build_wheels.sh
+      - store_artifacts:
+          path: wheels
+      - store_artifacts:
+          path: dist
+      - run:
+          name: List built wheels
+          command: |
+            ls -al wheels
+      - run:
+          name: Basic import test
+          command: |
+            python3 -m pip install --upgrade pip
+            cd ..
+            python3 -m pip install histomicstk --pre --find-links project/wheels --find-links https://girder.github.io/large_image_wheels
+            python3 -c "import histomicstk"
+  release:
+    working_directory: ~/project
+    docker:
+      - image: circleci/python:3.7
+      - image: docker:git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Setup virtual environment
+          command: |
+            if [ ! -d env ]; then python -m virtualenv env || python -m venv env; fi
+            echo ". $CIRCLE_WORKING_DIRECTORY/env/bin/activate" >> $BASH_ENV
+      - run:
+          name: Install python packages
+          command: pip install setuptools_scm twine
+      - run:
+          name: Build wheels
+          command: ./build_wheels.sh
+      - run:
+          name: Release to PyPi
+          command: twine upload --verbose wheels/* dist/*
+  docs-deploy:
+    working_directory: ~/project
+    docker:
+      - image: node
+    steps:
+      - checkout
+      - attach_workspace:
+          at: docs/_build
+      - run:
+          name: Disable jekyll builds
+          command: touch docs/_build/html/.nojekyll
+      - run:
+          name: Install and configure dependencies
+          command: |
+            npm install -g --silent gh-pages
+            git config user.email "ci-build@kitware.com"
+            git config user.name "ci-build"
+      - add_ssh_keys:
+          fingerprints:
+            - "aa:85:57:31:5c:82:aa:6b:52:69:de:e7:ed:74:0f:86"
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: |
+            touch package.json
+            gh-pages --dotfiles --message "[skip ci] Update documentation" --dist docs/_build/html --no-history
+
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - py36:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py37:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py38:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py39:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - lint_and_docs:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - docker:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - wheels:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - release:
+          requires:
+            - py36
+            - py37
+            - py38
+            - py39
+            - lint_and_docs
+            - wheels
+            - docker
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only: master
+      - docs-deploy:
+          requires:
+            - py36
+            - py37
+            - py38
+            - py39
+            - lint_and_docs
+            - wheels
+            - docker
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only:
+                - master
+                - sphinx
+  periodic:
+    triggers:
+      - schedule:
+          # Run every Tuesday morning at 7 a.m.
+          cron: "0 7 * * 2"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - py36
+      - py37
+      - py38
+      - py39
+      - lint_and_docs
+      - docker
+      - wheels

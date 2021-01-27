@@ -1,0 +1,547 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>histomicstk.annotations_and_masks.annotation_and_mask_utils &mdash; HistomicsTK 0.1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Working with tiles and merging polygons" href="histomicstk.annotations_and_masks.polygon_merger.html" />
+    <link rel="prev" title="Converting masks back to annotations" href="histomicstk.annotations_and_masks.masks_to_annotations_handler.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HistomicsTK
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotation_database_parser.html">Annotation database backup and sqlite parser</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.review_gallery.html">Mosaic review gallery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.html">Annotations to semantic segmentation masks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotations_to_object_segmentation_masks.html">Annotations to object segmentation masks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.masks_to_annotations_handler.html">Masks to annotations</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Annotation and mask utilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.polygon_merger.html">Polygon merger</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="api-docs.html">API Documentation</a> &raquo;</li>
+        
+          <li><a href="histomicstk.html">histomicstk</a> &raquo;</li>
+        
+          <li><a href="histomicstk.annotations_and_masks.html">histomicstk.annotations_and_masks</a> &raquo;</li>
+        
+      <li>histomicstk.annotations_and_masks.annotation_and_mask_utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/histomicstk.annotations_and_masks.annotation_and_mask_utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-histomicstk.annotations_and_masks.annotation_and_mask_utils">
+<span id="histomicstk-annotations-and-masks-annotation-and-mask-utils"></span><h1>histomicstk.annotations_and_masks.annotation_and_mask_utils<a class="headerlink" href="#module-histomicstk.annotations_and_masks.annotation_and_mask_utils" title="Permalink to this headline">¶</a></h1>
+<p>Created on Sun Aug 11 22:30:06 2019.</p>
+<p>&#64;author: tageldim</p>
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.create_mask_from_coords">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">create_mask_from_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coords</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#create_mask_from_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.create_mask_from_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a binary mask from given vertices coordinates.</p>
+<p>Source: This is modified from code by Juan Carlos from David Gutman Lab.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>coords</strong> (<em>np arrray</em>) – must be in the form (e.g. ([x1,y1],[x2,y2],[x3,y3],…..,[xn,yn])),
+where xn and yn corresponds to the nth vertix coordinate.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>binary mask</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.delete_annotations_in_slide">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">delete_annotations_in_slide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gc</span></em>, <em class="sig-param"><span class="n">slide_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#delete_annotations_in_slide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.delete_annotations_in_slide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete all annotations in a slide.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.get_bboxes_from_slide_annotations">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">get_bboxes_from_slide_annotations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">slide_annotations</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#get_bboxes_from_slide_annotations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.get_bboxes_from_slide_annotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a slide annotation list, gets information on bounding boxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>slide_annotations</strong> (<em>list of dicts</em>) – response from server request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The columns annidx and elementidx encode the
+dict index of annotation document and element, respectively, in the
+original slide_annotations list of dictionaries</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Pandas DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.get_idxs_for_annots_overlapping_roi_by_bbox">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">get_idxs_for_annots_overlapping_roi_by_bbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">element_infos</span></em>, <em class="sig-param"><span class="n">idx_for_roi</span></em>, <em class="sig-param"><span class="n">iou_thresh</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#get_idxs_for_annots_overlapping_roi_by_bbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.get_idxs_for_annots_overlapping_roi_by_bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find indices of <strong>potentially</strong> included annoations within the ROI.</p>
+<p>We say “potentially” because this uses the IoU of roi and annotation as a
+fast indicator of potential inclusion. This helps dramatically scale down
+the number of annotations to look through. Later on, a detailed look at
+whether the annotation polygons actually overlap the ROI can be done.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>element_infos</strong> (<em>pandas DataFrame</em>) – result from running get_bboxes_from_slide_annotations()</p></li>
+<li><p><strong>idx_for_roi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – index for roi annotation within the element_infos DF</p></li>
+<li><p><strong>iou_thresh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – overlap threshold to be considered within ROI</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>indices relative to element_infos</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.get_image_from_htk_response">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">get_image_from_htk_response</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">resp</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#get_image_from_htk_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.get_image_from_htk_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a histomicsTK girder response, get np array image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>resp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><em>object</em></a>) – response from server request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a pillow Image object of the image</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Pillow Image object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.get_rotated_rectangular_coords">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">get_rotated_rectangular_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roi_center</span></em>, <em class="sig-param"><span class="n">roi_width</span></em>, <em class="sig-param"><span class="n">roi_height</span></em>, <em class="sig-param"><span class="n">roi_rotation</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#get_rotated_rectangular_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.get_rotated_rectangular_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given data on rectangular ROI center/width/height/rotation.</p>
+<p>Get the unrotated abounding box coordinates around rotated ROI. This
+of course is applicable to any rotated rectangular annotation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>roi_center</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – (x, y) format</p></li>
+<li><p><strong>roi_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – </p></li>
+<li><p><strong>roi_height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – </p></li>
+<li><p><strong>roi_rotation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>includes roi corners (x, y) and bounds</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.get_scale_factor_and_appendStr">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">get_scale_factor_and_appendStr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gc</span></em>, <em class="sig-param"><span class="n">slide_id</span></em>, <em class="sig-param"><span class="n">MPP</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">MAG</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#get_scale_factor_and_appendStr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.get_scale_factor_and_appendStr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get how much is request region smaller than base.</p>
+<p>This also gets the string to append to server request for getting rgb.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gc</strong> (<em>Girder client instance</em>) – gc should be authoenticated.</p></li>
+<li><p><strong>slide_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – girder id of slide</p></li>
+<li><p><strong>MPP</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – Microns-per-pixel – best use this as it’s more well-defined than
+magnification which is more scanner/manufacturer specific.
+MPP of 0.25 often roughly translates to 40x</p></li>
+<li><p><strong>MAG</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – If you prefer to use whatever magnification is reported in slide.
+If neither MPP or MAG is provided, everything is retrieved without
+scaling at base (scan) magnification.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>float</em> – how much smaller (0.1 means 10x smaller) is requested image
+compared to scan magnification (slide coordinates)</p></li>
+<li><p><em>str</em> – string to appnd to server request for getting slide region</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.np_vec_no_jit_iou">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">np_vec_no_jit_iou</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bboxes1</span></em>, <em class="sig-param"><span class="n">bboxes2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#np_vec_no_jit_iou"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.np_vec_no_jit_iou" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fast, vectorized IoU.</p>
+<dl class="simple">
+<dt>Source: <a class="reference external" href="https://medium.com/&#64;venuktan/vectorized-intersection-over-union">https://medium.com/&#64;venuktan/vectorized-intersection-over-union</a> …</dt><dd><p>-iou-in-numpy-and-tensor-flow-4fa16231b63d</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bboxes1</strong> (<em>np array</em>) – columns encode bounding box corners xmin, ymin, xmax, ymax</p></li>
+<li><p><strong>bboxes2</strong> (<em>np array</em>) – same as bboxes 1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>IoU values for each pair from bboxes1 &amp; bboxes2</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.parse_slide_annotations_into_tables">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">parse_slide_annotations_into_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">slide_annotations</span></em>, <em class="sig-param"><span class="n">cropping_bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cropping_polygon_vertices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_shapely</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#parse_slide_annotations_into_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.parse_slide_annotations_into_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a slide annotation list, parse into convenient tabular format.</p>
+<p>If the annotation is a point, then it is just treated as if it is a
+rectangle with zero area (i.e. xmin=xmax). Rotated rectangles are treated
+as polygons for simplicity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slide_annotations</strong> (<em>list of dicts</em>) – response from server request</p></li>
+<li><p><strong>cropping_bounds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if given, must have keys XMIN, XMAX, YMIN, YMAX. These are the
+bounds to which the polygons may be cropped using shapely,
+if the param use_shapely is True. Otherwise, the polygon
+coordinates are just shifted relative to these bounds without
+actually cropping.</p></li>
+<li><p><strong>cropping_polygon_vertices</strong> (<em>nd array</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if given, is an (m, 2) nd array of vertices to crop bounds.
+if the param use_shapely is True. Otherwise, the polygon
+coordinates are just shifted relative to these bounds without
+actually cropping.</p></li>
+<li><p><strong>use_shapely</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – see cropping_bounds description.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>Pandas DataFrame</em> – Summary of key properties of the annotation documents. It has the
+following columns:
+- annotation_girder_id
+- _modelType
+- _version
+- itemId
+- created
+- creatorId
+- public
+- updated
+- updatedId
+- groups
+- element_count
+- element_details</p></li>
+<li><p><em>Pandas DataFrame</em> – The individual annotation elements (polygons, points, rectangles).
+The columns annidx and elementidx encode the dict index of annotation
+document and element, respectively, in the original slide_annotations
+list of dictionaries. It has the following columns:</p>
+<ul>
+<li><p>annidx</p></li>
+<li><p>annotation_girder_id</p></li>
+<li><p>elementidx</p></li>
+<li><p>element_girder_id</p></li>
+<li><p>type</p></li>
+<li><p>group</p></li>
+<li><p>label</p></li>
+<li><p>color</p></li>
+<li><p>xmin</p></li>
+<li><p>xmax</p></li>
+<li><p>ymin</p></li>
+<li><p>ymax</p></li>
+<li><p>bbox_area</p></li>
+<li><p>coords_x</p></li>
+<li><p>coords_y</p></li>
+</ul>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.rotate_point_list">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">rotate_point_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">point_list</span></em>, <em class="sig-param"><span class="n">rotation</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">(0, 0)</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#rotate_point_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.rotate_point_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate a certain point list around a central point. Modified from.</p>
+<p>javascript version at: <a class="reference external" href="https://github.com/girder/large_image/blob/master/">https://github.com/girder/large_image/blob/master/</a>
+… web_client/annotations/rotate.js.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_list</strong> (<em>list of tuples</em>) – (x,y) coordinates</p></li>
+<li><p><strong>rotation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – degrees (in radians)</p></li>
+<li><p><strong>center</strong> (<em>tuple of ints</em>) – central point coordinates</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of tuples</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_and_mask_utils.scale_slide_annotations">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_and_mask_utils.</code><code class="sig-name descname">scale_slide_annotations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">slide_annotations</span></em>, <em class="sig-param"><span class="n">sf</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_and_mask_utils.html#scale_slide_annotations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_and_mask_utils.scale_slide_annotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scales up or down annotations in a slide.</p>
+<p>Works in place, but returns slide_annotations anyways.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slide_annotations</strong> (<em>list of dicts</em>) – response from server request</p></li>
+<li><p><strong>sf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – scale factor to multiply coordinates</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of dicts</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="histomicstk.annotations_and_masks.polygon_merger.html" class="btn btn-neutral float-right" title="Working with tiles and merging polygons" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="histomicstk.annotations_and_masks.masks_to_annotations_handler.html" class="btn btn-neutral float-left" title="Converting masks back to annotations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Kitware, Inc..
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,436 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>histomicstk.segmentation &mdash; HistomicsTK 0.1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="histomicstk.segmentation.label" href="histomicstk.segmentation.label.html" />
+    <link rel="prev" title="histomicstk.filters.shape" href="histomicstk.filters.shape.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HistomicsTK
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">segmentation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.label.html">label mask processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.level_set.html">level-set segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.nuclear.html">nuclei segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.positive_pixel_count.html">positive pixel counting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="api-docs.html">API Documentation</a> &raquo;</li>
+        
+          <li><a href="histomicstk.html">histomicstk</a> &raquo;</li>
+        
+      <li>histomicstk.segmentation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/histomicstk.segmentation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-histomicstk.segmentation">
+<span id="histomicstk-segmentation"></span><h1>histomicstk.segmentation<a class="headerlink" href="#module-histomicstk.segmentation" title="Permalink to this headline">¶</a></h1>
+<p>This package contains functions for segmenting a variety of objects/structures
+(e.g. nuclei, tissue, cytoplasm) found in histopathology images.</p>
+<dl class="py function">
+<dt id="histomicstk.segmentation.embed_boundaries">
+<code class="sig-prename descclassname">histomicstk.segmentation.</code><code class="sig-name descname">embed_boundaries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">im_input</span></em>, <em class="sig-param"><span class="n">im_perim</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/embed_boundaries.html#embed_boundaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.segmentation.embed_boundaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Embeds object boundaries into an RGB color, grayscale or binary
+image, returning a color rendering of the image and object
+boundaries.</p>
+<p>Takes as input a grayscale or color image, a perimeter mask of object
+boundaries, and an RGB triplet, and embeds the object boundaries into
+the input image at the prescribed color. Returns a color RGB image of
+type unsigned char. If the input image is type double, and has pixels
+inside range [0, 1], then it will be scaled to the range [0, 255].
+Otherwise it will be assumed to be in the range of an unsigned char
+image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_input</strong> (<em>array_like</em>) – A color or grayscale image.</p></li>
+<li><p><strong>im_perim</strong> (<em>array_like</em>) – A binary image where object perimeter pixels have value 1, and
+non-perimeter pixels have value 0.</p></li>
+<li><p><strong>color</strong> (<em>array_like</em>) – A 1 x 3 array of RGB values in the range [0, 255].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>im_embed</strong> – A color image of type unsigned char where boundary pixels take
+on the color defined by the RGB-triplet ‘color’.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.segmentation.label.html#histomicstk.segmentation.label.perimeter" title="histomicstk.segmentation.label.perimeter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.perimeter</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.segmentation.rag">
+<code class="sig-prename descclassname">histomicstk.segmentation.</code><code class="sig-name descname">rag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">im_label</span></em>, <em class="sig-param"><span class="n">neigh_conn</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/rag.html#rag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.segmentation.rag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a region adjacency graph for a label image using either
+4-neighbor or 8-neighbor connectivity. Background pixels are not included
+(im_label == 0). Not intended to build large graphs from individual pixels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_label</strong> (<em>array_like</em>) – im_label image where positive values (im_label &gt; 0) correspond to foreground
+objects of interest.</p></li>
+<li><p><strong>neigh_conn</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – The neighbor connectivity to use, either ‘4’ or ‘8’. Default value = 4.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>adj_mat</strong> – A binary matrix of size N x N, where N is the number of objects in
+im_label. A value of ‘True’ at adj_mat(i,j) indicates that objects ‘i’
+and ‘j’ are neigh_conn.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.segmentation.rag_add_layer">
+<code class="sig-prename descclassname">histomicstk.segmentation.</code><code class="sig-name descname">rag_add_layer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adj_mat</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/rag_add_layer.html#rag_add_layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.segmentation.rag_add_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an additional layer of dependence to a region adjacency graph,
+connecting each node to the neighbors of its immediate neighbors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>adj_mat</strong> (<em>array_like</em>) – A binary matrix of size N x N, where N is the number of objects in
+Label. A value of ‘True’ at adj_mat(i,j) indicates that objects ‘i’
+and ‘j’ are neighbors.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>Layered</strong> – A version of ‘adj_mat’ with additional edges to connect 2-neighbors.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.segmentation.rag" title="histomicstk.segmentation.rag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.rag</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.segmentation.rag_color">
+<code class="sig-prename descclassname">histomicstk.segmentation.</code><code class="sig-name descname">rag_color</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adj_mat</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/rag_color.html#rag_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.segmentation.rag_color" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a coloring of an adjacency graph using the sequential coloring
+algorithm. Used to bin regions from a label image into a small number of
+independent groups that can be processed separately with algorithms like
+multi-label graph cuts or individual active contours. The rationale is to
+color adjacent objects with distinct colors so that their contours can be
+co-evolved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>adj_mat</strong> (<em>array_like</em>) – A binary matrix of size N x N, where N is the number of objects in
+Label. A value of ‘True’ at adj_mat(i,j) indicates that objects ‘i’
+and ‘j’ are neighbors. Does not contain entries for background objects.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>Colors</strong> – A list of colors for the objects encoded in ‘adj_mat’. No two objects
+that are connected in ‘adj_mat’ will share the same color.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.segmentation.rag" title="histomicstk.segmentation.rag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.rag</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.rag_add_layer" title="histomicstk.segmentation.rag_add_layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.rag_add_layer</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.segmentation.simple_mask">
+<code class="sig-prename descclassname">histomicstk.segmentation.</code><code class="sig-name descname">simple_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">im_rgb</span></em>, <em class="sig-param"><span class="n">bandwidth</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">bgnd_std</span><span class="o">=</span><span class="default_value">2.5</span></em>, <em class="sig-param"><span class="n">tissue_std</span><span class="o">=</span><span class="default_value">30</span></em>, <em class="sig-param"><span class="n">min_peak_width</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">max_peak_width</span><span class="o">=</span><span class="default_value">25</span></em>, <em class="sig-param"><span class="n">fraction</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">min_tissue_prob</span><span class="o">=</span><span class="default_value">0.05</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/simple_mask.html#simple_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.segmentation.simple_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs segmentation of the foreground (tissue)
+Uses a simple two-component Gaussian mixture model to mask tissue areas
+from background in brightfield H&amp;E images. Kernel-density estimation is
+used to create a smoothed image histogram, and then this histogram is
+analyzed to identify modes corresponding to tissue and background. The
+mode peaks are then analyzed to estimate their width, and a constrained
+optimization is performed to fit gaussians directly to the histogram
+(instead of using expectation-maximization directly on the data which
+is more prone to local minima effects). A maximum-likelihood threshold
+is then derived and used to mask the tissue area in a binarized image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_rgb</strong> (<em>array_like</em>) – An RGB image of type unsigned char.</p></li>
+<li><p><strong>bandwidth</strong> (<em>double</em><em>, </em><em>optional</em>) – Bandwidth for kernel density estimation - used for smoothing the
+grayscale histogram. Default value = 2.</p></li>
+<li><p><strong>bgnd_std</strong> (<em>double</em><em>, </em><em>optional</em>) – Standard deviation of background gaussian to be used if
+estimation fails. Default value = 2.5.</p></li>
+<li><p><strong>tissue_std</strong> (<em>double</em><em>, </em><em>optional</em>) – Standard deviation of tissue gaussian to be used if estimation fails.
+Default value = 30.</p></li>
+<li><p><strong>min_peak_width</strong> (<em>double</em><em>, </em><em>optional</em>) – Minimum peak width for finding peaks in KDE histogram. Used to
+initialize curve fitting process. Default value = 10.</p></li>
+<li><p><strong>max_peak_width</strong> (<em>double</em><em>, </em><em>optional</em>) – Maximum peak width for finding peaks in KDE histogram. Used to
+initialize curve fitting process. Default value = 25.</p></li>
+<li><p><strong>fraction</strong> (<em>double</em><em>, </em><em>optional</em>) – Fraction of pixels to sample for building foreground/background
+model. Default value = 0.10.</p></li>
+<li><p><strong>min_tissue_prob</strong> (<em>double</em><em>, </em><em>optional</em>) – Minimum probability to qualify as tissue pixel. Default value = 0.05.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>im_mask</strong> – A binarized version of <cite>I</cite> where foreground (tissue) has value ‘1’.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.sample_pixels" title="histomicstk.utils.sample_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.utils.sample_pixels</span></code></a></p>
+</div>
+</dd></dl>
+
+<p>** Sub-packages **</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.segmentation.label.html">label mask processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.segmentation.level_set.html">level-set segmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.segmentation.nuclear.html">nuclei segmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.segmentation.positive_pixel_count.html">positive pixel counting</a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="histomicstk.segmentation.label.html" class="btn btn-neutral float-right" title="histomicstk.segmentation.label" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="histomicstk.filters.shape.html" class="btn btn-neutral float-left" title="histomicstk.filters.shape" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Kitware, Inc..
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

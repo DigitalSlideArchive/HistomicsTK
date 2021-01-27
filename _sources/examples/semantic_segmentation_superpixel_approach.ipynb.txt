@@ -1,0 +1,621 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Finding cellular regions with superpixel analysis\n",
+    "\n",
+    "**Overview:**\n",
+    "\n",
+    "Whole-slide images often contain artifacts like marker or acellular regions that\n",
+    "need to be avoided during analysis. In this example we show how HistomicsTK can\n",
+    "be used to develop saliency detection algorithms that segment the slide at low\n",
+    "magnification to generate a map to guide higher magnification analyses. Here we\n",
+    "show how superpixel analysis can be used to locate hypercellular regions that\n",
+    "correspond to tumor-rich content.\n",
+    "\n",
+    "This uses Simple Linear Iterative Clustering (SLIC) to get superpixels at a low\n",
+    "slide magnification to detect cellular regions. The first step of this pipeline\n",
+    "detects tissue regions (i.e. individual tissue pieces) using the `get_tissue_mask`\n",
+    " method of the `histomicstk.saliency` module. Then, each tissue piece is processed\n",
+    " separately for accuracy and disk space efficiency. It is important to keep in\n",
+    " mind that this does NOT rely on a tile iterator, but loads the entire tissue\n",
+    " region (but NOT the whole slide) in memory and passes it on to\n",
+    " `skimage.segmentation.slic` method. Not using a tile iterator helps keep the\n",
+    " superpixel sizes large enough to correspond to tissue boundaries.\n",
+    "\n",
+    "Once superpixels are segmented, the image is deconvolved and features are extracted from the hematoxylin channel. Features include intensity and possibly also texture features. Then, a mixed component Gaussian mixture model is fit to the features, and median intensity is used to rank superpixel clusters by 'cellularity' (since we are working with the hematoxylin channel).\n",
+    "\n",
+    "Note that the decison to fit a gaussian mixture model instead of using K-means clustering is a design choice. If you'd like to experiment, feel free to try other methods of classifying superpixels into clusters using other approaches.\n",
+    "\n",
+    "Additional functionality includes contour extraction to get the final segmentation boundaries of cellular regions and to visualize them in HistomicsUI using one's preferred colormap.\n",
+    "\n",
+    "**Here are some sample results:**\n",
+    "\n",
+    "From left to right: Slide thumbnail, superpixel classifications, contiguous cellular/acellular regions\n",
+    "\n",
+    "![cdetection](https://user-images.githubusercontent.com/22067552/65730355-7e92b600-e08f-11e9-918a-507f117f6d77.png)\n",
+    "\n",
+    "**Where to look?**\n",
+    "\n",
+    "```\n",
+    "|_ histomicstk/\n",
+    "  |_saliency/\n",
+    "     |_cellularity_detection.py \n",
+    "     |_tests/\n",
+    "        |_test_saliency.py\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import tempfile\n",
+    "import girder_client\n",
+    "import numpy as np\n",
+    "from histomicstk.annotations_and_masks.annotation_and_mask_utils import (\n",
+    "    delete_annotations_in_slide)\n",
+    "from histomicstk.saliency.cellularity_detection_superpixels import (\n",
+    "    Cellularity_detector_superpixels)\n",
+    "\n",
+    "import matplotlib.pylab as plt\n",
+    "from matplotlib.colors import ListedColormap\n",
+    "%matplotlib inline\n",
+    "\n",
+    "# color map\n",
+    "vals = np.random.rand(256,3)\n",
+    "vals[0, ...] = [0.9, 0.9, 0.9]\n",
+    "cMap = ListedColormap(1 - vals)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Prepwork"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "APIURL = 'http://candygram.neurology.emory.edu:8080/api/v1/'\n",
+    "SAMPLE_SLIDE_ID = \"5d586d76bd4404c6b1f286ae\"\n",
+    "# SAMPLE_SLIDE_ID = \"5d8c296cbd4404c6b1fa5572\"\n",
+    "\n",
+    "gc = girder_client.GirderClient(apiUrl=APIURL)\n",
+    "gc.authenticate(apiKey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')\n",
+    "\n",
+    "# This is where the run logs will be saved\n",
+    "logging_savepath = tempfile.mkdtemp()\n",
+    "\n",
+    "# color normalization values from TCGA-A2-A3XS-DX1\n",
+    "cnorm_thumbnail = {\n",
+    "    'mu': np.array([9.24496373, -0.00966569,  0.01757247]),\n",
+    "    'sigma': np.array([0.35686209, 0.02566772, 0.02500282]),\n",
+    "}\n",
+    "# from the ROI in Amgad et al, 2019\n",
+    "cnorm_main = {\n",
+    "    'mu': np.array([8.74108109, -0.12440419,  0.0444982]),\n",
+    "    'sigma': np.array([0.6135447, 0.10989545, 0.0286032]),\n",
+    "}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# deleting existing annotations in target slide (if any)\n",
+    "delete_annotations_in_slide(gc, SAMPLE_SLIDE_ID)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Initialize the cellularity detector"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Init Cellularity_Detector_Superpixels object.\n",
+      "\n",
+      "        Arguments:\n",
+      "        -----------\n",
+      "        gc : object\n",
+      "            girder client object\n",
+      "        slide_id : str\n",
+      "            girder ID of slide\n",
+      "        verbose : int\n",
+      "            0 - Do not print to screen\n",
+      "            1 - Print only key messages\n",
+      "            2 - Print everything to screen\n",
+      "            3 - print everything including from inner functions\n",
+      "        monitorPrefix : str\n",
+      "            text to prepend to printed statements\n",
+      "        logging_savepath : str or None\n",
+      "            where to save run logs\n",
+      "        suppress_warnings : bool\n",
+      "            whether to suppress warnings\n",
+      "        cnorm_params : dict\n",
+      "            Reinhard color normalization parameters. Accepted keys: thumbnail\n",
+      "            and main (since thumbnail normalization is different from color\n",
+      "            normalization of tissue at target magnification. Each entry is a\n",
+      "            dict containing values for mu and sigma. This is either given\n",
+      "            here or can be set using self.set_color_normalization_values().\n",
+      "            May be left unset if you do not want to normalize.\n",
+      "        get_tissue_mask_kwargs : dict\n",
+      "            kwargs for the get_tissue_mask() method.\n",
+      "        MAG : float\n",
+      "            magnification at which to detect cellularity\n",
+      "        spixel_size_baseMag : int\n",
+      "            approximate superpixel size at base (scan) magnification\n",
+      "        compactness : float\n",
+      "            compactness parameter for the SLIC method. Higher values result\n",
+      "            in more regular superpixels while smaller values are more likely\n",
+      "            to respect tissue boundaries.\n",
+      "        deconvolve : bool\n",
+      "            Whether to deconvolve and use hematoxylin channel for feature\n",
+      "            extraction. Must be True to ranks spixel clusters by cellularity.\n",
+      "        use_grayscale : bool\n",
+      "            If True, grayscale image is used with SLIC. May be more robust to\n",
+      "            color variations from slide to slide and more efficient.\n",
+      "        use_intensity : bool\n",
+      "            Whether to extract intensity features from the hematoxylin channel.\n",
+      "            This must be True to rank spuerpixel clusters by cellularity.\n",
+      "        use_texture : bool\n",
+      "            Whether to extract Haralick texture features from Htx channel. May\n",
+      "            not necessarily improve results when used in conjunction with\n",
+      "            intensity features.\n",
+      "        keep_feats : list\n",
+      "            Name of intensity features to use. See\n",
+      "            histomicstk.features.compute_intensity_features.\n",
+      "            Using fewer informative features may result in better\n",
+      "            gaussian mixture modeling results.\n",
+      "        n_gaussian_components : int\n",
+      "            no of gaussian mixture model components\n",
+      "        max_cellularity : int\n",
+      "            Range [0, 100] or None. If None, normalize visualization RGB values\n",
+      "            for each tissue piece separately, else normalize by given number.\n",
+      "        opacity : float\n",
+      "            opacity of superpixel polygons when posted to DSA.\n",
+      "            0 (no opacity) is more efficient to render.\n",
+      "        opacity_contig : float\n",
+      "            opacity of contiguous region polygons when posted to DSA.\n",
+      "            0 (no opacity) is more efficient to render.\n",
+      "        lineWidth : float\n",
+      "            width of line when displaying superpixel boundaries.\n",
+      "        cMap : object\n",
+      "            matplotlib color map to use when visualizing cellularity\n",
+      "        visualize_tissue_boundary : bool\n",
+      "            whether to visualize result from tissue detection component\n",
+      "        visualize_spixels : bool\n",
+      "            whether to visualize superpixels, color-coded by cellularity\n",
+      "        visualize_contiguous : bool\n",
+      "            whether to visualize contiguous cellular regions\n",
+      "\n",
+      "        \n"
+     ]
+    }
+   ],
+   "source": [
+    "print(Cellularity_detector_superpixels.__init__.__doc__)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In this example, and as the default behavior, we use a handful of informative intensity features extracted from the hematoxylin channel after color deconvolution to fit a gaussian mixture model. Empirically (on a few test slides), this seems to give better results than using the full suite of intensity and texture features available. Feel free to experiment with this and find the optimum combination of features for your application. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Saving logs to: /tmp/tmpt7dygwhf/2019-09-29_18-04.log\n"
+     ]
+    }
+   ],
+   "source": [
+    "# init cellularity detector\n",
+    "cds = Cellularity_detector_superpixels(\n",
+    "    gc, slide_id=SAMPLE_SLIDE_ID,\n",
+    "    MAG=3.0, compactness=0.1, spixel_size_baseMag=256 * 256,\n",
+    "    max_cellularity=40,\n",
+    "    visualize_spixels=True, visualize_contiguous=True,\n",
+    "    get_tissue_mask_kwargs={\n",
+    "        'deconvolve_first': False,\n",
+    "        'n_thresholding_steps': 2,\n",
+    "        'sigma': 1.5,\n",
+    "        'min_size': 500, },\n",
+    "    verbose=2, monitorPrefix='test',\n",
+    "    logging_savepath=logging_savepath)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Set the color normalization values\n",
+    "\n",
+    "You can choose to reinhard color normalize the slide thumbnail and/or the tissue image at target magnificaion. You can either provide the mu and sigma values directly or provide the path to an image from which to infer these values. Please refer to the *color_normalization* module for reinhard normalization implementation details. In this example, we use a \"high-sensitivity, low-specificity\" strategy to detect tissue, followed by the more specific cellularity detection module. In other words, the *tissue_detection* module is used to detect all tissue, and only exclude whitespace and marker. Here we do NOT perform color normalization before tissue detection (empirically gives worse results), but we do normalize when detecting the cellular regions within the tissue. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# set color normalization for thumbnail\n",
+    "# cds.set_color_normalization_values(\n",
+    "#     mu=cnorm_thumbnail['mu'],\n",
+    "#     sigma=cnorm_thumbnail['sigma'], what='thumbnail')\n",
+    "\n",
+    "# set color normalization values for main tissue\n",
+    "cds.set_color_normalization_values(\n",
+    "    mu=cnorm_main['mu'], sigma=cnorm_main['sigma'], what='main')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Run the detector"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Run cellularity detection and optionally visualize result.\n",
+      "\n",
+      "        This runs the cellularity detection +/- visualization pipeline and\n",
+      "        returns a list of CD_single_tissue_piece objects. Each object has\n",
+      "        the following attributes\n",
+      "\n",
+      "        tissue_mask : np array\n",
+      "            mask of where tissue is at target magnification\n",
+      "        ymin : int\n",
+      "            min y coordinate at base (scan) magnification\n",
+      "        xmin : int\n",
+      "            min x coordinate at base (scan) magnification\n",
+      "        ymax : int\n",
+      "            max y coordinate at base (scan) magnification\n",
+      "        xmax : int\n",
+      "            max x coordinate at base (scan) magnification\n",
+      "        spixel_mask : np array\n",
+      "            np array where each unique value represents one superpixel\n",
+      "        fdata : pandas DataFrame\n",
+      "            features extracted for each superpixel. Index corresponds to\n",
+      "            values in the spixel_mask. This includes a 'cluster' column\n",
+      "            indicatign which cluster this superpixel belongs to.\n",
+      "        cluster_props : dict\n",
+      "            properties of each superpixel cluster, including its assigned\n",
+      "            cellularity score.\n",
+      "\n",
+      "        \n"
+     ]
+    }
+   ],
+   "source": [
+    "print(cds.run.__doc__)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "test: set_slide_info_and_get_tissue_mask()\n",
+      "test: Tissue piece 1 of 2\n",
+      "test: Tissue piece 1 of 2: set_tissue_rgb()\n",
+      "test: Tissue piece 1 of 2: set_superpixel_mask()\n",
+      "test: Tissue piece 1 of 2: set_superpixel_features()\n",
+      "test: Tissue piece 1 of 2: set_superpixel_assignment()\n",
+      "test: Tissue piece 1 of 2: assign_cellularity_scores()\n",
+      "test: Tissue piece 1 of 2: visualize_individual_superpixels()\n",
+      "test: Tissue piece 1 of 2: Posting doc 1 of 5\n",
+      "test: Tissue piece 1 of 2: Posting doc 2 of 5\n",
+      "test: Tissue piece 1 of 2: Posting doc 3 of 5\n",
+      "test: Tissue piece 1 of 2: Posting doc 4 of 5\n",
+      "test: Tissue piece 1 of 2: Posting doc 5 of 5\n",
+      "test: Tissue piece 1 of 2: visualize_contiguous_superpixels()\n",
+      "test: Tissue piece 1 of 2: Posting doc 1 of 5\n",
+      "test: Tissue piece 1 of 2: Posting doc 2 of 5\n",
+      "test: Tissue piece 1 of 2: Posting doc 3 of 5\n",
+      "test: Tissue piece 1 of 2: Posting doc 4 of 5\n",
+      "test: Tissue piece 1 of 2: Posting doc 5 of 5\n",
+      "test: Tissue piece 2 of 2\n",
+      "test: Tissue piece 2 of 2: set_tissue_rgb()\n",
+      "test: Tissue piece 2 of 2: set_superpixel_mask()\n",
+      "test: Tissue piece 2 of 2: set_superpixel_features()\n",
+      "test: Tissue piece 2 of 2: set_superpixel_assignment()\n",
+      "test: Tissue piece 2 of 2: assign_cellularity_scores()\n",
+      "test: Tissue piece 2 of 2: visualize_individual_superpixels()\n",
+      "test: Tissue piece 2 of 2: Posting doc 1 of 5\n",
+      "test: Tissue piece 2 of 2: Posting doc 2 of 5\n",
+      "test: Tissue piece 2 of 2: Posting doc 3 of 5\n",
+      "test: Tissue piece 2 of 2: Posting doc 4 of 5\n",
+      "test: Tissue piece 2 of 2: Posting doc 5 of 5\n",
+      "test: Tissue piece 2 of 2: visualize_contiguous_superpixels()\n",
+      "test: Tissue piece 2 of 2: Posting doc 1 of 5\n",
+      "test: Tissue piece 2 of 2: Posting doc 2 of 5\n",
+      "test: Tissue piece 2 of 2: Posting doc 3 of 5\n",
+      "test: Tissue piece 2 of 2: Posting doc 4 of 5\n",
+      "test: Tissue piece 2 of 2: Posting doc 5 of 5\n"
+     ]
+    }
+   ],
+   "source": [
+    "tissue_pieces = cds.run()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Check the results\n",
+    "\n",
+    "The resultant list of objects correspond to the results for each \"tissue piece\" detected in the slide. You may explore various attributes like the offset coordinates, tissue mask, superpixel labeled mask, superpixel feature data, and superpixel cluster properties."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<matplotlib.image.AxesImage at 0x7f7d1a3c0c50>"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "plt.imshow(tissue_pieces[0].tissue_mask, cmap=cMap)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<matplotlib.image.AxesImage at 0x7f7d1c35ad10>"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAYQAAACdCAYAAAC0Ew80AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAADh0RVh0U29mdHdhcmUAbWF0cGxvdGxpYiB2ZXJzaW9uMy4xLjEsIGh0dHA6Ly9tYXRwbG90bGliLm9yZy8QZhcZAAAgAElEQVR4nO2dd3gUxR/G3yEQmnQCSBekSSBI7wI/QIoISBWkSUeKohJUSmjSe4fQgiAElN6RIEU6UhKalAChht77/P7Ym70tM7t7JSEh+3mefW53dm5375Lbd9/vdwqhlMLGxsbGxibR274AGxsbG5u4gS0INjY2NjYAbEGwsbGxsXFgC4KNjY2NDQBbEGxsbGxsHNiCYGNjY2MD4C0IAiGkFiHkNCHkLCGkb2yf38bGxsaGD4nNfgiEEB8AZwDUABAF4ACALymlJ2LtImxsbGxsuMS2QygN4Cyl9Dyl9AWAJQDqx/I12NjY2NhwiG1ByAbgsmI7ylFmY2NjY/OWSfy2L0ALIaQTgE6O9RKJE8e5S7SxsbGJ07x8+fIWpdTP1ffF9t32CoAciu3sjjIZSuksALMAwNfXl2bMmDH2rs7GxsbmHeDatWsX3XlfbIeMDgDIRwj5gBDiC6A5gNWxfA02NjY2Nhxi1SFQSl8RQroD2ATAB8BcSmlEbF6DN4js+T4AYOSRZnLZ9B0T3tbl2NjY2HiFWA/QU0rXA1gf2+eNCQKLLZXXp+94ixdiY2Nj4wXsjK2XiOz5vuwYbLdgY2MTH7GHrrCxsbGxAWALgluMPNJMlT+wsbGxeRewQ0Yu0LXyt8J9WTr74PrMpcjS2QfJCsfiRdnY2Nh4CVsQPIC5hPHTlwOQRMHGxsYmvhKrg9u5SlzomDYn+FMAwMGQQpbqM3EAgGSFo2LkmuIyyWgBpL66hrtv/8hPuOW5J12LyUuysUlwXLt27RCltKSr77MdgkVKtj6p2rYqEDY2NjbxBTup7EWU7iAh8yBrvbd9CTY2Nm5gh4w4LMtZD1cbvsZ7RV4b1lO6hPHTl+O7ro0xfvpyfP/tdwCAqVu+j9HrjEtkunLGUj1R2AiwQ0c2Nt7C3ZCR7RAMeHTcepJYKwY2eozEwMbG5u1j5xAULMsphTquNjR2BiK+69oYSOrNK4rbJK9n/XnCihiwMaL+HldQLmuTOMz1C7OxsXELWxAU8ITg0XEf09ARI1HSHOaV3kFSzTjltWMpxcDGxiZ2sQXBBKtikBCxKgSuhIr6lJCmxxh1yJ5Iz8YmtknwSeWJveoY7reaWDZyB8tvzsSNo9aSrvEBFiqyIghWxKDM36lM68x8uMe0ToPzGUzrKGF9TLRkON4SKcf+CwAYeaoqt07nOrMtn6fJJX6/DBubmMJOKnvA7+Hp5UXLo+M+psllkRgsvzkTy2/O9Mo1xjW0YhC5IlOMnq9zqnIxenwlt4sswqX5J8TX4oIY2NjEJxJ8yIgnAjFB5oD8uNBxP1J0Txsr5/M22gQyTwAiV2RC7oY330pronF/BKKyYF/vRiN1Zbd/bhGzF6SANVb4hhTh7t/9pAAAIF90m1i7JhsbHrZDMMBMLA4vrWnoDt5lMmzifzfuiMG+Tx5aqtc5VTmXnELvRiO5YmAVkUuYub6jW8ebSo9zy0cF/YBRQT+4dUwbG2+S4B2Clt/D0+NL/zvyNsshaFsbHV5aU15nN//GmTpzheBCx/0xdblvjduf3uGWZ8p/EjfPFEJqf2dS+EH4FdPj7fvkoaVcAqAOH818uAfj/gjk1hv3R6BOEFx1Bs2XlcKSJgfkV/m8GlFwJ4xUv48derKJWySopHKHdSm45eHjvpDXeWLAgycIPIzEIK6Hj5blrIfWAeuE+0Wi8My3urzOxIAJhJE4MEGoM3Qv1vcrizpD96r2r+9XVvceI0FgMFGwKgb08nzhPqUoMBGYub6jy4KwOXCveSUAI5PkAgAEvryo2gaA9J0OunROm4SDnVS2QNn95yzVEyWYebzroSEtnW8lUb1qUYoBIAmBK2JghFYgAO8nm43EAJAcA2Pm+o7YnW2zLAa7s22W9/lsHOzV6xqZJJdKDGxsYoIEETIKHiiNkbO3dF7Tur+Hp0fHL6MN6yjdwbsIS4KK3IFWDH5elBkn0nfHkvp/u31OV0JG7hCTSWSRECjXX9cagNlF8qPjcan5cc2RZS27BBF3ZjkfAP+8om7amr7ZddX2Fx997NG5bBIGCcYhZAirzS0PH/cFUifLrFqM0IpB40yddXVmpEmBCx33v5O5AyU/L8osiwEANF/1CZqv8qyFEXMBPDfgDp4klc3w79hEV7ajvT6sBQCzi+SXX9m6N9AKAePO0ixeO4dNwiHBCAIA1B2ZX14YIgFYusIfS1f4y9uHl9YUOgOlKMxII+UpNoVWwabQKnK5cj0+YJQ70PLRnSnyupFLuN0ksbzwWD/lKbqnDbB+kQ5Ot92hevUEkqOtR++vPMeakM0ukh8X17f26FwMnihoHYKNjRXe2ZARCxNlCKsNhBXT7WeiMJ0TpWBC0KxhuEvnZGJglSdT7gGIe8llV8RAy4VCNyzVu90kMTIse6XaZnRPG4Ap9466dF5viAGDiYIon8BzBkbM+PE34b6L61sjV50Q4f7AlxcxMkkuTOlSGt1n7MeULqXVFfqLHYJSFP48IfW8DveX8h3dZ0juNft7HfGkhd7l2iRMPBIEQkgkgIcAXgN4RSktSQhJD2ApgNwAIgE0pZTeJYQQABMB1AHwBEBbSulhT87vDXJ2m45L07rqyl0Rg+rPF6K6QAy0LuHTpttdvcS3yqRve8nrEf2mefXYt5skRnQdKdHs10Q8dtH+nGU8PleGXxdbziMQcgNvLm1AopzOMOObSxvkdf+akQjfnNvja2LwRCFHjya4PHkZAMgioBMDAVeHDHG8zoZ/eEdZBLRkf8+9/hQ27y7ecAhVKaW3FNt9AfxFKR1BCOnr2A4EUBtAPsdSBsB0x6tXyRzAwkHXhHkDLTm7TQcArjAA5knkrUlbofrzhabnEYnBkyn3MHSB1Fv11wPWnrBjkl19pJvz4ReNY/xcfuuzyaKgpHvaALROnUxXnjGE4lZroiorML+yJYfAEwVCboDSzCBE/b2LxMCbQiDins8I5MAh5OjhmhMBnGLAEImBJC5HMeK3AKRY7GwplzRim67ud8P1Y0QNeOPdhwObuEFM5BDqA1jgWF8AoIGiPIRK7AWQlhDyvrdPXul6fQxrIMWxF52ugUWna1h+LxMGAKr8wc1GaXGzkXFYZ2vSVtiatJVhHV4eofWQYWg9ZJjla4wNDr9oLBSDwkO7qbajzvf06Fw8MTAjY4i+70yB+ZVRYL5+8AptH4UMvy7W1dGKgSeIkspG5KoTgns+I+SlSLdDbp8/a//+luuO+M1avmb8T7fdvRybeIanDoEC2EwIoQBmUkpnAchMKWVzIV4HwLK22QBcVrw3ylHm9XkTN84Y5/Z7S/V64TzO+aaqfUwUMv1xz+3jA4hzAqCluO9yriAwMSg8tBs2tXD+67BWRgDw04imGN431PQc7giBJ/B6LZ/PmR+A5CjzXt4pfG+inLVVLoFHykGd5PVDUXNRIvvXhrkDRpp6H+EeRqjKjk8rYVkUrg4ZohIBrUMQ8XyjD/rWkhzCdxnDMf6Wv7AuzyHYvJt4KggVKaVXCCGZAGwhhKiGwKSUUodYWIYQ0glAJwDw8bE+haWIlgW2qLZzHf0YFwP+ldeBM8icpD1uvJyjqnfmvD4RbcSYflLb/er9pdBRrSHSTXFjf7WobAqtgkWc97c+NAwhJX5x6Zze5NBO9ZhMIlHgkfpgIjwo+UZVZlUYGNF1rsBvvXtzILBwEc8hAHyXcGBGkKrsXI5KQlFwRQwYh6LmolQv4MBEX5Tq9QIHJvqq9qep95HhMV0RBYZVMeDBE4XMDaXJihY3dJa1KB2NY34p0Rg/co9TNPqxavv4tBKG513Wpb0bV2sTU3gkCJTSK47Xm4SQFQBKA7hBCHmfUnrNERK66ah+BYDyrpPdUaY95iwAswBp6ApPrg9gN31xWbcWzQA8wh/L1P+Y+fMccVkUAKcQuEPrQ8PwKzq4/X5PGBERBADoW1h6ZWJQqUZhAMDOLRGWj/XTiKbyqyuiYBVtDkG3f8kWZGxuPVTIOJejEgC+W2A5Bf+aG3Chwq9y+eOBswyPyRxnqV4vMPaWMkRDUe+B8eewiqtC8Hyjj/z6HZyNJ3j5Ay2L9/vBv+4Ty+cq0u2QqSjYxB3cziEQQlISQlKxdQA1AYQDWA2AjePbBsAqx/pqAK2JRFkA9xWhpbdOoyaPYuS4VgRiaHSBGDm3O7Ray/+XqFSjsCwOynCRu8fv3S0HendzPh+46w4YGWo9x60lW3BrieQI2TrbdgUmDAxlglm5DvDdgZaxtwI0YiCxJrXx887S9jNMj+3q+5gY8Oj2iXNIc+YOeIQLxgTTugOGyOlsvbyZW27z9vDEIWQGsEJqTYrEABZTSjcSQg4ACCWEtAdwEQCLmayH1OT0LKRmp+08OHeM0KjJI/yx7D2X35d95WOgn3eu4VSiYABAwTdvxykoYQKgxKoYRPkvF+5Tik7vbjkwbtplYV2GmSu4vTEpMtR6zn/vki34dZmzhbM2XMTjXI5KWLlsKr4vWxRj9x7D92WLmr7Hm5w4JDUJXdp+BprN6eLWMZTCwI6RtNZrQ1Fg3FjhjP4aiYOSY34puaLAcwhMDNL90kx4POV5T5UcZOkabDzDbYdAKT1PKQ1wLIUppcMc5bcppf+jlOajlFanlN5xlFNK6TeU0ryU0iKU0jg5VKPSKeTPc0ReZ4lkZUI5+8rHkhgAmFByieFxaw0J5bqFuOQOIi5IY++0WpuIKwZGpD7o3QZryianZmJgRsbmNfBzk+L4uUlxS/Xfq+CH9yr44asJQRi79xgAyK8AsHLZVMvn5jkDJWtSU6xJTVG1yAJ5YWLAcMcpaN+ztP0MJHmYBUkeZsF7FfxcPp632Hp5syVnYFWEbLzLO9FTuXFmfoILANq+75yUZP61IvL2/Gv82auMHIJZ6yImCt8ebK4qVwpBrSGhaNU07oyDX7ijdCNnYsD44sch+HO09SaMyqSyyB3wwlEid+CKCIicgXwsRdjo5ybF0VCz/70Kfni0O9r0RqkUBW8yLpe4p7JVmJOwKh7sM/Po9kkmTPv7pqosoLAkpkcjDiOgcHG8zr1L9z6jkBFzCdVzSH16zEThxopTKlEoeHCgan/3Vdm57/twgr7Xda2Hbzg1bXi8E2MZ/fzslrwwdvoOxk7fwbjx2JkgVIqDcl0JSySfOV9MXne1mamZW1gY6nwC7Od32qVjxyZf/DjEcNsKopwEw299NrfzB2ZCIGLFX6t1ZTwx+O3bILeO7wpWxMAoZLS0/QxZBMzEwMrnUeYRAP2TOhMGn8iK8ImsqNp3zC+l7nhTs43F1GxjsWNYC9UCAL4h802vR8SU+lGYUj9KV37224Q1HL23eSccQvD91riZeb1H72f4dQHOaH5X7vQ/mFByic4pMD7oMgi7lNMtxKGwkRYrIqBtcipi4WdvTAUCAOp0T471U57K60a4KwpmWLl53q0pTayUbvOf8rqSdJv/9Mq1iPIIroaSvpoQpNqe00ua4Kj9RPXcH2crVQfrm3+04WFZBHgwUeA5hqnZxgrfx8TAN2Q+XrRua3zhBkypH4Xuq7Jj6PLtAIB+javIosBzCzbGvBMzpnVDmGr7jxzq3qKZU6pbjQBAxVOjDY8ZPeO8rkybPzDCSAxEbD9dFQDwSbaWqvIbl41vilZpMmOOLj6thabnzxHN+Gh+U265VhSi/JcjoLw4D3H0H2cz1oWf8QXFHTGYFPy1vN6zw1xVuXIbABr+73NhmMhIED6Z/ZfhdSmZu1g8KZPIHUydr7+5ilyCVVHQigEATCzpdKdKUThbqbqurhkdsx/RlbVM0cfSe40EwWou4V6rs/J6v8ZVVGKw4Lda8npEoDoUxvjy0OfCYzdMlRVA3GjoYRV7xjQHWjEAoAobMXYVFOcdzMQAAKIa6O0xwxMxAIC/r/C6rnnOqNGPsXbbBKzdNkFYZ+bTWtx1q2TodBIAkD3cs3GQzMQAkFoWsWVS8NcqMQCgK9Puj43k6tct8sqvbN0VZiR3tjaq2v01qnYXT+uqhP2d126bwBUDAOh10OlM5/S6gw5d86FD13wY4X9RLleudw9cj+6B7jvxmOBeq7MqMQAguwVALQY25sTrkJHWGcQ2UQ1Scp2CKFx0YcZAoShUKRCmEgUlmXM8ddY7IyXjliavr6u3MRVf3+eMno1Ro40djRKRKExcmlr4HmVvZSYKRijdwxju1MxneYVuwYRA6xBEeMsdMJRC8HWLvIauAXCKgGi7avfXCJviXi/+5kXTYskx89DnCP+L6BvOn7JTKQpTRtbhugOrmIWLWPNXkVNIu/BDnSAAMSMErEk4ABTjjEqSdgj/fjQg+DK6VfDe8OwxyTvnELyBX5c8ujLR4HZGTsFVqhTwvsAVyDSBKwZGLsFdvN301NsoHUKrAeIhE0RP1N6m90Upd1X5yD5UPrLP5fdbDRc1L5pWXowo56u+BuYORvhfFDqD/nObIsvgX7n7zPirb1rszLrStN7OrCuxfN8ILN83grs/7cIPdWVhfdO5dC2/l3A2NJgUsRyTIpwt5arunWT43rRDwoRiEN+I279gNzgSvA1HgtVd8EPHzsDkwc64/MPTa/Hw9FrD4/h1yaMTBrMRT61wYcZAXJihbkK3dFBJLB3kcrjPIy4Nl0IP02o4E3/aJ1FX2L1mE3av2eTxdQHAtgGuu4OW2Y3DbAcuERy4RNBqQHtDMQCAWe/xex+74w5cwV1heBJ8FU+Cr1quz4Sh/Drrc1hnX+d0dOkKzJcXBk8UFj0ZpSv7q29aeWGIRGFn1pWWBON5Kf2w9VVH3OXWLTwyE7cckERBKQRaYUgIxOuQUf9NTzDk0xSqVwYThTP3z8hlTBTaNpPEYAMpBACoTU9iAymE2tQ41OHpKKdKROGjnrekZHfALec4SkcD9Jb82iZpVrNvK0uzjrXLpG5dXyDTBCwq3gAFDot/UEwMZFHYdUpXZ0jQdvQPqmLwSdRsf19qCljlGr+d+NuiVE6KA5f4fRtmvdcJnR7Nkte9xdk7UiL4w/T6J/nKtRyNGk4az+EtYh4dAASry54EX0WKDllN37vk2D1ZDNiDSLOB3u8najWpDEg3/0pXGxjWaVymL56X6oqkB6Rh6nlCwAjrmw5Fdx9Ehp15cbuSFKLLsFOfw9k0UfMbvAsUT/eTrl7VvZMQVlY/1LuRMxgQ7OxjM213ZcxoL92fokNe6OpeKx0zfVxcJV4LAgBZBJRiYETbZl/qypgw8PDrkkdOMt9slNaSKIiSylq0rkDaLolh1cWhgAk7nH8yJgZKDtaKlF4d24uKSz+ylgphYO5Ay5uKUpw2kUYYhgRtl9dTF3K2xjByBNvfj3JLFNxxB1bgiYHy5m9FCP7u+D8A1pwCEwPtOgBUVoS3eY4gXYH5uHu6rfDYrSeLGyd4Ggos57sPe17o562Kqms+uCFzCdcH/AxAcgiuiIISI2dgJAQA0N1/uLTiD+yo5Bzk8HalczpR+LTXQJ0oHL47nCsKSo58xc8jxHfiXcioG8LQDWHyE7I34QkDr8WRN9h/w/r1Bxzlj7o6YUdieTFjUfEG8rJzWSNhPSYGQ4K2c93Bg5Or8eCkFG8t8qFxHwDmFmKDRVHOkGDSUV8g6Sh1v4BSOT1rXv3J7L/kxVuM+z3Sa8falicU2/JYG1mWFypSPpxocwlajMQK4IePXEEkBiyHEBKs72Gd/NRYJD811ikGAphbYOgcggFmuQSr+LX21ZW9v78od9k55zh2zjmO9/cXxdAml7xyfiPinSDcXTXashvQwnMHWjaQQoaOgaHMJ0Q1SCknlz1JMg+rPoPrDnghIy0By9fI7sAbMCFQugMlD06uxvGzSU2PE1uiwERAKQTKdVG4SIQ2Js/cQWyhjM9rCekxULjPiKifqyLqZ35LNsApCjyHYJUuYzqiy5iOCEot3bTzJf5R9cqj0tUGpuEiAKjX/aIsBtrX8yiE9o31oRgAqNyZP+KtK2KQt1ll5G1WGR1yWW9RNbiDuk9PdMgLeeEdX0vocXVebOqPn1k+t7vE+5CRGfnT5FflEVxFGTICjBPLrohB6cx1LbuEgKPFsOCA8Sxwc4L5YzO5ypuKBXUhIx49fp6OTvjWK+eMDZhDeNqkEsLHqjt+7R0ThrI/OG+UkzqfkNf7vq6OET5bsWGG+wPs9fhZinlP/lUd6ijcXT+MdMSUJyjcPQUiprj20FPtfFNDh6AUgpw/+QjDhqr3GISJ7p5uqxKtLmP0DRL4oqAfx+vOr+pxjQqDP7y2tu2fUhQqdqiMX5YHYFjjo7r37Zipnhsjyz8PAfDDRYyrZZzx/0q51R1FO+Q6guCL1uZKYaKgzCcoUQpB3maVcW6p1DxVKwYA8M3oteiHnJbO6y7xpqfyl6vqqPaNS/aN6ft5QmDFJTCUSWZR6EibU2AzpxkhEgJR7sBMDBiuiEKlJn8Y7i/YtC1a3ZE6+S1Mv1cu399Fmm1u8q9d5Rtdp6/NhYHlE8xyC2Y5hGNHxeGMM3P0buR5nz/xtIm6p3rpfM45lMv+UBV7x4TJ64BTEJgYMMxEoXYX89+SUhQ2ZeD3mgWgEgReiCb/JH0TzCd5FwqPJ3IGb1JtVW2z5PKeF2W4gpA/VxV5PTqZ87p4gsBjxg+z4ffNdURPzaIq54mjljw4yQ0XAUDFDuonbKUwaAVBi/L3laXWV6p9WjFgMEGw0lT8aAfnk32xSs6QFs8VMIb30w+78ffGNKbnYrSflCTh9FQel+wbnA4zFwQe85f+blqnfrURqF9tBHz/t8q0rjeaogKSGPyy1b1x7xntO/AH7OOxYuZF7sI4FTofC9PvlcWAiQODiQGj2U/V5IXH9vej5PCRJ2GkogHWwxnP+/ypyyVoYWLAQykGgHTDZ4uyzCqfzWyETRluGgqBFXhiwONik3G42MT4YSLRw+qqv3/zrM7e28qmpowzF7ertv2ezYffs/mWrgcA/L65Lr+ydStisCt4h1AMPKVNqd4A9GIAADsj+c2ZrYSOjnb4TCUGWpgbsIodMuLQec8JdIa5GJwO+wbanyop3gv08ETMC5Rubu1G7lXtr19N/0NzioL46dtq6yNA7A48FQNG+w7HTZ3CrTvmjqNg07aqbaVL0DJr7gT8BWfHHiYKS4eLp2R0txWSCJ47EInB/v+kpp5apwCow0VmMDFwRRQYZqLAwkZmCVwrXGwyDj7QO4Q/Fs/h1HZi1rLIFSEAgD8u6AdKZG7Biii4S+XOW0xdghE7IxcJnYJydAGtWwgIXqsThCM7na2XGk3Z7dJ1fDPauO+UN4g3DqHznhPovEf9Y3XVJdDDE1XbTBi8hShctKFASdUrD1FC2R1ccQpamEs4FTrfsF5EW6d7+us//XDSAIRuARD3U6g2WN/r1BPuHbD2VLl3TBjGXsuPl0HmyU0AqH69vlzX6D1s32czxS27jNB2AAOAeXuDDN/Dcwav/zMPZSop57uP6xBE/NG9gkvHZ2hDR+6gDRcp2TGzhkdiEJf4pNb9GD9HvBEEESJRKFDV2qxWTBR47sAKJYpJHUqsisHtygNxu7JrrUSYpbXCnOAihg7BzB007CyNX6N1CIyItqtkMWDrWYaJn5B7vamKXm/UT6ciMdg24KzX+yGkLcUfwO5lUAPsbtkZu1s6Y7UVFs2U91nFihi8DGqAFdesDUoHAJ/WVSdG755ui90tkskLYC4KPLSi0KiFcY9tbfPT/LmqqHIIqmO5+LQLGIvBp3WPyt/DrmDj0Apv/y/LpZnqRC2MtLjyG4tNhqxIIy+xQbwLGWkR3fhdcQ+SKKzEygPWbwRKShQ7hhI4hl7P1ec0cgSxQeS0AOTuJv2odrDx8ZI7//E/eqoXhxUzL8qioMXoJqQUheu/mLfI0YaMXBGCogFl5OSycl3EqiHS03n9/lIiXXsTV4oCQ1knSdBKbrkIVwRFxKd1j6L3Bmm9Wj/xvAIMllA2yxko4YWMllx1L07PHIJSGNbnlzox1jmz2jBcxNAKobPM+MnYKKHsKp/ezqQK53VkqzeduYRTpfnhIy3acNEvrbu5fAwlIlFY/lJqFTgptefTjsZrQfCGGHiTiUml69EKgxFWwkSsFUSbUr0NWxyJnEHktACgnf5HcsIhDlphELmDdmWDLD2Z8hxDrzdVMTGRFGMVJZX/yzJFXs93vbvhOZTJ5aIBZbDgc3HYgLFqSCPU7/8H1vv4oM5r60/sDG/c6M3g3RS3Df2eKwrz9gahXdkgVVmuZdLfVCQMr/+rB598a9y6tjMXtwsdghImBAyeGGiJmPJEFkBv4kq46NPb0jhHHd3I+bs6MGXB/Yt0ohBVrT2yb5NE+qehM5GisGu9vHs+OOWxKMQrQWgbvQIAsKep9YG8rOCqM2BhIi35c88DAGzAPI+vSQmzs1abnzJydzsqiYEJJ5L3xpnMt9EgcoFhPXfCFFqSzlyA553bqMp47uC/LFNMRaHeVtefZplbcEUUYkMIjLDiEKxiJAY8d9BkyyMsqyHNM25FDHgk//QAAODpplK6fcwl9N7wn/D9AaHXVNtHm75v+dyuJpRzvjZXA97NnCWXmTAYuQMjoqq1R/4bGXAm823kv2FeX0vPB+Z9iIyINzmEttErsKfpVZUYdHtaXlfPHXfQoJTxiIpXmjifvEViAABnItu5fG534MU7ee5AKQY55xkLQ/4bGbAydxuszN3GsJ4nKMUg6Uy1+CjdgRXcEYO4Ds8dmDFvbxC3/wFzCkY0atHeNI8ASKJgFbPkcpeV0qKENT/VsvzlKTkcwuCJgVGOIaYSykYd04yamjK29t2GqGrSdx9Vrb28DgBnMt9WvYrgfT+eEq8cQrlQaSTHj+vl5u6XBOJjt47doJQzh/Bi99+qfX6K7UsAcm7nhyeYQ7CKq62KRE7BTAwYOecF4BIndASo//nKtI/Evjm5devusO96kLz+cb0g4Crw71jdqGMAACAASURBVJpIAMCe1cMce5px38tEgucU1lT381gU1vs4J5lhbmFr7ryoHnlOfvUGm388gpqjzXu2bloXoBOFlB1SYZ/mflkmS5C83qyl8SxsoRPU8wJ8qYmymjU9ZTTZ8gjwcAZJpRB0WQnMMDFejZMUdOmG50nu4MOsUrPXs1czWXIJWtKNTomAYH2zUJEzqD6imkoUREhOIQPypHMOZHn+bszdtuOVIABqMZiW/B95necW3kV4YSMrfQ8YRqKgpEz7SHndG6EiBhMDJUbugCcGMeUOtubOq3tloqC8qWtv8CzpzAstbf7xiPzaFcD030oYXoNSFFJ24M9XsO96EDL/IY33P1Lxbx/4j3RDGn1FejDRzn795VT+HM6AtWQyu+GZPQE/rSk9XCTfnMGwHhOIx8EP5bKUHVLJ2zwxYOEjpVP4e2Mar4iBcz03XlyOdPk4roaJmCi4Sp50rzCnUz9gaFuX32uGaciIEDKXEHKTEBKuKEtPCNlCCPnP8ZrOUU4IIZMIIWcJIccIIcUV72njqP8fIcQrcYluT8vLiyfUqFseNeqWx9Sgm5gadBOztxgPbnepyg5cqqK3qUYho7Bf1SMVutPnwCiHoO17wFoXsVf5GKdqS9cT2BdhgX0BmFvTt4lWLGJaDJQoxYC9snUlIiHg1WV0/eqQrqxnjwuWw0Y3GulnBBtZ/jNZDAC1O2Bi8Ps3rXXvc6dlEe9pWImZGChJ2SGVvJjhSv7ACkoxUOKbIzeSD7mgK19wqjZ+yDzaa+evPkLcVwcAar1Io3IHACQxAJCh33zVqzcwHcuIEFIZwCMAIZRSf0fZKAB3KKUjCCF9AaSjlAYSQuoA6AGgDoAyACZSSssQQtJDGqK/JAAK4BCAEpRS/rRGDpRjGeVuL42hIwoXAUCvvVK46HHUTaTMLp4ZqaBjlKwchcRC0rGG+bzAotARoA4fKcWg6s/Owalm+Lr2z+3JAHeR0wJkMVCSbb54FEpGl47z5fW2x6Q+CPOL6ud01lJkymwEN76iKuM5BMaxKP2NSekQjMSg4XfPsWK8+eirInxz5OaWvzEY80kbBkoStFIWByMxANROoWePC5g0+QP07OG8AUVVM/5dMofAI5HB8OZKvpwagj8Wz3G7qakS7dMxTxDadNUnlY1YMP2A/jwCQRCN82OWQxAJAgD4dFK3HJrRxPiJP2q/up/H0Ivq39vT/h8492makJbdt4J7zFov+J+LiYKSyyedERNab49bYxmZhowopTsIIbk1xfUBVHGsLwCwHUCgozyESiqzlxCSlhDyvqPuFkrpHQAghGwBUAuA+cBCDiLnSDf7qc+zqcqDG19Bh+VS2WM4Y3+Po6R1pTAU1A6X6AFGYgBIbuHKYvHwujwx8K/onO0qfJe+JZW7rY08hYmAtsxIFIpM0Y9qKRKDY1HRKJpd3YHMnbwBE4WG3znnaTASCZEIMIzEAFCHjpIErUTYjiFANeOQEMAPGynFwFOS5XGOr/XsvHhIFdktfPCR187NGFX+P/T5J5+qbMH0Ay6LgpaA0GtecwneFANP2VtGmvFQJAxKeGIASA+4SlFwB3dbGWWmlLK2YNcBsHkAswFQjvMa5SgTlXsMEwMRTBh4YmD05RmFjURi8GhTftV2thbWeyQrxcAdvDX8tVWsioHZ34e5Ap474LGmur7nsVIAlOtmmMWJEy1rZPi0XXN0MeyqVgK7qpWQxEBBikPiZCEvXKTEE3egJVmetKrFVVqQq6pFxORHdzD50R15HZBEQcuC6Qe4T/482nQtpROQUeX/w6aoHdgUZW1gOG1P5UXpA7EofaDhe7RiAABdlk0zPVf20sb9O3ghKC1MGHhk/HADMn64AYHb+C25PBUDwAtJZUopJYR4bQxtQkgnAJ0AwEfRCoRR9zfnsMDrvrI2IJbIGRiFjABg2tQxAIBu3/wgrKMVASUih6B1B66IAc8dWBWDNgU36MJGV9qONgwb8f5Bs/jMAaAfv4jnCgCnKHzDeVgvmt2PKwZW+iEAxgIgcgfD/RTt+p8BA5NNNj0Pj10W3ICSIQu3K7akaxjcUz8AX/ZthCsKrghBTKEVhRTNGqu2mRgwmCh44hbadC2FwkcXG9Zh4/xYHSJ6UfpAtLw60tAlaOmybJqpU8heeo0l8TAisrz0HXbZ/oFJTYmXlaTvRjkQyDV+VVPcdQg3HKEgOF5ZrOYKAOU0QdkdZaJyHZTSWZTSkpTSkokSxVw3CSMxeHmmPV6ecT7hTZs6RhYHs1AREwgrYuBfMatQDHjlolCR2WB2F4aOAL3zJeidL9E6k/op0aoYSCLgfO0b8bmu/srW/xpeh6u42jfBXQY964FBz3rg5eolAICXq5fIiyhsZOQAlHWs1OORfZtz+I8Vtw9jxe3DhvVf9hsjL/dXmM/4p+SLCydQd6XzRlp3ZRrUXZnG0BEwnixd7tK5lFh1CiKsugQRi9IHYtCzHh4dw1365+bPR85+X1oyfqjuxi1yCZ7i7h13NQDWUqgNgFWK8taO1kZlAdx3hJY2AahJCEnnaJFU01EW51AKgZZpU8eoboQid2DkGhiehoiUVN7bHgv8S1uqG3JTHVO+0ta8xYRWDHiceyA9Oa1s/a9KGL7Nl9r0+Nr8gRHaHILIBSjLw85LczcM9xurdgcKft4s/cCYKDBet3rJrb+m2UmsaWbe8MATlCLAnhZnVOGHHZIMVbtYkSjwwkfPj5YD4BQC0TFWzdOP+QSYi4LWHWgxCiMVPrrY1B1YwShUxESBPQQ8+4zfRdhqHsGsHvmXP5S86Pcl+pvn9NU/lHmKlVZGv0NKCmcEcAPAQAArAYQCyAngIoCmlNI7hBACYAqkhPETAO0opQcdx/kawM+Oww6jlJr24lK2MjLCLHRUorK+xZHIIRgJgpZ+UVI76eNv3qCIxs3cv90S61tuRJ1FtVTlp4OcY/BYEQVtclnpEirv1V9rm/D9sji0Cd+PC0P1o7gqRcFKKyNmYY3omEM9gmmDkI91YvDyEn+wGqP8gVkro9nh0pP0+jnP5LIV45PKIqBkbxnxtJRMEHj4LEyi2v7rQ/X/Tr2lxk/kT0o4f+jqsBE/ZAQAkwOM8wy8cMLLfmNU22kaGgsWSzgzQeCx/R7fEddvN1Ne14aNtJgJghJeGEkkCEMq9wcA7Drv7DhqFjLqvGyrrixj2A/o9HIPZiUph04v9wjfOz+52vW/eLURvolrcesqw0bPPruBZGszC4VmSOSn6HzlewDAqpz8BD+71wwdaG0khmvXrsVYKyPRnJO6WccdrYu4V0wpnQtgrktX5yE8IWBcPvmPaQ7BCsffvJFfiyRKhN9rseZ2G3V1XRUDVo/X4ggAdpSdoxKFNuH75fXKzb/ABfCH9G6dKS1Cbt5D60xp8ZeFa8j9T3pDUdCKAeAIH+35xMLRJUS5BB5MBJTUaZ9MFgWeGHjC61YvdaLgDloxAIBL6fTDTuS82wo9jpYQioIVMWDcX1HIUBh4YnBrsULg6uh2A3C6hfrtZuLJ0uVCUXBFDABnboE5Bl5iGuCLgZbWZaQn/5B9k9G6TA8k/0HfECJjmOSsZiUpJ7/yRKH/sT7o71jPWyYlXrySft/sFYAsDsqySQ3zACiHTgIxuLl7Mzrje3m7/qUTXFEYmt3zkUytEO96KrvCoR1SasNIGNyl/qUT0EbunWLghOcSrJJo8QMAgH8LSRTM3IHVsBEgicLANVeAPrPx16iO2FEoCJVPBnHrmjmE2ZejuKJQpdzf2K4QhSQ5a3NdAgsZsVcmDPdqTAWguDm1ktZnYyf3OsJ+cNS13tAIgLE7YLxu9VL1WRhm7sCIDgMf68py3m3l9vG0uJpLADRiYIFV8zrjy43e7djoSm6hYh7132QYpP4fTAy060qYGJjR/5h61NFz+x4jB6c9gV4IjLm5e7Nxhfa6Z+4YJ94MbhffUbqDnF8PMK2faPEDvGmRWl4vekkacXJs5gEYm9n4/ZWbG88jrGTgmivYUSgIAORXLbn/SS8vPHhiAIB7A02SU985zhv8mM751NwwKT8v0qm7e8M+A/zPAsA0j3ChmjNWrz1/8KCUuvqX0i3E00v8aVa9zYtaP+DW4kKqRYv/enPXFhG9VV6sMnjkT7rFjCQHpfAmcwc8Pql1XygAT8eswtMx5vOkz0pSTnYMADCk6CjT93iD4ocDUfywlOdo+G/sNKjQ8k47BMahHTdVLiHFRCnMc7mX1G6XhY4u9MgN4C9k7yFW5vqXrM+5y+CJwYP8HZD6TLDh+5hDYJgJgVUGruE28MJm/x0A5/72caHc+PdkJACg4d3iWJHOmeyMmiwFnQaN0o9GonUIItrdrIB5mXaj3U3pSX1e9t1CcbLK3531o9L2qKiv12lMQ9xyVM1Y1NmxscybstiXSEr+mX2GNc1Ocp0CE4MbaZwhASYKs6bUQ9LCQQD4OZynl9ahwyVpVLvgep5PM6nlQX5ppDq/o+kRHcB3gAuXS8L6cR3Pb4ih3zVD0/FLEfqdNJDhKeifoAeP/AkDAodLG1HS9fX5JxjjfRWTFR38EYMPAgN6J+OeJ9ddfqctBi9spLuOcSwf9THafcLv6XzlO+cc6NnG64eh+eKQNOzJnyXy4otD53ALmfBnibyqcJTyu2dCAACDVtbDkVyfml5nTJAgBAFwioAISQxiFiNnoL35uwpzBTuW/Glad1C9bEJR6NfEObbKuvDz8vrHhXLL6w3vFsfk39RP4QP7SMNZK4XhweHsKJ4UOPzcOU6QNmTERIC9uoPSHZihvCFruXVMemio6y/drMq8kaZXLePQ85H7xL2emVNgwqB0BlqU5164fDRaNXaKgt9RvQvrsOY6HpZVjpekjkeL8gePVkh/o0eODsnZQqThJZgYKM/JbkyrBjmfrlmTgHNlmuuOnXffEhRduJR7XkDKHWjj/0wMAKDg9fM4lcU8rKIUA09RikH3Ec2AfcCSMjlUdZxiIDHv7y1CUWBc+a4L+kRKLesWrdgniwEA3fotZEKGXevlMr+j6ZHjdUcMXKNt8GDeYzkmSBCCUOlf45ZKVsTAp6H0h10L6abw2UTrgWorISJPUIaIrISLeGKw2V/dplspBq7w4HB2pC4ehQeHnWGk4knPqURB6whcIUcJfv7AVTp1XwPk1rdxYGLAI7DMc0NRACRh8I/mt9pZECYliZMWPoTnEUG6/Twx4HG3cGZ5/b2G5q3EGFdaSwPSpdqrH8fa72h6jPvvJ5g3EpaIzPcARTn/1hHRW1HYrzoAZ0JZKQRKhKIQZT7O9uBxz4QuwVWa77uMj3Zbb/qc6LfCwn0tG5YBUAZP+3neVPZt8E4Igju9lwHJNTzppU+jRE1Wh42YGDB4YhBex/o/1Ntivp807s58SK8X5opj1ezGqBUGrTPgoRQDLUly1gZuGjuCdjcrAIW8O7FJj4qe9xnoXHok8kz2jrhL4SInVsUgrvA6fSesmAI07K7vyS7lEpyti5ShIi2ZXyTDDV/FU7kFMfCE7iPU19F832VBTTFvvopQiQJzB0qSD20BAFxhCF7p+nzKscU7IQhGmLmDV9NacMu1oqBkba+kKlEwEoMuZDJOw3sDYw087xgPsAhQ/Lj5PMJmaJ2BEnddghFfHXQ9NOaqK/i2rffjr51LjwQAnO8xmCsKnWorh8++iX9CvN+yzRVYuEhLqr3GswPGFnfTf4Qbvs+Q+YUkCgDQuZ3rN2dXeDpmFX58xd93okI01yUow0VGzuBd4Z1tZVTp34xCMegRvVNefrnaGb9cdfbAVK6zhKkRIjHoQiajC5HGyCnw8zQU+NnZUeVUYD6cCsyH/XNGymXnwvrhXJhxQgwABuXRdwvZseRPTIj4Vvie+X7FZHeg5IOv6xqeSxk+KV/5M5Sv/Bl+n/U3fp8lbvvNQxku8pS2zf5F22bOJ7JKyTZi79PpqqX59Abywpi8i9OcMvJrS+dkYsA432Ow6XvKt9bPutWmKn/so9u1ynDLPYGFkoLzX5EXMzFo02Gix+dNHToBqUMnqMqM3IGSmfPU8fypG8UPD6Jw0eIOx7C4g3ia29gm+dAW8hJd4T9EVxDPHR0XMO2p/Dax2lNZyfDLafFNLeNIaI9o4yfOYVmdvTBzbcstrPfZxOdcQWBCoOX0r91wKlDfUcdvLz/Bm7fqUABOVzAoz5dOh6Ch9cUI1Xb6OtIojzwhYHy+QLr2uoW+xrqTc1G3kPoGeTc9v9fkzvzqcXWmVfkO3baPBwAkn3FLV18pCFYdgjaR13/UJF2d+UulIdErJdN3AtTit2g4f4cmj6DNIWjFgKF1CWqH4OSfkEwo31rtGFguAQDqBDuHfSg4UnyzUCeVJYzyB7wHhCmlpH4q53qo59H0JIQx4p6U0N/Xr5hOCCZ/fFpeZ6IQXVi63yS+xn/afvV+BLf8RbcX8vqhhc571qp/k6vqjfxY6qncIrio7hg/vjKP62tdAvs/5LmDE43CMH+svvHAo8jteC93FfkVABbf4/fSjync7an8zjoEEVbFoEs345ElRUllkRgA4IoBAESX5Q8RfS6sn0oARGIAACG51P+wd9bXMBQDJetOzlW9ugoTAyv8VtJq2tKcts3+tSQGABDd8idEt9S3de/6tA66Pq0jr+c8UBA5D0i9Qq2KgRE8pwAAe5tnw97m6r+76P+D8V7DH1ULo1nov6plQsS3+LbwBOFx8k62NvyBqzxoKnapTccvlcXAHXyn+crrJVo5e6rX//gpAKcQMJROoVtqz8cNe/NVBN58JYnViUZhONFIGiK77ffi+SaYKMQn3rkcwk857iE11H+kB4VzCmqruT10BLootrt0uwsYOAQtRmIQ02gdwuo2Uoci5gKUZUYonUK6OyeELiE24bkDd4lu+ZPsFrpmds5ez0SBkfNAQWyYOg+1vxFPi6pk1oZzQpegRSsESpgoKN3Cw7INhG6gWag+obknog3KYYGuvPuB/bJLYKJwrsdUNBzvbOK44jvxePxKmDNgaN2BGcwJiJwCD6UzUCKJQhqdKOwKrYVdjnVJFKSeySnv8JvpauE1N33zVQTwVF3Gu+mzstVpnwKx7A48IcE5hMl+lVSLERsaf4zay50/uL+f8gfOWpCdYEF2gnLZegqPteq1/il6RM4LGJHzgjBk5AmfL/AzFAPlPi15p+8X7qtd9rpwX5/H89GjlX6u3eJJz+Grgw/kxQrz/nZObDKkj/h79YTpN4w7fCU5GIKt7apia7uqMXJ+ABiwtRe3nOWZANealjL2RKg7Ck4pVVoWAy0Z/hYP+ucJPf4t4FL9ksPmC/ftSeXieCQCzMTgRIVonKgQbdr3QEn3ycXkJb7zzjkEV2Gi0KKXPsHKxEApBCJRYDBR2HNFeqrt2YDd2PzlOv/7IxwjcjqHtP2+6Qs09ZH+4cv8ngr7vnwor7e+GKELB2lpfTFC9R4Rny/ww+o20YZiwMg7fT/OdS2NdHdOoGwd4yaRfR7PNz2eqBWHCFd+kK6yr5/0FDx/tvVB8JSi0MmNc7I8gtKVWOFUYD4UwG7uPp47iC0+S58Ia++8wWfppWdKdxv1lhw2Hwd/aSuLQdnuB7B3in7E03IPk3pFFB6n/8GSQ/jx1WKMTsxvgShiSg/1PNpvQtsCnbw70GJM884lla2SJmIaLjdVjwbKE4W+dat4fK5SpfS9Yg8cUI9rwwRBCbu5mwlCgfL68dWNhMGMntv9Vdt+a/SD8/18xzkCK08QJi9UT7ruihgA4qTyyrB1aFBV/Xc6t4o/kiSP8x+cUm2LRCHJwRDD43QqzneXRmEjlljWisLg6vzWPQXSzxcey4oYlCu8QOgKeOxfrh+Rvky73ty6TAh4jM64TV5XJpYBYGpwU9V22e78geyUorAn1XNDQSgPsdPbFar/37UiCEZicOopPy/EBGF12qfc/bGJnVSOo/DEgEfoa34PWHfEwJvwxAAAfk2fFX0ez7fkDtxBGTIqUvtTrAxbh5VhUkc69uoqWjEAgLYdu7p3gRzMcghdM1+37BCMxAAAljb9GEubfmxYRxs2igt80yEU33QINa2nFApvioEVzJxBweT6Piblvu+DRb6Lscg3fvZQZiRYQbhfuBtSR1xSLWs7TdctI9Ztd+m4Ael8EZBOahFhVQwAvkNgYSAeBcrvFYqBt9yBSAxcIbinNMRv76WL0HvpIpffX6S2uJPZuVU3XHIHIlwVBZE7AIA97QearmvR5hHMxIBhxSWUmO/+8NwijNyBlg0Z3sOGDO/J6wx3RMEq06pKveArNrXWAk2LleapjJr996Bm/z1IlaKhvMRnEnwOIaYISOcL3w/F+0uVqqcLGzFO/1PW9Pin/ynrdXegDRWZkTbHz7h3+VfhfiYG7NWbrAxbhyIPXHbEQjr8qX66X2DQMG3W4Z06USiyPAR7HF0KREIwI9Q541aXpmqBGLC1Fzd09HzDIiSt7dlQByXmF8Ldk+qpQ8+PFMx840XqVHc2luCJAgLXa98CAGhzSTEz2eeK0GNVoFiYeo7rf3Ad5ZFFFgHGtKoV0C1sN1pt188v8WdRZ8goSTJnk9SXz6QwqJXcQcHkmYSho/hMgnUIVpntdxV590tPDNpXAFi9fK5qUfLi7CbVokQkBkDMh4FETKoSrtqOric9YZ2pyE/wGomBtzi+gT/1thUx6B3o/gR9bS4NUt+YFDyOSIFZh3di/EKpgxl7tYpWDBi599VA7n3O7/r5Br6jYv0N3OX8yDrIE7geeTQ35NKN26F0Y3Uz233zxkHL2jvGIwcDajEw4mZKa7PkGaEVA8YH3fjf3xfHjiJJsqwqMeDxc+Lt8qLl1NOb3NBRfCfBJpW9TZ+JUmijf8cuhvV8P/wUL85uwtG7zp6X9z6piE671MNkmLkErWh4EiZitFrBv/kCQP5dW1TbTCR8r+onK0n79y45bKZlXDPXnnbHjeAnAEWCoBWBcSPVva95eQQASFxb7GIW5ByINpcGYdpDZ0e1lIWfoFPxSioxmJuc38uWB08UQlKJ59rQugQzQXixYDkel75o6Vp4bkGZYNYmls1CRqMzbrMsCADw48lp5pUUaF3CkaqN+NdRSDyG2JrSrk3U9OurKvJ6zh/MJ9l528TYnMo2rjFk9gxDUWBOISCdr0oUZlV0DqT3ySj91IqMXUWkQcsq/iO1Tdd2SIspRC7hRdYhXFGIK/QOnCuLgkgMzOA5hccRKTA+wjVnwPBUDADICWWeMLxYIMWuUu7PZUkU8gSu14lC6cbtUOxZExz1sz4LmruMLtTNZVFgiMTAxj3skFEMMGS2fgYlHqKn6L/7pFQtgCQETAzYthUGZ/1AXowQuYPNif7E5kTmk+4oufdJRZXYMVx1BzyKPCjpcu6gd+Bcbvjo8+Y/4PPm1ubVVboDLXOTR7jkDni0fijuEW4UOtLCxICRcn8uXZ2P6juHiA+72gBhV/mT0MxaWwcB0dVVZVYSyq64A4bR07wSrTuw8S62IHiJUb02ycsPk3PgaVHvzYsruvmbuQOtCGjFgb0ahYoYTBisioNI7LR0PdkCXU+2kNe19O7rvGF7M4ms5PPmP6BOGuPEd7dUgcJ9Xz+1PvyCKH/QM8krHHyWHwef5bd0nOF1X2Bp049RbIF07mILCsvrWlLuz6USAYZSCC62Uv+9ij1rgk6fSTkGrShYYWDRXvJiRvYAfnLZiMCZ0rSk7ghE9oD16PqcP++ylt++vY/fvr2PnD+skpd3GTuHEAPc/FA9yUfyY+Jhpv8uKu445LMhyPRcs9byW4uYOQIl/03lOxrRzb/mmy8Mw0QVAqRBxRIvfMbdr3QKPBGYXmixvG96ocXoUeooAOCDRltMRcEokdw9tLxqW+QO1t+vCQA40nAgiq2QwkVmDsEqWkHomUQ/QH/JZGd0Zdqw0fC6ege2H/wkOADkGqZO3p5YJQ1XoRSFXAulYxZ71oR7DBY+ErmExr/ye7QPOiYeVlskBl8uiVRt/948t/AYIzuPxZ2PxH1AelSZxT1noedt0DN1SUx6cFDe1zO19P/FytIPMB5wMK5i5xDiEJnOBqsLUgTj4RPrc6T6bAjC69pBhnXK/N4H7VOFG9axgkgMzPAkd8BEgN34RfsByGIAABf+qIEiNYxHoR038muhKExp+o9OFHjUSbMZv1aThos40lC6gZeHc7yff0LUT9tfPy1sSRRE7kDLwWf5daLgu+43vKj7leH7SmMgVxS0YgCAGyZiLqHYbP7xA6KrC3MKIjFwld+STMJXL2Nm7Cqe+CjFIP2AfPiNrSN+CoGnmIaMCCFzCSE3CSHhirIgQsgVQsgRx1JHse8nQshZQshpQsinivJajrKzhJC+3v8o7w6vawdZcgdzHqr7DezY6YcdO6UhIgZcvcB7C5cfM7TQrSvLtPhe7S8UA+YOAOBVK/4kJkaOyYzVW9K5/V4lVnMHPMq3Vg8GZ9UhKPshAHx3AEgOIdUbp3Nn677rfuPW55FrWLS8aJk6vabl42gJiK6OTxoswCcNnKOpmonBwKK9sL1kLXR7Zt5clVG31WpL9QInrjR0BwAweXsnTN6uH4HqZFL9iLAJHdOQESGkMoBHAEIopf6OsiAAjyilYzR1PwLwO4DSALIC2AqABUXPAKgBIArAAQBfUkrFTSsQf0NGPFgYSXkzLNYyAwBg4nHxP7RSGMr83ke3n7kEJgSMypWiDcNGWmdgJAA17jZWbX8WpU9mKoVACy90ZCXHkrg1P27/uYlLAMSho+6h5U3FgLkDI/qvqQgAuPZsId5P1grXni00fQ+DOQWrgqDkRd2vZGEYNK2pbv+NYd0Nz21FDOrPrm9a56tA57AYfqW/M61f1Vca0yh0l/MpfVqyRNyn9t+SOIc7X7fwcwDikFHgRP4scNfKSK2W3t/XTV4HgJCy6lxRoefOzxFfw0M8YmwsI0rpDgB34aWNKQAAEWBJREFULB6vPoAllNLnlNILAM5CEofSAM5SSs9TSl8AWOKom2DIdDYYmc4Go1jLDPLC6FXknK6+zwbXXELlSuonwR07/YQuwdUw0ZZ0y80ruUhMu4RxI79WLar3LxmD1Uv4/RvMxKD/moqyGADA+8n0PWGtMuml6xFbpUsY2E09/IOZGACAz2MCn8fEtJ4IpRAwovfzJ0iq6ntaXrRMS2atPUvdVqtRt9VqlUgoyX7TOGypFAMeJ5MuQPoB+d4pMfAET3II3QkhrQEcBPA9pfQugGwAlD2mohxlAHBZU+79iWTjMb2KnDN0CkbMeegvzCcMuHpBdgoiITByB4DaIfDcgbskP1bX7dZYZ+7pQwr5036uK+u3YDeenNDfkABJGJRuwUgMlCLAgwmDkVN4/VxyiTNCg9Gl6UChQxC5A0aDAs75ERpMBLI+Eo+ZNWMMfywoJgqvUzrP1aCgY0Y5xSgX9HvJxCuFQCQKfqW/k1/NYOEj5V9RdNMHoMsrBE5cKYuBUhSiMg0xPbeNGHcFYTqAIQCo43UsAGszlptACOkEx5DzPj4+3jhknOLcisq6srwNd8TIuXbs9EPF8BbAEOlnl++bLi6FiuIbZ+6tRsiqDLryFB8VwJMTp7kJ5dVLxiB8VjnD45qJAcMsbOSTNBivn3fA6+cdMHUhUADA6a8zWzo2QykGjKvvScOg8IShyw+bhKKgFAMAWHlquFMUHJCxH8miYAZzCtH7x6NpRWtjJX2+TxpAsWJ4CwBpkbULf0rKUXNC0Kd9awDA5F+KIDuKcOsxcbjG2RdSdjMqBA61dF0JFbcEgVIqDzFJCJkNgE2TdQVADkXV7I4yGJRrjz0LwCxAyiG4c33vArzEcvMU57HkSR5u/TkP/dG+UrgulwAA/fpLT85tsjh/pHFFCDxxCVp4YsBI8ZF49i7/TnsAwFQYzDDLJTCHoKTA3Bt42mk2Lr3qh5yJ2c1K3eyTJwJWEYmBK4xf1Rglyku95w/9k9Lj4zEkERBzdYYkEFdnSBPZK0XBJmZwSxAIIe9TSpkINwTA4hWrASwmhIyDlFTOB2A/AAIgHyHkA0hC0BxA3LgjxSFYLmHi8bzoVeQcpij2jV8lhW2MRAFQ5xLeTFd3Clpwfb1KFLzJyOTb5fXAp1VU+161Sibsk+DNDnyeoBQDq45AiyuJZS1OMQDOvVmG7wuJpzHlMXbLY0ipOWBsueaW3uPzmOhcgpZxH6p7UJco/9iSKITuWo+OKdbgfvHpSHNYGl78fvHp6JhCcjMn9/9u+H4mAuyVMWpOCJLDvJd+3lzrce6i+n+99d6aAGyHYISVVka/A6gCICOAGwAGOraLQQoZRQLozASCEPILpPDRKwDfUko3OMrrAJgAwAfAXErpMLOLe5daGXlCzTH6nsQiUWj32/+45UrCC1tvvsiocbexYf5gV1l9/JcJg0gMAHNB0LY0KljKuKmgkUtgfB2kr6N1B2aioL35m7mDEYP4M4P92HcmnnbiN/xnonD0s8vc/QAQsDaHQwzUKEXBasgIgC5kpBUEwLpLYDd/HiJBYCEjrRAoSX5eLAh3ujv/RzdPGCGs964Tk62MvqSUvk8pTUIpzU4pnUMpbUUpLUIpLUop/VzhFkApHUYpzUspLcDEwFG+nlKa37HPVAxs3GPeV3+ZV3IDT5PJvD4JVtzBqxBxD2FvwQsVDam3i1v32rOF3Bu/mTvoO1A/T/CPfWdi9IjOwveMPVkaY08aT4EpEovv9yzBjDGfGoaM3G1txMJHbwOeGNzp/q+82HiGPXTFO8Cdwf9xy43cgjsuQdQKysgdAO47BFE/BCsuoc+d46qyUemLcJ0BIAlCwfVbcKqONKKrq+7ADJE7YHQ/r36QO7Jc3wz5h33qCdy39jLvGZxvt36OZB7clkbguwOGmUswcgeAechIhMgdMDFIyK5AiT2nso1l3BEDT3jVKpnLvZZFYsAjy7yr8muWeVe5YqAtAyQhcDWR7EmeILb5r0I7bnmv12GqbeYUTu3fhhEhkiiOCKmhE6Yjy8/JZSXKP5aXIhvTysvbIv0U4/mlbaxhj2X0jmLkDvwjvnJZFIz6SFTc21N2CdqEsju4IgYMJgo8+tw5jluTqqjKXjV4hILr1ZP+aLcZ5XJLHeH2RJr3kNZi5g4YR5afQ7HGebnuQEmDj7+VXhUtlbtXDhHW/69CO9kp9Hodhok+VeV9ERFSeLFg6Wo4tX+b85pDnHNfaK+nWGP9/4Hv4Ct4MUDqbiSLwheGHwOFSn8pr5u5heyfOx8abk8wPq6NZ9ghowRI/fw5UTjbDixNe8m07vRI/Tg9Lx7qO4AxdpWdxBUFo7ARg4WPzASBhYyMRECJVgwASRB4NHmtHm+IiQHjz1PizlNaRGLQ5Y95mNGonfxacZR0DjNB2PWiiuH5tMJQ8qg0UdP9R1IfUK0z6HTKeGyhE0X1/WOUgvBiQDaVGGgp+4XaTSW6IrU2epNtuuF5GSf3/64SA8btCVVU20teNbN0vISEHTKysUzhbOYd4aZHRrgsBoDkFngYhY0YyY/VdWlIi+vtsuJ6O+N5cQEgY8/tlo+5zEcaZ6hc7nQ6MbBCnpo7LdXr8sc8+dU/rzRvsZk7cAUmBgCQ5r19SPPePo+PyXMHroqBdp3HwywP8DDLA64YAECGb7ebXKmNu9ghowTIr2G5TeuIh0DrirUfuj4jlgheUjkx/Dk1nZw60MY0sayFiQLPLWhZ5jMQ5WDdCWhFgG3P2g10qqAWQSYEWvzzjkP4ud7cfVY4dsAfUxBuGD6anyYF2t5/ItxvBgtrAWIh4GEmAEoeZnlgWoc5BNsZeB/bIdh4FaNRT7VwxcBC/kApBryw0aHIWqbHSLzyPeE+bdhIy9Lk97A0udRe3qojAMRiwGBOgYdRuOjYAX/VqxHz0zjncphVUPzz54WLpu12Dp7nO9j4oWDvn62w90/3B/4ToQ0X2XgXWxBsXMY3FX+seqti8LToOmFzU2W/A20fhCrhw1ElfDgAZ4siJYcia8liIBKFjD23y25BKwr31yzG/TWLLYeKlia/h+E7+WPqAGp3YCYGDCNR4KEVgU5jR5m+h4mCUQ7ho2POMbeUQtDpu9ry0v1hUdV7Dv1zXXecDZPPW84ZjB8vDS4YHHgcwYHqVmFaIVh30LwDoo3r2EllmziDdupRQO0YmBiIUIpAidwbhfXCL/XTlWXERtxf45zBbU63WwCA9tMyYk63W2h2cbDweD9V0jdpBdwTBFHYiOcQrDiCw9XPC/e1vf/ENLGsvenzaHdcPcdAnlwzVdt1v9D3HdCKBBMDLR1GFsHtCVXs8JCL2FNo2rxzaMNH2/1/4orCochaKJF7I0rk3qhyCDxR4IkBAJUYAJIQWGX4ziJCUXibiMRgf4bOjlcAp8Zy63iTdX+qB+er3SMPEl3pijfZpguFgGGHiGIXWxBs4gy6uagHBOvq8IJSSTAXx/Y711+WDuXUEotBkjXeH0HTHXcAeJ5cdpXEdb4HALxa754waN0BAJy/2FnnEpQkutIVY0ON54cGgOd+u7DkFX8IEZuYwc4h2NiY4Ipb4DGjUTvMaMTvNcyDl0eo6LtdtT33SigOZh0gL1rM3IEWJgxapqQ6Ji9aeGKQJ9dMQzFglF7cBKUXNzGtZxO72IJg885RreU1rMk3TpdY9s8Zc0MfD99ZBM8HtZe3Z+1+hsk1WwIAJtdsKa97AhOFuVfUDqjk1cEqUTDKG5S+bX6zNmLilPHyUuzvCHn59VZv/HqrNzocOi0vInY2WOW8HlsU4hR2UtnGxoSk0RXxqC6/w52S3tuMRyaN6Fzd8jknp1+Lqgecw0mElaqm2r8wdInuPSWvDkahb52zmy0KV/eBELkDhlHYqPvDopg4RT93ctPCcwyPGVyigCwOwSWkSYpSh+gHD9zfYpm8/tzPDhN5ip1UtrGJIXq2vYki3ZII93856KVXxQAAetz5DGGlpIkIlcLgCi391cOFtMRE9LrWS1DbmCmpjsHHMRDq6+HuDbHe4dBpWRS0lF7cBN85xjT6YpFbh7fxArYg2NiYMHrdGWBdQ+H+JAAmi/u5SSwCqrX80NL5Jqdfq9q24g4A4GDWAShk6Qzu8Xr4X/D5yXwCJiO07sApAnthvYufTUxhC4KNTSxReOZWAOZuYWHoErRq2lxXFtMYtThirsBVd6DNJTQtPAehEe0FtW3eNrYg2NjEEq6GjRixIQZm+Pz0P7dDRUpsMYjbxOmkMiHkIQBxc4WEQ0YAt972RcQB7O9Bwv4eJOzvQYL3PeSilPq5eqC47hBOu5Mpf9cghBy0vwf7e2DY34OE/T1IePN7sPsh2NjY2NgAsAXBxsbGxsZBXBeEWW/7AuII9vcgYX8PEvb3IGF/DxJe+x7idFLZxsbGxib2iOsOwcbGxsYmloizgkAIqUUIOU0IOUsI6fu2r8fbEELmEkJuEkLCFWXpCSFbCCH/OV7TOcoJIWSS47s4RggprnhPG0f9/wghbd7GZ3EXQkgOQkgYIeQEISSCENLLUZ7QvodkhJD9hJCjju9hkKP8A0LIPsfnXUoI8XWUJ3Vsn3Xsz6041k+O8tOEkE/fzifyDEKIDyHkX0LIWsd2gvseCCGRhJDjhJAjhJCDjrKY/11QSuPcAsAHwDkAeQD4AjgK4KO3fV1e/oyVARQHEK4oGwWgr2O9L4CRjvU6ADYAIADKAtjnKE8P4LzjNZ1jPd3b/mwufAfvAyjuWE8F4AyAjxLg90AAvOdYTwJgn+PzhQJo7iifAaCrY70bgBmO9eYAljrWP3L8VpIC+MDxG/J525/Pje+jN4DFANY6thPc9wAgEkBGTVmM/y7iqkMoDeAspfQ8pfQFgCUA6r/la/IqlNIdAO5oiusDYDPILwDQQFEeQiX2AkhLCHkfwKcAtlBK71BK7wLYAsB8hvk4AqX0GqX0sGP9IYCTALIh4X0PlFL6yLGZxLFQANUALHeUa78H9v0sB/A/QghxlC+hlD6nlF4AcBbSbyneQAjJDqAugGDHNkEC/B4ExPjvIq4KQjYAlxXbUY6yd53MlNJrjvXrADI71kXfxzvzPTns/seQno4T3PfgCJMcAXAT0g/3HIB7lNJXjirKzyR/Xsf++wAy4B34HgBMANAHAJvsOQMS5vdAAWwmhBwihHRylMX47yKu91ROsFBKKSEkQTQBI4S8B+APAN9SSh9ID3kSCeV7oJS+BlCMEJIWwAoABd/yJcU6hJDPANyklB4ihFR529fzlqlIKb1CCMkEYAsh5JRyZ0z9LuKqQ7gCIIdiO7uj7F3nhsPqwfF601Eu+j7i/fdECEkCSQwWUUr/dBQnuO+BQSm9ByAMQDlI1p89tCk/k/x5HfvTALiN+P89VADwOSEkElKYuBqAiUh43wMopVccrzchPSCURiz8LuKqIBwAkM/RusAXUsJo9Vu+pthgNQDWEqANgFWK8taO1gRlAdx3WMdNAGoSQtI5WhzUdJTFCxzx3jkATlJKlRMJJ7Tvwc/hDEAISQ6gBqR8ShiAxo5q2u+BfT+NAWyjUhZxNYDmjtY3HwDIB2B/7HwKz6GU/kQpzU4pzQ3pN7+NUtoSCex7IISkJISkYuuQ/p/DERu/i7edTTfIsteB1OrkHIBf3vb1xMDn+x3ANQAvIcX22kOKf/4F4D8AWwGkd9QlAKY6vovjAEoqjvM1pKTZWQDt3vbncvE7qAgpVnoMwBHHUicBfg9FAfzr+B7CAQxwlOeBdCM7C2AZgKSO8mSO7bOO/XkUx/rF8f2cBlD7bX82D76TKnC2MkpQ34Pj8x51LBHs/hcbvwu7p7KNjY2NDYC4GzKysbGxsYllbEGwsbGxsQFgC4KNjY2NjQNbEGxsbGxsANiCYGNjY2PjwBYEGxsbGxsAtiDY2NjY2DiwBcHGxsbGBgDwf+F2Bp5mQhyBAAAAAElFTkSuQmCC\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "plt.imshow(tissue_pieces[0].spixel_mask, cmap=cMap)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Intensity.Mean</th>\n",
+       "      <th>Intensity.Median</th>\n",
+       "      <th>Intensity.Std</th>\n",
+       "      <th>Intensity.IQR</th>\n",
+       "      <th>Intensity.HistEntropy</th>\n",
+       "      <th>cluster</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <td>5</td>\n",
+       "      <td>86.639486</td>\n",
+       "      <td>74.0</td>\n",
+       "      <td>50.329524</td>\n",
+       "      <td>34.0</td>\n",
+       "      <td>1.775608</td>\n",
+       "      <td>4</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>6</td>\n",
+       "      <td>73.010711</td>\n",
+       "      <td>68.0</td>\n",
+       "      <td>26.269239</td>\n",
+       "      <td>20.0</td>\n",
+       "      <td>1.341687</td>\n",
+       "      <td>4</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>67</td>\n",
+       "      <td>88.820514</td>\n",
+       "      <td>73.0</td>\n",
+       "      <td>56.899073</td>\n",
+       "      <td>49.0</td>\n",
+       "      <td>1.942993</td>\n",
+       "      <td>5</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>68</td>\n",
+       "      <td>72.959455</td>\n",
+       "      <td>67.0</td>\n",
+       "      <td>31.681785</td>\n",
+       "      <td>21.0</td>\n",
+       "      <td>1.349226</td>\n",
+       "      <td>4</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>71</td>\n",
+       "      <td>100.068075</td>\n",
+       "      <td>79.0</td>\n",
+       "      <td>60.721122</td>\n",
+       "      <td>67.0</td>\n",
+       "      <td>1.989196</td>\n",
+       "      <td>5</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "    Intensity.Mean  Intensity.Median  Intensity.Std  Intensity.IQR  \\\n",
+       "5        86.639486              74.0      50.329524           34.0   \n",
+       "6        73.010711              68.0      26.269239           20.0   \n",
+       "67       88.820514              73.0      56.899073           49.0   \n",
+       "68       72.959455              67.0      31.681785           21.0   \n",
+       "71      100.068075              79.0      60.721122           67.0   \n",
+       "\n",
+       "    Intensity.HistEntropy  cluster  \n",
+       "5                1.775608        4  \n",
+       "6                1.341687        4  \n",
+       "67               1.942993        5  \n",
+       "68               1.349226        4  \n",
+       "71               1.989196        5  "
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "tissue_pieces[0].fdata.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{1: {'cellularity': 20, 'color': 'rgb(253,253,255)'},\n",
+       " 2: {'cellularity': 37, 'color': 'rgb(167,0,0)'},\n",
+       " 3: {'cellularity': 47, 'color': 'rgb(127,0,0)'},\n",
+       " 4: {'cellularity': 26, 'color': 'rgb(255,105,105)'},\n",
+       " 5: {'cellularity': 29, 'color': 'rgb(255,29,29)'}}"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "tissue_pieces[0].cluster_props"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Check the visualization on HistomicsUI\n",
+    "\n",
+    "Now you may go to the slide on Digital Slide Archive and check the posted annotations."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

@@ -1,0 +1,643 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Local backup and SQL querying of annotation data\n",
+    "\n",
+    "**Overview:**\n",
+    "\n",
+    "![sqlite](https://user-images.githubusercontent.com/22067552/80071301-5e868080-8512-11ea-8115-47fcefdb568a.png)\n",
+    "\n",
+    "Annotations represent a significant time investment for the users who generate\n",
+    "them and they should be backed up frequently. The simplest way to backup the\n",
+    "annotations in a DSA database is to perform a\n",
+    "[mongodump](https://docs.mongodb.com/manual/reference/program/mongodump/)\n",
+    "operation. While frequent `mongodump` operations are always important to guard\n",
+    "against failures they have the following disadvantages:\n",
+    "- You need to have access on the server where the annotations are hosted.\n",
+    "- The entire Mongo database is backed up, not just the folder you care about.\n",
+    "- You cannot query the database using SQL queries.\n",
+    "HistomicsTK has utility functions that allow the recursive backup of a girder\n",
+    "database locally as a combination of `.json` files (most similar to the raw format),\n",
+    "tabular files (`.csv`), and/or an SQLite database.\n",
+    "\n",
+    "The SQLite database can easily\n",
+    "be viewed using, for example, an [offline](https://sqlitebrowser.org/dl/)\n",
+    "sqlite viewer or even an [online](https://sqliteonline.com/) sqlite\n",
+    "viewer.\n",
+    "\n",
+    "**Where to look:**\n",
+    "\n",
+    "```\n",
+    "|_histomicstk/\n",
+    "   |_annotations_and_masks/\n",
+    "      |_annotation_database_parser.py\n",
+    "      |_annotation_and_mask_utils.py -> parse_slide_annotations_into_tables()\n",
+    "      |_tests/\n",
+    "         |_test_annotation_database_parser.py\n",
+    "         |_test_annotation_and_mask_utils.py -> test_parse_slide_annotations_into_table()\n",
+    "   \n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "import pandas as pd\n",
+    "import sqlalchemy as db\n",
+    "\n",
+    "from histomicstk.utils.girder_convenience_utils import connect_to_api\n",
+    "from histomicstk.annotations_and_masks.annotation_database_parser import (\n",
+    "    dump_annotations_locally, parse_annotations_to_local_tables)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Connect and set parameters\n",
+    "\n",
+    "We use an api key to connect to the remote server, set the girder ID of the folder we want to backup, and set the local path where the backup will be stored."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "gc = connect_to_api(\n",
+    "    apiurl='http://candygram.neurology.emory.edu:8080/api/v1/',\n",
+    "    apikey='kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb')\n",
+    "\n",
+    "# This is the girder ID of the folder we would like to backup and parse locally\n",
+    "SAMPLE_FOLDER_ID = \"5e24c20dddda5f8398695671\"\n",
+    "\n",
+    "# This is where the annotations and sqlite database will be dumped locally\n",
+    "savepath = '/home/mtageld/Desktop/tmp/concordance/'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Examine functions for pulling annotation data"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This is the main function you will be using to walk the folder and pull the annotations from the remote server"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Dump annotations of folder and subfolders locally recursively.\n",
+      "\n",
+      "    This reproduces this tiered structure locally and (possibly) dumps\n",
+      "    annotations there. Adapted from Lee A.D. Cooper\n",
+      "\n",
+      "    Parameters\n",
+      "    -----------\n",
+      "    gc : girder_client.GirderClient\n",
+      "        authenticated girder client instance\n",
+      "\n",
+      "    folderid : str\n",
+      "        girder id of source (base) folder\n",
+      "\n",
+      "    local : str\n",
+      "        local path to dump annotations\n",
+      "\n",
+      "    save_json : bool\n",
+      "        whether to dump annotations as json file\n",
+      "\n",
+      "    save_sqlite : bool\n",
+      "        whether to save the backup into an sqlite database\n",
+      "\n",
+      "    dbcon : sqlalchemy.create_engine.connect() object\n",
+      "        IGNORE THIS PARAMETER!! This is used internally.\n",
+      "\n",
+      "    callback : function\n",
+      "        function to call that CAN accept AT LEAST the following params\n",
+      "        - item: girder response with item information\n",
+      "        - annotations: loaded annotations\n",
+      "        - local: local directory\n",
+      "        - monitorPrefix: string\n",
+      "        - dbcon: sqlalchemy.create_engine.connect() object\n",
+      "        You can just add kwargs at the end of your callback definition\n",
+      "        for simplicity.\n",
+      "\n",
+      "    callback_kwargs : dict\n",
+      "        kwargs to pass along to callback. DO NOT pass any of the parameters\n",
+      "        item, annotations, local, monitorPrefix, or dbcon as these will be\n",
+      "        internally passed. Just include any specific paremeters for the\n",
+      "        callback. See parse_annotations_to_local_tables() above for\n",
+      "        an example of a callback and the unir test of this function.\n",
+      "\n",
+      "    \n"
+     ]
+    }
+   ],
+   "source": [
+    "print(dump_annotations_locally.__doc__)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This optionally calls the following function to parse annotations into tables that are added to an sqlite database."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Parse loaded annotations for slide into tables.\n",
+      "\n",
+      "    Parameters\n",
+      "    ----------\n",
+      "    item : dict\n",
+      "        girder response with item information\n",
+      "\n",
+      "    annotations : dict\n",
+      "        loaded annotations\n",
+      "\n",
+      "    local : str\n",
+      "        local directory\n",
+      "\n",
+      "    save_csv : bool\n",
+      "        whether to use histomicstk.annotations_and_masks.annotation_and_mask.\n",
+      "        parse_slide_annotations_into_tables() to get a tabular representation\n",
+      "        (including some simple calculations like bounding box) and save\n",
+      "        the output as two csv files, one representing the annotation documents\n",
+      "        and the other representing the actual annotation elements (polygons).\n",
+      "\n",
+      "    save_sqlite : bool\n",
+      "        whether to save the backup into an sqlite database\n",
+      "\n",
+      "    dbcon : sqlalchemy.create_engine.connect() object\n",
+      "        IGNORE THIS PARAMETER!! This is used internally.\n",
+      "\n",
+      "    monitorPrefix : str\n",
+      "        text to prepend to printed statements\n",
+      "\n",
+      "    \n"
+     ]
+    }
+   ],
+   "source": [
+    "print(parse_annotations_to_local_tables.__doc__)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Case 1: Simple backup"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The simplest case is to backup the information about the girder folders, items, and annotations as `.json` files, with a folder structure replicated locally as it is in the girder database. The user may also elect to save the folder and item/slide information (but not the annotations) as the following tables in a SQLite database:\n",
+    "\n",
+    "- **folders**: all girder folders contained within the folder that the user wants to backup. This includes an 'absolute girder path' convenience column. The column '\\_id' is the unique girder ID.  \n",
+    "\n",
+    "- **items**: all items (slide). The column '\\_id' is the unique girder ID, and is linked to the folders table by the 'folderId' column. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Here is the syntax:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      ": save folder info\n",
+      "Participant_1: save folder info\n",
+      "Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): save item info\n",
+      "Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): load annotations\n",
+      "Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): save annotations\n",
+      "Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): save item info\n",
+      "Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): load annotations\n",
+      "Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): save annotations\n",
+      "Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): save item info\n",
+      "Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): load annotations\n",
+      "Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): save annotations\n",
+      "Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): save item info\n",
+      "Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): load annotations\n",
+      "Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): save annotations\n",
+      "Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): save item info\n",
+      "Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): load annotations\n",
+      "Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): save annotations\n",
+      "Participant_2: save folder info\n",
+      "Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): save item info\n",
+      "Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): load annotations\n",
+      "Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): save annotations\n",
+      "Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): save item info\n",
+      "Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): load annotations\n",
+      "Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): save annotations\n",
+      "Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): save item info\n",
+      "Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): load annotations\n",
+      "Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): save annotations\n",
+      "Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): save item info\n",
+      "Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): load annotations\n",
+      "Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): save annotations\n",
+      "Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): save item info\n",
+      "Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): load annotations\n",
+      "Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): save annotations\n"
+     ]
+    }
+   ],
+   "source": [
+    "# recursively save annotations -- JSONs + sqlite for folders/items\n",
+    "dump_annotations_locally(\n",
+    "    gc, folderid=SAMPLE_FOLDER_ID, local=savepath,\n",
+    "    save_json=True, save_sqlite=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Check the results"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/home/mtageld/Desktop/tmp/concordance/\r\n",
+      "├── Concordance.json\r\n",
+      "├── Concordance.sqlite\r\n",
+      "├── Participant_1\r\n",
+      "│   ├── Participant_1.json\r\n",
+      "│   ├── TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs_annotations.json\r\n",
+      "│   ├── TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs.json\r\n",
+      "│   ├── TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs_annotations.json\r\n",
+      "│   ├── TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs.json\r\n",
+      "│   ├── TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs_annotations.json\r\n",
+      "│   ├── TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs.json\r\n",
+      "│   ├── TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs_annotations.json\r\n",
+      "│   ├── TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs.json\r\n",
+      "│   ├── TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs_annotations.json\r\n",
+      "│   └── TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs.json\r\n",
+      "└── Participant_2\r\n",
+      "    ├── Participant_2.json\r\n",
+      "    ├── TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs_annotations.json\r\n",
+      "    ├── TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs.json\r\n",
+      "    ├── TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs_annotations.json\r\n",
+      "    ├── TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs.json\r\n",
+      "    ├── TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs_annotations.json\r\n",
+      "    ├── TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs.json\r\n",
+      "    ├── TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs_annotations.json\r\n",
+      "    ├── TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs.json\r\n",
+      "    ├── TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs_annotations.json\r\n",
+      "    └── TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs.json\r\n",
+      "\r\n",
+      "2 directories, 24 files\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!tree '/home/mtageld/Desktop/tmp/concordance/'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Query the database"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Connect to the database\n",
+    "sql_engine = db.create_engine(\n",
+    "    'sqlite:///%s/Concordance.sqlite' % savepath)\n",
+    "dbcon = sql_engine.connect()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": "                        _id           name  \\\n0  5e24c20dddda5f8398695671    Concordance   \n1  5e24c0dfddda5f839869556c  Participant_1   \n2  5e24c0d3ddda5f8398694f06  Participant_2   \n\n                                     folder_path  \n0                UncrossPolygonTest/Concordance/  \n1  UncrossPolygonTest/Concordance/Participant_1/  \n2  UncrossPolygonTest/Concordance/Participant_2/  ",
+      "text/html": "<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>_id</th>\n      <th>name</th>\n      <th>folder_path</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>5e24c20dddda5f8398695671</td>\n      <td>Concordance</td>\n      <td>UncrossPolygonTest/Concordance/</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>5e24c0dfddda5f839869556c</td>\n      <td>Participant_1</td>\n      <td>UncrossPolygonTest/Concordance/Participant_1/</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>5e24c0d3ddda5f8398694f06</td>\n      <td>Participant_2</td>\n      <td>UncrossPolygonTest/Concordance/Participant_2/</td>\n    </tr>\n  </tbody>\n</table>\n</div>"
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# folders table\n",
+    "folders_df = pd.read_sql_query(\n",
+    "    \"\"\"\n",
+    "    SELECT \"_id\", \"name\", \"folder_path\"\n",
+    "    FROM \"folders\"\n",
+    "    ;\"\"\", dbcon)\n",
+    "\n",
+    "folders_df"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": "                        _id  \\\n0  5e24c0dfddda5f8398695571   \n1  5e24c0dfddda5f8398695586   \n2  5e24c0dfddda5f83986955b1   \n3  5e24c0dfddda5f83986955c1   \n4  5e24c0e0ddda5f83986955d8   \n5  5e24c0dbddda5f839869531a   \n6  5e24c0dbddda5f8398695342   \n7  5e24c0dbddda5f8398695372   \n8  5e24c0dcddda5f8398695387   \n9  5e24c0dcddda5f83986953aa   \n\n                                                name                  folderId  \n0  TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...  5e24c0dfddda5f839869556c  \n1  TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B...  5e24c0dfddda5f839869556c  \n2  TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA2...  5e24c0dfddda5f839869556c  \n3  TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E4...  5e24c0dfddda5f839869556c  \n4  TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F7...  5e24c0dfddda5f839869556c  \n5  TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...  5e24c0d3ddda5f8398694f06  \n6  TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B...  5e24c0d3ddda5f8398694f06  \n7  TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA2...  5e24c0d3ddda5f8398694f06  \n8  TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E4...  5e24c0d3ddda5f8398694f06  \n9  TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F7...  5e24c0d3ddda5f8398694f06  ",
+      "text/html": "<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>_id</th>\n      <th>name</th>\n      <th>folderId</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>5e24c0dfddda5f8398695571</td>\n      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>\n      <td>5e24c0dfddda5f839869556c</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>5e24c0dfddda5f8398695586</td>\n      <td>TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B...</td>\n      <td>5e24c0dfddda5f839869556c</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>5e24c0dfddda5f83986955b1</td>\n      <td>TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA2...</td>\n      <td>5e24c0dfddda5f839869556c</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>5e24c0dfddda5f83986955c1</td>\n      <td>TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E4...</td>\n      <td>5e24c0dfddda5f839869556c</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>5e24c0e0ddda5f83986955d8</td>\n      <td>TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F7...</td>\n      <td>5e24c0dfddda5f839869556c</td>\n    </tr>\n    <tr>\n      <th>5</th>\n      <td>5e24c0dbddda5f839869531a</td>\n      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>\n      <td>5e24c0d3ddda5f8398694f06</td>\n    </tr>\n    <tr>\n      <th>6</th>\n      <td>5e24c0dbddda5f8398695342</td>\n      <td>TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B...</td>\n      <td>5e24c0d3ddda5f8398694f06</td>\n    </tr>\n    <tr>\n      <th>7</th>\n      <td>5e24c0dbddda5f8398695372</td>\n      <td>TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA2...</td>\n      <td>5e24c0d3ddda5f8398694f06</td>\n    </tr>\n    <tr>\n      <th>8</th>\n      <td>5e24c0dcddda5f8398695387</td>\n      <td>TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E4...</td>\n      <td>5e24c0d3ddda5f8398694f06</td>\n    </tr>\n    <tr>\n      <th>9</th>\n      <td>5e24c0dcddda5f83986953aa</td>\n      <td>TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F7...</td>\n      <td>5e24c0d3ddda5f8398694f06</td>\n    </tr>\n  </tbody>\n</table>\n</div>"
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# items table\n",
+    "items_df = pd.read_sql_query(\n",
+    "    \"\"\"\n",
+    "    SELECT \"_id\", \"name\", \"folderid\"\n",
+    "    FROM \"items\"\n",
+    "    ;\"\"\", dbcon)\n",
+    "\n",
+    "items_df"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# cleanup\n",
+    "import shutil\n",
+    "shutil.rmtree(os.path.join(savepath))\n",
+    "os.mkdir(savepath)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Case 2: Parse annotations to tables"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Besides everything outlined above, we could also parse the annotations into tables in the SQLite database and not just save the raw JSON files. This is a little slower because loops through each annotation element. Beside the tables above, the following extra tables are saved into the SQLite database:\n",
+    "\n",
+    "- **annotation_docs**: Information about all the annotation documents (one document is a collection of elements like polygons, rectangles etc). The column 'annotation_girder_id' is the unique girder ID, and is linked to the 'items' table by the 'itemid' column. \n",
+    "\n",
+    "- **annotation_elements**: Information about the annotation elements (polygons, rectangles, points, etc). The column 'element_girder_id' is the unique girder ID, and is linked to the 'annotation_docs' table by the 'annotation_girder_id' column. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Here's the syntax:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): load annotations\n",
+      "Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): run callback\n",
+      "Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): parse to tables\n",
+      "Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): load annotations\n",
+      "Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): run callback\n",
+      "Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): parse to tables\n",
+      "Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): load annotations\n",
+      "Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): run callback\n",
+      "Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): parse to tables\n",
+      "Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): load annotations\n",
+      "Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): run callback\n",
+      "Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): parse to tables\n",
+      "Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): load annotations\n",
+      "Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): run callback\n",
+      "Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): parse to tables\n",
+      "Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): load annotations\n",
+      "Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): run callback\n",
+      "Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): parse to tables\n",
+      "Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): load annotations\n",
+      "Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): run callback\n",
+      "Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): parse to tables\n",
+      "Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): load annotations\n",
+      "Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): run callback\n",
+      "Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): parse to tables\n",
+      "Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): load annotations\n",
+      "Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): run callback\n",
+      "Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): parse to tables\n",
+      "Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): load annotations\n",
+      "Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): run callback\n",
+      "Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): parse to tables\n"
+     ]
+    }
+   ],
+   "source": [
+    "# recursively save annotations -- parse sqlite\n",
+    "dump_annotations_locally(\n",
+    "    gc, folderid=SAMPLE_FOLDER_ID, local=savepath,\n",
+    "    save_json=False, save_sqlite=True,\n",
+    "    callback=parse_annotations_to_local_tables,\n",
+    "    callback_kwargs={\n",
+    "        'save_csv': False,\n",
+    "        'save_sqlite': True,\n",
+    "    }\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Check the result"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/home/mtageld/Desktop/tmp/concordance/\r\n",
+      "├── Concordance.sqlite\r\n",
+      "├── Participant_1\r\n",
+      "└── Participant_2\r\n",
+      "\r\n",
+      "2 directories, 1 file\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!tree '/home/mtageld/Desktop/tmp/concordance/'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Query the database"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Connect to the database\n",
+    "sql_engine = db.create_engine(\n",
+    "    'sqlite:///%s/Concordance.sqlite' % savepath)\n",
+    "dbcon = sql_engine.connect()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": "       annotation_girder_id                    itemId  \\\n0  5e24c0dfddda5f8398695573  5e24c0dfddda5f8398695571   \n1  5e24c0dfddda5f8398695575  5e24c0dfddda5f8398695571   \n2  5e24c0dfddda5f839869557a  5e24c0dfddda5f8398695571   \n3  5e24c0dfddda5f8398695580  5e24c0dfddda5f8398695571   \n4  5e24c0dfddda5f8398695582  5e24c0dfddda5f8398695571   \n\n                                           item_name  element_count  \n0  TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...              1  \n1  TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...              4  \n2  TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...              5  \n3  TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...              1  \n4  TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...              1  ",
+      "text/html": "<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>annotation_girder_id</th>\n      <th>itemId</th>\n      <th>item_name</th>\n      <th>element_count</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>5e24c0dfddda5f8398695573</td>\n      <td>5e24c0dfddda5f8398695571</td>\n      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>\n      <td>1</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>5e24c0dfddda5f8398695575</td>\n      <td>5e24c0dfddda5f8398695571</td>\n      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>\n      <td>4</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>5e24c0dfddda5f839869557a</td>\n      <td>5e24c0dfddda5f8398695571</td>\n      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>\n      <td>5</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>5e24c0dfddda5f8398695580</td>\n      <td>5e24c0dfddda5f8398695571</td>\n      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>\n      <td>1</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>5e24c0dfddda5f8398695582</td>\n      <td>5e24c0dfddda5f8398695571</td>\n      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>\n      <td>1</td>\n    </tr>\n  </tbody>\n</table>\n</div>"
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# annotation documents\n",
+    "docs_df = pd.read_sql_query(\n",
+    "    \"\"\"\n",
+    "    SELECT \"annotation_girder_id\", \"itemId\", \"item_name\", \"element_count\"\n",
+    "    FROM 'annotation_docs'\n",
+    "    ;\"\"\", dbcon)\n",
+    "docs_df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": "                            group  count(*)\n0              Necrosis_or_Debris         6\n1                    Mostly_Blood         3\n2                    Mostly_Tumor        10\n3            Arteriole_or_Veinule         6\n4                      Evaluation        10\n5                         Exclude        20\n6                        Exclude         23\n7                    Mostly_Blood         3\n8                      Mostly_Fat         9\n9                    Mostly_Lymph         2\n10  Mostly_Lymphocytic_Infiltrate        36\n11             Mostly_PlasmaCells         9\n12                   Mostly_Tumor        83\n13             Necrosis_or_Debris        10",
+      "text/html": "<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>group</th>\n      <th>count(*)</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>Necrosis_or_Debris</td>\n      <td>6</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>Mostly_Blood</td>\n      <td>3</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>Mostly_Tumor</td>\n      <td>10</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>Arteriole_or_Veinule</td>\n      <td>6</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>Evaluation</td>\n      <td>10</td>\n    </tr>\n    <tr>\n      <th>5</th>\n      <td>Exclude</td>\n      <td>20</td>\n    </tr>\n    <tr>\n      <th>6</th>\n      <td>Exclude</td>\n      <td>23</td>\n    </tr>\n    <tr>\n      <th>7</th>\n      <td>Mostly_Blood</td>\n      <td>3</td>\n    </tr>\n    <tr>\n      <th>8</th>\n      <td>Mostly_Fat</td>\n      <td>9</td>\n    </tr>\n    <tr>\n      <th>9</th>\n      <td>Mostly_Lymph</td>\n      <td>2</td>\n    </tr>\n    <tr>\n      <th>10</th>\n      <td>Mostly_Lymphocytic_Infiltrate</td>\n      <td>36</td>\n    </tr>\n    <tr>\n      <th>11</th>\n      <td>Mostly_PlasmaCells</td>\n      <td>9</td>\n    </tr>\n    <tr>\n      <th>12</th>\n      <td>Mostly_Tumor</td>\n      <td>83</td>\n    </tr>\n    <tr>\n      <th>13</th>\n      <td>Necrosis_or_Debris</td>\n      <td>10</td>\n    </tr>\n  </tbody>\n</table>\n</div>"
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# annotation elements\n",
+    "elements_summary = pd.read_sql_query(\n",
+    "    \"\"\"\n",
+    "    SELECT \"group\", count(*)\n",
+    "    FROM 'annotation_elements'\n",
+    "    GROUP BY \"group\"\n",
+    "    ;\"\"\", dbcon)\n",
+    "elements_summary"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Sample screenshots"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "![image1](https://user-images.githubusercontent.com/22067552/72703220-09a62900-3b23-11ea-8968-709f938b1eb9.png)\n",
+    "\n",
+    "![image2](https://user-images.githubusercontent.com/22067552/72703277-29d5e800-3b23-11ea-80fe-86d82a4e86b3.png)\n",
+    "\n",
+    "![image3](https://user-images.githubusercontent.com/22067552/72703918-001dc080-3b25-11ea-8ca2-6aa5454536db.png)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.8"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

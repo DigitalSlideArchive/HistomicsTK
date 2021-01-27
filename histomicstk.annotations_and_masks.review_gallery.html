@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Creating mosaic annotation review galleries &mdash; HistomicsTK 0.1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Converting annotations to semantic segmentation mask images" href="histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.html" />
+    <link rel="prev" title="Local backup and SQL querying of annotation data" href="histomicstk.annotations_and_masks.annotation_database_parser.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HistomicsTK
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotation_database_parser.html">Annotation database backup and sqlite parser</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Mosaic review gallery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.html">Annotations to semantic segmentation masks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotations_to_object_segmentation_masks.html">Annotations to object segmentation masks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.masks_to_annotations_handler.html">Masks to annotations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotation_and_mask_utils.html">Annotation and mask utilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.polygon_merger.html">Polygon merger</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="api-docs.html">API Documentation</a> &raquo;</li>
+        
+          <li><a href="histomicstk.html">histomicstk</a> &raquo;</li>
+        
+          <li><a href="histomicstk.annotations_and_masks.html">histomicstk.annotations_and_masks</a> &raquo;</li>
+        
+      <li>Creating mosaic annotation review galleries</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/histomicstk.annotations_and_masks.review_gallery.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-histomicstk.annotations_and_masks.review_gallery">
+<span id="creating-mosaic-annotation-review-galleries"></span><h1>Creating mosaic annotation review galleries<a class="headerlink" href="#module-histomicstk.annotations_and_masks.review_gallery" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.review_gallery.create_review_galleries">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.review_gallery.</code><code class="sig-name descname">create_review_galleries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tilepath_base</span></em>, <em class="sig-param"><span class="n">upload_results</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">gc</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gallery_savepath</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gallery_folderid</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">25</span></em>, <em class="sig-param"><span class="n">tiles_per_row</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">tiles_per_column</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">annprops</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">url</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nameprefix</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/review_gallery.html#create_review_galleries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.review_gallery.create_review_galleries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and or post review galleries for rapid review.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tilepath_base</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – directory where combined visualization.</p></li>
+<li><p><strong>upload_results</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – upload results to DSA?</p></li>
+<li><p><strong>gc</strong> (<em>girder_client.Girder_Client</em>) – authenticated girder client. Only needed upload_results.</p></li>
+<li><p><strong>gallery_savepath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – directory to save gallery. Only if upload_results.</p></li>
+<li><p><strong>gallery_folderid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – girder ID of folder to post galleries. Only if upload_result.</p></li>
+<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – padding in pixels between tiles in same gallery.</p></li>
+<li><p><strong>tiles_per_row</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – how many visualization tiles per row in gallery.</p></li>
+<li><p><strong>tiles_per_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – how many visualization tiles per column in gallery.</p></li>
+<li><p><strong>annprops</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – properties of the annotations to be posted to DSA. Passed directly
+as annprops to get_annotation_documents_from_contours()</p></li>
+<li><p><strong>url</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – url of the Digital Slide Archive Instance. For example:
+<a class="reference external" href="http://candygram.neurology.emory.edu:8080/">http://candygram.neurology.emory.edu:8080/</a></p></li>
+<li><p><strong>nameprefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – prefix to prepend to gallery name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>each entry is a dict representing the response of the server
+post request to upload the gallery to DSA.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.review_gallery.get_all_rois_from_folder_v2">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.review_gallery.</code><code class="sig-name descname">get_all_rois_from_folder_v2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gc</span></em>, <em class="sig-param"><span class="n">folderid</span></em>, <em class="sig-param"><span class="n">get_all_rois_kwargs</span></em>, <em class="sig-param"><span class="n">monitor</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/review_gallery.html#get_all_rois_from_folder_v2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.review_gallery.get_all_rois_from_folder_v2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all rois in a girder folder using get_all_rois_from_slide_v2().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gc</strong> (<em>girder_client.Girder_Client</em>) – authenticated girder client</p></li>
+<li><p><strong>folderid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – girder id of folder</p></li>
+<li><p><strong>get_all_rois_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – kwargs to pass to get_all_rois_from_slide_v2()</p></li>
+<li><p><strong>monitor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – monitor prefix</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.html" class="btn btn-neutral float-right" title="Converting annotations to semantic segmentation mask images" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="histomicstk.annotations_and_masks.annotation_database_parser.html" class="btn btn-neutral float-left" title="Local backup and SQL querying of annotation data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Kitware, Inc..
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

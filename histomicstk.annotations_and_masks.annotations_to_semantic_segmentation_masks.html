@@ -1,0 +1,521 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Converting annotations to semantic segmentation mask images &mdash; HistomicsTK 0.1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Converting annotations to object segmentation mask images" href="histomicstk.annotations_and_masks.annotations_to_object_segmentation_masks.html" />
+    <link rel="prev" title="Creating mosaic annotation review galleries" href="histomicstk.annotations_and_masks.review_gallery.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HistomicsTK
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotation_database_parser.html">Annotation database backup and sqlite parser</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.review_gallery.html">Mosaic review gallery</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Annotations to semantic segmentation masks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotations_to_object_segmentation_masks.html">Annotations to object segmentation masks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.masks_to_annotations_handler.html">Masks to annotations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotation_and_mask_utils.html">Annotation and mask utilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.polygon_merger.html">Polygon merger</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="api-docs.html">API Documentation</a> &raquo;</li>
+        
+          <li><a href="histomicstk.html">histomicstk</a> &raquo;</li>
+        
+          <li><a href="histomicstk.annotations_and_masks.html">histomicstk.annotations_and_masks</a> &raquo;</li>
+        
+      <li>Converting annotations to semantic segmentation mask images</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-histomicstk.annotations_and_masks.annotations_to_masks_handler">
+<span id="converting-annotations-to-semantic-segmentation-mask-images"></span><h1>Converting annotations to semantic segmentation mask images<a class="headerlink" href="#module-histomicstk.annotations_and_masks.annotations_to_masks_handler" title="Permalink to this headline">¶</a></h1>
+<p>Created on Mon Aug 12 18:33:48 2019.</p>
+<p>&#64;author: tageldim</p>
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotations_to_masks_handler.get_all_rois_from_slide">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotations_to_masks_handler.</code><code class="sig-name descname">get_all_rois_from_slide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gc</span></em>, <em class="sig-param"><span class="n">slide_id</span></em>, <em class="sig-param"><span class="n">GTCodes_dict</span></em>, <em class="sig-param"><span class="n">save_directories</span></em>, <em class="sig-param"><span class="n">get_image_and_mask_from_slide_kwargs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_roiside</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">slide_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">monitorPrefix</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotations_to_masks_handler.html#get_all_rois_from_slide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotations_to_masks_handler.get_all_rois_from_slide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse annotations and saves ground truth masks for ALL ROIs.</p>
+<p>Get all ROIs in a single slide. This is mainly uses
+get_image_and_mask_from_slide(), which should be referred to
+for implementation details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gc</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><em>object</em></a>) – girder client object to make requests, for example:
+gc = girder_client.GirderClient(apiUrl = APIURL)
+gc.authenticate(interactive=True)</p></li>
+<li><p><strong>slide_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – girder id for item (slide)</p></li>
+<li><p><strong>GTCodes_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – the ground truth codes and information dict.
+This is a dict that is indexed by the annotation group name and
+each entry is in turn a dict with the following keys:
+- group: group name of annotation (string), eg. mostly_tumor
+- overlay_order: int, how early to place the annotation in the
+mask. Larger values means this annotation group is overlayed
+last and overwrites whatever overlaps it.
+- GT_code: int, desired ground truth code (in the mask)
+Pixels of this value belong to corresponding group (class)
+- is_roi: Flag for whether this group encodes an ROI
+- is_background_class: Flag, whether this group is the default
+fill value inside the ROI. For example, you may descide that
+any pixel inside the ROI is considered stroma.</p></li>
+<li><p><strong>save_directories</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – paths to directories to save data. Each entry is a string, and the
+following keys are allowed
+- ROI: path to save masks (labeled images)
+- rgb: path to save rgb images
+- contours: path to save annotation contours
+- visualization: path to save rgb visualzation overlays</p></li>
+<li><p><strong>get_image_and_mask_from_slide_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – kwargs to pass to get_image_and_mask_from_slide()
+default values are assigned if speceific parameters are not given.</p></li>
+<li><p><strong>max_roiside</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – If int, this is the maximum allowed side for a downloaded region. If
+a region-of-interest is larger than this size, then it is tiled into
+non-overlapping regions whose maximal side is max_roiside.
+If None, the ROI is downloaded as-is, even if it was extremely large.
+If you know your slides have very large ROI annotations, the safer
+option is to set a max_roiside. A good value may be 5000-8000 pixels.</p></li>
+<li><p><strong>slide_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – If not given, it’s inferred using a server request using girder client.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Print progress to screen?</p></li>
+<li><p><strong>monitorPrefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – text to prepend to printed statements</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>each entry contains the following keys
+- ROI: path to saved mask (labeled image)
+- rgb: path to saved rgb image
+- contours: path to saved annotation contours
+- visualization: path to saved rgb visualzation overlay</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of dicts</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotations_to_masks_handler.get_image_and_mask_from_slide">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotations_to_masks_handler.</code><code class="sig-name descname">get_image_and_mask_from_slide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gc</span></em>, <em class="sig-param"><span class="n">slide_id</span></em>, <em class="sig-param"><span class="n">GTCodes_dict</span></em>, <em class="sig-param"><span class="n">MPP</span><span class="o">=</span><span class="default_value">5.0</span></em>, <em class="sig-param"><span class="n">MAG</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'min_bounding_box'</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">idx_for_roi</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">slide_annotations</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">element_infos</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">get_roi_mask_kwargs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">get_contours_kwargs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">linewidth</span><span class="o">=</span><span class="default_value">0.2</span></em>, <em class="sig-param"><span class="n">get_rgb</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">get_contours</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">get_visualization</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">tau</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotations_to_masks_handler.html#get_image_and_mask_from_slide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotations_to_masks_handler.get_image_and_mask_from_slide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse region from the slide and get its corresponding labeled mask.</p>
+<p>This is a wrapper around get_roi_mask() which should be referred to for
+implementation details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gc</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><em>object</em></a>) – girder client object to make requests, for example:
+gc = girder_client.GirderClient(apiUrl = APIURL)
+gc.authenticate(interactive=True)</p></li>
+<li><p><strong>slide_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – girder id for item (slide)</p></li>
+<li><p><strong>GTCodes_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – the ground truth codes and information dict.
+This is a dict that is indexed by the annotation group name and
+each entry is in turn a dict with the following keys:
+- group: group name of annotation (string), eg. mostly_tumor
+- overlay_order: int, how early to place the annotation in the
+mask. Larger values means this annotation group is overlayed
+last and overwrites whatever overlaps it.
+- GT_code: int, desired ground truth code (in the mask)
+Pixels of this value belong to corresponding group (class)
+- is_roi: Flag for whether this group encodes an ROI
+- is_background_class: Flag, whether this group is the default
+fill value inside the ROI. For example, you may descide that
+any pixel inside the ROI is considered stroma.</p></li>
+<li><p><strong>MPP</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – Microns-per-pixel – best use this as it’s more well-defined than
+magnification which is more scanner/manufacturer specific.
+MPP of 0.25 often roughly translates to 40x</p></li>
+<li><p><strong>MAG</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – If you prefer to use whatever magnification is reported in slide.
+If neither MPP or MAG is provided, everything is retrieved without
+scaling at base (scan) magnification.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – This specifies which part of the slide to get the mask from. Allowed
+modes include the following
+- wsi: get scaled up/down version of mask of whole slide
+- min_bounding_box: get minimum box for all annotations in slide
+- manual_bounds: use given ROI bounds provided by the ‘bounds’ param
+- polygonal_bounds: use the idx_for_roi param to get coordinates</p></li>
+<li><p><strong>bounds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if not None, has keys ‘XMIN’, ‘XMAX’, ‘YMIN’, ‘YMAX’ for slide
+region coordinates (AT BASE MAGNIFICATION) to get labeled image
+(mask) for. Use this with the ‘manual_bounds’ run mode.</p></li>
+<li><p><strong>idx_for_roi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – index of ROI within the element_infos dataframe.
+Use this with the ‘polygonal_bounds’ run mode.</p></li>
+<li><p><strong>slide_annotations</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – Give this parameter to avoid re-getting slide annotations. If you do
+provide the annotations, though, make sure you have used
+scale_slide_annotations() to scale them up/down by sf BEFOREHAND.</p></li>
+<li><p><strong>element_infos</strong> (<em>pandas DataFrame.</em>) – The columns annidx and elementidx
+encode the dict index of annotation document and element,
+respectively, in the original slide_annotations list of dictionaries.
+This can be obained by get_bboxes_from_slide_annotations() method.
+Make sure you have used scale_slide_annotations().</p></li>
+<li><p><strong>get_roi_mask_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – extra kwargs for get_roi_mask()</p></li>
+<li><p><strong>get_contours_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – extra kwargs for get_contours_from_mask()</p></li>
+<li><p><strong>linewidth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – visualization line width</p></li>
+<li><p><strong>get_rgb</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – get rgb image?</p></li>
+<li><p><strong>get_contours</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – get annotation contours? (relative to final mask)</p></li>
+<li><p><strong>get_visualization</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – get overlayed annotation bounds over RGB for visualization</p></li>
+<li><p><strong>tau</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – maximum difference (in pixels) between fetched image and mask allowed.
+Above this threshold, an error is raised indicating you may have some
+problem in your parameters or elsewhere. If the difference is less then
+tau, the rgb image and mask are resized to match each other before
+being returned</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Results dict containing one or more of the following keys
+bounds: dict of bounds at scan magnification
+ROI - (mxn) labeled image (mask)
+rgb - (mxnx3 np array) corresponding rgb image
+contours - list, each entry is a dict version of a row from the output
+of masks_to_annotations_handler.get_contours_from_mask()
+visualization - (mxnx3 np array) visualization overlay</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotations_to_masks_handler.get_mask_from_slide">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotations_to_masks_handler.</code><code class="sig-name descname">get_mask_from_slide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">GTCodes_dict</span></em>, <em class="sig-param"><span class="n">roiinfo</span></em>, <em class="sig-param"><span class="n">slide_annotations</span></em>, <em class="sig-param"><span class="n">element_infos</span></em>, <em class="sig-param"><span class="n">sf</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">get_roi_mask_kwargs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotations_to_masks_handler.html#get_mask_from_slide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotations_to_masks_handler.get_mask_from_slide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse region from the slide and get its corresponding labeled mask.</p>
+<p>This is a wrapper around get_roi_mask() which should be referred to for
+implementation details. If roiinfo is None, all annotations in the slide
+are parsed into labeled image (mask) form. Otherwise, the bounding box
+coordinates in roiinfo are used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>GTCodes_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – the ground truth codes and information dict.
+This is a dict that is indexed by the annotation group name and
+each entry is in turn a dict with the following keys:
+- group: group name of annotation (string), eg. mostly_tumor
+- overlay_order: int, how early to place the annotation in the
+mask. Larger values means this annotation group is overlayed
+last and overwrites whatever overlaps it.
+- GT_code: int, desired ground truth code (in the mask)
+Pixels of this value belong to corresponding group (class)
+- is_roi: Flag for whether this group encodes an ROI
+- is_background_class: Flag, whether this group is the default
+fill value inside the ROI. For example, you may descide that
+any pixel inside the ROI is considered stroma.</p></li>
+<li><p><strong>roiinfo</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – if not None, has keys ‘XMIN’, ‘XMAX’, ‘YMIN’, ‘YMAX’ for slide
+region coordinates (AT BASE MAGNIFICATION) to get labeled image
+(mask) for.</p></li>
+<li><p><strong>sf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – scale factor to multiple coordinates (eg 0.5 would halve size)</p></li>
+<li><p><strong>slide_annotations</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – Make sure you have used
+scale_slide_annotations() to scale them up/down by sf BEFOREHAND.</p></li>
+<li><p><strong>element_infos</strong> (<em>pandas DataFrame.</em>) – The columns annidx and elementidx
+encode the dict index of annotation document and element,
+respectively, in the original slide_annotations list of dictionaries.
+This can be obained by get_bboxes_from_slide_annotations() method.
+Make sure you have used scale_slide_annotations().</p></li>
+<li><p><strong>get_roi_mask_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – extra kwargs for get_roi_mask()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>Np array</em> – (N x 2), where pixel values encode class membership.
+IMPORTANT NOTE: Zero pixels have special meaning and do NOT
+encode specific ground truth class. Instead, they simply
+mean Outside mask and should be IGNORED during model training
+or evaluation.</p></li>
+<li><p><em>Dict</em> – information about mask</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotations_to_masks_handler.get_roi_mask">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotations_to_masks_handler.</code><code class="sig-name descname">get_roi_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">slide_annotations</span></em>, <em class="sig-param"><span class="n">element_infos</span></em>, <em class="sig-param"><span class="n">GTCodes_df</span></em>, <em class="sig-param"><span class="n">idx_for_roi</span></em>, <em class="sig-param"><span class="n">iou_thresh</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">roiinfo</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">crop_to_roi</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">use_shapely</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">monitorPrefix</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotations_to_masks_handler.html#get_roi_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotations_to_masks_handler.get_roi_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse annotations and gets a ground truth mask for a single ROI.</p>
+<p>This will look at all slide annotations and get ones that
+overlap with the region of interest (ROI) and assigns them to mask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slide_annotations</strong> (<em>list of dicts</em>) – response from server request</p></li>
+<li><p><strong>element_infos</strong> (<em>pandas DataFrame.</em>) – The columns annidx and elementidx
+encode the dict index of annotation document and element,
+respectively, in the original slide_annotations list of dictionaries.
+This can be obain by get_bboxes_from_slide_annotations() method</p></li>
+<li><p><strong>GTCodes_df</strong> (<em>pandas Dataframe</em>) – the ground truth codes and information dataframe.
+WARNING: Modified inside this method so pass a copy.
+This is a dataframe that is indexed by the annotation group name and
+has the following columns:
+- group: group name of annotation (string), eg. mostly_tumor
+- overlay_order: int, how early to place the annotation in the
+mask. Larger values means this annotation group is overlayed
+last and overwrites whatever overlaps it.
+- GT_code: int, desired ground truth code (in the mask)
+Pixels of this value belong to corresponding group (class)
+- is_roi: Flag for whether this group encodes an ROI
+- is_background_class: Flag, whether this group is the default
+fill value inside the ROI. For example, you may descide that
+any pixel inside the ROI is considered stroma.</p></li>
+<li><p><strong>idx_for_roi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – index of ROI within the element_infos dataframe.</p></li>
+<li><p><strong>iou_thresh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – how much bounding box overlap is enough to
+consider an annotation to belong to the region of interest</p></li>
+<li><p><strong>roiinfo</strong> (<em>pandas series</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – contains information about the roi. Keys will be added to this
+index containing info about the roi like bounding box
+location and size.</p></li>
+<li><p><strong>crop_to_roi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – flag of whether to crop polygons to roi
+(prevent overflow beyond roi edge)</p></li>
+<li><p><strong>use_shapely</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – flag of whether to precisely determine whether an element
+belongs to an ROI using shapely polygons. Slightly slower. If
+set to False, overlapping bounding box is used as a cheap but
+less precise indicator of inclusion.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Print progress to screen?</p></li>
+<li><p><strong>monitorPrefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – text to prepend to printed statements</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>Np array</em> – (N x 2), where pixel values encode class membership.
+IMPORTANT NOTE: Zero pixels have special meaning and do NOT
+encode specific ground truth class. Instead, they simply
+mean Outside ROI and should be IGNORED during model training
+or evaluation.</p></li>
+<li><p><em>Dict</em> – information about ROI</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="histomicstk.annotations_and_masks.annotations_to_object_segmentation_masks.html" class="btn btn-neutral float-right" title="Converting annotations to object segmentation mask images" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="histomicstk.annotations_and_masks.review_gallery.html" class="btn btn-neutral float-left" title="Creating mosaic annotation review galleries" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Kitware, Inc..
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

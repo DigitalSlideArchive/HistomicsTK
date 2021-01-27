@@ -1,0 +1,354 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Local backup and SQL querying of annotation data &mdash; HistomicsTK 0.1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Creating mosaic annotation review galleries" href="histomicstk.annotations_and_masks.review_gallery.html" />
+    <link rel="prev" title="histomicstk.annotations_and_masks" href="histomicstk.annotations_and_masks.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HistomicsTK
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Annotation database backup and sqlite parser</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.review_gallery.html">Mosaic review gallery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.html">Annotations to semantic segmentation masks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotations_to_object_segmentation_masks.html">Annotations to object segmentation masks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.masks_to_annotations_handler.html">Masks to annotations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.annotation_and_mask_utils.html">Annotation and mask utilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.annotations_and_masks.polygon_merger.html">Polygon merger</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="api-docs.html">API Documentation</a> &raquo;</li>
+        
+          <li><a href="histomicstk.html">histomicstk</a> &raquo;</li>
+        
+          <li><a href="histomicstk.annotations_and_masks.html">histomicstk.annotations_and_masks</a> &raquo;</li>
+        
+      <li>Local backup and SQL querying of annotation data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/histomicstk.annotations_and_masks.annotation_database_parser.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-histomicstk.annotations_and_masks.annotation_database_parser">
+<span id="local-backup-and-sql-querying-of-annotation-data"></span><h1>Local backup and SQL querying of annotation data<a class="headerlink" href="#module-histomicstk.annotations_and_masks.annotation_database_parser" title="Permalink to this headline">¶</a></h1>
+<p>Created on Thu Dec 12 13:19:18 2019</p>
+<p>&#64;author: tageldim</p>
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_database_parser.dump_annotations_locally">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_database_parser.</code><code class="sig-name descname">dump_annotations_locally</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gc</span></em>, <em class="sig-param"><span class="n">folderid</span></em>, <em class="sig-param"><span class="n">local</span></em>, <em class="sig-param"><span class="n">save_json</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">save_sqlite</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dbcon</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback_kwargs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_database_parser.html#dump_annotations_locally"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_database_parser.dump_annotations_locally" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump annotations of folder and subfolders locally recursively.</p>
+<p>This reproduces this tiered structure locally and (possibly) dumps
+annotations there. Adapted from Lee A.D. Cooper</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gc</strong> (<em>girder_client.GirderClient</em>) – authenticated girder client instance</p></li>
+<li><p><strong>folderid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – girder id of source (base) folder</p></li>
+<li><p><strong>local</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – local path to dump annotations</p></li>
+<li><p><strong>save_json</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to dump annotations as json file</p></li>
+<li><p><strong>save_sqlite</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to save the backup into an sqlite database</p></li>
+<li><p><strong>dbcon</strong> (<em>sqlalchemy.create_engine.connect</em><em>(</em><em>) </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><em>object</em></a>) – IGNORE THIS PARAMETER!! This is used internally.</p></li>
+<li><p><strong>callback</strong> (<em>function</em>) – function to call that CAN accept AT LEAST the following params
+- item: girder response with item information
+- annotations: loaded annotations
+- local: local directory
+- monitorPrefix: string
+- dbcon: sqlalchemy.create_engine.connect() object
+You can just add kwargs at the end of your callback definition
+for simplicity.</p></li>
+<li><p><strong>callback_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – kwargs to pass along to callback. DO NOT pass any of the parameters
+item, annotations, local, monitorPrefix, or dbcon as these will be
+internally passed. Just include any specific paremeters for the
+callback. See parse_annotations_to_local_tables() above for
+an example of a callback and the unir test of this function.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_database_parser.dump_annotations_workflow">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_database_parser.</code><code class="sig-name descname">dump_annotations_workflow</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gc</span></em>, <em class="sig-param"><span class="n">slide_id</span></em>, <em class="sig-param"><span class="n">local</span></em>, <em class="sig-param"><span class="n">monitorPrefix</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">save_json</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">save_sqlite</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dbcon</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback_kwargs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_database_parser.html#dump_annotations_workflow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_database_parser.dump_annotations_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump annotations for single slide into the local folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gc</strong> (<em>girder_client.GirderClient</em>) – authenticated girder client instance</p></li>
+<li><p><strong>slide_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – girder id of item (slide)</p></li>
+<li><p><strong>monitorPrefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – prefix to monitor string</p></li>
+<li><p><strong>local</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – local path to dump annotations</p></li>
+<li><p><strong>save_json</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to dump annotations as json file</p></li>
+<li><p><strong>save_sqlite</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to save the backup into an sqlite database</p></li>
+<li><p><strong>dbcon</strong> (<em>sqlalchemy.create_engine.connect</em><em>(</em><em>) </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><em>object</em></a>) – IGNORE THIS PARAMETER!! This is used internally.</p></li>
+<li><p><strong>callback</strong> (<em>function</em>) – function to call that takes in AT LEAST the following params
+- item: girder response with item information
+- annotations: loaded annotations
+- local: local directory
+- monitorPrefix: string</p></li>
+<li><p><strong>callback_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – kwargs to pass along to callback</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="histomicstk.annotations_and_masks.annotation_database_parser.parse_annotations_to_local_tables">
+<code class="sig-prename descclassname">histomicstk.annotations_and_masks.annotation_database_parser.</code><code class="sig-name descname">parse_annotations_to_local_tables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span></em>, <em class="sig-param"><span class="n">annotations</span></em>, <em class="sig-param"><span class="n">local</span></em>, <em class="sig-param"><span class="n">monitorPrefix</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">save_csv</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">save_sqlite</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dbcon</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/annotations_and_masks/annotation_database_parser.html#parse_annotations_to_local_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#histomicstk.annotations_and_masks.annotation_database_parser.parse_annotations_to_local_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse loaded annotations for slide into tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – girder response with item information</p></li>
+<li><p><strong>annotations</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – loaded annotations</p></li>
+<li><p><strong>local</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – local directory</p></li>
+<li><p><strong>save_csv</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to use histomicstk.annotations_and_masks.annotation_and_mask.
+parse_slide_annotations_into_tables() to get a tabular representation
+(including some simple calculations like bounding box) and save
+the output as two csv files, one representing the annotation documents
+and the other representing the actual annotation elements (polygons).</p></li>
+<li><p><strong>save_sqlite</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to save the backup into an sqlite database</p></li>
+<li><p><strong>dbcon</strong> (<em>sqlalchemy.create_engine.connect</em><em>(</em><em>) </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><em>object</em></a>) – IGNORE THIS PARAMETER!! This is used internally.</p></li>
+<li><p><strong>monitorPrefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – text to prepend to printed statements</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="histomicstk.annotations_and_masks.review_gallery.html" class="btn btn-neutral float-right" title="Creating mosaic annotation review galleries" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="histomicstk.annotations_and_masks.html" class="btn btn-neutral float-left" title="histomicstk.annotations_and_masks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Kitware, Inc..
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
