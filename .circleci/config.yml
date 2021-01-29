@@ -44,7 +44,7 @@ jobs:
     parameters:
       os:
         type: executor
-      node-version:
+      python-version:
         type: string
     executor: << parameters.os >>
     steps:
