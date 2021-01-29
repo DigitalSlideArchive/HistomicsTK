@@ -1,4 +1,13 @@
 version: 2.1
+executors:
+  linux:
+    docker:
+      - image: cimg/base:2021.01
+  macos:
+    macos:
+      xcode: 9.4.1
+orbs:
+  python: circleci/python@1.3.2
 commands:
   tox:
     description: "Run tox"
@@ -20,41 +29,6 @@ commands:
           # Piping through cat does less buffering of the output but can
           # consume the exit code
           command: tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
-  upgradepython:
-    description: "Upgrade python"
-    parameters:
-      version:
-        type: string
-    steps:
-      - run:
-          name: Upgrade pyenv
-          command: |
-            rm -rf /opt/circleci/.pyenv
-            curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
-            pyenv install --list list
-      - run:
-          name: Use pyenv to install python
-          command: |
-            pyenv install << parameters.version >>
-      #      sudo systemctl stop apt-daily.timer
-      #      sudo systemctl stop apt-daily-upgrade.timer
-      #      sudo rm -rf /usr/lib/apt/apt.systemd.daily
-      #      sudo add-apt-repository -y ppa:deadsnakes/ppa
-      #      while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do sleep 1; done
-      #      sudo apt-get update || true
-      #- run:
-      #    name: Update python
-      #    command: |
-      #      while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do sleep 1; done
-      #      sudo apt-get install -y << parameters.version >>
-      # - run:
-      #     name: Disable preinstalled pyenv
-      #     command: |
-      #       rm /opt/circleci/.pyenv/shims/*3*
-      # - run:
-      #     name: Check python version
-      #     command: |
-      #       which << parameters.version >>
   coverage:
     description: "Upload coverage"
     steps:
@@ -65,75 +39,21 @@ commands:
           name: Upload coverage
           # Retry as codecov can be flaky
           command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; codecov --required --disable search pycov gcov --root project --file .tox/coverage/py_coverage.xml && s=0 && break || s=$?; done; (exit $s)
-
 jobs:
-  # Because some of our tests use docker-compose as part of the test, we can't
-  # use a CircleCI docker environment, since those environments run sub dockers
-  # in a separate environment.  The 201808-01 machine environment has versions
-  # of Python 2.7, 3.5, 3.6, 3.7 with specific subversions.
-  py36:
-    working_directory: ~/project
-    machine:
-      image: circleci/classic:201808-01
+  test:
+    parameters:
+      os:
+        type: executor
+      node-version:
+        type: string
+    executor: << parameters.os >>
     steps:
       - checkout
-      - upgradepython:
-          version: 3.6.10
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.6.10
+      - python/install-packages:
+          pip-dependency-file: requirements-dev.txt
+          pkg-manager: pip
       - tox:
-          env: py36
-      - coverage
-  py37:
-    working_directory: ~/project
-    machine:
-      image: circleci/classic:201808-01
-    steps:
-      - checkout
-      - upgradepython:
-          version: 3.7.7
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.7.7
-      - tox:
-          env: py37
-      - coverage
-  py38:
-    working_directory: ~/project
-    machine:
-      image: circleci/classic:201808-01
-    steps:
-      - checkout
-      - upgradepython:
-          version: 3.8.6
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.8.6
-      - tox:
-          env: py38
-      - coverage
-  py39:
-    working_directory: ~/project
-    machine:
-      image: circleci/classic:201808-01
-    steps:
-      - checkout
-      - upgradepython:
-          version: 3.9.1
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.9.1
-      - tox:
-          env: py39
+          env: << parameters.python-version >>
       - coverage
   lint_and_docs:
     working_directory: ~/project
@@ -249,39 +169,21 @@ jobs:
           command: |
             touch package.json
             gh-pages --dotfiles --message "[skip ci] Update documentation" --dist docs/_build/html --no-history
-
 workflows:
   version: 2
   ci:
     jobs:
-      - py36:
+      - test:
           filters:
             tags:
               only: /^v.*/
             branches:
               ignore:
                 - gh-pages
-      - py37:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
-      - py38:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
-      - py39:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
+          matrix:
+            parameters:
+              os: [linux, macos]
+              python-version: ["py36", "py37", "py38", "py39"]
       - lint_and_docs:
           filters:
             tags:
@@ -305,13 +207,10 @@ workflows:
                 - gh-pages
       - release:
           requires:
-            - py36
-            - py37
-            - py38
-            - py39
+            - test
             - lint_and_docs
-            - wheels
             - docker
+            - wheels
           filters:
             tags:
               only: /^v.*/
@@ -319,13 +218,10 @@ workflows:
               only: master
       - docs-deploy:
           requires:
-            - py36
-            - py37
-            - py38
-            - py39
+            - test
             - lint_and_docs
-            - wheels
             - docker
+            - wheels
           filters:
             tags:
               only: /^v.*/
@@ -343,10 +239,11 @@ workflows:
               only:
                 - master
     jobs:
-      - py36
-      - py37
-      - py38
-      - py39
+      - test:
+          matrix:
+            parameters:
+              os: [linux, macos]
+              python-version: ["py36", "py37", "py38", "py39"]
       - lint_and_docs
       - docker
       - wheels
