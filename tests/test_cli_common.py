@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #  Copyright Kitware Inc.
@@ -38,7 +37,7 @@ sys.path.insert(0, thisDir)
 import htk_test_utilities as utilities  # noqa
 
 
-class TestCliCommon(object):
+class TestCliCommon:
 
     def test_get_stain_matrix(self):
 
@@ -222,7 +221,7 @@ class TestCliCommon(object):
             'data/TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot.sha512'  # noqa
         ))
 
-        with open(nuclei_bbox_annot_gtruth_file, 'r') as fbbox_annot:
+        with open(nuclei_bbox_annot_gtruth_file) as fbbox_annot:
             nuclei_bbox_annot_list_gtruth = json.load(fbbox_annot)['elements']
 
         # Check that nuclei_bbox_annot_list is nearly equal to
@@ -244,7 +243,7 @@ class TestCliCommon(object):
             'data/TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot.sha512'  # noqa
         ))
 
-        with open(nuclei_bndry_annot_gtruth_file, 'r') as fbndry_annot:
+        with open(nuclei_bndry_annot_gtruth_file) as fbndry_annot:
             nuclei_bndry_annot_list_gtruth = json.load(
                 fbndry_annot)['elements']
 

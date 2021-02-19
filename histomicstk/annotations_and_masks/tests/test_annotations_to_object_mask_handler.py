@@ -111,7 +111,7 @@ def test_prep(girderClient):  # noqa
 # %%===========================================================================
 
 
-class TestGetSlideRegionNoMask(object):
+class TestGetSlideRegionNoMask:
     """Test methods for getting ROI contours from annotations."""
 
     def test_annotations_to_contours_no_mask_1(self):

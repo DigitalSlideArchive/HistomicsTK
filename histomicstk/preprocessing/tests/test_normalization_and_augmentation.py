@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Sun Oct 20 00:14:03 2019.
 
@@ -143,7 +142,7 @@ class TestColorNormalization():
             ) == (188, 125, 175)
 
 
-class TestColorAugmentation(object):
+class TestColorAugmentation:
     """Test color augmentation."""
 
     def test_rgb_perturb_stain_concentration(self):

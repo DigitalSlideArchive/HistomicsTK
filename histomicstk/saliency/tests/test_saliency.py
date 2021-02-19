@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Wed Sep 18 00:06:28 2019.
 
@@ -84,7 +83,7 @@ class TestTissueDetection():
         assert all(['annotation' in resp for resp in resps])
 
 
-class TestCellularityDetection(object):
+class TestCellularityDetection:
     """Test methods for getting cellularity."""
 
     def test_cellularity_detection_thresholding(self):

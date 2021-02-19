@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #  Copyright Kitware Inc.
@@ -27,7 +26,7 @@ sys.path.insert(0, thisDir)
 import htk_test_utilities as utilities  # noqa
 
 
-class TestMacenko(object):
+class TestMacenko:
 
     def test_macenko(self):
         im_path = utilities.externaldata('data/Easy1.png.sha512')
@@ -42,7 +41,7 @@ class TestMacenko(object):
         np.testing.assert_allclose(w, w_expected, atol=1e-6)
 
 
-class TestColorDeconvolution(object):
+class TestColorDeconvolution:
 
     def test_roundtrip(self):
         im_path = utilities.externaldata('data/Easy1.png.sha512')

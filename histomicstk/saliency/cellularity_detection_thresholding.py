@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Tue Oct 22 02:37:52 2019.
 
@@ -37,7 +36,7 @@ Image.MAX_IMAGE_PIXELS = None
 # =============================================================================
 
 
-class CDT_single_tissue_piece(object):
+class CDT_single_tissue_piece:
     """Detect various regions in a single tissue piece (internal)."""
 
     def __init__(self, cdt, tissue_mask, monitorPrefix=""):
@@ -560,7 +559,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             'get_roi_contour': True,
         }
         default_attr.update(kwargs)
-        super(Cellularity_detector_thresholding, self).__init__(
+        super().__init__(
             default_attr=default_attr)
 
         self.color_normalization_method = \

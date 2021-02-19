@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Tue Sep 24 00:43:04 2019.
 
@@ -12,7 +11,7 @@ import datetime
 # %% ==========================================================================
 
 
-class Print_and_log(object):
+class Print_and_log:
     """Print to screen and/or log if conditions are satisfied (Internal)."""
 
     def __init__(self, verbose=True, logger=None):
@@ -31,7 +30,7 @@ class Print_and_log(object):
 # %% ==========================================================================
 
 
-class Base_HTK_Class(object):
+class Base_HTK_Class:
     """Just a base class with preferred behavior to inherit."""
 
     def __init__(self, default_attr=None, more_allowed_attr=None, **kwargs):
@@ -59,7 +58,7 @@ class Base_HTK_Class(object):
         rejected_keys = set(kwargs.keys()) - set(allowed_attr)
         if rejected_keys:
             raise ValueError(
-                "Invalid arguments in constructor:{}".format(rejected_keys))
+                f"Invalid arguments in constructor:{rejected_keys}")
 
         # configure logger
         self.keep_log = self.logging_savepath is not None

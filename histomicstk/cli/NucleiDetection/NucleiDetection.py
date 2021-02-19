@@ -89,7 +89,7 @@ def main(args):
     print(args)
 
     if not os.path.isfile(args.inputImageFile):
-        raise IOError('Input image file does not exist.')
+        raise OSError('Input image file does not exist.')
 
     if len(args.reference_mu_lab) != 3:
         raise ValueError('Reference Mean LAB should be a 3 element vector.')
@@ -178,7 +178,7 @@ def main(args):
 
         num_tiles = ts.getSingleTile(**it_kwargs)['iterator_range']['position']
 
-        print('Number of tiles = {}'.format(num_tiles))
+        print(f'Number of tiles = {num_tiles}')
 
         if process_whole_image:
 
@@ -198,7 +198,7 @@ def main(args):
 
         fgnd_frac_comp_time = time.time() - start_time
 
-        print('Number of foreground tiles = {0:d} ({1:2f}%%)'.format(
+        print('Number of foreground tiles = {:d} ({:2f}%%)'.format(
             num_fgnd_tiles, percent_fgnd_tiles))
 
         print('Tile foreground fraction computation time = {}'.format(

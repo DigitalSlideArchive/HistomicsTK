@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Mon Sep 30 18:12:48 2019.
 
@@ -29,7 +28,7 @@ class Cfg:
 cfg = Cfg()
 
 
-class TestWorkflows(object):
+class TestWorkflows:
     """Test slide and folder iterator & workflow runner."""
 
     # pytest runs tests in the order they appear in the module

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Wed Aug 21 16:25:06 2019.
 
@@ -101,7 +100,7 @@ class Polygon_merger(Base_HTK_Class):
             'roi_group': 'roi',
         }
         default_attr.update(kwargs)
-        super(Polygon_merger, self).__init__(default_attr=default_attr)
+        super().__init__(default_attr=default_attr)
 
         # some sanity checks
         assert not (

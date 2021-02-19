@@ -46,7 +46,7 @@ def check_fdata_sanity(fdata, expected_feature_list,
         assert prefix + col in fcols
 
 
-class TestFeatureExtraction(object):
+class TestFeatureExtraction:
 
     def test_setup(self):
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pytest
 import os
 from histomicstk.utils.girder_convenience_utils import \
@@ -25,7 +24,7 @@ class Cfg:
 cfg = Cfg()
 
 
-class TestGirderConvenience(object):
+class TestGirderConvenience:
     """Test utilities for interaction with girder."""
 
     # pytest runs tests in the order they appear in the module

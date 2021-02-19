@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This package contains utility functions to augment images.
 

@@ -41,7 +41,7 @@ MAXCHILDREN = 10
 MAX_KMEANS = 5
 
 
-class RTree(object):
+class RTree:
     """Placeholder."""
 
     def __init__(self):
@@ -83,20 +83,18 @@ class RTree(object):
 
     def query_rect(self, r):
         """Placeholder."""
-        for x in self.cursor.query_rect(r):
-            yield x
+        yield from self.cursor.query_rect(r)
 
     def query_point(self, p):
         """Placeholder."""
-        for x in self.cursor.query_point(p):
-            yield x
+        yield from self.cursor.query_point(p)
 
     def walk(self, pred):
         """Placeholder."""
         return self.cursor.walk(pred)
 
 
-class _NodeCursor(object):
+class _NodeCursor:
     """Placeholder."""
 
     @classmethod
@@ -162,23 +160,20 @@ class _NodeCursor(object):
             yield self
             if not self.is_leaf():
                 for c in self.children():
-                    for cr in c.walk(predicate):
-                        yield cr
+                    yield from c.walk(predicate)
 
     def query_rect(self, r):
         """Return things that intersect with 'r'."""
         def p(o, x):
             return r.does_intersect(o.rect)
-        for rr in self.walk(p):
-            yield rr
+        yield from self.walk(p)
 
     def query_point(self, point):
         """Query by a point."""
         def p(o, x):
             return o.rect.does_containpoint(point)
 
-        for rr in self.walk(p):
-            yield rr
+        yield from self.walk(p)
 
     def lift(self):
         """Placeholder."""

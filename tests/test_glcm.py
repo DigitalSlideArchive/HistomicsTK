@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #  Copyright Kitware Inc.
@@ -22,7 +21,7 @@ import numpy as np
 import skimage.feature
 
 
-class TestGLCMMatrixGeneration(object):
+class TestGLCMMatrixGeneration:
 
     def test_graycomatrixext(self):
 

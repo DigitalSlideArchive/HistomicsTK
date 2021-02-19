@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Fri Aug 23 17:14:38 2019.
 @author: tageldim
@@ -22,7 +21,7 @@ import tests.htk_test_utilities as utilities  # noqa
 from tests.htk_test_utilities import girderClient, getTestFilePath  # noqa
 
 
-class TestPolygonMerger(object):
+class TestPolygonMerger:
     """Test methods for polygon merger."""
 
     @pytest.mark.usefixtures('girderClient')  # noqa

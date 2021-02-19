@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -17,7 +16,7 @@ Please run:
     sys.exit(1)
 
 
-with open('README.rst', 'rt') as readme_file:
+with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 
