@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Tue Aug 20 18:13:37 2019.
 
@@ -18,7 +17,7 @@ sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 from tests.htk_test_utilities import girderClient, getTestFilePath  # noqa
 
 
-class TestMasksToAnnotations(object):
+class TestMasksToAnnotations:
     """Test methods for getting ROI mask from annotations."""
 
     def _setup(self):

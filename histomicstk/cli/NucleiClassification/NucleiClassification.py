@@ -77,10 +77,10 @@ def read_feature_file(args):
 def check_args(args):
 
     if not os.path.isfile(args.inputImageFile):
-        raise IOError('Input image file does not exist.')
+        raise OSError('Input image file does not exist.')
 
     if not os.path.isfile(args.inputModelFile):
-        raise IOError('Input model file does not exist.')
+        raise OSError('Input model file does not exist.')
 
 
 def main(args):

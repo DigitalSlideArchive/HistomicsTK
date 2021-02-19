@@ -1,5 +1,3 @@
-from __future__ import division
-
 from collections import namedtuple
 
 from dask import delayed
@@ -10,7 +8,7 @@ from ..preprocessing.color_conversion import rgb_to_hsi
 
 
 # This can be an enum in Python >= 3.4
-class Labels(object):
+class Labels:
     """Labels for the output image of the positive pixel count routines."""
     NEGATIVE = 0
     WEAK = 1

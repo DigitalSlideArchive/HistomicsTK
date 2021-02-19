@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #  Copyright Kitware Inc.
@@ -28,7 +27,7 @@ sys.path.insert(0, thisDir)
 import htk_test_utilities as utilities  # noqa
 
 
-class TestReinhardNormalization(object):
+class TestReinhardNormalization:
 
     def test_reinhard_stats(self):
 
@@ -61,7 +60,7 @@ class TestReinhardNormalization(object):
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)
 
 
-class TestBackgroundIntensity(object):
+class TestBackgroundIntensity:
 
     def test_background_intensity(self):
         wsi_path = os.path.join(utilities.externaldata(

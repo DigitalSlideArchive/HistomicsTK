@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pytest
 import os
 import tempfile
@@ -62,7 +61,7 @@ def test_prep(girderClient):  # noqa
                 })
 
 
-class TestDatabaseParser(object):
+class TestDatabaseParser:
     """Test girder database parser."""
 
     def test_dump_annotations_locally_1(self):

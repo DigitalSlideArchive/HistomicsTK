@@ -227,7 +227,7 @@ def seed_contours(I, Delta=0.3):  # noqa
                     Range = Delta * 255.0
                 elif np.issubdtype(I.dtype, np.float):
                     Range = Delta * 1.0
-                Shallow = ((I[i, Maxima] - I[i, Minima] < Range)).nonzero()
+                Shallow = (I[i, Maxima] - I[i, Minima] < Range).nonzero()
                 Maxima = np.delete(Maxima, Shallow)
                 Minima = np.delete(Minima, Shallow)
 
@@ -244,7 +244,7 @@ def seed_contours(I, Delta=0.3):  # noqa
             # capture min, max values and add to list with seed coordinates
             if(Maxima.size > 0):
                 X.extend(MinGrad)
-                Y.extend(i * np.ones((Maxima.size)))
+                Y.extend(i * np.ones(Maxima.size))
                 Min.extend(I[i, Minima])
                 Max.extend(I[i, MinGrad])
 
@@ -393,7 +393,7 @@ def score_contours(I, cXs, cYs):
     """
 
     # initialize output
-    Scores = np.zeros((len(cXs)))
+    Scores = np.zeros(len(cXs))
 
     # generate Sobel filter response from input intensity image 'I'
     Gradients = ft.sobel(I, mode='mirror')
@@ -592,8 +592,8 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         iX = []
         iY = []
         Depths = []
-        Length = np.zeros((Start.size))
-        MaxDepth = np.zeros((Start.size))
+        Length = np.zeros(Start.size)
+        MaxDepth = np.zeros(Start.size)
         for j in np.arange(Start.size):
             if(Start[j] < Stop[j]):
                 iX.append(X[Start[j]:Stop[j]+1])

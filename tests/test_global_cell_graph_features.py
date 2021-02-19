@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #  Copyright Kitware Inc.
@@ -23,7 +22,7 @@ from pandas.testing import assert_frame_equal
 from histomicstk.features import compute_global_cell_graph_features as cgcgf
 
 
-class TestGlobalCellGraphFeatures(object):
+class TestGlobalCellGraphFeatures:
     def testSimple(self):
         data = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1], [-.5, -.5], [.5, .5]])
         actual = cgcgf(data, neighbor_distances=0.7 * np.arange(1, 6), neighbor_counts=(3, 5))

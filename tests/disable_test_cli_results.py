@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ##############################################################################
 #  Copyright Kitware Inc.
@@ -18,12 +17,12 @@
 ##############################################################################
 
 import hashlib
+import io
 import json
 import os
 import PIL.Image
 import runpy
 import shutil
-import six
 import sys
 import tempfile
 thisDir = os.path.dirname(os.path.realpath(__file__))
@@ -43,7 +42,7 @@ def tearDownModule():
     base.stopServer()
 
 
-class TestCliResults(object):
+class TestCliResults:
     def _runTest(self, cli_args=(), cli_kwargs=None, outputs=None,  # noqa
                  contains=None, excludes=None):
         """
@@ -88,14 +87,14 @@ class TestCliResults(object):
                    os.path.join(tmppath, arg) for arg in cli_args]
             cmd += ['--%s=%s' % (
                 k, v if not v.startswith('tmp_') else os.path.join(tmppath, v))
-                for k, v in six.iteritems(cli_kwargs)]
+                for k, v in cli_kwargs.items()]
             stdout = ''
             try:
                 old_sys_argv = sys.argv[:]
                 old_stdout, old_stderr = sys.stdout, sys.stderr
                 old_cwd = os.getcwd()
                 sys.argv[:] = cmd
-                sys.stdout, sys.stderr = six.StringIO(), six.StringIO()
+                sys.stdout, sys.stderr = io.StringIO(), io.StringIO()
                 os.chdir(cwd)
                 runpy.run_path(
                     # If passed a Python file, run it directly
@@ -114,7 +113,7 @@ class TestCliResults(object):
                 assert entry in stdout
             for entry in excludes:
                 assert entry not in stdout
-            for outpath, options in six.iteritems(outputs):
+            for outpath, options in outputs.items():
                 if outpath.startswith('tmp_'):
                     outpath = os.path.join(tmppath, outpath)
                 assert os.path.isfile(outpath)
@@ -138,7 +137,7 @@ class TestCliResults(object):
                         sys.stderr.write('File hash mismatch: %s\n' % outpath)
                         raise
                 if 'contains' in options:
-                    data = open(outpath, 'rt').read(chunkSize)
+                    data = open(outpath).read(chunkSize)
                     for entry in options['contains']:
                         assert entry in data
         except Exception:
@@ -214,7 +213,7 @@ class TestCliResults(object):
             cli_args=[
                 'ColorDeconvolution',
                 utilities.externaldata('data/Easy1.png.sha512'),
-            ] + ['tmp_out_{}.png'.format(i) for i in (1, 2, 3)],
+            ] + [f'tmp_out_{i}.png' for i in (1, 2, 3)],
             outputs={
                 'tmp_out_1.png': dict(
                     hash='b91d961b7eba8c02a1c067da91fced315fa3922db73f489202a296f4c2304b94',  # noqa

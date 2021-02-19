@@ -34,7 +34,7 @@
 import math
 
 
-class Rect(object):
+class Rect:
     """
     A rectangle class that stores: .
 

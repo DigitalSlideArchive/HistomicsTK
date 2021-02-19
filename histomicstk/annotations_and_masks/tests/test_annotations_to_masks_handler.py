@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Mon Aug 12 18:47:34 2019.
 
@@ -104,7 +103,7 @@ def test_prep(girderClient):  # noqa
     }
 
 
-class TestGetROIMasks(object):
+class TestGetROIMasks:
     """Test methods for getting ROI mask from annotations."""
 
     def test_get_roi_mask(self):

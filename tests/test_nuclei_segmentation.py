@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #  Copyright Kitware Inc.
@@ -30,7 +29,7 @@ sys.path.insert(0, thisDir)
 import htk_test_utilities as utilities  # noqa
 
 
-class TestNucleiSegmentation(object):
+class TestNucleiSegmentation:
 
     def test_segment_nuclei_kofahi(self):
 

@@ -23,7 +23,6 @@ containers = [
     'python:3.7',
     'python:3.8',
     'python:3.9',
-    # 'centos/python-35-centos7',
     'centos/python-36-centos7',
 ]
 
@@ -35,5 +34,5 @@ for container in containers:
         '--rm', container, 'sh', '-c', script])
 
 # To test manually, run a container such as
-#  docker run -v `pwd`/docs:/wheels --rm -it python:2.7 bash
+#  docker run -v `pwd`/docs:/wheels --rm -it python:3.7 bash
 # and then enter the script commands directly

@@ -87,7 +87,7 @@ def test_prep(girderClient):  # noqa
             })
 
 
-class TestReviewGallery(object):
+class TestReviewGallery:
     """Test methods for getting review gallery."""
 
     def test_get_all_rois_from_folder_v2(self):
@@ -133,9 +133,9 @@ class TestReviewGallery(object):
         assert set(fovdict.keys()) == {
             'testSlide0ForRevGal', 'testSlide1ForRevGal'}
 
-        assert set([
+        assert {
             j.split('_left-')[1] for j in fovdict['testSlide0ForRevGal']
-            ]) == {
+            } == {
                 '%d_top-%d_bottom-%d_right-%d'
                 % (l, t, b, r) for (l, t, b, r) in [
                     (57584, 35788, 37425, 59421),

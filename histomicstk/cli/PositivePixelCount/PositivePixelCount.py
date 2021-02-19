@@ -46,7 +46,7 @@ def main(args):
         stats, = results
     with open(args.returnParameterFile, 'w') as f:
         for k, v in zip(stats._fields, stats):
-            f.write('{} = {}\n'.format(k, v))
+            f.write(f'{k} = {v}\n')
 
 
 if __name__ == '__main__':

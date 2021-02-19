@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Mon Sep 23 21:17:43 2019.
 
@@ -37,7 +36,7 @@ Image.MAX_IMAGE_PIXELS = None
 # =============================================================================
 
 
-class CD_single_tissue_piece(object):
+class CD_single_tissue_piece:
     """Detect cellular regions in a single tissue piece (internal)."""
 
     def __init__(self, cd, tissue_mask, monitorPrefix=""):
@@ -450,7 +449,7 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
             'visualize_contiguous': True,
         }
         default_attr.update(kwargs)
-        super(Cellularity_detector_superpixels, self).__init__(
+        super().__init__(
             default_attr=default_attr)
 
         # set attribs

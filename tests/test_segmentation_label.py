@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #  Copyright Kitware Inc.
@@ -22,7 +21,7 @@ from histomicstk.segmentation.label import trace_object_boundaries
 from histomicstk.segmentation.label import delete_border
 
 
-class TestTraceBoundary(object):
+class TestTraceBoundary:
 
     def test_trace_boundary(self):
 
@@ -65,7 +64,7 @@ class TestTraceBoundary(object):
         np.testing.assert_allclose(ry_moore, y_moore[0])
 
 
-class TestDeleteBorderLabel(object):
+class TestDeleteBorderLabel:
 
     def test_delete_border(self):
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Thu Dec 12 13:19:18 2019
 
@@ -509,7 +508,7 @@ def reproduce_annotations_workflow(
         local = os.path.dirname(annotation_jsonfile)
 
         # copy item without annotations
-        with open(os.path.join(local, itemname + '.json'), 'r') as jf:
+        with open(os.path.join(local, itemname + '.json')) as jf:
             source_item_info = json.load(jf)
         print("%s: copy item" % monitorPrefix)
         item = gc.post(

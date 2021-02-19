@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Sat Aug 24 16:01:26 2019.
 
@@ -60,7 +59,7 @@ class Polygon_merger_v2(Base_HTK_Class):
             'merge_thresh': 3,
         }
         default_attr.update(kwargs)
-        super(Polygon_merger_v2, self).__init__(default_attr=default_attr)
+        super().__init__(default_attr=default_attr)
 
         # This is where contours will be stored
         self.contours_df = contours_df

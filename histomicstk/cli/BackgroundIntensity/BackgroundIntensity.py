@@ -6,7 +6,7 @@ from histomicstk.cli import utils
 
 
 def main(args):
-    other_args = set(['returnParameterFile', 'scheduler'])
+    other_args = {'returnParameterFile', 'scheduler'}
     kwargs = {k: v for k, v in vars(args).items()
               if k not in other_args}
     # Allow (some) default parameters to work.  Assume certain values

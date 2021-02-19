@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #  Copyright Kitware Inc.
@@ -24,7 +23,7 @@ from histomicstk.preprocessing.color_conversion import rgb_to_lab
 from histomicstk.preprocessing.color_conversion import lab_to_rgb
 
 
-class TestColorConversion(object):
+class TestColorConversion:
 
     def test_rgb_to_od(self):
 

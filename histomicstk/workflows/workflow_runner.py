@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Mon Sep 30 22:09:40 2019.
 
@@ -38,7 +37,7 @@ class Slide_iterator(Base_HTK_Class):
             'discard_slides': [],
         }
         default_attr.update(kwargs)
-        super(Slide_iterator, self).__init__(default_attr=default_attr)
+        super().__init__(default_attr=default_attr)
 
         # set attribs
         self.gc = gc
@@ -104,7 +103,7 @@ class Workflow_runner(Base_HTK_Class):
         """
         default_attr = dict()
         default_attr.update(kwargs)
-        super(Workflow_runner, self).__init__(default_attr=default_attr)
+        super().__init__(default_attr=default_attr)
 
         # set attribs
         self.workflow = workflow
@@ -210,7 +209,7 @@ class Annotation_iterator(Base_HTK_Class):
         """
         default_attr = dict()
         default_attr.update(kwargs)
-        super(Annotation_iterator, self).__init__(default_attr=default_attr)
+        super().__init__(default_attr=default_attr)
 
         # set attribs
         self.gc = gc
