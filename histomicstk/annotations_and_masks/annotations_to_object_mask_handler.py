@@ -293,11 +293,12 @@ def annotations_to_contours_no_mask(
 
 
 def combs_with_unique_products(low, high, k):
-    combs = {
-        np.prod(comb): comb
-        for comb in combinations(range(low, high), k)
-    }
-    return iter(combs.values())
+    prods = set()
+    for comb in combinations(range(low, high), k):
+        prod = np.prod(comb)
+        if prod not in prods:
+            yield comb
+            prods.add(prod)
 
 
 def contours_to_labeled_object_mask(
