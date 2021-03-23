@@ -185,8 +185,7 @@ class TestGetSlideRegionNoMask:
         assert mask.shape == (82, 92, 3)
         assert set(np.unique(mask[..., 0])) == {0, 1, 2, 7}
         assert set(np.unique(mask[..., 1])) == {0, 1, 2, 3}
-        assert set(np.unique(mask[..., 2])) == {
-            0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+        assert set(np.unique(mask[..., 2])) == {0, 2, 3, 4, 5, 7, 9, 11}
 
         # Second, we test the semantic segmentation mode
         cfg.get_all_rois_kwargs['mode'] = 'semantic'
