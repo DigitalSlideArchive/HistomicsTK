@@ -292,6 +292,14 @@ def annotations_to_contours_no_mask(
 # %%===========================================================================
 
 
+def combs_with_unique_products(low, high, k):
+    combs = {
+        np.prod(comb): comb
+        for comb in combinations(range(low, high), k)
+    }
+    return iter(combs.values())
+
+
 def contours_to_labeled_object_mask(
         contours, gtcodes, mode='object', verbose=False, monitorprefix=''):
     """Process contours to get and object segmentation labeled mask.
@@ -375,14 +383,14 @@ def contours_to_labeled_object_mask(
 
     # unique combinations of number to be multiplied (second & third channel)
     # to be able to reconstruct the object ID when image is re-read
-    object_code_comb = combinations(range(1, 256), 2)
+    object_code_comb = combs_with_unique_products(1, 256, 2)
 
     # Add annotations in overlay order
     overlay_orders = sorted(set(gtcodes.loc[:, 'overlay_order']))
     N_elements = contours.shape[0]
 
     # Make sure we don't run out of object encoding values.
-    if N_elements > 32358:
+    if N_elements > 17437:  # max unique products
         raise Exception("Too many objects!!")
 
     # Add roiinfo & init roi
