@@ -345,7 +345,7 @@ def contours_to_labeled_object_mask(
     Returns
     -------
     np.array
-        If mode is "object", this returns an (m, n, 3) np array
+        If mode is "object", this returns an (m, n, 3) np array of dtype uint8
         that can be saved as a png
         First channel: encodes label (can be used for semantic segmentation)
         Second & third channels: multiplication of second and third channel
@@ -358,6 +358,9 @@ def contours_to_labeled_object_mask(
         compatibility with data loaders that expect an image or mask.
         If mode is "semantic" only the labels (corresponding to first
         channel of the object mode) is output.
+        ** IMPORTANT NOTE ** When you read this mask and decide to reconstruct
+        the object codes, convert it to float32 so that the product doesn't
+        saturate at 255.
 
     """
     def _process_gtcodes(gtcodesdf):
