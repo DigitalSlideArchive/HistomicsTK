@@ -10,10 +10,6 @@ RUN for PYBIN in /opt/python/*/bin; do \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \
-        ${PYBIN}/pip install --no-cache-dir -f https://girder.github.io/large_image_wheels 'large_image[sources]' pyvips; \
-    done
-
-RUN for PYBIN in /opt/python/*/bin; do \
       if [[ "${PYBIN}" =~ "39" ]]; then \
         export VERSIONS="numpy==1.19.*"; \
       elif [[ "${PYBIN}" =~ "38" ]]; then \
@@ -25,6 +21,10 @@ RUN for PYBIN in /opt/python/*/bin; do \
         export VERSIONS="numpy==1.12.*"; \
       fi && \
       ${PYBIN}/pip install setuptools-scm 'Cython>=0.25.2' 'scikit-build>=0.8.1' 'cmake>=0.6.0' "${VERSIONS}"; \
+    done
+
+RUN for PYBIN in /opt/python/*/bin; do \
+        ${PYBIN}/pip install --no-cache-dir -f https://girder.github.io/large_image_wheels 'large_image[sources]' pyvips; \
     done
 
 ENV htk_path=/HistomicsTK

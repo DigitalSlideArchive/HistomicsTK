@@ -141,6 +141,9 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
+      - run:
+          name: Upgrade pip
+          command: pip install -U pip
       - tox:
           env: docs,flake8
       - store_artifacts:
@@ -181,6 +184,9 @@ jobs:
           command: |
             if [ ! -d env ]; then python -m virtualenv env || python -m venv env; fi
             echo ". $CIRCLE_WORKING_DIRECTORY/env/bin/activate" >> $BASH_ENV
+      - run:
+          name: Upgrade pip
+          command: pip install -U pip
       - run:
           name: Install python packages
           command: pip install setuptools_scm twine
