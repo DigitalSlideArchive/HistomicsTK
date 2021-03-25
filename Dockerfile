@@ -59,6 +59,9 @@ WORKDIR $htk_path
 RUN pip install --no-cache-dir --upgrade pip setuptools && \
     # Install bokeh to help debug dask \
     pip install --no-cache-dir 'bokeh>=0.12.14' && \
+    # Install a specific version of numpy.  This needs to be compatible with
+    # tensorflow and our wheels \
+    pip install --no-cache-dir 'numpy==1.17.5' && \
     # Install large_image memcached extras \
     pip install --no-cache-dir --pre 'large-image[memcached]' --find-links https://girder.github.io/large_image_wheels && \
     # Install girder-client \
