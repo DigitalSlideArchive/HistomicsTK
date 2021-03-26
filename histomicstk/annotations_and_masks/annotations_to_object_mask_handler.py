@@ -292,6 +292,15 @@ def annotations_to_contours_no_mask(
 # %%===========================================================================
 
 
+def combs_with_unique_products(low, high, k):
+    prods = set()
+    for comb in combinations(range(low, high), k):
+        prod = np.prod(comb)
+        if prod not in prods:
+            yield comb
+            prods.add(prod)
+
+
 def contours_to_labeled_object_mask(
         contours, gtcodes, mode='object', verbose=False, monitorprefix=''):
     """Process contours to get and object segmentation labeled mask.
@@ -337,7 +346,7 @@ def contours_to_labeled_object_mask(
     Returns
     -------
     np.array
-        If mode is "object", this returns an (m, n, 3) np array
+        If mode is "object", this returns an (m, n, 3) np array of dtype uint8
         that can be saved as a png
         First channel: encodes label (can be used for semantic segmentation)
         Second & third channels: multiplication of second and third channel
@@ -350,6 +359,9 @@ def contours_to_labeled_object_mask(
         compatibility with data loaders that expect an image or mask.
         If mode is "semantic" only the labels (corresponding to first
         channel of the object mode) is output.
+        ** IMPORTANT NOTE ** When you read this mask and decide to reconstruct
+        the object codes, convert it to float32 so that the product doesn't
+        saturate at 255.
 
     """
     def _process_gtcodes(gtcodesdf):
@@ -375,14 +387,14 @@ def contours_to_labeled_object_mask(
 
     # unique combinations of number to be multiplied (second & third channel)
     # to be able to reconstruct the object ID when image is re-read
-    object_code_comb = combinations(range(1, 256), 2)
+    object_code_comb = combs_with_unique_products(1, 256, 2)
 
     # Add annotations in overlay order
     overlay_orders = sorted(set(gtcodes.loc[:, 'overlay_order']))
     N_elements = contours.shape[0]
 
     # Make sure we don't run out of object encoding values.
-    if N_elements > 32358:
+    if N_elements > 17437:  # max unique products
         raise Exception("Too many objects!!")
 
     # Add roiinfo & init roi
