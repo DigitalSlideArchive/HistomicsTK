@@ -23,19 +23,17 @@ import histomicstk.preprocessing.color_conversion as htk_cvt
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.segmentation as htk_seg
-import sys
-thisDir = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, thisDir)
-import htk_test_utilities as utilities  # noqa
+
+from .datastore import datastore
 
 
 class TestNucleiSegmentation:
 
     def test_segment_nuclei_kofahi(self):
 
-        input_image_file = utilities.externaldata('data/Easy1.png.sha512')
+        input_image_file = datastore.fetch('Easy1.png')
 
-        ref_image_file = utilities.externaldata('data/L1.png.sha512')
+        ref_image_file = datastore.fetch('L1.png')
 
         # read input image
         im_input = skimage.io.imread(input_image_file)[:, :, :3]
@@ -75,8 +73,8 @@ class TestNucleiSegmentation:
         num_nuclei = len(np.unique(im_nuclei_seg_mask)) - 1
 
         # check if segmentation mask matches ground truth
-        gtruth_mask_file = os.path.join(utilities.externaldata(
-            'data/Easy1_nuclei_seg_kofahi.npy.sha512'))
+        gtruth_mask_file = os.path.join(datastore.fetch(
+            'Easy1_nuclei_seg_kofahi.npy'))
 
         im_gtruth_mask = np.load(gtruth_mask_file)
 

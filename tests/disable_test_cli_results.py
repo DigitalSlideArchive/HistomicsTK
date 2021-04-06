@@ -25,9 +25,8 @@ import runpy
 import shutil
 import sys
 import tempfile
-thisDir = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, thisDir)
-import htk_test_utilities as utilities  # noqa
+
+from .datastore import datastore
 
 base = None
 
@@ -212,7 +211,7 @@ class TestCliResults:
         self._runTest(
             cli_args=[
                 'ColorDeconvolution',
-                utilities.externaldata('data/Easy1.png.sha512'),
+                datastore.fetch('Easy1.png'),
             ] + [f'tmp_out_{i}.png' for i in (1, 2, 3)],
             outputs={
                 'tmp_out_1.png': dict(

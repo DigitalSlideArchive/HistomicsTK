@@ -17,7 +17,7 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
 import sys
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
-import tests.htk_test_utilities as utilities  # noqa
+from tests.datastore import datastore  # noqa
 from tests.htk_test_utilities import girderClient, getTestFilePath  # noqa
 
 
@@ -71,8 +71,8 @@ class TestPolygonMerger:
 
     def test_polygon_merger_rtree(self):
         """Test Polygon_merger_v2.run()."""
-        annotationPath = utilities.externaldata(
-            'data/TCGA-A2-A0YE-01Z-00-DX1_GET_MergePolygons.svs_annotations.json.sha512')  # noqa
+        annotationPath = datastore.fetch(
+            'TCGA-A2-A0YE-01Z-00-DX1_GET_MergePolygons.svs_annotations.json')  # noqa
         slide_annotations = json.load(open(annotationPath))
         _, contours_df = parse_slide_annotations_into_tables(slide_annotations)
 
