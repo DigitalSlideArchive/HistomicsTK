@@ -142,5 +142,7 @@ cython_debug/
 # pycharm
 .idea/
 
+.vscode
+
 # temporary downloaded data when doing unit testing locally
 tests/externaldata/

@@ -11,7 +11,7 @@ from girder.utility.server import configureServer
 
 from girder_large_image_annotation.models.annotation import Annotation
 
-import htk_test_utilities as utilities
+from datastore import datastore
 
 
 def namedFolder(user, folderName='Public'):
@@ -36,12 +36,10 @@ fsAssetstore = Assetstore().findOne()
 publicFolder = namedFolder(adminUser)
 dataFiles = {
     'tcga1': {
-        'sha512': 'data/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-'
-                  '7F0A2ECA0F39.svs.sha512',
-    },
+        'name': 'TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs'},
 }
 for key, entry in dataFiles.items():
-    path = utilities.externaldata(entry['sha512'])
+    path = datastore.fetch(entry['name'])
     query = {'folderId': publicFolder['_id'], 'name': os.path.basename(path)}
     if not Item().findOne(query):
         with ProgressContext(False, user=adminUser) as ctx:
@@ -54,15 +52,15 @@ for key, entry in dataFiles.items():
 annotationFiles = {
     'tcga1': {
         'item': 'tcga1',
-        'sha512': 'data/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-'
-                  '7F0A2ECA0F39.svs_annotations.json.sha512',
+        'name': 'TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-'
+                '7F0A2ECA0F39.svs_annotations.json',
     }
 }
 for key, entry in annotationFiles.items():
     item = dataFiles[entry['item']]['item']
     query = {'_active': {'$ne': False}, 'itemId': item['_id']}
     if not Annotation().findOne(query):
-        path = utilities.externaldata(entry['sha512'])
+        path = datastore.fetch(entry['name'])
         annotations = json.load(open(path))
         if not isinstance(annotations, list):
             annotations = [annotations]

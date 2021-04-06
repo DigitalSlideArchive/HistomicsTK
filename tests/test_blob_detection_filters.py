@@ -20,10 +20,8 @@ import os
 import numpy as np
 from histomicstk.filters.shape import clog, cdog
 from skimage.feature import peak_local_max
-import sys
-thisDir = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, thisDir)
-import htk_test_utilities as utilities  # noqa
+
+from .datastore import datastore
 
 
 def assert_array_almost_equal_neighborhood_lines(im, gt, decimal=4):
@@ -78,11 +76,11 @@ class TestBlobDetectionFilters:
     def test_clog(self):
 
         im_nuclei_stain_data = np.load(
-            utilities.externaldata('data/Easy1_nuclei_stain.npz.sha512'))
+            datastore.fetch('Easy1_nuclei_stain.npz'))
         im_nuclei_stain = im_nuclei_stain_data['Easy1_nuclei_stain']
 
         im_nuclei_fgnd_mask_data = np.load(
-            utilities.externaldata('data/Easy1_nuclei_fgnd_mask.npz.sha512'))
+            datastore.fetch('Easy1_nuclei_fgnd_mask.npz'))
         im_nuclei_fgnd_mask = im_nuclei_fgnd_mask_data['Easy1_nuclei_fgnd_mask']
 
         sigma_min = 10.0 / np.sqrt(2.0)
@@ -92,25 +90,25 @@ class TestBlobDetectionFilters:
             im_input=im_nuclei_stain, im_mask=im_nuclei_fgnd_mask,
             sigma_min=sigma_min, sigma_max=sigma_max)
 
-        im_log_max_gtruth_data = np.load(os.path.join(utilities.externaldata(
-            'data/Easy1_clog_max.npz.sha512')))
+        im_log_max_gtruth_data = np.load(os.path.join(datastore.fetch(
+            'Easy1_clog_max.npz')))
         im_log_max_gtruth = im_log_max_gtruth_data['Easy1_clog_max']
         assert_array_almost_equal_neighborhood_lines(im_log_max, im_log_max_gtruth, decimal=4)
         compare_maxima(im_log_max, im_log_max_gtruth)
 
-        im_sigma_max_gtruth_data = np.load(os.path.join(utilities.externaldata(
-            'data/Easy1_clog_sigma_max.npz.sha512')))
+        im_sigma_max_gtruth_data = np.load(os.path.join(datastore.fetch(
+            'Easy1_clog_sigma_max.npz')))
         im_sigma_max_gtruth = im_sigma_max_gtruth_data['Easy1_clog_sigma_max']
         assert_array_almost_equal_neighborhood_lines(im_sigma_max, im_sigma_max_gtruth, decimal=4)
 
     def test_cdog(self):
 
         im_nuclei_stain_data = np.load(
-            os.path.join(utilities.externaldata('data/Easy1_nuclei_stain.npz.sha512')))
+            os.path.join(datastore.fetch('Easy1_nuclei_stain.npz')))
         im_nuclei_stain = im_nuclei_stain_data['Easy1_nuclei_stain']
 
         im_nuclei_fgnd_mask_data = np.load(
-            os.path.join(utilities.externaldata('data/Easy1_nuclei_fgnd_mask.npz.sha512')))
+            os.path.join(datastore.fetch('Easy1_nuclei_fgnd_mask.npz')))
         im_nuclei_fgnd_mask = im_nuclei_fgnd_mask_data['Easy1_nuclei_fgnd_mask']
 
         sigma_min = 10.0 / np.sqrt(2.0)
@@ -121,12 +119,12 @@ class TestBlobDetectionFilters:
                                         sigma_min, sigma_max)
 
         im_dog_max_gtruth_data = np.load(
-            os.path.join(utilities.externaldata('data/Easy1_cdog_max.npz.sha512')))
+            os.path.join(datastore.fetch('Easy1_cdog_max.npz')))
         im_dog_max_gtruth = im_dog_max_gtruth_data['Easy1_cdog_max']
         assert_array_almost_equal_neighborhood_lines(im_dog_max, im_dog_max_gtruth, decimal=4)
         compare_maxima(im_dog_max, im_dog_max_gtruth)
 
         im_sigma_max_gtruth_data = np.load(
-            os.path.join(utilities.externaldata('data/Easy1_cdog_sigma_max.npz.sha512')))
+            os.path.join(datastore.fetch('Easy1_cdog_sigma_max.npz')))
         im_sigma_max_gtruth = im_sigma_max_gtruth_data['Easy1_cdog_sigma_max']
         assert_array_almost_equal_neighborhood_lines(im_sigma_max, im_sigma_max_gtruth, decimal=4)

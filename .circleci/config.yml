@@ -18,8 +18,11 @@ commands:
       - run:
           name: Run tests via tox
           # Piping through cat does less buffering of the output but can
-          # consume the exit code
-          command: tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
+          # consume the exit code.  Tail a test log to allow slow setup times
+          # from stopping circle
+          command: |
+            (while true; do date; tail -n 3 /tmp/histomicstk_test_girder_log.txt 2>/dev/null || true; sleep 60; done) &
+            tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
   upgradepython:
     description: "Upgrade python"
     parameters:

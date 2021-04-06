@@ -15,6 +15,8 @@ thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, thisDir)
 import htk_test_utilities as utilities  # noqa
 
+from .datastore import datastore  # noqa
+
 
 class Cfg:
     def __init__(self):
@@ -65,7 +67,7 @@ class TestFeatureExtraction:
         args = collections.namedtuple('Parameters', args.keys())(**args)
 
         # read input image
-        input_image_file = utilities.externaldata('data/Easy1.png.sha512')
+        input_image_file = datastore.fetch('Easy1.png')
 
         im_input = skimage.io.imread(input_image_file)[:, :, :3]
 
