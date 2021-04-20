@@ -1,5 +1,5 @@
-Introducing the gider API
-===========================
+Introducing the Girder API
+==========================
 
 A RESTful API allows developers to programmatically interact with a DSA server
 to manage data, user accounts, annotations, and their permissions. These
