@@ -484,7 +484,7 @@ def revert_annotations_in_folder(
 
 def reproduce_annotations_workflow(
         gc, folderid, annotation_jsonfile, monitorPrefix=''):
-    """Dump annotations into single slide from local folder.
+    """Dump annotations into single slide from local folder (Internal function).
 
     Parameters
     -----------
@@ -492,7 +492,9 @@ def reproduce_annotations_workflow(
         authenticated girder client instance
 
     folderid : str
-        girder id of girder folder to post reproduced annotations.
+        girder id of girder folder to copy the slide to before posting
+        the annotations to it. This prevents confusing old annotations that
+        were associated with the slide originally and the new posted annotations.
 
     annotation_jsonfile : str
         path to annotation json file
