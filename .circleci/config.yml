@@ -145,8 +145,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Upgrade pip
-          command: pip install -U pip
+          name: Install dependencies
+          command: sudo apt-get update -yq && sudo apt install -yq pandoc
       - tox:
           env: docs,flake8
       - store_artifacts:
