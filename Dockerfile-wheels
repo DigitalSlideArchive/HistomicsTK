@@ -4,6 +4,8 @@ FROM dockcross/manylinux2014-x64
 RUN rm -rf /opt/python/cp27*
 RUN rm -rf /opt/python/cp34*
 RUN rm -rf /opt/python/cp35*
+RUN rm -rf /opt/python/cp310*
+RUN rm -rf /opt/python/pp*
 
 RUN for PYBIN in /opt/python/*/bin; do \
         ${PYBIN}/pip install --no-cache-dir --upgrade pip; \
