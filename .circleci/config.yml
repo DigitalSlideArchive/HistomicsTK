@@ -39,25 +39,6 @@ commands:
           name: Use pyenv to install python
           command: |
             pyenv install << parameters.version >>
-      #      sudo systemctl stop apt-daily.timer
-      #      sudo systemctl stop apt-daily-upgrade.timer
-      #      sudo rm -rf /usr/lib/apt/apt.systemd.daily
-      #      sudo add-apt-repository -y ppa:deadsnakes/ppa
-      #      while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do sleep 1; done
-      #      sudo apt-get update || true
-      #- run:
-      #    name: Update python
-      #    command: |
-      #      while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do sleep 1; done
-      #      sudo apt-get install -y << parameters.version >>
-      # - run:
-      #     name: Disable preinstalled pyenv
-      #     command: |
-      #       rm /opt/circleci/.pyenv/shims/*3*
-      # - run:
-      #     name: Check python version
-      #     command: |
-      #       which << parameters.version >>
   coverage:
     description: "Upload coverage"
     steps:
@@ -174,6 +155,36 @@ jobs:
             docker run --rm dsarchive/histomicstk:latest PositivePixelCount --xml
             docker run --rm dsarchive/histomicstk:latest SeparateStainsMacenkoPCA --xml
             docker run --rm dsarchive/histomicstk:latest SeparateStainsXuSnmf --xml
+      - run:
+          name: Archive docker images
+          command: |
+            docker save -o dsa_histomicstk.tar dsarchive/histomicstk:latest
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./dsa_histomicstk.tar
+      - store_artifacts:
+          path: ./dsa_histomicstk.tar
+  publish_docker:
+    working_directory: ~/project
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Load archived docker images
+          command: |
+            docker load -i /tmp/workspace/dsa_histomicstk.tar
+      - run:
+          name: Publish images to Docker Hub
+          command: |
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker push dsarchive/histomicstk:latest
+              if [[ $CIRCLE_TAG =~ ^v.*$ ]]; then
+              docker tag dsarchive/dsa_worker:latest "dsarchive/dsa_worker:$CIRCLE_TAG"
+              docker push "dsarchive/histomicstk:$CIRCLE_TAG"
+              fi
   wheels:
     working_directory: ~/project
     docker:
@@ -342,6 +353,21 @@ workflows:
               only:
                 - master
                 - sphinx
+      - publish_docker:
+          requires:
+            - py36
+            - py37
+            - py38
+            - py39
+            - lint_and_docs
+            - docker
+            - wheels
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only:
+                - master
   periodic:
     triggers:
       - schedule:
@@ -359,3 +385,12 @@ workflows:
       - lint_and_docs
       - docker
       - wheels
+      - publish_docker:
+          requires:
+            - py36
+            - py37
+            - py38
+            - py39
+            - lint_and_docs
+            - docker
+            - wheels
