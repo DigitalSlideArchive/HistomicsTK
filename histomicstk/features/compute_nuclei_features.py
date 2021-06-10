@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from skimage.measure import regionprops
 
@@ -151,16 +152,16 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     nuclei_props = regionprops(im_label)
 
     # extract object locations and identifiers
-    numLabels = len(rprops)
+    numLabels = len(nuclei_props)
     idata = pd.DataFrame(np.zeros((numLabels, 7)))
     for i in range(numLabels):
-        idata.at[i, 'Label'] = rprops[i].label
-        idata.at[i, 'Identifier.Xmin'] = rprops[i].bbox[1]
-        idata.at[i, 'Identifier.Ymin'] = rprops[i].bbox[0]
-        idata.at[i, 'Identifier.Xmax'] = rprops[i].bbox[3]
-        idata.at[i, 'Identifier.Ymax'] = rprops[i].bbox[2]
-        idata.at[i, 'Identifier.CentroidX'] = rprops[i].centroid[1]
-        idata.at[i, 'Identifier.CentroidY'] = rprops[i].centroid[0]
+        idata.at[i, 'Label'] = nuclei_props[i].label
+        idata.at[i, 'Identifier.Xmin'] = nuclei_props[i].bbox[1]
+        idata.at[i, 'Identifier.Ymin'] = nuclei_props[i].bbox[0]
+        idata.at[i, 'Identifier.Xmax'] = nuclei_props[i].bbox[3]
+        idata.at[i, 'Identifier.Ymax'] = nuclei_props[i].bbox[2]
+        idata.at[i, 'Identifier.CentroidX'] = nuclei_props[i].centroid[1]
+        idata.at[i, 'Identifier.CentroidY'] = nuclei_props[i].centroid[0]
     feature_list.append(idata)
 
     # compute cytoplasm mask
