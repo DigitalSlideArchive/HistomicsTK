@@ -152,9 +152,8 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     nuclei_props = regionprops(im_label)
 
     # extract object locations and identifiers
-    numLabels = len(nuclei_props)
-    idata = pd.DataFrame(np.zeros((numLabels, 7)))
-    for i in range(numLabels):
+    idata = pd.DataFrame()
+    for i in range(len(nuclei_props)):
         idata.at[i, 'Label'] = nuclei_props[i].label
         idata.at[i, 'Identifier.Xmin'] = nuclei_props[i].bbox[1]
         idata.at[i, 'Identifier.Ymin'] = nuclei_props[i].bbox[0]
