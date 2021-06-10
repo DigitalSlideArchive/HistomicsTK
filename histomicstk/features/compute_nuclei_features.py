@@ -167,12 +167,11 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
 
         cyto_mask = htk_label.dilate_xor(im_label, neigh_width=cyto_width)
 
-        cytoplasm_props = regionprops(cyto_mask)
+        cyto_props = regionprops(cyto_mask)
 
-        # FIXME: confirm that cytoplasm props order corresponds to the
-        #  nuclei_props list. The assumption here is that sklearn regionprops
-        #  gives consistently the same result as long as the labeled image
-        #  unique pixel values is the same. Is this assumption true???
+        # ensure that cytoplasm props order corresponds to the nuclei
+        lablocs = {v['label']: i for i, v in enumerate(cyto_props)}
+        cyto_props = [cyto_props[lablocs[v['label']]] for v in nuclei_props]
 
     # compute morphometry features
     if morphometry_features_flag:
@@ -203,7 +202,7 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     if intensity_features_flag and im_cytoplasm is not None:
 
         fint_cytoplasm = compute_intensity_features(cyto_mask, im_cytoplasm,
-                                                    rprops=cytoplasm_props)
+                                                    rprops=cyto_props)
         fint_cytoplasm.columns = ['Cytoplasm.' + col
                                   for col in fint_cytoplasm.columns]
 
@@ -223,7 +222,7 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     if gradient_features_flag and im_cytoplasm is not None:
 
         fgrad_cytoplasm = compute_gradient_features(cyto_mask, im_cytoplasm,
-                                                    rprops=cytoplasm_props)
+                                                    rprops=cyto_props)
         fgrad_cytoplasm.columns = ['Cytoplasm.' + col
                                    for col in fgrad_cytoplasm.columns]
 
@@ -249,7 +248,7 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
         fharalick_cytoplasm = compute_haralick_features(
             cyto_mask, im_cytoplasm,
             num_levels=num_glcm_levels,
-            rprops=cytoplasm_props
+            rprops=cyto_props
         )
 
         fharalick_cytoplasm.columns = ['Cytoplasm.' + col
