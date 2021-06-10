@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from skimage.measure import regionprops
 
@@ -140,10 +139,10 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     histomicstk.features.compute_haralick_features
 
     """
-    
+
     # TODO: this pipeline uses loops a lot. For each set of features it
     #  iterates over all nuclei, which may become an issue when one needs to
-    #  do this for lots and lots of slides and 10^6+ nuclei. Consider 
+    #  do this for lots and lots of slides and 10^6+ nuclei. Consider
     #  improving efficiency in the future somehow (cython? reuse? etc)
 
     feature_list = []
@@ -169,7 +168,7 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
         cyto_mask = htk_label.dilate_xor(im_label, neigh_width=cyto_width)
 
         cytoplasm_props = regionprops(cyto_mask)
-        
+
         # FIXME: confirm that cytoplasm props order corresponds to the
         #  nuclei_props list. The assumption here is that sklearn regionprops
         #  gives consistently the same result as long as the labeled image
