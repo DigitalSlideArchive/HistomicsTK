@@ -89,6 +89,24 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     -----
     List of features computed by this function
 
+    Identifier
+        Location of the nucleus and its code in the input labeled mask.
+        Columns are prefixed by *Identifier.*. These include ...
+
+        Identifier.Label (int) - nucleus label in the input labeled mask
+
+        Identifier.Xmin (int) - Left bound
+
+        Identifier.Ymin (int) - Upper bound
+
+        Identifier.Xmax (int) - Right bound
+
+        Identifier.Ymax (int) - Lower bound
+
+        Identifier.CentroidX (float) - X centroid (columns)
+
+        Identifier.CentroidY (float) - Y centroid (rows)
+
     Morphometry (size and shape) features of the nuclei
         See histomicstk.features.compute_morphometry_features for more details.
         Feature names prefixed by *Size.* or *Shape.*.
@@ -122,10 +140,27 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
 
     """
 
+    # TODO: this pipeline uses loops a lot. For each set of features it
+    #  iterates over all nuclei, which may become an issue when one needs to
+    #  do this for lots and lots of slides and 10^6+ nuclei. Consider
+    #  improving efficiency in the future somehow (cython? reuse? etc)
+
     feature_list = []
 
-    # get the number of objects in im_label
+    # get the objects in im_label
     nuclei_props = regionprops(im_label)
+
+    # extract object locations and identifiers
+    idata = pd.DataFrame()
+    for i in range(len(nuclei_props)):
+        idata.at[i, 'Label'] = nuclei_props[i].label
+        idata.at[i, 'Identifier.Xmin'] = nuclei_props[i].bbox[1]
+        idata.at[i, 'Identifier.Ymin'] = nuclei_props[i].bbox[0]
+        idata.at[i, 'Identifier.Xmax'] = nuclei_props[i].bbox[3]
+        idata.at[i, 'Identifier.Ymax'] = nuclei_props[i].bbox[2]
+        idata.at[i, 'Identifier.CentroidX'] = nuclei_props[i].centroid[1]
+        idata.at[i, 'Identifier.CentroidY'] = nuclei_props[i].centroid[0]
+    feature_list.append(idata)
 
     # compute cytoplasm mask
     if im_cytoplasm is not None:
@@ -133,6 +168,11 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
         cyto_mask = htk_label.dilate_xor(im_label, neigh_width=cyto_width)
 
         cytoplasm_props = regionprops(cyto_mask)
+
+        # FIXME: confirm that cytoplasm props order corresponds to the
+        #  nuclei_props list. The assumption here is that sklearn regionprops
+        #  gives consistently the same result as long as the labeled image
+        #  unique pixel values is the same. Is this assumption true???
 
     # compute morphometry features
     if morphometry_features_flag:
