@@ -287,13 +287,11 @@ class TestFeatureExtraction:
                 index=False)
 
         if packaging.version.parse(skimage.__version__) < packaging.version.parse('0.18'):
-            fdata_file = 'Easy1_nuclei_morphometry_features.csv'
-        else:
-            fdata_file = 'Easy1_nuclei_morphometry_features_2.csv'
-        fdata_gtruth = pd.read_csv(utilities.getTestFilePath(fdata_file), index_col=None)
-
-        pd.testing.assert_frame_equal(
-            fdata, fdata_gtruth, check_less_precise=2)
+            fdata_gtruth = pd.read_csv(
+                utilities.getTestFilePath('Easy1_nuclei_morphometry_features.csv'),
+                index_col=None)
+            pd.testing.assert_frame_equal(
+                fdata, fdata_gtruth, check_less_precise=2)
 
     def test_compute_fsd_features(self):
 
