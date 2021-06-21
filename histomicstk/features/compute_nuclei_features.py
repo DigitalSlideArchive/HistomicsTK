@@ -10,7 +10,7 @@ from .compute_morphometry_features import compute_morphometry_features
 from histomicstk.segmentation import label as htk_label
 
 
-def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
+def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
                             fsd_bnd_pts=128, fsd_freq_bins=6, cyto_width=8,
                             num_glcm_levels=32,
                             morphometry_features_flag=True,
@@ -107,9 +107,13 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
 
         Identifier.CentroidY (float) - Y centroid (rows)
 
-    Morphometry (size and shape) features of the nuclei
+        Identifier.WeightedCentroidX (float) - intensity-weighted X centroid
+
+        Identifier.WeightedCentroidY (float) - intensity-weighted Y centroid
+
+    Morphometry (size, shape, and orientation) features of the nuclei
         See histomicstk.features.compute_morphometry_features for more details.
-        Feature names prefixed by *Size.* or *Shape.*.
+        Feature names prefixed by *Size.*, *Shape.*, or *Orientation.*.
 
     Fourier shape descriptor features
         See `histomicstk.features.compute_fsd_features` for more details.
@@ -139,6 +143,13 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     histomicstk.features.compute_haralick_features
 
     """
+    # sanity checks
+    if any([
+        intensity_features_flag,
+        gradient_features_flag,
+        haralick_features_flag,
+    ]):
+        assert im_nuclei is not None, "You must provide nuclei intensity!"
 
     # TODO: this pipeline uses loops a lot. For each set of features it
     #  iterates over all nuclei, which may become an issue when one needs to
@@ -148,18 +159,23 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
     feature_list = []
 
     # get the objects in im_label
-    nuclei_props = regionprops(im_label)
+    nuclei_props = regionprops(im_label, intensity_image=im_nuclei)
 
     # extract object locations and identifiers
     idata = pd.DataFrame()
-    for i in range(len(nuclei_props)):
-        idata.at[i, 'Label'] = nuclei_props[i].label
-        idata.at[i, 'Identifier.Xmin'] = nuclei_props[i].bbox[1]
-        idata.at[i, 'Identifier.Ymin'] = nuclei_props[i].bbox[0]
-        idata.at[i, 'Identifier.Xmax'] = nuclei_props[i].bbox[3]
-        idata.at[i, 'Identifier.Ymax'] = nuclei_props[i].bbox[2]
-        idata.at[i, 'Identifier.CentroidX'] = nuclei_props[i].centroid[1]
-        idata.at[i, 'Identifier.CentroidY'] = nuclei_props[i].centroid[0]
+    for i, nprop in enumerate(nuclei_props):
+        idata.at[i, 'Label'] = nprop.label
+        idata.at[i, 'Identifier.Xmin'] = nprop.bbox[1]
+        idata.at[i, 'Identifier.Ymin'] = nprop.bbox[0]
+        idata.at[i, 'Identifier.Xmax'] = nprop.bbox[3]
+        idata.at[i, 'Identifier.Ymax'] = nprop.bbox[2]
+        idata.at[i, 'Identifier.CentroidX'] = nprop.centroid[1]
+        idata.at[i, 'Identifier.CentroidY'] = nprop.centroid[0]
+        if im_nuclei is not None:
+            # intensity-weighted centroid
+            wcy, wcx = nprop.weighted_centroid
+            idata.at[i, 'Identifier.WeightedCentroidX'] = wcx
+            idata.at[i, 'Identifier.WeightedCentroidY'] = wcy
     feature_list.append(idata)
 
     # compute cytoplasm mask
@@ -167,7 +183,7 @@ def compute_nuclei_features(im_label, im_nuclei, im_cytoplasm=None,
 
         cyto_mask = htk_label.dilate_xor(im_label, neigh_width=cyto_width)
 
-        cyto_props = regionprops(cyto_mask)
+        cyto_props = regionprops(cyto_mask, intensity_image=im_cytoplasm)
 
         # ensure that cytoplasm props order corresponds to the nuclei
         lablocs = {v['label']: i for i, v in enumerate(cyto_props)}

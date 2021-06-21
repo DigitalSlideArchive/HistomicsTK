@@ -15,7 +15,10 @@ thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, thisDir)
 import htk_test_utilities as utilities  # noqa
 
-from .datastore import datastore  # noqa
+try:
+    from .datastore import datastore  # noqa
+except ModuleNotFoundError:  # local prototyping
+    from datastore import datastore  # noqa
 
 
 class Cfg:
@@ -247,7 +250,9 @@ class TestFeatureExtraction:
     def test_compute_morphometry_features(self):
 
         expected_feature_list = [
+            'Orientation.Orientation',
             'Size.Area',
+            'Size.ConvexHullArea',
             'Size.MajorAxisLength',
             'Size.MinorAxisLength',
             'Size.Perimeter',
@@ -255,8 +260,16 @@ class TestFeatureExtraction:
             'Shape.Eccentricity',
             'Shape.EquivalentDiameter',
             'Shape.Extent',
+            'Shape.FractalDimension',
             'Shape.MinorMajorAxisRatio',
             'Shape.Solidity',
+            'Shape.HuMoments1',
+            'Shape.HuMoments2',
+            'Shape.HuMoments3',
+            'Shape.HuMoments4',
+            'Shape.HuMoments5',
+            'Shape.HuMoments6',
+            'Shape.HuMoments7',
         ]
 
         fdata = htk_features.compute_morphometry_features(
@@ -274,13 +287,11 @@ class TestFeatureExtraction:
                 index=False)
 
         if packaging.version.parse(skimage.__version__) < packaging.version.parse('0.18'):
-            fdata_file = 'Easy1_nuclei_morphometry_features.csv'
-        else:
-            fdata_file = 'Easy1_nuclei_morphometry_features_2.csv'
-        fdata_gtruth = pd.read_csv(utilities.getTestFilePath(fdata_file), index_col=None)
-
-        pd.testing.assert_frame_equal(
-            fdata, fdata_gtruth, check_less_precise=2)
+            fdata_gtruth = pd.read_csv(
+                utilities.getTestFilePath('Easy1_nuclei_morphometry_features.csv'),
+                index_col=None)
+            pd.testing.assert_frame_equal(
+                fdata, fdata_gtruth, check_less_precise=2)
 
     def test_compute_fsd_features(self):
 
@@ -305,3 +316,13 @@ class TestFeatureExtraction:
 
         pd.testing.assert_frame_equal(
             fdata, fdata_gtruth, check_less_precise=2)
+
+
+# PROTOTYPING =================================================================
+
+if __name__ == '__main__':
+
+    tfe = TestFeatureExtraction()
+    tfe.test_setup()
+    tfe.test_compute_morphometry_features()
+    tfe.test_compute_intensity_features()

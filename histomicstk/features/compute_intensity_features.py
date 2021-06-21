@@ -134,45 +134,31 @@ def compute_intensity_features(
             im_intensity[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
         )
 
-        # compute min
-        _conditional_execution('Intensity.Min', np.min, pixelIntensities)
-
-        # compute max
-        _conditional_execution('Intensity.Max', np.max, pixelIntensities)
-
-        # compute mean
+        # simple descriptors
         meanIntensity = np.mean(pixelIntensities)
-        _conditional_execution('Intensity.Mean', _return_input, meanIntensity)
-
-        # compute median
         medianIntensity = np.median(pixelIntensities)
+        _conditional_execution('Intensity.Min', np.min, pixelIntensities)
+        _conditional_execution('Intensity.Max', np.max, pixelIntensities)
+        _conditional_execution('Intensity.Mean', _return_input, meanIntensity)
         _conditional_execution(
             'Intensity.Median', _return_input, medianIntensity)
-
-        # compute mean median differnece
         _conditional_execution(
             'Intensity.MeanMedianDiff', _return_input,
             meanIntensity - medianIntensity)
-
-        # compute standard deviation
         _conditional_execution('Intensity.Std', np.std, pixelIntensities)
+        _conditional_execution(
+            'Intensity.Skewness', scipy.stats.skew, pixelIntensities)
+        _conditional_execution(
+            'Intensity.Kurtosis', scipy.stats.kurtosis, pixelIntensities)
 
-        # compute inter-quartile range
+        # inter-quartile range
         _conditional_execution(
             'Intensity.IQR', scipy.stats.iqr, pixelIntensities)
 
-        # compute median absolute deviation
+        # median absolute deviation
         _conditional_execution(
             'Intensity.MAD', np.median,
             np.abs(pixelIntensities - medianIntensity))
-
-        # compute skewness
-        _conditional_execution(
-            'Intensity.Skewness', scipy.stats.skew, pixelIntensities)
-
-        # compute kurtosis
-        _conditional_execution(
-            'Intensity.Kurtosis', scipy.stats.kurtosis, pixelIntensities)
 
         # histogram-based features
         if any(j in feature_list for j in [
@@ -182,12 +168,9 @@ def compute_intensity_features(
             hist, bins = np.histogram(pixelIntensities, bins=num_hist_bins)
             prob = hist/np.sum(hist, dtype=np.float32)
 
-            # compute entropy
+            # entropy and energy
             _conditional_execution(
                 'Intensity.HistEntropy', scipy.stats.entropy, prob)
-
-            # compute energy
-            _conditional_execution(
-                'Intensity.HistEnergy', np.sum, prob**2)
+            _conditional_execution('Intensity.HistEnergy', np.sum, prob**2)
 
     return fdata
