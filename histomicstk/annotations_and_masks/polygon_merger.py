@@ -42,6 +42,11 @@ class Polygon_merger(Base_HTK_Class):
                 belong to corresponding group (class).
             color: str
                 rgb format. eg. rgb(255,0,0).
+        imreader : function
+            function that takes a maskpath and returns mask. Default is
+            imageio.imread
+        imreader_kws : dict
+            kwargs for mask reader
         merge_thresh : int
             how close do the polygons need to be (in pixels) to be merged
         contkwargs : dict
@@ -94,6 +99,8 @@ class Polygon_merger(Base_HTK_Class):
         default_attr = {
             'verbose': 1,
             'monitorPrefix': "",
+            'imreader': imread,
+            'imreader_kws': {},
             'merge_thresh': 3,
             'discard_nonenclosed_background': False,
             'background_group': 'mostly_stroma',
@@ -134,7 +141,7 @@ class Polygon_merger(Base_HTK_Class):
         for midx, maskpath in enumerate(self.maskpaths):
 
             # read mask
-            MASK = imread(maskpath)
+            MASK = self.imreader(maskpath, **self.imreader_kws)
 
             # mask is empty!
             if MASK.sum() < 2:
@@ -221,7 +228,7 @@ class Polygon_merger(Base_HTK_Class):
             # https://stackoverflow.com/questions/15800704/ ...
             # ... get-image-size-without-loading-image-into-memory
             with Image.open(maskpath, mode='r') as mask_obj:
-                width, height = mask_obj.size
+                width, height = mask_obj.size[:2]
                 maskname = os.path.split(maskpath)[1]
                 roiinfos[maskname]['right'] = roiinfos[
                     maskname]['left'] + width
