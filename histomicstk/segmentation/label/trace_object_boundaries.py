@@ -157,7 +157,7 @@ def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0):
 
         # get coords of next triplet of points to test
         if testpos == len(px) - 1:
-            if not len(keep):
+            if not keep:
                 break
             nextpos = keep[0]
         else:
