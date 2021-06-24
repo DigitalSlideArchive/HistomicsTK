@@ -538,20 +538,23 @@ def parse_slide_annotations_into_tables(
 
         # Add annotation document info to annotations dataframe
 
-        cfg.annotation_infos.loc[annno, 'annotation_girder_id'] = cfg.ann[
-            '_id']
+        cfg.annotation_infos.loc[annno, 'annotation_girder_id'] = cfg.ann['_id']
 
         for key in [
                 '_modelType', '_version',
                 'itemId', 'created', 'creatorId',
                 'public', 'updated', 'updatedId', ]:
-            cfg.annotation_infos.loc[annno, key] = cfg.ann[key]
+            if key in cfg.ann:
+                cfg.annotation_infos.loc[annno, key] = cfg.ann[key]
 
-        cfg.annotation_infos.loc[annno, 'groups'] = str(cfg.ann['groups'])
-        cfg.annotation_infos.loc[annno, 'element_count'] = cfg.ann[
-            '_elementQuery']['count']
-        cfg.annotation_infos.loc[annno, 'element_details'] = cfg.ann[
-            '_elementQuery']['details']
+        if 'groups' in cfg.ann:
+            cfg.annotation_infos.loc[annno, 'groups'] = str(cfg.ann['groups'])
+
+        if '_elementQuery' in cfg.ann:
+            cfg.annotation_infos.loc[annno, 'element_count'] = cfg.ann[
+                '_elementQuery']['count']
+            cfg.annotation_infos.loc[annno, 'element_details'] = cfg.ann[
+                '_elementQuery']['details']
 
         for cfg.elementidx, cfg.element in enumerate(
                 cfg.ann['annotation']['elements']):
