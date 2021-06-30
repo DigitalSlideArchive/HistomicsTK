@@ -20,17 +20,23 @@ from histomicstk.preprocessing.color_conversion import lab_mean_std
 from histomicstk.preprocessing.color_normalization import reinhard
 from histomicstk.saliency.tissue_detection import (
     get_slide_thumbnail, get_tissue_mask, _deconv_color,
-    get_tissue_boundary_annotation_documents)
+    get_tissue_boundary_annotation_documents,
+)
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    get_contours_from_mask, get_annotation_documents_from_contours)
+    get_contours_from_mask, get_annotation_documents_from_contours,
+)
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    get_image_from_htk_response)
+    get_image_from_htk_response
+)
 from histomicstk.features.compute_intensity_features import (
-    compute_intensity_features)
+    compute_intensity_features
+)
 from histomicstk.features.compute_haralick_features import (
-    compute_haralick_features)
+    compute_haralick_features
+)
 
 Image.MAX_IMAGE_PIXELS = None
+
 
 # %%===========================================================================
 # =============================================================================
@@ -107,7 +113,7 @@ class CD_single_tissue_piece:
         # load RGB for this tissue piece at saliency magnification
         getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
             self.cd.slide_id, self.xmin, self.xmax, self.ymin, self.ymax
-            ) + "&magnification=%d" % self.cd.MAG
+        ) + "&magnification=%d" % self.cd.MAG
         resp = self.cd.gc.get(getStr, jsonResp=False)
         self.tissue_rgb = get_image_from_htk_response(resp)
 
@@ -196,7 +202,7 @@ class CD_single_tissue_piece:
         assert self.cd.deconvolve, \
             "We must use hematoxyling channel to rank by cellularity."
 
-        self.cluster_props = dict()
+        self.cluster_props = {}
 
         self.fdata.loc[:, "cluster"] = self.spixel_labels
         for clid in np.unique(self.spixel_labels):
@@ -215,7 +221,9 @@ class CD_single_tissue_piece:
             max_cellularity = self.cd.max_cellularity
         else:
             max_cellularity = max(
-                [j['cellularity'] for _, j in self.cluster_props.items()])
+                j['cellularity'] for _, j in self.cluster_props.items()
+            )
+
         # Assign rgb string
         for clid in np.unique(self.spixel_labels):
             cellularity = min(
@@ -305,11 +313,12 @@ class CD_single_tissue_piece:
             _ = self.cd.gc.post(
                 "/annotation?itemId=" + self.cd.slide_id, json=doc)
 
+
 # %%===========================================================================
 # =============================================================================
 
 
-class Cellularity_detector_superpixels(Base_HTK_Class):
+class Cellularity_detector_superpixels (Base_HTK_Class):
     """Detect cellular regions in a slides by classifying superpixels.
 
     This uses Simple Linear Iterative Clustering (SLIC) to get superpixels at
@@ -502,7 +511,7 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
         tissue_pieces = [None for _ in range(len(unique_tvals))]
         for idx, tval in enumerate(unique_tvals):
             monitorPrefix = "%s: Tissue piece %d of %d" % (
-                self.monitorPrefix, idx+1, len(unique_tvals))
+                self.monitorPrefix, idx + 1, len(unique_tvals))
             self._print1(monitorPrefix)
             tissue_pieces[idx] = CD_single_tissue_piece(
                 self, tissue_mask=labeled == tval, monitorPrefix=monitorPrefix)
@@ -517,9 +526,9 @@ class Cellularity_detector_superpixels(Base_HTK_Class):
             self, mu=None, sigma=None, ref_image_path=None, what='main'):
         """Set color normalization values for thumbnail or main image."""
         assert (
-            all([j is not None for j in (mu, sigma)])
-            or ref_image_path is not None), \
-            "You must provide mu & sigma values or ref. image to get them."
+            all(j is not None for j in (mu, sigma)) or ref_image_path is not None
+        ), "You must provide mu & sigma values or ref. image to get them."
+
         assert what in ('thumbnail', 'main')
 
         if ref_image_path is not None:
