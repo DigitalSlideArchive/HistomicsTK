@@ -58,71 +58,71 @@ jobs:
   py36:
     working_directory: ~/project
     machine:
-      image: circleci/classic:201808-01
+      image: ubuntu-2004:202107-02
     steps:
       - checkout
       - upgradepython:
-          version: 3.6.10
+          version: 3.6.14
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.6.10
+            pyenv global 3.6.14
       - tox:
           env: py36
       - coverage
   py37:
     working_directory: ~/project
     machine:
-      image: circleci/classic:201808-01
+      image: ubuntu-2004:202107-02
     steps:
       - checkout
       - upgradepython:
-          version: 3.7.7
+          version: 3.7.11
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.7.7
+            pyenv global 3.7.11
       - tox:
           env: py37
       - coverage
   py38:
     working_directory: ~/project
     machine:
-      image: circleci/classic:201808-01
+      image: ubuntu-2004:202107-02
     steps:
       - checkout
       - upgradepython:
-          version: 3.8.6
+          version: 3.8.12
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.8.6
+            pyenv global 3.8.12
       - tox:
           env: py38
       - coverage
   py39:
     working_directory: ~/project
     machine:
-      image: circleci/classic:201808-01
+      image: ubuntu-2004:202107-02
     steps:
       - checkout
       - upgradepython:
-          version: 3.9.1
+          version: 3.9.7
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.9.1
+            pyenv global 3.9.7
       - tox:
           env: py39
       - coverage
   lint_and_docs:
     working_directory: ~/project
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.9
     steps:
       - checkout
       - run:
@@ -188,7 +188,7 @@ jobs:
   wheels:
     working_directory: ~/project
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.9
       - image: docker:git
     steps:
       - checkout
@@ -225,7 +225,7 @@ jobs:
   release:
     working_directory: ~/project
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.9
       - image: docker:git
     steps:
       - checkout
