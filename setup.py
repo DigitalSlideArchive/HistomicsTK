@@ -62,7 +62,7 @@ setup(
         'scikit-image>=0.14.2',
         'scikit-learn>=0.18.1',
         'imageio>=2.3.0',
-        'shapely[vectorized]',
+        'shapely[vectorized]<1.8',
         'opencv-python-headless',
         'sqlalchemy',
         'matplotlib',
