@@ -1,16 +1,19 @@
 import collections
-import numpy as np
 import os
+import sys
+import tempfile
+
+import numpy as np
 import packaging.version
 import pandas as pd
 import skimage.io
 import skimage.measure
-import tempfile
-import histomicstk.preprocessing.color_normalization as htk_cnorm
-import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
-import histomicstk.segmentation.nuclear as htk_nuclear
+
 import histomicstk.features as htk_features
-import sys
+import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk.preprocessing.color_normalization as htk_cnorm
+import histomicstk.segmentation.nuclear as htk_nuclear
+
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, thisDir)
 import htk_test_utilities as utilities  # noqa
@@ -240,8 +243,11 @@ class TestFeatureExtraction:
                 tempfile.gettempdir(), 'Easy1_nuclei_gradient_features.csv'),
                 index=False)
 
+        test_file = 'Easy1_nuclei_gradient_features.csv'
+        if packaging.version.parse(skimage.__version__) >= packaging.version.parse('0.19'):
+            test_file = 'Easy1_nuclei_gradient_features_v2.csv'
         fdata_gtruth = pd.read_csv(
-            utilities.getTestFilePath('Easy1_nuclei_gradient_features.csv'),
+            utilities.getTestFilePath(test_file),
             index_col=None)
 
         pd.testing.assert_frame_equal(
@@ -286,12 +292,14 @@ class TestFeatureExtraction:
                 'Easy1_nuclei_morphometry_features.csv'),
                 index=False)
 
-        if packaging.version.parse(skimage.__version__) < packaging.version.parse('0.18'):
-            fdata_gtruth = pd.read_csv(
-                utilities.getTestFilePath('Easy1_nuclei_morphometry_features.csv'),
-                index_col=None)
-            pd.testing.assert_frame_equal(
-                fdata, fdata_gtruth, check_less_precise=2)
+        test_file = 'Easy1_nuclei_morphometry_features.csv'
+        if packaging.version.parse(skimage.__version__) >= packaging.version.parse('0.18'):
+            test_file = 'Easy1_nuclei_morphometry_features_v2.csv'
+        fdata_gtruth = pd.read_csv(
+            utilities.getTestFilePath(test_file),
+            index_col=None)
+        pd.testing.assert_frame_equal(
+            fdata, fdata_gtruth, check_less_precise=2)
 
     def test_compute_fsd_features(self):
 
