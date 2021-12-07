@@ -1,11 +1,12 @@
 import os
-import pytest
 import subprocess
 import tempfile
 import time
 import warnings
+
 import docker
 import girder_client
+import pytest
 
 
 def getTestFilePath(name):
