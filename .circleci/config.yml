@@ -62,12 +62,12 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.6.14
+          version: 3.6.15
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.6.14
+            pyenv global 3.6.15
       - tox:
           env: py36
       - coverage
@@ -78,12 +78,12 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.7.11
+          version: 3.7.12
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.7.11
+            pyenv global 3.7.12
       - tox:
           env: py37
       - coverage
@@ -110,14 +110,30 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.9.7
+          version: 3.9.9
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.9.7
+            pyenv global 3.9.9
       - tox:
           env: py39
+      - coverage
+  py310:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2004:202107-02
+    steps:
+      - checkout
+      - upgradepython:
+          version: 3.10.0
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.10.0
+      - tox:
+          env: py310
       - coverage
   lint_and_docs:
     working_directory: ~/project
@@ -302,6 +318,13 @@ workflows:
             branches:
               ignore:
                 - gh-pages
+      - py310:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
       - lint_and_docs:
           filters:
             tags:
@@ -329,6 +352,7 @@ workflows:
             - py37
             - py38
             - py39
+            - py310
             - lint_and_docs
             - wheels
             - docker
@@ -343,6 +367,7 @@ workflows:
             - py37
             - py38
             - py39
+            - py310
             - lint_and_docs
             - wheels
             - docker
@@ -359,6 +384,7 @@ workflows:
             - py37
             - py38
             - py39
+            - py310
             - lint_and_docs
             - docker
             - wheels
@@ -382,6 +408,7 @@ workflows:
       - py37
       - py38
       - py39
+      - py310
       - lint_and_docs
       - docker
       - wheels
@@ -391,6 +418,7 @@ workflows:
             - py37
             - py38
             - py39
+            - py310
             - lint_and_docs
             - docker
             - wheels
