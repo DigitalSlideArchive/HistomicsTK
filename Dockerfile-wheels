@@ -4,7 +4,6 @@ FROM dockcross/manylinux2014-x64
 RUN rm -rf /opt/python/cp27*
 RUN rm -rf /opt/python/cp34*
 RUN rm -rf /opt/python/cp35*
-RUN rm -rf /opt/python/cp310*
 RUN rm -rf /opt/python/pp*
 
 RUN for PYBIN in /opt/python/*/bin; do \
@@ -12,7 +11,9 @@ RUN for PYBIN in /opt/python/*/bin; do \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \
-      if [[ "${PYBIN}" =~ "39" ]]; then \
+      if [[ "${PYBIN}" =~ "310" ]]; then \
+        export VERSIONS="numpy==1.21.*"; \
+      elif [[ "${PYBIN}" =~ "39" ]]; then \
         export VERSIONS="numpy==1.19.*"; \
       elif [[ "${PYBIN}" =~ "38" ]]; then \
         export VERSIONS="numpy==1.17.*"; \
