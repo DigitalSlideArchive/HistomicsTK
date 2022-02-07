@@ -52,7 +52,7 @@ setup(
     },
     include_package_data=True,
     install_requires=[
-        'girder_client',
+        'girder-client',
         # scientific packages
         'nimfa>=1.3.2',
         'numpy>=1.12.1',
