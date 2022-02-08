@@ -3,25 +3,27 @@ Created on Thu Dec 12 13:19:18 2019
 
 @author: tageldim
 """
-import os
-import json
 import copy
-from pandas import DataFrame
-from sqlalchemy import create_engine
-from sqlalchemy.types import Integer, String, Boolean
-from histomicstk.workflows.workflow_runner import (
-    Workflow_runner, Slide_iterator)
-from histomicstk.utils.girder_convenience_utils import (
-    get_absolute_girder_folderpath)
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    parse_slide_annotations_into_tables)
+import json
+import os
 
+from sqlalchemy import create_engine
+from sqlalchemy.types import Boolean, Integer, String
+
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
+    parse_slide_annotations_into_tables
+from histomicstk.utils.girder_convenience_utils import \
+    get_absolute_girder_folderpath
+from histomicstk.workflows.workflow_runner import (Slide_iterator,
+                                                   Workflow_runner)
 
 # %%===========================================================================
 # Helper functions
 
 
 def _add_item_to_sqlite(dbcon, item):
+    from pandas import DataFrame
+
     # modify item info to prep for appending to sqlite table
     item_info = copy.deepcopy(item)
     item_info['largeImage'] = str(item_info['largeImage'])
@@ -55,6 +57,8 @@ def _add_item_to_sqlite(dbcon, item):
 
 
 def _add_folder_to_sqlite(dbcon, folder_info):
+    from pandas import DataFrame
+
     # modify folder info to prep for appending to sqlite table
     folder_info_dtypes = {
         '_accessLevel': Integer(),

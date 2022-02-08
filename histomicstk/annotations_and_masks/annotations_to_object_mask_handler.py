@@ -5,18 +5,19 @@ Created on Fri Jan 24 2020.
 """
 import copy
 import os
-import numpy as np
 from itertools import combinations
+
+import numpy as np
 from imageio import imwrite
-from pandas import DataFrame
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
-    get_idxs_for_annots_overlapping_roi_by_bbox, \
-    get_scale_factor_and_appendStr, scale_slide_annotations, \
-    get_bboxes_from_slide_annotations, get_image_from_htk_response, \
-    parse_slide_annotations_into_tables, _get_coords_from_element, \
-    _simple_add_element_to_roi, _get_idxs_for_all_rois
-from histomicstk.annotations_and_masks.annotations_to_masks_handler import \
-    _get_roi_bounds_by_run_mode, _visualize_annotations_on_rgb
+
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+    _get_coords_from_element, _get_idxs_for_all_rois,
+    _simple_add_element_to_roi, get_bboxes_from_slide_annotations,
+    get_idxs_for_annots_overlapping_roi_by_bbox, get_image_from_htk_response,
+    get_scale_factor_and_appendStr, parse_slide_annotations_into_tables,
+    scale_slide_annotations)
+from histomicstk.annotations_and_masks.annotations_to_masks_handler import (
+    _get_roi_bounds_by_run_mode, _visualize_annotations_on_rgb)
 
 # %%===========================================================================
 
@@ -606,6 +607,8 @@ def get_all_rois_from_slide_v2(
         visualization - path to saved rgb visualzation overlay
 
     """
+    from pandas import DataFrame
+
     default_keyvalues = {
         'MPP': None, 'MAG': None,
         'linewidth': 0.2,

@@ -1,14 +1,17 @@
-import pytest
 import os
-from histomicstk.utils.girder_convenience_utils import \
-    get_absolute_girder_folderpath, \
-    update_styles_for_annotations_in_slide, \
-    revert_annotations_in_slide, \
-    update_permissions_for_annotations_in_slide
 import sys
+
+import pytest
+
+from histomicstk.utils.girder_convenience_utils import (
+    get_absolute_girder_folderpath, revert_annotations_in_slide,
+    update_permissions_for_annotations_in_slide,
+    update_styles_for_annotations_in_slide)
+
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
 from tests.htk_test_utilities import girderClient  # noqa
+
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()

@@ -1,9 +1,9 @@
-from histomicstk.cli.utils import CLIArgumentParser
 import numpy
 
-from histomicstk.preprocessing.color_deconvolution import rgb_separate_stains_macenko_pca
-
 from histomicstk.cli import utils
+from histomicstk.cli.utils import CLIArgumentParser
+from histomicstk.preprocessing.color_deconvolution import \
+    rgb_separate_stains_macenko_pca
 
 
 def main(args):

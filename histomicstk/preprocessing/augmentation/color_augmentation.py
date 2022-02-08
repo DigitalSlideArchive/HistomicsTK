@@ -5,12 +5,11 @@ Created on Sat Oct 19 18:09:17 2019.
 @author: mtageld
 """
 import numpy as np
-from histomicstk.utils import (
-    convert_image_to_matrix, convert_matrix_to_image)
-from histomicstk.preprocessing.color_conversion import (
-    rgb_to_sda, sda_to_rgb)
-from histomicstk.preprocessing.color_deconvolution import (
-    color_deconvolution_routine)
+
+from histomicstk.preprocessing.color_conversion import rgb_to_sda, sda_to_rgb
+from histomicstk.preprocessing.color_deconvolution import \
+    color_deconvolution_routine
+from histomicstk.utils import convert_image_to_matrix, convert_matrix_to_image
 
 
 def perturb_stain_concentration(

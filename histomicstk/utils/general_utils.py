@@ -4,9 +4,9 @@ Created on Tue Sep 24 00:43:04 2019.
 
 @author: mtageld
 """
-import os
-import logging
 import datetime
+import logging
+import os
 
 # %% ==========================================================================
 

@@ -1,6 +1,5 @@
 from collections import namedtuple
 
-from dask import delayed
 import large_image
 import numpy as np
 
@@ -107,6 +106,8 @@ def count_slide(slide_path, params, region=None,
     single-threaded manner.
 
     """
+    from dask import delayed
+
     ts = large_image.getTileSource(slide_path)
     kwargs = dict(format=large_image.tilesource.TILE_FORMAT_NUMPY)
     if region is not None:

@@ -1,6 +1,4 @@
 import numpy as np
-import scipy.ndimage.filters as ft
-import scipy.ndimage.morphology as mp
 
 
 def compact(im_label, compaction=3):
@@ -41,6 +39,8 @@ def compact(im_label, compaction=3):
            Scientific Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
+    import scipy.ndimage.filters as ft
+    import scipy.ndimage.morphology as mp
 
     # copy input image
     im_compact = im_label.copy()

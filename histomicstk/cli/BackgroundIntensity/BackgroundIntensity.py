@@ -1,8 +1,6 @@
-from histomicstk.cli.utils import CLIArgumentParser
-
-from histomicstk.preprocessing.color_normalization import background_intensity
-
 from histomicstk.cli import utils
+from histomicstk.cli.utils import CLIArgumentParser
+from histomicstk.preprocessing.color_normalization import background_intensity
 
 
 def main(args):

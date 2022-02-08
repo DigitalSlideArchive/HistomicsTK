@@ -1,5 +1,6 @@
 """Placeholder."""
 import numpy as np
+
 import histomicstk.utils as utils
 from histomicstk.preprocessing import color_conversion
 

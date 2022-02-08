@@ -1,6 +1,4 @@
 import numpy as np
-import scipy.ndimage.morphology as mp
-import scipy.ndimage.measurements as ms
 
 from .condense import condense
 
@@ -37,6 +35,8 @@ def width_open(im_label, width):
     histomicstk.segmentation.label.area_open
 
     """
+    import scipy.ndimage.measurements as ms
+    import scipy.ndimage.morphology as mp
 
     # copy input image
     im_thinned = im_label.copy()

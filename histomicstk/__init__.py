@@ -1,14 +1,8 @@
 # import sub-packages to support nested calls
-from . import utils  # must be imported before other packages
-
 from . import segmentation  # must be imported before features
-
-from . import features
-from . import filters
-from . import preprocessing
-from . import annotations_and_masks
-from . import saliency
-from . import workflows
+from . import utils  # must be imported before other packages
+from . import (annotations_and_masks, features, filters, preprocessing,
+               saliency, workflows)
 
 # list out things that are available for public use
 __all__ = (

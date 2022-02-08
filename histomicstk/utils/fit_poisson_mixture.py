@@ -1,5 +1,4 @@
 import numpy as np
-import scipy as sp
 
 
 def fit_poisson_mixture(im_input, mu=None, tol=0.1):
@@ -39,6 +38,7 @@ def fit_poisson_mixture(im_input, mu=None, tol=0.1):
        Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.
 
     """
+    import scipy as sp
 
     # check if intensity values in 'I' are integer type
     if not np.issubdtype(im_input.dtype, np.integer):

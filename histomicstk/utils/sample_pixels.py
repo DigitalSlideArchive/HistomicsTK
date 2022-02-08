@@ -1,8 +1,6 @@
-import dask
-import dask.distributed
 import large_image
-import PIL.Image
 import numpy as np
+import PIL.Image
 
 from .simple_mask import simple_mask
 
@@ -54,6 +52,8 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
     histomicstk.preprocessing.color_normalization.reinhard
 
     """
+    import dask
+    import dask.distributed
 
     if (sample_fraction is None) == (sample_approximate_total is None):
         raise ValueError('Exactly one of sample_fraction and ' +

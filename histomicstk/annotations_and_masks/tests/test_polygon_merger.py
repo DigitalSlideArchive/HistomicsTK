@@ -4,21 +4,24 @@ Created on Fri Aug 23 17:14:38 2019.
 """
 import json
 import os
+import sys
+
 import pytest
 from pandas import read_csv
+
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+    delete_annotations_in_slide, parse_slide_annotations_into_tables)
+from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
+    _discard_nonenclosed_background_group,
+    get_annotation_documents_from_contours)
 from histomicstk.annotations_and_masks.polygon_merger import Polygon_merger
 from histomicstk.annotations_and_masks.polygon_merger_v2 import \
     Polygon_merger_v2
-from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    get_annotation_documents_from_contours,
-    _discard_nonenclosed_background_group, )
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    parse_slide_annotations_into_tables, delete_annotations_in_slide)
-import sys
+
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
 from tests.datastore import datastore  # noqa
-from tests.htk_test_utilities import girderClient, getTestFilePath  # noqa
+from tests.htk_test_utilities import getTestFilePath, girderClient  # noqa
 
 
 class TestPolygonMerger:

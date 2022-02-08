@@ -1,16 +1,20 @@
-import pytest
 import os
-import tempfile
 import shutil
-from pandas import read_csv
-from histomicstk.annotations_and_masks.review_gallery import \
-    get_all_rois_from_folder_v2, _plot_rapid_review_vis,\
-    create_review_galleries
 import sys
+import tempfile
+
+import pytest
+from pandas import read_csv
+
+from histomicstk.annotations_and_masks.review_gallery import (
+    _plot_rapid_review_vis, create_review_galleries,
+    get_all_rois_from_folder_v2)
+
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import tests.htk_test_utilities as utilities  # noqa
-from tests.htk_test_utilities import girderClient, getTestFilePath  # noqa
+from tests.htk_test_utilities import getTestFilePath, girderClient  # noqa
+
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()

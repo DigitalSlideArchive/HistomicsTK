@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.ndimage.filters as spf
 
 
 def gradient_diffusion(im_dx, im_dy, im_fgnd_mask,
@@ -52,6 +51,7 @@ def gradient_diffusion(im_dx, im_dy, im_fgnd_mask,
            tracking" in BMC Cell Biology,vol.40,no.8, 2007.
 
     """
+    import scipy.ndimage.filters as spf
 
     # initialize solution
     im_vx = im_dx.copy()

@@ -2,11 +2,6 @@ from collections import namedtuple
 
 import numpy as np
 from numpy import linalg
-from pandas import DataFrame
-from scipy.spatial import cKDTree as KDTree, Voronoi
-from scipy import sparse
-from scipy.sparse.csgraph import minimum_spanning_tree
-from scipy.spatial.distance import pdist
 
 PopStats = namedtuple('PopStats', ['mean', 'stddev', 'min_max_ratio', 'disorder'])
 PolyProps = namedtuple('PolyProps', ['area', 'peri', 'max_dist'])
@@ -102,6 +97,12 @@ def _compute_global_cell_graph_features(
     pandas DataFrame.
 
     """
+    from scipy import sparse
+    from scipy.sparse.csgraph import minimum_spanning_tree
+    from scipy.spatial import Voronoi
+    from scipy.spatial import cKDTree as KDTree
+    from scipy.spatial.distance import pdist
+
     vor = Voronoi(centroids)
     centroids = vor.points
     vertices = vor.vertices
@@ -199,6 +200,8 @@ def _flatten_to_dataframe(nt):
     DataFrame returned by compute_global_cell_graph_features.
 
     """
+    from pandas import DataFrame
+
     return DataFrame(_flatten_to_dict(nt), index=[0])
 
 

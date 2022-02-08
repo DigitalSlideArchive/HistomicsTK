@@ -2,10 +2,6 @@ import math
 
 import numpy as np
 
-from scipy.ndimage.morphology import distance_transform_edt
-from scipy.ndimage.filters import gaussian_filter
-from skimage.transform import resize
-
 
 def cdog(im_input, im_mask, sigma_min, sigma_max, num_octave_levels=3):
     """SCale-adaptive Multiscale Difference-of-Gaussian (DoG) filter for
@@ -55,6 +51,9 @@ def cdog(im_input, im_mask, sigma_min, sigma_max, num_octave_levels=3):
            no. 2, 91-110, 2004.
 
     """
+    from scipy.ndimage.filters import gaussian_filter
+    from scipy.ndimage.morphology import distance_transform_edt
+    from skimage.transform import resize
 
     im_input = im_input.astype(np.float)
 

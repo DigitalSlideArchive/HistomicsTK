@@ -1,5 +1,6 @@
-from histomicstk.utils import sample_pixels
 import numpy
+
+from histomicstk.utils import sample_pixels
 
 
 def background_intensity(*args, **kwargs):

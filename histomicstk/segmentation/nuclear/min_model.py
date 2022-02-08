@@ -1,10 +1,6 @@
-from histomicstk.segmentation import label
 import numpy as np
-import scipy.ndimage.filters as ft
-import scipy.ndimage.measurements as ms
-import scipy.ndimage.morphology as mp
-import skimage.morphology as mo
-from skimage.draw import polygon
+
+from histomicstk.segmentation import label
 
 
 def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
@@ -391,6 +387,7 @@ def score_contours(I, cXs, cYs):
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
+    import scipy.ndimage.filters as ft
 
     # initialize output
     Scores = np.zeros(len(cXs))
@@ -461,6 +458,7 @@ def label_contour(Shape, cXs, cYs, Scores):
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
+    from skimage.draw import polygon
 
     # initialize label image
     Label = np.zeros(Shape, dtype=np.dtype('uint32'))
@@ -527,9 +525,11 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
+    import scipy.ndimage.measurements as ms
+    import scipy.ndimage.morphology as mp
+    import skimage.morphology as mo
 
     # use shape profiles to split objects with concavities
-
     # copy input label image
     Convex = Label.copy()
 

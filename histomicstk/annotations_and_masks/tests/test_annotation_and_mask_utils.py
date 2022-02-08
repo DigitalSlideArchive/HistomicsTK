@@ -2,18 +2,21 @@
 Created on Sun Aug 11 22:50:03 2019.
 @author: tageldim
 """
-import os
-import pytest
 import copy
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    get_image_from_htk_response, get_bboxes_from_slide_annotations,
-    parse_slide_annotations_into_tables, scale_slide_annotations,
-    get_scale_factor_and_appendStr,
-)
+import os
 import sys
+
+import pytest
+
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+    get_bboxes_from_slide_annotations, get_image_from_htk_response,
+    get_scale_factor_and_appendStr, parse_slide_annotations_into_tables,
+    scale_slide_annotations)
+
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
 from tests.htk_test_utilities import girderClient  # noqa
+
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()

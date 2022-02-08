@@ -1,21 +1,25 @@
 import copy
 import os
-import tempfile
 import shutil
+import sys
+import tempfile
+
+import numpy as np
 import pytest
 from imageio import imread
 from pandas import read_csv
-import numpy as np
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
-    get_scale_factor_and_appendStr, scale_slide_annotations, \
-    get_bboxes_from_slide_annotations
-from histomicstk.annotations_and_masks.annotations_to_object_mask_handler \
-    import annotations_to_contours_no_mask, get_all_rois_from_slide_v2
-import sys
+
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+    get_bboxes_from_slide_annotations, get_scale_factor_and_appendStr,
+    scale_slide_annotations)
+from histomicstk.annotations_and_masks.annotations_to_object_mask_handler import (
+    annotations_to_contours_no_mask, get_all_rois_from_slide_v2)
+
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import htk_test_utilities as utilities  # noqa
-from htk_test_utilities import girderClient, getTestFilePath  # noqa
+from htk_test_utilities import getTestFilePath, girderClient  # noqa
+
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()

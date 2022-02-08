@@ -3,13 +3,13 @@ Created on Thu Dec 12 13:19:18 2019
 
 @author: tageldim
 """
-# import os
+import json
 import os
 
-import girder_client
-import json
-from histomicstk.workflows.workflow_runner import Workflow_runner, \
-    Slide_iterator, Annotation_iterator
+from histomicstk.workflows.workflow_runner import (Annotation_iterator,
+                                                   Slide_iterator,
+                                                   Workflow_runner)
+
 # import warnings
 # warnings.simplefilter('once', UserWarning)
 
@@ -32,6 +32,8 @@ def connect_to_api(apiurl, apikey=None, interactive=True):
         Authenticated girder client.
 
     """
+    import girder_client
+
     assert interactive or (apikey is not None)
     gc = girder_client.GirderClient(apiUrl=apiurl)
     if apikey is not None:

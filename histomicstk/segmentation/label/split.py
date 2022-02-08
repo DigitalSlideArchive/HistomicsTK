@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.ndimage.measurements as ms
 
 from .condense import condense
 
@@ -32,6 +31,7 @@ def split(im_label, conn=8):
     histomicstk.segmentation.label.shuffle
 
     """
+    import scipy.ndimage.measurements as ms
 
     # copy input image
     Split = im_label.copy()

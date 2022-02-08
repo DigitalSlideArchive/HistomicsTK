@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.ndimage.measurements as ms
 
 
 def delete(im_label, indices):
@@ -30,6 +29,7 @@ def delete(im_label, indices):
     histomicstk.segmentation.label.condense
 
     """
+    import scipy.ndimage.measurements as ms
 
     # initialize output
     Deleted = im_label.copy()

@@ -1,7 +1,7 @@
 import numpy as np
 
-from .delete import delete
 from .condense import condense
+from .delete import delete
 
 
 def delete_border(im_label):

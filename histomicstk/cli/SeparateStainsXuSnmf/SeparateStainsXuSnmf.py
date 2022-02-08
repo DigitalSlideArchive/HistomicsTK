@@ -1,10 +1,8 @@
 import numpy
 
-from histomicstk.cli.utils import CLIArgumentParser
-
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
-
 from histomicstk.cli import utils
+from histomicstk.cli.utils import CLIArgumentParser
 
 
 def main(args):

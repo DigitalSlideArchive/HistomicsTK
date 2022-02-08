@@ -4,26 +4,30 @@ Created on Wed Sep 18 00:06:28 2019.
 
 @author: mtageld
 """
-import pytest
 import os
-import numpy as np
-import tempfile
 import shutil
-from pandas import read_csv
-from histomicstk.saliency.tissue_detection import (
-    get_slide_thumbnail, get_tissue_mask,
-    get_tissue_boundary_annotation_documents)
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    delete_annotations_in_slide)
-from histomicstk.saliency.cellularity_detection_thresholding import (
-    Cellularity_detector_thresholding)
-from histomicstk.saliency.cellularity_detection_superpixels import (
-    Cellularity_detector_superpixels)
 import sys
+import tempfile
+
+import numpy as np
+import pytest
+from pandas import read_csv
+
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
+    delete_annotations_in_slide
+from histomicstk.saliency.cellularity_detection_superpixels import \
+    Cellularity_detector_superpixels
+from histomicstk.saliency.cellularity_detection_thresholding import \
+    Cellularity_detector_thresholding
+from histomicstk.saliency.tissue_detection import (
+    get_slide_thumbnail, get_tissue_boundary_annotation_documents,
+    get_tissue_mask)
+
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 # import htk_test_utilities as utilities  # noqa
-from htk_test_utilities import girderClient, getTestFilePath  # noqa
+from htk_test_utilities import getTestFilePath, girderClient  # noqa
+
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()

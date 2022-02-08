@@ -1,21 +1,20 @@
-import os
-import json
 import colorsys
+import json
+import os
 
 import numpy as np
-import pandas as pd
+
 try:
     import joblib
 except ImportError:
     # Versions of scikit-learn before 0.21 had joblib internally
     from sklearn.externals import joblib
-import dask.dataframe as dd
-
-from histomicstk.cli.utils import CLIArgumentParser
-
-from histomicstk.cli import utils as cli_utils
 
 import logging
+
+from histomicstk.cli import utils as cli_utils
+from histomicstk.cli.utils import CLIArgumentParser
+
 logging.basicConfig(level=logging.CRITICAL)
 
 
@@ -57,6 +56,7 @@ def gen_distinct_rgb_colors(n, seed=None):
 
 
 def read_feature_file(args):
+    import dask.dataframe as dd
 
     fname, feature_file_format = os.path.splitext(args.inputNucleiFeatureFile)
 
@@ -84,6 +84,7 @@ def check_args(args):
 
 
 def main(args):
+    import pandas as pd
 
     print('\n>> CLI Parameters ...\n')
 

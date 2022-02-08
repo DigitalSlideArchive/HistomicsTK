@@ -5,18 +5,16 @@ Created on Wed Sep 18 03:29:24 2019.
 @author: mtageld
 """
 
+import cv2
 import numpy as np
 from PIL import Image
-from pandas import DataFrame
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    get_image_from_htk_response)
-from histomicstk.preprocessing.color_deconvolution.color_deconvolution import (
-    color_deconvolution_routine)
+
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
+    get_image_from_htk_response
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    get_contours_from_mask, get_annotation_documents_from_contours)
-import cv2
-from skimage.filters import threshold_otsu, gaussian
-from scipy import ndimage
+    get_annotation_documents_from_contours, get_contours_from_mask)
+from histomicstk.preprocessing.color_deconvolution.color_deconvolution import \
+    color_deconvolution_routine
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -87,6 +85,9 @@ def get_tissue_mask(
         largest contiguous tissue region.
 
     """
+    from scipy import ndimage
+    from skimage.filters import gaussian, threshold_otsu
+
     stain_unmixing_routine_kwargs = (
         {} if stain_unmixing_routine_kwargs is None else stain_unmixing_routine_kwargs)
 
@@ -173,6 +174,8 @@ def get_tissue_boundary_annotation_documents(
         each dict is an annotation document that you can post to DSA
 
     """
+    from pandas import DataFrame
+
     # Get annotations properties
     if annprops is None:
         slide_info = gc.get('item/%s/tiles' % slide_id)

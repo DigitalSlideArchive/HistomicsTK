@@ -62,8 +62,8 @@ RUN pip install --no-cache-dir --upgrade pip setuptools && \
     pip install --no-cache-dir 'large-image[all]' --find-links https://girder.github.io/large_image_wheels && \
     # Install girder-client \
     pip install --no-cache-dir girder-client && \
-    # Install some other dependencies here to save time in the local install \
-    # step \
+    # Install some other dependencies here to save time in the histomicstk \
+    # install step \
     pip install --no-cache-dir nimfa numpy scipy Pillow pandas scikit-image scikit-learn imageio 'shapely[vectorized]' opencv-python-headless sqlalchemy matplotlib 'dask[dataframe]' distributed && \
     # clean up \
     rm -rf /root/.cache/pip/*
@@ -94,5 +94,7 @@ WORKDIR $htk_path/histomicstk/cli
 # openslide, one of these will fail
 RUN python -m slicer_cli_web.cli_list_entrypoint --list_cli
 RUN python -m slicer_cli_web.cli_list_entrypoint ColorDeconvolution --help
+# Debug import time
+RUN python -X importtime ColorDeconvolution/ColorDeconvolution.py --help
 
 ENTRYPOINT ["/bin/bash", "docker-entrypoint.sh"]

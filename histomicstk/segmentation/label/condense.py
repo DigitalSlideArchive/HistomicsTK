@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.ndimage.measurements as ms
 
 
 def condense(im_label):
@@ -22,6 +21,7 @@ def condense(im_label):
     histomicstk.segmentation.label.shuffle
 
     """
+    import scipy.ndimage.measurements as ms
 
     # initialize output
     Condensed = im_label.copy()

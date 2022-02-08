@@ -4,8 +4,8 @@ Created on Tue Oct  1 01:38:16 2019.
 
 @author: mtageld
 """
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    delete_annotations_in_slide)
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
+    delete_annotations_in_slide
 
 
 def cellularity_detection_workflow(

@@ -5,10 +5,10 @@ Created on Mon Aug 12 18:33:48 2019.
 
 """
 
-import numpy as np
-from pandas import DataFrame, concat
 import cv2
+import numpy as np
 from shapely.geometry.polygon import Polygon
+
 from histomicstk.utils.general_utils import Print_and_log
 
 # %% =====================================================================
@@ -139,6 +139,8 @@ def _get_contours_df(
         MASK, GTCodes_df, groups_to_get=None, MIN_SIZE=30, MAX_SIZE=None,
         verbose=False, monitorPrefix=""):
     """Parse ground truth mask and gets countours (Internal)."""
+    from pandas import DataFrame
+
     cpr = Print_and_log(verbose=verbose)
     _print = cpr._print
 
@@ -367,6 +369,8 @@ def get_contours_from_mask(
             vertix y coordinated comma-separated values
 
     """
+    from pandas import concat
+
     if MASK.sum() < 3:
         raise Exception("Mask is empty!!")
     cpr = Print_and_log(verbose=verbose)

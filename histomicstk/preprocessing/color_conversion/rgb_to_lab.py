@@ -1,6 +1,5 @@
 import numpy as np
 
-
 # define conversion matrices
 _rgb2lms = np.array([[0.3811, 0.5783, 0.0402],
                      [0.1967, 0.7244, 0.0782],

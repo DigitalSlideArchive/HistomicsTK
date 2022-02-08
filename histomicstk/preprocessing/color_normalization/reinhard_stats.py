@@ -1,7 +1,9 @@
 import collections
+
 import numpy as np
-from histomicstk.utils import sample_pixels
+
 from histomicstk.preprocessing import color_conversion
+from histomicstk.utils import sample_pixels
 
 
 def reinhard_stats(slide_path, sample_fraction, magnification=None,

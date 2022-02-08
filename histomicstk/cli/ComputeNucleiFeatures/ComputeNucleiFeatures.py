@@ -1,25 +1,20 @@
-import os
 import json
+import logging
+import os
 import time
 
-import numpy as np
-import pandas as pd
-import dask
-
-import histomicstk.preprocessing.color_normalization as htk_cnorm
-import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
-import histomicstk.features as htk_features
-import histomicstk.utils as htk_utils
-import histomicstk.segmentation.nuclear as htk_nuclear
-import histomicstk.segmentation.label as htk_seg_label
-
 import large_image
+import numpy as np
 
+import histomicstk.features as htk_features
+import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk.preprocessing.color_normalization as htk_cnorm
+import histomicstk.segmentation.label as htk_seg_label
+import histomicstk.segmentation.nuclear as htk_nuclear
+import histomicstk.utils as htk_utils
+from histomicstk.cli import utils as cli_utils
 from histomicstk.cli.utils import CLIArgumentParser
 
-from histomicstk.cli import utils as cli_utils
-
-import logging
 logging.basicConfig(level=logging.CRITICAL)
 
 
@@ -126,6 +121,8 @@ def check_args(args):
 
 
 def main(args):
+    import dask
+    import pandas as pd
 
     total_start_time = time.time()
 

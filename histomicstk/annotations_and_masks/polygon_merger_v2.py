@@ -5,12 +5,12 @@ Created on Sat Aug 24 16:01:26 2019.
 """
 
 import numpy as np
-from pandas import DataFrame  # , concat
 from shapely.geometry.polygon import Polygon
 from shapely.ops import cascaded_union
-from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    _parse_annot_coords, )
-from histomicstk.annotations_and_masks.pyrtree.rtree import RTree, Rect
+
+from histomicstk.annotations_and_masks.masks_to_annotations_handler import \
+    _parse_annot_coords
+from histomicstk.annotations_and_masks.pyrtree.rtree import Rect, RTree
 from histomicstk.utils.general_utils import Base_HTK_Class
 
 # %% =====================================================================
@@ -51,6 +51,8 @@ class Polygon_merger_v2(Base_HTK_Class):
             text to prepend to printed statements
 
         """
+        from pandas import DataFrame
+
         # see: https://stackoverflow.com/questions/8187082/how-can-you-set-...
         # class-attributes-from-variable-arguments-kwargs-in-python
         default_attr = {

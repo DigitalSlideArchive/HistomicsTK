@@ -1,17 +1,20 @@
-import pytest
 import os
-import tempfile
 import shutil
+import sys
+import tempfile
+
 import pandas as pd
+import pytest
 import sqlalchemy as db
+
 from histomicstk.annotations_and_masks.annotation_database_parser import (
     dump_annotations_locally, parse_annotations_to_local_tables)
 
-import sys
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import htk_test_utilities as utilities  # noqa
-from htk_test_utilities import girderClient, getTestFilePath  # noqa
+from htk_test_utilities import getTestFilePath, girderClient  # noqa
+
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()
