@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <executable>
   <category>HistomicsTK</category>
-  <title>Performs Color Deconvolution</title>
+  <title>Color Deconvolution</title>
   <description>Unmixes the stains of a composite image given the stain colors</description>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
   <license>Apache 2.0</license>
   <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware)</contributor>
@@ -14,31 +14,45 @@
     <image>
       <name>inputImageFile</name>
       <label>Input Image</label>
+      <description>Input image to be deconvolved</description>
       <channel>input</channel>
       <index>0</index>
-      <description>Input image to be deconvolved</description>
     </image>
-    <image fileExtensions='.png'>
+    <region>
+      <name>region</name>
+      <label>Region</label>
+      <description>left,top,width,height of the region of interest.  All -1 means the whole image is used.</description>
+      <longflag>region</longflag>
+      <default>-1,-1,-1,-1</default>
+    </region>
+    <image fileExtensions=".png" reference="inputImageFile">
       <name>outputStainImageFile_1</name>
       <label>Output Image of Stain 1</label>
+      <description>Output Image of Stain 1 (*.png)</description>
       <channel>output</channel>
       <index>1</index>
-      <description>Output Image of Stain 1</description>
     </image>
-    <image fileExtensions='.png'>
+    <image fileExtensions=".png" reference="inputImageFile">
       <name>outputStainImageFile_2</name>
       <label>Output Image of Stain 2</label>
+      <description>Output Image of Stain 2 (*.png)</description>
       <channel>output</channel>
       <index>2</index>
-      <description>Output Image of Stain 2</description>
     </image>
-    <image fileExtensions='.png'>
+    <image fileExtensions=".png" reference="inputImageFile">
       <name>outputStainImageFile_3</name>
       <label>Output Image of Stain 3</label>
+      <description>Output Image of Stain 3 (*.png)</description>
       <channel>output</channel>
       <index>3</index>
-      <description>Output Image of Stain 3</description>
     </image>
+    <file fileExtensions=".anot" reference="inputImageFile">
+      <name>outputAnnotationFile</name>
+      <label>Image Annotation</label>
+      <description>Annotation to relate images on source (*.anot)</description>
+      <channel>output</channel>
+      <longflag>image_annotation</longflag>
+    </file>
     <string-enumeration>
       <name>stain_1</name>
       <label>stain-1</label>
@@ -68,6 +82,7 @@
       <element>eosin</element>
       <element>dab</element>
       <element>custom</element>
+      <element>null</element>
       <default>eosin</default>
     </string-enumeration>
     <double-vector>
@@ -97,13 +112,6 @@
       <default>-1,-1,-1</default>
       <description>Custom value for stain-3</description>
     </double-vector>
-    <region>
-      <name>region</name>
-      <label>Region</label>
-      <longflag>region</longflag>
-      <description>left,top,width,height of the region of interest.  All -1 means the whole image is used.</description>
-      <default>-1,-1,-1,-1</default>
-    </region>
     <integer>
       <name>maxRegionSize</name>
       <longflag>maxRegionSize</longflag>
