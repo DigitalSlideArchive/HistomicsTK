@@ -1,13 +1,12 @@
 import os
 
-from histomicstk.cli.utils import CLIArgumentParser
 import large_image
 import numpy as np
 import skimage.io
 
 import histomicstk.segmentation.positive_pixel_count as ppc
-
 from histomicstk.cli import utils
+from histomicstk.cli.utils import CLIArgumentParser
 
 
 def main(args):

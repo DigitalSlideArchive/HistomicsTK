@@ -5,12 +5,12 @@ Created on Sun Aug 11 22:30:06 2019.
 
 """
 import copy
+import warnings
 from io import BytesIO
+
+import numpy as np
 from PIL import Image, ImageDraw
 from shapely.geometry.polygon import Polygon
-import numpy as np
-from pandas import DataFrame
-import warnings
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -235,6 +235,8 @@ def get_bboxes_from_slide_annotations(slide_annotations):
         original slide_annotations list of dictionaries
 
     """
+    from pandas import DataFrame
+
     element_infos = DataFrame(columns=[
         'annidx', 'elementidx', 'type', 'group',
         'xmin', 'xmax', 'ymin', 'ymax', ])
@@ -489,6 +491,8 @@ def parse_slide_annotations_into_tables(
         - coords_y
 
     """
+    from pandas import DataFrame
+
     # we use this object to pass params to split method into sub-methods
     # and avoid annoying linting ("method too complex") issue
     class Cfg:

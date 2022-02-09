@@ -5,28 +5,24 @@ Created on Mon Aug 12 18:33:48 2019.
 
 """
 
-import os
-import numpy as np
-from pandas import DataFrame
-from imageio import imwrite
-from shapely.geometry.polygon import Polygon
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    pass
-from matplotlib.patches import Polygon as mpPolygon
-import io
-from PIL import Image
 import copy
+import io
+import os
 from warnings import warn
 
+import numpy as np
+from imageio import imwrite
+from matplotlib.patches import Polygon as mpPolygon
+from PIL import Image
+from shapely.geometry.polygon import Polygon
+
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    get_bboxes_from_slide_annotations, _get_idxs_for_all_rois,
-    get_idxs_for_annots_overlapping_roi_by_bbox, _get_element_mask,
-    _get_and_add_element_to_roi, scale_slide_annotations,
-    get_image_from_htk_response, get_scale_factor_and_appendStr)
-from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    get_contours_from_mask)
+    _get_and_add_element_to_roi, _get_element_mask, _get_idxs_for_all_rois,
+    get_bboxes_from_slide_annotations,
+    get_idxs_for_annots_overlapping_roi_by_bbox, get_image_from_htk_response,
+    get_scale_factor_and_appendStr, scale_slide_annotations)
+from histomicstk.annotations_and_masks.masks_to_annotations_handler import \
+    get_contours_from_mask
 
 # %% =====================================================================
 
@@ -276,6 +272,8 @@ def get_mask_from_slide(
         information about mask
 
     """
+    from pandas import DataFrame
+
     # convert from dict to required dataframe
     if get_roi_mask_kwargs is None:
         get_roi_mask_kwargs = dict()
@@ -376,6 +374,7 @@ def get_mask_from_slide(
 def _visualize_annotations_on_rgb(
         rgb, contours_list, linewidth=0.2, x_offset=0, y_offset=0,
         text=False):
+    import matplotlib.pyplot as plt
 
     # later on flipped by matplotlib for weird reason
     rgb = np.flipud(rgb)
@@ -653,6 +652,8 @@ def get_image_and_mask_from_slide(
         visualization - (mxnx3 np array) visualization overlay
 
     """
+    from pandas import DataFrame
+
     get_roi_mask_kwargs = get_roi_mask_kwargs or {}
     get_contours_kwargs = get_contours_kwargs or {}
     # important sanity checks
@@ -731,6 +732,8 @@ def _roi_getter_asis(
         gc, slide_id, GTCodes_dict, slide_annotations, element_infos,
         get_kwargs, monitor="", verbose=False):
     """Download special ROI regions as-is, even if they are very large."""
+    from pandas import DataFrame
+
     # get idx of all 'special' roi annotations
     GTCodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
     idxs_for_all_rois = _get_idxs_for_all_rois(
@@ -894,6 +897,8 @@ def get_all_rois_from_slide(  # noqa: C901
         - visualization: path to saved rgb visualzation overlay
 
     """
+    from pandas import DataFrame
+
     # assign defaults if nothing given
     default_keyvalues = {
         'MPP': 5.0,

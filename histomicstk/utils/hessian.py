@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.ndimage.filters import convolve
 
 
 def hessian(im_input, sigma):
@@ -21,6 +20,7 @@ def hessian(im_input, sigma):
         im_hess[:,:,1] = im_hess[:,:,2] = dxy, im_hess[:,:,3] = dyy.
 
     """
+    from scipy.ndimage.filters import convolve
 
     # generate kernel domain
     h, k = round(3 * sigma), round(3 * sigma + 1)

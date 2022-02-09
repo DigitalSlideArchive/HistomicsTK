@@ -5,14 +5,15 @@ Created on Fri Oct 18 02:31:32 2019.
 @author: mtageld
 """
 import numpy as np
-from histomicstk.preprocessing.color_deconvolution.stain_color_map import (
-    stain_color_map)
+
+from histomicstk.preprocessing.color_deconvolution import \
+    complement_stain_matrix
+from histomicstk.preprocessing.color_deconvolution.color_convolution import \
+    color_convolution
 from histomicstk.preprocessing.color_deconvolution.color_deconvolution import (
-    stain_unmixing_routine, color_deconvolution_routine)
-from histomicstk.preprocessing.color_deconvolution.color_convolution import (
-    color_convolution)
-from histomicstk.preprocessing.color_deconvolution import (
-    complement_stain_matrix)
+    color_deconvolution_routine, stain_unmixing_routine)
+from histomicstk.preprocessing.color_deconvolution.stain_color_map import \
+    stain_color_map
 
 
 def deconvolution_based_normalization(

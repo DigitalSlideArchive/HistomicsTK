@@ -2,26 +2,21 @@ import io
 import os
 import tempfile
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    pass
 import numpy as np
 import pyvips
-from PIL import Image
 from imageio import imwrite
-from pandas import DataFrame
+from PIL import Image
 
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
-    get_scale_factor_and_appendStr, get_image_from_htk_response
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
+    get_image_from_htk_response, get_scale_factor_and_appendStr)
 from histomicstk.annotations_and_masks.annotations_to_masks_handler import \
     _visualize_annotations_on_rgb
-from histomicstk.annotations_and_masks.annotations_to_object_mask_handler \
-    import get_all_rois_from_slide_v2
-from histomicstk.workflows.workflow_runner import Workflow_runner, \
-    Slide_iterator
+from histomicstk.annotations_and_masks.annotations_to_object_mask_handler import \
+    get_all_rois_from_slide_v2
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import \
     get_annotation_documents_from_contours
+from histomicstk.workflows.workflow_runner import (Slide_iterator,
+                                                   Workflow_runner)
 
 # %============================================================================
 # CONSTANTS
@@ -203,6 +198,8 @@ def _get_review_visualization(rgb, vis, vis_zoomout):
         visualization to be used for gallery
 
     """
+    import matplotlib.pyplot as plt
+
     wmax = max(vis.shape[1], vis_zoomout.shape[1])
     hmax = max(vis.shape[0], vis_zoomout.shape[0])
 
@@ -332,6 +329,8 @@ def create_review_galleries(
         post request to upload the gallery to DSA.
 
     """
+    from pandas import DataFrame
+
     if upload_results:
         for par in ('gc', 'gallery_folderid', 'url'):
             if locals()[par] is None:

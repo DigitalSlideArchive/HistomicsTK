@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.ndimage.measurements as ms
 
 from .condense import condense
 
@@ -33,6 +32,7 @@ def area_open(im_label, min_area):
     histomicstk.segmentation.label.width_open
 
     """
+    import scipy.ndimage.measurements as ms
 
     # copy input image
     im_open = im_label.copy()

@@ -1,6 +1,6 @@
 import collections
+
 import numpy as np
-import scipy.signal as signal
 
 
 def gaussian_grad(im_input, sigma):
@@ -28,6 +28,7 @@ def gaussian_grad(im_input, sigma):
     Return values are returned as a namedtuple
 
     """
+    import scipy.signal as signal
 
     # generate separable gaussian derivative kernels
     x = np.linspace(0, np.ceil(2 * 3 * sigma), int(np.ceil(2 * 3 * sigma) + 1))

@@ -1,9 +1,10 @@
 """Placeholder."""
+import numpy
+
 import histomicstk.utils as utils
+
 from . import _linalg as linalg
 from .complement_stain_matrix import complement_stain_matrix
-
-import numpy
 
 
 def separate_stains_macenko_pca(

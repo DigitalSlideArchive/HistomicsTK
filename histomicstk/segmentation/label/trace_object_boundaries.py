@@ -1,5 +1,4 @@
 import numpy as np
-from skimage.measure import regionprops
 
 from ._trace_object_boundaries_cython import _trace_object_boundaries_cython
 
@@ -63,6 +62,7 @@ def trace_object_boundaries(im_label,
        doi:10.3390/s16030353, 2016.
 
     """
+    from skimage.measure import regionprops
 
     if max_length is None:
         max_length = float('inf')

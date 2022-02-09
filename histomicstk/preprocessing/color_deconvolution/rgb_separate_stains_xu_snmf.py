@@ -1,5 +1,5 @@
-from .separate_stains_xu_snmf import separate_stains_xu_snmf
 from ..color_conversion import rgb_to_sda
+from .separate_stains_xu_snmf import separate_stains_xu_snmf
 
 
 def rgb_separate_stains_xu_snmf(im_rgb, I_0, *args, **kwargs):

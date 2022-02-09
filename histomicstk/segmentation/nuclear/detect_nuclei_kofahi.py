@@ -1,8 +1,7 @@
 import numpy as np
-import scipy as sp
-import skimage.morphology
-import histomicstk.filters.shape as htk_shape_filters
+
 import histomicstk as htk
+import histomicstk.filters.shape as htk_shape_filters
 
 
 def detect_nuclei_kofahi(im_nuclei_stain, im_nuclei_fgnd_mask, min_radius,
@@ -44,6 +43,8 @@ def detect_nuclei_kofahi(im_nuclei_stain, im_nuclei_fgnd_mask, min_radius,
        April 2010.
 
     """
+    import scipy as sp
+    import skimage.morphology
 
     # smooth foreground mask with closing and opening
     im_nuclei_fgnd_mask = skimage.morphology.closing(

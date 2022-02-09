@@ -1,17 +1,16 @@
-import skimage.io
+import logging
 
-from histomicstk.cli.utils import CLIArgumentParser
 import large_image
 
 import histomicstk.preprocessing.color_deconvolution as htk_cd
-
 from histomicstk.cli import utils
+from histomicstk.cli.utils import CLIArgumentParser
 
-import logging
 logging.basicConfig()
 
 
 def main(args):
+    import skimage.io
 
     # Read Input Image
     print('>> Reading input image')

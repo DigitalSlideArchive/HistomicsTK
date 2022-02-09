@@ -1,7 +1,6 @@
-from histomicstk.utils import gradient_diffusion
 import numpy as np
-import skimage.morphology as mp
-from skimage import measure as ms
+
+from histomicstk.utils import gradient_diffusion
 
 
 def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
@@ -57,7 +56,6 @@ def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
        tracking" in BMC Cell Biology,vol.40,no.8, 2007.
 
     """
-
     # get image shape
     M = I.shape[0]
     N = I.shape[1]
@@ -210,6 +208,8 @@ def merge_sinks(Label, Sinks, Radius=5):
         Label image where attraction regions are merged.
 
     """
+    import skimage.morphology as mp
+    from skimage import measure as ms
 
     # build seed image
     SeedImage = np.zeros(Label.shape)

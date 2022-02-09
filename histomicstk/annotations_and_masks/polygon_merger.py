@@ -5,16 +5,17 @@ Created on Wed Aug 21 16:25:06 2019.
 
 """
 import os
+
 import numpy as np
-from pandas import DataFrame, concat
+from imageio import imread
+from PIL import Image
 # import cv2
 from shapely.geometry.polygon import Polygon
 from shapely.ops import cascaded_union
-from PIL import Image
-from imageio import imread
+
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    get_contours_from_mask, _parse_annot_coords,
-    _discard_nonenclosed_background_group)
+    _discard_nonenclosed_background_group, _parse_annot_coords,
+    get_contours_from_mask)
 from histomicstk.utils.general_utils import Base_HTK_Class
 
 # %% =====================================================================
@@ -133,6 +134,8 @@ class Polygon_merger(Base_HTK_Class):
         save all merged contours
 
         """
+        from pandas import DataFrame
+
         ordinary_contours = dict()
         edge_contours = dict()
 
@@ -251,6 +254,8 @@ class Polygon_merger(Base_HTK_Class):
 
     def set_shared_roi_edges(self):
         """Get shared edges between rois in same slide (Internal)."""
+        from pandas import DataFrame
+
         self.roinames = list(self.roiinfos.keys())
         edgepairs = [
             ('left', 'right'), ('right', 'left'),
@@ -300,6 +305,8 @@ class Polygon_merger(Base_HTK_Class):
 
     def _get_merge_pairs(self, edgepair, group, monitorPrefix=""):
         """Get nest dfs and indices of which ones to merge (Internal)."""
+        from pandas import DataFrame
+
         def _get_nests_slice(ridx=1):
             Nests = self.edge_contours[edgepair['roi%d-name' % ridx]]
             edgevar = "touches_edge-%s" % (edgepair['roi%d-edge' % ridx])
@@ -373,6 +380,8 @@ class Polygon_merger(Base_HTK_Class):
 
     def _get_merge_df(self, group, monitorPrefix=""):
         """Get merge dataframe (pairs along shared edges) (Internal)."""
+        from pandas import DataFrame, concat
+
         merge_df = DataFrame()
         for rpno, edgepair in self.shared_edges.iterrows():
             edgepair = dict(edgepair)
@@ -606,6 +615,8 @@ class Polygon_merger(Base_HTK_Class):
         get_contours_from_mask().
 
         """
+        from pandas import concat
+
         # concatenate all contours
         all_contours = self.merged_contours.copy()
         for contours_dict in [self.edge_contours, self.ordinary_contours]:

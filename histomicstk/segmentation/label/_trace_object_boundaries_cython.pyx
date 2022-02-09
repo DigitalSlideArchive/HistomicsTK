@@ -1,9 +1,10 @@
 import numpy as np
-cimport numpy as np
-cimport cython
 
+cimport cython
+cimport numpy as np
+from libc.math cimport M_PI, cos, round, sin
 from libcpp.vector cimport vector
-from libc.math cimport sin, cos, M_PI, round
+
 
 @cython.cdivision(True)
 @cython.boundscheck(False)

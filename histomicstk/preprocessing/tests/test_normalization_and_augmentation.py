@@ -4,24 +4,28 @@ Created on Sun Oct 20 00:14:03 2019.
 
 @author: mtageld
 """
-import pytest
-import numpy as np
-from skimage.transform import resize
-from histomicstk.saliency.tissue_detection import get_tissue_mask
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    get_image_from_htk_response)
-from histomicstk.preprocessing.color_conversion import lab_mean_std
-from histomicstk.preprocessing.color_normalization import reinhard
-from histomicstk.preprocessing.augmentation.\
-    color_augmentation import rgb_perturb_stain_concentration
-from histomicstk.preprocessing.color_normalization.\
-    deconvolution_based_normalization import deconvolution_based_normalization
 import os
 import sys
+
+import numpy as np
+import pytest
+from skimage.transform import resize
+
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
+    get_image_from_htk_response
+from histomicstk.preprocessing.augmentation.color_augmentation import \
+    rgb_perturb_stain_concentration
+from histomicstk.preprocessing.color_conversion import lab_mean_std
+from histomicstk.preprocessing.color_normalization import reinhard
+from histomicstk.preprocessing.color_normalization.deconvolution_based_normalization import \
+    deconvolution_based_normalization
+from histomicstk.saliency.tissue_detection import get_tissue_mask
+
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 # import htk_test_utilities as utilities  # noqa
-from htk_test_utilities import girderClient, getTestFilePath  # noqa
+from htk_test_utilities import getTestFilePath, girderClient  # noqa
+
 # # for protyping
 # from tests.htk_test_utilities import _connect_to_existing_local_dsa
 # girderClient = _connect_to_existing_local_dsa()

@@ -5,41 +5,25 @@ Created on Mon Sep 23 21:17:43 2019.
 @author: mtageld
 """
 import numpy as np
-from imageio import imread
-from pandas import DataFrame, concat
-from skimage.color import rgb2gray
-from skimage.segmentation import slic
-from skimage.transform import resize
-from sklearn.mixture import GaussianMixture
-from skimage.measure import regionprops
-from matplotlib import cm
 from PIL import Image
+from skimage.color import rgb2gray
 
-from histomicstk.utils.general_utils import Base_HTK_Class
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
+    get_image_from_htk_response
+from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
+    get_annotation_documents_from_contours, get_contours_from_mask)
+from histomicstk.features.compute_haralick_features import \
+    compute_haralick_features
+from histomicstk.features.compute_intensity_features import \
+    compute_intensity_features
 from histomicstk.preprocessing.color_conversion import lab_mean_std
 from histomicstk.preprocessing.color_normalization import reinhard
 from histomicstk.saliency.tissue_detection import (
-    get_slide_thumbnail, get_tissue_mask, _deconv_color,
-    get_tissue_boundary_annotation_documents,
-)
-from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    get_contours_from_mask, get_annotation_documents_from_contours,
-)
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    get_image_from_htk_response
-)
-from histomicstk.features.compute_intensity_features import (
-    compute_intensity_features
-)
-from histomicstk.features.compute_haralick_features import (
-    compute_haralick_features
-)
+    _deconv_color, get_slide_thumbnail,
+    get_tissue_boundary_annotation_documents, get_tissue_mask)
+from histomicstk.utils.general_utils import Base_HTK_Class
 
 Image.MAX_IMAGE_PIXELS = None
-
-
-# %%===========================================================================
-# =============================================================================
 
 
 class CD_single_tissue_piece:
@@ -61,8 +45,6 @@ class CD_single_tissue_piece:
         self.cd = cd
         self.tissue_mask = 0 + tissue_mask
         self.monitorPrefix = monitorPrefix
-
-    # =========================================================================
 
     def run(self):
         """Get cellularity and optionally visualize on DSA."""
@@ -93,8 +75,6 @@ class CD_single_tissue_piece:
                 "%s: visualize_contiguous_superpixels()" % self.monitorPrefix)
             self.visualize_contiguous_superpixels()
 
-    # =========================================================================
-
     def restrict_mask_to_single_tissue_piece(self):
         """Only keep relevant part of slide mask."""
         # find coordinates at scan magnification
@@ -105,8 +85,6 @@ class CD_single_tissue_piece:
         self.tissue_mask = self.tissue_mask[
             int(self.ymin / F): int(self.ymax / F),
             int(self.xmin / F): int(self.xmax / F)]
-
-    # =========================================================================
 
     def set_tissue_rgb(self):
         """Load RGB from server for single tissue piece."""
@@ -124,10 +102,11 @@ class CD_single_tissue_piece:
                 target_mu=self.cd.cnorm_params['main']['mu'],
                 target_sigma=self.cd.cnorm_params['main']['sigma']))
 
-    # =========================================================================
-
     def set_superpixel_mask(self):
         """Use Simple Linear Iterative Clustering (SLIC) to get superpixels."""
+        from skimage.segmentation import slic
+        from skimage.transform import resize
+
         # Get superpixel size and number
         spixel_size = self.cd.spixel_size_baseMag * (
             self.cd.MAG / self.cd.slide_info['magnification'])
@@ -152,10 +131,11 @@ class CD_single_tissue_piece:
             order=0, preserve_range=True, anti_aliasing=False)
         self.spixel_mask[tmask == 0] = 0
 
-    # =========================================================================
-
     def set_superpixel_features(self):
         """Get superpixel features."""
+        from pandas import concat
+        from skimage.measure import regionprops
+
         assert (self.cd.use_intensity or self.cd.use_texture)
 
         # Possibly deconvolvve to get hematoxylin channel (cellular areas)
@@ -187,14 +167,12 @@ class CD_single_tissue_piece:
         # pixel values in label mask, which it is by default
         self.fdata.index = set(np.unique(self.spixel_mask)) - {0, }
 
-    # =========================================================================
-
     def set_superpixel_assignment(self):
         """Fit gaussian mixture model to features and get assignment."""
+        from sklearn.mixture import GaussianMixture
+
         mmodel = GaussianMixture(n_components=self.cd.n_gaussian_components)
         self.spixel_labels = mmodel.fit_predict(self.fdata.values) + 1
-
-    # =========================================================================
 
     def assign_cellularity_scores(self):
         """Assign cellularity scores to spixel clusters."""
@@ -211,8 +189,6 @@ class CD_single_tissue_piece:
                     self.fdata.loc[:, "cluster"] == clid,
                     "Intensity.Median"]) / 255 * 100),
             }
-
-    # =========================================================================
 
     def assign_colors_to_spixel_clusters(self):
         """Assign RGB color string to cellularity clusters."""
@@ -232,11 +208,11 @@ class CD_single_tissue_piece:
             rgb = [int(255 * j) for j in rgb]
             self.cluster_props[clid]['color'] = 'rgb(%d,%d,%d)' % tuple(rgb)
 
-    # =========================================================================
-
     def visualize_individual_superpixels(self):
         """Visualize individual spixels, color-coded by cellularity."""
         # Define GTCodes dataframe
+        from pandas import DataFrame
+
         GTCodes_df = DataFrame(columns=['group', 'GT_code', 'color'])
         for spval, sp in self.fdata.iterrows():
             spstr = 'spixel-%d_cellularity-%d' % (
@@ -272,10 +248,10 @@ class CD_single_tissue_piece:
             _ = self.cd.gc.post(
                 "/annotation?itemId=" + self.cd.slide_id, json=doc)
 
-    # =========================================================================
-
     def visualize_contiguous_superpixels(self):
         """Visualize contiguous spixels, color-coded by cellularity."""
+        from pandas import DataFrame
+
         # get cellularity cluster membership mask
         cellularity_mask = np.zeros(self.spixel_mask.shape)
         for spval, sp in self.fdata.iterrows():
@@ -312,10 +288,6 @@ class CD_single_tissue_piece:
                 self.monitorPrefix, didx + 1, len(annotation_docs)))
             _ = self.cd.gc.post(
                 "/annotation?itemId=" + self.cd.slide_id, json=doc)
-
-
-# %%===========================================================================
-# =============================================================================
 
 
 class Cellularity_detector_superpixels (Base_HTK_Class):
@@ -421,6 +393,8 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
             whether to visualize contiguous cellular regions
 
         """
+        from matplotlib import cm
+
         default_attr = {
 
             # The following are already assigned defaults by Base_HTK_Class
@@ -464,8 +438,6 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
         # set attribs
         self.gc = gc
         self.slide_id = slide_id
-
-    # %% ======================================================================
 
     def run(self):
         """Run cellularity detection and optionally visualize result.
@@ -520,8 +492,6 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
 
         return tissue_pieces
 
-    # %% ======================================================================
-
     def set_color_normalization_values(
             self, mu=None, sigma=None, ref_image_path=None, what='main'):
         """Set color normalization values for thumbnail or main image."""
@@ -532,12 +502,12 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
         assert what in ('thumbnail', 'main')
 
         if ref_image_path is not None:
+            from imageio import imread
+
             ref_im = np.array(imread(ref_image_path, pilmode='RGB'))
             mu, sigma = lab_mean_std(ref_im)
 
         self.cnorm_params[what] = {'mu': mu, 'sigma': sigma}
-
-    # %% ======================================================================
 
     def set_slide_info_and_get_tissue_mask(self):
         """Set self.slide_info dict and self.labeled tissue mask."""
@@ -573,5 +543,3 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
             'sizeX'] / labeled.shape[1]
 
         return labeled
-
-# %%===========================================================================

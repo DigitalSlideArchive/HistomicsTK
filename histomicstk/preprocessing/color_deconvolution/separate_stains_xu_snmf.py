@@ -1,10 +1,10 @@
 """Placeholder."""
-import histomicstk.utils as utils
-from . import _linalg as htk_linalg
-
-import nimfa
 import numpy
 import numpy.linalg as np_linalg
+
+import histomicstk.utils as utils
+
+from . import _linalg as htk_linalg
 
 
 def separate_stains_xu_snmf(im_sda, w_init=None, beta=0.2):
@@ -49,6 +49,8 @@ def separate_stains_xu_snmf(im_sda, w_init=None, beta=0.2):
            analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.
 
     """
+    import nimfa
+
     # Image matrix
     m = utils.convert_image_to_matrix(im_sda)
     m = utils.exclude_nonfinite(m)

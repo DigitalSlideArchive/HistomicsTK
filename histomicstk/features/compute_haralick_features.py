@@ -1,11 +1,9 @@
 import numpy as np
-import pandas as pd
-from skimage.measure import regionprops
-from .graycomatrixext import graycomatrixext
-from .graycomatrixext import _default_num_levels
-from .graycomatrixext import _default_offsets
 
-from ._compute_marginal_glcm_probs_cython import _compute_marginal_glcm_probs_cython
+from ._compute_marginal_glcm_probs_cython import \
+    _compute_marginal_glcm_probs_cython
+from .graycomatrixext import (_default_num_levels, _default_offsets,
+                              graycomatrixext)
 
 
 def compute_haralick_features(im_label, im_intensity, offsets=None,
@@ -213,6 +211,8 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
        computer vision," Journal of Open Research Software, vol 1, 2013.
 
     """
+    import pandas as pd
+    from skimage.measure import regionprops
 
     # List of feature names
     feature_list = [

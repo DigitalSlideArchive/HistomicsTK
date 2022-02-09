@@ -1,23 +1,19 @@
-import os
 import json
+import logging
+import os
 import time
 
-import numpy as np
-import dask
-
-import histomicstk.preprocessing.color_normalization as htk_cnorm
-import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
-import histomicstk.segmentation.nuclear as htk_nuclear
-import histomicstk.segmentation.label as htk_seg_label
-import histomicstk.utils as htk_utils
-
 import large_image
+import numpy as np
 
+import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk.preprocessing.color_normalization as htk_cnorm
+import histomicstk.segmentation.label as htk_seg_label
+import histomicstk.segmentation.nuclear as htk_nuclear
+import histomicstk.utils as htk_utils
+from histomicstk.cli import utils as cli_utils
 from histomicstk.cli.utils import CLIArgumentParser
 
-from histomicstk.cli import utils as cli_utils
-
-import logging
 logging.basicConfig(level=logging.CRITICAL)
 
 
@@ -81,6 +77,7 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
 
 def main(args):
+    import dask
 
     total_start_time = time.time()
 

@@ -1,6 +1,7 @@
 """Placeholder."""
-from histomicstk.preprocessing import color_conversion
 import numpy as np
+
+from histomicstk.preprocessing import color_conversion
 
 
 def reinhard(

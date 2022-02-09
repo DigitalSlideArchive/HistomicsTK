@@ -1,7 +1,6 @@
 from collections import OrderedDict
+
 import numpy as np
-import pandas as pd
-from skimage.measure import regionprops
 
 
 def compute_morphometry_features(im_label, rprops=None):
@@ -94,6 +93,9 @@ def compute_morphometry_features(im_label, rprops=None):
         intensity image.
 
     """
+    import pandas as pd
+    from skimage.measure import regionprops
+
     # compute object properties if not provided
     if rprops is None:
         rprops = regionprops(im_label)

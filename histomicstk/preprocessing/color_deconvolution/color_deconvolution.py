@@ -1,18 +1,21 @@
 """Placeholder."""
-from histomicstk.preprocessing import color_conversion
+import collections
+
+import numpy as np
+
 import histomicstk.utils as utils
+from histomicstk.preprocessing import color_conversion
+from histomicstk.preprocessing.color_deconvolution.find_stain_index import \
+    find_stain_index
+from histomicstk.preprocessing.color_deconvolution.rgb_separate_stains_macenko_pca import \
+    rgb_separate_stains_macenko_pca
+from histomicstk.preprocessing.color_deconvolution.rgb_separate_stains_xu_snmf import \
+    rgb_separate_stains_xu_snmf
+from histomicstk.preprocessing.color_deconvolution.stain_color_map import \
+    stain_color_map
+
 from ._linalg import normalize
 from .complement_stain_matrix import complement_stain_matrix
-import collections
-import numpy as np
-from histomicstk.preprocessing.color_deconvolution.stain_color_map import (
-    stain_color_map)
-from histomicstk.preprocessing.color_deconvolution.find_stain_index import (
-    find_stain_index)
-from histomicstk.preprocessing.color_deconvolution.\
-    rgb_separate_stains_macenko_pca import rgb_separate_stains_macenko_pca
-from histomicstk.preprocessing.color_deconvolution.\
-    rgb_separate_stains_xu_snmf import rgb_separate_stains_xu_snmf
 
 
 def color_deconvolution(im_rgb, w, I_0=None):

@@ -1,7 +1,6 @@
 import numpy as np
 
-from .rgb_to_lab import _rgb2lms, _lms2lab
-
+from .rgb_to_lab import _lms2lab, _rgb2lms
 
 # Define conversion matrices
 _lms2rgb = np.linalg.inv(_rgb2lms)

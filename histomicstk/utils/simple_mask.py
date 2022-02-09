@@ -1,9 +1,4 @@
 import numpy as np
-from skimage import color
-from sklearn.neighbors import KernelDensity
-from scipy.stats import norm
-from scipy.optimize import fmin_slsqp
-from scipy import signal
 
 
 def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
@@ -55,6 +50,11 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
     histomicstk.utils.sample_pixels
 
     """
+    from scipy import signal
+    from scipy.optimize import fmin_slsqp
+    from scipy.stats import norm
+    from skimage import color
+    from sklearn.neighbors import KernelDensity
 
     # convert image to grayscale, flatten and sample
     im_rgb = 255 * color.rgb2gray(im_rgb)

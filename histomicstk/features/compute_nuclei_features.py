@@ -1,13 +1,10 @@
-import pandas as pd
-from skimage.measure import regionprops
+from histomicstk.segmentation import label as htk_label
 
 from .compute_fsd_features import compute_fsd_features
 from .compute_gradient_features import compute_gradient_features
 from .compute_haralick_features import compute_haralick_features
 from .compute_intensity_features import compute_intensity_features
 from .compute_morphometry_features import compute_morphometry_features
-
-from histomicstk.segmentation import label as htk_label
 
 
 def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
@@ -143,6 +140,9 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
     histomicstk.features.compute_haralick_features
 
     """
+    import pandas as pd
+    from skimage.measure import regionprops
+
     # sanity checks
     if any([
         intensity_features_flag,

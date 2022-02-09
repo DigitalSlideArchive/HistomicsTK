@@ -52,28 +52,32 @@ RUN rm -f /usr/bin/python && \
 ENV htk_path=$PWD/HistomicsTK
 RUN mkdir -p $htk_path
 
-COPY . $htk_path/
-WORKDIR $htk_path
-
-# Install HistomicsTK and its dependencies
 RUN pip install --no-cache-dir --upgrade pip setuptools && \
     # Install bokeh to help debug dask \
     pip install --no-cache-dir 'bokeh>=0.12.14' && \
     # Install a specific version of numpy.  This needs to be compatible with
     # tensorflow and our wheels \
-    pip install --no-cache-dir 'numpy==1.17.5' && \
-    # Install large_image memcached extras \
-    pip install --no-cache-dir --pre 'large-image[memcached]' --find-links https://girder.github.io/large_image_wheels && \
+    # pip install --no-cache-dir 'numpy==1.17.5' && \
+    # Install large_image memcached and sources extras \
+    pip install --no-cache-dir 'large-image[all]' --find-links https://girder.github.io/large_image_wheels && \
     # Install girder-client \
     pip install --no-cache-dir girder-client && \
-    # Install HistomicsTK \
-    pip install --no-cache-dir --pre . --find-links https://girder.github.io/large_image_wheels && \
+    # Install some other dependencies here to save time in the histomicstk \
+    # install step \
+    pip install --no-cache-dir nimfa numpy scipy Pillow pandas scikit-image scikit-learn imageio 'shapely[vectorized]' opencv-python-headless sqlalchemy matplotlib 'dask[dataframe]' distributed && \
+    # clean up \
+    rm -rf /root/.cache/pip/*
+
+COPY . $htk_path/
+WORKDIR $htk_path
+
+# Install HistomicsTK and its dependencies
+RUN pip install --no-cache-dir . --find-links https://girder.github.io/large_image_wheels && \
     # Create separate virtual environments with CPU and GPU versions of tensorflow \
     pip install --no-cache-dir virtualenv && \
     virtualenv --system-site-packages /venv-gpu && \
     chmod +x /venv-gpu/bin/activate && \
     /venv-gpu/bin/pip install --no-cache-dir 'tensorflow-gpu>=1.3.0' && \
-    # clean up \
     rm -rf /root/.cache/pip/*
 
 # Show what was installed
@@ -90,5 +94,7 @@ WORKDIR $htk_path/histomicstk/cli
 # openslide, one of these will fail
 RUN python -m slicer_cli_web.cli_list_entrypoint --list_cli
 RUN python -m slicer_cli_web.cli_list_entrypoint ColorDeconvolution --help
+# Debug import time
+RUN python -X importtime ColorDeconvolution/ColorDeconvolution.py --help
 
 ENTRYPOINT ["/bin/bash", "docker-entrypoint.sh"]

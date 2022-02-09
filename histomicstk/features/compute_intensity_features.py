@@ -1,8 +1,5 @@
 """Compute intensity features in labeled image."""
 import numpy as np
-import pandas as pd
-import scipy.stats
-from skimage.measure import regionprops
 
 
 def compute_intensity_features(
@@ -87,6 +84,10 @@ def compute_intensity_features(
        and statistics tables and formulae," Crc Press, 1999.
 
     """
+    import pandas as pd
+    import scipy.stats
+    from skimage.measure import regionprops
+
     default_feature_list = [
         'Intensity.Min',
         'Intensity.Max',

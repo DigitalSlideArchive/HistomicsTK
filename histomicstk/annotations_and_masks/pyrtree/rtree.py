@@ -31,11 +31,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 """
 
+import array
 import random
 import time
-import array
-from .rect import (
-    Rect, union_all, NullRect)
+
+from .rect import NullRect, Rect, union_all
 
 MAXCHILDREN = 10
 MAX_KMEANS = 5

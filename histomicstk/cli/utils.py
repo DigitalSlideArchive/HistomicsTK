@@ -1,18 +1,15 @@
 from argparse import Namespace
 from datetime import timedelta
-from slicer_cli_web import ctk_cli_adjustment  # noqa - imported for side effects
-from ctk_cli import CLIArgumentParser
-import psutil
+
+import large_image
 import numpy as np
-import skimage.measure
-import skimage.morphology
+from ctk_cli import CLIArgumentParser
+from slicer_cli_web import \
+    ctk_cli_adjustment  # noqa - imported for side effects
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.segmentation as htk_seg
 import histomicstk.utils as htk_utils
-
-import large_image
-
 
 # These defaults are only used if girder is not present
 # Use memcached by default.
@@ -80,6 +77,7 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
 
 
 def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
+    import skimage.measure
 
     nuclei_annot_list = []
 
@@ -182,13 +180,16 @@ def create_dask_client(args):
 
     """
     import dask
+    import psutil
+
     scheduler = getattr(args, 'scheduler', None)
     num_workers = getattr(args, 'num_workers', 0)
     num_threads_per_worker = getattr(args, 'num_threads_per_worker', 0)
 
     if scheduler == 'multithreading':
-        import dask.threaded
         from multiprocessing.pool import ThreadPool
+
+        import dask.threaded
 
         if num_threads_per_worker <= 0:
             num_workers = max(1, psutil.cpu_count(logical=False) + num_threads_per_worker)
@@ -200,8 +201,9 @@ def create_dask_client(args):
         return
 
     if scheduler == 'multiprocessing':
-        import dask.multiprocessing
         import multiprocessing
+
+        import dask.multiprocessing
 
         dask.config.set(scheduler='processes')
         if num_workers <= 0:

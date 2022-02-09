@@ -1,8 +1,5 @@
-import numpy as np
-import dask
-import dask.distributed
-
 import large_image
+import numpy as np
 
 
 def compute_tile_foreground_fraction(slide_path, im_fgnd_mask_lres,
@@ -40,6 +37,8 @@ def compute_tile_foreground_fraction(slide_path, im_fgnd_mask_lres,
         all tiles will be returned.
 
     """
+    import dask
+    import dask.distributed
 
     if tile_position is None:
 

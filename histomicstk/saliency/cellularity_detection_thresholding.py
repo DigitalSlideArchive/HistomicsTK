@@ -5,35 +5,28 @@ Created on Tue Oct 22 02:37:52 2019.
 @author: mtageld
 """
 import numpy as np
-from imageio import imread
-from skimage.transform import resize
 from PIL import Image
-from skimage.filters import gaussian
-from scipy import ndimage
 
-from histomicstk.utils.general_utils import Base_HTK_Class
-from histomicstk.preprocessing.color_conversion import lab_mean_std
-from histomicstk.preprocessing.color_conversion import rgb_to_hsi
-from histomicstk.preprocessing.color_conversion import rgb_to_lab
-from histomicstk.preprocessing.color_normalization import (
-    reinhard, deconvolution_based_normalization)
-from histomicstk.preprocessing.color_deconvolution import (
-    rgb_separate_stains_macenko_pca, _reorder_stains,
-    color_deconvolution_routine)
-from histomicstk.saliency.tissue_detection import (
-    get_slide_thumbnail, get_tissue_mask,
-    threshold_multichannel, _get_largest_regions)
-from histomicstk.features.compute_intensity_features import (
-    compute_intensity_features)
+from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
+    get_image_from_htk_response
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
-    get_contours_from_mask, get_annotation_documents_from_contours)
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
-    get_image_from_htk_response)
+    get_annotation_documents_from_contours, get_contours_from_mask)
+from histomicstk.features.compute_intensity_features import \
+    compute_intensity_features
+from histomicstk.preprocessing.color_conversion import (lab_mean_std,
+                                                        rgb_to_hsi, rgb_to_lab)
+from histomicstk.preprocessing.color_deconvolution import (
+    _reorder_stains, color_deconvolution_routine,
+    rgb_separate_stains_macenko_pca)
+from histomicstk.preprocessing.color_normalization import (
+    deconvolution_based_normalization, reinhard)
+from histomicstk.saliency.tissue_detection import (_get_largest_regions,
+                                                   get_slide_thumbnail,
+                                                   get_tissue_mask,
+                                                   threshold_multichannel)
+from histomicstk.utils.general_utils import Base_HTK_Class
 
 Image.MAX_IMAGE_PIXELS = None
-
-# %%===========================================================================
-# =============================================================================
 
 
 class CDT_single_tissue_piece:
@@ -55,8 +48,6 @@ class CDT_single_tissue_piece:
         self.cdt = cdt
         self.tissue_mask = 0 + tissue_mask
         self.monitorPrefix = monitorPrefix
-
-    # =========================================================================
 
     def run(self):
         """Get cellularity and optionally visualize on DSA."""
@@ -82,8 +73,6 @@ class CDT_single_tissue_piece:
             self.cdt._print2("%s: visualize_results()" % self.monitorPrefix)
             self.visualize_results()
 
-    # =========================================================================
-
     def restrict_mask_to_single_tissue_piece(self):
         """Only keep relevant part of slide mask."""
         # find coordinates at scan magnification
@@ -95,8 +84,6 @@ class CDT_single_tissue_piece:
             int(self.ymin / F): int(self.ymax / F),
             int(self.xmin / F): int(self.xmax / F)]
 
-    # =========================================================================
-
     def set_tissue_rgb(self):
         """Load RGB from server for single tissue piece."""
         # load RGB for this tissue piece at saliency magnification
@@ -106,18 +93,16 @@ class CDT_single_tissue_piece:
         resp = self.cdt.gc.get(getStr, jsonResp=False)
         self.tissue_rgb = get_image_from_htk_response(resp)
 
-    # =========================================================================
-
     def initialize_labeled_mask(self):
         """Initialize labeled components mask."""
+        from skimage.transform import resize
+
         # resize tissue mask to target mag
         self.labeled = resize(
             self.tissue_mask, output_shape=self.tissue_rgb.shape[:2],
             order=0, preserve_range=True, anti_aliasing=False)
         self.labeled[self.labeled > 0] = self.cdt.GTcodes.loc[
             'not_specified', 'GT_code']
-
-    # =========================================================================
 
     def assign_components_by_thresholding(self):
         """Get components by thresholding in HSI and LAB spaces."""
@@ -161,8 +146,6 @@ class CDT_single_tissue_piece:
         self.labeled[self.labeled == 0] = self.cdt.GTcodes.loc[
             'outside_tissue', 'GT_code']
 
-    # =========================================================================
-
     def color_normalize_unspecified_components(self):
         """Color normalize "true" tissue components."""
         if self.cdt.color_normalization_method == 'reinhard':
@@ -187,10 +170,11 @@ class CDT_single_tissue_piece:
         else:
             self.cdt._print2("%s: -- No normalization!" % self.monitorPrefix)
 
-    # =========================================================================
-
     def find_potentially_cellular_regions(self):
         """Find regions that are potentially cellular."""
+        from scipy import ndimage
+        from skimage.filters import gaussian
+
         mask_out = self.labeled != self.cdt.GTcodes.loc[
             "not_specified", "GT_code"]
 
@@ -222,8 +206,6 @@ class CDT_single_tissue_piece:
         self.labeled[self.maybe_cellular > 0] = self.cdt.GTcodes.loc[
             'maybe_cellular', 'GT_code']
 
-    # =========================================================================
-
     def find_top_cellular_regions(self):
         """Keep largest and most cellular regions."""
         # keep only largest n regions regions
@@ -248,8 +230,6 @@ class CDT_single_tissue_piece:
         # integrate into labeled mask
         self.labeled[top_cellular > 0] = self.cdt.GTcodes.loc[
             'top_cellular', 'GT_code']
-
-    # =========================================================================
 
     def visualize_results(self):
         """Visualize results in DSA."""
@@ -282,9 +262,6 @@ class CDT_single_tissue_piece:
         for doc in annotation_docs:
             _ = self.cdt.gc.post(
                 "/annotation?itemId=" + self.cdt.slide_id, json=doc)
-
-# %%===========================================================================
-# =============================================================================
 
 
 class Cellularity_detector_thresholding(Base_HTK_Class):
@@ -574,8 +551,6 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
         self.fix_GTcodes()
 
-    # %% ======================================================================
-
     def fix_GTcodes(self):
         """Fix self.GTcodes (important!)."""
         # validate
@@ -598,8 +573,6 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         for c in self.ordered_components[:]:
             if c not in self.keep_components:
                 self.ordered_components.remove(c)
-
-    # %% ======================================================================
 
     def run(self):
         """Run full pipeline to detect cellular regions."""
@@ -628,8 +601,6 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
         return tissue_pieces
 
-    # %% ======================================================================
-
     def set_color_normalization_target(
             self, ref_image_path, color_normalization_method='macenko_pca'):
         """Set color normalization values to use from target image.
@@ -642,6 +613,8 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         >    reinhard and macenko_pca are accepted.
 
         """
+        from imageio import imread
+
         # read input image
         ref_im = np.array(imread(ref_image_path, pilmode='RGB'))
 
@@ -665,8 +638,6 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
 
         self.color_normalization_method = color_normalization_method
 
-    # %% ======================================================================
-
     def set_slide_info_and_get_tissue_mask(self):
         """Set self.slide_info dict and self.labeled tissue mask."""
         # This is a presistent dict to store information about slide
@@ -687,9 +658,3 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             'sizeX'] / labeled.shape[1]
 
         return labeled
-
-    # %% ======================================================================
-
-
-# %%===========================================================================
-# =============================================================================

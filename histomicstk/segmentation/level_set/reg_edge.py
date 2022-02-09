@@ -1,6 +1,6 @@
-import histomicstk.utils as htk_utls
 import numpy as np
-import scipy.ndimage.filters as filters
+
+import histomicstk.utils as htk_utls
 
 
 def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
@@ -63,6 +63,7 @@ def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
        Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.
 
     """
+    import scipy.ndimage.filters as filters
 
     # smoothed gradient of input image
     sI = filters.gaussian_filter(im_input, sigma, mode='constant', cval=0)

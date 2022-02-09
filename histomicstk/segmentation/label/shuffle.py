@@ -1,5 +1,4 @@
 import numpy as np
-from skimage import measure as ms
 
 
 def shuffle(im_label):
@@ -22,6 +21,7 @@ def shuffle(im_label):
     histomicstk.segmentation.label.CondenseLabel
 
     """
+    from skimage import measure as ms
 
     # get list of unique object labels
     Unique = np.unique(im_label.flatten())
