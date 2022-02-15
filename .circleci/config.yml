@@ -58,7 +58,7 @@ jobs:
   py36:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - upgradepython:
@@ -74,7 +74,7 @@ jobs:
   py37:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - upgradepython:
@@ -90,7 +90,7 @@ jobs:
   py38:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - upgradepython:
@@ -106,7 +106,7 @@ jobs:
   py39:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - upgradepython:
@@ -122,7 +122,7 @@ jobs:
   py310:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - upgradepython:
@@ -153,7 +153,8 @@ jobs:
           paths: html
   docker:
     working_directory: ~/project
-    machine: true
+    machine:
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run:
@@ -183,7 +184,8 @@ jobs:
           path: ./dsa_histomicstk.tar
   publish_docker:
     working_directory: ~/project
-    machine: true
+    machine:
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - attach_workspace:
