@@ -3,9 +3,9 @@ from datetime import timedelta
 
 import large_image
 import numpy as np
-from ctk_cli import CLIArgumentParser
-from slicer_cli_web import \
-    ctk_cli_adjustment  # noqa - imported for side effects
+# imported for side effects
+from slicer_cli_web import ctk_cli_adjustment  # noqa 
+from ctk_cli import CLIArgumentParser  # noqa
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.segmentation as htk_seg
