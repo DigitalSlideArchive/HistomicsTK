@@ -178,7 +178,7 @@ def createSuperPixels(opts):  # noqa
 
     if opts.outputAnnotationFile:
         print(opts.outputAnnotationFile)
-        region = utils.get_region_dict(opts.roi, None, ts)['region']
+        region_dict = utils.get_region_dict(opts.roi, None, ts)
         annotation = {
             'name': 'Superpixel Pixelmap %s' % (
                 os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0]),
@@ -187,8 +187,8 @@ def createSuperPixels(opts):  # noqa
                 'type': 'pixelmap',
                 'girderId': 'outputImageFile',
                 'transform': {
-                    'xoffset': region.get('left', 0),
-                    'yoffset': region.get('top', 0),
+                    'xoffset': region_dict.get('region', {}).get('left', 0),
+                    'yoffset': region_dict.get('region', {}).get('top', 0),
                 },
                 'values': [0] * found,
                 'categories': [{

@@ -21,7 +21,7 @@
     <image fileExtensions=".tiff" reference="inputImageFile">
       <name>outputImageFile</name>
       <label>Output Image of Superpixel Pixelmap</label>
-      <description>Output Image of Superpixel Pixelmap (.tiff)</description>
+      <description>Output Image of Superpixel Pixelmap (*.tiff)</description>
       <channel>output</channel>
       <index>1</index>
     </image>
