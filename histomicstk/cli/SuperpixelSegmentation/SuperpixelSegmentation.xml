@@ -89,4 +89,79 @@
       <default>1.0</default>
     </float>
   </parameters>
+  <parameters>
+    <label>Category Details 1</label>
+    <description>Details for a category to label superpixels with. Used in the annotation file.</description>
+    <string>
+      <name>label_1</name>
+      <label>Label</label>
+      <longflag>label_1</longflag>
+      <description>Label used for superpixels</description>
+      <default>Label_1</default>
+    </string>
+    <string>
+      <name>fillColor_1</name>
+      <label>Fill Color</label>
+      <longflag>fillColor_1</longflag>
+      <description>Color to fill superpixels with this label</description>
+      <default>rgba(255, 0, 0, 0.5)</default>
+    </string>
+    <string>
+      <name>strokeColor_1</name>
+      <label>Stroke Color</label>
+      <longflag>strokeColor_1</longflag>
+      <description>If creating boundary superpixels, this is the color of the boundaries of superpixels with this label</description>
+      <default>rgba(0, 0, 0, 1)</default>
+    </string>
+  </parameters>
+  <parameters>
+    <label>Category Details 2</label>
+    <description>Details for a category to label superpixels with. Used in the annotation file.</description>
+    <string>
+      <name>label_2</name>
+      <label>Label</label>
+      <longflag>label_2</longflag>
+      <description>Label used for superpixels</description>
+      <default>Label_2</default>
+    </string>
+    <string>
+      <name>fillColor_2</name>
+      <label>Fill Color</label>
+      <longflag>fillColor_2</longflag>
+      <description>Color to fill superpixels with this label</description>
+      <default>rgba(0, 255, 0, 0.5)</default>
+    </string>
+    <string>
+      <name>strokeColor_2</name>
+      <label>Stroke Color</label>
+      <longflag>strokeColor_2</longflag>
+      <description>If creating boundary superpixels, this is the color of the boundaries of superpixels with this label</description>
+      <default>rgba(0, 0, 0, 1)</default>
+    </string>
+  </parameters>
+  <parameters>
+    <label>Category Details 3</label>
+    <description>Details for a category to label superpixels with. Used in the annotation file.</description>
+    <string>
+      <name>label_3</name>
+      <label>Label</label>
+      <longflag>label_3</longflag>
+      <description>Label used for superpixels</description>
+      <default>Label_3</default>
+    </string>
+    <string>
+      <name>fillColor_3</name>
+      <label>Fill Color</label>
+      <longflag>fillColor_3</longflag>
+      <description>Color to fill superpixels with this label</description>
+      <default>rgba(0, 0, 255, 0.5)</default>
+    </string>
+    <string>
+      <name>strokeColor_3</name>
+      <label>Stroke Color</label>
+      <longflag>strokeColor_3</longflag>
+      <description>If creating boundary superpixels, this is the color of the boundaries of superpixels with this label</description>
+      <default>rgba(0, 0, 0, 1)</default>
+    </string>
+  </parameters>
 </executable>

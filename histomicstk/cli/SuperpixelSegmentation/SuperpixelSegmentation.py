@@ -177,7 +177,29 @@ def createSuperPixels(opts):  # noqa
         bigtiff=True, compression='lzw', predictor='horizontal')
 
     if opts.outputAnnotationFile:
-        print(opts.outputAnnotationFile)
+        print('>> Generating annotation file')
+        categories = [
+            {
+                'label': 'no_category',
+                'fillColor': 'rgba(0, 0, 0, 0)',
+                'strokeColor': 'rgba(0, 0, 0, 1)',
+            },
+            {
+                'label': opts.label_1,
+                'fillColor': opts.fillColor_1,
+                'strokeColor': opts.strokeColor_1,
+            },
+            {
+                'label': opts.label_2,
+                'fillColor': opts.fillColor_2,
+                'strokeColor': opts.strokeColor_2,
+            },
+            {
+                'label': opts.label_3,
+                'fillColor': opts.fillColor_3,
+                'strokeColor': opts.strokeColor_3,
+            },
+        ]
         region_dict = utils.get_region_dict(opts.roi, None, ts)
         annotation = {
             'name': 'Superpixel Pixelmap %s' % (
@@ -191,11 +213,7 @@ def createSuperPixels(opts):  # noqa
                     'yoffset': region_dict.get('region', {}).get('top', 0),
                 },
                 'values': [0] * found,
-                'categories': [{
-                    'fillColor': 'rgba(0, 0, 0, 0)',
-                    'strokeColor': 'rgba(0, 0, 0, 1)',
-                    'label': 'default_category',
-                }],
+                'categories': categories,
                 'boundaries': opts.boundaries,
             }],
         }
