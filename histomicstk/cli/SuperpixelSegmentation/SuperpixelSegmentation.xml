@@ -76,9 +76,9 @@
       <name>compactness</name>
       <label>Compactness</label>
       <longflag>compactness</longflag>
-      <description>Balances color proximity and space proximity. Higher values give more weight to space proximity, making superpixel shapes more square/cubic.</description>
+      <description>Balances color proximity and space proximity. Higher values give more weight to space proximity, making superpixel shapes more square/cubic. If set to 0, use SLICO to adaptively choose compactness for each superpixel.</description>
       <channel>input</channel>
-      <default>1.0</default>
+      <default>0</default>
     </float>
     <float>
       <name>sigma</name>

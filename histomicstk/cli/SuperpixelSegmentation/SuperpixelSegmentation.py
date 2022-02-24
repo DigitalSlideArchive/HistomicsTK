@@ -1,5 +1,4 @@
 import json
-import logging
 import math
 import os
 
@@ -11,8 +10,6 @@ import skimage
 from histomicstk.cli import utils
 from histomicstk.cli.utils import CLIArgumentParser
 
-logging.basicConfig()
-
 
 def createSuperPixels(opts):  # noqa
     averageSize = opts.superpixelSize ** 2
@@ -20,8 +17,8 @@ def createSuperPixels(opts):  # noqa
     tileSize = opts.tileSize + overlap
     boundaries = opts.boundaries
 
-    logging.info('>> Reading input image')
-    logging.info(opts.inputImageFile)
+    print('>> Reading input image')
+    print(opts.inputImageFile)
 
     ts = large_image.open(opts.inputImageFile)
     meta = ts.getMetadata()
@@ -30,14 +27,16 @@ def createSuperPixels(opts):  # noqa
     tiparams = {}
     tiparams = utils.get_region_dict(opts.roi, None, ts)
 
-    logging.info('>> Generating superpixels')
+    print('>> Generating superpixels')
+    if opts.compactness == 0:
+        print('>> Using SLIC Zero for segmentation')
     for tile in ts.tileIterator(
         format=large_image.constants.TILE_FORMAT_NUMPY,
         tile_size=dict(width=tileSize, height=tileSize),
         tile_overlap=dict(x=overlap, y=overlap),
         **tiparams,
     ):
-        logging.info('%d/%d (%d x %d) - %d' % (
+        print('%d/%d (%d x %d) - %d' % (
             tile['tile_position']['position'], tile['iterator_range']['position'],
             tile['width'], tile['height'],
             found))
@@ -67,26 +66,37 @@ def createSuperPixels(opts):  # noqa
                     mask[suby:suby + submask.shape[0], :submask.shape[1]] *= submask
             n_pixels = numpy.count_nonzero(mask)
         n_segments = math.ceil(n_pixels / averageSize)
-        while True:
+        if opts.compactness == 0:
             segments = skimage.segmentation.slic(
                 img,
                 n_segments=n_segments,
-                compactness=compactness,
+                slic_zero=True,
                 sigma=opts.sigma,
                 start_label=0,
                 enforce_connectivity=True,
-                # max_num_iter=100,
                 mask=mask,
             )
-            # We now have an array that is the same size as the image
             maxValue = numpy.max(segments) + 1
-            if maxValue >= n_segments / 4:
-                break
-            logging.info('Adjusting compactness from %g - got %d rather than %d' % (
-                compactness, maxValue, n_segments))
-            compactness *= 10
+        else:
+            while True:
+                segments = skimage.segmentation.slic(
+                    img,
+                    n_segments=n_segments,
+                    compactness=compactness,
+                    sigma=opts.sigma,
+                    start_label=0,
+                    enforce_connectivity=True,
+                    mask=mask,
+                )
+                # We now have an array that is the same size as the image
+                maxValue = numpy.max(segments) + 1
+                if maxValue >= n_segments / 4:
+                    break
+                print('Adjusting compactness from %g - got %d rather than %d' % (
+                    compactness, maxValue, n_segments))
+                compactness *= 10
         if compactness != opts.compactness:
-            logging.info('Adjusted compactness to %g - got %d' % (
+            print('Adjusted compactness to %g - got %d' % (
                 compactness, maxValue))
         if overlap:
             # Keep any segment that is at all in the non-overlap region
@@ -104,7 +114,7 @@ def createSuperPixels(opts):  # noqa
                 if used >= 0:
                     usedLut[used] = idx
             usedLut = numpy.array(usedLut, dtype=int)
-            logging.info('reduced from %d to %d' % (maxValue, len(usedIndices)))
+            print('reduced from %d to %d' % (maxValue, len(usedIndices)))
             maxValue = len(usedIndices)
             segments = usedLut[segments]
             mask *= (segments != -1)
@@ -153,9 +163,9 @@ def createSuperPixels(opts):  # noqa
             strip = strip.copy(interpretation=pyvips.Interpretation.RGB)
             strips[ty] = [tile['y'] - y0, strip]
         strips[ty][1] = strips[ty][1].composite([vimg], pyvips.BlendMode.OVER, x=int(x), y=0)
-    logging.info('>> Found %d superpixels' % found)
+    print('>> Found %d superpixels' % found)
     if found > 256 ** 3:
-        logging.info('Too many superpixels')
+        print('Too many superpixels')
     img = pyvips.Image.black(
         tiparams.get('region', {}).get('width', meta['sizeX']),
         tiparams.get('region', {}).get('height', meta['sizeY']),
@@ -177,7 +187,7 @@ def createSuperPixels(opts):  # noqa
         bigtiff=True, compression='lzw', predictor='horizontal')
 
     if opts.outputAnnotationFile:
-        logging.info('>> Generating annotation file')
+        print('>> Generating annotation file')
         categories = [
             {
                 'label': opts.default_category_label,
@@ -185,10 +195,18 @@ def createSuperPixels(opts):  # noqa
                 'strokeColor': opts.default_strokeColor,
             },
         ]
+        if opts.compactness == 0:
+            annotation_name = '%s - SLIC 0' % (
+                os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0])
+        else:
+            annotation_name = '%s - compactness: %g - sigma: %g' % (
+                os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0],
+                opts.compactness,
+                opts.sigma,
+            )
         region_dict = utils.get_region_dict(opts.roi, None, ts)
         annotation = {
-            'name': 'Superpixel Pixelmap %s' % (
-                os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0]),
+            'name': annotation_name,
             'description': 'Used params %r' % vars(opts),
             'elements': [{
                 'type': 'pixelmap',
