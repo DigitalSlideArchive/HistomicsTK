@@ -143,7 +143,7 @@ def _count_tiles(slide_path, params, kwargs, position, count):
     return OutputTotals._make(total)
 
 
-def count_image(image, params):
+def count_image(image, params, mask=None):
     """Count positive pixels, computing a label mask and summary
     statistics.
 
@@ -153,6 +153,9 @@ def count_image(image, params):
         NxMx3 array of RGB data
     params : Parameters
         An instance of Parameters, which see for further documentation
+    mask: array-like
+        A boolean mask.  If present, only pixels where the mask is True are
+        considered.
 
     Returns
     -------
@@ -162,7 +165,7 @@ def count_image(image, params):
         NxM array of pixel types.  See Labels for the different values.
 
     """
-    total, masks = _count_image(image, params)
+    total, masks = _count_image(image, params, mask)
     mask_all_positive, mask_weak, mask_pos, mask_strong = masks
     label_image = np.full(image.shape[:-1], Labels.NEGATIVE, dtype=np.uint8)
     label_image[mask_all_positive] = (
@@ -173,7 +176,7 @@ def count_image(image, params):
     return _totals_to_stats(total), label_image
 
 
-def _count_image(image, params):
+def _count_image(image, params, mask=None):
     """A version of count_image that doesn't compute the label image and
     only computes the sums.
 
@@ -187,6 +190,8 @@ def _count_image(image, params):
         (image_hsi[..., 2] < p.intensity_upper_limit) &
         (image_hsi[..., 2] >= p.intensity_lower_limit)
     )
+    if mask is not None:
+        mask_all_positive &= mask
     all_positive_i = image_hsi[mask_all_positive, 2]
     mask_weak = all_positive_i >= p.intensity_weak_threshold
     nw, iw = np.count_nonzero(mask_weak), np.sum(all_positive_i[mask_weak])
@@ -213,12 +218,12 @@ def _totals_to_stats(total):
         IntensityAverage=((t.IntensitySumWeakPositive +
                            t.IntensitySumPositive +
                            t.IntensitySumStrongPositive) /
-                          all_positive),
-        RatioStrongToTotal=t.NumberStrongPositive / all_positive,
+                          all_positive) if all_positive else 0,
+        RatioStrongToTotal=t.NumberStrongPositive / all_positive if all_positive else 0,
         IntensityAverageWeakAndPositive=(
             (t.IntensitySumWeakPositive + t.IntensitySumPositive) /
             (t.NumberWeakPositive + t.NumberPositive)
-        ),
+        ) if t.NumberWeakPositive + t.NumberPositive else 0,
         **t._asdict()
     )
 

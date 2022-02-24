@@ -68,6 +68,16 @@ RUN pip install --no-cache-dir --upgrade pip setuptools && \
     # clean up \
     rm -rf /root/.cache/pip/*
 
+# Install the latest version of large_image.  This can be disabled if the
+# latest version we need has had an official release
+# RUN cd /opt && \
+#     git clone https://github.com/girder/large_image && \
+#     cd large_image && \
+#     # git checkout write-with-mask && \
+#     # We can't install editable when we share system-site-packages \
+#     sed  's/-e //g' -i requirements-dev.txt && \
+#     pip install .[all] -r requirements-dev.txt --find-links https://girder.github.io/large_image_wheels
+
 COPY . $htk_path/
 WORKDIR $htk_path
 

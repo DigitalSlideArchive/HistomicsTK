@@ -6,7 +6,7 @@
   <version>0.1.0</version>
   <documentation-url>https://digitalslidearchive.github.io/HistomicsTK</documentation-url>
   <license>Apache 2.0</license>
-  <contributor>Neal Siekierski (Kitware)</contributor>
+  <contributor>David Manthey (Kitware), Neal Siekierski (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
   <parameters>
     <label>I/O</label>
@@ -18,6 +18,13 @@
       <index>0</index>
       <description>Input image in which to count and classify positive pixels</description>
     </image>
+    <region shapes="rectangle,polygon,multipolygon">
+      <name>region</name>
+      <label>Analysis ROI</label>
+      <longflag>region</longflag>
+      <description>Region of interest where analysis is performed.  This is either -1,-1,-1,-1 for thw hole image, or a four-element vector in the format "left, top, width, height", or a list of four or more x,y vertices to specify a polygon.</description>
+      <default>-1,-1,-1,-1</default>
+    </region>
     <float>
       <name>hue_value</name>
       <label>Hue Value</label>
@@ -67,27 +74,30 @@
       <description>Intensity threshold in HSI space below which a pixel is considered negative</description>
       <default>0.05</default>
     </float>
-    <region>
-      <name>region</name>
-      <label>Region</label>
-      <longflag>region</longflag>
-      <description>left,top,width,height of the region of interest.  All -1 means the whole image is used.</description>
-      <default>-1,-1,-1,-1</default>
-    </region>
-    <image fileExtensions=".png">
+    <image fileExtensions=".tiff" reference="inputImageFile">
       <name>outputLabelImage</name>
       <longflag>outputLabelImage</longflag>
       <label>Output Label Image</label>
       <description>Color-coded image of the region, showing the various classes of pixel</description>
       <channel>output</channel>
     </image>
-    <integer>
-      <name>maxRegionSize</name>
-      <longflag>maxRegionSize</longflag>
-      <label>Maximum region size</label>
-      <description>Maximum width and height allowed when processing an image, in order to prevent accidentally running on too large a region.  Use -1 for no limit</description>
-      <default>5000</default>
-    </integer>
+    <string-enumeration>
+      <name>outputImageForm</name>
+      <label>Image Format</label>
+      <description>The output image can either be colored for easy visibility or coded as categorical values where 0 is negative, 1 weak, 2 plain, and 3 strong</description>
+      <channel>input</channel>
+      <longflag>output_form</longflag>
+      <element>visible</element>
+      <element>pixelmap</element>
+      <default>visible</default>
+    </string-enumeration>
+    <file fileExtensions=".anot" reference="inputImageFile">
+      <name>outputAnnotationFile</name>
+      <label>Image Annotation</label>
+      <description>Annotation to relate the image to the source (*.anot)</description>
+      <channel>output</channel>
+      <longflag>image_annotation</longflag>
+    </file>
   </parameters>
   <parameters>
     <label>Output parameters</label>
@@ -148,7 +158,7 @@
     </float>
   </parameters>
   <parameters advanced="true">
-    <label>Dask parameters</label>
+    <label>Dask</label>
     <description>Dask parameters</description>
     <string>
       <name>scheduler</name>
@@ -164,19 +174,12 @@
       <longflag>num_workers</longflag>
       <default>-1</default>
     </integer>
-      <integer>
+    <integer>
       <name>num_threads_per_worker</name>
       <label>Number of threads per worker</label>
       <description>Number of threads to use per worker while setting up a local cluster internally. Must be a positive integer >= 1.</description>
       <longflag>num_threads_per_worker</longflag>
       <default>1</default>
-    </integer>
-    <integer>
-      <name>tile_grouping</name>
-      <label>Tile grouping</label>
-      <longflag>tileGrouping</longflag>
-      <description>Number of tiles to process as part of a single task</description>
-      <default>256</default>
     </integer>
   </parameters>
 </executable>
