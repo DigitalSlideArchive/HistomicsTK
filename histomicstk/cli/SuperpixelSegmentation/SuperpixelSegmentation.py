@@ -20,24 +20,24 @@ def createSuperPixels(opts):  # noqa
     tileSize = opts.tileSize + overlap
     boundaries = opts.boundaries
 
-    print('>> Reading input image')
-    print(opts.inputImageFile)
+    logging.info('>> Reading input image')
+    logging.info(opts.inputImageFile)
 
-    ts = large_image.getTileSource(opts.inputImageFile)
+    ts = large_image.open(opts.inputImageFile)
     meta = ts.getMetadata()
     found = 0
     strips = []
     tiparams = {}
     tiparams = utils.get_region_dict(opts.roi, None, ts)
 
-    print('>> Generating superpixels')
+    logging.info('>> Generating superpixels')
     for tile in ts.tileIterator(
         format=large_image.constants.TILE_FORMAT_NUMPY,
         tile_size=dict(width=tileSize, height=tileSize),
         tile_overlap=dict(x=overlap, y=overlap),
         **tiparams,
     ):
-        print('%d/%d (%d x %d) - %d' % (
+        logging.info('%d/%d (%d x %d) - %d' % (
             tile['tile_position']['position'], tile['iterator_range']['position'],
             tile['width'], tile['height'],
             found))
@@ -82,11 +82,11 @@ def createSuperPixels(opts):  # noqa
             maxValue = numpy.max(segments) + 1
             if maxValue >= n_segments / 4:
                 break
-            print('Adjusting compactness from %g - got %d rather than %d' % (
+            logging.info('Adjusting compactness from %g - got %d rather than %d' % (
                 compactness, maxValue, n_segments))
             compactness *= 10
         if compactness != opts.compactness:
-            print('Adjusted compactness to %g - got %d' % (
+            logging.info('Adjusted compactness to %g - got %d' % (
                 compactness, maxValue))
         if overlap:
             # Keep any segment that is at all in the non-overlap region
@@ -104,7 +104,7 @@ def createSuperPixels(opts):  # noqa
                 if used >= 0:
                     usedLut[used] = idx
             usedLut = numpy.array(usedLut, dtype=int)
-            print('reduced from %d to %d' % (maxValue, len(usedIndices)))
+            logging.info('reduced from %d to %d' % (maxValue, len(usedIndices)))
             maxValue = len(usedIndices)
             segments = usedLut[segments]
             mask *= (segments != -1)
@@ -153,9 +153,9 @@ def createSuperPixels(opts):  # noqa
             strip = strip.copy(interpretation=pyvips.Interpretation.RGB)
             strips[ty] = [tile['y'] - y0, strip]
         strips[ty][1] = strips[ty][1].composite([vimg], pyvips.BlendMode.OVER, x=int(x), y=0)
-    print('>> Found %d superpixels' % found)
+    logging.info('>> Found %d superpixels' % found)
     if found > 256 ** 3:
-        print('Too many superpixels')
+        logging.info('Too many superpixels')
     img = pyvips.Image.black(
         tiparams.get('region', {}).get('width', meta['sizeX']),
         tiparams.get('region', {}).get('height', meta['sizeY']),
@@ -177,27 +177,12 @@ def createSuperPixels(opts):  # noqa
         bigtiff=True, compression='lzw', predictor='horizontal')
 
     if opts.outputAnnotationFile:
-        print('>> Generating annotation file')
+        logging.info('>> Generating annotation file')
         categories = [
             {
-                'label': 'no_category',
-                'fillColor': 'rgba(0, 0, 0, 0)',
-                'strokeColor': 'rgba(0, 0, 0, 1)',
-            },
-            {
-                'label': opts.label_1,
-                'fillColor': opts.fillColor_1,
-                'strokeColor': opts.strokeColor_1,
-            },
-            {
-                'label': opts.label_2,
-                'fillColor': opts.fillColor_2,
-                'strokeColor': opts.strokeColor_2,
-            },
-            {
-                'label': opts.label_3,
-                'fillColor': opts.fillColor_3,
-                'strokeColor': opts.strokeColor_3,
+                'label': opts.default_category_label,
+                'fillColor': opts.default_fillColor,
+                'strokeColor': opts.default_strokeColor,
             },
         ]
         region_dict = utils.get_region_dict(opts.roi, None, ts)
