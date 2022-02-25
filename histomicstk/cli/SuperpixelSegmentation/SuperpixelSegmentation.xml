@@ -72,13 +72,21 @@
       <channel>input</channel>
       <default>true</default>
     </boolean>
+    <boolean>
+      <name>slic_zero</name>
+      <label>SLIC0</label>
+      <longflag>slic_zero</longflag>
+      <description>If true, run the algorithm in SLIC0 mode to adaptively determine compactness for each superpixel.</description>
+      <channel>input</channel>
+      <default>true</default>
+    </boolean>
     <float>
       <name>compactness</name>
       <label>Compactness</label>
       <longflag>compactness</longflag>
-      <description>Balances color proximity and space proximity. Higher values give more weight to space proximity, making superpixel shapes more square/cubic. If set to 0, use SLICO to adaptively choose compactness for each superpixel.</description>
+      <description>Balances color proximity and space proximity. Higher values give more weight to space proximity, making superpixel shapes more square/cubic.</description>
       <channel>input</channel>
-      <default>0</default>
+      <default>1</default>
     </float>
     <float>
       <name>sigma</name>
@@ -86,7 +94,7 @@
       <longflag>sigma</longflag>
       <description>Width of Gaussian smoothing kernel for pre-processing for each dimension of the image. The same sigma is applied to each dimension in case of a scalar value. Zero means no smoothing.</description>
       <channel>input</channel>
-      <default>1.0</default>
+      <default>0</default>
     </float>
   </parameters>
   <parameters>

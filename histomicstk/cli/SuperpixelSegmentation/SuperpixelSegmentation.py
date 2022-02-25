@@ -28,7 +28,7 @@ def createSuperPixels(opts):  # noqa
     tiparams = utils.get_region_dict(opts.roi, None, ts)
 
     print('>> Generating superpixels')
-    if opts.compactness == 0:
+    if opts.slic_zero:
         print('>> Using SLIC Zero for segmentation')
     for tile in ts.tileIterator(
         format=large_image.constants.TILE_FORMAT_NUMPY,
@@ -66,11 +66,12 @@ def createSuperPixels(opts):  # noqa
                     mask[suby:suby + submask.shape[0], :submask.shape[1]] *= submask
             n_pixels = numpy.count_nonzero(mask)
         n_segments = math.ceil(n_pixels / averageSize)
-        if opts.compactness == 0:
+        if opts.slic_zero:
             segments = skimage.segmentation.slic(
                 img,
                 n_segments=n_segments,
                 slic_zero=True,
+                compactness=opts.compactness,
                 sigma=opts.sigma,
                 start_label=0,
                 enforce_connectivity=True,
@@ -195,7 +196,7 @@ def createSuperPixels(opts):  # noqa
                 'strokeColor': opts.default_strokeColor,
             },
         ]
-        if opts.compactness == 0:
+        if opts.slic_zero:
             annotation_name = '%s - SLIC 0' % (
                 os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0])
         else:
