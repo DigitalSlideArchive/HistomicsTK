@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>HistomicsTK</category>
+  <title>Superpixel Pixelmap</title>
+  <description>Create a pixelmap image of superpixels using SLIC.</description>
+  <version>0.1.0</version>
+  <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
+  <license>Apache 2.0</license>
+  <contributor>Kitware</contributor>
+  <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters.</description>
+    <image>
+        <name>inputImageFile</name>
+        <label>Input Image</label>
+        <description>Input image for superpixel segmentation</description>
+        <channel>input</channel>
+        <index>0</index>
+    </image>
+    <image fileExtensions=".tiff" reference="inputImageFile">
+      <name>outputImageFile</name>
+      <label>Output Image of Superpixel Pixelmap</label>
+      <description>Output Image of Superpixel Pixelmap (*.tiff)</description>
+      <channel>output</channel>
+      <index>1</index>
+    </image>
+    <file fileExtensions=".anot" reference="inputImageFile">
+      <name>outputAnnotationFile</name>
+      <label>Pixelmap Annotation</label>
+      <description>Annotation to display pixelmap on source (*.anot)</description>
+      <channel>output</channel>
+      <longflag>superpixel_annotation</longflag>
+    </file>
+    <region>
+      <name>roi</name>
+      <label>Analysis ROI</label>
+      <longflag>roi</longflag>
+      <description>Region of interest within which the analysis should be run</description>
+      <channel>input</channel>
+      <default>-1, -1, -1, -1</default>
+    </region>
+    <integer>
+       <name>tileSize</name>
+       <longflag>tileSize</longflag>
+       <label>Working tile size</label>
+       <description>Specify the size of the working tile. If there is no overlap, superpixel boundaries will appear at these locations.</description>
+       <channel>input</channel>
+       <default>4096</default>
+    </integer>
+    <integer>
+       <name>superpixelSize</name>
+       <longflag>superpixelSize</longflag>
+       <label>Superpixel Size</label>
+       <description>Approximate diameter of the average superpixel.</description>
+       <channel>input</channel>
+       <default>50</default>
+    </integer>
+    <boolean>
+      <name>overlap</name>
+      <label>Overlap</label>
+      <longflag>overlap</longflag>
+      <description>If specified, overlap tile computation to avoid edge effects.</description>
+      <channel>input</channel>
+      <default>false</default>
+    </boolean>
+    <boolean>
+      <name>boundaries</name>
+      <label>Boundaries</label>
+      <longflag>boundaries</longflag>
+      <description>Mark the boundary around each superpixel. Boundaries are specified with a separate pixelmap index value that is always 1 higher than the pixelmap index value of the superpixel's interior.</description>
+      <channel>input</channel>
+      <default>true</default>
+    </boolean>
+    <boolean>
+      <name>slic_zero</name>
+      <label>SLIC0</label>
+      <longflag>slic_zero</longflag>
+      <description>If true, run the algorithm in SLIC0 mode to adaptively determine compactness for each superpixel.</description>
+      <channel>input</channel>
+      <default>true</default>
+    </boolean>
+    <float>
+      <name>compactness</name>
+      <label>Compactness</label>
+      <longflag>compactness</longflag>
+      <description>Balances color proximity and space proximity. Higher values give more weight to space proximity, making superpixel shapes more square/cubic.</description>
+      <channel>input</channel>
+      <default>1</default>
+    </float>
+    <float>
+      <name>sigma</name>
+      <label>Sigma</label>
+      <longflag>sigma</longflag>
+      <description>Width of Gaussian smoothing kernel for pre-processing for each dimension of the image. The same sigma is applied to each dimension in case of a scalar value. Zero means no smoothing.</description>
+      <channel>input</channel>
+      <default>0</default>
+    </float>
+  </parameters>
+  <parameters>
+    <label>Default Annotation Category</label>
+    <description>Specify a default category for the output pixelmap annotation. Configure the default color of superpixels.</description>
+    <string>
+      <name>default_category_label</name>
+      <label>Default Category Label</label>
+      <longflag>default_category_label</longflag>
+      <description>Default category label used for superpixels</description>
+      <default>default</default>
+    </string>
+    <string>
+      <name>default_fillColor</name>
+      <label>Fill Color</label>
+      <longflag>default_fillColor</longflag>
+      <description>Default color for superpixels</description>
+      <default>rgba(0, 0, 0, 0)</default>
+    </string>
+    <string>
+      <name>default_strokeColor</name>
+      <label>Stroke Color</label>
+      <longflag>default_strokeColor</longflag>
+      <description>If creating boundary superpixels, this is the default color of the boundaries of the superpixels</description>
+      <default>rgba(0, 0, 0, 1)</default>
+    </string>
+  </parameters>
+</executable>

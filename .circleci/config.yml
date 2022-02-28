@@ -172,6 +172,7 @@ jobs:
             docker run --rm dsarchive/histomicstk:latest PositivePixelCount --xml
             docker run --rm dsarchive/histomicstk:latest SeparateStainsMacenkoPCA --xml
             docker run --rm dsarchive/histomicstk:latest SeparateStainsXuSnmf --xml
+            docker run --rm dsarchive/histomicstk:latest SuperpixelSegmentation --xml
       - run:
           name: Archive docker images
           command: |

@@ -29,5 +29,9 @@
 
   "PositivePixelCount": {
     "type"    : "python"
+  },
+
+  "SuperpixelSegmentation": {
+    "type"    : "python"
   }
 }
