@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import importlib
 import os
 import sys
 
@@ -63,7 +64,6 @@ setup(
         'scikit-learn>=0.18.1',
         'imageio>=2.3.0',
         'shapely[vectorized]',
-        'opencv-python-headless',
         'sqlalchemy',
         'matplotlib',
         'pyvips',
@@ -78,7 +78,12 @@ setup(
         'girder-slicer-cli-web',
         # cli
         'ctk-cli',
-    ],
+    ] + (
+        # Only require opencv if it isn't installed.  This can allow alternate
+        # forms to be in the environment (such as a headed form) without
+        # causing conflicts
+        ['opencv-python-headless'] if not importlib.util.find_spec('cv2') else []
+    ),
     license='Apache Software License 2.0',
     keywords='histomicstk',
     classifiers=[
