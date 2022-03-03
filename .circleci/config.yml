@@ -201,7 +201,7 @@ jobs:
               echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
               docker push dsarchive/histomicstk:latest
               if [[ $CIRCLE_TAG =~ ^v.*$ ]]; then
-              docker tag dsarchive/dsa_worker:latest "dsarchive/histomicstk:$CIRCLE_TAG"
+              docker tag dsarchive/histomicstk:latest "dsarchive/histomicstk:$CIRCLE_TAG"
               docker push "dsarchive/histomicstk:$CIRCLE_TAG"
               fi
   wheels:
