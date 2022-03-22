@@ -560,17 +560,17 @@ def parse_slide_annotations_into_tables(
             cfg.annotation_infos.loc[annno, 'element_details'] = cfg.ann[
                 '_elementQuery']['details']
 
-        for cfg.elementidx, cfg.element in enumerate(
-                cfg.ann['annotation']['elements']):
-
-            coords = _get_coords_from_element(copy.deepcopy(cfg.element))
+        for idx, element in enumerate(cfg.ann['annotation']['elements']):
+            cfg.elementidx = idx
+            cfg.element = element
+            coords = _get_coords_from_element(copy.deepcopy(element))
 
             # crop using shapely to desired bounds if needed
             # IMPORTANT: everything till this point needs to be
             # relative to the whole slide image
             if ((cfg.cropping_bounds is None) and
                     (cfg.cropping_polygon_vertices is None)) \
-                    or (cfg.element['type'] == 'point') \
+                    or (element['type'] == 'point') \
                     or (not use_shapely):
                 all_coords = [coords, ]
             else:
@@ -581,9 +581,6 @@ def parse_slide_annotations_into_tables(
                 _add_element_to_final_df(vertices, cfg=cfg)
 
     return cfg.annotation_infos, cfg.element_infos
-
-
-# %%===========================================================================
 
 
 def np_vec_no_jit_iou(bboxes1, bboxes2):
