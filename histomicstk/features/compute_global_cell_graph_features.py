@@ -13,7 +13,7 @@ Props = namedtuple('Props', ['voronoi', 'delaunay', 'mst_branches', 'density'])
 
 def compute_global_cell_graph_features(
         centroids,
-        neighbor_distances=10. * np.arange(1, 6),
+        neighbor_distances=None,
         neighbor_counts=(3, 5, 7),
 ):
     r"""Compute global (i.e., not per-nucleus) features of the nuclei with
@@ -80,6 +80,8 @@ def compute_global_cell_graph_features(
        5th IEEE International Symposium on (pp. 496-499).  IEEE.
 
     """
+    if neighbor_distances is None:
+        neighbor_distances = 10. * np.arange(1, 6)
     return _flatten_to_dataframe(_compute_global_cell_graph_features(
         centroids,
         neighbor_distances,
