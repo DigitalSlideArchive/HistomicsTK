@@ -7,6 +7,7 @@ import numpy
 import pyvips
 import scipy
 import skimage
+
 from histomicstk.cli import utils
 from histomicstk.cli.utils import CLIArgumentParser
 
@@ -79,26 +80,17 @@ def createSuperPixels(opts):  # noqa
             )
             maxValue = numpy.max(segments) + 1
         else:
-            while True:
-                segments = skimage.segmentation.slic(
-                    img,
-                    n_segments=n_segments,
-                    compactness=compactness,
-                    sigma=opts.sigma,
-                    start_label=0,
-                    enforce_connectivity=True,
-                    mask=mask,
-                )
-                # We now have an array that is the same size as the image
-                maxValue = numpy.max(segments) + 1
-                if maxValue >= n_segments / 4:
-                    break
-                print('Adjusting compactness from %g - got %d rather than %d' % (
-                    compactness, maxValue, n_segments))
-                compactness *= 10
-        if compactness != opts.compactness:
-            print('Adjusted compactness to %g - got %d' % (
-                compactness, maxValue))
+            segments = skimage.segmentation.slic(
+                img,
+                n_segments=n_segments,
+                compactness=compactness,
+                sigma=opts.sigma,
+                start_label=0,
+                enforce_connectivity=True,
+                mask=mask,
+            )
+            # We now have an array that is the same size as the image
+            maxValue = numpy.max(segments) + 1
         if overlap:
             # Keep any segment that is at all in the non-overlap region
             core = segments[

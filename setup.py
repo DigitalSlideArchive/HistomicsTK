@@ -58,7 +58,9 @@ setup(
         'nimfa>=1.3.2',
         'numpy>=1.12.1',
         'scipy>=0.19.0',
-        'Pillow>=3.2.0',
+        # Pin Pillow to < 9.1 until a new version of imageio is released that
+        # works with it.
+        'Pillow>=3.2.0,<9.1',
         'pandas>=0.19.2',
         'scikit-image>=0.14.2',
         'scikit-learn>=0.18.1',
