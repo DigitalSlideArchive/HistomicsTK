@@ -4,8 +4,8 @@ from datetime import timedelta
 import large_image
 import numpy as np
 # imported for side effects
-from slicer_cli_web import ctk_cli_adjustment  # noqa 
-from ctk_cli import CLIArgumentParser  # noqa
+from slicer_cli_web import ctk_cli_adjustment  # noqa
+from ctk_cli import CLIArgumentParser  # noqa I004
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.segmentation as htk_seg
@@ -235,6 +235,99 @@ def create_dask_client(args):
     return dask.distributed.Client(scheduler)
 
 
+def get_region_polygons(region):
+    """
+    Convert the region into a list of polygons.
+
+    Params
+    ------
+    region: list
+        4 elements -- left, top, width, height -- or all -1, meaning the whole
+        slide.
+        6 elements -- x,y,z,rx,ry,rz: a rectangle specified by center and
+        radius.
+        8 or more elements -- x,y,x,y,...: a polygon.  The region is the
+        bounding box.
+
+    Returns
+    -------
+    polygons: list
+        A list of lists of x, y tuples.
+    """
+    if len(region) % 2 or len(region) < 4:
+        raise ValueError('region must be 4, 6, or a list of 2n values.')
+    region = [float(v) for v in region]
+    if region == [-1] * 4:
+        return []
+    if len(region) == 6:
+        region = [region[0] - region[3], region[1] - region[4], region[3] * 2, region[4] * 2]
+    if len(region) == 4:
+        region = [
+            region[0], region[1],
+            region[0] + region[2], region[1],
+            region[0] + region[2], region[1] + region[3],
+            region[0], region[1] + region[3],
+        ]
+    polys = [[]]
+    for idx, x in enumerate(region[::2]):
+        y = region[idx * 2 + 1]
+        if x == -1 and y == -1:
+            polys.append([])
+        elif not len(polys[-1]) or (x, y) != tuple(polys[-1][-1]):
+            polys[-1].append((x, y))
+    for poly in polys:
+        if len(poly) and poly[0] == poly[-1]:
+            poly[-1:] = []
+    polys = [poly for poly in polys if len(poly) >= 3]
+    return polys
+
+
+def polygons_to_binary_mask(polygons, x=0, y=0, width=None, height=None):
+    """Convert a set of region polygons to a numpy binary mask.
+
+    Params
+    ------
+    polygons: list
+        A list of lists of x, y tuples.  If None, returns None.
+    x: integer
+        An offset for the mask compared to the polygon coordinates.
+    y: integer
+        An offset for the mask compared to the polygon coordinates.
+    width: integer
+        The width of the mask to return.  None uses the maximum polygon
+        coordinate.
+    height: integer
+        The height of the mask to return.  None uses the maximum polygon
+        coordinate.
+
+    Returns
+    -------
+    mask: numpy.array
+        A 1-bit numpy array where 1 is inside an odd number of polygons.  This
+        can return None if polygons was None.
+    """
+    import PIL.Image
+    import PIL.ImageChops
+    import PIL.ImageDraw
+
+    if polygons is None or not len(polygons):
+        return None
+    if width is None:
+        width = max(pt[0] for poly in polygons for pt in poly) - x
+    if height is None:
+        height = max(pt[1] for poly in polygons for pt in poly) - y
+    full = PIL.Image.new('1', (width, height), 0)
+    for polyidx, poly in enumerate(polygons):
+        mask = PIL.Image.new('1', (width, height), 0)
+        PIL.ImageDraw.Draw(mask).polygon(
+            [(int(pt[0] - x), int(pt[1] - y)) for pt in poly], outline=None, fill=1, width=0)
+        if not polyidx:
+            full = mask
+        else:
+            full = PIL.ImageChops.logical_xor(full, mask)
+    return np.array(full)
+
+
 def get_region_dict(region, maxRegionSize=None, tilesource=None):
     """Return a dict corresponding to region, checking the region size if
     maxRegionSize is provided.
@@ -248,12 +341,17 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
     region: list
         4 elements -- left, top, width, height -- or all -1, meaning the whole
         slide.
+        6 elements -- x,y,z,rx,ry,rz: a rectangle specified by center and
+        radius.
+        8 or more elements -- x,y,x,y,...: a polygon.  The region is the
+        bounding box.
     maxRegionSize: int, optional
-        Maximum size permitted of any single dimension
+        Maximum size permitted of any single dimension.  -1 or None for
+        unlimited.
     tilesource: tilesource, optional
         A `large_image` tilesource (or anything with `.sizeX` and `.sizeY`
         properties) that is used to determine the size of the whole slide if
-        necessary.  Must be provided if `maxRegionSize` is.
+        necessary.  Must be provided if `maxRegionSize` is not None.
 
     Returns
     -------
@@ -263,26 +361,42 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
 
     """
 
-    if len(region) != 4:
-        raise ValueError('Exactly four values required for --region')
+    if len(region) % 2 or len(region) < 4:
+        raise ValueError('region must be 4, 6, or a list of 2n values.')
 
     useWholeImage = region == [-1] * 4
 
-    if maxRegionSize is not None:
+    if len(region) == 6:
+        region = [region[0] - region[3], region[1] - region[4], region[3] * 2, region[4] * 2]
+    if len(region) >= 8:
+        polygons = get_region_polygons(region)
+        minx = min(pt[0] for poly in polygons for pt in poly)
+        maxx = max(pt[0] for poly in polygons for pt in poly)
+        miny = min(pt[1] for poly in polygons for pt in poly)
+        maxy = max(pt[1] for poly in polygons for pt in poly)
+        region = [minx, miny, maxx - minx, maxy - miny]
+
+    if maxRegionSize is not None and maxRegionSize > 0:
         if tilesource is None:
-            raise ValueError('tilesource must be provided if maxRegionSize is')
-        if maxRegionSize != -1:
-            if useWholeImage:
-                size = max(tilesource.sizeX, tilesource.sizeY)
-            else:
-                size = max(region[-2:])
-            if size > maxRegionSize:
-                raise ValueError('Requested region is too large!  '
-                                 'Please see --maxRegionSize')
+            raise ValueError('tilesource must be provided if maxRegionSize is specified')
+        if useWholeImage:
+            size = max(tilesource.sizeX, tilesource.sizeY)
+        else:
+            size = max(region[-2:])
+        if size > maxRegionSize:
+            raise ValueError('Requested region is too large!  '
+                             'Please see --maxRegionSize')
+    # If a tilesource was specified, restrict the region to the image size
+    if not useWholeImage and tilesource:
+        minx = max(0, region[0])
+        maxx = min(tilesource.sizeX, region[0] + region[2])
+        miny = max(0, region[1])
+        maxy = min(tilesource.sizeY, region[1] + region[3])
+        region = [minx, miny, maxx - minx, maxy - miny]
 
     return {} if useWholeImage else dict(
         region=dict(zip(['left', 'top', 'width', 'height'],
-                        region)))
+                        [int(val) for val in region])))
 
 
 def disp_time_hms(seconds):
