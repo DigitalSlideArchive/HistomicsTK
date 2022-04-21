@@ -88,7 +88,7 @@ def main(opts):
                 utils.disp_time_hms(time.time() - tile_start_time),
                 utils.disp_time_hms(time.time() - start_time)))
     print('Combining results, time from start %s' % (utils.disp_time_hms(time.time() - start_time)))
-    stats = ppc._combine(results)
+    stats = ppc._totals_to_stats(ppc._combine(results))
     if sink:
         print('Outputting file, time from start %s' % (
             utils.disp_time_hms(time.time() - start_time)))

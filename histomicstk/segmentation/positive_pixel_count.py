@@ -60,6 +60,7 @@ OutputTotals = namedtuple('OutputTotals', [
     'NumberWeakPositive',
     'NumberPositive',
     'NumberStrongPositive',
+    'NumberTotalPixels',
     'IntensitySumWeakPositive',
     'IntensitySumPositive',
     'IntensitySumStrongPositive',
@@ -69,6 +70,9 @@ Output = namedtuple('Output', OutputTotals._fields + (
     'IntensityAverage',
     'RatioStrongToTotal',
     'IntensityAverageWeakAndPositive',
+    'RatioStrongToPixels',
+    'RatioWeakToPixels',
+    'RatioTotalToPixels',
 ))
 
 
@@ -203,6 +207,8 @@ def _count_image(image, params, mask=None):
         NumberWeakPositive=nw,
         NumberPositive=np_,
         NumberStrongPositive=ns,
+        NumberTotalPixels=(np.count_nonzero(mask) if mask is not None else
+                           image_hsi.shape[0] * image_hsi.shape[1]),
         IntensitySumWeakPositive=iw,
         IntensitySumPositive=ip,
         IntensitySumStrongPositive=is_,
@@ -224,6 +230,9 @@ def _totals_to_stats(total):
             (t.IntensitySumWeakPositive + t.IntensitySumPositive) /
             (t.NumberWeakPositive + t.NumberPositive)
         ) if t.NumberWeakPositive + t.NumberPositive else 0,
+        RatioStrongToPixels=t.NumberStrongPositive / (t.NumberTotalPixels or 1),
+        RatioWeakToPixels=t.NumberWeakPositive / (t.NumberTotalPixels or 1),
+        RatioTotalToPixels=all_positive / (t.NumberTotalPixels or 1),
         **t._asdict()
     )
 
