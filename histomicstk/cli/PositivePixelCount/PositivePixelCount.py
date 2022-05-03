@@ -33,7 +33,7 @@ def main(opts):
     region_polygons = utils.get_region_polygons(opts.region)
     print('region: %r %r' % (tiparams, region_polygons))
     tileSize = 2048
-    useAlpha = bool(region_polygons)
+    useAlpha = len(opts.region) > 6
     # Colorize label image.  Colors from the "coolwarm" color map
     color_map = np.empty((4, 4), dtype=np.uint8)
     color_map[ppc.Labels.NEGATIVE] = 255, 255, 255, 255

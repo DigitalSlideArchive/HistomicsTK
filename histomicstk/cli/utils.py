@@ -320,7 +320,7 @@ def polygons_to_binary_mask(polygons, x=0, y=0, width=None, height=None):
     for polyidx, poly in enumerate(polygons):
         mask = PIL.Image.new('1', (width, height), 0)
         PIL.ImageDraw.Draw(mask).polygon(
-            [(int(pt[0] - x), int(pt[1] - y)) for pt in poly], outline=None, fill=1, width=0)
+            [(int(pt[0] - x), int(pt[1] - y)) for pt in poly], outline=None, fill=1)
         if not polyidx:
             full = mask
         else:
