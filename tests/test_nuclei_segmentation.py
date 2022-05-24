@@ -61,7 +61,7 @@ class TestNucleiSegmentation:
 
         nuclei_channel = htk_cdeconv.find_stain_index(stain_color_map['hematoxylin'], w)
 
-        im_nuclei_stain = im_stains[:, :, nuclei_channel].astype(np.float)
+        im_nuclei_stain = im_stains[:, :, nuclei_channel].astype(float)
 
         # segment nuclei
         im_nuclei_seg_mask = htk_seg.nuclear.detect_nuclei_kofahi(

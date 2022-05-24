@@ -55,7 +55,7 @@ def cdog(im_input, im_mask, sigma_min, sigma_max, num_octave_levels=3):
     from scipy.ndimage.morphology import distance_transform_edt
     from skimage.transform import resize
 
-    im_input = im_input.astype(np.float)
+    im_input = im_input.astype(float)
 
     # generate distance map
     im_dmap = distance_transform_edt(im_mask)

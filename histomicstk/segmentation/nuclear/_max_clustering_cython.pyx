@@ -21,7 +21,7 @@ def _max_clustering_cython(double[:, :] im not None, int[:, :] im_fgnd_mask not 
     cdef long num_pixels = py.shape[0]
 
     # find local maximum of all requested pixels
-    cdef double[:, ::1] local_max_val = np.zeros([sy, sx], dtype=np.float)
+    cdef double[:, ::1] local_max_val = np.zeros([sy, sx], dtype=float)
     cdef long[:, ::1] local_max_ind = np.zeros([sy, sx], dtype=np.int)
     cdef int[:, ::1] peak_found = np.zeros([sy, sx], dtype=np.int32)
     cdef double min_im_val = np.min(im)

@@ -45,7 +45,7 @@ def clog(im_input, im_mask, sigma_min, sigma_max):
     from scipy.ndimage.morphology import distance_transform_edt
 
     # convert intensity image type to float
-    im_input = im_input.astype(np.float)
+    im_input = im_input.astype(float)
 
     # generate distance map
     im_dmap = distance_transform_edt(im_mask)

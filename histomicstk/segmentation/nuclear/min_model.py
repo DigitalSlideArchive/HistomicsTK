@@ -162,7 +162,7 @@ def seed_contours(I, Delta=0.3):  # noqa
                   (I[i, 1:-1] <= I[i, 2:])).nonzero()[0] + 1
 
         # identify transitions - start of intervals of monotonic non-increase
-        dI = np.sign(I[i, 1:].astype(np.float) - I[i, 0:-1].astype(np.float))
+        dI = np.sign(I[i, 1:].astype(float) - I[i, 0:-1].astype(float))
         dI = np.hstack((dI, dI[-1]))
         Transitions = np.nonzero(dI == 1)[0]
         Transitions = np.hstack((Transitions, I.shape[1]-1))
@@ -221,7 +221,7 @@ def seed_contours(I, Delta=0.3):  # noqa
             if(Delta is not None):
                 if np.issubdtype(I.dtype, np.integer):
                     Range = Delta * 255.0
-                elif np.issubdtype(I.dtype, np.float):
+                elif np.issubdtype(I.dtype, float):
                     Range = Delta * 1.0
                 Shallow = (I[i, Maxima] - I[i, Minima] < Range).nonzero()
                 Maxima = np.delete(Maxima, Shallow)
@@ -610,8 +610,8 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         Keep = np.where((Length > 1) & (MaxDepth >= MinDepth))[0]
         Start = Start[Keep]
         Stop = Stop[Keep]
-        iX = [iX[Ind].astype(dtype=np.float) for Ind in Keep]
-        iY = [iY[Ind].astype(dtype=np.float) for Ind in Keep]
+        iX = [iX[Ind].astype(dtype=float) for Ind in Keep]
+        iY = [iY[Ind].astype(dtype=float) for Ind in Keep]
         Depths = [Depths[Ind] for Ind in Keep]
 
         # attempt cutting if more than 1 sequence is found
@@ -684,10 +684,10 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
 
                 # perform cut
                 SplitMask = cut(Mask,
-                                Xcut1[ArgMin[0], ArgMin[1]].astype(np.float),
-                                Ycut1[ArgMin[0], ArgMin[1]].astype(np.float),
-                                Xcut2[ArgMin[0], ArgMin[1]].astype(np.float),
-                                Ycut2[ArgMin[0], ArgMin[1]].astype(np.float))
+                                Xcut1[ArgMin[0], ArgMin[1]].astype(float),
+                                Ycut1[ArgMin[0], ArgMin[1]].astype(float),
+                                Xcut2[ArgMin[0], ArgMin[1]].astype(float),
+                                Ycut2[ArgMin[0], ArgMin[1]].astype(float))
 
                 # re-label cut image
                 SplitLabel = ms.label(SplitMask)[0]

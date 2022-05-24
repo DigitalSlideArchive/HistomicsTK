@@ -190,7 +190,7 @@ class TestCliCommon:
 
             im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
 
-            im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
+            im_nuclei_stain = im_stains[:, :, 0].astype(float)
 
             # segment nuclei
             im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
