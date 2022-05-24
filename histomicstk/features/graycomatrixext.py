@@ -145,7 +145,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
     # scale input intensity image
     im_input = im_input.astype('float')
     im_input -= gray_limits[0]
-    im_input /= np.float(gray_limits[1] - gray_limits[0])
+    im_input /= float(gray_limits[1] - gray_limits[0])
     im_input *= (num_levels - 1)
     im_input = np.round(im_input).astype('int')
 

@@ -46,7 +46,7 @@ def fit_poisson_mixture(im_input, mu=None, tol=0.1):
                         ' type')
 
     # generate a small number for conditioning calculations
-    Small = np.finfo(np.float).eps
+    Small = np.finfo(float).eps
 
     # generate histogram of inputs - assume range is 0, 255 (type uint8)
     H = np.histogram(np.ravel(im_input), bins=256, range=(0, 256))

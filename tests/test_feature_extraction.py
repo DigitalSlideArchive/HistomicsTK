@@ -3,7 +3,6 @@ import os
 import sys
 import tempfile
 
-import numpy as np
 import packaging.version
 import pandas as pd
 import skimage.io
@@ -90,13 +89,13 @@ class TestFeatureExtraction:
         nuclei_channel = htk_cdeconv.find_stain_index(
             htk_cdeconv.stain_color_map['hematoxylin'], w)
 
-        im_nuclei_stain = im_stains[:, :, nuclei_channel].astype(np.float)
+        im_nuclei_stain = im_stains[:, :, nuclei_channel].astype(float)
 
         cytoplasm_channel = htk_cdeconv.find_stain_index(
             htk_cdeconv.stain_color_map['eosin'], w)
 
         im_cytoplasm_stain = im_stains[:, :, cytoplasm_channel].astype(
-            np.float)
+            float)
 
         # segment nuclei
         im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(

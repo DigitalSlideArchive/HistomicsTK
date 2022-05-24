@@ -44,7 +44,7 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
     im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
 
-    im_nuclei_stain = im_stains[:, :, 0].astype(np.float)
+    im_nuclei_stain = im_stains[:, :, 0].astype(float)
 
     # segment nuclear foreground
     im_nuclei_fgnd_mask = im_nuclei_stain < args.foreground_threshold
