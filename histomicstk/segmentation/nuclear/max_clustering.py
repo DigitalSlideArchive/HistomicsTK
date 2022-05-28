@@ -74,7 +74,7 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
     # compute object properties
     obj_props = skimage.measure.regionprops(im_label, im_response_nmzd)
 
-    obj_props = [prop for prop in obj_props if np.isfinite(prop.weighted_centroid).all()]
+    obj_props = [prop for prop in obj_props if np.isfinite(prop['centroid_weighted']).all()]
 
     num_labels = len(obj_props)
 
@@ -83,7 +83,7 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
 
     # extract object seeds
     seeds = np.array(
-        [obj_props[i].weighted_centroid for i in range(num_labels)])
+        [obj_props[i]['centroid_weighted'] for i in range(num_labels)])
     seeds = np.round(seeds).astype(np.int)
 
     # fix seeds outside the object region - happens for non-convex objects
