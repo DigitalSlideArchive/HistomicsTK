@@ -77,7 +77,7 @@ def color_deconvolution(im_rgb, w, I_0=None):
     wc = normalize(wc)
 
     # invert stain matrix
-    Q = np.linalg.inv(wc)
+    Q = np.linalg.pinv(wc)
 
     # transform 3D input image to 2D RGB matrix format
     m = utils.convert_image_to_matrix(im_rgb)[:3]
