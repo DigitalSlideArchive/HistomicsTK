@@ -243,7 +243,10 @@ class TestFeatureExtraction:
                 index=False)
 
         test_file = 'Easy1_nuclei_gradient_features.csv'
-        if packaging.version.parse(skimage.__version__) >= packaging.version.parse('0.19'):
+        if (
+            packaging.version.parse(skimage.__version__) >= packaging.version.parse('0.19') and
+            packaging.version.parse(skimage.__version__) < packaging.version.parse('0.19.3')
+        ):
             test_file = 'Easy1_nuclei_gradient_features_v2.csv'
         fdata_gtruth = pd.read_csv(
             utilities.getTestFilePath(test_file),
