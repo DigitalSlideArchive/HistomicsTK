@@ -279,6 +279,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
     xy_IDM = 1. / (1 + np.square(x - y))
 
     e = 0.00001  # small positive constant to avoid log 0
+    eps = np.finfo(float).eps  # small constant to avoid div / 0
 
     for i in range(numLabels):
 
@@ -318,8 +319,11 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             meanx = np.dot(n_Minus, px)
             variance = np.dot(px, np.square(n_Minus)) - np.square(meanx)
             nGLCMr = np.ravel(nGLCM)
-            ldata.at[r, 'Haralick.Correlation'] = \
-                (np.dot(np.ravel(xy), nGLCMr) - np.square(meanx)) / variance
+
+            har_corr = (np.dot(np.ravel(xy), nGLCMr) - np.square(meanx)) /\
+                max(eps, variance)
+            ldata.at[r, 'Haralick.Correlation'] = np.clip(har_corr,
+                                                          a_min=-1, a_max=1)
 
             # computes sum of squares : variance
             ldata.at[r, 'Haralick.SumOfSquares'] = variance
@@ -366,7 +370,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
 
             # computes information measures of correlation
             ldata.at[r, 'Haralick.IMC2'] = \
-                np.sqrt(1 - np.exp(-2.0*(HXY2-HXY)))
+                np.sqrt(max(0, 1 - np.exp(-2.0*(HXY2-HXY))))
 
         fdata.values[i, ::2] = np.mean(ldata.values, axis=0)
         fdata.values[i, 1::2] = np.ptp(ldata.values, axis=0)
