@@ -8,7 +8,7 @@ from .graycomatrixext import (_default_num_levels, _default_offsets,
 
 def compute_haralick_features(im_label, im_intensity, offsets=None,
                               num_levels=None, gray_limits=None, rprops=None):
-    r"""
+    """
     Calculates 26 Haralick texture features for each object in the given label
     mask.
 
