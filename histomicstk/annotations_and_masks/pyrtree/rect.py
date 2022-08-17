@@ -180,5 +180,5 @@ def union_all(kids):
     cur = NullRect
     for k in kids:
         cur = cur.union(k.rect)
-    assert(not cur.swapped_x)
+    assert not cur.swapped_x
     return cur

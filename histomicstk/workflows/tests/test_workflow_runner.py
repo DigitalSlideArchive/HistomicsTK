@@ -71,9 +71,9 @@ class TestWorkflows:
         for i in range(2):
             slide_info = next(si)
             if i == 0:
-                assert(all(
+                assert all(
                     [k in slide_info.keys() for k in
-                     ('name', '_id', 'levels', 'magnification')]))
+                     ('name', '_id', 'levels', 'magnification')])
 
     def test_runner_using_annotation_style_update(self):
         """Test workflow runner for cellularity detection."""

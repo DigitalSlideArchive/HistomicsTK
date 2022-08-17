@@ -53,7 +53,7 @@ def fit_poisson_mixture(im_input, mu=None, tol=0.1):
     X = H[1]
     H = H[0].astype('float') / H[0].sum()
 
-    if(mu is None):
+    if mu is None:
         mu = np.dot(X[0: -1], H)
 
     # calculate cumulative sum along histogram counts

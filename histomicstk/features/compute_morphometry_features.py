@@ -175,7 +175,7 @@ def _fractal_dimension(Z):
 
     """
     # Only for 2d binary image
-    assert(len(Z.shape) == 2)
+    assert len(Z.shape) == 2
     Z = Z > 0
 
     # From https://github.com/rougier/numpy-100 (#87)
