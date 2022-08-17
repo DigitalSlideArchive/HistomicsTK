@@ -79,7 +79,7 @@ class RTree:
     def insert(self, o, orect):
         """Placeholder."""
         self.cursor.insert(o, orect)
-        assert(self.cursor.index == 0)
+        assert self.cursor.index == 0
 
     def query_rect(self, r):
         """Placeholder."""
@@ -117,10 +117,10 @@ class _NodeCursor:
         """Placeholder."""
         rect = union_all([c for c in children])
         # nr = Rect(rect.x,rect.y,rect.xx,rect.yy)
-        assert(not rect.swapped_x)
+        assert not rect.swapped_x
         nc = _NodeCursor.create(rooto, rect)
         nc._set_children(children)
-        assert(not nc.is_leaf())
+        assert not nc.is_leaf()
         return nc
 
     @classmethod
@@ -136,7 +136,7 @@ class _NodeCursor:
         rooto.leaf_pool.append(leaf_obj)
         res._save_back()
         res._become(idx)
-        assert(res.is_leaf())
+        assert res.is_leaf()
         return res
 
     __slots__ = (
@@ -489,7 +489,7 @@ def k_means_cluster(root, k, nodes):
                 print("Nodes: %d, centers: %s" % (
                     len(ns), repr(cluster_centers)))
 
-            assert(len(c) > 0)
+            assert len(c) > 0
 
         new_cluster_centers = [center_of_gravity(c) for c in clusters]
         if new_cluster_centers == cluster_centers:

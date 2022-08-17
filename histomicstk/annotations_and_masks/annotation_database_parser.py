@@ -324,7 +324,7 @@ def dump_annotations_locally(
 
     """
     callback_kwargs = callback_kwargs or {}
-    assert(save_json or save_sqlite), "must save results somehow!"
+    assert save_json or save_sqlite, "must save results somehow!"
     monitor = os.path.basename(local)
 
     # get folder info

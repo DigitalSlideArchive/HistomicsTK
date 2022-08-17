@@ -100,7 +100,7 @@ def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
         Trajectory[0, 1] = y
 
         # track while angle defined by successive steps is < np.pi / 2
-        while(phi < np.pi / 2):
+        while phi < np.pi / 2:
 
             # calculate step
             xStep = round_float(dx[Trajectory[points-1, 1],
