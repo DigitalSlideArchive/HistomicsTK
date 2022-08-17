@@ -28,6 +28,10 @@ def createSuperPixels(opts):  # noqa
     tiparams = {}
     tiparams = utils.get_region_dict(opts.roi, None, ts)
 
+    scale = 1
+    if opts.magnification:
+        tiparams['scale'] = {'magnification': opts.magnification}
+
     print('>> Generating superpixels')
     if opts.slic_zero:
         print('>> Using SLIC Zero for segmentation')
@@ -41,8 +45,14 @@ def createSuperPixels(opts):  # noqa
             tile['tile_position']['position'], tile['iterator_range']['position'],
             tile['width'], tile['height'],
             found))
+        if meta['magnification'] and tile['magnification']:
+            scale = meta['magnification'] / tile['magnification']
         x0 = tiparams.get('region', {}).get('left', 0)
         y0 = tiparams.get('region', {}).get('top', 0)
+        # tx0 = tile['x'] - x0
+        # ty0 = tile['y'] - y0
+        tx0 = int((tile['gx'] - x0) / scale)
+        ty0 = int((tile['gy'] - y0) / scale)
         img = tile['tile']
         compactness = opts.compactness
         n_pixels = tile['width'] * tile['height']
@@ -50,15 +60,13 @@ def createSuperPixels(opts):  # noqa
         if overlap:
             mask = numpy.ones(img.shape[:2])
             for y, simg in strips:
-                if (y < tile['y'] - y0 + tile['height'] and
-                        y + simg.height > tile['y'] - y0 and
-                        simg.width > tile['x'] - x0):
-                    suby = max(0, y - (tile['y'] - y0))
+                if (y < ty0 + tile['height'] and y + simg.height > ty0 and simg.width > tx0):
+                    suby = max(0, y - ty0)
                     subimg = simg.crop(
-                        tile['x'] - x0,
-                        max(0, tile['y'] - y0 - y),
+                        tx0,
+                        max(0, ty0 - y),
                         min(tile['width'], simg.width),
-                        min(tile['height'], simg.height - max(0, tile['y'] - y0 - y)))
+                        min(tile['height'], simg.height - max(0, ty0 - y)))
                     # Our mask is true when a pixel has not been set
                     submask = numpy.ndarray(
                         buffer=subimg[3].write_to_memory(),
@@ -145,7 +153,7 @@ def createSuperPixels(opts):  # noqa
         vimgTemp = pyvips.Image.new_temp_file('%s.v')
         vimg.write(vimgTemp)
         vimg = vimgTemp
-        x = tile['x'] - x0
+        x = tx0
         ty = tile['tile_position']['region_y']
         while len(strips) <= ty:
             strips.append(None)
@@ -154,14 +162,14 @@ def createSuperPixels(opts):  # noqa
                 tiparams.get('region', {}).get('width', meta['sizeX']),
                 vimg.height, bands=vimg.bands)
             strip = strip.copy(interpretation=pyvips.Interpretation.RGB)
-            strips[ty] = [tile['y'] - y0, strip]
+            strips[ty] = [ty0, strip]
         strips[ty][1] = strips[ty][1].composite([vimg], pyvips.BlendMode.OVER, x=int(x), y=0)
     print('>> Found %d superpixels' % found)
     if found > 256 ** 3:
         print('Too many superpixels')
     img = pyvips.Image.black(
-        tiparams.get('region', {}).get('width', meta['sizeX']),
-        tiparams.get('region', {}).get('height', meta['sizeY']),
+        tiparams.get('region', {}).get('width', meta['sizeX']) / scale,
+        tiparams.get('region', {}).get('height', meta['sizeY']) / scale,
         bands=strips[0][1].bands)
     img = img.copy(interpretation=pyvips.Interpretation.RGB)
     for stripidx in range(len(strips)):
@@ -205,8 +213,9 @@ def createSuperPixels(opts):  # noqa
                 'type': 'pixelmap',
                 'girderId': 'outputImageFile',
                 'transform': {
-                    'xoffset': region_dict.get('region', {}).get('left', 0),
-                    'yoffset': region_dict.get('region', {}).get('top', 0),
+                    'xoffset': region_dict.get('region', {}).get('left', 0) / scale,
+                    'yoffset': region_dict.get('region', {}).get('top', 0) / scale,
+                    'matrix': [[scale, 0], [0, scale]],
                 },
                 'values': [0] * found,
                 'categories': categories,

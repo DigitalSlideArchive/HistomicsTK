@@ -56,6 +56,14 @@
        <channel>input</channel>
        <default>50</default>
     </integer>
+    <float>
+      <name>magnification</name>
+      <label>Magnification</label>
+      <longflag>magnification</longflag>
+      <description>If specified, the magnification that should be used for the superpixels.  If 0, the base magnfication is used</description>
+      <channel>input</channel>
+      <default>0</default>
+    </float>
     <boolean>
       <name>overlap</name>
       <label>Overlap</label>
