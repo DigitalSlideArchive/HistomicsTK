@@ -170,7 +170,7 @@ def seed_contours(I, Delta=0.3):  # noqa
         # define min/max neighbor pairs
         MinPair = []
         MaxPair = []
-        if(Minima.size > 0) & (Maxima.size > 0):
+        if (Minima.size > 0) and (Maxima.size > 0):
 
             # initialize initial positions of min/max & transition indices
             MinPos = 0
@@ -195,7 +195,7 @@ def seed_contours(I, Delta=0.3):  # noqa
                         MinPair.append(Minima[MinPos])
                         MaxPair.append(Maxima[MaxPos])
                         MinPos += 1
-                        if(MinPos == Minima.size):
+                        if MinPos == Minima.size:
                             break
 
                     # increment maxima
@@ -218,7 +218,7 @@ def seed_contours(I, Delta=0.3):  # noqa
                 continue
 
             # remove pairs that do not have sufficient intensity transitions
-            if(Delta is not None):
+            if Delta is not None:
                 if np.issubdtype(I.dtype, np.integer):
                     Range = Delta * 255.0
                 elif np.issubdtype(I.dtype, float):
@@ -238,7 +238,7 @@ def seed_contours(I, Delta=0.3):  # noqa
                     Maxima[j]+1
 
             # capture min, max values and add to list with seed coordinates
-            if(Maxima.size > 0):
+            if Maxima.size > 0:
                 X.extend(MinGrad)
                 Y.extend(i * np.ones(Maxima.size))
                 Min.extend(I[i, Minima])
@@ -575,7 +575,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         Linear = np.arange(X.size)
 
         # rotate boundary counter-clockwise until start position is on hull
-        while(D[0] != 0):
+        while D[0] != 0:
             X = np.roll(X, -1)
             Y = np.roll(Y, -1)
             D = np.roll(D, -1)
@@ -585,7 +585,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         Concave = (D > 0).astype(np.int)
         Start = np.where((Concave[1:] - Concave[0:-1]) == 1)[0]
         Stop = np.where((Concave[1:] - Concave[0:-1]) == -1)[0] + 1
-        if(Stop.size == Start.size - 1):
+        if Stop.size == Start.size - 1:
             Stop = np.append(Stop, 0)
 
         # extract depth profiles, indices, distances for each run
@@ -595,7 +595,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         Length = np.zeros(Start.size)
         MaxDepth = np.zeros(Start.size)
         for j in np.arange(Start.size):
-            if(Start[j] < Stop[j]):
+            if Start[j] < Stop[j]:
                 iX.append(X[Start[j]:Stop[j]+1])
                 iY.append(Y[Start[j]:Stop[j]+1])
                 Depths.append(D[Start[j]:Stop[j]+1])
@@ -811,7 +811,7 @@ def cut(Mask, x1, y1, x2, y2):
     Cut = Mask.copy()
 
     # calculate angle of line
-    if(x1 < x2):
+    if x1 < x2:
         theta = np.arctan2(y2-y1, x2-x1)
     else:
         theta = np.arctan2(y1-y2, x1-x2)
@@ -829,7 +829,7 @@ def cut(Mask, x1, y1, x2, y2):
     rotated = R.dot(np.vstack((x, y)))
 
     # translate
-    if(x1 < x2):
+    if x1 < x2:
         xr = rotated[0, :] + x1
         yr = rotated[1, :] + y1
     else:

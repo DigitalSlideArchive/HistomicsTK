@@ -119,7 +119,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
         gray_limits = _default_gray_limits(im_input)
 
-    assert(len(gray_limits) == 2 and gray_limits[0] < gray_limits[1])
+    assert len(gray_limits) == 2 and gray_limits[0] < gray_limits[1]
 
     # num_levels
     if num_levels is None:
@@ -219,7 +219,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
 def _default_gray_limits(im_input):
 
-    assert(isinstance(im_input, np.ndarray))
+    assert isinstance(im_input, np.ndarray)
 
     if np.issubdtype(im_input.dtype, np.bool_):
 
@@ -242,7 +242,7 @@ def _default_gray_limits(im_input):
 
 def _default_num_levels(im_input):
 
-    assert(isinstance(im_input, np.ndarray))
+    assert isinstance(im_input, np.ndarray)
 
     if np.issubdtype(im_input.dtype, np.bool_):
 

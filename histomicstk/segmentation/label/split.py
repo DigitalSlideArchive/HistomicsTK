@@ -66,7 +66,7 @@ def split(im_label, conn=8):
         L, Count = ms.label(Template == i, Kernel)
 
         # relabel if necessary
-        if(Count > 1):
+        if Count > 1:
             Template[L == 1] = i
             for i in np.arange(2, Count+1):
                 Template[L == i] = Total + 1
