@@ -16,7 +16,6 @@ def createSuperPixels(opts):  # noqa
     averageSize = opts.superpixelSize ** 2
     overlap = opts.superpixelSize * 4 * 2 if opts.overlap else 0
     tileSize = opts.tileSize + overlap
-    boundaries = opts.boundaries
 
     print('>> Reading input image')
     print(opts.inputImageFile)
@@ -25,6 +24,7 @@ def createSuperPixels(opts):  # noqa
     meta = ts.getMetadata()
     found = 0
     strips = []
+    bboxes = []
     tiparams = {}
     tiparams = utils.get_region_dict(opts.roi, None, ts)
 
@@ -54,7 +54,6 @@ def createSuperPixels(opts):  # noqa
         tx0 = int((tile['gx'] - x0) / scale)
         ty0 = int((tile['gy'] - y0) / scale)
         img = tile['tile']
-        compactness = opts.compactness
         n_pixels = tile['width'] * tile['height']
         mask = None
         if overlap:
@@ -75,30 +74,18 @@ def createSuperPixels(opts):  # noqa
                     mask[suby:suby + submask.shape[0], :submask.shape[1]] *= submask
             n_pixels = numpy.count_nonzero(mask)
         n_segments = math.ceil(n_pixels / averageSize)
-        if opts.slic_zero:
-            segments = skimage.segmentation.slic(
-                img,
-                n_segments=n_segments,
-                slic_zero=True,
-                compactness=opts.compactness,
-                sigma=opts.sigma,
-                start_label=0,
-                enforce_connectivity=True,
-                mask=mask,
-            )
-            maxValue = numpy.max(segments) + 1
-        else:
-            segments = skimage.segmentation.slic(
-                img,
-                n_segments=n_segments,
-                compactness=compactness,
-                sigma=opts.sigma,
-                start_label=0,
-                enforce_connectivity=True,
-                mask=mask,
-            )
-            # We now have an array that is the same size as the image
-            maxValue = numpy.max(segments) + 1
+        segments = skimage.segmentation.slic(
+            img,
+            n_segments=n_segments,
+            slic_zero=bool(opts.slic_zero),
+            compactness=opts.compactness,
+            sigma=opts.sigma,
+            start_label=0,
+            enforce_connectivity=True,
+            mask=mask,
+        )
+        # We now have an array that is the same size as the image
+        maxValue = numpy.max(segments) + 1
         if overlap:
             # Keep any segment that is at all in the non-overlap region
             core = segments[
@@ -119,7 +106,19 @@ def createSuperPixels(opts):  # noqa
             maxValue = len(usedIndices)
             segments = usedLut[segments]
             mask *= (segments != -1)
-        if boundaries:
+        if opts.bounding:
+            regions = skimage.measure.regionprops(1 + segments)
+            for pidx, props in enumerate(regions):
+                label = props.label - 1 + found // (1 if not opts.boundaries else 2)
+                by0, bx0, by1, bx1 = props.bbox
+                if len(bboxes) < label + 1:
+                    bboxes += [None] * ((label + 1) - len(bboxes))
+                bboxes[label] = (
+                    ((bx0 + bx1) / 2 + tx0) * scale + x0,
+                    ((by0 + by1) / 2 + ty0) * scale + y0,
+                    (bx1 - bx0) * scale,
+                    (by1 - by0) * scale)
+        if opts.boundaries:
             segments *= 2
             maxValue *= 2
             edges = (scipy.ndimage.sobel(segments, axis=0) != 0) | (
@@ -222,6 +221,23 @@ def createSuperPixels(opts):  # noqa
                 'boundaries': opts.boundaries,
             }],
         }
+        if len(bboxes) and all(bbox is not None for bbox in bboxes):
+            bboxannotation = {
+                'name': '%s bounding boxes' % os.path.splitext(
+                    os.path.basename(opts.outputAnnotationFile))[0],
+                'description': 'Used params %r' % vars(opts),
+                'elements': [{
+                    'type': 'rectangle',
+                    'center': [bcx, bcy, 0],
+                    'width': bw,
+                    'height': bh,
+                    'rotation': 0,
+                    'label': {'value': 'Region %d' % bidx},
+                    'fillColor': 'rgba(0,0,0,0)',
+                    'lineColor': opts.default_strokeColor,
+                } for bidx, (bcx, bcy, bw, bh) in enumerate(bboxes)],
+            }
+            annotation = [annotation, bboxannotation]
         with open(opts.outputAnnotationFile, 'w') as annotation_file:
             json.dump(annotation, annotation_file, indent=2, sort_keys=False)
 

@@ -81,6 +81,14 @@
       <default>true</default>
     </boolean>
     <boolean>
+      <name>bounding</name>
+      <label>Bounding Boxes</label>
+      <longflag>bounding</longflag>
+      <description>If specified, output an annotation with the bounding box of each superpixel.</description>
+      <channel>input</channel>
+      <default>false</default>
+    </boolean>
+    <boolean>
       <name>slic_zero</name>
       <label>SLIC0</label>
       <longflag>slic_zero</longflag>
