@@ -80,14 +80,18 @@
       <channel>input</channel>
       <default>true</default>
     </boolean>
-    <boolean>
+    <string-enumeration>
       <name>bounding</name>
       <label>Bounding Boxes</label>
       <longflag>bounding</longflag>
-      <description>If specified, output an annotation with the bounding box of each superpixel.</description>
+      <description>If specified, output an annotation with the bounding box of each superpixel.  Internal adds a user.bbox field as a single array to the superpixel annotation with the base image coordinates left,top,right,bottom for each superpixel.</description>
       <channel>input</channel>
-      <default>false</default>
-    </boolean>
+      <default>None</default>
+      <element>None</element>
+      <element>Separate</element>
+      <element>Internal</element>
+      <element>All</element>
+    </string-enumeration>
     <boolean>
       <name>slic_zero</name>
       <label>SLIC0</label>
