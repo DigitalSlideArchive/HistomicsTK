@@ -25,6 +25,7 @@ def createSuperPixels(opts):  # noqa
     found = 0
     strips = []
     bboxes = []
+    bboxesUser = []
     tiparams = {}
     tiparams = utils.get_region_dict(opts.roi, None, ts)
 
@@ -106,18 +107,21 @@ def createSuperPixels(opts):  # noqa
             maxValue = len(usedIndices)
             segments = usedLut[segments]
             mask *= (segments != -1)
-        if opts.bounding:
+        if str(opts.bounding).lower() not in {'', 'none'}:
             regions = skimage.measure.regionprops(1 + segments)
             for pidx, props in enumerate(regions):
-                label = props.label - 1 + found // (1 if not opts.boundaries else 2)
                 by0, bx0, by1, bx1 = props.bbox
-                if len(bboxes) < label + 1:
-                    bboxes += [None] * ((label + 1) - len(bboxes))
-                bboxes[label] = (
+                bboxes.append((
                     ((bx0 + bx1) / 2 + tx0) * scale + x0,
                     ((by0 + by1) / 2 + ty0) * scale + y0,
                     (bx1 - bx0) * scale,
-                    (by1 - by0) * scale)
+                    (by1 - by0) * scale))
+                bboxesUser.extend([
+                    bx0 * scale + x0,
+                    by0 * scale + y0,
+                    bx1 * scale + x0,
+                    by1 * scale + y0,
+                ])
         if opts.boundaries:
             segments *= 2
             maxValue *= 2
@@ -221,7 +225,9 @@ def createSuperPixels(opts):  # noqa
                 'boundaries': opts.boundaries,
             }],
         }
-        if len(bboxes) and all(bbox is not None for bbox in bboxes):
+        if len(bboxes) and str(opts.bounding).lower() != 'separate':
+            annotation['elements'][0]['user'] = {'bbox': bboxesUser}
+        if len(bboxes) and str(opts.bounding).lower() != 'internal':
             bboxannotation = {
                 'name': '%s bounding boxes' % os.path.splitext(
                     os.path.basename(opts.outputAnnotationFile))[0],
