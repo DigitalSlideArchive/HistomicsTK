@@ -117,10 +117,10 @@ def createSuperPixels(opts):  # noqa
                     (bx1 - bx0) * scale,
                     (by1 - by0) * scale))
                 bboxesUser.extend([
-                    bx0 * scale + x0,
-                    by0 * scale + y0,
-                    bx1 * scale + x0,
-                    by1 * scale + y0,
+                    (bx0 + tx0) * scale + x0,
+                    (by0 + ty0) * scale + y0,
+                    (bx1 + tx0) * scale + x0,
+                    (by1 + ty0) * scale + y0,
                 ])
         if opts.boundaries:
             segments *= 2
@@ -187,7 +187,10 @@ def createSuperPixels(opts):  # noqa
         json.dumps(dict(vars(opts), indexCount=found)))
     img.write_to_file(
         opts.outputImageFile, tile=True, tile_width=256, tile_height=256, pyramid=True,
-        region_shrink='nearest',
+        region_shrink=pyvips.RegionShrink.NEAREST,
+        # We'd perfer max, but to do so we need to compute max of the
+        # superpixel, not the faux-color it is mapped to.
+        # region_shrink=pyvips.RegionShrink.MAX,
         bigtiff=True, compression='lzw', predictor='horizontal')
 
     if opts.outputAnnotationFile:
@@ -199,15 +202,7 @@ def createSuperPixels(opts):  # noqa
                 'strokeColor': opts.default_strokeColor,
             },
         ]
-        if opts.slic_zero:
-            annotation_name = '%s - SLIC 0' % (
-                os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0])
-        else:
-            annotation_name = '%s - compactness: %g - sigma: %g' % (
-                os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0],
-                opts.compactness,
-                opts.sigma,
-            )
+        annotation_name = os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0]
         region_dict = utils.get_region_dict(opts.roi, None, ts)
         annotation = {
             'name': annotation_name,
