@@ -215,7 +215,7 @@ def createSuperPixels(opts):  # noqa
                     'yoffset': region_dict.get('region', {}).get('top', 0) / scale,
                     'matrix': [[scale, 0], [0, scale]],
                 },
-                'values': [0] * found,
+                'values': [0] * (found // (2 if opts.boundaries else 1)),
                 'categories': categories,
                 'boundaries': opts.boundaries,
             }],
