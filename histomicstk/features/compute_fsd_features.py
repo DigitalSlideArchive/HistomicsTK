@@ -80,10 +80,10 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
         )
         # check length of boundaries
         if len(Bounds) < 2:
-            fdata.at[i, :] = 0
+            fdata.iloc[i, :] = 0
         else:
             # compute fourier descriptors
-            fdata.at[i, :] = _FSDs(Bounds[:, 0], Bounds[:, 1], K, Interval)
+            fdata.iloc[i, :] = _FSDs(Bounds[:, 0], Bounds[:, 1], K, Interval)
 
     return fdata
 
