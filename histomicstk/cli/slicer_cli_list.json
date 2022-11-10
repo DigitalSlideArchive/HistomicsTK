@@ -1,47 +1,37 @@
 {
   "ColorDeconvolution": {
-    "type": "python"
+    "type"    : "python"
   },
 
   "SeparateStainsXuSnmf": {
-    "type": "python"
+    "type"    : "python"
   },
 
   "NucleiDetection": {
-    "type": "python",
-    "resources": {
-        "gpu": true
-    },
-    "lifecycle": {
-        "max-tasks": null,
-        "max-idle": 600
-    },
-    "docker-params": {
-        "ipc_mode": "host"
-    }
+    "type"    : "python"
   },
 
   "ComputeNucleiFeatures": {
-    "type": "python"
+    "type"    : "python"
   },
 
   "NucleiClassification": {
-    "type": "python"
+    "type"    : "python"
   },
 
   "BackgroundIntensity": {
-    "type": "python"
+    "type"    : "python"
   },
 
   "SeparateStainsMacenkoPCA": {
-    "type": "python"
+    "type"    : "python"
   },
 
   "PositivePixelCount": {
-    "type": "python"
+    "type"    : "python"
   },
 
   "SuperpixelSegmentation": {
-    "type": "python"
+    "type"    : "python"
   }
 }
