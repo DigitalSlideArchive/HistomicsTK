@@ -115,7 +115,7 @@ def main(opts):
         }],
     }
     with open(opts.outputAnnotationFile, 'w') as annotation_file:
-        json.dump(annotation, annotation_file, indent=2, sort_keys=False)
+        json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
     print('Finished time %s' % (utils.disp_time_hms(time.time() - start_time)))
 
 

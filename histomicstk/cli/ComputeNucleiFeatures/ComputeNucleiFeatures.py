@@ -320,7 +320,7 @@ def main(args):
     }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
-        json.dump(annotation, annotation_file, indent=2, sort_keys=False)
+        json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
 
     #
     # Create CSV Feature file

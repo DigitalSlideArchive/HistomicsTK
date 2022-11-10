@@ -96,7 +96,7 @@ def main(args):
             annotation[1:2] = []
 
         with open(args.outputAnnotationFile, 'w') as annotation_file:
-            json.dump(annotation, annotation_file, indent=2, sort_keys=False)
+            json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
 
 
 if __name__ == "__main__":
