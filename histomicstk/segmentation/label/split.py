@@ -38,9 +38,9 @@ def split(im_label, conn=8):
 
     # define kernel for neighborhood
     if conn == 8:
-        Kernel = np.ones((3, 3), dtype=np.bool)
+        Kernel = np.ones((3, 3), dtype=bool)
     elif conn == 4:
-        Kernel = np.zeros((3, 3), dtype=np.bool)
+        Kernel = np.zeros((3, 3), dtype=bool)
         Kernel[1, :] = True
         Kernel[:, 1] = True
     else:

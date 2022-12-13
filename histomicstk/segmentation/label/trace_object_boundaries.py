@@ -88,7 +88,7 @@ def trace_object_boundaries(im_label,
                 im_label[
                     min_row:max_row, min_col:max_col
                 ] == rprops[i].label
-            ).astype(np.bool)
+            ).astype(bool)
 
             mrows = max_row - min_row + 2
             mcols = max_col - min_col + 2
@@ -98,7 +98,7 @@ def trace_object_boundaries(im_label,
 
             by, bx = _trace_object_boundaries_cython(
                 np.ascontiguousarray(
-                    mask, dtype=np.int), conn, x_start, y_start, max_length
+                    mask, dtype=int), conn, x_start, y_start, max_length
             )
 
             bx = bx + min_row - 1
@@ -130,7 +130,7 @@ def trace_object_boundaries(im_label,
 
         by, bx = _trace_object_boundaries_cython(
             np.ascontiguousarray(
-                im_label, dtype=np.int), conn, x_start, y_start, max_length
+                im_label, dtype=int), conn, x_start, y_start, max_length
         )
 
         if simplify_colinear_spurs:

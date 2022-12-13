@@ -245,6 +245,9 @@ class Polygon_merger_v2(Base_HTK_Class):
         """Add merged polygons to self.new_contours df (Internal)."""
         if merged_multipolygon.geom_type == "Polygon":
             merged_multipolygon = [merged_multipolygon, ]
+        elif (merged_multipolygon.geom_type == "MultiPolygon" and
+                hasattr(merged_multipolygon, 'geoms')):
+            merged_multipolygon = merged_multipolygon.geoms
         for pno, polygon in enumerate(merged_multipolygon):
             self._print2("%s: contour %d of %d" % (
                 monitorPrefix, pno+1, len(merged_multipolygon)))

@@ -221,7 +221,7 @@ def merge_sinks(Label, Sinks, Radius=5):
 
     # generate new labels for merged seeds, define memberships
     Labels = ms.label(Dilated)
-    New = Labels[Sinks[:, 1].astype(np.int), Sinks[:, 0].astype(np.int)]
+    New = Labels[Sinks[:, 1].astype(int), Sinks[:, 0].astype(int)]
 
     # get unique list of seed clusters
     Unique = np.arange(1, New.max()+1)
@@ -230,7 +230,7 @@ def merge_sinks(Label, Sinks, Radius=5):
     Merged = np.zeros(Label.shape)
 
     # get pixel list for each sink object
-    Props = ms.regionprops(Label.astype(np.int))
+    Props = ms.regionprops(Label.astype(int))
 
     # fill in new values
     for i in Unique:

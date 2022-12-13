@@ -79,6 +79,6 @@ def detect_nuclei_kofahi(im_nuclei_stain, im_nuclei_fgnd_mask, min_radius,
 
     # filter out small objects
     im_nuclei_seg_mask = htk.segmentation.label.area_open(
-        im_nuclei_seg_mask, min_nucleus_area).astype(np.int)
+        im_nuclei_seg_mask, min_nucleus_area).astype(int)
 
     return im_nuclei_seg_mask
