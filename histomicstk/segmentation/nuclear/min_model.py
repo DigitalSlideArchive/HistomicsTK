@@ -320,7 +320,7 @@ def trace_contours(I, X, Y, Min, Max, MaxLength=255):
         W = (W <= Max[i]) & (W >= Min[i])
 
         # embed with center pixel in middle of padded window
-        Embed = np.zeros((W.shape[0]+2, W.shape[1]+2), dtype=np.bool)
+        Embed = np.zeros((W.shape[0]+2, W.shape[1]+2), dtype=bool)
         Embed[1:-1, 1:-1] = W
 
         # calculate location of (X[i], Y[i]) in 'Embed'
@@ -556,7 +556,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
             W = Convex[Locations[i-1]]
 
         # embed masked object in padded boolean array
-        Mask = np.zeros((W.shape[0]+2, W.shape[1]+2), dtype=np.bool)
+        Mask = np.zeros((W.shape[0]+2, W.shape[1]+2), dtype=bool)
         Mask[1:-1, 1:-1] = W == i
 
         # generate convex hull of object
@@ -582,7 +582,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
             Linear = np.roll(Linear, -1)
 
         # find runs of concave pixels with length > 1
-        Concave = (D > 0).astype(np.int)
+        Concave = (D > 0).astype(int)
         Start = np.where((Concave[1:] - Concave[0:-1]) == 1)[0]
         Stop = np.where((Concave[1:] - Concave[0:-1]) == -1)[0] + 1
         if Stop.size == Start.size - 1:

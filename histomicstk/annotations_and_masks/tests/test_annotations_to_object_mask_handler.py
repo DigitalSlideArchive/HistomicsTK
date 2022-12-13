@@ -136,7 +136,7 @@ class TestGetSlideRegionNoMask:
                 'bounds', 'rgb', 'contours', 'visualization'}
             assert roi_out['rgb'].shape == (200, 251, 3)
             assert roi_out['visualization'].shape == (200, 251, 3)
-            assert len(roi_out['contours']) > 60 and (
+            assert len(roi_out['contours']) > 56 and (
                 len(roi_out['contours']) < 68)
             assert set(roi_out['contours'][0].keys()) == {
                 'annidx', 'elementidx', 'element_girder_id', 'type', 'label',
@@ -190,7 +190,8 @@ class TestGetSlideRegionNoMask:
         assert set(np.unique(mask[..., 0])) == {0, 1, 2, 7}
         assert set(np.unique(mask[..., 1])) == {0, 1}
         assert set(np.unique(mask[..., 2])) == {
-            0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+            0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12} or set(np.unique(mask[..., 2])) == {
+            0, 2, 3, 4, 5, 6, 7, 8}
 
         # Second, we test the semantic segmentation mode
         cfg.get_all_rois_kwargs['mode'] = 'semantic'

@@ -55,7 +55,7 @@ def width_open(im_label, width):
         W = im_thinned[Locations[i-1]]
 
         # embed into mask with boundary
-        Mask = np.zeros((W.shape[0]+2, W.shape[1]+2), dtype=np.bool)
+        Mask = np.zeros((W.shape[0]+2, W.shape[1]+2), dtype=bool)
         Mask[1:-1, 1:-1] = W == i
 
         # calculate distance transform of mask
