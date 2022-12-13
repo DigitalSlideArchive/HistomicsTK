@@ -49,7 +49,7 @@ def compact(im_label, compaction=3):
     D = mp.distance_transform_cdt(im_compact > 0, metric='taxicab')
 
     # define 4-neighbors filtering kernel
-    Kernel = np.zeros((3, 3), dtype=np.bool)
+    Kernel = np.zeros((3, 3), dtype=bool)
     Kernel[1, :] = True
     Kernel[:, 1] = True
 

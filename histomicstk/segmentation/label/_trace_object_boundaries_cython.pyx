@@ -60,7 +60,7 @@ cdef long[:, :] _rot90(long[:, :] input):
     cdef long nrows = input.shape[0]
     cdef long ncols = input.shape[1]
 
-    cdef long[:, :] output = np.zeros([ncols, nrows], dtype=np.int)
+    cdef long[:, :] output = np.zeros([ncols, nrows], dtype=int)
 
     cdef long i, j
 
@@ -131,7 +131,7 @@ def _moore(long[:, :] mask, long[:, :] mask_90, long[:, :] mask_180, long[:, :] 
       # loop until true
       while(True):
 
-        h = np.zeros((row_isbf, col_isbf), dtype=np.int)
+        h = np.zeros((row_isbf, col_isbf), dtype=int)
 
         with nogil:
             with cython.boundscheck(False):
@@ -282,7 +282,7 @@ def _isbf(long[:, :] mask, long[:, :] mask_90, long[:, :] mask_180, long[:, :] m
 
     while(True):
 
-        h = np.zeros((row_isbf, col_isbf), dtype=np.int)
+        h = np.zeros((row_isbf, col_isbf), dtype=int)
 
         with nogil:
             with cython.boundscheck(False):

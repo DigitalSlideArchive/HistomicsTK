@@ -30,7 +30,7 @@ def rag_color(adj_mat):
     """
 
     # initialize colors and color count
-    Colors = np.zeros((adj_mat.shape[0], 1), dtype=np.int)
+    Colors = np.zeros((adj_mat.shape[0], 1), dtype=int)
     Colors[0] = 1
     ColorCount = 1
 

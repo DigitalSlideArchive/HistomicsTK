@@ -36,7 +36,7 @@ def shuffle(im_label):
     Shuffled = np.zeros(im_label.shape, dtype=np.uint32)
 
     # get pixel list for each object
-    Props = ms.regionprops(im_label.astype(np.int))
+    Props = ms.regionprops(im_label.astype(int))
 
     # fill in new values
     for i in range(len(Unique)):
