@@ -59,7 +59,7 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
     # convert image to grayscale, flatten and sample
     im_rgb = 255 * color.rgb2gray(im_rgb)
     im_rgb = im_rgb.astype(np.uint8)
-    num_samples = np.int(fraction * im_rgb.size)
+    num_samples = int(fraction * im_rgb.size)
     sI = np.random.choice(im_rgb.flatten(), num_samples)[:, np.newaxis]
 
     # kernel-density smoothed histogram
@@ -93,6 +93,11 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
 
     # solve for mixing parameter
     Mix = yHist[BGPeak] * (BGScale * (2 * np.pi)**0.5)
+    try:
+        if len(Mix) == 1:
+            Mix = Mix[0]
+    except Exception:
+        pass
 
     # flatten kernel-smoothed histogram and corresponding x values for
     # optimization
@@ -211,5 +216,9 @@ def estimate_variance(x, y, peak):
             LeftSlope = y[Left + 1] - y[Left] / (x[Left + 1] - x[Left])
             Left = (y[peak] / 2 - y[Left]) / LeftSlope + x[Left]
             scale = 2 * (x[peak] - Left) / 2.355
-
+    try:
+        if len(scale) == 1:
+            scale = scale[0]
+    except Exception:
+        pass
     return scale

@@ -525,7 +525,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
-    import scipy.ndimage.measurements as ms
+    import scipy
     import scipy.ndimage.morphology as mp
     import skimage.morphology as mo
 
@@ -538,7 +538,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         Convex = label.condense(Convex)
 
     # get locations of objects in initial image
-    Locations = ms.find_objects(Convex)
+    Locations = scipy.ndimage.find_objects(Convex)
 
     # initialize number of labeled objects and record initial count
     Total = Label.max()
@@ -552,7 +552,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         if i < len(Locations):
             W = Convex[Locations[i-1]]
         else:
-            Locations = ms.find_objects(Convex)
+            Locations = scipy.ndimage.find_objects(Convex)
             W = Convex[Locations[i-1]]
 
         # embed masked object in padded boolean array
@@ -690,7 +690,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
                                 Ycut2[ArgMin[0], ArgMin[1]].astype(float))
 
                 # re-label cut image
-                SplitLabel = ms.label(SplitMask)[0]
+                SplitLabel = scipy.ndimage.label(SplitMask)[0]
 
                 # increment object count, and label new object at end
                 SplitLabel[SplitLabel > 1] = Total + 1
