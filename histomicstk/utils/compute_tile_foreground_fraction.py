@@ -109,10 +109,10 @@ def _compute_tile_foreground_fraction_single(slide_path, im_fgnd_mask_lres,
                                      targetScale=fgnd_seg_scale,
                                      targetUnits='mag_pixels')
 
-    top = np.int(rgn_lres['top'])
-    bottom = np.int(rgn_lres['bottom'])
-    left = np.int(rgn_lres['left'])
-    right = np.int(rgn_lres['right'])
+    top = int(rgn_lres['top'])
+    bottom = int(rgn_lres['bottom'])
+    left = int(rgn_lres['left'])
+    right = int(rgn_lres['right'])
 
     im_tile_fgnd_mask_lres = im_fgnd_mask_lres[top:bottom, left:right]
 
