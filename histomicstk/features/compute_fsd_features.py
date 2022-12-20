@@ -73,7 +73,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
         # grab label mask
         lmask = (
             im_label[min_row:max_row, min_col:max_col] == rprops[i].label
-        ).astype(np.bool)
+        ).astype(bool)
         # find boundaries
         Bounds = np.argwhere(
             find_boundaries(lmask, mode="inner").astype(np.uint8) == 1
