@@ -287,7 +287,11 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
         minr, minc, maxr, maxc = rprops[i].bbox
 
         # grab nucleus mask
+<<<<<<< HEAD
         subImage = im_intensity[minr:maxr+1, minc:maxc+1]
+=======
+        subImage = im_intensity[minr:maxr + 1, minc:maxc + 1].astype(np.uint8)
+>>>>>>> 1fbae0d5 (Add isort and autopep8 to tox format environment. (#968))
 
         # gets GLCM or gray-tone spatial dependence matrix
         arrayGLCM = graycomatrixext(subImage, offsets=offsets,
@@ -344,33 +348,33 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
 
             # computes sum entropy
             ldata.at[r, 'Haralick.SumEntropy'] = \
-                -np.dot(pxPlusy, np.log2(pxPlusy+e))
+                -np.dot(pxPlusy, np.log2(pxPlusy + e))
 
             # computes entropy
             ldata.at[r, 'Haralick.Entropy'] = \
-                -np.dot(nGLCMr, np.log2(nGLCMr+e))
+                -np.dot(nGLCMr, np.log2(nGLCMr + e))
 
             # computes variance px-y
             ldata.at[r, 'Haralick.DifferenceVariance'] = np.var(pxMinusy)
 
             # computes difference entropy px-y
             ldata.at[r, 'Haralick.DifferenceEntropy'] = \
-                -np.dot(pxMinusy, np.log2(pxMinusy+e))
+                -np.dot(pxMinusy, np.log2(pxMinusy + e))
 
             # computes information measures of correlation
             # gets entropies of px and py
-            HX = -np.dot(px, np.log2(px+e))
-            HY = -np.dot(py, np.log2(py+e))
+            HX = -np.dot(px, np.log2(px + e))
+            HY = -np.dot(py, np.log2(py + e))
             HXY = ldata.at[r, 'Haralick.Entropy']
             pxy_ij = np.outer(px, py)
             pxy_ijr = np.ravel(pxy_ij)
-            HXY1 = -np.dot(nGLCMr, np.log2(pxy_ijr+e))
-            HXY2 = -np.dot(pxy_ijr, np.log2(pxy_ijr+e))
-            ldata.at[r, 'Haralick.IMC1'] = (HXY-HXY1)/max(HX, HY)
+            HXY1 = -np.dot(nGLCMr, np.log2(pxy_ijr + e))
+            HXY2 = -np.dot(pxy_ijr, np.log2(pxy_ijr + e))
+            ldata.at[r, 'Haralick.IMC1'] = (HXY - HXY1) / max(HX, HY)
 
             # computes information measures of correlation
             ldata.at[r, 'Haralick.IMC2'] = \
-                np.sqrt(max(0, 1 - np.exp(-2.0*(HXY2-HXY))))
+                np.sqrt(max(0, 1 - np.exp(-2.0 * (HXY2 - HXY))))
 
         fdata.values[i, ::2] = np.mean(ldata.values, axis=0)
         fdata.values[i, 1::2] = np.ptp(ldata.values, axis=0)

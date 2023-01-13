@@ -35,6 +35,8 @@ class Cfg:
 cfg = Cfg()
 
 # pytest runs tests in the order they appear in the module
+
+
 @pytest.mark.usefixtures('girderClient')  # noqa
 def test_prep(girderClient):  # noqa
 
@@ -139,14 +141,14 @@ class TestReviewGallery:
 
         assert {
             j.split('_left-')[1] for j in fovdict['testSlide0ForRevGal']
-            } == {
-                '%d_top-%d_bottom-%d_right-%d'
-                % (l, t, b, r) for (l, t, b, r) in [
-                    (57584, 35788, 37425, 59421),
-                    (58463, 38203, 39760, 60379),
-                    (59181, 33473, 38043, 63712),
-                ]
-            }
+        } == {
+            '%d_top-%d_bottom-%d_right-%d'
+            % (l, t, b, r) for (l, t, b, r) in [
+                (57584, 35788, 37425, 59421),
+                (58463, 38203, 39760, 60379),
+                (59181, 33473, 38043, 63712),
+            ]
+        }
 
     def test_create_review_galleries(self):
         """Test create_review_galleries()."""

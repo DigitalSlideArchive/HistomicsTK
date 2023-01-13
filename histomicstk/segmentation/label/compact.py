@@ -54,13 +54,13 @@ def compact(im_label, compaction=3):
     Kernel[:, 1] = True
 
     # sweep over distance values from d-1 to 1
-    for i in np.arange(compaction-1, 0, -1):
+    for i in np.arange(compaction - 1, 0, -1):
 
         # four-neighbor maxima of distance transform
         MaxD = ft.maximum_filter(D, footprint=Kernel)
 
         # identify pixels whose max 4-neighbor is less than i+1
-        Decrement = (D == i) & (MaxD < i+1)
+        Decrement = (D == i) & (MaxD < i + 1)
 
         # decrement non-compact pixels
         D[Decrement] -= 1

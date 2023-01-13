@@ -19,13 +19,15 @@
 # This is to serve as an example for how to create a server-side test in a
 # girder plugin, it is not meant to be useful.
 
-from argparse import Namespace
-import os
-import json
 import collections
+import json
+import os
+from argparse import Namespace
+
+import large_image
 import numpy as np
 import skimage.io
-import large_image
+
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.nuclear as htk_nuclear

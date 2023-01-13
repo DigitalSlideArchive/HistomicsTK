@@ -165,7 +165,7 @@ def seed_contours(I, Delta=0.3):  # noqa
         dI = np.sign(I[i, 1:].astype(float) - I[i, 0:-1].astype(float))
         dI = np.hstack((dI, dI[-1]))
         Transitions = np.nonzero(dI == 1)[0]
-        Transitions = np.hstack((Transitions, I.shape[1]-1))
+        Transitions = np.hstack((Transitions, I.shape[1] - 1))
 
         # define min/max neighbor pairs
         MinPair = []
@@ -234,8 +234,8 @@ def seed_contours(I, Delta=0.3):  # noqa
             # identify max gradient locations within paired maxima/minima
             MinGrad = np.zeros(Maxima.shape, dtype=int)
             for j in np.arange(Maxima.size):
-                MinGrad[j] = np.argmin(Gradient[Maxima[j]+1:Minima[j]]) + \
-                    Maxima[j]+1
+                MinGrad[j] = np.argmin(Gradient[Maxima[j] + 1:Minima[j]]) + \
+                    Maxima[j] + 1
 
             # capture min, max values and add to list with seed coordinates
             if Maxima.size > 0:
@@ -311,21 +311,21 @@ def trace_contours(I, X, Y, Min, Max, MaxLength=255):
     for i in np.arange(X.size):
 
         # capture window surrounding (X[i], Y[i])
-        W = I[max(0, Y[i]-np.ceil(MaxLength/2.0)):
-              min(I.shape[0]+1, Y[i]+np.ceil(MaxLength/2.0)+1),
-              max(0, X[i]-np.ceil(MaxLength/2.0)):
-              min(I.shape[1]+1, X[i]+np.ceil(MaxLength/2.0))+1]
+        W = I[max(0, Y[i] - np.ceil(MaxLength / 2.0)):
+              min(I.shape[0] + 1, Y[i] + np.ceil(MaxLength / 2.0) + 1),
+              max(0, X[i] - np.ceil(MaxLength / 2.0)):
+              min(I.shape[1] + 1, X[i] + np.ceil(MaxLength / 2.0)) + 1]
 
         # binary threshold corresponding to seed pixel 'i'
         W = (W <= Max[i]) & (W >= Min[i])
 
         # embed with center pixel in middle of padded window
-        Embed = np.zeros((W.shape[0]+2, W.shape[1]+2), dtype=bool)
+        Embed = np.zeros((W.shape[0] + 2, W.shape[1] + 2), dtype=bool)
         Embed[1:-1, 1:-1] = W
 
         # calculate location of (X[i], Y[i]) in 'Embed'
-        pX = X[i] - max(0, X[i]-np.ceil(MaxLength/2.0)) + 1
-        pY = Y[i] - max(0, Y[i]-np.ceil(MaxLength/2.0)) + 1
+        pX = X[i] - max(0, X[i] - np.ceil(MaxLength / 2.0)) + 1
+        pY = Y[i] - max(0, Y[i] - np.ceil(MaxLength / 2.0)) + 1
 
         # trace boundary, check stopping condition, append to list of contours
         cX, cY = label.trace_object_boundaries(Embed, conn=4,
@@ -336,10 +336,10 @@ def trace_contours(I, X, Y, Min, Max, MaxLength=255):
 
             # add window offset to contour coordinates
             cX[0] = [
-                x + max(0, X[i]-np.ceil(MaxLength/2.0)) - 1 for x in cX[0]
+                x + max(0, X[i] - np.ceil(MaxLength / 2.0)) - 1 for x in cX[0]
             ]
             cY[0] = [
-                y + max(0, Y[i]-np.ceil(MaxLength/2.0)) - 1 for y in cY[0]
+                y + max(0, Y[i] - np.ceil(MaxLength / 2.0)) - 1 for y in cY[0]
             ]
 
             # append to list of candidate contours
@@ -476,10 +476,10 @@ def label_contour(Shape, cXs, cYs, Scores):
         yMax = np.max(cYs[Order[i]])
 
         # extract portion of existing label image
-        T = Label[yMin:yMax+1, xMin:xMax+1]
+        T = Label[yMin:yMax + 1, xMin:xMax + 1]
 
         # generate mask for object 'Order[i]' from polygon
-        Mask = polygon(cYs[Order[i]]-yMin, cXs[Order[i]]-xMin, T.shape)
+        Mask = polygon(cYs[Order[i]] - yMin, cXs[Order[i]] - xMin, T.shape)
 
         # replace non-zero areas with value 'i'
         T[Mask] = i
@@ -534,7 +534,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
     Convex = Label.copy()
 
     # condense label image
-    if np.unique(Convex).size-1 != Convex.max():
+    if np.unique(Convex).size - 1 != Convex.max():
         Convex = label.condense(Convex)
 
     # get locations of objects in initial image
@@ -550,13 +550,13 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
 
         # get object window from label image
         if i < len(Locations):
-            W = Convex[Locations[i-1]]
+            W = Convex[Locations[i - 1]]
         else:
             Locations = scipy.ndimage.find_objects(Convex)
-            W = Convex[Locations[i-1]]
+            W = Convex[Locations[i - 1]]
 
         # embed masked object in padded boolean array
-        Mask = np.zeros((W.shape[0]+2, W.shape[1]+2), dtype=bool)
+        Mask = np.zeros((W.shape[0] + 2, W.shape[1] + 2), dtype=bool)
         Mask[1:-1, 1:-1] = W == i
 
         # generate convex hull of object
@@ -596,9 +596,9 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         MaxDepth = np.zeros(Start.size)
         for j in np.arange(Start.size):
             if Start[j] < Stop[j]:
-                iX.append(X[Start[j]:Stop[j]+1])
-                iY.append(Y[Start[j]:Stop[j]+1])
-                Depths.append(D[Start[j]:Stop[j]+1])
+                iX.append(X[Start[j]:Stop[j] + 1])
+                iY.append(Y[Start[j]:Stop[j] + 1])
+                Depths.append(D[Start[j]:Stop[j] + 1])
             else:  # run terminates at beginning of sequence
                 iX.append(np.append(X[Start[j]:], X[0]))
                 iY.append(np.append(Y[Start[j]:], Y[0]))
@@ -630,7 +630,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
                 # get list of 'j' candidates that pass depth threshold
                 jCandidates = np.where(Depths[j] >= MinDepth)[0]
 
-                for k in np.arange(j+1, Start.size):
+                for k in np.arange(j + 1, Start.size):
 
                     # get list of 'k' candidates that pass depth threshold
                     kCandidates = np.where(Depths[k] >= MinDepth)[0]
@@ -750,8 +750,8 @@ def angle_score(ax1, ay1, bx1, by1, ax2, ay2, bx2, by2, cx1, cy1, cx2, cy2):
     kCutAlpha = np.arctan2(cy1 - cy2, cx2 - cx1)
 
     # calculate angle score
-    Score = (np.abs(np.pi/2 - (jCutAlpha - jHullAlpha)) +
-             np.abs(np.pi/2 - (kCutAlpha - kHullAlpha))) / np.pi
+    Score = (np.abs(np.pi / 2 - (jCutAlpha - jHullAlpha)) +
+             np.abs(np.pi / 2 - (kCutAlpha - kHullAlpha))) / np.pi
 
     return Score
 
@@ -812,15 +812,15 @@ def cut(Mask, x1, y1, x2, y2):
 
     # calculate angle of line
     if x1 < x2:
-        theta = np.arctan2(y2-y1, x2-x1)
+        theta = np.arctan2(y2 - y1, x2 - x1)
     else:
-        theta = np.arctan2(y1-y2, x1-x2)
+        theta = np.arctan2(y1 - y2, x1 - x2)
 
     # define line length
-    length = ((x1-x2)**2 + (y1-y2)**2)**0.5
+    length = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
 
     # define points along x-axis
-    x = np.arange(-1, length+1, 0.1)
+    x = np.arange(-1, length + 1, 0.1)
     y = np.zeros(x.shape)
 
     # rotate

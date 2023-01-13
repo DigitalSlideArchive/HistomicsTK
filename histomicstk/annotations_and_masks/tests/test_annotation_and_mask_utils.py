@@ -73,14 +73,14 @@ class TestAnnotAndMaskUtils:
             'itemId', 'created', 'creatorId',
             'public', 'updated', 'updatedId',
             'groups', 'element_count', 'element_details',
-            }
+        }
         assert set(element_infos.columns) == {
             'annidx', 'annotation_girder_id',
             'elementidx', 'element_girder_id',
             'type', 'group', 'label', 'color',
             'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
             'coords_x', 'coords_y'
-            }
+        }
         assert set(element_infos.loc[:, 'type']) == {'polyline', 'rectangle'}
 
     def test_scale_slide_annotations(self):

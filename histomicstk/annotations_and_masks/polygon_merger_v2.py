@@ -117,7 +117,7 @@ class Polygon_merger_v2(Base_HTK_Class):
 
             child_nodes = [
                 {'nidx': k, 'parent_idx': parent_idx,
-                 'is_leaf': type(v) is not dict} for k, v in node_dict.items()]
+                 'is_leaf': not isinstance(v, dict)} for k, v in node_dict.items()]
 
             if len(child_nodes) < 1:
                 return
@@ -130,8 +130,8 @@ class Polygon_merger_v2(Base_HTK_Class):
 
             # add next level
             for nidx, ndict in node_dict.items():
-                if type(ndict) is dict:
-                    _add_hierarchy_level(ndict, level=level+1, parent_idx=nidx)
+                if isinstance(ndict, dict):
+                    _add_hierarchy_level(ndict, level=level + 1, parent_idx=nidx)
 
         _add_hierarchy_level(self.tree_dict, level=0, parent_idx=0)
 
@@ -250,7 +250,7 @@ class Polygon_merger_v2(Base_HTK_Class):
             merged_multipolygon = merged_multipolygon.geoms
         for pno, polygon in enumerate(merged_multipolygon):
             self._print2("%s: contour %d of %d" % (
-                monitorPrefix, pno+1, len(merged_multipolygon)))
+                monitorPrefix, pno + 1, len(merged_multipolygon)))
             self._add_single_merged_edge_contour(polygon, group=group)
 
     # %% =====================================================================

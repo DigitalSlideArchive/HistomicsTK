@@ -167,7 +167,7 @@ def compute_intensity_features(
 
             # compute intensity histogram
             hist, bins = np.histogram(pixelIntensities, bins=num_hist_bins)
-            prob = hist/np.sum(hist, dtype=np.float32)
+            prob = hist / np.sum(hist, dtype=np.float32)
 
             # entropy and energy
             _conditional_execution(

@@ -343,10 +343,9 @@ def create_review_galleries(
     savepaths = []
     resps = []
 
-    tile_paths = [
+    tile_paths = sorted([
         os.path.join(tilepath_base, j) for j in
-        os.listdir(tilepath_base) if j.endswith('.png')]
-    tile_paths.sort()
+        os.listdir(tilepath_base) if j.endswith('.png')])
 
     def _parse_tilepath(tpath):
         basename = os.path.basename(tpath)

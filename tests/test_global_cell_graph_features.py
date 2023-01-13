@@ -19,6 +19,7 @@
 import numpy as np
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
+
 from histomicstk.features import compute_global_cell_graph_features as cgcgf
 
 

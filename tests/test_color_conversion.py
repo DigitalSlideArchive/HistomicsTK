@@ -17,10 +17,9 @@
 ###############################################################################
 
 import numpy as np
-from histomicstk.preprocessing.color_conversion import rgb_to_od
-from histomicstk.preprocessing.color_conversion import od_to_rgb
-from histomicstk.preprocessing.color_conversion import rgb_to_lab
-from histomicstk.preprocessing.color_conversion import lab_to_rgb
+
+from histomicstk.preprocessing.color_conversion import (lab_to_rgb, od_to_rgb,
+                                                        rgb_to_lab, rgb_to_od)
 
 
 class TestColorConversion:

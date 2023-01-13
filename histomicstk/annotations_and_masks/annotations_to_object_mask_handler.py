@@ -481,7 +481,7 @@ def contours_to_labeled_object_mask(
             labels_channel[..., None],
             objects_channel1[..., None],
             objects_channel2[..., None],
-            ), -1))
+        ), -1))
 
 # %%===========================================================================
 

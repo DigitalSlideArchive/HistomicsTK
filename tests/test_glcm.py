@@ -16,9 +16,10 @@
 #  limitations under the License.
 ###############################################################################
 
-import histomicstk as htk
 import numpy as np
 import skimage.feature
+
+import histomicstk as htk
 
 
 class TestGLCMMatrixGeneration:
@@ -33,7 +34,7 @@ class TestGLCMMatrixGeneration:
         # test 0, 45, 90, 135 degree offsets
         res_skim = skimage.feature.greycomatrix(
             image, [1],
-            [0, np.pi/4.0, np.pi/2.0, 3*np.pi/4.0],
+            [0, np.pi / 4.0, np.pi / 2.0, 3 * np.pi / 4.0],
             levels=4
         )
 
@@ -47,7 +48,7 @@ class TestGLCMMatrixGeneration:
         # test 0, 45, 90, 135 degree offsets - normalized
         res_skim = skimage.feature.greycomatrix(
             image, [1],
-            [0, np.pi/4.0, np.pi/2.0, 3*np.pi/4.0],
+            [0, np.pi / 4.0, np.pi / 2.0, 3 * np.pi / 4.0],
             levels=4, normed=True
         )
 
@@ -61,7 +62,7 @@ class TestGLCMMatrixGeneration:
         # test 0, 45, 90, 135 degree offsets - symmetric
         res_skim = skimage.feature.greycomatrix(
             image, [1],
-            [0, np.pi/4.0, np.pi/2.0, 3*np.pi/4.0],
+            [0, np.pi / 4.0, np.pi / 2.0, 3 * np.pi / 4.0],
             levels=4, symmetric=True
         )
 
