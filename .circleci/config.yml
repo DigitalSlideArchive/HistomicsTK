@@ -78,12 +78,12 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.7.13
+          version: 3.7.16
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.7.13
+            pyenv global 3.7.16
       - tox:
           env: py37
       - coverage
@@ -94,12 +94,12 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.8.13
+          version: 3.8.16
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.8.13
+            pyenv global 3.8.16
       - tox:
           env: py38
       - coverage
@@ -110,12 +110,12 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.9.12
+          version: 3.9.16
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.9.12
+            pyenv global 3.9.16
       - tox:
           env: py39
       - coverage
@@ -126,14 +126,30 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.10.4
+          version: 3.10.9
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.10.4
+            pyenv global 3.10.9
       - tox:
           env: py310
+      - coverage
+  py311:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - upgradepython:
+          version: 3.11.1
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.11.1
+      - tox:
+          env: py311
       - coverage
   lint_and_docs:
     working_directory: ~/project
@@ -328,6 +344,13 @@ workflows:
             branches:
               ignore:
                 - gh-pages
+      - py311:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
       - lint_and_docs:
           filters:
             tags:
@@ -356,6 +379,7 @@ workflows:
             - py38
             - py39
             - py310
+            - py311
             - lint_and_docs
             - wheels
             - docker
@@ -371,6 +395,7 @@ workflows:
             - py38
             - py39
             - py310
+            - py311
             - lint_and_docs
             - wheels
             - docker
@@ -388,6 +413,7 @@ workflows:
             - py38
             - py39
             - py310
+            - py311
             - lint_and_docs
             - docker
             - wheels
@@ -412,6 +438,7 @@ workflows:
       - py38
       - py39
       - py310
+      - py311
       - lint_and_docs
       - docker
       - wheels
@@ -422,6 +449,7 @@ workflows:
             - py38
             - py39
             - py310
+            - py311
             - lint_and_docs
             - docker
             - wheels
