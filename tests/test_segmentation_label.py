@@ -17,8 +17,9 @@
 ###############################################################################
 
 import numpy as np
-from histomicstk.segmentation.label import trace_object_boundaries
-from histomicstk.segmentation.label import delete_border
+
+from histomicstk.segmentation.label import (delete_border,
+                                            trace_object_boundaries)
 
 
 class TestTraceBoundary:

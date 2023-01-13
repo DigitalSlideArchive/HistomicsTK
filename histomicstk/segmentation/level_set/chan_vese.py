@@ -90,7 +90,7 @@ def kappa(im_phi):
     dPhi = np.gradient(im_phi)  # calculate gradient of level set image
     xdPhi = np.gradient(dPhi[1])
     ydPhi = np.gradient(dPhi[0])
-    K = (xdPhi[1]*(dPhi[0]**2) - 2*xdPhi[0]*dPhi[0]*dPhi[1] +
-         ydPhi[0]*(dPhi[1]**2)) / ((dPhi[0]**2 + dPhi[1]**2 + 1e-10)**(3/2))
-    K *= (xdPhi[1]**2 + ydPhi[0]**2)**(1/2)
+    K = (xdPhi[1] * (dPhi[0]**2) - 2 * xdPhi[0] * dPhi[0] * dPhi[1] +
+         ydPhi[0] * (dPhi[1]**2)) / ((dPhi[0]**2 + dPhi[1]**2 + 1e-10)**(3 / 2))
+    K *= (xdPhi[1]**2 + ydPhi[0]**2)**(1 / 2)
     return K

@@ -47,7 +47,7 @@ def split(im_label, conn=8):
         raise ValueError("Input 'conn' must be 4 or 8")
 
     # condense label image
-    if np.unique(Split).size-1 != Split.max():
+    if np.unique(Split).size - 1 != Split.max():
         Split = condense(Split)
 
     # get locations of objects in initial image
@@ -57,10 +57,10 @@ def split(im_label, conn=8):
     Total = Split.max()
 
     # iterate through objects, replicating where needed
-    for i in np.arange(1, len(Locations)+1):
+    for i in np.arange(1, len(Locations) + 1):
 
         # extract object from label image
-        Template = Split[Locations[i-1]]
+        Template = Split[Locations[i - 1]]
 
         # label mask of object 'i'
         L, Count = ms.label(Template == i, Kernel)
@@ -68,7 +68,7 @@ def split(im_label, conn=8):
         # relabel if necessary
         if Count > 1:
             Template[L == 1] = i
-            for i in np.arange(2, Count+1):
+            for i in np.arange(2, Count + 1):
                 Template[L == i] = Total + 1
                 Total += 1
 

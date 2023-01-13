@@ -160,11 +160,11 @@ def main(args):
     if not process_whole_image:
 
         it_kwargs['region'] = {
-            'left':   args.analysis_roi[0],
-            'top':    args.analysis_roi[1],
-            'width':  args.analysis_roi[2],
+            'left': args.analysis_roi[0],
+            'top': args.analysis_roi[1],
+            'width': args.analysis_roi[2],
             'height': args.analysis_roi[3],
-            'units':  'base_pixels'
+            'units': 'base_pixels'
         }
 
     if is_wsi:
@@ -269,7 +269,7 @@ def main(args):
         os.path.basename(args.outputNucleiAnnotationFile))[0]
 
     annotation = {
-        "name":     annot_fname + '-nuclei-' + args.nuclei_annotation_format,
+        "name": annot_fname + '-nuclei-' + args.nuclei_annotation_format,
         "elements": nuclei_list
     }
 

@@ -63,10 +63,10 @@ def fit_poisson_mixture(im_input, mu=None, tol=0.1):
     # determine cost at each possible threshold
     P0 = Cumulative
     P0[P0 <= 0] = Small
-    P1 = 1-Cumulative
+    P1 = 1 - Cumulative
     P1[P1 <= 0] = Small
     Mu0 = np.divide(CumProd, P0) + Small
-    Mu1 = np.divide(CumProd[-1]-CumProd, P1) + Small
+    Mu1 = np.divide(CumProd[-1] - CumProd, P1) + Small
     Cost = mu - np.multiply(P0, np.log(P0) + np.multiply(Mu0, np.log(Mu0))) - \
         np.multiply(P1, np.log(P1) + np.multiply(Mu1, np.log(Mu1)))
 

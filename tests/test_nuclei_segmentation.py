@@ -17,11 +17,13 @@
 ###############################################################################
 
 import os
+
 import numpy as np
 import skimage.io
+
 import histomicstk.preprocessing.color_conversion as htk_cvt
-import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation as htk_seg
 
 from .datastore import datastore

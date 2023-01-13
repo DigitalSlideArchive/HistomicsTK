@@ -33,9 +33,9 @@ def condense(im_label):
     Counter = 1
 
     # fill in new values
-    for i in np.arange(1, len(Locations)+1):
-        if Locations[i-1] is not None:
-            Patch = Condensed[Locations[i-1]]
+    for i in np.arange(1, len(Locations) + 1):
+        if Locations[i - 1] is not None:
+            Patch = Condensed[Locations[i - 1]]
             Patch[Patch == i] = Counter
             Counter += 1
 

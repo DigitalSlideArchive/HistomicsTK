@@ -17,9 +17,11 @@
 ###############################################################################
 
 import os
+
 import numpy as np
-from histomicstk.filters.shape import clog, cdog
 from skimage.feature import peak_local_max
+
+from histomicstk.filters.shape import cdog, clog
 
 from .datastore import datastore
 

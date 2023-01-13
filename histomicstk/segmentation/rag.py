@@ -77,8 +77,8 @@ def rag(im_label, neigh_conn=4):
 
     # add entries to adjacency matrix
     for i in range(Xc.shape[0]):
-        adj_mat[Xc[i, 0]-1, Xc[i, 1]-1] = True
-        adj_mat[Xc[i, 1]-1, Xc[i, 0]-1] = True
+        adj_mat[Xc[i, 0] - 1, Xc[i, 1] - 1] = True
+        adj_mat[Xc[i, 1] - 1, Xc[i, 0] - 1] = True
 
     # return result
     return adj_mat

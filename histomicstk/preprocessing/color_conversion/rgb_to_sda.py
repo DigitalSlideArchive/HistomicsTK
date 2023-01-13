@@ -45,5 +45,5 @@ def rgb_to_sda(im_rgb, I_0, allow_negatives=False):
     if not allow_negatives:
         im_rgb = np.minimum(im_rgb, I_0)
 
-    im_sda = -np.log(im_rgb/(1.*I_0)) * 255/np.log(I_0)
+    im_sda = -np.log(im_rgb / (1. * I_0)) * 255 / np.log(I_0)
     return im_sda.T if is_matrix else im_sda

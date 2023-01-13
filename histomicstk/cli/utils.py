@@ -3,9 +3,9 @@ from datetime import timedelta
 
 import large_image
 import numpy as np
+from ctk_cli import CLIArgumentParser  # noqa I004
 # imported for side effects
 from slicer_cli_web import ctk_cli_adjustment  # noqa
-from ctk_cli import CLIArgumentParser  # noqa I004
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.segmentation as htk_seg
@@ -46,7 +46,7 @@ def get_stain_matrix(args, count=3):
     Return a numpy array of column vectors.
 
     """
-    return np.array([get_stain_vector(args, i+1) for i in range(count)]).T
+    return np.array([get_stain_vector(args, i + 1) for i in range(count)]).T
 
 
 def segment_wsi_foreground_at_low_res(ts, lres_size=2048):

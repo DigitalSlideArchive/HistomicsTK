@@ -41,6 +41,8 @@ class Cfg:
 cfg = Cfg()
 
 # pytest runs tests in the order they appear in the module
+
+
 @pytest.mark.usefixtures('girderClient')  # noqa
 def test_prep(girderClient):  # noqa
 
@@ -98,7 +100,7 @@ def test_prep(girderClient):  # noqa
         'bounds': {
             'XMIN': 58000, 'XMAX': 63000,
             'YMIN': 35000, 'YMAX': 39000},
-        })
+    })
 
     # params for getting all rois for slide
     cfg.get_all_rois_kwargs = {

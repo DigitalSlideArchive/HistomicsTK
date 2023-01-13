@@ -39,7 +39,7 @@ def delete(im_label, indices):
 
     # fill in new values
     for i in np.arange(indices.size):
-        if Locations[indices[i]-1] is not None:
+        if Locations[indices[i] - 1] is not None:
             Patch = Deleted[Locations[indices[i] - 1]]
             Patch[Patch == indices[i]] = 0
 

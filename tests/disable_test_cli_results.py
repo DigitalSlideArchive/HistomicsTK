@@ -20,11 +20,12 @@ import hashlib
 import io
 import json
 import os
-import PIL.Image
 import runpy
 import shutil
 import sys
 import tempfile
+
+import PIL.Image
 
 from .datastore import datastore
 
@@ -152,8 +153,8 @@ class TestCliResults:
         Test that we can list clis, get help for each, and get the xml spec for
         each.
         """
-        from girder.plugins.slicer_cli_web import rest_slicer_cli
         from girder.api.rest import Resource
+        from girder.plugins.slicer_cli_web import rest_slicer_cli
 
         restResource = Resource()
         cli_args = (os.environ['CLI_LIST_ENTRYPOINT'], '--list_cli',)

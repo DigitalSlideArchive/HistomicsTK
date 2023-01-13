@@ -44,6 +44,8 @@ class Cfg:
 cfg = Cfg()
 
 # pytest runs tests in the order they appear in the module
+
+
 @pytest.mark.usefixtures('girderClient')  # noqa
 def test_prep(girderClient):  # noqa
 
@@ -170,7 +172,6 @@ class TestGetROIMasks:
             'TCGA-A2-A0YE_left-58483_top-38223_bottom-39780_right-60399.png',
             'TCGA-A2-A0YE_left-59201_top-33493_bottom-38063_right-63732.png'
         } == {os.path.basename(savename['ROI']) for savename in savenames}
-
 
     def test_get_all_rois_from_slide_tiled(self, tmpdir):  # noqa
         """Test get_all_roi_masks_for_slide() with tiling."""

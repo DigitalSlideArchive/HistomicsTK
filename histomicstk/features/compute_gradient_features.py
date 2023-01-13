@@ -114,7 +114,7 @@ def compute_gradient_features(im_label, im_intensity,
 
         # compute intensity histogram
         hist, bins = np.histogram(pixelGradients, bins=num_hist_bins)
-        prob = hist/np.sum(hist, dtype=np.float32)
+        prob = hist / np.sum(hist, dtype=np.float32)
 
         # compute entropy
         fdata.at[i, 'Gradient.Mag.HistEntropy'] = scipy.stats.entropy(prob)

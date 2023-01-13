@@ -1,17 +1,15 @@
-import cherrypy
 import json
 import os
 
+import cherrypy
+from datastore import datastore
 from girder.models.assetstore import Assetstore
 from girder.models.folder import Folder
 from girder.models.item import Item
 from girder.models.user import User
 from girder.utility.progress import ProgressContext
 from girder.utility.server import configureServer
-
 from girder_large_image_annotation.models.annotation import Annotation
-
-from datastore import datastore
 
 
 def namedFolder(user, folderName='Public'):
