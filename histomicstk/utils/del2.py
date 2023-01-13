@@ -30,7 +30,7 @@ def del2(im_input):
     # process rows first
     D = np.diff(im_input, axis=0)
     S = np.zeros(im_input.shape)
-    S[1:-1, :] = (D[1:, :] - D[0:-1, :])/2
+    S[1:-1, :] = (D[1:, :] - D[0:-1, :]) / 2
     if im_input.shape[0] > 3:
         S[0, :] = 2 * S[1, :] - S[2, :]
         S[-1, :] = 2 * S[-2, :] - S[-3, :]
@@ -45,7 +45,7 @@ def del2(im_input):
     # process columns
     D = np.diff(im_input, axis=1)
     S = np.zeros(im_input.shape)
-    S[:, 1:-1] = (D[:, 1:] - D[:, 0:-1])/2
+    S[:, 1:-1] = (D[:, 1:] - D[:, 0:-1]) / 2
     if im_input.shape[1] > 3:
         S[:, 0] = 2 * S[:, 1] - S[:, 2]
         S[:, -1] = 2 * S[:, -2] - S[:, -3]

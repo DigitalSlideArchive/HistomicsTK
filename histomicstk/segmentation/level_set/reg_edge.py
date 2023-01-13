@@ -68,7 +68,7 @@ def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
     # smoothed gradient of input image
     sI = filters.gaussian_filter(im_input, sigma, mode='constant', cval=0)
     dsI = np.gradient(sI)
-    G = 1/(1 + dsI[0]**2 + dsI[1]**2)
+    G = 1 / (1 + dsI[0]**2 + dsI[1]**2)
     dG = np.gradient(G)
 
     # perform regularized level-set evolutions with time step dt
@@ -114,7 +114,7 @@ def initialize(Mask, c0=2):
 
 def single_well(Phi, Curve):
     # Single-well potential function
-    return 4 * htk_utls.del2(Phi)-Curve
+    return 4 * htk_utls.del2(Phi) - Curve
 
 
 def double_well(Phi, dPhi, mPhi, Curve, i):
@@ -153,14 +153,14 @@ def neumann_bounds(Phi):
 
     # deal with corners
     PhiOut[0, 0] = PhiOut[2, 2]
-    PhiOut[0, n-1] = PhiOut[0, -3]
-    PhiOut[m-1, 0] = PhiOut[-3, 2]
-    PhiOut[m-1, n-1] = PhiOut[-3, -3]
+    PhiOut[0, n - 1] = PhiOut[0, -3]
+    PhiOut[m - 1, 0] = PhiOut[-3, 2]
+    PhiOut[m - 1, n - 1] = PhiOut[-3, -3]
 
     # deal with edges
     PhiOut[0, 1:-1] = PhiOut[2, 1:-1]
-    PhiOut[m-1, 1:-1] = PhiOut[m-3, 1:-1]
+    PhiOut[m - 1, 1:-1] = PhiOut[m - 3, 1:-1]
     PhiOut[1:-1, 0] = PhiOut[1:-1, 2]
-    PhiOut[1:-1, n-1] = PhiOut[1:-1, n-3]
+    PhiOut[1:-1, n - 1] = PhiOut[1:-1, n - 3]
 
     return PhiOut

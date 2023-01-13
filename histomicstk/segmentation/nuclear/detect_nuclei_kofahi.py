@@ -6,7 +6,6 @@ import histomicstk.filters.shape as htk_shape_filters
 
 def detect_nuclei_kofahi(im_nuclei_stain, im_nuclei_fgnd_mask, min_radius,
                          max_radius, min_nucleus_area, local_max_search_radius):
-
     """Performs a nuclear segmentation using kofahi's method.
 
     This method uses scale-adaptive multi-scale Laplacian-of-Gaussian filtering

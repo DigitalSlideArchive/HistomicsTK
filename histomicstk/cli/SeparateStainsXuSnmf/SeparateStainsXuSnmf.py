@@ -28,7 +28,7 @@ def main(args):
 
     with open(args.returnParameterFile, 'w') as f:
         for i, stain in enumerate(w_est.T):
-            f.write('stainColor_{} = {}\n'.format(i+1, ','.join(map(str, stain))))
+            f.write('stainColor_{} = {}\n'.format(i + 1, ','.join(map(str, stain))))
 
 
 if __name__ == "__main__":

@@ -38,11 +38,11 @@ def area_open(im_label, min_area):
     im_open = im_label.copy()
 
     # condense label image
-    if np.unique(im_open).size-1 != im_open.max():
+    if np.unique(im_open).size - 1 != im_open.max():
         im_open = condense(im_open)
 
     # count pixels in each object
-    Counts, Edges = np.histogram(im_open, bins=im_open.max()+1)
+    Counts, Edges = np.histogram(im_open, bins=im_open.max() + 1)
 
     # get locations of objects in initial image
     Locations = ms.find_objects(im_open)
@@ -52,7 +52,7 @@ def area_open(im_label, min_area):
         if Counts[i] < min_area:
 
             # extract object from label image
-            Template = im_open[Locations[i-1]]
+            Template = im_open[Locations[i - 1]]
 
             # label mask of object 'i'
             Template[Template == i] = 0

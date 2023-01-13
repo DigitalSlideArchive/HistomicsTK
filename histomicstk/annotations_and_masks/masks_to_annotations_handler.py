@@ -623,11 +623,11 @@ def get_annotation_documents_from_contours(
         else:
             docbounds = [0, contours_df_slice.shape[0]]
 
-        for docidx in range(len(docbounds)-1):
+        for docidx in range(len(docbounds) - 1):
             docStr = "%s: %s: doc %d of %d" % (
-                monitorPrefix, doc_group, docidx+1, len(docbounds)-1)
+                monitorPrefix, doc_group, docidx + 1, len(docbounds) - 1)
             start = docbounds[docidx]
-            end = docbounds[docidx+1]
+            end = docbounds[docidx + 1]
             annotation_doc = get_single_annotation_document_from_contours(
                 contours_df_slice.iloc[start:end, :],
                 docname="%s_%s-%d" % (docnamePrefix, doc_group, docidx),

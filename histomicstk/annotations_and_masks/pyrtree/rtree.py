@@ -189,9 +189,9 @@ class _NodeCursor:
         nodei = index * 2
         rp = self.rpool
         x = rp[recti]
-        y = rp[recti+1]
-        xx = rp[recti+2]
-        yy = rp[recti+3]
+        y = rp[recti + 1]
+        xx = rp[recti + 2]
+        yy = rp[recti + 3]
 
         if (x == 0.0 and y == 0.0 and xx == 0.0 and yy == 0.0):
             self.rect = NullRect
@@ -241,9 +241,9 @@ class _NodeCursor:
             self.rect.write_raw_coords(rp, recti)
         else:
             rp[recti] = 0
-            rp[recti+1] = 0
-            rp[recti+2] = 0
-            rp[recti+3] = 0
+            rp[recti + 1] = 0
+            rp[recti + 2] = 0
+            rp[recti + 3] = 0
 
         self.npool[nodei] = self.next_sibling
         self.npool[nodei + 1] = self.first_child

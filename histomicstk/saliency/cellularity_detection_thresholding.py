@@ -89,7 +89,7 @@ class CDT_single_tissue_piece:
         # load RGB for this tissue piece at saliency magnification
         getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
             self.cdt.slide_id, self.xmin, self.xmax, self.ymin, self.ymax
-            ) + "&magnification=%d" % self.cdt.MAG
+        ) + "&magnification=%d" % self.cdt.MAG
         resp = self.cdt.gc.get(getStr, jsonResp=False)
         self.tissue_rgb = get_image_from_htk_response(resp)
 
@@ -156,7 +156,7 @@ class CDT_single_tissue_piece:
                 target_mu=self.cdt.target_stats_reinhard['mu'],
                 target_sigma=self.cdt.target_stats_reinhard['sigma'],
                 mask_out=self.labeled != self.cdt.GTcodes
-                    .loc["not_specified", "GT_code"])
+                .loc["not_specified", "GT_code"])
 
         elif self.cdt.color_normalization_method == 'macenko_pca':
             self.cdt._print2(
@@ -164,7 +164,7 @@ class CDT_single_tissue_piece:
             self.tissue_rgb = deconvolution_based_normalization(
                 self.tissue_rgb, W_target=self.cdt.target_W_macenko,
                 mask_out=self.labeled != self.cdt.GTcodes
-                    .loc["not_specified", "GT_code"],
+                .loc["not_specified", "GT_code"],
                 stain_unmixing_routine_params=self.
                 cdt.stain_unmixing_routine_params)
         else:
@@ -466,15 +466,15 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             # and using reordered such that columns are the order:
             # Hamtoxylin, Eosin, Null
             'target_W_macenko': np.array([
-                [0.5807549,  0.08314027,  0.08213795],
-                [0.71681094,  0.90081588,  0.41999816],
-                [0.38588316,  0.42616716, -0.90380025]
+                [0.5807549, 0.08314027, 0.08213795],
+                [0.71681094, 0.90081588, 0.41999816],
+                [0.38588316, 0.42616716, -0.90380025]
             ]),
 
             # TCGA-A2-A3XS-DX1_xmin21421_ymin37486_.png, Amgad et al, 2019)
             # Reinhard color norm. standard
             'target_stats_reinhard': {
-                'mu': np.array([8.74108109, -0.12440419,  0.0444982]),
+                'mu': np.array([8.74108109, -0.12440419, 0.0444982]),
                 'sigma': np.array([0.6135447, 0.10989545, 0.0286032]),
             },
 
@@ -586,7 +586,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         tissue_pieces = [None for _ in range(len(unique_tvals))]
         for idx, tval in enumerate(unique_tvals):
             monitorPrefix = "%s: Tissue piece %d of %d" % (
-                self.monitorPrefix, idx+1, len(unique_tvals))
+                self.monitorPrefix, idx + 1, len(unique_tvals))
             self._print1(monitorPrefix)
             tissue_pieces[idx] = CDT_single_tissue_piece(
                 self, tissue_mask=labeled == tval, monitorPrefix=monitorPrefix)

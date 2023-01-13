@@ -42,20 +42,20 @@ def width_open(im_label, width):
     im_thinned = im_label.copy()
 
     # condense label image
-    if np.unique(im_thinned).size-1 != im_thinned.max():
+    if np.unique(im_thinned).size - 1 != im_thinned.max():
         im_thinned = condense(im_thinned)
 
     # get locations of objects in initial label image
     Locations = ms.find_objects(im_thinned)
 
     # iterate through objects, calculating distances where needed
-    for i in np.arange(1, len(Locations)+1):
+    for i in np.arange(1, len(Locations) + 1):
 
         # extract object from label image
-        W = im_thinned[Locations[i-1]]
+        W = im_thinned[Locations[i - 1]]
 
         # embed into mask with boundary
-        Mask = np.zeros((W.shape[0]+2, W.shape[1]+2), dtype=bool)
+        Mask = np.zeros((W.shape[0] + 2, W.shape[1] + 2), dtype=bool)
         Mask[1:-1, 1:-1] = W == i
 
         # calculate distance transform of mask

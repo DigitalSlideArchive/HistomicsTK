@@ -17,10 +17,12 @@
 ###############################################################################
 
 import collections
-import numpy as np
 import os
-from histomicstk.preprocessing import color_normalization as htk_cn
+
+import numpy as np
+
 from histomicstk.cli import utils as cli_utils
+from histomicstk.preprocessing import color_normalization as htk_cn
 
 from .datastore import datastore
 

@@ -361,11 +361,11 @@ class Polygon_merger(Base_HTK_Class):
                 self._print2(e)
                 continue
 
-            nno1Max = len(polygons1)-1
+            nno1Max = len(polygons1) - 1
             for nno1, poly1 in enumerate(polygons1):
                 self._print2(
                     "%s: edge2-nest %d of %d: vs. edge1-nest %d of %d" % (
-                        monitorPrefix, nno2, nno2Max, nno1+1, nno1Max+1))
+                        monitorPrefix, nno2, nno2Max, nno1 + 1, nno1Max + 1))
                 nid1, polygon1 = poly1
                 if polygon1.distance(polygon2) < self.merge_thresh:
                     idx = to_merge.shape[0]
@@ -417,7 +417,7 @@ class Polygon_merger(Base_HTK_Class):
         keep_going = True
         while keep_going:
             self._print2("%s: level %d" % (monitorPrefix, level))
-            merge_groups['level-%d' % (level+1)] = []
+            merge_groups['level-%d' % (level + 1)] = []
             reference = merge_groups['level-%d' % (level)][:]
             # compare each cluster to the others in current level
             for gid, mgroup in enumerate(merge_groups['level-%d' % (level)]):
@@ -430,15 +430,15 @@ class Polygon_merger(Base_HTK_Class):
                     # hierarchy and remove them both from this level
                     if (gid != gid2) and (
                             len(mgroupSet.intersection(mgroup2Set)) > 0):
-                        merge_groups['level-%d' % (level+1)].append(
+                        merge_groups['level-%d' % (level + 1)].append(
                             list(mgroupSet.union(set(mgroup2Set))))
                         reference[gid] = []
                         reference[gid2] = []
             # cleanup
             merge_groups['level-%d' % (level)] = [
                 j for j in reference if len(j) > 0]
-            if len(merge_groups['level-%d' % (level+1)]) < 1:
-                del merge_groups['level-%d' % (level+1)]
+            if len(merge_groups['level-%d' % (level + 1)]) < 1:
+                del merge_groups['level-%d' % (level + 1)]
                 keep_going = False
             level += 1
 
@@ -500,7 +500,7 @@ class Polygon_merger(Base_HTK_Class):
         merged_polygons = []
         for cid, cl in enumerate(merge_clusters):
             self._print2("%s: cluster %d of %d" % (
-                monitorPrefix, cid+1, len(merge_clusters)))
+                monitorPrefix, cid + 1, len(merge_clusters)))
             merged_polygon = self._get_merged_polygon(cluster=cl)
             merged_polygons.append(merged_polygon)
         return merged_polygons
@@ -535,7 +535,7 @@ class Polygon_merger(Base_HTK_Class):
         """Add merged polygons to self.merged_contours df (Internal)."""
         for pno, geometry in enumerate(merged_polygons):
             self._print2("%s: contour %d of %d" % (
-                monitorPrefix, pno+1, len(merged_polygons)))
+                monitorPrefix, pno + 1, len(merged_polygons)))
             if geometry.type == 'MultiPolygon':
                 for polygon in geometry:
                     self._add_single_merged_edge_contour(polygon, group=group)

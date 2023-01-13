@@ -18,6 +18,7 @@
 
 import numpy as np
 import skimage.io
+
 from histomicstk.preprocessing import color_deconvolution as htk_dcv
 
 from .datastore import datastore

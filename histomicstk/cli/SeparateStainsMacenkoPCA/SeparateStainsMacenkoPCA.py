@@ -15,7 +15,7 @@ def main(args):
     stain_matrix = rgb_separate_stains_macenko_pca(sample.T, **vars(args.macenko))
     with open(args.returnParameterFile, 'w') as f:
         for i, stain in enumerate(stain_matrix.T):
-            f.write('stainColor_{} = {}\n'.format(i+1, ','.join(map(str, stain))))
+            f.write('stainColor_{} = {}\n'.format(i + 1, ','.join(map(str, stain))))
 
 
 if __name__ == '__main__':

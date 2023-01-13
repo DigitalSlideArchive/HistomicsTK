@@ -94,7 +94,7 @@ def trace_object_boundaries(im_label,
             mcols = max_col - min_col + 2
 
             mask = np.zeros((mrows, mcols))
-            mask[1:mrows-1, 1:mcols-1] = lmask
+            mask[1:mrows - 1, 1:mcols - 1] = lmask
 
             by, bx = _trace_object_boundaries_cython(
                 np.ascontiguousarray(
