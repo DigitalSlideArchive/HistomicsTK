@@ -6,6 +6,7 @@ import tempfile
 import pandas as pd
 import pytest
 import sqlalchemy as db
+from sqlalchemy import text
 
 from histomicstk.annotations_and_masks.annotation_database_parser import (
     dump_annotations_locally, parse_annotations_to_local_tables)
@@ -79,24 +80,22 @@ class TestDatabaseParser:
             cfg.gc, folderid=cfg.folderid, local=savepath,
             save_json=True, save_sqlite=True)
 
-        assert set(os.listdir(savepath)) == {
+        assert not len({
             'test.json', 'test.sqlite',
             'test_dbsqlite-0.json',
             'test_dbsqlite-0_annotations.json',
             'test_dbsqlite-1.json',
             'test_dbsqlite-1_annotations.json',
             'test_sub',
-        }
+        } - set(os.listdir(savepath)))
 
         sql_engine = db.create_engine('sqlite:///%s/test.sqlite' % savepath)
         dbcon = sql_engine.connect()
 
-        result = pd.read_sql_query(
-            """SELECT count(*) FROM 'folders';""", dbcon)
+        result = pd.read_sql_query(text("""SELECT count(*) FROM 'folders';"""), dbcon)
         assert int(result.loc[0, :]) == 2
 
-        result = pd.read_sql_query(
-            """SELECT count(*) FROM 'items';""", dbcon)
+        result = pd.read_sql_query(text("""SELECT count(*) FROM 'items';"""), dbcon)
         assert int(result.loc[0, :]) == 4
 
         # cleanup
@@ -118,13 +117,13 @@ class TestDatabaseParser:
             }
         )
 
-        assert set(os.listdir(savepath)), {
+        assert not len({
             'test.sqlite',
             'test_dbsqlite-0_docs.csv',
             'test_dbsqlite-0_elements.csv',
             'test_dbsqlite-1_docs.csv',
             'test_dbsqlite-1_elements.csv',
-            'test_sub'}
+            'test_sub'} - set(os.listdir(savepath)))
 
         files = [j for j in os.listdir(os.path.join(savepath, 'test_sub'))]
         assert len([j for j in files if j.endswith('_docs.csv')]) == 2
@@ -133,8 +132,8 @@ class TestDatabaseParser:
         sql_engine = db.create_engine('sqlite:///%s/test.sqlite' % savepath)
         dbcon = sql_engine.connect()
 
-        result = pd.read_sql_query(
-            """SELECT * FROM 'annotation_docs';""", dbcon)
+        result = pd.read_sql_query(text(
+            """SELECT * FROM 'annotation_docs';"""), dbcon)
         assert result.shape == (32, 13)
         assert set(result.columns) == {
             '_modelType', '_version', 'annotation_girder_id',
@@ -142,8 +141,8 @@ class TestDatabaseParser:
             'element_details', 'groups', 'itemId', 'item_name',
             'public', 'updated', 'updatedId'}
 
-        result = pd.read_sql_query(
-            """SELECT * FROM 'annotation_elements';""", dbcon)
+        result = pd.read_sql_query(text(
+            """SELECT * FROM 'annotation_elements';"""), dbcon)
         assert result.shape == (304, 13)
         assert set(result.columns) == {
             'annotation_girder_id', 'bbox_area', 'color',

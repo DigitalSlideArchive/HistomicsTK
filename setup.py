@@ -40,7 +40,8 @@ def prerelease_local_scheme(version):
 
 setup(
     name='histomicstk',
-    use_scm_version={'local_scheme': prerelease_local_scheme},
+    use_scm_version={'local_scheme': prerelease_local_scheme,
+                     'fallback_version': '0.0.0'},
     description='A Python toolkit for Histopathology Image Analysis',
     long_description=readme,
     long_description_content_type='text/x-rst',
@@ -64,7 +65,7 @@ setup(
         'scikit-learn>=0.18.1',
         'imageio>=2.3.0',
         'shapely[vectorized]',
-        'sqlalchemy',
+        'sqlalchemy<2',
         'matplotlib',
         'pyvips',
         # dask packages
