@@ -188,7 +188,7 @@ def _count_image(image, params, mask=None):
     p = params
     image_hsi = rgb_to_hsi(image / 255)
     mask_all_positive = (
-        (np.abs((image_hsi[..., 0] - p.hue_value + 0.5 % 1) - 0.5) <=
+        (np.abs(((image_hsi[..., 0] - p.hue_value + 0.5) % 1) - 0.5) <=
          p.hue_width / 2) &
         (image_hsi[..., 1] >= p.saturation_minimum) &
         (image_hsi[..., 2] < p.intensity_upper_limit) &
