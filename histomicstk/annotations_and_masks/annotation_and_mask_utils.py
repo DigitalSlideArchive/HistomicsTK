@@ -118,7 +118,7 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
     else:
         warnings.warn(
             "NO SLIDE MAGNIFICATION FOUND; BASE MAGNIFICATION USED!",
-            RuntimeWarning)
+            RuntimeWarning, stacklevel=1)
         sf = 1.0
         appendStr = ""
 
