@@ -130,6 +130,7 @@ def girderClient():
             e.__repr__() + "\n"
             "Looks like there's no existing local DSA docker running; "
             "will create one now and try again.",
+            stacklevel=2
         )
         # create a local dsa docker and connect to it
         gc, proc = _create_and_connect_to_local_dsa()
