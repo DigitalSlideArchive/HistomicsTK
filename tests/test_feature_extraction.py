@@ -33,7 +33,7 @@ class Cfg:
 
 cfg = Cfg()
 # Enable to generate groundtruth files in the /tmp directory
-GENERATE_GROUNDTRUTH = False
+GENERATE_GROUNDTRUTH = bool(os.environ.get('GENERATE_GROUNDTRUTH'))
 
 
 def check_fdata_sanity(fdata, expected_feature_list,
@@ -162,7 +162,7 @@ class TestFeatureExtraction:
             index_col=None)
 
         pd.testing.assert_frame_equal(
-            fdata, fdata_gtruth, check_less_precise=2)
+            fdata, fdata_gtruth, atol=1e-2)
 
     def test_compute_haralick_features(self):
 
@@ -209,7 +209,7 @@ class TestFeatureExtraction:
             utilities.getTestFilePath('Easy1_nuclei_haralick_features.csv'))
 
         pd.testing.assert_frame_equal(
-            fdata, fdata_gtruth, check_less_precise=2)
+            fdata, fdata_gtruth, atol=1e-2)
 
     def test_compute_gradient_features(self):
 
@@ -253,7 +253,7 @@ class TestFeatureExtraction:
             index_col=None)
 
         pd.testing.assert_frame_equal(
-            fdata, fdata_gtruth, check_less_precise=2)
+            fdata, fdata_gtruth, atol=1e-2)
 
     def test_compute_morphometry_features(self):
 
@@ -301,7 +301,7 @@ class TestFeatureExtraction:
             utilities.getTestFilePath(test_file),
             index_col=None)
         pd.testing.assert_frame_equal(
-            fdata, fdata_gtruth, check_less_precise=2)
+            fdata, fdata_gtruth, atol=1e-2)
 
     def test_compute_fsd_features(self):
 
@@ -325,7 +325,7 @@ class TestFeatureExtraction:
             utilities.getTestFilePath('Easy1_nuclei_fsd_features.csv'))
 
         pd.testing.assert_frame_equal(
-            fdata, fdata_gtruth, check_less_precise=2)
+            fdata, fdata_gtruth, atol=1e-2)
 
 
 # PROTOTYPING =================================================================

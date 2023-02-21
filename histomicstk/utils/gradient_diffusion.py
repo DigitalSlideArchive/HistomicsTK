@@ -51,7 +51,7 @@ def gradient_diffusion(im_dx, im_dy, im_fgnd_mask,
            tracking" in BMC Cell Biology,vol.40,no.8, 2007.
 
     """
-    import scipy.ndimage.filters as spf
+    import scipy.ndimage as ndi
 
     # initialize solution
     im_vx = im_dx.copy()
@@ -67,10 +67,10 @@ def gradient_diffusion(im_dx, im_dy, im_fgnd_mask,
         DivY, DivX = np.gradient(Div)
 
         # calculate laplacians of current solution
-        im_vx += dt * (mu * spf.laplace(im_vx) +
+        im_vx += dt * (mu * ndi.laplace(im_vx) +
                        (lamda + mu) * DivX +
                        im_fgnd_mask * (im_dx - im_vx))
-        im_vy += dt * (mu * spf.laplace(im_vy) +
+        im_vy += dt * (mu * ndi.laplace(im_vy) +
                        (lamda + mu) * DivY +
                        im_fgnd_mask * (im_dy - im_vy))
 

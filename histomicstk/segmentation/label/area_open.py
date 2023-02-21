@@ -32,7 +32,7 @@ def area_open(im_label, min_area):
     histomicstk.segmentation.label.width_open
 
     """
-    import scipy.ndimage.measurements as ms
+    import scipy.ndimage as ndi
 
     # copy input image
     im_open = im_label.copy()
@@ -45,7 +45,7 @@ def area_open(im_label, min_area):
     Counts, Edges = np.histogram(im_open, bins=im_open.max() + 1)
 
     # get locations of objects in initial image
-    Locations = ms.find_objects(im_open)
+    Locations = ndi.find_objects(im_open)
 
     # iterate through objects, zeroing where needed
     for i in np.arange(1, Counts.size):

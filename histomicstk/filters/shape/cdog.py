@@ -51,8 +51,7 @@ def cdog(im_input, im_mask, sigma_min, sigma_max, num_octave_levels=3):
            no. 2, 91-110, 2004.
 
     """
-    from scipy.ndimage.filters import gaussian_filter
-    from scipy.ndimage.morphology import distance_transform_edt
+    from scipy.ndimage import distance_transform_edt, gaussian_filter
     from skimage.transform import resize
 
     im_input = im_input.astype(float)

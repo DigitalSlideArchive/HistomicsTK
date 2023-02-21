@@ -54,9 +54,9 @@ def glog(im_input, alpha=1, range=None, theta=np.pi / 4, tau=0.6, eps=0.6):
     Min = np.zeros((len(Sigma), 1))
     Max = np.zeros((len(Sigma), 1))
     for i, s in enumerate(Sigma):
-        Response = s**2 * ndi.filters.gaussian_laplace(im_input, s, output=None,
-                                                       mode='constant',
-                                                       cval=0.0)
+        Response = s**2 * ndi.gaussian_laplace(im_input, s, output=None,
+                                               mode='constant',
+                                               cval=0.0)
         Min[i] = Response.min()
         Max[i] = Response.max()
         Bins.append(np.arange(0.01 * np.floor(Min[i] / 0.01),
@@ -100,7 +100,7 @@ def glog(im_input, alpha=1, range=None, theta=np.pi / 4, tau=0.6, eps=0.6):
 
     # detect local maxima
     Disk = morphology.disk(3 * np.exp(range[Index]))
-    Maxima = ndi.filters.maximum_filter(Rsum, footprint=Disk)
+    Maxima = ndi.maximum_filter(Rsum, footprint=Disk)
     Maxima = Rsum == Maxima
 
     return Rsum, Maxima

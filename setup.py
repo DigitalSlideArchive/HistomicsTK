@@ -56,21 +56,21 @@ setup(
     install_requires=[
         'girder-client',
         # scientific packages
-        'nimfa>=1.3.2',
-        'numpy>=1.12.1',
-        'scipy>=0.19.0',
+        'nimfa',
+        'numpy',
+        'scipy',
         'Pillow',
-        'pandas>=0.19.2',
-        'scikit-image>=0.14.2',
-        'scikit-learn>=0.18.1',
-        'imageio>=2.3.0',
+        'pandas',
+        'scikit-image',
+        'scikit-learn',
+        'imageio',
         'shapely[vectorized]',
         'sqlalchemy<2',
         'matplotlib',
         'pyvips',
         # dask packages
-        'dask[dataframe]>=1.1.0',
-        'distributed>=1.21.6',
+        'dask[dataframe]',
+        'distributed',
         # large image; for non-linux systems only install the PIL tile source
         # by default.
         'large-image[sources];sys.platform=="linux"',
@@ -83,7 +83,10 @@ setup(
         # Only require opencv if it isn't installed.  This can allow alternate
         # forms to be in the environment (such as a headed form) without
         # causing conflicts
-        ['opencv-python-headless'] if not importlib.util.find_spec('cv2') else []
+        [
+            'opencv-python-headless ; python_version >= "3.7"',
+            'opencv-python-headless<4.7 ; python_version < "3.7"',
+        ] if not importlib.util.find_spec('cv2') else []
     ),
     license='Apache Software License 2.0',
     keywords='histomicstk',
