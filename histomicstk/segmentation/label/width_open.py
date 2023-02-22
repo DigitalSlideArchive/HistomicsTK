@@ -35,8 +35,7 @@ def width_open(im_label, width):
     histomicstk.segmentation.label.area_open
 
     """
-    import scipy.ndimage.measurements as ms
-    import scipy.ndimage.morphology as mp
+    import scipy.ndimage as ndi
 
     # copy input image
     im_thinned = im_label.copy()
@@ -46,7 +45,7 @@ def width_open(im_label, width):
         im_thinned = condense(im_thinned)
 
     # get locations of objects in initial label image
-    Locations = ms.find_objects(im_thinned)
+    Locations = ndi.find_objects(im_thinned)
 
     # iterate through objects, calculating distances where needed
     for i in np.arange(1, len(Locations) + 1):
@@ -59,7 +58,7 @@ def width_open(im_label, width):
         Mask[1:-1, 1:-1] = W == i
 
         # calculate distance transform of mask
-        D = mp.distance_transform_cdt(Mask, metric='taxicab')
+        D = ndi.distance_transform_cdt(Mask, metric='taxicab')
 
         # get max distance
         Max = D.max()

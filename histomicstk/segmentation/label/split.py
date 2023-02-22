@@ -31,7 +31,7 @@ def split(im_label, conn=8):
     histomicstk.segmentation.label.shuffle
 
     """
-    import scipy.ndimage.measurements as ms
+    import scipy.ndimage as ndi
 
     # copy input image
     Split = im_label.copy()
@@ -51,7 +51,7 @@ def split(im_label, conn=8):
         Split = condense(Split)
 
     # get locations of objects in initial image
-    Locations = ms.find_objects(Split)
+    Locations = ndi.find_objects(Split)
 
     # initialize number of labeled objects
     Total = Split.max()
@@ -63,7 +63,7 @@ def split(im_label, conn=8):
         Template = Split[Locations[i - 1]]
 
         # label mask of object 'i'
-        L, Count = ms.label(Template == i, Kernel)
+        L, Count = ndi.label(Template == i, Kernel)
 
         # relabel if necessary
         if Count > 1:

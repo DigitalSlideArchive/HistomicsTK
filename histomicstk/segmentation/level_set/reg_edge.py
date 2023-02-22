@@ -63,10 +63,10 @@ def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
        Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.
 
     """
-    import scipy.ndimage.filters as filters
+    import scipy.ndimage as ndi
 
     # smoothed gradient of input image
-    sI = filters.gaussian_filter(im_input, sigma, mode='constant', cval=0)
+    sI = ndi.gaussian_filter(im_input, sigma, mode='constant', cval=0)
     dsI = np.gradient(sI)
     G = 1 / (1 + dsI[0]**2 + dsI[1]**2)
     dG = np.gradient(G)
