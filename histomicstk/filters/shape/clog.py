@@ -41,8 +41,7 @@ def clog(im_input, im_mask, sigma_min, sigma_max):
            Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.
 
     """
-    from scipy.ndimage.filters import gaussian_laplace
-    from scipy.ndimage.morphology import distance_transform_edt
+    from scipy.ndimage import distance_transform_edt, gaussian_laplace
 
     # convert intensity image type to float
     im_input = im_input.astype(float)

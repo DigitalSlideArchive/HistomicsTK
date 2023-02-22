@@ -53,8 +53,13 @@ class TestReinhardNormalization:
         wsi_mean, wsi_stddev = htk_cn.reinhard_stats(
             wsi_path, 0.1, magnification=20)
 
-        gt_mean = [8.896134, -0.074579, 0.022006]
-        gt_stddev = [0.612143, 0.122667, 0.021361]
+        # Without ICC correction
+        # gt_mean = [8.896134, -0.074579, 0.022006]
+        # gt_stddev = [0.612143, 0.122667, 0.021361]
+
+        # With icc correction
+        gt_mean = [8.977143, -0.082973, 0.021126]
+        gt_stddev = [0.561896, 0.124711, 0.025968]
 
         np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-2)
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)

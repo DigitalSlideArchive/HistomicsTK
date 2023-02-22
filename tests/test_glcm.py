@@ -31,8 +31,12 @@ class TestGLCMMatrixGeneration:
                           [0, 2, 2, 2],
                           [2, 2, 3, 3]], dtype=np.uint8)
 
+        # Work with skimage < 1.19 and >= 1.19
+        if not hasattr(skimage.feature, 'graycomatrix'):
+            skimage.feature.graycomatrix = skimage.feature.greycomatrix
+
         # test 0, 45, 90, 135 degree offsets
-        res_skim = skimage.feature.greycomatrix(
+        res_skim = skimage.feature.graycomatrix(
             image, [1],
             [0, np.pi / 4.0, np.pi / 2.0, 3 * np.pi / 4.0],
             levels=4
@@ -46,7 +50,7 @@ class TestGLCMMatrixGeneration:
         np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
 
         # test 0, 45, 90, 135 degree offsets - normalized
-        res_skim = skimage.feature.greycomatrix(
+        res_skim = skimage.feature.graycomatrix(
             image, [1],
             [0, np.pi / 4.0, np.pi / 2.0, 3 * np.pi / 4.0],
             levels=4, normed=True
@@ -60,7 +64,7 @@ class TestGLCMMatrixGeneration:
         np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
 
         # test 0, 45, 90, 135 degree offsets - symmetric
-        res_skim = skimage.feature.greycomatrix(
+        res_skim = skimage.feature.graycomatrix(
             image, [1],
             [0, np.pi / 4.0, np.pi / 2.0, 3 * np.pi / 4.0],
             levels=4, symmetric=True

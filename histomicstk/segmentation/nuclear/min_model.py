@@ -387,16 +387,16 @@ def score_contours(I, cXs, cYs):
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
-    import scipy.ndimage.filters as ft
+    import scipy.ndimage as ndi
 
     # initialize output
     Scores = np.zeros(len(cXs))
 
     # generate Sobel filter response from input intensity image 'I'
-    Gradients = ft.sobel(I, mode='mirror')
+    Gradients = ndi.sobel(I, mode='mirror')
 
     # generate local max in 3 x 3 window of Gradients
-    Maxima = ft.maximum_filter(Gradients, size=3, mode='mirror')
+    Maxima = ndi.maximum_filter(Gradients, size=3, mode='mirror')
 
     # generate score for each contour
     for i in np.arange(len(cXs)):
@@ -526,7 +526,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
 
     """
     import scipy
-    import scipy.ndimage.morphology as mp
+    import scipy.ndimage as ndi
     import skimage.morphology as mo
 
     # use shape profiles to split objects with concavities
@@ -568,7 +568,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
         Y = np.array(Y[0][:-1], dtype=np.uint32)
 
         # calculate distance transform of object boundary pixels to convex hull
-        Distance = mp.distance_transform_edt(Hull)
+        Distance = ndi.distance_transform_edt(Hull)
         D = Distance[Y, X] - 1
 
         # generate linear index of positions

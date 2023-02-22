@@ -39,14 +39,13 @@ def compact(im_label, compaction=3):
            Scientific Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
-    import scipy.ndimage.filters as ft
-    import scipy.ndimage.morphology as mp
+    import scipy.ndimage as ndi
 
     # copy input image
     im_compact = im_label.copy()
 
     # generate distance map of label image
-    D = mp.distance_transform_cdt(im_compact > 0, metric='taxicab')
+    D = ndi.distance_transform_cdt(im_compact > 0, metric='taxicab')
 
     # define 4-neighbors filtering kernel
     Kernel = np.zeros((3, 3), dtype=bool)
@@ -57,7 +56,7 @@ def compact(im_label, compaction=3):
     for i in np.arange(compaction - 1, 0, -1):
 
         # four-neighbor maxima of distance transform
-        MaxD = ft.maximum_filter(D, footprint=Kernel)
+        MaxD = ndi.maximum_filter(D, footprint=Kernel)
 
         # identify pixels whose max 4-neighbor is less than i+1
         Decrement = (D == i) & (MaxD < i + 1)

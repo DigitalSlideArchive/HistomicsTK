@@ -29,13 +29,13 @@ def delete(im_label, indices):
     histomicstk.segmentation.label.condense
 
     """
-    import scipy.ndimage.measurements as ms
+    import scipy.ndimage as ndi
 
     # initialize output
     Deleted = im_label.copy()
 
     # get extent of each object
-    Locations = ms.find_objects(Deleted)
+    Locations = ndi.find_objects(Deleted)
 
     # fill in new values
     for i in np.arange(indices.size):

@@ -6,7 +6,7 @@ Created on Sat Aug 24 16:01:26 2019.
 
 import numpy as np
 from shapely.geometry.polygon import Polygon
-from shapely.ops import cascaded_union
+from shapely.ops import unary_union
 
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import \
     _parse_annot_coords
@@ -140,9 +140,9 @@ class Polygon_merger_v2(Base_HTK_Class):
     def _merge_polygons(self, poly_list):
         if self.buffer_size > 0:
             poly_list = [j.buffer(self.buffer_size) for j in poly_list]
-            merged_polys = cascaded_union(poly_list).buffer(-self.buffer_size)
+            merged_polys = unary_union(poly_list).buffer(-self.buffer_size)
         else:
-            merged_polys = cascaded_union(poly_list)
+            merged_polys = unary_union(poly_list)
         return merged_polys
 
     # %% =====================================================================

@@ -11,7 +11,7 @@ from imageio import imread
 from PIL import Image
 # import cv2
 from shapely.geometry.polygon import Polygon
-from shapely.ops import cascaded_union
+from shapely.ops import unary_union
 
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     _discard_nonenclosed_background_group, _parse_annot_coords,
@@ -483,7 +483,7 @@ class Polygon_merger(Base_HTK_Class):
             coords = _parse_annot_coords(
                 nest, x_offset=roileft, y_offset=roitop)
             nest_polygons.append(Polygon(coords).buffer(buffer_size))
-        merged_polygon = cascaded_union(nest_polygons).buffer(-buffer_size)
+        merged_polygon = unary_union(nest_polygons).buffer(-buffer_size)
         return merged_polygon
 
     # %% =====================================================================
@@ -536,7 +536,7 @@ class Polygon_merger(Base_HTK_Class):
         for pno, geometry in enumerate(merged_polygons):
             self._print2("%s: contour %d of %d" % (
                 monitorPrefix, pno + 1, len(merged_polygons)))
-            if geometry.type == 'MultiPolygon':
+            if geometry.geom_type == 'MultiPolygon':
                 for polygon in geometry:
                     self._add_single_merged_edge_contour(polygon, group=group)
             else:

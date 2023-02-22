@@ -36,6 +36,8 @@ from histomicstk.cli import utils as cli_utils
 
 from .datastore import datastore
 
+GENERATE_GROUNDTRUTH = bool(os.environ.get('GENERATE_GROUNDTRUTH'))
+
 
 class TestCliCommon:
 
@@ -86,6 +88,12 @@ class TestCliCommon:
 
         im_fgnd_mask_lres_gtruth = skimage.io.imread(
             fgnd_mask_gtruth_file) > 0
+
+        if GENERATE_GROUNDTRUTH:
+            import PIL.Image
+
+            PIL.Image.fromarray(im_fgnd_mask_lres).save(
+                '/tmp/TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png')
 
         np.testing.assert_array_equal(im_fgnd_mask_lres > 0,
                                       im_fgnd_mask_lres_gtruth)
@@ -215,6 +223,12 @@ class TestCliCommon:
                 im_nuclei_seg_mask, tile_info, 'boundary')
 
             nuclei_bndry_annot_list.extend(cur_bndry_annot_list)
+
+        if GENERATE_GROUNDTRUTH:
+            open('/tmp/TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot', 'w').write(
+                json.dumps({'elements': nuclei_bbox_annot_list}))
+            open('/tmp/TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot', 'w').write(
+                json.dumps({'elements': nuclei_bndry_annot_list}))
 
         # compare nuclei bbox annotations with gtruth
         nuclei_bbox_annot_gtruth_file = os.path.join(datastore.fetch(

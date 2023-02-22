@@ -51,10 +51,10 @@ def chan_vese(im_input, im_mask, sigma,
        Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.
 
     """
-    import scipy.ndimage.filters as filters
+    import scipy.ndimage as ndi
 
     # smoothed gradient of input image
-    im_input = filters.gaussian_filter(im_input, sigma, mode='constant', cval=0)
+    im_input = ndi.gaussian_filter(im_input, sigma, mode='constant', cval=0)
 
     # generate signed distance map
     im_phi = mask_to_sdf(im_mask)
@@ -77,7 +77,7 @@ def chan_vese(im_input, im_mask, sigma,
 
 
 def mask_to_sdf(im_mask):
-    from scipy.ndimage.morphology import distance_transform_edt as dtx
+    from scipy.ndimage import distance_transform_edt as dtx
 
     # convert binary mask to signed distance function
 

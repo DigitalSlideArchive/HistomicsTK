@@ -52,7 +52,7 @@ def detect_nuclei_kofahi(im_nuclei_stain, im_nuclei_fgnd_mask, min_radius,
     im_nuclei_fgnd_mask = skimage.morphology.opening(
         im_nuclei_fgnd_mask, skimage.morphology.disk(3))
 
-    im_nuclei_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
+    im_nuclei_fgnd_mask = sp.ndimage.binary_fill_holes(
         im_nuclei_fgnd_mask)
 
     if not np.any(im_nuclei_fgnd_mask):
