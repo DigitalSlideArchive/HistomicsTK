@@ -96,3 +96,43 @@ class TestNucleiSegmentation:
         num_nuclei = len(np.unique(im_nuclei_seg_mask)) - 1
 
         assert num_nuclei == 0
+
+    def test_segment_nuclei_guassian_voting(self):
+
+        input_image_file = datastore.fetch('Easy1.png')
+
+        ref_image_file = datastore.fetch('L1.png')
+
+        # read input image
+        im_input = skimage.io.imread(input_image_file)[:, :, :3]
+
+        # read reference image
+        im_reference = skimage.io.imread(ref_image_file)[:, :, :3]
+
+        # get mean and stddev of reference image in lab space
+        mean_ref, std_ref = htk_cvt.lab_mean_std(im_reference)
+
+        # perform color normalization
+        im_nmzd = htk_cnorm.reinhard(im_input, mean_ref, std_ref)
+
+        # perform color decovolution
+        stain_color_map = {
+            'hematoxylin': [0.65, 0.70, 0.29],
+            'eosin': [0.07, 0.99, 0.11],
+            'dab': [0.27, 0.57, 0.78],
+            'null': [0.0, 0.0, 0.0]
+        }
+
+        w = htk_cdeconv.rgb_separate_stains_macenko_pca(im_nmzd, im_nmzd.max())
+
+        im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
+
+        nuclei_channel = htk_cdeconv.find_stain_index(stain_color_map['hematoxylin'], w)
+
+        im_nuclei_stain = im_stains[:, :, nuclei_channel].astype(float)
+
+        # segment nuclei
+        nuclei, votes = htk_seg.nuclear.gaussian_voting(im_nuclei_stain)
+
+        assert len(nuclei.X) > 50
+        assert len(votes) > 1000

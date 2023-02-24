@@ -51,7 +51,7 @@ def gaussian_grad(im_input, sigma):
     dy = signal.convolve2d(dy, yGy, mode='same')
 
     # format output
-    Output = collections.namedtuple('Output', ['dx', 'dy'])
+    Output = collections.namedtuple('Output', ['dX', 'dY'])
     Gradients = Output(dx, dy)
 
     return Gradients

@@ -65,7 +65,7 @@ def gaussian_voting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
     vSigma = (rmax - rmin) / 3
 
     # calculate voting radius
-    r = (rmax + rmin) / 2
+    r = int(round((rmax + rmin) / 2))
 
     # generate separable gaussian derivative kernels
     Grad = htk.filters.edge.gaussian_grad(I, sSigma)
@@ -104,8 +104,8 @@ def gaussian_voting(I, rmax=35, rmin=10, sSigma=5, Tau=5, bw=15, Psi=0.3):
     Votes = signal.convolve2d(Votes, yK, mode='full', boundary='fill')
 
     # crop voting image to size of original input image
-    Votes = Votes[r + np.floor(x.size / 2):-(r + np.ceil(x.size / 2)),
-                  r + np.floor(x.size / 2):-(r + np.ceil(x.size / 2))]
+    Votes = Votes[r + int(np.floor(x.size / 2)):-(r + int(np.ceil(x.size / 2))),
+                  r + int(np.floor(x.size / 2)):-(r + int(np.ceil(x.size / 2)))]
 
     # generate sets of potential seed points
     Seeds = [None] * np.arange(np.floor(10 * Psi) / 10, 0.9, 0.1).size
