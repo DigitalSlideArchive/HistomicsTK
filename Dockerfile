@@ -42,7 +42,7 @@ RUN mkdir -p $htk_path
 
 RUN pip install --no-cache-dir --upgrade pip setuptools && \
     # Install bokeh to help debug dask \
-    pip install --no-cache-dir 'bokeh>=0.12.14' && \
+    pip install --no-cache-dir 'bokeh>=0.12.14,<3' && \
     # Install large_image memcached and sources extras \
     pip install --no-cache-dir 'large-image[all]' --find-links https://girder.github.io/large_image_wheels && \
     # Install girder-client \
@@ -62,6 +62,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools && \
 #     pip install .[all] -r requirements-dev.txt --find-links https://girder.github.io/large_image_wheels
 
 COPY . $htk_path/
+COPY histomicstk/cli/dask_config.yaml /root/.config/dask/dask_config.yaml
 WORKDIR $htk_path
 
 # Install HistomicsTK and its dependencies

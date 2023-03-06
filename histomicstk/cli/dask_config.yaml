@@ -1,0 +1,4 @@
+---
+# Set dask log levels
+logging:
+  distributed: warning
