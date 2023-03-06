@@ -117,9 +117,14 @@ class CD_single_tissue_piece:
         # optionally use grayscale instead of RGB -- seems more robust to
         # color variations and sometimes gives better results
         if self.cd.use_grayscale:
-            self.spixel_mask = slic(
-                rgb2gray(self.tissue_rgb), n_segments=n_spixels,
-                compactness=self.cd.compactness)
+            try:
+                self.spixel_mask = slic(
+                    rgb2gray(self.tissue_rgb), n_segments=n_spixels,
+                    compactness=self.cd.compactness, channel_axis=None)
+            except Exception:
+                self.spixel_mask = slic(
+                    rgb2gray(self.tissue_rgb), n_segments=n_spixels,
+                    compactness=self.cd.compactness)
         else:
             self.spixel_mask = slic(
                 self.tissue_rgb, n_segments=n_spixels,
