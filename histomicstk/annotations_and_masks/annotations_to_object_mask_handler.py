@@ -8,6 +8,7 @@ import os
 from itertools import combinations
 
 import numpy as np
+import pandas as pd
 from imageio import imwrite
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
@@ -65,12 +66,12 @@ def _keep_relevant_elements_for_roi(
 
     if mode != "polygonal_bounds":
         # add to bounding boxes dataframe
-        element_infos = element_infos.append(
-            {'xmin': int(roiinfo['XMIN'] * sf),
-             'xmax': int(roiinfo['XMAX'] * sf),
-             'ymin': int(roiinfo['YMIN'] * sf),
-             'ymax': int(roiinfo['YMAX'] * sf)},
-            ignore_index=True)
+        element_infos = pd.concat([element_infos, pd.DataFrame([{
+            'xmin': int(roiinfo['XMIN'] * sf),
+            'xmax': int(roiinfo['XMAX'] * sf),
+            'ymin': int(roiinfo['YMIN'] * sf),
+            'ymax': int(roiinfo['YMAX'] * sf),
+        }])], ignore_index=True)
         idx_for_roi = element_infos.shape[0] - 1
 
     # isolate annotations that potentially overlap roi

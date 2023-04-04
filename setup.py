@@ -65,7 +65,8 @@ setup(
         'scikit-learn',
         'imageio',
         'shapely[vectorized]',
-        'sqlalchemy<2',
+        'sqlalchemy ; python_version >= "3.8"',
+        'sqlalchemy<2 ; python_version < "3.8"',
         'matplotlib',
         'pyvips',
         # dask packages
