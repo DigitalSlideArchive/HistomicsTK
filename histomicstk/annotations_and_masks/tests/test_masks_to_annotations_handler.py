@@ -6,6 +6,7 @@ Created on Tue Aug 20 18:13:37 2019.
 import os
 import sys
 
+import pandas as pd
 import pytest
 from imageio import imread
 from pandas import read_csv
@@ -88,14 +89,14 @@ class TestMasksToAnnotations:
         """Test get_contours_from_mask()."""
         self._setup()
         groups_to_get = None
-        gtcodes = self.GTCodes_df.append({
+        gtcodes = pd.concat([self.GTCodes_df, pd.DataFrame([{
             'group': 'zeroes',
             'overlay_order': 4,
             'GT_code': 0,
             'is_roi': 0,
             'is_background_class': 0,
             'color': 'rgb(0,128,0)',
-            'comments': 'zeroes'}, ignore_index=True)
+            'comments': 'zeroes'}])], ignore_index=True)
         gtcodes.index = gtcodes.loc[:, 'group']
         contours_df = get_contours_from_mask(
             MASK=self.MASK, GTCodes_df=gtcodes,

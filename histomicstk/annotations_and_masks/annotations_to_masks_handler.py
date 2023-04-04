@@ -11,6 +11,7 @@ import os
 from warnings import warn
 
 import numpy as np
+import pandas as pd
 from imageio import imwrite
 from matplotlib.patches import Polygon as mpPolygon
 from PIL import Image
@@ -316,7 +317,7 @@ def get_mask_from_slide(
     })
 
     # add to bounding boxes dataframe
-    element_infos = element_infos.append({
+    element_infos = pd.concat([element_infos, pd.DataFrame([{
         'annidx': len(slide_annotations) - 1,
         'elementidx': 0,
         'type': 'rectangle',
@@ -326,7 +327,7 @@ def get_mask_from_slide(
         'ymin': YMIN,
         'ymax': YMAX,
         'bbox_area': WIDTH * HEIGHT,
-    }, ignore_index=True)
+    }])], ignore_index=True)
 
     # find roi and background codes to use later
     roi_codes = list(GTCodes.loc[GTCodes.loc[:, 'is_roi'] == 1, "GT_code"])
@@ -341,14 +342,14 @@ def get_mask_from_slide(
     assert np.max(GTCodes.loc[:, 'GT_code']) < 255
     GTCodes.loc[:, 'is_roi'] = 0  # treat other ROIs as ordinary annotations
     GTCodes.loc[:, 'is_background_class'] = 0  # we'll adjust later
-    GTCodes = GTCodes.append({
+    GTCodes = pd.concat([GTCodes, pd.DataFrame([{
         'GT_code': 255,
         'overlay_order': 0,
         'color': 'rgb(0,0,0)',
         'group': 'super_roi',
         'is_background_class': 0,
         'is_roi': 1,
-    }, ignore_index=True)
+    }])], ignore_index=True)
     GTCodes.index = GTCodes.loc[:, 'group']
 
     # now get mask

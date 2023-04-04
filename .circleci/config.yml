@@ -126,12 +126,12 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.10.9
+          version: 3.10.10
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.10.9
+            pyenv global 3.10.10
       - tox:
           env: py310
       - coverage
@@ -142,12 +142,12 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.11.1
+          version: 3.11.2
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.11.1
+            pyenv global 3.11.2
       - tox:
           env: py311
       - coverage
