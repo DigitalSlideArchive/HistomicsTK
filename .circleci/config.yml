@@ -44,11 +44,11 @@ commands:
     steps:
       - run:
           name: Install Codecov client
-          command: pip install codecov==2.1.9
+          command: pip install codecov
       - run:
           name: Upload coverage
           # Retry as codecov can be flaky
-          command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; codecov --required --disable search pycov gcov --root project --file .tox/coverage/py_coverage.xml && s=0 && break || s=$?; done; (exit $s)
+          command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; codecov --disable search pycov gcov --file .tox/coverage/py_coverage.xml .tox/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
 
 jobs:
   # Because some of our tests use docker-compose as part of the test, we can't
