@@ -22,7 +22,7 @@ def find_stain_index(reference, w):
 
     Notes
     -----
-    The index of the vector with the smallest angular distance is returned.
+    The index of the vector with the smallest distance is returned.
 
     See Also
     --------
@@ -30,5 +30,5 @@ def find_stain_index(reference, w):
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
 
     """
-    dot_products = np.dot(reference, w)
-    return np.argmax(np.abs(dot_products))
+    dists = [np.linalg.norm(w[i] - reference) for i in range(w.shape[0])]
+    return np.argmin(dists)
