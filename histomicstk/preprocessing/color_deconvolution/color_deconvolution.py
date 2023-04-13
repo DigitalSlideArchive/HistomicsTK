@@ -70,9 +70,7 @@ def color_deconvolution(im_rgb, w, I_0=None):
     # complement stain matrix if needed
     if w.shape[1] < 3:
         wc = np.zeros((w.shape[0], 3))
-        for i in range(w.shape[0]):
-            for j in range(w.shape[1]):
-                wc[i, j] = w[i, j]
+        wc[:,:w.shape[1]] = w
         w = wc
     
     if np.linalg.norm(w[:, 2]) <= 1e-16:
