@@ -104,6 +104,7 @@ def main(opts):
     annotation = {
         'name': 'Positive Pixel Count',
         'description': 'Used params: %r\nResults: %r' % (vars(opts), stats._asdict()),
+        'attributes': {'params': vars(opts), 'stats': stats._asdict()},
         'elements': [{
             'type': 'image',
             'girderId': 'outputLabelImage',
