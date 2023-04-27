@@ -13,6 +13,11 @@ from histomicstk.cli.utils import CLIArgumentParser
 
 
 def createSuperPixels(opts):  # noqa
+    """
+    Besides the inputs described by the specification, this also can take
+    opts.callback, which is a function that takes (step_name: str,
+    step_count: int, step_total: int).
+    """
     averageSize = opts.superpixelSize ** 2
     overlap = opts.superpixelSize * 4 * 2 if opts.overlap else 0
     tileSize = opts.tileSize + overlap
@@ -42,6 +47,9 @@ def createSuperPixels(opts):  # noqa
         tile_overlap=dict(x=overlap, y=overlap),
         **tiparams,
     ):
+        if hasattr(opts, 'callback'):
+            opts.callback('tiles', tile['tile_position']['position'],
+                          tile['iterator_range']['position'])
         print('%d/%d (%d x %d) - %d' % (
             tile['tile_position']['position'], tile['iterator_range']['position'],
             tile['width'], tile['height'],
@@ -167,6 +175,11 @@ def createSuperPixels(opts):  # noqa
             strip = strip.copy(interpretation=pyvips.Interpretation.RGB)
             strips[ty] = [ty0, strip]
         strips[ty][1] = strips[ty][1].composite([vimg], pyvips.BlendMode.OVER, x=int(x), y=0)
+        if hasattr(opts, 'callback'):
+            opts.callback('tiles', tile['tile_position']['position'] + 1,
+                          tile['iterator_range']['position'])
+    if hasattr(opts, 'callback'):
+        opts.callback('file', 0, 2 if opts.outputAnnotationFile else 1)
     print('>> Found %d superpixels' % found)
     if found > 256 ** 3:
         print('Too many superpixels')
@@ -184,7 +197,8 @@ def createSuperPixels(opts):  # noqa
     # superpixel count
     img.set_type(
         pyvips.GValue.gstr_type, 'image-description',
-        json.dumps(dict(vars(opts), indexCount=found)))
+        json.dumps(dict(
+            {k: v for k, v in vars(opts).items() if k != 'callback'}, indexCount=found)))
     img.write_to_file(
         opts.outputImageFile, tile=True, tile_width=256, tile_height=256, pyramid=True,
         region_shrink=pyvips.RegionShrink.NEAREST,
@@ -193,6 +207,8 @@ def createSuperPixels(opts):  # noqa
         # region_shrink=pyvips.RegionShrink.MAX,
         bigtiff=True, compression='lzw', predictor='horizontal')
 
+    if hasattr(opts, 'callback'):
+        opts.callback('file', 1, 2 if opts.outputAnnotationFile else 1)
     if opts.outputAnnotationFile:
         print('>> Generating annotation file')
         categories = [
@@ -241,6 +257,8 @@ def createSuperPixels(opts):  # noqa
             annotation = [annotation, bboxannotation]
         with open(opts.outputAnnotationFile, 'w') as annotation_file:
             json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
+        if hasattr(opts, 'callback'):
+            opts.callback('file', 2, 2)
 
 
 if __name__ == "__main__":
