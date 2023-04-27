@@ -1,10 +1,6 @@
-================================================
-HistomicsTK |build-status| |codecov-io| |gitter|
-================================================
-
-.. |build-status| image:: https://travis-ci.org/DigitalSlideArchive/HistomicsTK.svg?branch=master
-    :target: https://travis-ci.org/DigitalSlideArchive/HistomicsTK
-    :alt: Build Status
+=================================
+HistomicsTK |codecov-io| |gitter|
+=================================
 
 .. |codecov-io| image:: https://codecov.io/github/DigitalSlideArchive/HistomicsTK/coverage.svg?branch=master
     :target: https://codecov.io/github/DigitalSlideArchive/HistomicsTK?branch=master
