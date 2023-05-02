@@ -11,13 +11,18 @@ from histomicstk.cli.utils import CLIArgumentParser
 
 
 def tile_positive_pixel_count(imagePath, tilePosition, it_kwargs, ppc_params,
-                              color_map, useAlpha, region_polygons):
+                              color_map, useAlpha, region_polygons, style):
     tile_start_time = time.time()
-    ts = large_image.getTileSource(imagePath)
+    ts = large_image.getTileSource(imagePath, style=style)
     tile = ts.getSingleTile(tile_position=tilePosition, **it_kwargs)
     mask = utils.polygons_to_binary_mask(
         region_polygons, tile['x'], tile['y'], tile['width'], tile['height'])
-    result, ppcmask = ppc.count_image(tile['tile'], ppc_params, mask)
+    img = tile['tile']
+    if len(img.shape) == 2:
+        img = img.reshape((img.shape[0], img.shape[1], 1))
+    if len(img.shape) == 3 and img.shape[-1] == 1:
+        img = np.repeat(img, 3, axis=2)
+    result, ppcmask = ppc.count_image(img, ppc_params, mask)
     tile.release()
     ppcimg = color_map[ppcmask]
     if not useAlpha:
@@ -27,7 +32,9 @@ def tile_positive_pixel_count(imagePath, tilePosition, it_kwargs, ppc_params,
 
 def main(opts):
     pprint.pprint(vars(opts))
-    ts = large_image.getTileSource(opts.inputImageFile)
+    if not opts.style or opts.style.startswith('{#control'):
+        opts.style = None
+    ts = large_image.getTileSource(opts.inputImageFile, style=opts.style)
     sink = large_image.new() if getattr(opts, 'outputLabelImage', None) else None
     tiparams = utils.get_region_dict(opts.region, None, ts)
     region_polygons = utils.get_region_polygons(opts.region)
@@ -50,6 +57,10 @@ def main(opts):
             tiparams['region']['width'], tiparams['region']['height'])
     tiparams['format'] = large_image.constants.TILE_FORMAT_NUMPY
     tiparams['tile_size'] = dict(width=tileSize, height=tileSize)
+    try:
+        tiparams['frame'] = int(opts.frame)
+    except Exception:
+        pass
     tileCount = next(ts.tileIterator(**tiparams))['iterator_range']['position']
     start_time = time.time()
     if tileCount > 4 and getattr(opts, 'scheduler', None) != 'none':
@@ -64,7 +75,7 @@ def main(opts):
             futureList.append(client.submit(
                 tile_positive_pixel_count,
                 opts.inputImageFile, tile_position, tiparams, ppc_params,
-                color_map, useAlpha, region_polygons))
+                color_map, useAlpha, region_polygons, opts.style))
         for idx, future in enumerate(futureList):
             result, ppcimg, x, y, mask, tile_start_time = future.result()
             results.append(result)
@@ -79,7 +90,7 @@ def main(opts):
             tile_position = tile['tile_position']['position']
             result, ppcimg, x, y, mask, tile_start_time = tile_positive_pixel_count(
                 opts.inputImageFile, tile_position, tiparams, ppc_params,
-                color_map, useAlpha, region_polygons)
+                color_map, useAlpha, region_polygons, opts.style)
             results.append(result)
             if sink:
                 sink.addTile(ppcimg, x, y, mask=mask)

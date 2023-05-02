@@ -22,7 +22,7 @@
       <name>region</name>
       <label>Analysis ROI</label>
       <longflag>region</longflag>
-      <description>Region of interest where analysis is performed.  This is either -1,-1,-1,-1 for thw hole image, or a four-element vector in the format "left, top, width, height", or a list of four or more x,y vertices to specify a polygon.</description>
+      <description>Region of interest where analysis is performed.  This is either -1,-1,-1,-1 for the whole image, or a four-element vector in the format "left, top, width, height", or a list of four or more x,y vertices to specify a polygon.</description>
       <default>-1,-1,-1,-1</default>
     </region>
     <float>
@@ -156,6 +156,24 @@
       <channel>output</channel>
       <description>Average intensity of positive pixels excluding strong positive pixels</description>
     </float>
+  </parameters>
+  <parameters advanced="true">
+    <label>Frame and Style</label>
+    <description>Frame parameters</description>
+    <string>
+      <name>frame</name>
+      <longflag>frame</longflag>
+      <label>Frame Index</label>
+      <description>Frame index in a multi-frame image</description>
+      <default>{#control:#current_image_frame#}</default>
+    </string>
+    <string>
+      <name>style</name>
+      <longflag>style</longflag>
+      <label>Style Options</label>
+      <description>Image style options for compositing a multi-frame image</description>
+      <default>{#control:#current_image_style#}</default>
+    </string>
   </parameters>
   <parameters advanced="true">
     <label>Dask</label>
