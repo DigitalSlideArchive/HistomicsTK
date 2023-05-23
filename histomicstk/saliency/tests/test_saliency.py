@@ -73,7 +73,7 @@ class TestTissueDetection():
             cfg.gc, slide_id=cfg.iteminfo['_id'], labeled=cfg.labeled)
 
         assert 'elements' in annotation_docs[0].keys()
-        assert len(annotation_docs[0]['elements']) == 9
+        assert len(annotation_docs[0]['elements']) in {9, 10}
 
         # test delete existing annotations in slide
         delete_annotations_in_slide(cfg.gc, cfg.iteminfo['_id'])

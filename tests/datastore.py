@@ -34,8 +34,8 @@ registry = {
     # Source: TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs
 'TCGA-06-0129-01Z-00-DX3.bae772ea-dd36-47ec-8185-761989be3cc8.svs': 'sha512:b7bf2d6a56e90bca599351d93a716a7433fe376b78c8df08fa4b9e3c41b91b879a85dd5597f343bde5a552c0744515685712bf36c5e8b60287b8d991dc304f94',  # noqa
     #
-    # Source: TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png
-'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png': 'sha512:71f5552814f6fbdf4d85620797ac78649063df972517b7e3895e81c89c354d3f7f15a93dbe497ccd10b65b2b93a221468db9a6c0f3ce9f923ace69f5313ce43a',  # noqa
+    # Source: TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres2.png
+'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png': 'sha512:d100f935c7ca243a584d21371c763a109b8590dee45ab35991f7678ea6b5a8bd35b39101aea202b185eee5cb4a4e51807c9be66fef6a3397616fcf19f86aa9e5',  # noqa
     #
     # Source: TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot
 'TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot': 'sha512:d880fd29abf6e5c9afb624a93631697b4f8eb70ffad36a21689839783bcac206b6494352412ded0cb2129eb36b007ec67e0609c1862dd9ee3df2815c5f9e7c52',  # noqa
