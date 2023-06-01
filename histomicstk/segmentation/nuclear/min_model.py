@@ -21,7 +21,7 @@ def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
     MaxLength : int
         Maximum allowable contour length. Default value = 255.
     Compaction : int
-        Factor used in compacting objects to remove thin spurs. Refered to as
+        Factor used in compacting objects to remove thin spurs. Referred to as
         'd' in the paper. Default value = 3.
     MinArea : int
         Minimum area of objects to analyze. Default value = 100.
@@ -438,7 +438,7 @@ def label_contour(Shape, cXs, cYs, Scores):
 
     Notes
     -----
-    Can produce a large number of thin "halo" objects surrouding the objects
+    Can produce a large number of thin "halo" objects surrounding the objects
     with higher scores. These can be removed by filtering object width in the
     resulting label image.
 
@@ -505,7 +505,7 @@ def split_concavities(Label, MinDepth=4, MinConcavity=np.inf):  # noqa: C901
 
     Notes
     -----
-    Can produce a large number of thin "halo" objects surrouding the objects
+    Can produce a large number of thin "halo" objects surrounding the objects
     with higher scores. These can be removed by filtering object width in the
     resulting label image.
 

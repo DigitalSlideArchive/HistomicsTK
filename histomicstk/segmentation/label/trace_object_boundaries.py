@@ -118,11 +118,11 @@ def trace_object_boundaries(im_label,
         numLabels = len(rprops)
 
         if numLabels > 1:
-            raise ValueError("Number of labels should be 1 !!")
+            raise ValueError('Number of labels should be 1 !!')
 
         if (x_start is None and y_start is not None) | \
                 (x_start is not None and y_start is None):
-            raise ValueError("x_start or y_start is not defined !!")
+            raise ValueError('x_start or y_start is not defined !!')
 
         if x_start is None and y_start is None:
             x_start = -1

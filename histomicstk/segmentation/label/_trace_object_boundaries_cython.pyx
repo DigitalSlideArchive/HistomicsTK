@@ -246,7 +246,7 @@ def _isbf(long[:, :] mask, long[:, :] mask_90, long[:, :] mask_180, long[:, :] m
     cdef vector[long] list_bx
     cdef vector[long] list_by
 
-    # set defalut direction
+    # set default direction
     cdef long DX = 1
     cdef long DY = 0
 

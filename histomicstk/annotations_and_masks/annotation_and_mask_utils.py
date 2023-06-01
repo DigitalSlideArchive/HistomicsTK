@@ -14,8 +14,6 @@ from shapely.geometry.polygon import Polygon
 
 Image.MAX_IMAGE_PIXELS = None
 
-# %%===========================================================================
-
 
 def get_image_from_htk_response(resp):
     """Given a histomicsTK girder response, get np array image.
@@ -36,8 +34,6 @@ def get_image_from_htk_response(resp):
     image = Image.open(image_content)
     image = image.convert('RGB')
     return np.uint8(image)
-
-# %%===========================================================================
 
 
 def scale_slide_annotations(slide_annotations, sf):
@@ -72,8 +68,6 @@ def scale_slide_annotations(slide_annotations, sf):
                     element[key] = (np.array(element[key]) * sf).astype(int).tolist()
     return slide_annotations
 
-# %%===========================================================================
-
 
 def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
     """Get how much is request region smaller than base.
@@ -104,27 +98,25 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
         string to appnd to server request for getting slide region
 
     """
-    slide_info = gc.get("/item/%s/tiles" % slide_id)
+    slide_info = gc.get('/item/%s/tiles' % slide_id)
 
     if (MPP is not None) and (slide_info['mm_x'] is not None):
         mm = 0.001 * MPP
         sf = slide_info['mm_x'] / mm
-        appendStr = "&mm_x=%.8f&mm_y=%.8f" % (mm, mm)
+        appendStr = '&mm_x=%.8f&mm_y=%.8f' % (mm, mm)
 
     elif (MAG is not None) and (slide_info['magnification'] is not None):
         sf = MAG / slide_info['magnification']
-        appendStr = "&magnification=%.8f" % MAG
+        appendStr = '&magnification=%.8f' % MAG
 
     else:
         warnings.warn(
-            "NO SLIDE MAGNIFICATION FOUND; BASE MAGNIFICATION USED!",
+            'NO SLIDE MAGNIFICATION FOUND; BASE MAGNIFICATION USED!',
             RuntimeWarning, stacklevel=1)
         sf = 1.0
-        appendStr = ""
+        appendStr = ''
 
     return sf, appendStr
-
-# %%===========================================================================
 
 
 def rotate_point_list(point_list, rotation, center=(0, 0)):
@@ -163,8 +155,6 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
             int(x * sin + y * cos + center[1])))
 
     return point_list_rotated
-
-# %%============================================================================
 
 
 def get_rotated_rectangular_coords(
@@ -216,8 +206,6 @@ def get_rotated_rectangular_coords(
 
     return roi_info
 
-# %%===========================================================================
-
 
 def get_bboxes_from_slide_annotations(slide_annotations):
     """Given a slide annotation list, gets information on bounding boxes.
@@ -252,8 +240,8 @@ def get_bboxes_from_slide_annotations(slide_annotations):
             # get bounds
             if element['type'] == 'polyline':
                 coords = np.array(element['points'])[:, :-1]
-                xmin, ymin = [int(j) for j in np.min(coords, axis=0)]
-                xmax, ymax = [int(j) for j in np.max(coords, axis=0)]
+                xmin, ymin = (int(j) for j in np.min(coords, axis=0))
+                xmax, ymax = (int(j) for j in np.max(coords, axis=0))
 
             elif element['type'] == 'rectangle':
                 roiinfo = get_rotated_rectangular_coords(
@@ -282,8 +270,6 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 
     return element_infos
 
-# %%===========================================================================
-
 
 def _get_coords_from_element(element):
 
@@ -309,7 +295,7 @@ def _get_coords_from_element(element):
              (xmin, ymax), (xmin, ymin)], dtype='int32')
 
     else:
-        raise Exception("Unsupported element type:", element['type'])
+        raise Exception('Unsupported element type:', element['type'])
 
     return coords
 
@@ -356,8 +342,8 @@ def _maybe_crop_polygon(vertices, bounds_polygon):
 
 def _parse_coords_to_str(vertices):
     return (
-        ",".join(str(j) for j in vertices[:, 0]),
-        ",".join(str(j) for j in vertices[:, 1]))
+        ','.join(str(j) for j in vertices[:, 0]),
+        ','.join(str(j) for j in vertices[:, 1]))
 
 
 def _add_element_to_final_df(vertices, cfg):
@@ -520,7 +506,7 @@ def parse_slide_annotations_into_tables(
 
     if cfg.cropping_bounds is not None:
         assert cfg.cropping_polygon_vertices is None, \
-            "either give cropping bouns or vertices, not both"
+            'either give cropping bounds or vertices, not both'
         xmin, xmax, ymin, ymax = (
             cfg.cropping_bounds['XMIN'], cfg.cropping_bounds['XMAX'],
             cfg.cropping_bounds['YMIN'], cfg.cropping_bounds['YMAX'])
@@ -614,8 +600,6 @@ def np_vec_no_jit_iou(bboxes1, bboxes2):
     iou = interArea / (boxAArea + np.transpose(boxBArea) - interArea)
     return iou
 
-# %%===========================================================================
-
 
 def _get_idxs_for_all_rois(GTCodes, element_infos):
     """Get indices of ROIs within the element_infos dataframe.
@@ -629,8 +613,6 @@ def _get_idxs_for_all_rois(GTCodes, element_infos):
         if elinfo.group in roi_labels:
             idxs_for_all_rois.append(idx)
     return idxs_for_all_rois
-
-# %%===========================================================================
 
 
 def get_idxs_for_annots_overlapping_roi_by_bbox(
@@ -668,8 +650,6 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
 
     return list(overlaps)
 
-# %%===========================================================================
-
 
 def create_mask_from_coords(coords):
     """Create a binary mask from given vertices coordinates.
@@ -678,9 +658,9 @@ def create_mask_from_coords(coords):
 
     Parameters
     -----------
-    coords : np arrray
+    coords : np array
         must be in the form (e.g. ([x1,y1],[x2,y2],[x3,y3],.....,[xn,yn])),
-        where xn and yn corresponds to the nth vertix coordinate.
+        where xn and yn corresponds to the nth vertex coordinate.
 
     Returns
     --------
@@ -708,8 +688,6 @@ def create_mask_from_coords(coords):
 
     return np.array(img, dtype='int32')
 
-# %%===========================================================================
-
 
 def _get_element_mask(elinfo, slide_annotations):
     """Get coordinates and mask for annotation element.
@@ -728,12 +706,10 @@ def _get_element_mask(elinfo, slide_annotations):
             roi_height=element['height'], roi_rotation=element['rotation'])
         coords = infoDict['roi_corners']
     else:
-        raise Exception("cannot create mask from point annotation!")
+        raise Exception('cannot create mask from point annotation!')
 
     mask = create_mask_from_coords(coords)
     return coords, mask
-
-# %%===========================================================================
 
 
 def _add_element_to_roi(elinfo, ROI, GT_code, element_mask, roiinfo):
@@ -762,12 +738,10 @@ def _add_element_to_roi(elinfo, ROI, GT_code, element_mask, roiinfo):
 
     return ROI, element
 
-# %%===========================================================================
-
 
 def _get_and_add_element_to_roi(
         elinfo, slide_annotations, ROI, roiinfo, roi_polygon, GT_code,
-        use_shapely=True, verbose=True, monitorPrefix=""):
+        use_shapely=True, verbose=True, monitorPrefix=''):
     """Get element coords and mask and add to ROI (Internal)."""
     try:
         coords, element_mask = _get_element_mask(
@@ -780,7 +754,7 @@ def _get_and_add_element_to_roi(
             el_polygon = Polygon(coords)
             if el_polygon.distance(roi_polygon) > 2:
                 if verbose:
-                    print("%s: OUSIDE ROI." % monitorPrefix)
+                    print('%s: OUTSIDE ROI.' % monitorPrefix)
                 ADD_TO_ROI = False
 
         # Add element to ROI mask
@@ -791,11 +765,9 @@ def _get_and_add_element_to_roi(
 
     except Exception as e:
         if verbose:
-            print("%s: ERROR! (see below)" % monitorPrefix)
+            print('%s: ERROR! (see below)' % monitorPrefix)
             print(e)
     return ROI
-
-# %%===========================================================================
 
 
 def delete_annotations_in_slide(gc, slide_id):
@@ -804,16 +776,14 @@ def delete_annotations_in_slide(gc, slide_id):
     for ann in existing_annotations:
         gc.delete('/annotation/%s' % ann['_id'])
 
-# %%===========================================================================
-
 
 def _simple_add_element_to_roi(
         elinfo, ROI, roiinfo, GT_code, element=None,
-        verbose=True, monitorPrefix=""):
+        verbose=True, monitorPrefix=''):
     """Get element coords and mask and add to ROI (Internal)."""
 
     def _process_coords(k):
-        return np.array([int(j) for j in elinfo[k].split(",")])[..., None]
+        return np.array([int(j) for j in elinfo[k].split(',')])[..., None]
 
     try:
         if element is None:
@@ -821,7 +791,7 @@ def _simple_add_element_to_roi(
                 _process_coords(k) for k in ('coords_x', 'coords_y')], 1)
             element_mask = create_mask_from_coords(coords)
         else:
-            element_mask = element["mask"]
+            element_mask = element['mask']
 
         # Add element to ROI mask
         ROI, element = _add_element_to_roi(
@@ -830,8 +800,6 @@ def _simple_add_element_to_roi(
 
     except Exception as e:
         if verbose:
-            print("%s: ERROR! (see below)" % monitorPrefix)
+            print('%s: ERROR! (see below)' % monitorPrefix)
             print(e)
     return ROI, element
-
-# %%===========================================================================

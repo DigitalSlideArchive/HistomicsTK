@@ -2,7 +2,7 @@ import numpy as np
 
 
 def clog(im_input, im_mask, sigma_min, sigma_max):
-    """Constrainted Laplacian of Gaussian filter.
+    """Constrained Laplacian of Gaussian filter.
 
     Takes as input a grayscale nuclear image and binary mask of cell nuclei,
     and uses the distance transform of the nuclear mask to constrain the LoG
@@ -18,7 +18,7 @@ def clog(im_input, im_mask, sigma_min, sigma_max):
         A binary image where nuclei pixels have value 1/True, and non-nuclear
         pixels have value 0/False.
     sigma_min : double
-        Minumum sigma value for the scale space. For blob detection, set this
+        Minimum sigma value for the scale space. For blob detection, set this
         equal to minimum-blob-radius / sqrt(2).
     sigma_max : double
         Maximum sigma value for the scale space. For blob detection, set this
@@ -27,7 +27,7 @@ def clog(im_input, im_mask, sigma_min, sigma_max):
     Returns
     -------
     im_log_max : array_like
-        An intensity image containing the maximal LoG filter response accross
+        An intensity image containing the maximal LoG filter response across
         all scales for each pixel
     im_sigma_max : array_like
         An intensity image containing the sigma value corresponding to the

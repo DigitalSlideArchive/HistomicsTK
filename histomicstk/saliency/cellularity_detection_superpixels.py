@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Mon Sep 23 21:17:43 2019.
 
@@ -29,7 +28,7 @@ Image.MAX_IMAGE_PIXELS = None
 class CD_single_tissue_piece:
     """Detect cellular regions in a single tissue piece (internal)."""
 
-    def __init__(self, cd, tissue_mask, monitorPrefix=""):
+    def __init__(self, cd, tissue_mask, monitorPrefix=''):
         """Detect cellularity in one tissue piece (Internal).
 
         Arguments
@@ -50,15 +49,15 @@ class CD_single_tissue_piece:
         """Get cellularity and optionally visualize on DSA."""
         # get cellularity
         self.restrict_mask_to_single_tissue_piece()
-        self.cd._print2("%s: set_tissue_rgb()" % self.monitorPrefix)
+        self.cd._print2('%s: set_tissue_rgb()' % self.monitorPrefix)
         self.set_tissue_rgb()
-        self.cd._print2("%s: set_superpixel_mask()" % self.monitorPrefix)
+        self.cd._print2('%s: set_superpixel_mask()' % self.monitorPrefix)
         self.set_superpixel_mask()
-        self.cd._print2("%s: set_superpixel_features()" % self.monitorPrefix)
+        self.cd._print2('%s: set_superpixel_features()' % self.monitorPrefix)
         self.set_superpixel_features()
-        self.cd._print2("%s: set_superpixel_assignment()" % self.monitorPrefix)
+        self.cd._print2('%s: set_superpixel_assignment()' % self.monitorPrefix)
         self.set_superpixel_assignment()
-        self.cd._print2("%s: assign_cellularity_scores()" % self.monitorPrefix)
+        self.cd._print2('%s: assign_cellularity_scores()' % self.monitorPrefix)
         self.assign_cellularity_scores()
 
         # visualize
@@ -67,12 +66,12 @@ class CD_single_tissue_piece:
 
         if self.cd.visualize_spixels:
             self.cd._print2(
-                "%s: visualize_individual_superpixels()" % self.monitorPrefix)
+                '%s: visualize_individual_superpixels()' % self.monitorPrefix)
             self.visualize_individual_superpixels()
 
         if self.cd.visualize_contiguous:
             self.cd._print2(
-                "%s: visualize_contiguous_superpixels()" % self.monitorPrefix)
+                '%s: visualize_contiguous_superpixels()' % self.monitorPrefix)
             self.visualize_contiguous_superpixels()
 
     def restrict_mask_to_single_tissue_piece(self):
@@ -80,8 +79,8 @@ class CD_single_tissue_piece:
         # find coordinates at scan magnification
         tloc = np.argwhere(self.tissue_mask)
         F = self.cd.slide_info['F_tissue']
-        self.ymin, self.xmin = [int(j) for j in np.min(tloc, axis=0) * F]
-        self.ymax, self.xmax = [int(j) for j in np.max(tloc, axis=0) * F]
+        self.ymin, self.xmin = (int(j) for j in np.min(tloc, axis=0) * F)
+        self.ymax, self.xmax = (int(j) for j in np.max(tloc, axis=0) * F)
         self.tissue_mask = self.tissue_mask[
             int(self.ymin / F): int(self.ymax / F),
             int(self.xmin / F): int(self.xmax / F)]
@@ -89,9 +88,9 @@ class CD_single_tissue_piece:
     def set_tissue_rgb(self):
         """Load RGB from server for single tissue piece."""
         # load RGB for this tissue piece at saliency magnification
-        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
+        getStr = '/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG' % (
             self.cd.slide_id, self.xmin, self.xmax, self.ymin, self.ymax
-        ) + "&magnification=%d" % self.cd.MAG
+        ) + '&magnification=%d' % self.cd.MAG
         resp = self.cd.gc.get(getStr, jsonResp=False)
         self.tissue_rgb = get_image_from_htk_response(resp)
 
@@ -181,18 +180,18 @@ class CD_single_tissue_piece:
 
     def assign_cellularity_scores(self):
         """Assign cellularity scores to spixel clusters."""
-        assert self.cd.use_intensity, "We need intensity to rank cellularity."
+        assert self.cd.use_intensity, 'We need intensity to rank cellularity.'
         assert self.cd.deconvolve, \
-            "We must use hematoxyling channel to rank by cellularity."
+            'We must use hematoxyling channel to rank by cellularity.'
 
         self.cluster_props = {}
 
-        self.fdata.loc[:, "cluster"] = self.spixel_labels
+        self.fdata.loc[:, 'cluster'] = self.spixel_labels
         for clid in np.unique(self.spixel_labels):
             self.cluster_props[clid] = {
                 'cellularity': int(np.median(self.fdata.loc[
-                    self.fdata.loc[:, "cluster"] == clid,
-                    "Intensity.Median"]) / 255 * 100),
+                    self.fdata.loc[:, 'cluster'] == clid,
+                    'Intensity.Median']) / 255 * 100),
             }
 
     def assign_colors_to_spixel_clusters(self):
@@ -232,8 +231,8 @@ class CD_single_tissue_piece:
             MASK=self.spixel_mask, GTCodes_df=GTCodes_df,
             get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None,
             verbose=self.cd.verbose == 3, monitorPrefix=self.monitorPrefix)
-        contours_df.loc[:, "group"] = [
-            j.split('_')[-1] for j in contours_df.loc[:, "group"]]
+        contours_df.loc[:, 'group'] = [
+            j.split('_')[-1] for j in contours_df.loc[:, 'group']]
 
         # get annotation docs
         annprops = {
@@ -248,10 +247,10 @@ class CD_single_tissue_piece:
             annots_per_doc=1000, separate_docs_by_group=True,
             verbose=self.cd.verbose == 3, monitorPrefix=self.monitorPrefix)
         for didx, doc in enumerate(annotation_docs):
-            self.cd._print2("%s: Posting doc %d of %d" % (
+            self.cd._print2('%s: Posting doc %d of %d' % (
                 self.monitorPrefix, didx + 1, len(annotation_docs)))
             _ = self.cd.gc.post(
-                "/annotation?itemId=" + self.cd.slide_id, json=doc)
+                '/annotation?itemId=' + self.cd.slide_id, json=doc)
 
     def visualize_contiguous_superpixels(self):
         """Visualize contiguous spixels, color-coded by cellularity."""
@@ -289,10 +288,10 @@ class CD_single_tissue_piece:
             annots_per_doc=1000, separate_docs_by_group=True,
             verbose=self.cd.verbose == 3, monitorPrefix=self.monitorPrefix)
         for didx, doc in enumerate(annotation_docs):
-            self.cd._print2("%s: Posting doc %d of %d" % (
+            self.cd._print2('%s: Posting doc %d of %d' % (
                 self.monitorPrefix, didx + 1, len(annotation_docs)))
             _ = self.cd.gc.post(
-                "/annotation?itemId=" + self.cd.slide_id, json=doc)
+                '/annotation?itemId=' + self.cd.slide_id, json=doc)
 
 
 class Cellularity_detector_superpixels (Base_HTK_Class):
@@ -408,7 +407,7 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
             # 'logging_savepath': None,
             # 'suppress_warnings': False,
 
-            'cnorm_params': dict(),
+            'cnorm_params': {},
             'MAG': 3.0,
             'get_tissue_mask_kwargs': {
                 'deconvolve_first': True, 'n_thresholding_steps': 1,
@@ -422,9 +421,9 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
             'use_texture': False,
             # 'keep_feats': None,  # keep everything
             'keep_feats': [
-                "Intensity.Mean", "Intensity.Median",
-                "Intensity.Std", "Intensity.IQR",
-                "Intensity.HistEntropy",
+                'Intensity.Mean', 'Intensity.Median',
+                'Intensity.Std', 'Intensity.IQR',
+                'Intensity.HistEntropy',
             ],
             'n_gaussian_components': 5,
             'max_cellularity': None,
@@ -480,14 +479,14 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
 
         # get mask, each unique value is a single tissue piece
         self._print1(
-            "%s: set_slide_info_and_get_tissue_mask()" % self.monitorPrefix)
+            '%s: set_slide_info_and_get_tissue_mask()' % self.monitorPrefix)
         labeled = self.set_slide_info_and_get_tissue_mask()
 
         # Go through tissue pieces and do run sequence
         unique_tvals = list(set(np.unique(labeled)) - {0, })
         tissue_pieces = [None for _ in range(len(unique_tvals))]
         for idx, tval in enumerate(unique_tvals):
-            monitorPrefix = "%s: Tissue piece %d of %d" % (
+            monitorPrefix = '%s: Tissue piece %d of %d' % (
                 self.monitorPrefix, idx + 1, len(unique_tvals))
             self._print1(monitorPrefix)
             tissue_pieces[idx] = CD_single_tissue_piece(
@@ -502,7 +501,7 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
         """Set color normalization values for thumbnail or main image."""
         assert (
             all(j is not None for j in (mu, sigma)) or ref_image_path is not None
-        ), "You must provide mu & sigma values or ref. image to get them."
+        ), 'You must provide mu & sigma values or ref. image to get them.'
 
         assert what in ('thumbnail', 'main')
 
@@ -516,7 +515,7 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
 
     def set_slide_info_and_get_tissue_mask(self):
         """Set self.slide_info dict and self.labeled tissue mask."""
-        # This is a presistent dict to store information about slide
+        # This is a persistent dict to store information about slide
         self.slide_info = self.gc.get('item/%s/tiles' % self.slide_id)
 
         # get tissue mask
@@ -534,14 +533,14 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
             thumbnail_rgb, **self.get_tissue_mask_kwargs)
 
         if len(np.unique(labeled)) < 2:
-            raise ValueError("No tissue detected!")
+            raise ValueError('No tissue detected!')
 
         if self.visualize_tissue_boundary:
             annotation_docs = get_tissue_boundary_annotation_documents(
                 self.gc, slide_id=self.slide_id, labeled=labeled)
             for doc in annotation_docs:
                 _ = self.gc.post(
-                    "/annotation?itemId=" + self.slide_id, json=doc)
+                    '/annotation?itemId=' + self.slide_id, json=doc)
 
         # Find size relative to WSI
         self.slide_info['F_tissue'] = self.slide_info[

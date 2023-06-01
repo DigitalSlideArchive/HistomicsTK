@@ -14,7 +14,7 @@ import histomicstk.utils as htk_utils
 # These defaults are only used if girder is not present
 # Use memcached by default.
 large_image.config.setConfig('cache_backend', 'memcached')
-# If memcached is unavilable, specify the fraction of memory that python
+# If memcached is unavailable, specify the fraction of memory that python
 # caching is allowed to use.  This is deliberately small.
 large_image.config.setConfig('cache_python_memory_portion', 32)
 
@@ -102,13 +102,13 @@ def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
 
         # create annotation json
         cur_bbox = {
-            "type": "rectangle",
-            "center": [cx, cy, 0],
-            "width": width,
-            "height": height,
-            "rotation": 0,
-            "fillColor": "rgba(0,0,0,0)",
-            "lineColor": "rgb(0,255,0)"
+            'type': 'rectangle',
+            'center': [cx, cy, 0],
+            'width': width,
+            'height': height,
+            'rotation': 0,
+            'fillColor': 'rgba(0,0,0,0)',
+            'lineColor': 'rgb(0,255,0)'
         }
 
         nuclei_annot_list.append(cur_bbox)
@@ -143,11 +143,11 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
 
         # create annotation json
         cur_annot = {
-            "type": "polyline",
-            "points": cur_points,
-            "closed": True,
-            "fillColor": "rgba(0,0,0,0)",
-            "lineColor": "rgb(0,255,0)"
+            'type': 'polyline',
+            'points': cur_points,
+            'closed': True,
+            'fillColor': 'rgba(0,0,0,0)',
+            'lineColor': 'rgb(0,255,0)'
         }
 
         nuclei_annot_list.append(cur_annot)

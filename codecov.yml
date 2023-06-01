@@ -12,4 +12,3 @@ coverage:
       default:
         threshold: 25
         only_pulls: true
-

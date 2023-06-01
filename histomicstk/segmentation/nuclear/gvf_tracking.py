@@ -25,7 +25,7 @@ def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
     K : float
         Number of steps to check for tracking cycle. Default value = 1000.
     Mu : float
-        Weight parmeter from Navier-Stokes diffusion - weights divergence and
+        Weight parameter from Navier-Stokes diffusion - weights divergence and
         Laplacian terms. Default value = 5.
     Lambda : float
         Weight parameter from Navier-Stokes diffusion - used to weight

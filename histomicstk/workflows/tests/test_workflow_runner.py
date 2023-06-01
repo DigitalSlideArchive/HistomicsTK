@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Mon Sep 30 18:12:48 2019.
 
@@ -42,7 +41,7 @@ class TestWorkflows:
 
         # get original item
         original_iteminfo = cfg.gc.get('/item', parameters={
-            'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+            'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
         # create a sample folder
         cfg.posted_folder = cfg.gc.post(
@@ -54,7 +53,7 @@ class TestWorkflows:
         # copy the item a couple of times
         for i in range(2):
             _ = cfg.gc.post(
-                "/item/%s/copy" % original_iteminfo['_id'], data={
+                '/item/%s/copy' % original_iteminfo['_id'], data={
                     'name': 'TCGA-A2-A0YE_copy-%d' % i,
                     'copyAnnotations': True,
                     'folderId': cfg.posted_folder['_id'],

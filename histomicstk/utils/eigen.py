@@ -14,12 +14,12 @@ def eigen(im_hess):
 
     Returns
     -------
-    lamda : array_like
+    lambda_ : array_like
         M x N x 2 image of eigenvalues.
     v1 : array_like
-        M x N x 2 eigenvector for lamda(:,:,0)
+        M x N x 2 eigenvector for lambda_(:,:,0)
     v2 :
-        M x N x 2 eigenvector for lamda(:,:,1)
+        M x N x 2 eigenvector for lambda_(:,:,1)
 
     """
 
@@ -27,16 +27,16 @@ def eigen(im_hess):
     sizeX = im_hess.shape[0]
     sizeY = im_hess.shape[1]
 
-    # initialize lamda, v1 and v2
-    lamda = np.zeros((sizeX, sizeY, 2))
+    # initialize lambda_, v1 and v2
+    lambda_ = np.zeros((sizeX, sizeY, 2))
     v1 = np.zeros((sizeX, sizeY, 2))
     v2 = np.zeros((sizeX, sizeY, 2))
 
     # compute eigenvalues of H
     radical = np.sqrt((im_hess[:, :, 0] - im_hess[:, :, 3]) ** 2 +
                       4 * im_hess[:, :, 1] ** 2)
-    lamda[:, :, 0] = (im_hess[:, :, 0] + im_hess[:, :, 3] + radical) / 2
-    lamda[:, :, 1] = (im_hess[:, :, 0] + im_hess[:, :, 3] - radical) / 2
+    lambda_[:, :, 0] = (im_hess[:, :, 0] + im_hess[:, :, 3] + radical) / 2
+    lambda_[:, :, 1] = (im_hess[:, :, 0] + im_hess[:, :, 3] - radical) / 2
 
     # compute eigenvectors of H
     v1[:, :, 0] = 2 * im_hess[:, :, 1]
@@ -54,11 +54,11 @@ def eigen(im_hess):
     v2[:, :, 1] = v1[:, :, 0]
 
     # order by magnitude
-    swap = np.where(abs(lamda[:, :, 0]) > abs(lamda[:, :, 1]))
+    swap = np.where(abs(lambda_[:, :, 0]) > abs(lambda_[:, :, 1]))
 
-    # swap between lamda[:, :, 0] and lamda[:, :, 1]
-    lamda[:, :, 0][swap], lamda[:, :, 1][swap] = \
-        lamda[:, :, 1][swap], lamda[:, :, 0][swap]
+    # swap between lambda_[:, :, 0] and lambda_[:, :, 1]
+    lambda_[:, :, 0][swap], lambda_[:, :, 1][swap] = \
+        lambda_[:, :, 1][swap], lambda_[:, :, 0][swap]
 
     # swap between v1 and v2
     v1[:, :, 0][swap], v2[:, :, 0][swap] = \
@@ -67,4 +67,4 @@ def eigen(im_hess):
     v1[:, :, 1][swap], v2[:, :, 1][swap] = \
         v2[:, :, 1][swap], v1[:, :, 1][swap]
 
-    return lamda, v1, v2
+    return lambda_, v1, v2

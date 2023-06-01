@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 import importlib
 import os
 import sys

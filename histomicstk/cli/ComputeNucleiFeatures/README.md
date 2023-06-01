@@ -3,7 +3,7 @@ HistomicsTK ComputeNucleiFeatures Application
 
 #### Overview:
 
-Computes the following features that can be used for nuclei 
+Computes the following features that can be used for nuclei
 classification:
 
 * Morphometry (Size and shape) features
@@ -129,11 +129,11 @@ optional arguments:
                         space for Reinhard color normalization (default:
                         [0.57506023, 0.10403329, 0.01364062])
   --scheduler <string>
-                        Address of a dask scheduler in the format 
+                        Address of a dask scheduler in the format
                         '127.0.0.1:8786'.  Not passing this parameter sets up a
-                        dask cluster on the local machine.  'multiprocessing' 
-                        uses Python multiprocessing.  'multithreading' uses 
-                        Python multiprocessing in threaded mode. 
+                        dask cluster on the local machine.  'multiprocessing'
+                        uses Python multiprocessing.  'multithreading' uses
+                        Python multiprocessing in threaded mode.
   --stain_1 {hematoxylin,eosin,dab,custom}
                         Name of stain-1 (default: hematoxylin)
   --stain_1_vector <double-vector>

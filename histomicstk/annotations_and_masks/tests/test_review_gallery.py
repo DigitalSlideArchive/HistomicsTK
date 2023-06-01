@@ -65,7 +65,7 @@ def test_prep(girderClient):  # noqa
 
     # get original item
     iteminfo = cfg.gc.get('/item', parameters={
-        'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
     # create the folder to parse its contents into galleries
     folderinfo = cfg.gc.post(
@@ -86,7 +86,7 @@ def test_prep(girderClient):  # noqa
     # copy the item multiple times to create dummy database
     for i in range(2):
         _ = cfg.gc.post(
-            "/item/%s/copy" % iteminfo['_id'], data={
+            '/item/%s/copy' % iteminfo['_id'], data={
                 'name': 'testSlide%dForRevGal' % i,
                 'copyAnnotations': True,
                 'folderId': cfg.folderid,
@@ -129,7 +129,7 @@ class TestReviewGallery:
 
         # a couple of checks
         all_fovs = os.listdir(cfg.combinedvis_savepath)
-        fovdict = dict()
+        fovdict = {}
         for fov in all_fovs:
             slide = fov.split('_')[0]
             if slide not in fovdict.keys():

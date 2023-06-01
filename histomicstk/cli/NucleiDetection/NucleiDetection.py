@@ -255,7 +255,7 @@ def main(args):
 
     nuclei_detection_time = time.time() - start_time
 
-    print('Number of nuclei = {}'.format(len(nuclei_list)))
+    print(f'Number of nuclei = {len(nuclei_list)}')
 
     print('Nuclei detection time = {}'.format(
         cli_utils.disp_time_hms(nuclei_detection_time)))
@@ -269,8 +269,8 @@ def main(args):
         os.path.basename(args.outputNucleiAnnotationFile))[0]
 
     annotation = {
-        "name": annot_fname + '-nuclei-' + args.nuclei_annotation_format,
-        "elements": nuclei_list
+        'name': annot_fname + '-nuclei-' + args.nuclei_annotation_format,
+        'elements': nuclei_list
     }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
@@ -282,6 +282,6 @@ def main(args):
         cli_utils.disp_time_hms(total_time_taken)))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     main(CLIArgumentParser().parse_args())

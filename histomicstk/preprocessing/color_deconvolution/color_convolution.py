@@ -20,7 +20,7 @@ def color_convolution(im_stains, w, I_0=None):
         A 3x3 matrix containing the stain colors in its columns.
         In the case of two stains, the third column is zero and will be
         complemented using cross-product. The matrix should contain a
-        minumum two nonzero columns.
+        minimum two nonzero columns.
     I_0 : float or array_like, optional
         A float a 3-vector containing background RGB intensities.
         If unspecified, use the old OD conversion.

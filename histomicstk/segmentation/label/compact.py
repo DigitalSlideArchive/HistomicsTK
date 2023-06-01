@@ -12,7 +12,7 @@ def compact(im_label, compaction=3):
     im_label : array_like
         A labeled segmentation mask
     compaction : int
-        Factor used in compacting objects to remove thin protrusions. Refered
+        Factor used in compacting objects to remove thin protrusions. Referred
         to as d in the reference below. Default value = 3.
 
     Notes

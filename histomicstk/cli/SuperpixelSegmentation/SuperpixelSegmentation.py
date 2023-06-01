@@ -202,7 +202,7 @@ def createSuperPixels(opts):  # noqa
     img.write_to_file(
         opts.outputImageFile, tile=True, tile_width=256, tile_height=256, pyramid=True,
         region_shrink=pyvips.RegionShrink.NEAREST,
-        # We'd perfer max, but to do so we need to compute max of the
+        # We'd prefer max, but to do so we need to compute max of the
         # superpixel, not the faux-color it is mapped to.
         # region_shrink=pyvips.RegionShrink.MAX,
         bigtiff=True, compression='lzw', predictor='horizontal')
@@ -261,5 +261,5 @@ def createSuperPixels(opts):  # noqa
             opts.callback('file', 2, 2)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     createSuperPixels(CLIArgumentParser().parse_args())

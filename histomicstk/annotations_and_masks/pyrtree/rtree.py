@@ -48,13 +48,13 @@ class RTree:
         """Placeholder."""
         self.count = 0
         self.stats = {
-            "overflow_f": 0,
-            "avg_overflow_t_f": 0.0,
-            "longest_overflow": 0.0,
-            "longest_kmeans": 0.0,
-            "sum_kmeans_iter_f": 0,
-            "count_kmeans_iter_f": 0,
-            "avg_kmeans_iter_f": 0.0
+            'overflow_f': 0,
+            'avg_overflow_t_f': 0.0,
+            'longest_overflow': 0.0,
+            'longest_kmeans': 0.0,
+            'sum_kmeans_iter_f': 0,
+            'count_kmeans_iter_f': 0,
+            'avg_kmeans_iter_f': 0.0
         }
 
         # This round: not using objects directly -- they
@@ -140,8 +140,8 @@ class _NodeCursor:
         return res
 
     __slots__ = (
-        "root", "npool", "rpool", "index", "rect",
-        "next_sibling", "first_child")
+        'root', 'npool', 'rpool', 'index', 'rect',
+        'next_sibling', 'first_child')
 
     def __init__(self, rooto, index, rect, first_child, next_sibling):
         """Placeholder."""
@@ -323,13 +323,13 @@ class _NodeCursor:
         self._set_children(nodes)
 
         dur = (time.time() - t)
-        c = float(self.root.stats["overflow_f"])
-        oa = self.root.stats["avg_overflow_t_f"]
-        self.root.stats["avg_overflow_t_f"] = (
+        c = float(self.root.stats['overflow_f'])
+        oa = self.root.stats['avg_overflow_t_f']
+        self.root.stats['avg_overflow_t_f'] = (
             dur / (c + 1.0)) + (c * oa / (c + 1.0))
-        self.root.stats["overflow_f"] += 1
-        self.root.stats["longest_overflow"] = max(
-            self.root.stats["longest_overflow"], dur)
+        self.root.stats['overflow_f'] += 1
+        self.root.stats['longest_overflow'] = max(
+            self.root.stats['longest_overflow'], dur)
 
     def _set_children(self, cs):
         """Placeholder."""
@@ -464,7 +464,7 @@ def k_means_cluster(root, k, nodes):
         return [[n] for n in nodes]
 
     ns = list(nodes)
-    root.stats["count_kmeans_iter_f"] += 1
+    root.stats['count_kmeans_iter_f'] += 1
 
     # Initialize: take n random nodes.
     random.shuffle(ns)
@@ -473,7 +473,7 @@ def k_means_cluster(root, k, nodes):
 
     # Loop until stable:
     while True:
-        root.stats["sum_kmeans_iter_f"] += 1
+        root.stats['sum_kmeans_iter_f'] += 1
         clusters = [[] for c in cluster_centers]
 
         for n in ns:
@@ -485,19 +485,19 @@ def k_means_cluster(root, k, nodes):
 
         for c in clusters:
             if (len(c) == 0):
-                print("Errorrr....")
-                print("Nodes: %d, centers: %s" % (
+                print('Errorrr....')
+                print('Nodes: %d, centers: %s' % (
                     len(ns), repr(cluster_centers)))
 
             assert len(c) > 0
 
         new_cluster_centers = [center_of_gravity(c) for c in clusters]
         if new_cluster_centers == cluster_centers:
-            root.stats["avg_kmeans_iter_f"] = float(
-                root.stats["sum_kmeans_iter_f"]
-                / root.stats["count_kmeans_iter_f"])
-            root.stats["longest_kmeans"] = max(
-                root.stats["longest_kmeans"], (time.time() - t))
+            root.stats['avg_kmeans_iter_f'] = float(
+                root.stats['sum_kmeans_iter_f']
+                / root.stats['count_kmeans_iter_f'])
+            root.stats['longest_kmeans'] = max(
+                root.stats['longest_kmeans'], (time.time() - t))
             return clusters
         else:
             cluster_centers = new_cluster_centers

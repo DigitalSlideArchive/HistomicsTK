@@ -13,4 +13,3 @@ histomicstk.preprocessing
     color deconvolution <histomicstk.preprocessing.color_deconvolution>
     color normalization <histomicstk.preprocessing.color_normalization>
     data augmentation <histomicstk.preprocessing.augmentation>
-
