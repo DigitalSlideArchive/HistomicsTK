@@ -20,8 +20,6 @@ from histomicstk.annotations_and_masks.annotation_and_mask_utils import (
 from histomicstk.annotations_and_masks.annotations_to_masks_handler import (
     _get_roi_bounds_by_run_mode, _visualize_annotations_on_rgb)
 
-# %%===========================================================================
-
 
 def _sanity_checks(
         MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization):
@@ -34,7 +32,7 @@ def _sanity_checks(
 
     for mf in (MPP, MAG):
         if mf is not None:
-            assert mf > 0, "MPP or MAG must be positive."
+            assert mf > 0, 'MPP or MAG must be positive.'
 
     if mode in ['wsi', 'min_bounding_box']:
         bounds = None
@@ -47,10 +45,10 @@ def _sanity_checks(
 
     assert mode in [
         'wsi', 'min_bounding_box', 'manual_bounds', 'polygonal_bounds'], \
-        "mode %s not recognized" % mode
+        'mode %s not recognized' % mode
 
     if get_visualization:
-        assert get_rgb, "cannot get visualization without rgb."
+        assert get_rgb, 'cannot get visualization without rgb.'
 
     return MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization
 
@@ -62,9 +60,9 @@ def _keep_relevant_elements_for_roi(
     # This stores information about the ROI like bounds, slide_name, etc
     # Allows passing many parameters and good forward/backward compatibility
     if roiinfo is None:
-        roiinfo = dict()
+        roiinfo = {}
 
-    if mode != "polygonal_bounds":
+    if mode != 'polygonal_bounds':
         # add to bounding boxes dataframe
         element_infos = pd.concat([element_infos, pd.DataFrame([{
             'xmin': int(roiinfo['XMIN'] * sf),
@@ -77,7 +75,7 @@ def _keep_relevant_elements_for_roi(
     # isolate annotations that potentially overlap roi
     overlaps = get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi=idx_for_roi)
-    if mode == "polygonal_bounds":
+    if mode == 'polygonal_bounds':
         overlaps = overlaps + [idx_for_roi, ]
     elinfos_roi = element_infos.loc[overlaps, :]
 
@@ -85,7 +83,7 @@ def _keep_relevant_elements_for_roi(
     # really large and extend beyond the bounds asked by the user.
     # since we're not parsing the polygons into mask form here, and
     # therefore we're not 'cropping' the polygons to the requested bounds,
-    # we extend the requested bounds themselves to accomodate the overflowing
+    # we extend the requested bounds themselves to accommodate the overflowing
     # annotations.
     roiinfo['XMIN'] = int(np.min(elinfos_roi.xmin))
     roiinfo['YMIN'] = int(np.min(elinfos_roi.ymin))
@@ -102,8 +100,8 @@ def _keep_relevant_elements_for_roi(
 
 def _trim_slide_annotations_to_roi(annotations, elinfos_roi):
 
-    # unique relevent annotation document indices & slice
-    unique_annidxs = np.int32(np.unique(elinfos_roi.loc[:, "annidx"]))
+    # unique relevant annotation document indices & slice
+    unique_annidxs = np.int32(np.unique(elinfos_roi.loc[:, 'annidx']))
     annotations_slice = np.array(annotations)[unique_annidxs].tolist()
 
     # anno is index relative to unique_annidxs, while
@@ -120,8 +118,6 @@ def _trim_slide_annotations_to_roi(annotations, elinfos_roi):
             elements_original)[eleidxs].tolist()
 
     return annotations_slice
-
-# %%===========================================================================
 
 
 def annotations_to_contours_no_mask(
@@ -187,7 +183,7 @@ def annotations_to_contours_no_mask(
         get rgb image?
 
     get_visualization : bool
-        get overlayed annotation bounds over RGB for visualization
+        get overlaid annotation bounds over RGB for visualization
 
     text : bool
         add text labels to visualization?
@@ -212,7 +208,7 @@ def annotations_to_contours_no_mask(
         gc=gc, slide_id=slide_id, MPP=MPP, MAG=MAG)
 
     if slide_annotations is not None:
-        assert element_infos is not None, "must also provide element_infos"
+        assert element_infos is not None, 'must also provide element_infos'
     else:
         # get annotations for slide
         slide_annotations = gc.get('/annotation/item/' + slide_id)
@@ -263,12 +259,12 @@ def annotations_to_contours_no_mask(
 
     # Final bounds (relative to slide at base magnification)
     bounds = {k: int(v / sf) for k, v in rescaled_bounds.items()}
-    result = dict()
+    result = {}
 
     # get RGB
     if get_rgb:
         getStr = \
-            "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" \
+            '/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG' \
             % (slide_id,
                bounds['XMIN'], bounds['XMAX'],
                bounds['YMIN'], bounds['YMAX'])
@@ -291,8 +287,6 @@ def annotations_to_contours_no_mask(
 
     return result
 
-# %%===========================================================================
-
 
 def combs_with_unique_products(low, high, k):
     prods = set()
@@ -310,16 +304,16 @@ def contours_to_labeled_object_mask(
     Parameters
     ----------
     contours : DataFrame
-        contours corresponding to annotation elemeents from the slide.
+        contours corresponding to annotation elements from the slide.
         All coordinates are relative to the mask that you want to output.
         The following columns are expected.
         - group: str, annotation group (ground truth label).
-        - ymin: int, minimun y coordinate
+        - ymin: int, minimum y coordinate
         - ymax: int, maximum y coordinate
         - xmin: int, minimum x coordinate
         - xmax: int, maximum x coordinate
-        - coords_x: str, vertix x coordinates comma-separated values
-        - coords_y: str, vertix y coordinated comma-separated values
+        - coords_x: str, vertex x coordinates comma-separated values
+        - coords_y: str, vertex y coordinated comma-separated values
 
     gtcodes : DataFrame
         the ground truth codes and information dataframe.
@@ -367,10 +361,10 @@ def contours_to_labeled_object_mask(
 
     """
     def _process_gtcodes(gtcodesdf):
-        # make sure ROIs are overlayed first
+        # make sure ROIs are overlaid first
         # & assigned background class if relevant
         roi_groups = list(
-            gtcodesdf.loc[gtcodesdf.loc[:, 'is_roi'] == 1, "group"])
+            gtcodesdf.loc[gtcodesdf.loc[:, 'is_roi'] == 1, 'group'])
         roi_order = np.min(gtcodesdf.loc[:, 'overlay_order']) - 1
         bck_classes = gtcodesdf.loc[
             gtcodesdf.loc[:, 'is_background_class'] == 1, :]
@@ -382,9 +376,9 @@ def contours_to_labeled_object_mask(
         return gtcodesdf
 
     if mode not in ['semantic', 'object']:
-        raise Exception("Unknown run mode:", mode)
+        raise Exception('Unknown run mode:', mode)
 
-    # make sure roi is overlayed first + other processing
+    # make sure roi is overlaid first + other processing
     gtcodes = _process_gtcodes(gtcodes)
 
     # unique combinations of number to be multiplied (second & third channel)
@@ -397,7 +391,7 @@ def contours_to_labeled_object_mask(
 
     # Make sure we don't run out of object encoding values.
     if N_elements > 17437:  # max unique products
-        raise Exception("Too many objects!!")
+        raise Exception('Too many objects!!')
 
     # Add roiinfo & init roi
     roiinfo = {
@@ -439,7 +433,7 @@ def contours_to_labeled_object_mask(
         for elId, elinfo in elinfos_relevant.iterrows():
 
             elNo += 1
-            elcountStr = "%s: Overlay level %d: Element %d of %d: %s" % (
+            elcountStr = '%s: Overlay level %d: Element %d of %d: %s' % (
                 monitorprefix, overlay_level, elNo, N_elements,
                 elinfo['group'])
             if verbose:
@@ -484,14 +478,12 @@ def contours_to_labeled_object_mask(
             objects_channel2[..., None],
         ), -1))
 
-# %%===========================================================================
-
 
 def get_all_rois_from_slide_v2(
         gc, slide_id, GTCodes_dict, save_directories,
         annotations_to_contours_kwargs=None,
         mode='object', get_mask=True,
-        slide_name=None, verbose=True, monitorprefix="",
+        slide_name=None, verbose=True, monitorprefix='',
         callback=None, callback_kwargs=None):
     """Get all ROIs for a slide without an intermediate mask form.
 
@@ -541,13 +533,13 @@ def get_all_rois_from_slide_v2(
         each entry is in turn a dict with the following keys:
         - group: group name of annotation (string), eg. mostly_tumor
         - overlay_order: int, how early to place the annotation in the
-        mask. Larger values means this annotation group is overlayed
+        mask. Larger values means this annotation group is overlaid
         last and overwrites whatever overlaps it.
         - GT_code: int, desired ground truth code (in the mask)
         Pixels of this value belong to corresponding group (class)
         - is_roi: Flag for whether this group encodes an ROI
         - is_background_class: Flag, whether this group is the default
-        fill value inside the ROI. For example, you may descide that
+        fill value inside the ROI. For example, you may decide that
         any pixel inside the ROI is considered stroma.
 
     save_directories : dict
@@ -556,7 +548,7 @@ def get_all_rois_from_slide_v2(
         - ROI: path to save masks (labeled images)
         - rgb: path to save rgb images
         - contours: path to save annotation contours
-        - visualization: path to save rgb visualzation overlays
+        - visualization: path to save rgb visualization overlays
 
     mode : str
         run mode for getting masks. Must me in
@@ -590,7 +582,7 @@ def get_all_rois_from_slide_v2(
         internal, but if you really want to use this, make sure the callback
         can accept the following keys and that you do NOT assign them yourself
         gc, slide_id, slide_name, MPP, MAG, verbose, monitorprefix
-        Also, this callback MUST *ONLY* return thr roi dictionary, whether
+        Also, this callback MUST *ONLY* return the roi dictionary, whether
         or not it is modified inside it. If it is modified inside the callback
         then the modified version is the one that will be saved to disk.
 
@@ -605,7 +597,7 @@ def get_all_rois_from_slide_v2(
         mask - path to saved mask
         rgb - path to saved rgb image
         contours - path to saved annotation contours
-        visualization - path to saved rgb visualzation overlay
+        visualization - path to saved rgb visualization overlay
 
     """
     from pandas import DataFrame
@@ -625,7 +617,7 @@ def get_all_rois_from_slide_v2(
     # convert to df and sanity check
     gtcodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
     if any(gtcodes_df.loc[:, 'GT_code'] <= 0):
-        raise Exception("All GT_code must be > 0")
+        raise Exception('All GT_code must be > 0')
 
     # if not given, assign name of first file associated with girder item
     if slide_name is None:
@@ -652,7 +644,7 @@ def get_all_rois_from_slide_v2(
 
     for roino, idx_for_roi in enumerate(idxs_for_all_rois):
 
-        roicountStr = "%s: roi %d of %d" % (
+        roicountStr = '%s: roi %d of %d' % (
             monitorprefix, roino + 1, len(idxs_for_all_rois))
 
         # get specified area
@@ -686,8 +678,8 @@ def get_all_rois_from_slide_v2(
 
         # now save roi (rgb, vis, mask)
 
-        this_roi_savenames = dict()
-        ROINAMESTR = "%s_left-%d_top-%d_bottom-%d_right-%d" % (
+        this_roi_savenames = {}
+        ROINAMESTR = '%s_left-%d_top-%d_bottom-%d_right-%d' % (
             slide_name,
             roi_out['bounds']['XMIN'], roi_out['bounds']['YMIN'],
             roi_out['bounds']['YMAX'], roi_out['bounds']['XMAX'])
@@ -695,17 +687,17 @@ def get_all_rois_from_slide_v2(
         for imtype in ['mask', 'rgb', 'visualization']:
             if imtype in roi_out.keys():
                 savename = os.path.join(
-                    save_directories[imtype], ROINAMESTR + ".png")
+                    save_directories[imtype], ROINAMESTR + '.png')
                 if verbose:
-                    print("%s: Saving %s" % (roicountStr, savename))
+                    print('%s: Saving %s' % (roicountStr, savename))
                 imwrite(im=roi_out[imtype], uri=savename)
                 this_roi_savenames[imtype] = savename
 
         # save contours
         savename = os.path.join(
-            save_directories['contours'], ROINAMESTR + ".csv")
+            save_directories['contours'], ROINAMESTR + '.csv')
         if verbose:
-            print("%s: Saving %s\n" % (roicountStr, savename))
+            print('%s: Saving %s\n' % (roicountStr, savename))
         contours_df = DataFrame(roi_out['contours'])
         contours_df.to_csv(savename)
         this_roi_savenames['contours'] = savename
@@ -713,5 +705,3 @@ def get_all_rois_from_slide_v2(
         savenames.append(this_roi_savenames)
 
     return savenames
-
-# %%===========================================================================

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Sat Oct 19 18:09:17 2019.
 
@@ -19,7 +18,7 @@ def perturb_stain_concentration(
     This is an implementation of the method described in Tellez et
     al, 2018 (see below). The SDA matrix is perturbed by multiplying each
     channel independently by a value chosen from a random uniform distribution
-    in the range [1 - sigma1, 1 + sigma1], then add a value chosed from another
+    in the range [1 - sigma1, 1 + sigma1], then add a value chosen from another
     random uniform distribution in the range [-sigma2, sigma2].
 
     Parameters

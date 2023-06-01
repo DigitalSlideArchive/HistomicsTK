@@ -76,7 +76,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
         ).astype(bool)
         # find boundaries
         Bounds = np.argwhere(
-            find_boundaries(lmask, mode="inner").astype(np.uint8) == 1
+            find_boundaries(lmask, mode='inner').astype(np.uint8) == 1
         )
         # check length of boundaries
         if len(Bounds) < 2:
@@ -217,11 +217,11 @@ def _GetBounds(bbox, delta, M, N):
     Returns
     -------
     min_row : int
-        Minum row of the region bounds.
+        Minimum row of the region bounds.
     max_row : int
         Maximum row of the region bounds.
     min_col : int
-        Minum column of the region bounds.
+        Minimum column of the region bounds.
     max_col : int
         Maximum column of the region bounds.
 

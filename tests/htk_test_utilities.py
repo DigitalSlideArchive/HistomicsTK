@@ -127,9 +127,9 @@ def girderClient():
 
     except Exception as e:
         warnings.warn(
-            e.__repr__() + "\n"
+            e.__repr__() + '\n'
             "Looks like there's no existing local DSA docker running; "
-            "will create one now and try again.",
+            'will create one now and try again.',
             stacklevel=2
         )
         # create a local dsa docker and connect to it

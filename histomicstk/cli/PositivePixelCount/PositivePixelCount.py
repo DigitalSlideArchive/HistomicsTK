@@ -68,7 +68,7 @@ def main(opts):
 
         client = utils.create_dask_client(opts)
         dask_setup_time = time.time() - start_time
-        print('Dask setup time = {}'.format(utils.disp_time_hms(dask_setup_time)))
+        print(f'Dask setup time = {utils.disp_time_hms(dask_setup_time)}')
         futureList = []
         for tile in ts.tileIterator(**tiparams):
             tile_position = tile['tile_position']['position']

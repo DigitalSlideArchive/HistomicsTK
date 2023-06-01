@@ -101,7 +101,7 @@ See Also
 
 **Discussion:** `Discourse forum`_ | `Gitter Chatroom`_
 
-.. Links for everythign above (not rendered):
+.. Links for everything above (not rendered):
 .. _HistomicsTK: https://digitalslidearchive.github.io/digital_slide_archive/
 .. _Digital Slide Archive: http://github.com/DigitalSlideArchive/digital_slide_archive
 .. _HistomicsUI: http://github.com/DigitalSlideArchive/HistomicsUI

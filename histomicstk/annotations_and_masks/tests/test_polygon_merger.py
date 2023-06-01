@@ -64,12 +64,12 @@ class TestPolygonMerger:
         annotation_docs = get_annotation_documents_from_contours(
             contours_df.copy(), separate_docs_by_group=True,
             docnamePrefix='test',
-            verbose=False, monitorPrefix=sampleSlideId + ": annotation docs")
+            verbose=False, monitorPrefix=sampleSlideId + ': annotation docs')
 
         # post annotations to slide -- make sure it posts without errors
         for annotation_doc in annotation_docs:
             resp = girderClient.post(
-                "/annotation?itemId=" + sampleSlideId, json=annotation_doc)
+                '/annotation?itemId=' + sampleSlideId, json=annotation_doc)
             assert 'annotation' in resp.keys()
 
     def test_polygon_merger_rtree(self):
@@ -81,7 +81,7 @@ class TestPolygonMerger:
 
         # init & run polygon merger
         pm = Polygon_merger_v2(contours_df, verbose=0)
-        pm.unique_groups.remove("roi")
+        pm.unique_groups.remove('roi')
         pm.run()
 
         # make sure it is what we expect
@@ -91,17 +91,17 @@ class TestPolygonMerger:
 
         # add colors (aesthetic)
         for group in pm.unique_groups:
-            cs = contours_df.loc[contours_df.loc[:, "group"] == group, "color"]
+            cs = contours_df.loc[contours_df.loc[:, 'group'] == group, 'color']
             pm.new_contours.loc[
-                pm.new_contours.loc[:, "group"] == group, "color"] = cs.iloc[0]
+                pm.new_contours.loc[:, 'group'] == group, 'color'] = cs.iloc[0]
 
         # get rid of nonenclosed stroma (aesthetic)
         pm.new_contours = _discard_nonenclosed_background_group(
-            pm.new_contours, background_group="mostly_stroma")
+            pm.new_contours, background_group='mostly_stroma')
 
         # get list of annotation documents
         annotation_docs = get_annotation_documents_from_contours(
             pm.new_contours.copy(), separate_docs_by_group=True,
             docnamePrefix='test',
-            verbose=False, monitorPrefix="annotation docs")
+            verbose=False, monitorPrefix='annotation docs')
         assert len(annotation_docs) == 3

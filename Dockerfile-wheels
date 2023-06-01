@@ -20,7 +20,7 @@ RUN for PYBIN in /opt/python/*/bin; do \
       elif [[ "${PYBIN}" =~ "37" ]]; then \
         export VERSIONS="numpy==1.14.*"; \
       else \
-        # This could be numpy 1.11, but we specifiy 1.12.1 as our minimum \
+        # This could be numpy 1.11, but we specify 1.12.1 as our minimum \
         export VERSIONS="numpy==1.12.*"; \
       fi && \
       ${PYBIN}/pip install setuptools-scm 'Cython>=0.25.2' 'scikit-build>=0.8.1' 'cmake>=0.6.0' "${VERSIONS}"; \

@@ -108,7 +108,7 @@ def compute_intensity_features(
         feature_list = default_feature_list
     else:
         assert all(j in default_feature_list for j in feature_list), \
-            "Some feature names are not recognized."
+            'Some feature names are not recognized.'
 
     # compute object properties if not provided
     if rprops is None:

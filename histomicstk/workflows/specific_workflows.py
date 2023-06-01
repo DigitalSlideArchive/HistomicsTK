@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Tue Oct  1 01:38:16 2019.
 
@@ -40,14 +39,14 @@ def cellularity_detection_workflow(
 
     # copy slide to target folder, otherwise work in-place
     if destination_folder_id is not None:
-        cdo._print1("%s: copying slide to destination folder" % monitorPrefix)
+        cdo._print1('%s: copying slide to destination folder' % monitorPrefix)
         resp = gc.post(
-            "/item/%s/copy?folderId=%s&copyAnnotations=%s" %
+            '/item/%s/copy?folderId=%s&copyAnnotations=%s' %
             (slide_id, destination_folder_id, keep_existing_annotations))
         slide_id = resp['_id']
 
     elif not keep_existing_annotations:
-        cdo._print1("%s: deleting existing annotations" % monitorPrefix)
+        cdo._print1('%s: deleting existing annotations' % monitorPrefix)
         delete_annotations_in_slide(gc, slide_id)
 
     # run cds for this slide
@@ -55,5 +54,3 @@ def cellularity_detection_workflow(
     cdo.run()
 
     return slide_id
-
-# %%===========================================================================

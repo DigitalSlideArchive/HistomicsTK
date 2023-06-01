@@ -4,7 +4,7 @@ import histomicstk.utils as htk_utls
 
 
 def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
-             lamda=1, alpha=-3, epsilon=1.5, iter=100):
+             lambda_=1, alpha=-3, epsilon=1.5, iter=100):
     """Distance-regularized edge-based level sets.
 
     Distance-regularization is used in this edge-based level set implementation
@@ -18,7 +18,7 @@ def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
     im_input : array_like
         A floating-point intensity image.
     im_phi : array_like
-        A floating-point initalization of the level-set image. Interior values
+        A floating-point initialization of the level-set image. Interior values
         are set to -c0, and exterior values set to c0, where c0 > 0.
     well : string
         Choice of well function for regularization. Can be set to either
@@ -30,7 +30,7 @@ def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
         Time step for evolving im_phi. Default value = 1.0.
     mu : double
         Regularization weight for energy function. Default value = 0.2.
-    lamda : double
+    lambda_ : double
         Boundary length weight for energy function. Default value = 1.0.
     alpha : double
         Area weight for energy function. A negative value is used to seed the
@@ -98,7 +98,7 @@ def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
                        dG[1] * (dPhi[1] / (mPhi + 1e-10))) + iPhi * G * Curve
 
         # evolve level-set function
-        im_phi = im_phi + dt * (mu * Reg + lamda * Edge + alpha * Area)
+        im_phi = im_phi + dt * (mu * Reg + lambda_ * Edge + alpha * Area)
 
     # return evolved level-set function following iterations
     return im_phi
@@ -142,7 +142,7 @@ def impulse(X, Epsilon):
 
 
 def neumann_bounds(Phi):
-    # Transofrm input to enforce Neumann boundary conditions.
+    # Transform input to enforce Neumann boundary conditions.
 
     # copy input
     PhiOut = Phi

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Wed Sep 18 00:06:28 2019.
 
@@ -50,7 +49,7 @@ cfg = Cfg()
 def test_prep(girderClient):  # noqa
     cfg.gc = girderClient
     cfg.iteminfo = cfg.gc.get('/item', parameters={
-        'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
     cfg.GTcodes = read_csv(getTestFilePath('saliency_GTcodes.csv'))
 
 
@@ -81,7 +80,7 @@ class TestTissueDetection():
         # check that it posts without issues
         resps = [
             cfg.gc.post(
-                "/annotation?itemId=" + cfg.iteminfo['_id'], json=doc)
+                '/annotation?itemId=' + cfg.iteminfo['_id'], json=doc)
             for doc in annotation_docs
         ]
         assert all(['annotation' in resp for resp in resps])

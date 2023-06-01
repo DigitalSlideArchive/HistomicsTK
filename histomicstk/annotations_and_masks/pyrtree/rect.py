@@ -43,7 +43,7 @@ class Rect:
     minx/y and maxx/y.)
     """
 
-    __slots__ = ("x", "y", "xx", "yy", "swapped_x", "swapped_y")
+    __slots__ = ('x', 'y', 'xx', 'yy', 'swapped_x', 'swapped_y')
 
     def __init__(self, minx, miny, maxx, maxy):
         """Placeholder."""

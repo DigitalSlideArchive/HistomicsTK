@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Wed Sep 18 03:29:24 2019.
 
@@ -18,8 +17,6 @@ from histomicstk.preprocessing.color_deconvolution.color_deconvolution import \
 
 Image.MAX_IMAGE_PIXELS = None
 
-# %%===========================================================================
-
 
 def get_slide_thumbnail(gc, slide_id):
     """Get slide thumbnail using girder client.
@@ -37,19 +34,15 @@ def get_slide_thumbnail(gc, slide_id):
         RGB slide thumbnail at lowest level
 
     """
-    getStr = "/item/%s/tiles/thumbnail" % (slide_id)
+    getStr = '/item/%s/tiles/thumbnail' % (slide_id)
     resp = gc.get(getStr, jsonResp=False)
     return get_image_from_htk_response(resp)
-
-# %%===========================================================================
 
 
 def _deconv_color(im, **kwargs):
     """Wrap around color_deconvolution_routine (compatibility)."""
     Stains, _, _ = color_deconvolution_routine(im, **kwargs)
     return Stains, 0
-
-# %%===========================================================================
 
 
 def get_tissue_mask(
@@ -71,7 +64,7 @@ def get_tissue_mask(
     stain_matrix_method : str
         see deconv_color method in seed_utils
     n_thresholding_steps : int
-        number of gaussian smoothign steps
+        number of gaussian smoothing steps
     sigma : float
         sigma of gaussian filter
     min_size : int
@@ -141,8 +134,6 @@ def get_tissue_mask(
     return labeled, mask
 
 
-# %%===========================================================================
-
 def get_tissue_boundary_annotation_documents(
         gc, slide_id, labeled,
         color='rgb(0,0,0)', group='tissue', annprops=None):
@@ -197,14 +188,12 @@ def get_tissue_boundary_annotation_documents(
     contours_tissue = get_contours_from_mask(
         MASK=0 + (labeled > 0), GTCodes_df=GTCodes_df,
         get_roi_contour=False, MIN_SIZE=0, MAX_SIZE=None, verbose=False,
-        monitorPrefix="tissue: getting contours")
+        monitorPrefix='tissue: getting contours')
     annotation_docs = get_annotation_documents_from_contours(
         contours_tissue.copy(), docnamePrefix='test', annprops=annprops,
-        verbose=False, monitorPrefix="tissue : annotation docs")
+        verbose=False, monitorPrefix='tissue : annotation docs')
 
     return annotation_docs
-
-# %%===========================================================================
 
 
 def threshold_multichannel(
@@ -227,7 +216,7 @@ def threshold_multichannel(
     channels : list
         names of channels, in order (eg. hue, saturation, intensity)
     just_threshold : bool
-        if Fase, get_tissue_mask() is used to smooth result and get regions.
+        if False, get_tissue_mask() is used to smooth result and get regions.
     get_tissue_mask_kwargs : dict
         key-value pairs of parameters to pass to get_tissue_mask()
 
@@ -266,8 +255,6 @@ def threshold_multichannel(
 
     return labeled, mask
 
-# %%===========================================================================
-
 
 def _get_largest_regions(labeled, top_n=10):
 
@@ -284,5 +271,3 @@ def _get_largest_regions(labeled, top_n=10):
     labeled_im[mask == 0] = 0
 
     return labeled_im
-
-# %%===========================================================================

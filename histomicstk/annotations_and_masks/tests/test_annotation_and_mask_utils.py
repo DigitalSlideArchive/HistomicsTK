@@ -40,12 +40,12 @@ class TestAnnotAndMaskUtils:
     def test_prep(self, girderClient):  # noqa
         cfg.gc = girderClient
         cfg.iteminfo = cfg.gc.get('/item', parameters={
-            'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+            'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
         cfg.annotations = cfg.gc.get('/annotation/item/' + cfg.iteminfo['_id'])
 
     def test_get_image_from_htk_response(self):
         """Test get_image_from_htk_response."""
-        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
+        getStr = '/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG' % (
             cfg.iteminfo['_id'], 59000, 59100, 35000, 35100)
         resp = cfg.gc.get(getStr, jsonResp=False)
         rgb = get_image_from_htk_response(resp)
@@ -95,9 +95,9 @@ class TestAnnotAndMaskUtils:
     def test_get_scale_factor_and_appendStr(self):
         """Test get_scale_factor_and_appendStr."""
         in_out = [
-            [(0.2, None), (1.2525, "&mm_x=0.00020000&mm_y=0.00020000")],
-            [(None, 10.), (0.25, "&magnification=10.00000000")],
-            [(None, None), (1.0, "")],
+            [(0.2, None), (1.2525, '&mm_x=0.00020000&mm_y=0.00020000')],
+            [(None, 10.), (0.25, '&magnification=10.00000000')],
+            [(None, None), (1.0, '')],
         ]
         for (MPP, MAG), (sftrue, apstr) in in_out:
             sf, appendStr = get_scale_factor_and_appendStr(

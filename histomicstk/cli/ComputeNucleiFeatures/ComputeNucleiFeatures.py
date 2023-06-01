@@ -302,7 +302,7 @@ def main(args):
 
     nuclei_detection_time = time.time() - start_time
 
-    print('Number of nuclei = {}'.format(len(nuclei_annot_list)))
+    print(f'Number of nuclei = {len(nuclei_annot_list)}')
     print('Nuclei detection time = {}'.format(
         cli_utils.disp_time_hms(nuclei_detection_time)))
 

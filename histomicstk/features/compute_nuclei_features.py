@@ -149,7 +149,7 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
         gradient_features_flag,
         haralick_features_flag,
     ]):
-        assert im_nuclei is not None, "You must provide nuclei intensity!"
+        assert im_nuclei is not None, 'You must provide nuclei intensity!'
 
     # TODO: this pipeline uses loops a lot. For each set of features it
     #  iterates over all nuclei, which may become an issue when one needs to
