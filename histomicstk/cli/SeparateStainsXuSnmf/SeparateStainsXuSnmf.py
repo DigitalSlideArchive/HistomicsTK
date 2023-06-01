@@ -9,7 +9,7 @@ def main(args):
     args = utils.splitArgs(args)
     args.snmf.I_0 = numpy.array(args.snmf.I_0)
 
-    print(">> Starting Dask cluster and sampling pixels")
+    print('>> Starting Dask cluster and sampling pixels')
     utils.create_dask_client(args.dask)
     sample = utils.sample_pixels(args.sample)
 
@@ -31,5 +31,5 @@ def main(args):
             f.write('stainColor_{} = {}\n'.format(i + 1, ','.join(map(str, stain))))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(CLIArgumentParser().parse_args())

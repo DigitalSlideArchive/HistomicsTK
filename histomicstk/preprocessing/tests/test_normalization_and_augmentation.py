@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Sun Oct 20 00:14:03 2019.
 
@@ -47,13 +46,13 @@ def test_prep(girderClient):  # noqa
     cfg.gc = girderClient
 
     iteminfo = cfg.gc.get('/item', parameters={
-        'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
     # get RGB region at a small magnification
     MAG = 1.5
-    getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
+    getStr = '/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG' % (
         iteminfo['_id'], 46890, 50000, 40350, 43000
-    ) + "&magnification=%.2f" % MAG
+    ) + '&magnification=%.2f' % MAG
     cfg.tissue_rgb = get_image_from_htk_response(
         cfg.gc.get(getStr, jsonResp=False))
 

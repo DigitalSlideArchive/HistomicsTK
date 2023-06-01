@@ -182,13 +182,13 @@ def main(args):
     for c in clf_model.classes_:
 
         annotation.append({
-            "name": annot_fname + '-nuclei-class-' + str(c),
-            "elements": nuclei_annot_by_class[c]
+            'name': annot_fname + '-nuclei-class-' + str(c),
+            'elements': nuclei_annot_by_class[c]
         })
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(CLIArgumentParser().parse_args())

@@ -12,7 +12,7 @@ Installing HistomicsTK as a Python toolkit
 ------------------------------------------
 
 On Linux, HistomicsTK can be installed via pip.  You can specify the
-`--find-links` option to get prebuilt libraries for reading some common image
+``--find-links`` option to get prebuilt libraries for reading some common image
 formats.  The installation command is::
 
     $ pip install histomicstk --find-links https://girder.github.io/large_image_wheels
@@ -77,5 +77,3 @@ interface, see `here <https://github.com/cdeepakroy/slicer_cli_web_plugin>`__.
 .. _scipy: https://www.scipy.org/
 .. _slicer_cli_web: https://github.com/girder/slicer_cli_web
 .. _anaconda: https://www.continuum.io/downloads
-
-

@@ -30,7 +30,7 @@ def compute_morphometry_features(im_label, rprops=None):
     List of morphometry features computed by this function:
 
     Orientation.Orientation :  float
-        Angle between the horizonal axis and the major axis of the ellipse
+        Angle between the horizontal axis and the major axis of the ellipse
         that has the same second moments as the region,
         ranging from `-pi/2` to `pi/2` counter-clockwise.
 

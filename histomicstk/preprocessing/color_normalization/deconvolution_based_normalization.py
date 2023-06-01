@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Fri Oct 18 02:31:32 2019.
 
@@ -99,7 +98,7 @@ def deconvolution_based_normalization(
         stain_unmixing_routine_params)
     for k in ['W_source', 'mask_out']:
         assert k not in stain_unmixing_routine_params.keys(), \
-            "%s must be provided as a separate parameter." % k
+            '%s must be provided as a separate parameter.' % k
 
     # find stains matrix from source image
     stain_unmixing_routine_params['stains'] = stains

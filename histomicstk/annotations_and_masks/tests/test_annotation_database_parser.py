@@ -39,7 +39,7 @@ def test_prep(girderClient):  # noqa
 
     # get original item
     iteminfo = cfg.gc.get('/item', parameters={
-        'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
     # create the folder to "back up"
     folderinfo = cfg.gc.post(
@@ -60,7 +60,7 @@ def test_prep(girderClient):  # noqa
     for i in range(2):
         for fid in (cfg.folderid, subf['_id']):
             _ = cfg.gc.post(
-                "/item/%s/copy" % iteminfo['_id'], data={
+                '/item/%s/copy' % iteminfo['_id'], data={
                     'name': 'test_dbsqlite-%d' % i,
                     'copyAnnotations': True,
                     'folderId': fid,

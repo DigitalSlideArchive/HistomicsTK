@@ -38,7 +38,7 @@ class TestGirderConvenience:
 
         # get original item
         original_iteminfo = cfg.gc.get('/item', parameters={
-            'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+            'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
         # create a sample folder
         cfg.posted_folder = cfg.gc.post(
@@ -47,10 +47,10 @@ class TestGirderConvenience:
                 'name': 'test'
             })
 
-        # copy the item so that everythign we do here does not affect
+        # copy the item so that everything we do here does not affect
         # other modules that use that item
         cfg.iteminfo = cfg.gc.post(
-            "/item/%s/copy" % original_iteminfo['_id'], data={
+            '/item/%s/copy' % original_iteminfo['_id'], data={
                 'name': 'test_slide_gcutils',
                 'copyAnnotations': True,
             })
@@ -63,7 +63,7 @@ class TestGirderConvenience:
 
     def test_update_permissions_for_annotations_in_slide(self):
         admininfo = cfg.gc.get('/user', parameters={
-            'text': "admin"})[0]
+            'text': 'admin'})[0]
 
         # params to pass to update_permissions_for_annotation()
         update_params = {
@@ -100,14 +100,14 @@ class TestGirderConvenience:
         )
         modified = [j for j in resps if j is not None]
         assert len(modified) == 3
-        assert "modified_roi" in modified[0]['groups']
+        assert 'modified_roi' in modified[0]['groups']
 
     def test_revert_annotations_in_slide(self):
         # delete elements for one annotation
         anns = cfg.gc.get('/annotation/item/%s' % cfg.iteminfo['_id'])
         anns[0]['annotation']['elements'] = []
         _ = cfg.gc.put(
-            "/annotation/%s" % anns[0]['_id'], json=anns[0]['annotation'])
+            '/annotation/%s' % anns[0]['_id'], json=anns[0]['annotation'])
 
         # now revert
         resps = revert_annotations_in_slide(

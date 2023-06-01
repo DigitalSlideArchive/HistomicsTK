@@ -328,8 +328,6 @@ class TestFeatureExtraction:
             fdata, fdata_gtruth, atol=1e-2)
 
 
-# PROTOTYPING =================================================================
-
 if __name__ == '__main__':
 
     tfe = TestFeatureExtraction()

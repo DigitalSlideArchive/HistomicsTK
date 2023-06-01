@@ -49,7 +49,7 @@ def test_prep(girderClient):  # noqa
     cfg.gc = girderClient
 
     iteminfo = cfg.gc.get('/item', parameters={
-        'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
     # read GTCodes dataframe
     gtcodePath = getTestFilePath('sample_GTcodes.csv')
@@ -113,8 +113,6 @@ def test_prep(girderClient):  # noqa
         'verbose': False,
         'monitorprefix': 'test',
     }
-
-# %%===========================================================================
 
 
 class TestGetSlideRegionNoMask:

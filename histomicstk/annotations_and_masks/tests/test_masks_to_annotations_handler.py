@@ -59,7 +59,7 @@ class TestMasksToAnnotations:
             discard_nonenclosed_background=True,
             background_group='mostly_stroma',
             MIN_SIZE=30, MAX_SIZE=None, verbose=False,
-            monitorPrefix=self.MASKNAME[:12] + ": getting contours")
+            monitorPrefix=self.MASKNAME[:12] + ': getting contours')
 
         # make sure it is what we expect
         assert set(contours_df.columns) == set(self.CONTOURS_DF.columns)
@@ -78,7 +78,7 @@ class TestMasksToAnnotations:
             discard_nonenclosed_background=True,
             background_group='mostly_stroma',
             MIN_SIZE=30, MAX_SIZE=None, verbose=False,
-            monitorPrefix=self.MASKNAME[:12] + ": getting contours")
+            monitorPrefix=self.MASKNAME[:12] + ': getting contours')
 
         # make sure it is what we expect
         assert set(contours_df.columns) == set(self.CONTOURS_DF.columns)
@@ -129,7 +129,7 @@ class TestMasksToAnnotations:
             self.CONTOURS_DF.copy(), separate_docs_by_group=True,
             annots_per_doc=10, docnamePrefix='test', annprops=annprops,
             verbose=False,
-            monitorPrefix=self.MASKNAME[:12] + ": annotation docs")
+            monitorPrefix=self.MASKNAME[:12] + ': annotation docs')
 
         # make sure its what we expect
         assert len(annotation_docs) == 8
@@ -149,6 +149,6 @@ class TestMasksToAnnotations:
 
         # post annotations to slide -- make sure it posts without errors
         resp = girderClient.post(
-            "/annotation?itemId=" + sampleSlideId,
+            '/annotation?itemId=' + sampleSlideId,
             json=annotation_docs[0])
         assert 'annotation' in resp.keys()

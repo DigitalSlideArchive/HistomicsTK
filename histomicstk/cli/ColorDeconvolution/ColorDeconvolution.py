@@ -99,5 +99,5 @@ def main(args):
             json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(CLIArgumentParser().parse_args())

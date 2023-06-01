@@ -52,7 +52,7 @@ def test_prep(girderClient):  # noqa
     cfg.gc = girderClient
 
     cfg.iteminfo = cfg.gc.get('/item', parameters={
-        'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
     # read GTCodes dataframe
     gtcodePath = getTestFilePath('sample_GTcodes.csv')
@@ -73,7 +73,7 @@ def test_prep(girderClient):  # noqa
         'discard_nonenclosed_background': True,
         'background_group': 'mostly_stroma',
         'MIN_SIZE': 10, 'MAX_SIZE': None,
-        'verbose': False, 'monitorPrefix': ""
+        'verbose': False, 'monitorPrefix': ''
     }
 
     # Microns-per-pixel / Magnification (either or)
