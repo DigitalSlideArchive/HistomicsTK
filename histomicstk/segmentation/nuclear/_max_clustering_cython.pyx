@@ -87,7 +87,7 @@ def _max_clustering_cython(double[:, :] im not None, int[:, :] im_fgnd_mask not 
                 peak_found[cy, cx] = 1
 
     # find local peaks of all requested pixels
-    cdef np.ndarray[np.long_t, ndim=2, mode='c'] maxpath_np = np.zeros([1000, 2], dtype=np.int64)
+    cdef np.ndarray[np.int64_t, ndim=2, mode='c'] maxpath_np = np.zeros([1000, 2], dtype=np.int64)
     cdef long[:, ::1] maxpath = maxpath_np
     cdef long end_x, end_y, end_pos, end_ind, end_max_ind
     cdef long path_len = maxpath.shape[0]

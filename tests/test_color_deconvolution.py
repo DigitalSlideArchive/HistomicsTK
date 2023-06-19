@@ -37,3 +37,17 @@ class TestColorDeconvolution:
                                               conv_result.Wc, 255)
 
         np.testing.assert_allclose(im, im_reconv, atol=1)
+
+    def test_short_array(self):
+        im_path = datastore.fetch('Easy1.png')
+        im = skimage.io.imread(im_path)[..., :3]
+
+        w = [[0.650, 0.072],
+             [0.704, 0.990],
+             [0.286, 0.105]]
+
+        conv_result = htk_dcv.color_deconvolution(im, w, 255)
+
+        im_reconv = htk_dcv.color_convolution(conv_result.StainsFloat,
+                                              conv_result.Wc, 255)
+        np.testing.assert_allclose(im, im_reconv, atol=1)
