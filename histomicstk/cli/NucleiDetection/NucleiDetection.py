@@ -34,20 +34,14 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
     # get tile image & check if image is single channel
     print('The given shape of image is ', tile_info['tile'].shape)
-    if (len(tile_info['tile'].shape) < 2) or (tile_info['tile'].shape[2] <= 1):
-        im_tile = tile_info['tile']
-        flag_single_channel = True
-        # perform color normalization
-        im_nmzd = htk_cnorm.reinhard(np.dstack((im_tile, im_tile, im_tile)),
-                                     args.reference_mu_lab,
-                                     args.reference_std_lab,
-                                     src_mu=src_mu_lab,
-                                     src_sigma=src_sigma_lab)
+    flag_single_channel =len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
+    if flag_single_channel:
+        im_tile = np.dstack((tile_info['tile'], tile_info['tile'], tile_info['tile']))
     else:
-        flag_single_channel = False
-        im_tile = tile_info['tile'][:, :, :3]
-        # perform color normalization
-        im_nmzd = htk_cnorm.reinhard(im_tile,
+        im_tile = tile_info['tile'][:,:,:3]
+    
+    # perform color normalization
+    im_nmzd = htk_cnorm.reinhard(im_tile,
                                      args.reference_mu_lab,
                                      args.reference_std_lab,
                                      src_mu=src_mu_lab,
