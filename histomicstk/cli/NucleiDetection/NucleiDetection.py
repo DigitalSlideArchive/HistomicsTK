@@ -34,18 +34,18 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
     # get tile image & check if image is single channel
     print('The given shape of image is ', tile_info['tile'].shape)
-    flag_single_channel =len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
+    flag_single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
     if flag_single_channel:
         im_tile = np.dstack((tile_info['tile'], tile_info['tile'], tile_info['tile']))
     else:
-        im_tile = tile_info['tile'][:,:,:3]
-    
+        im_tile = tile_info['tile'][:, :, :3]
+
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
-                                     args.reference_mu_lab,
-                                     args.reference_std_lab,
-                                     src_mu=src_mu_lab,
-                                     src_sigma=src_sigma_lab)
+                                 args.reference_mu_lab,
+                                 args.reference_std_lab,
+                                 src_mu=src_mu_lab,
+                                 src_sigma=src_sigma_lab)
 
     # perform color decovolution
     w = cli_utils.get_stain_matrix(args)
@@ -125,6 +125,10 @@ def main(args):
     # color inversion flag
     if args.colorInversionForm == "Yes":
         flag_color_inversion = True
+    if args.colorInversionForm == "No":
+        flag_color_inversion = False
+    if args.colorInversionForm == "unspecified":
+        flag_color_inversion = False
 
     #
     # Initiate Dask client

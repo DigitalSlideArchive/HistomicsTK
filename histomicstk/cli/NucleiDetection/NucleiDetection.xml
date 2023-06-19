@@ -228,7 +228,8 @@
       <longflag>output_form</longflag>
       <element>Yes</element>
       <element>No</element>
-      <default>No</default>
+      <element>unspecified</element>
+      <default>unspecified</default>
     </string-enumeration>
   </parameters>
 </executable>
