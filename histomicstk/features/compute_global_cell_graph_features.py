@@ -110,9 +110,9 @@ def _compute_global_cell_graph_features(
     vertices = vor.vertices
 
     regions = [r for r in vor.regions if r and -1 not in r]
-    areas = np.stack(_poly_area(vertices[r]) for r in regions)
-    peris = np.stack(_poly_peri(vertices[r]) for r in regions)
-    max_dists = np.stack(pdist(vertices[r]).max() for r in regions)
+    areas = np.array([_poly_area(vertices[r]) for r in regions])
+    peris = np.array([_poly_peri(vertices[r]) for r in regions])
+    max_dists = np.array([pdist(vertices[r]).max() for r in regions])
     poly_props = PolyProps._make(map(_pop_stats, (areas, peris, max_dists)))
 
     # Assume that each Voronoi vertex is on exactly three ridges.
@@ -134,7 +134,7 @@ def _compute_global_cell_graph_features(
     # beyond throwing an AssertionError
     assert all(len(t) == 3 for t in tris)
     tris = np.asarray(tris)
-    areas = np.stack(_poly_area(centroids[t]) for t in tris)
+    areas = np.array([_poly_area(centroids[t]) for t in tris])
     tri_props = TriProps._make(map(_pop_stats, (sides, areas)))
 
     graph = sparse.coo_matrix((ridge_lengths, np.sort(ridge_points).T),
@@ -146,16 +146,18 @@ def _compute_global_cell_graph_features(
     mst_branches = _pop_stats(mst.data[mst.data != 0])
 
     tree = KDTree(centroids)
-    neigbors_in_distance = {
+    neighbors_in_distance = {
         # Yes, we just throw away the actual points
-        r: _pop_stats(np.stack(map(len, tree.query_ball_tree(tree, r))) - 1)
+        r: _pop_stats(np.stack(np.array([
+            m for m in map(len, tree.query_ball_tree(tree, r))])) - 1)
         for r in neighbor_distances
     }
+
     distance_for_neighbors = dict(zip(
         neighbor_counts,
         map(_pop_stats, tree.query(centroids, [c + 1 for c in neighbor_counts])[0].T),
     ))
-    density_props = DensityProps(neigbors_in_distance, distance_for_neighbors)
+    density_props = DensityProps(neighbors_in_distance, distance_for_neighbors)
 
     return Props(poly_props, tri_props, mst_branches, density_props)
 
