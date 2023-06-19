@@ -18,7 +18,10 @@ logging.basicConfig(level=logging.CRITICAL)
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
-                       src_mu_lab=None, src_sigma_lab=None):
+                       src_mu_lab=None, src_sigma_lab=None, flag_color_inversion=False):
+
+    # Flags
+    flag_single_channel = False
 
     # get slide tile source
     ts = large_image.getTileSource(slide_path)
@@ -29,22 +32,41 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         **it_kwargs)
 
-    # get tile image
-    im_tile = tile_info['tile'][:, :, :3]
-
-    # perform color normalization
-    im_nmzd = htk_cnorm.reinhard(im_tile,
-                                 args.reference_mu_lab,
-                                 args.reference_std_lab,
-                                 src_mu=src_mu_lab,
-                                 src_sigma=src_sigma_lab)
+    # get tile image & check if image is single channel
+    print('The given shape of image is ', tile_info['tile'].shape)
+    if (len(tile_info['tile'].shape) < 2) or (tile_info['tile'].shape[2] <= 1):
+        im_tile = tile_info['tile']
+        flag_single_channel = True
+        # perform color normalization
+        im_nmzd = htk_cnorm.reinhard(np.dstack((im_tile, im_tile, im_tile)),
+                                     args.reference_mu_lab,
+                                     args.reference_std_lab,
+                                     src_mu=src_mu_lab,
+                                     src_sigma=src_sigma_lab)
+    else:
+        flag_single_channel = False
+        im_tile = tile_info['tile'][:, :, :3]
+        # perform color normalization
+        im_nmzd = htk_cnorm.reinhard(im_tile,
+                                     args.reference_mu_lab,
+                                     args.reference_std_lab,
+                                     src_mu=src_mu_lab,
+                                     src_sigma=src_sigma_lab)
 
     # perform color decovolution
     w = cli_utils.get_stain_matrix(args)
 
-    im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
-
-    im_nuclei_stain = im_stains[:, :, 0].astype(float)
+    # Color inversion and deconvolution
+    if flag_single_channel:
+        # inverting the color
+        if flag_color_inversion:
+            inv_im_tile = 1 - im_nmzd
+            im_nuclei_stain = inv_im_tile[:, :, 0].astype(float)
+        else:
+            im_nuclei_stain = im_nmzd[:, :, 0].astype(float)
+    else:
+        im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
+        im_nuclei_stain = im_stains[:, :, 0].astype(float)
 
     # segment nuclear foreground
     im_nuclei_fgnd_mask = im_nuclei_stain < args.foreground_threshold
@@ -79,6 +101,10 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 def main(args):
     import dask
 
+    # Flags
+
+    flag_color_inversion = False
+
     total_start_time = time.time()
 
     print('\n>> CLI Parameters ...\n')
@@ -101,6 +127,10 @@ def main(args):
         process_whole_image = True
     else:
         process_whole_image = False
+
+    # color inversion flag
+    if args.colorInversionForm == "Yes":
+        flag_color_inversion = True
 
     #
     # Initiate Dask client
@@ -242,7 +272,7 @@ def main(args):
             args.inputImageFile,
             tile_position,
             args, it_kwargs,
-            src_mu_lab, src_sigma_lab
+            src_mu_lab, src_sigma_lab, flag_color_inversion
         )
 
         # append result to list
