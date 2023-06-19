@@ -91,7 +91,7 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
     return nuclei_annot_list
 
-
+# flake8: noqa: C901
 def main(args):
     import dask
 
