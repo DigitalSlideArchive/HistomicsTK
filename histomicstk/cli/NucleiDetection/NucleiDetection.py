@@ -51,7 +51,8 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     w = cli_utils.get_stain_matrix(args)
 
     # perform image inversion
-    if invert_image: im_nmzd = 1 - im_nmzd
+    if invert_image:
+        im_nmzd = 1 - im_nmzd
 
     # perform deconvolution
     if single_channel:
@@ -161,7 +162,7 @@ def main(args):
     # print(json.dumps(ts_metadata, indent=2))
 
     is_wsi = ts_metadata['magnification'] is not None
-    #TODO - Remove this checkpoint
+    # TODO - Remove this checkpoint
     print('\n >> is it wsi {}, is it whole image {}'.format(is_wsi, process_whole_image))
 
     #
