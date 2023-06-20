@@ -74,7 +74,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
     # TODO - add code for single channel image
     print('n\\ >>Low res image shape', im_lres.shape)
     if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
-        im_lres =1- np.dstack((im_lres, im_lres, im_lres))
+        im_lres = 1 - np.dstack((im_lres, im_lres, im_lres))
     else:
         im_lres = im_lres[:, :, :3]
 
@@ -157,7 +157,7 @@ def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
         # get current tile image
         # TODO - check if single channel
         if len(tile['tile'].shape) <= 2 or tile['tile'].shape[2] == 1:
-            im_tile =1 - np.dstack((tile['tile'], tile['tile'], tile['tile']))
+            im_tile = 1 - np.dstack((tile['tile'], tile['tile'], tile['tile']))
         else:
             im_tile = tile['tile'][:, :, :3]
 

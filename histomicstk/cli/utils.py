@@ -70,7 +70,7 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
 
     # TODO - Correction 3 - check if the input is single channel
     if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
-        im_lres =1- np.dstack((im_lres, im_lres, im_lres))
+        im_lres = 1 - np.dstack((im_lres, im_lres, im_lres))
     else:
         im_lres = im_lres[:, :, :3]
 
