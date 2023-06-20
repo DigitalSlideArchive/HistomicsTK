@@ -53,7 +53,7 @@ def reinhard_stats(slide_path, sample_fraction, magnification=None,
     """
 
     # generate a sampling of sample_pixels_rgb pixels from whole-slide image
-    #TODO - Correction 4 
+    # TODO - Correction 4
     sample_pixels_rgb = sample_pixels(
         slide_path,
         sample_fraction=sample_fraction,

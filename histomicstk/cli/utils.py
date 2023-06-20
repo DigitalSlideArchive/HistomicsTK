@@ -49,7 +49,7 @@ def get_stain_matrix(args, count=3):
     return np.array([get_stain_vector(args, i + 1) for i in range(count)]).T
 
 
-def segment_wsi_foreground_at_low_res(ts, lres_size=2048 ):
+def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
 
     ts_metadata = ts.getMetadata()
 
@@ -67,10 +67,10 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048 ):
         scale=fgnd_seg_scale,
         format=large_image.tilesource.TILE_FORMAT_NUMPY
     )
-    
-    #TODO - Correction 3 - check if the input is single channel
+
+    # TODO - Correction 3 - check if the input is single channel
     if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
-        im_lres = np.dstack((im_lres, im_lres, im_lres))
+        im_lres =1- np.dstack((im_lres, im_lres, im_lres))
     else:
         im_lres = im_lres[:, :, :3]
 

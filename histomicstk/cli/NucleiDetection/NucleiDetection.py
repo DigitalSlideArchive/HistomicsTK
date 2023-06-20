@@ -91,7 +91,16 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
     return nuclei_annot_list
 
-# flake8: noqa: C901
+
+def color_inversion_flag_setter(args):
+    color_inversion = False
+    if args.colorInversionForm == "Yes":
+        color_inversion = True
+    if args.colorInversionForm == "No" or args.colorInversionForm == "unspecified":
+        color_inversion = False
+    return color_inversion
+
+
 def main(args):
     import dask
 
@@ -122,13 +131,10 @@ def main(args):
     else:
         process_whole_image = False
 
+    #
     # color inversion flag
-    if args.colorInversionForm == "Yes":
-        flag_color_inversion = True
-    if args.colorInversionForm == "No":
-        flag_color_inversion = False
-    if args.colorInversionForm == "unspecified":
-        flag_color_inversion = False
+    #
+    flag_color_inversion = color_inversion_flag_setter(args)
 
     #
     # Initiate Dask client
@@ -154,7 +160,7 @@ def main(args):
 
     ts_metadata = ts.getMetadata()
 
-    print(json.dumps(ts_metadata, indent=2))
+    # print(json.dumps(ts_metadata, indent=2))
 
     is_wsi = ts_metadata['magnification'] is not None
 
@@ -240,7 +246,7 @@ def main(args):
         print('\n>> Computing reinhard color normalization stats ...\n')
 
         start_time = time.time()
-        #TODO  - correction 2
+        # TODO  - correction 2
         src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
             args.inputImageFile, 0.01, magnification=args.analysis_mag)
 
