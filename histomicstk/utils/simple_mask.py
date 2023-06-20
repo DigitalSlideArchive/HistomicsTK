@@ -103,8 +103,6 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
     # optimization
     xHist = xHist.flatten()
     yHist = yHist.flatten()
-    # TODO - X hist
-    print('\n >> histogram shape ', xHist.shape)
 
     # define gaussian mixture model
     def gaussian_mixture(x, mu1, mu2, sigma1, sigma2, p):
@@ -142,10 +140,7 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
     # identify maximum likelihood threshold
     Difference = pTissue - pBackground
     Candidates = np.nonzero(Difference >= 0)[0]
-    # TODO - Fix this problem that filtered is not giving anything
     Filtered = np.nonzero(xHist[Candidates] > muBackground)
-    # TODO - print candidate and filter sizes
-    print('\n >> candidate and filtered shape ', Candidates, Filtered)
     ML = xHist[Candidates[Filtered[0]][0]]
 
     # identify limits for tissue model (MinProb, 1-MinProb)
@@ -189,8 +184,6 @@ def estimate_variance(x, y, peak):
     SimpleMask
 
     """
-    peak = int(peak)  # EKS
-    print('\n >> Peak values ', peak)  # EKS
     # analyze peak to estimate variance parameter via FWHM
     Left = peak
     while y[Left] > y[peak] / 2 and Left >= 0:

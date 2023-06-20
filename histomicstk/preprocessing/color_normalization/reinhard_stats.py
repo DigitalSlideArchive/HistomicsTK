@@ -7,7 +7,7 @@ from histomicstk.utils import sample_pixels
 
 
 def reinhard_stats(slide_path, sample_fraction, magnification=None,
-                   tissue_seg_mag=1.25, flag_color_inversion=False):
+                   tissue_seg_mag=1.25, invert_image=False):
     """Samples a whole-slide-image to determine colorspace statistics (mean,
     variance) needed to perform global Reinhard color normalization.
 
@@ -59,7 +59,7 @@ def reinhard_stats(slide_path, sample_fraction, magnification=None,
         sample_fraction=sample_fraction,
         magnification=magnification,
         tissue_seg_mag=tissue_seg_mag,
-        flag_color_inversion=flag_color_inversion
+        invert_image=invert_image
     )
 
     # reshape the Nx3 pixel array into a 1 x N x 3 image for lab_mean_std

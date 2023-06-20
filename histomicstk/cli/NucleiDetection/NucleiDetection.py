@@ -18,10 +18,10 @@ logging.basicConfig(level=logging.CRITICAL)
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
-                       src_mu_lab=None, src_sigma_lab=None, flag_color_inversion=False):
+                       src_mu_lab=None, src_sigma_lab=None, invert_image=False):
 
     # Flags
-    flag_single_channel = False
+    single_channel = False
 
     # get slide tile source
     ts = large_image.getTileSource(slide_path)
@@ -34,8 +34,8 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
     # get tile image & check if image is single channel
     print('The given shape of image is ', tile_info['tile'].shape)
-    flag_single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
-    if flag_single_channel:
+    single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
+    if single_channel:
         im_tile = np.dstack((tile_info['tile'], tile_info['tile'], tile_info['tile']))
     else:
         im_tile = tile_info['tile'][:, :, :3]
@@ -51,9 +51,9 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     w = cli_utils.get_stain_matrix(args)
 
     # Color inversion and deconvolution
-    if flag_single_channel:
+    if single_channel:
         # inverting the color
-        if flag_color_inversion:
+        if invert_image:
             inv_im_tile = 1 - im_nmzd
             im_nuclei_stain = inv_im_tile[:, :, 0].astype(float)
         else:
@@ -92,13 +92,13 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     return nuclei_annot_list
 
 
-def color_inversion_flag_setter(args):
-    color_inversion = False
+def image_inversion_flag_setter(args):
+    invert_image = False
     if args.colorInversionForm == "Yes":
-        color_inversion = True
+        invert_image = True
     if args.colorInversionForm == "No" or args.colorInversionForm == "unspecified":
-        color_inversion = False
-    return color_inversion
+        invert_image = False
+    return invert_image
 
 
 def main(args):
@@ -106,7 +106,7 @@ def main(args):
 
     # Flags
 
-    flag_color_inversion = False
+    invert_image = False
 
     total_start_time = time.time()
 
@@ -129,13 +129,13 @@ def main(args):
     if np.all(np.array(args.analysis_roi) == -1):
         process_whole_image = True
     else:
-        process_whole_image = True
+        process_whole_image = False
 
     #
     # color inversion flag
     #
-    flag_color_inversion = color_inversion_flag_setter(args)
-
+    invert_image = image_inversion_flag_setter(args)
+    print('>> image inversion flag is ', invert_image)
     #
     # Initiate Dask client
     #
@@ -174,7 +174,7 @@ def main(args):
         start_time = time.time()
 
         im_fgnd_mask_lres, fgnd_seg_scale = \
-            cli_utils.segment_wsi_foreground_at_low_res(ts)
+            cli_utils.segment_wsi_foreground_at_low_res(ts, invert_image=invert_image)
 
         fgnd_time = time.time() - start_time
 
@@ -248,7 +248,8 @@ def main(args):
         start_time = time.time()
         # TODO  - correction 2
         src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
-            args.inputImageFile, 0.01, magnification=args.analysis_mag, flag_color_inversion=flag_color_inversion)
+            args.inputImageFile, 0.01, magnification=args.analysis_mag,
+            invert_image=invert_image)
 
         rstats_time = time.time() - start_time
 
@@ -276,7 +277,7 @@ def main(args):
             args.inputImageFile,
             tile_position,
             args, it_kwargs,
-            src_mu_lab, src_sigma_lab, flag_color_inversion
+            src_mu_lab, src_sigma_lab, invert_image=invert_image
         )
 
         # append result to list

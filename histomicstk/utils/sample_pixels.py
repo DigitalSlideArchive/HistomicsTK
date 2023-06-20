@@ -7,7 +7,7 @@ from .simple_mask import simple_mask
 
 def sample_pixels(slide_path, sample_fraction=None, magnification=None,
                   tissue_seg_mag=1.25, min_coverage=0.1, background=False,
-                  sample_approximate_total=None, tile_grouping=256, flag_color_inversion=False):
+                  sample_approximate_total=None, tile_grouping=256, invert_image=False):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -75,8 +75,9 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
     print('n\\ >>Low res image shape', im_lres.shape)
     if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
         im_lres = np.dstack((im_lres, im_lres, im_lres))
-        if flag_color_inversion:
+        if invert_image:
             im_lres = 1 - im_lres
+            print('n\\ >>sample_pixels invert_image working')
     else:
         im_lres = im_lres[:, :, :3]
 
@@ -112,7 +113,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
             slide_path, iter_args,
             (position, min(tile_grouping, total_tiles - position)),
             sample_fraction, tissue_seg_mag, min_coverage,
-            im_fgnd_mask_lres, flag_color_inversion=flag_color_inversion))
+            im_fgnd_mask_lres, invert_image=invert_image))
 
     # concatenate pixel values in list
     if sample_pixels:
@@ -125,7 +126,8 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
 
 
 def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
-                        tissue_seg_mag, min_coverage, im_fgnd_mask_lres, flag_color_inversion=False):
+                        tissue_seg_mag, min_coverage, im_fgnd_mask_lres,
+                        invert_image=False):
     start_position, position_count = positions
     sample_pixels = [np.empty((0, 3))]
     ts = large_image.getTileSource(slide_path)
@@ -160,7 +162,7 @@ def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
         # TODO - check if single channel
         if len(tile['tile'].shape) <= 2 or tile['tile'].shape[2] == 1:
             im_tile = np.dstack((tile['tile'], tile['tile'], tile['tile']))
-            if flag_color_inversion:
+            if invert_image:
                 im_tile = 1 - im_tile
         else:
             im_tile = tile['tile'][:, :, :3]
