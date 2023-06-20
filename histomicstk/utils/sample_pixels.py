@@ -125,7 +125,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
 
 
 def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
-                        tissue_seg_mag, min_coverage, im_fgnd_mask_lres,flag_color_inversion=False):
+                        tissue_seg_mag, min_coverage, im_fgnd_mask_lres, flag_color_inversion=False):
     start_position, position_count = positions
     sample_pixels = [np.empty((0, 3))]
     ts = large_image.getTileSource(slide_path)
@@ -161,7 +161,7 @@ def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
         if len(tile['tile'].shape) <= 2 or tile['tile'].shape[2] == 1:
             im_tile = np.dstack((tile['tile'], tile['tile'], tile['tile']))
             if flag_color_inversion:
-                im_tile = 1- im_tile
+                im_tile = 1 - im_tile
         else:
             im_tile = tile['tile'][:, :, :3]
 
