@@ -7,7 +7,7 @@ from .simple_mask import simple_mask
 
 def sample_pixels(slide_path, sample_fraction=None, magnification=None,
                   tissue_seg_mag=1.25, min_coverage=0.1, background=False,
-                  sample_approximate_total=None, tile_grouping=256):
+                  sample_approximate_total=None, tile_grouping=256 ):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -70,7 +70,12 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         scale=scale_lres
     )
-    im_lres = im_lres[:, :, :3]
+
+    #TODO - add code for single channel image
+    if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
+        im_lres = np.dstack((im_lres, im_lres, im_lres))
+    else:
+        im_lres = im_lres[:, :, :3]
 
     # compute foreground mask of whole-slide image at low-res.
     # it will actually be a background mask if background is set.
