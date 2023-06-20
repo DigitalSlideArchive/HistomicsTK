@@ -69,13 +69,13 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048, invert_image=False):
     )
 
     # TODO - Correction 3 - check if the input is single channel
-    print('>> segment_wsi_foreground_at_low_res', invert_image, im_lres.shape)
     if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
         im_lres = np.dstack((im_lres, im_lres, im_lres))
-        if invert_image:
-            im_lres = 1 - im_lres
     else:
         im_lres = im_lres[:, :, :3]
+    
+    # perform image inversion
+    if invert_image: im_lres = 1 - im_lres
 
     # compute foreground mask at low-res
     im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)

@@ -50,14 +50,12 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     # perform color decovolution
     w = cli_utils.get_stain_matrix(args)
 
-    # Color inversion and deconvolution
+    # perform image inversion
+    if invert_image: im_nmzd = 1 - im_nmzd
+
+    # perform deconvolution
     if single_channel:
-        # inverting the color
-        if invert_image:
-            inv_im_tile = 1 - im_nmzd
-            im_nuclei_stain = inv_im_tile[:, :, 0].astype(float)
-        else:
-            im_nuclei_stain = im_nmzd[:, :, 0].astype(float)
+        im_nuclei_stain = im_nmzd[:, :, 0].astype(float)
     else:
         im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
         im_nuclei_stain = im_stains[:, :, 0].astype(float)
@@ -135,7 +133,7 @@ def main(args):
     # color inversion flag
     #
     invert_image = image_inversion_flag_setter(args)
-    print('>> image inversion flag is ', invert_image)
+    print('>> perform image inversion flag is ', invert_image)
     #
     # Initiate Dask client
     #
@@ -163,6 +161,8 @@ def main(args):
     # print(json.dumps(ts_metadata, indent=2))
 
     is_wsi = ts_metadata['magnification'] is not None
+    #TODO - Remove this checkpoint
+    print('\n >> is it wsi {}, is it whole image {}'.format(is_wsi, process_whole_image))
 
     #
     # Compute tissue/foreground mask at low-res for whole slide images
