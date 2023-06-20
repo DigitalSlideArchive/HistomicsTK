@@ -129,7 +129,7 @@ def main(args):
     if np.all(np.array(args.analysis_roi) == -1):
         process_whole_image = True
     else:
-        process_whole_image = False
+        process_whole_image = True
 
     #
     # color inversion flag
@@ -172,7 +172,7 @@ def main(args):
         print('\n>> Computing tissue/foreground mask at low-res ...\n')
 
         start_time = time.time()
-        # TODO - Correction 1
+ 
         im_fgnd_mask_lres, fgnd_seg_scale = \
             cli_utils.segment_wsi_foreground_at_low_res(ts)
 
@@ -248,7 +248,7 @@ def main(args):
         start_time = time.time()
         # TODO  - correction 2
         src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
-            args.inputImageFile, 0.01, magnification=args.analysis_mag)
+            args.inputImageFile, 0.01, magnification=args.analysis_mag,flag_color_inversion=flag_color_inversion)
 
         rstats_time = time.time() - start_time
 
