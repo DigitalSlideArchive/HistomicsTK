@@ -49,7 +49,7 @@ def get_stain_matrix(args, count=3):
     return np.array([get_stain_vector(args, i + 1) for i in range(count)]).T
 
 
-def segment_wsi_foreground_at_low_res(ts, lres_size=2048, invert_image=False):
+def segment_wsi_foreground_at_low_res(ts, lres_size=2048, invert_image=False, frame=None):
 
     ts_metadata = ts.getMetadata()
 
@@ -63,9 +63,12 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048, invert_image=False):
 
     fgnd_seg_scale = {'magnification': fgnd_seg_mag}
 
+    print('here is the ts arguments are ', frame)
+
     im_lres, _ = ts.getRegion(
         scale=fgnd_seg_scale,
-        format=large_image.tilesource.TILE_FORMAT_NUMPY
+        format=large_image.tilesource.TILE_FORMAT_NUMPY,
+        frame=frame
     )
 
     # TODO - Correction 3 - check if the input is single channel

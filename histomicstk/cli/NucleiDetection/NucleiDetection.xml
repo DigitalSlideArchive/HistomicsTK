@@ -218,12 +218,30 @@
       <default>1</default>
     </integer>
   </parameters>
-    <parameters advanced="true">
-    <label>Color inversion</label>
-    <description>Choose if color inversion is needed</description>
+  <parameters advanced="true">
+    <label>Frame and Style</label>
+    <description>Frame parameters</description>
+    <string>
+      <name>frame</name>
+      <longflag>frame</longflag>
+      <label>Frame Index</label>
+      <description>Frame index in a multi-frame image</description>
+      <default>{#control:#current_image_frame#}</default>
+    </string>
+    <string>
+      <name>style</name>
+      <longflag>style</longflag>
+      <label>Style Options</label>
+      <description>Image style options for compositing a multi-frame image</description>
+      <default>{#control:#current_image_style#}</default>
+    </string>
+  </parameters>
+  <parameters advanced="true">
+    <label>Image inversion</label>
+    <description>Choose if image inversion is needed</description>
     <string-enumeration>
-      <name>colorInversionForm</name>
-      <description>Color inversion may be needed for greyscale images with bright nuclei with dark background. Choose if color inversion is needed.</description>
+      <name>ImageInversionForm</name>
+      <description>Image inversion may be needed for greyscale images with bright nuclei and dark background. Choose if color inversion is needed.</description>
       <channel>input</channel>
       <longflag>output_form</longflag>
       <element>Yes</element>

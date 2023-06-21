@@ -18,13 +18,13 @@ logging.basicConfig(level=logging.CRITICAL)
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
-                       src_mu_lab=None, src_sigma_lab=None, invert_image=False):
+                       src_mu_lab=None, src_sigma_lab=None, invert_image=False, style=None):
 
     # Flags
     single_channel = False
 
     # get slide tile source
-    ts = large_image.getTileSource(slide_path)
+    ts = large_image.getTileSource(slide_path, style=style)
 
     # get requested tile
     tile_info = ts.getSingleTile(
@@ -93,9 +93,9 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
 def image_inversion_flag_setter(args):
     invert_image = False
-    if args.colorInversionForm == "Yes":
+    if args.ImageInversionForm == "Yes":
         invert_image = True
-    if args.colorInversionForm == "No" or args.colorInversionForm == "unspecified":
+    if args.ImageInversionForm == "No" or args.ImageInversionForm == "unspecified":
         invert_image = False
     return invert_image
 
@@ -130,6 +130,14 @@ def main(args):
     else:
         process_whole_image = False
 
+    # retrive style
+    if not args.style or args.style.startswith('{#control'):
+        args.style = None
+    if not args.frame or args.frame.startswith('{#control'):
+        args.frame = None
+
+    print('\n >> target frame and style is {} {}'.format(args.frame, args.style))
+
     #
     # color inversion flag
     #
@@ -155,7 +163,7 @@ def main(args):
     #
     print('\n>> Reading input image ... \n')
 
-    ts = large_image.getTileSource(args.inputImageFile)
+    ts = large_image.getTileSource(args.inputImageFile, style=args.style)
 
     ts_metadata = ts.getMetadata()
 
@@ -175,7 +183,8 @@ def main(args):
         start_time = time.time()
 
         im_fgnd_mask_lres, fgnd_seg_scale = \
-            cli_utils.segment_wsi_foreground_at_low_res(ts, invert_image=invert_image)
+            cli_utils.segment_wsi_foreground_at_low_res(
+                ts, invert_image=invert_image, frame=args.frame)
 
         fgnd_time = time.time() - start_time
 
@@ -189,7 +198,7 @@ def main(args):
 
     it_kwargs = {
         'tile_size': {'width': args.analysis_tile_size},
-        'scale': {'magnification': args.analysis_mag},
+        'scale': {'magnification': args.analysis_mag}
     }
 
     if not process_whole_image:
@@ -216,7 +225,7 @@ def main(args):
 
             tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
                 args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
-                it_kwargs
+                it_kwargs, style=args.style
             )
 
         else:
@@ -250,7 +259,7 @@ def main(args):
         # TODO  - correction 2
         src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
             args.inputImageFile, 0.01, magnification=args.analysis_mag,
-            invert_image=invert_image)
+            invert_image=invert_image, style=args.style, frame=args.frame)
 
         rstats_time = time.time() - start_time
 
@@ -266,7 +275,7 @@ def main(args):
 
     tile_nuclei_list = []
 
-    for tile in ts.tileIterator(**it_kwargs):
+    for tile in ts.tileIterator(**it_kwargs, frame=args.frame):
 
         tile_position = tile['tile_position']['position']
 
@@ -278,7 +287,7 @@ def main(args):
             args.inputImageFile,
             tile_position,
             args, it_kwargs,
-            src_mu_lab, src_sigma_lab, invert_image=invert_image
+            src_mu_lab, src_sigma_lab, invert_image=invert_image, style=args.style
         )
 
         # append result to list
