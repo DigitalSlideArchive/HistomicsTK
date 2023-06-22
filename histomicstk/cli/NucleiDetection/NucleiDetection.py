@@ -18,7 +18,7 @@ from histomicstk.cli.utils import CLIArgumentParser
 logging.basicConfig(level=logging.CRITICAL)
 
 
-def read_input_image(args, process_whole_image):
+def read_input_image(args, process_whole_image=False):
     print('\n>> Reading input image ... \n')
 
     ts = large_image.getTileSource(args.inputImageFile, style=args.style)
@@ -30,6 +30,15 @@ def read_input_image(args, process_whole_image):
     is_wsi = ts_metadata['magnification'] is not None
     # TODO - Remove this checkpoint
     print('\n >> is it wsi {}, is it whole image {}'.format(is_wsi, process_whole_image))
+
+
+def image_inversion_flag_setter(args=None):
+    invert_image = False
+    if args.ImageInversionForm == "Yes":
+        invert_image = True
+    if args.ImageInversionForm == "No" or args.ImageInversionForm == "unspecified":
+        invert_image = False
+    return invert_image
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
@@ -104,15 +113,6 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
             im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
 
     return nuclei_annot_list
-
-
-def image_inversion_flag_setter(args=None):
-    invert_image = False
-    if args.ImageInversionForm == "Yes":
-        invert_image = True
-    if args.ImageInversionForm == "No" or args.ImageInversionForm == "unspecified":
-        invert_image = False
-    return invert_image
 
 
 def process_wsi_as_whole_image(ts, invert_image=False, args=None):
@@ -285,7 +285,6 @@ def main(args):
     #
     # Read Input Image
     #
-
     ts, is_wsi = read_input_image(args, process_whole_image)
 
     #

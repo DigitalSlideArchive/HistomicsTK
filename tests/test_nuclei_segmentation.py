@@ -129,7 +129,7 @@ class TestNucleiSegmentation:
         # set the args
         args = {}
         args["inputImageFile"] = input_grey_img_path
-        args["ImageInversionForm"] == "Yes"
+        args["ImageInversionForm"] = "Yes"
         process_whole_image = True
 
         # set image inversion flag
