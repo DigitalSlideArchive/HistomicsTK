@@ -31,6 +31,8 @@ def read_input_image(args, process_whole_image=False):
     # TODO - Remove this checkpoint
     print('\n >> is it wsi {}, is it whole image {}'.format(is_wsi, process_whole_image))
 
+    return ts, is_wsi
+
 
 def image_inversion_flag_setter(args=None):
     invert_image = False
@@ -132,7 +134,8 @@ def process_wsi_as_whole_image(ts, invert_image=False, args=None):
     return im_fgnd_mask_lres, fgnd_seg_scale
 
 
-def process_wsi(it_kwargs, args, im_fgnd_mask_lres, fgnd_seg_scale, process_whole_image=False):
+def process_wsi(ts, it_kwargs, args, im_fgnd_mask_lres=None,
+                fgnd_seg_scale=None, process_whole_image=False):
 
     print('\n>> Computing foreground fraction of all tiles ...\n')
 
@@ -182,7 +185,7 @@ def compute_reinhard_norm(args, invert_image=False):
 
     print('Reinhard stats computation time = {}'.format(
         cli_utils.disp_time_hms(rstats_time)))
-    return src_sigma_lab, src_sigma_lab
+    return src_mu_lab, src_sigma_lab
 
 
 def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
@@ -193,7 +196,7 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
 
     tile_nuclei_list = []
 
-    for tile in ts.tileIterator(**it_kwargs, frame=args.frame):
+    for tile in ts.tileIterator(**it_kwargs):
 
         tile_position = tile['tile_position']['position']
 
@@ -235,7 +238,7 @@ def main(args):
 
     print('\n>> CLI Parameters ...\n')
 
-    print(args)
+    print(args, type(args))
 
     if not os.path.isfile(args.inputImageFile):
         raise OSError('Input image file does not exist.')
@@ -303,6 +306,11 @@ def main(args):
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag}
     }
+    try:
+        it_kwargs['frame'] = int(args.frame)
+    except Exception:
+        pass
+    # TODO try catch function for the argument
 
     if not process_whole_image:
 
@@ -316,12 +324,15 @@ def main(args):
 
     if is_wsi:
 
-        tile_fgnd_frac_list = process_wsi(
-            it_kwargs,
-            args,
-            im_fgnd_mask_lres,
-            fgnd_seg_scale,
-            process_whole_image)
+        if process_whole_image:
+            tile_fgnd_frac_list = process_wsi(ts,
+                                              it_kwargs,
+                                              args,
+                                              im_fgnd_mask_lres,
+                                              fgnd_seg_scale,
+                                              process_whole_image)
+        else:
+            tile_fgnd_frac_list = process_wsi(ts, it_kwargs, args)
 
     #
     # Compute reinhard stats for color normalization
