@@ -1,10 +1,10 @@
 import os
-from argparse import Namespace
+#from argparse import Namespace
 
 import numpy as np
 import skimage.io
 
-import histomicstk.cli.NucleiDetection.NucleiDetection as nucl_det
+#import histomicstk.cli.NucleiDetection.NucleiDetection as nucl_det
 import histomicstk.preprocessing.color_conversion as htk_cvt
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm

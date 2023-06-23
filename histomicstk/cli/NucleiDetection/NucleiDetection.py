@@ -29,7 +29,7 @@ def read_input_image(args, process_whole_image=False):
 
     is_wsi = ts_metadata['magnification'] is not None
     # TODO - Remove this checkpoint
-    print('\n >> is it wsi {}, is it whole image {}'.format(is_wsi, process_whole_image))
+    print('\n >> is it wsi ? {}, is it whole image ? {}'.format(is_wsi, process_whole_image))
 
     return ts, is_wsi
 
@@ -310,7 +310,6 @@ def main(args):
         it_kwargs['frame'] = int(args.frame)
     except Exception:
         pass
-    # TODO try catch function for the argument
 
     if not process_whole_image:
 
