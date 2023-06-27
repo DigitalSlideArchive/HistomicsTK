@@ -49,7 +49,8 @@ def get_stain_matrix(args, count=3):
     return np.array([get_stain_vector(args, i + 1) for i in range(count)]).T
 
 
-def segment_wsi_foreground_at_low_res(ts, lres_size=2048, invert_image=False, frame=None):
+def segment_wsi_foreground_at_low_res(
+        args, ts, lres_size=2048, invert_image=False, frame=None, invert_image_by_default=False):
 
     ts_metadata = ts.getMetadata()
 
@@ -71,9 +72,11 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048, invert_image=False, fr
         frame=frame
     )
 
-    # TODO - Correction 3 - check if the input is single channel
+    # check number of channels
     if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
         im_lres = np.dstack((im_lres, im_lres, im_lres))
+        if invert_image_by_default:
+            invert_image = True
     else:
         im_lres = im_lres[:, :, :3]
 

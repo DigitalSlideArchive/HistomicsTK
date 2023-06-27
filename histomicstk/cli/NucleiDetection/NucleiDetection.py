@@ -3,7 +3,6 @@ import logging
 import os
 import time
 
-import dask
 import large_image
 import numpy as np
 
@@ -25,26 +24,26 @@ def read_input_image(args, process_whole_image=False):
 
     ts_metadata = ts.getMetadata()
 
-    # print(json.dumps(ts_metadata, indent=2))
+    print(json.dumps(ts_metadata, indent=2))
 
     is_wsi = ts_metadata['magnification'] is not None
-    # TODO - Remove this checkpoint
-    print('\n >> is it wsi ? {}, is it whole image ? {}'.format(is_wsi, process_whole_image))
 
     return ts, is_wsi
 
 
 def image_inversion_flag_setter(args=None):
-    invert_image = False
+    invert_image, invert_image_by_default = False, False
     if args.ImageInversionForm == "Yes":
         invert_image = True
-    if args.ImageInversionForm == "No" or args.ImageInversionForm == "unspecified":
+    if args.ImageInversionForm == "No":
         invert_image = False
-    return invert_image
+    if args.ImageInversionForm == "default":
+        invert_image_by_default = True
+    return invert_image, invert_image_by_default
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
-                       src_mu_lab=None, src_sigma_lab=None, invert_image=False, style=None):
+                       src_mu_lab=None, src_sigma_lab=None, invert_image=False, style=None, invert_image_by_default=False):
 
     # Flags
     single_channel = False
@@ -58,11 +57,13 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         **it_kwargs)
 
-    # get tile image & check if image is single channel
+    # get tile image & check number of channels
     print('The given shape of image is ', tile_info['tile'].shape)
     single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
     if single_channel:
         im_tile = np.dstack((tile_info['tile'], tile_info['tile'], tile_info['tile']))
+        if invert_image_by_default:
+            invert_image = True
     else:
         im_tile = tile_info['tile'][:, :, :3]
 
@@ -117,14 +118,14 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     return nuclei_annot_list
 
 
-def process_wsi_as_whole_image(ts, invert_image=False, args=None):
+def process_wsi_as_whole_image(ts, invert_image=False, args=None, invert_image_by_default=False):
     print('\n>> Computing tissue/foreground mask at low-res ...\n')
 
     start_time = time.time()
 
     im_fgnd_mask_lres, fgnd_seg_scale = \
-        cli_utils.segment_wsi_foreground_at_low_res(
-            ts, invert_image=invert_image, frame=args.frame)
+        cli_utils.segment_wsi_foreground_at_low_res(args,
+                                                    ts, invert_image=invert_image, frame=args.frame, invert_image_by_default=invert_image_by_default)
 
     fgnd_time = time.time() - start_time
 
@@ -172,14 +173,13 @@ def process_wsi(ts, it_kwargs, args, im_fgnd_mask_lres=None,
     return tile_fgnd_frac_list
 
 
-def compute_reinhard_norm(args, invert_image=False):
+def compute_reinhard_norm(args, invert_image=False, invert_image_by_default=False):
     print('\n>> Computing reinhard color normalization stats ...\n')
 
     start_time = time.time()
-    # TODO  - correction 2
     src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
         args.inputImageFile, 0.01, magnification=args.analysis_mag,
-        invert_image=invert_image, style=args.style, frame=args.frame)
+        invert_image=invert_image, style=args.style, frame=args.frame, invert_image_by_default=invert_image_by_default)
 
     rstats_time = time.time() - start_time
 
@@ -189,7 +189,10 @@ def compute_reinhard_norm(args, invert_image=False):
 
 
 def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
-                            invert_image=False, is_wsi=False, src_mu_lab=None, src_sigma_lab=None):
+                            invert_image=False, is_wsi=False, src_mu_lab=None, src_sigma_lab=None, invert_image_by_default=False):
+
+    import dask
+
     print('\n>> Detecting nuclei ...\n')
 
     start_time = time.time()
@@ -208,7 +211,8 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
             args.inputImageFile,
             tile_position,
             args, it_kwargs,
-            src_mu_lab, src_sigma_lab, invert_image=invert_image, style=args.style
+            src_mu_lab, src_sigma_lab, invert_image=invert_image, style=args.style,
+            invert_image_by_default=invert_image_by_default
         )
 
         # append result to list
@@ -231,8 +235,14 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
 def main(args):
 
     # Flags
-
     invert_image = False
+    invert_image_by_default = False
+
+    # initial arguments
+    it_kwargs = {
+        'tile_size': {'width': args.analysis_tile_size},
+        'scale': {'magnification': args.analysis_mag}
+    }
 
     total_start_time = time.time()
 
@@ -257,19 +267,16 @@ def main(args):
     else:
         process_whole_image = False
 
-    # retrive style
+    # retrive style and frame
     if not args.style or args.style.startswith('{#control'):
         args.style = None
     if not args.frame or args.frame.startswith('{#control'):
         args.frame = None
+    elif not args.frame.isdigit():
+        raise Exception("The given frame value is not an integer")
+    else:
+        it_kwargs['frame'] = args.frame
 
-    print('\n >> target frame and style is {} {}'.format(args.frame, args.style))
-
-    #
-    # color inversion flag
-    #
-    invert_image = image_inversion_flag_setter(args)
-    print('>> perform image inversion flag is ', invert_image)
     #
     # Initiate Dask client
     #
@@ -286,6 +293,11 @@ def main(args):
         cli_utils.disp_time_hms(dask_setup_time)))
 
     #
+    # color inversion flag
+    #
+    invert_image, invert_image_by_default = image_inversion_flag_setter(args)
+
+    #
     # Read Input Image
     #
     ts, is_wsi = read_input_image(args, process_whole_image)
@@ -295,21 +307,13 @@ def main(args):
     #
     if is_wsi and process_whole_image:
 
-        im_fgnd_mask_lres, fgnd_seg_scale = process_wsi_as_whole_image(ts, invert_image, args)
+        im_fgnd_mask_lres, fgnd_seg_scale = process_wsi_as_whole_image(
+            ts, invert_image=invert_image, args=args, invert_image_by_default=invert_image_by_default)
 
     #
     # Compute foreground fraction of tiles in parallel using Dask
     #
     tile_fgnd_frac_list = [1.0]
-
-    it_kwargs = {
-        'tile_size': {'width': args.analysis_tile_size},
-        'scale': {'magnification': args.analysis_mag}
-    }
-    try:
-        it_kwargs['frame'] = int(args.frame)
-    except Exception:
-        pass
 
     if not process_whole_image:
 
@@ -341,12 +345,12 @@ def main(args):
 
     if is_wsi and process_whole_image:
 
-        src_mu_lab, src_sigma_lab = compute_reinhard_norm(args, invert_image)
+        src_mu_lab, src_sigma_lab = compute_reinhard_norm(
+            args, invert_image, invert_image_by_default=invert_image_by_default)
 
     #
     # Detect nuclei in parallel using Dask
     #
-
     nuclei_list = detect_nuclei_with_dask(
         ts,
         tile_fgnd_frac_list,
@@ -355,7 +359,8 @@ def main(args):
         invert_image,
         is_wsi,
         src_mu_lab,
-        src_sigma_lab)
+        src_sigma_lab,
+        invert_image_by_default=invert_image_by_default)
 
     #
     # Write annotation file

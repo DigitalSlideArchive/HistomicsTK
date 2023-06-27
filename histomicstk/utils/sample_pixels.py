@@ -8,7 +8,7 @@ from .simple_mask import simple_mask
 def sample_pixels(slide_path, sample_fraction=None, magnification=None,
                   tissue_seg_mag=1.25, min_coverage=0.1, background=False,
                   sample_approximate_total=None, tile_grouping=256, invert_image=False,
-                  style=None, frame=None):
+                  style=None, frame=None, invert_image_by_default=False):
     """Generates a sampling of pixels from a whole-slide image.
 
     Useful for generating statistics or Reinhard color-normalization or
@@ -73,9 +73,11 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
         frame=frame
     )
 
-    # TODO - add code for single channel image
+    # check number of channels
     if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
         im_lres = np.dstack((im_lres, im_lres, im_lres))
+        if invert_image_by_default:
+            invert_image = True
     else:
         im_lres = im_lres[:, :, :3]
 
@@ -115,7 +117,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
             slide_path, iter_args,
             (position, min(tile_grouping, total_tiles - position)),
             sample_fraction, tissue_seg_mag, min_coverage,
-            im_fgnd_mask_lres, invert_image=invert_image, style=style))
+            im_fgnd_mask_lres, invert_image=invert_image, style=style, invert_image_by_default=invert_image_by_default))
 
     # concatenate pixel values in list
     if sample_pixels:
@@ -129,7 +131,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
 
 def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
                         tissue_seg_mag, min_coverage, im_fgnd_mask_lres,
-                        invert_image=False, style=None):
+                        invert_image=False, style=None, invert_image_by_default=False):
     start_position, position_count = positions
     sample_pixels = [np.empty((0, 3))]
     ts = large_image.getTileSource(slide_path, style=style)
@@ -160,10 +162,11 @@ def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
         if np.isnan(cur_fgnd_frac) or cur_fgnd_frac <= min_coverage:
             continue
 
-        # get current tile image
-        # TODO - check if single channel
+        # check number of channels
         if len(tile['tile'].shape) <= 2 or tile['tile'].shape[2] == 1:
             im_tile = np.dstack((tile['tile'], tile['tile'], tile['tile']))
+            if invert_image_by_default:
+                invert_image = True
 
         else:
             im_tile = tile['tile'][:, :, :3]

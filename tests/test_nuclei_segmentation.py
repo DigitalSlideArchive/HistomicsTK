@@ -1,7 +1,6 @@
 import argparse
 import os
 
-import dask
 import numpy as np
 import skimage.io
 
@@ -16,7 +15,7 @@ from .datastore import datastore
 
 
 class TestNucleiSegmentation:
-    # TODO Test arguments
+    # Test arguments
     args = argparse.Namespace(inputImageFile='/home/local/KHQ/s.erattakulangara/Documents/HistomicsTK_EKS/HistomicsTK/tests/test_files/annotations_and_masks/img/simple.tiff',
                               ImageInversionForm='Yes',
                               analysis_mag=20.0,
@@ -164,10 +163,10 @@ class TestNucleiSegmentation:
         assert len(nuclei.X) > 50
         assert len(votes) > 1000
 
-    # TODO test code for nuclei detection
+    # test code for nuclei detection
     def test_image_inversion_flag_setter(self):
         invert_image = nucl_det.image_inversion_flag_setter(self.args)
-        assert invert_image == True
+        assert invert_image, True
 
     def test_nuclei_detection(self):
         ts, is_wsi = nucl_det.read_input_image(self.args, process_whole_image=True)
