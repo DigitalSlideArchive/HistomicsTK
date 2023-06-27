@@ -184,6 +184,7 @@ def estimate_variance(x, y, peak):
     SimpleMask
 
     """
+
     # analyze peak to estimate variance parameter via FWHM
     Left = peak
     while y[Left] > y[peak] / 2 and Left >= 0:
