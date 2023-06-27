@@ -43,7 +43,8 @@ def image_inversion_flag_setter(args=None):
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
-                       src_mu_lab=None, src_sigma_lab=None, invert_image=False, style=None, invert_image_by_default=False):
+                       src_mu_lab=None, src_sigma_lab=None, invert_image=False,
+                       style=None, invert_image_by_default=False):
 
     # Flags
     single_channel = False
@@ -386,5 +387,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    
+
     main(CLIArgumentParser().parse_args())

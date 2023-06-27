@@ -1,21 +1,20 @@
-import argparse
+# import argparse
 import os
 
 import numpy as np
 import skimage.io
 
-import histomicstk.cli.NucleiDetection.NucleiDetection as nucl_det
+# import histomicstk.cli.NucleiDetection.NucleiDetection as nucl_det
 import histomicstk.preprocessing.color_conversion as htk_cvt
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation as htk_seg
-from histomicstk.cli import utils as cli_utils
 
 from .datastore import datastore
 
 
 class TestNucleiSegmentation:
-   
+
     def test_segment_nuclei_kofahi(self):
 
         input_image_file = datastore.fetch('Easy1.png')
@@ -121,7 +120,7 @@ class TestNucleiSegmentation:
 
         assert len(nuclei.X) > 50
         assert len(votes) > 1000
-    
+
     # # Test arguments
     # args = argparse.Namespace(inputImageFile='/home/local/KHQ/s.erattakulangara/Documents/HistomicsTK_EKS/HistomicsTK/tests/test_files/annotations_and_masks/img/simple.tiff',
     #                           ImageInversionForm='Yes',

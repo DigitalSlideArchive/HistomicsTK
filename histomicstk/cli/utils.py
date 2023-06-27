@@ -50,7 +50,7 @@ def get_stain_matrix(args, count=3):
 
 
 def segment_wsi_foreground_at_low_res(
-        args, ts, lres_size=2048, invert_image=False, frame=None, invert_image_by_default=False):
+        ts=None, lres_size=2048, invert_image=False, frame=None, invert_image_by_default=False):
 
     ts_metadata = ts.getMetadata()
 
