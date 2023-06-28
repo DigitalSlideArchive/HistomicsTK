@@ -50,7 +50,7 @@ def get_stain_matrix(args, count=3):
 
 
 def segment_wsi_foreground_at_low_res(
-        ts=None, lres_size=2048, invert_image=False, frame=None, invert_image_by_default=False):
+        ts=None, lres_size=2048, invert_image=False, frame=None, default_img_inversion=False):
 
     ts_metadata = ts.getMetadata()
 
@@ -73,7 +73,7 @@ def segment_wsi_foreground_at_low_res(
     # check number of channels
     if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
         im_lres = np.dstack((im_lres, im_lres, im_lres))
-        if invert_image_by_default:
+        if default_img_inversion:
             invert_image = True
     else:
         im_lres = im_lres[:, :, :3]

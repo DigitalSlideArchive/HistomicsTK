@@ -32,19 +32,19 @@ def read_input_image(args, process_whole_image=False):
 
 
 def image_inversion_flag_setter(args=None):
-    invert_image, invert_image_by_default = False, False
+    invert_image, default_img_inversion = False, False
     if args.ImageInversionForm == "Yes":
         invert_image = True
     if args.ImageInversionForm == "No":
         invert_image = False
     if args.ImageInversionForm == "default":
-        invert_image_by_default = True
-    return invert_image, invert_image_by_default
+        default_img_inversion = True
+    return invert_image, default_img_inversion
 
 
 def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
                        src_mu_lab=None, src_sigma_lab=None, invert_image=False,
-                       style=None, invert_image_by_default=False):
+                       style=None, default_img_inversion=False):
 
     # Flags
     single_channel = False
@@ -63,7 +63,7 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
     if single_channel:
         im_tile = np.dstack((tile_info['tile'], tile_info['tile'], tile_info['tile']))
-        if invert_image_by_default:
+        if default_img_inversion:
             invert_image = True
     else:
         im_tile = tile_info['tile'][:, :, :3]
@@ -119,7 +119,7 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     return nuclei_annot_list
 
 
-def process_wsi_as_whole_image(ts, invert_image=False, args=None, invert_image_by_default=False):
+def process_wsi_as_whole_image(ts, invert_image=False, args=None, default_img_inversion=False):
     print('\n>> Computing tissue/foreground mask at low-res ...\n')
 
     start_time = time.time()
@@ -127,7 +127,7 @@ def process_wsi_as_whole_image(ts, invert_image=False, args=None, invert_image_b
     im_fgnd_mask_lres, fgnd_seg_scale = \
         cli_utils.segment_wsi_foreground_at_low_res(args,
                                                     ts, invert_image=invert_image, frame=args.frame,
-                                                    invert_image_by_default=invert_image_by_default)
+                                                    default_img_inversion=default_img_inversion)
 
     fgnd_time = time.time() - start_time
 
@@ -175,14 +175,14 @@ def process_wsi(ts, it_kwargs, args, im_fgnd_mask_lres=None,
     return tile_fgnd_frac_list
 
 
-def compute_reinhard_norm(args, invert_image=False, invert_image_by_default=False):
+def compute_reinhard_norm(args, invert_image=False, default_img_inversion=False):
     print('\n>> Computing reinhard color normalization stats ...\n')
 
     start_time = time.time()
     src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
         args.inputImageFile, 0.01, magnification=args.analysis_mag,
         invert_image=invert_image, style=args.style, frame=args.frame,
-        invert_image_by_default=invert_image_by_default)
+        default_img_inversion=default_img_inversion)
 
     rstats_time = time.time() - start_time
 
@@ -193,7 +193,7 @@ def compute_reinhard_norm(args, invert_image=False, invert_image_by_default=Fals
 
 def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
                             invert_image=False, is_wsi=False, src_mu_lab=None,
-                            src_sigma_lab=None, invert_image_by_default=False):
+                            src_sigma_lab=None, default_img_inversion=False):
 
     import dask
 
@@ -216,7 +216,7 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
             tile_position,
             args, it_kwargs,
             src_mu_lab, src_sigma_lab, invert_image=invert_image, style=args.style,
-            invert_image_by_default=invert_image_by_default
+            default_img_inversion=default_img_inversion
         )
 
         # append result to list
@@ -240,7 +240,7 @@ def main(args):
 
     # Flags
     invert_image = False
-    invert_image_by_default = False
+    default_img_inversion = False
 
     # initial arguments
     it_kwargs = {
@@ -299,7 +299,7 @@ def main(args):
     #
     # color inversion flag
     #
-    invert_image, invert_image_by_default = image_inversion_flag_setter(args)
+    invert_image, default_img_inversion = image_inversion_flag_setter(args)
 
     #
     # Read Input Image
@@ -313,7 +313,7 @@ def main(args):
 
         im_fgnd_mask_lres, fgnd_seg_scale = process_wsi_as_whole_image(
             ts, invert_image=invert_image, args=args,
-            invert_image_by_default=invert_image_by_default)
+            default_img_inversion=default_img_inversion)
 
     #
     # Compute foreground fraction of tiles in parallel using Dask
@@ -351,7 +351,7 @@ def main(args):
     if is_wsi and process_whole_image:
 
         src_mu_lab, src_sigma_lab = compute_reinhard_norm(
-            args, invert_image, invert_image_by_default=invert_image_by_default)
+            args, invert_image, default_img_inversion=default_img_inversion)
 
     #
     # Detect nuclei in parallel using Dask
@@ -365,7 +365,7 @@ def main(args):
         is_wsi,
         src_mu_lab,
         src_sigma_lab,
-        invert_image_by_default=invert_image_by_default)
+        default_img_inversion=default_img_inversion)
 
     #
     # Write annotation file
