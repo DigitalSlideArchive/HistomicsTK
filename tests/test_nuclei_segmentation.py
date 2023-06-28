@@ -121,11 +121,8 @@ class TestNucleiSegmentation:
         assert len(nuclei.X) > 50
         assert len(votes) > 1000
 
-    
-    input_image_path = os.path.join(datastore.fetch(
-            'simple.tiff'  # noqa
-        ))
-    
+    input_image_path = os.path.join(datastore.fetch('simple.tiff'))
+
     # Test arguments
     args = argparse.Namespace(inputImageFile=input_image_path,
                               ImageInversionForm='Yes',
@@ -146,7 +143,7 @@ class TestNucleiSegmentation:
                               nuclei_annotation_format='boundary',
                               num_threads_per_worker=1,
                               num_workers=-1,
-                                reference_mu_lab=[8.63234435,
+                              reference_mu_lab=[8.63234435,
                                                 -0.11501964,
                                                 0.03868433],
                               reference_std_lab=[0.57506023,

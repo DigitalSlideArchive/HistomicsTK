@@ -127,7 +127,7 @@ def process_wsi_as_whole_image(ts, invert_image=False, args=None, invert_image_b
     im_fgnd_mask_lres, fgnd_seg_scale = \
         cli_utils.segment_wsi_foreground_at_low_res(args,
                                                     ts, invert_image=invert_image, frame=args.frame,
-                                                      invert_image_by_default=invert_image_by_default)
+                                                    invert_image_by_default=invert_image_by_default)
 
     fgnd_time = time.time() - start_time
 
@@ -182,7 +182,7 @@ def compute_reinhard_norm(args, invert_image=False, invert_image_by_default=Fals
     src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
         args.inputImageFile, 0.01, magnification=args.analysis_mag,
         invert_image=invert_image, style=args.style, frame=args.frame,
-          invert_image_by_default=invert_image_by_default)
+        invert_image_by_default=invert_image_by_default)
 
     rstats_time = time.time() - start_time
 
@@ -193,7 +193,7 @@ def compute_reinhard_norm(args, invert_image=False, invert_image_by_default=Fals
 
 def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
                             invert_image=False, is_wsi=False, src_mu_lab=None,
-                              src_sigma_lab=None, invert_image_by_default=False):
+                            src_sigma_lab=None, invert_image_by_default=False):
 
     import dask
 
@@ -312,7 +312,7 @@ def main(args):
     if is_wsi and process_whole_image:
 
         im_fgnd_mask_lres, fgnd_seg_scale = process_wsi_as_whole_image(
-            ts, invert_image=invert_image, args=args, 
+            ts, invert_image=invert_image, args=args,
             invert_image_by_default=invert_image_by_default)
 
     #
