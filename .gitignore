@@ -90,6 +90,7 @@ HistomicsTK.code-workspace
 # debugging
 histomicstk/Debugging
 .devcontainer/
+MANIFEST.in
 
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is
