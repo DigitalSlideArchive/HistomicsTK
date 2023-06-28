@@ -54,6 +54,9 @@ registry = {
     #
     # Source: sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs
     'sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs': 'sha512:5580c2b5a5360d279d102f1eb5b0e646a4943e362ec1d47f2db01f8e9e52b302e51692171198d0d35c7fa9ec9f5b8e445ef91fa7ea0bdb05ead31ab49e0118f9',  # noqa
+    #
+    # Source: sinple.tiff
+    'simple.tiff': 'sha512:fa7ccf08634e02037c3eec43633c58ece3cb8619d2a7ebb815c3fc0faf8b08ebce0e692b869809ebe4d0c910aa0014d91dbb2f8107ca0e4fe5ff1c0a88c53248' # noqa
 }
 
 
