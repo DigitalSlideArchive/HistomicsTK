@@ -18,6 +18,7 @@ logging.basicConfig(level=logging.CRITICAL)
 
 
 def read_input_image(args, process_whole_image=False):
+    # read input image and check if it is WSI
     print('\n>> Reading input image ... \n')
 
     ts = large_image.getTileSource(args.inputImageFile, style=args.style)
@@ -32,6 +33,7 @@ def read_input_image(args, process_whole_image=False):
 
 
 def image_inversion_flag_setter(args=None):
+    # generates image inversion flags
     invert_image, default_img_inversion = False, False
     if args.ImageInversionForm == "Yes":
         invert_image = True
@@ -123,7 +125,7 @@ def process_wsi_as_whole_image(ts, invert_image=False, args=None, default_img_in
     print('\n>> Computing tissue/foreground mask at low-res ...\n')
 
     start_time = time.time()
-
+    # segment wsi foreground at low resolution
     im_fgnd_mask_lres, fgnd_seg_scale = \
         cli_utils.segment_wsi_foreground_at_low_res(args,
                                                     ts, invert_image=invert_image, frame=args.frame,
@@ -140,6 +142,7 @@ def process_wsi_as_whole_image(ts, invert_image=False, args=None, default_img_in
 def process_wsi(ts, it_kwargs, args, im_fgnd_mask_lres=None,
                 fgnd_seg_scale=None, process_whole_image=False):
 
+    # process the wsi
     print('\n>> Computing foreground fraction of all tiles ...\n')
 
     start_time = time.time()
