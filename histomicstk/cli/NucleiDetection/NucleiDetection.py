@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import pprint
 import time
 
 import large_image
@@ -61,7 +62,6 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
         **it_kwargs)
 
     # get tile image & check number of channels
-    print('The given shape of image is ', tile_info['tile'].shape)
     single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
     if single_channel:
         im_tile = np.dstack((tile_info['tile'], tile_info['tile'], tile_info['tile']))
@@ -69,6 +69,10 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
             invert_image = True
     else:
         im_tile = tile_info['tile'][:, :, :3]
+
+    # perform image inversion
+    if invert_image:
+        im_tile = np.invert(im_tile)
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
@@ -79,10 +83,6 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
     # perform color decovolution
     w = cli_utils.get_stain_matrix(args)
-
-    # perform image inversion
-    if invert_image:
-        im_nmzd = 1 - im_nmzd
 
     # perform deconvolution
     if single_channel:
@@ -127,9 +127,8 @@ def process_wsi_as_whole_image(ts, invert_image=False, args=None, default_img_in
     start_time = time.time()
     # segment wsi foreground at low resolution
     im_fgnd_mask_lres, fgnd_seg_scale = \
-        cli_utils.segment_wsi_foreground_at_low_res(args,
-                                                    ts, invert_image=invert_image, frame=args.frame,
-                                                    default_img_inversion=default_img_inversion)
+        cli_utils.segment_wsi_foreground_at_low_res(
+            ts, invert_image=invert_image, frame=args.frame, default_img_inversion=False)
 
     fgnd_time = time.time() - start_time
 
@@ -184,8 +183,7 @@ def compute_reinhard_norm(args, invert_image=False, default_img_inversion=False)
     start_time = time.time()
     src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
         args.inputImageFile, 0.01, magnification=args.analysis_mag,
-        invert_image=invert_image, style=args.style, frame=args.frame,
-        default_img_inversion=default_img_inversion)
+        invert_image=invert_image, style=args.style, frame=args.frame,)
 
     rstats_time = time.time() - start_time
 
@@ -254,8 +252,7 @@ def main(args):
     total_start_time = time.time()
 
     print('\n>> CLI Parameters ...\n')
-
-    print(args, type(args))
+    pprint.pprint(vars(args))
 
     if not os.path.isfile(args.inputImageFile):
         raise OSError('Input image file does not exist.')

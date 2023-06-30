@@ -83,7 +83,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
 
     # perform image inversion
     if invert_image:
-        im_lres = 1 - im_lres
+        im_lres = np.invert(im_lres)
 
     # compute foreground mask of whole-slide image at low-res.
     # it will actually be a background mask if background is set.
@@ -174,9 +174,9 @@ def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
 
         # perform image inversion
         if invert_image:
-            im_tile = 1 - im_tile
+            im_tile = np.invert(im_tile)
 
-        # get tile foreground mask at resolution of current tile
+       # get tile foreground mask at resolution of current tile
         tile_fgnd_mask = np.array(PIL.Image.fromarray(tile_fgnd_mask_lres).resize(
             im_tile.shape[:2],
             resample=PIL.Image.NEAREST

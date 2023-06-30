@@ -50,7 +50,7 @@ def get_stain_matrix(args, count=3):
 
 
 def segment_wsi_foreground_at_low_res(
-        ts=None, lres_size=2048, invert_image=False, frame=None, default_img_inversion=False):
+        ts, lres_size=2048, invert_image=False, frame=None, default_img_inversion=False):
 
     ts_metadata = ts.getMetadata()
 
@@ -80,7 +80,7 @@ def segment_wsi_foreground_at_low_res(
 
     # perform image inversion
     if invert_image:
-        im_lres = 1 - im_lres
+        im_lres = np.invert(im_lres)
 
     # compute foreground mask at low-res
     im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)
