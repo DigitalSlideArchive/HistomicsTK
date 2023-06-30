@@ -221,6 +221,7 @@ class TestNucleiSegmentation:
         input_image_path = os.path.join(datastore.fetch('tcgaextract_ihergb.tiff'))
         self.args.inputImageFile = input_image_path
         self.args.frame = 3
+        self.args.style = '{"bands":[{"frame":3,"palette":"#f00"},{"frame":4,"palette":"#0f0"},{"frame":5,"palette":"#00f"}]}'
         # read the image
         ts, is_wsi = nucl_det.read_input_image(self.args, process_whole_image=True)
         it_kwargs = {

@@ -80,7 +80,7 @@ def segment_wsi_foreground_at_low_res(
 
     # perform image inversion
     if invert_image:
-        im_lres = np.invert(im_lres)
+        im_lres = np.max(im_lres)-im_lres
 
     # compute foreground mask at low-res
     im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)

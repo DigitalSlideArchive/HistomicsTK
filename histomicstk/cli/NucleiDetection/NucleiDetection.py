@@ -72,7 +72,7 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
 
     # perform image inversion
     if invert_image:
-        im_tile = np.invert(im_tile)
+        im_tile = np.max(im_tile) - im_tile
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
