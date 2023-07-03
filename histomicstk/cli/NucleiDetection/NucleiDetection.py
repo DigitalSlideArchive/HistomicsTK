@@ -128,7 +128,7 @@ def process_wsi_as_whole_image(ts, invert_image=False, args=None, default_img_in
     # segment wsi foreground at low resolution
     im_fgnd_mask_lres, fgnd_seg_scale = \
         cli_utils.segment_wsi_foreground_at_low_res(
-            ts, invert_image=invert_image, frame=args.frame, default_img_inversion=False)
+            ts, invert_image=invert_image, frame=args.frame, default_img_inversion=default_img_inversion)
 
     fgnd_time = time.time() - start_time
 
@@ -183,7 +183,8 @@ def compute_reinhard_norm(args, invert_image=False, default_img_inversion=False)
     start_time = time.time()
     src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
         args.inputImageFile, 0.01, magnification=args.analysis_mag,
-        invert_image=invert_image, style=args.style, frame=args.frame,)
+        invert_image=invert_image, style=args.style, frame=args.frame,
+        default_img_inversion=default_img_inversion)
 
     rstats_time = time.time() - start_time
 
@@ -242,6 +243,7 @@ def main(args):
     # Flags
     invert_image = False
     default_img_inversion = False
+    process_whole_image = False
 
     # initial arguments
     it_kwargs = {
@@ -253,6 +255,8 @@ def main(args):
 
     print('\n>> CLI Parameters ...\n')
     pprint.pprint(vars(args))
+    # TODO - Test arguments
+    print(args)
 
     if not os.path.isfile(args.inputImageFile):
         raise OSError('Input image file does not exist.')
@@ -351,7 +355,7 @@ def main(args):
     if is_wsi and process_whole_image:
 
         src_mu_lab, src_sigma_lab = compute_reinhard_norm(
-            args, invert_image, default_img_inversion=default_img_inversion)
+            args, invert_image=invert_image, default_img_inversion=default_img_inversion)
 
     #
     # Detect nuclei in parallel using Dask
@@ -391,5 +395,48 @@ def main(args):
 
 
 if __name__ == '__main__':
+    import argparse
+
+    args = argparse.Namespace(ImageInversionForm='Yes',
+                              analysis_mag=20.0,
+                              analysis_roi=[-1.0,
+                                            -1.0,
+                                            -1.0,
+                                            -1.0],
+                              analysis_tile_size=1024.0,
+                              foreground_threshold=60.0,
+                              frame='0',
+                              ignore_border_nuclei=False,
+                              inputImageFile='/workspaces/HistomicsTK/tests/externaldata/large_img.qptiff',
+                              local_max_search_radius=10.0,
+                              max_radius=20.0,
+                              min_fgnd_frac=0.25,
+                              min_nucleus_area=80.0,
+                              min_radius=6.0,
+                              nuclei_annotation_format='boundary',
+                              num_threads_per_worker=1,
+                              num_workers=-1,
+                              outputNucleiAnnotationFile='/workspaces/HistomicsTK/tests/externaldata/large_img.qptiff.anot',
+                              reference_mu_lab=[8.63234435,
+                                                -0.11501964,
+                                                0.03868433],
+                              reference_std_lab=[0.57506023,
+                                                 0.10403329,
+                                                 0.01364062],
+                              scheduler='',
+                              stain_1='hematoxylin',
+                              stain_1_vector=[-1.0,
+                                              -1.0,
+                                              -1.0],
+                              stain_2='eosin',
+                              stain_2_vector=[-1.0,
+                                              -1.0,
+                                              -1.0],
+                              stain_3='null',
+                              stain_3_vector=[-1.0,
+                                              -1.0,
+                                              -1.0],
+                              style='{}')
 
     main(CLIArgumentParser().parse_args())
+    #main(args)

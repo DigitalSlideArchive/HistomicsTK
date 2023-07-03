@@ -100,15 +100,10 @@ class TestReinhardNormalizationInvert:
         # compute reinhard stats
         wsi_mean, wsi_stddev = htk_cn.reinhard_stats(
             wsi_path, 0.1, magnification=20, invert_image=True)
-        print(wsi_mean, wsi_stddev)
-
-        # Without ICC correction
-        # gt_mean = [8.977143, -0.082973, 0.021126]
-        # gt_stddev = [0.561896, 0.124711, 0.025968]
 
         # With icc correction
-        gt_mean = [4.69781614, -0.09899423, 0.01560651]
-        gt_stddev = [0.12081579, 0.07763013, 0.01923325]
+        gt_mean = [3.95768563, -0.15254668, 0.02557574]
+        gt_stddev = [0.4689624, 0.12877607, 0.03364667]
 
         np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-2)
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)

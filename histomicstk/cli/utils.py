@@ -72,6 +72,8 @@ def segment_wsi_foreground_at_low_res(
 
     # check number of channels
     if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
+        # TODO - debugging
+        print('-----> low resolution image shape', im_lres.shape)
         im_lres = np.dstack((im_lres, im_lres, im_lres))
         if default_img_inversion:
             invert_image = True
@@ -80,6 +82,8 @@ def segment_wsi_foreground_at_low_res(
 
     # perform image inversion
     if invert_image:
+        # TODO - debugging
+        print('-----> image inversion flag', invert_image)
         im_lres = np.max(im_lres) - im_lres
 
     # compute foreground mask at low-res
