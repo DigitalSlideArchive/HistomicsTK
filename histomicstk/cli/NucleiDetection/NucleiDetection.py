@@ -128,7 +128,8 @@ def process_wsi_as_whole_image(ts, invert_image=False, args=None, default_img_in
     # segment wsi foreground at low resolution
     im_fgnd_mask_lres, fgnd_seg_scale = \
         cli_utils.segment_wsi_foreground_at_low_res(
-            ts, invert_image=invert_image, frame=args.frame, default_img_inversion=default_img_inversion)
+            ts, invert_image=invert_image, frame=args.frame,
+            default_img_inversion=default_img_inversion)
 
     fgnd_time = time.time() - start_time
 
@@ -398,6 +399,4 @@ def main(args):
 
 
 if __name__ == '__main__':
- 
     main(CLIArgumentParser().parse_args())
-

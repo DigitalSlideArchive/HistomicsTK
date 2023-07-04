@@ -86,6 +86,7 @@ ipython_config.py
 
 # workspace
 HistomicsTK.code-workspace
+HistomicsTKDocker.code-workspace
 
 # debugging
 histomicstk/Debugging

@@ -176,7 +176,7 @@ def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
         if invert_image:
             im_tile = np.max(im_tile) - im_tile
 
-       # get tile foreground mask at resolution of current tile
+        # get tile foreground mask at resolution of current tile
         tile_fgnd_mask = np.array(PIL.Image.fromarray(tile_fgnd_mask_lres).resize(
             im_tile.shape[:2],
             resample=PIL.Image.NEAREST

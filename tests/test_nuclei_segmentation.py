@@ -221,7 +221,8 @@ class TestNucleiSegmentation:
         input_image_path = os.path.join(datastore.fetch('tcgaextract_ihergb.tiff'))
         self.args.inputImageFile = input_image_path
         self.args.frame = 3
-        self.args.style = '{"bands":[{"frame":3,"palette":"#f00"},{"frame":4,"palette":"#0f0"},{"frame":5,"palette":"#00f"}]}'
+        self.args.style = '{"bands":[{"frame":3,"palette":"#f00"},'\
+            '{"frame":4,"palette":"#0f0"},{"frame":5,"palette":"#00f"}]}'
         # read the image
         ts, is_wsi = nucl_det.read_input_image(self.args, process_whole_image=True)
         it_kwargs = {
@@ -248,7 +249,8 @@ class TestNucleiSegmentation:
         input_image_path = os.path.join(datastore.fetch('tcgaextract_ihergb.tiff'))
         self.args.inputImageFile = input_image_path
         self.args.frame = 3
-        self.args.style = '{"bands":[{"frame":3,"palette":"#f00"},{"frame":4,"palette":"#0f0"},{"frame":5,"palette":"#00f"}]}'
+        self.args.style = '{"bands":[{"frame":3,"palette":"#f00"},'\
+            '{"frame":4,"palette":"#0f0"},{"frame":5,"palette":"#00f"}]}'
         self.args.analysis_roi = [1765.0, 1256.0, 478.0, 503.0]
 
         # read the image
