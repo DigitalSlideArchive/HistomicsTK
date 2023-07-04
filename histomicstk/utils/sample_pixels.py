@@ -79,7 +79,6 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
         if default_img_inversion:
             invert_image = True
     else:
-        print('-----> the image resolution was', im_lres.shape)
         im_lres = im_lres[:, :, :3]
 
     # perform image inversion

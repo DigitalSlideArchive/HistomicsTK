@@ -259,8 +259,6 @@ def main(args):
 
     print('\n>> CLI Parameters ...\n')
     pprint.pprint(vars(args))
-    # TODO - Test arguments
-    print(args)
 
     if not os.path.isfile(args.inputImageFile):
         raise OSError('Input image file does not exist.')
@@ -406,4 +404,4 @@ def main(args):
 
 if __name__ == '__main__':
     main(CLIArgumentParser().parse_args())
-    # main(args)
+
