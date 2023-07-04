@@ -186,7 +186,6 @@ def estimate_variance(x, y, peak):
     """
 
     # analyze peak to estimate variance parameter via FWHM
-    # TODO - casted the value to int.
     peak = int(peak)
     Left = peak
     while y[Left] > y[peak] / 2 and Left >= 0:
