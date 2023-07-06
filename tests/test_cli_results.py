@@ -32,7 +32,7 @@ class TestNucleiDetection:
         ('tcgaextract_rgb.tiff', []),
         ('tcgaextract_rgbmag.tiff', []),
         ('tcgaextract_ihergb_labeled.tiff', []),
-        ('tcgaextract_ihergb_labeled.tiff', ['--frame', '1', '--output_form', 'No']),
+        ('tcgaextract_ihergb_labeled.tiff', ['--frame', '1', '--invert_image', 'No']),
         ('tcgaextract_ihergb_labeled.tiff', ['--style', json.dumps({
             'bands': [
                 {'palette': '#FF0000', 'framedelta': 3},
@@ -41,7 +41,7 @@ class TestNucleiDetection:
             ]
         })]),
         ('tcgaextract_ihergb_labeledmag.tiff', []),
-        ('tcgaextract_ihergb_labeledmag.tiff', ['--frame', '1', '--output_form', 'No']),
+        ('tcgaextract_ihergb_labeledmag.tiff', ['--frame', '1', '--invert_image', 'No']),
         ('tcgaextract_ihergb_labeledmag.tiff', ['--style', json.dumps({
             'bands': [
                 {'palette': '#FF0000', 'framedelta': 3},
