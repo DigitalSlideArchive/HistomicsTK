@@ -161,8 +161,8 @@ class TestNucleiSegmentation:
 
     def test_image_inversion_flag_setter(self):
         invert_image, default_img_inversion = nucl_det.image_inversion_flag_setter(self.args)
-        assert invert_image == True
-        assert default_img_inversion == False
+        np.testing.assert_equal(invert_image,True)
+        np.testing.assert_equal(default_img_inversion,False)
 
     def test_nuclei_detection(self):
 
