@@ -1,8 +1,10 @@
+import argparse
 import os
 
 import numpy as np
 import skimage.io
 
+import histomicstk.cli.NucleiDetection.NucleiDetection as nucl_det
 import histomicstk.preprocessing.color_conversion as htk_cvt
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
@@ -118,3 +120,98 @@ class TestNucleiSegmentation:
 
         assert len(nuclei.X) > 50
         assert len(votes) > 1000
+
+    # Test arguments
+    args = argparse.Namespace(inputImageFile='',
+                              ImageInversionForm='Yes',
+                              analysis_mag=20.0,
+                              analysis_roi=[-1.0, -1.0, -1.0, -1.0],
+                              analysis_tile_size=1024.0,
+                              foreground_threshold=60.0,
+                              frame='0',
+                              ignore_border_nuclei=False,
+                              local_max_search_radius=10.0,
+                              max_radius=20.0,
+                              min_fgnd_frac=0.25,
+                              min_nucleus_area=80.0,
+                              min_radius=6.0,
+                              nuclei_annotation_format='boundary',
+                              num_threads_per_worker=1,
+                              num_workers=-1,
+                              reference_mu_lab=[8.63234435,
+                                                -0.11501964,
+                                                0.03868433],
+                              reference_std_lab=[0.57506023,
+                                                 0.10403329,
+                                                 0.01364062],
+                              scheduler='',
+                              stain_1='hematoxylin',
+                              stain_1_vector=[-1.0,
+                                              -1.0,
+                                              -1.0],
+                              stain_2='eosin',
+                              stain_2_vector=[-1.0,
+                                              -1.0,
+                                              -1.0],
+                              stain_3='null',
+                              stain_3_vector=[-1.0,
+                                              -1.0,
+                                              -1.0],
+                              style=None)
+
+    def test_image_inversion_flag_setter(self):
+        invert_image, default_img_inversion = nucl_det.image_inversion_flag_setter(self.args)
+        np.testing.assert_equal(invert_image, True)
+        np.testing.assert_equal(default_img_inversion, False)
+
+    def test_nuclei_detection(self):
+
+        # retrieve image from datastore
+        input_image_path = datastore.fetch('tcgaextract_ihergb.tiff')
+        self.args.inputImageFile = input_image_path
+
+        # read the image
+        ts, is_wsi = nucl_det.read_input_image(self.args, process_whole_image=True)
+        it_kwargs = {
+            'tile_size': {'width': self.args.analysis_tile_size},
+            'scale': {'magnification': self.args.analysis_mag}
+        }
+
+        # determine number of nuclei
+        tile_fgnd_frac_list = nucl_det.process_wsi(ts, it_kwargs, self.args)
+        nuclei_list = nucl_det.detect_nuclei_with_dask(
+            ts,
+            tile_fgnd_frac_list,
+            it_kwargs,
+            self.args,
+            invert_image=False,
+            is_wsi=is_wsi,
+            src_mu_lab=None,
+            src_sigma_lab=None)
+        np.testing.assert_allclose(len(nuclei_list), 10, 1e+2)
+
+    def test_nuclei_detection_image_inverted(self):
+
+        # retrieve image from datastore
+        input_image_path = datastore.fetch('tcgaextract_ihergb.tiff')
+        self.args.inputImageFile = input_image_path
+
+        # read the image
+        ts, is_wsi = nucl_det.read_input_image(self.args, process_whole_image=True)
+        it_kwargs = {
+            'tile_size': {'width': self.args.analysis_tile_size},
+            'scale': {'magnification': self.args.analysis_mag}
+        }
+
+        # determine number of nuclei
+        tile_fgnd_frac_list = nucl_det.process_wsi(ts, it_kwargs, self.args)
+        nuclei_list = nucl_det.detect_nuclei_with_dask(
+            ts,
+            tile_fgnd_frac_list,
+            it_kwargs,
+            self.args,
+            invert_image=True,
+            is_wsi=is_wsi,
+            src_mu_lab=None,
+            src_sigma_lab=None)
+        np.testing.assert_allclose(len(nuclei_list), 7497, 1e+2)
