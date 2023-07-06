@@ -82,6 +82,13 @@ def segment_wsi_foreground_at_low_res(
     if invert_image:
         im_lres = np.max(im_lres) - im_lres
 
+    # casting the float to integers
+    if issubclass(im_lres.dtype.type, np.floating) and np.max(im_lres) > 1:
+        if np.min(im_lres) >= 0 and np.max(im_lres) < 256:
+            im_lres = im_lres.astype(np.uint8)
+        elif np.min(im_lres) >= 0 and np.max(im_lres) < 65536:
+            im_lres = im_lres.astype(np.uint16)
+
     # compute foreground mask at low-res
     im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)
 

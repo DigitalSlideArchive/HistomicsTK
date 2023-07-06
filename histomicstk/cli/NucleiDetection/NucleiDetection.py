@@ -85,11 +85,8 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     w = cli_utils.get_stain_matrix(args)
 
     # perform deconvolution
-    if single_channel:
-        im_nuclei_stain = im_nmzd[:, :, 0].astype(float)
-    else:
-        im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
-        im_nuclei_stain = im_stains[:, :, 0].astype(float)
+    im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
+    im_nuclei_stain = im_stains[:, :, 0].astype(float)
 
     # segment nuclear foreground
     im_nuclei_fgnd_mask = im_nuclei_stain < args.foreground_threshold
@@ -315,15 +312,6 @@ def main(args):
     ts, is_wsi = read_input_image(args, process_whole_image)
 
     #
-    # Compute tissue/foreground mask at low-res for whole slide images
-    #
-    if is_wsi and process_whole_image:
-
-        im_fgnd_mask_lres, fgnd_seg_scale = process_wsi_as_whole_image(
-            ts, invert_image=invert_image, args=args,
-            default_img_inversion=default_img_inversion)
-
-    #
     # Compute foreground fraction of tiles in parallel using Dask
     #
     tile_fgnd_frac_list = [1.0]
@@ -341,6 +329,10 @@ def main(args):
     if is_wsi:
 
         if process_whole_image:
+
+            im_fgnd_mask_lres, fgnd_seg_scale = process_wsi_as_whole_image(
+                ts, invert_image=invert_image, args=args,
+                default_img_inversion=default_img_inversion)
             tile_fgnd_frac_list = process_wsi(ts,
                                               it_kwargs,
                                               args,
@@ -357,9 +349,15 @@ def main(args):
     src_sigma_lab = None
 
     if is_wsi and process_whole_image:
-
-        src_mu_lab, src_sigma_lab = compute_reinhard_norm(
-            args, invert_image=invert_image, default_img_inversion=default_img_inversion)
+        # get a tile
+        tile_info = ts.getSingleTile(
+            format=large_image.tilesource.TILE_FORMAT_NUMPY,
+            frame=args.frame)
+        # get tile image & check number of channels
+        single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
+        if not single_channel:
+            src_mu_lab, src_sigma_lab = compute_reinhard_norm(
+                args, invert_image=invert_image, default_img_inversion=default_img_inversion)
 
     #
     # Detect nuclei in parallel using Dask
@@ -399,4 +397,49 @@ def main(args):
 
 
 if __name__ == '__main__':
+
+    # import argparse
+
+    # args = argparse.Namespace(ImageInversionForm='Yes',
+    #                             analysis_mag=20.0,
+    #                             analysis_roi=[-1.0,
+    #                                             -1.0,
+    #                                             -1.0,
+    #                                             -1.0],
+    #                             analysis_tile_size=1024.0,
+    #                             foreground_threshold=60.0,
+    #                             frame='0',
+    #                             ignore_border_nuclei=False,
+    #                             inputImageFile='/workspaces/HistomicsTK/tests/externaldata/tcgaextract_ihergb_labeledmag.tiff',
+    #                             local_max_search_radius=10.0,
+    #                             max_radius=20.0,
+    #                             min_fgnd_frac=0.02,
+    #                             min_nucleus_area=80.0,
+    #                             min_radius=6.0,
+    #                             nuclei_annotation_format='boundary',
+    #                             num_threads_per_worker=1,
+    #                             num_workers=-1,
+    #                             outputNucleiAnnotationFile='/workspaces/HistomicsTK/tests/externaldata/large_img.qptiff.anot',
+    #                             reference_mu_lab=[8.63234435,
+    #                                                 -0.11501964,
+    #                                                 0.03868433],
+    #                             reference_std_lab=[0.57506023,
+    #                                                 0.10403329,
+    #                                                 0.01364062],
+    #                             scheduler='',
+    #                             stain_1='hematoxylin',
+    #                             stain_1_vector=[-1.0,
+    #                                             -1.0,
+    #                                             -1.0],
+    #                             stain_2='eosin',
+    #                             stain_2_vector=[-1.0,
+    #                                             -1.0,
+    #                                             -1.0],
+    #                             stain_3='null',
+    #                             stain_3_vector=[-1.0,
+    #                                             -1.0,
+    #                                             -1.0],
+    #                             style='{}')
+
+    # main(args)
     main(CLIArgumentParser().parse_args())

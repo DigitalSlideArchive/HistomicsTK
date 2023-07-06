@@ -56,7 +56,19 @@ registry = {
     'sample_svs_image.TCGA-DU-6399-01A-01-TS1.e8eb65de-d63e-42db-af6f-14fefbbdf7bd.svs': 'sha512:5580c2b5a5360d279d102f1eb5b0e646a4943e362ec1d47f2db01f8e9e52b302e51692171198d0d35c7fa9ec9f5b8e445ef91fa7ea0bdb05ead31ab49e0118f9',  # noqa
     #
     # Source: tcgaextract_ihergb.tiff
-    'tcgaextract_ihergb.tiff': 'sha512:c4a12c0cdb77aebe3ee9a8148731af134e085d9466fd570c66676d66e5f46378905e55ab4d6e9a12b765c35e92d7e64a1674f6d8b131b3b34114412baf48f4c9'  # noqa
+    'tcgaextract_ihergb.tiff': 'sha512:c4a12c0cdb77aebe3ee9a8148731af134e085d9466fd570c66676d66e5f46378905e55ab4d6e9a12b765c35e92d7e64a1674f6d8b131b3b34114412baf48f4c9',  # noqa
+    #
+    # Source: tcgaextract_rgbmag.tiff
+    'tcgaextract_rgbmag.tiff': 'sha512:1ff135eb0ff8864a876a19ae3dec579f27f1718726a68643f6a40a244fdfa08e81f63f1413c198b38384cb34e8705bc60a6c69ef2b706cb0419f6ec091b2b621',  # noqa
+    #
+    # Source: tcgaextract_ihergb_labeledmag.tiff
+    'tcgaextract_ihergb_labeledmag.tiff': 'sha512:256489424bbf96b6c9cbe3eee0daf33ac0b2601da2f0ae0c9d7556c8d68e6469ab05dc2077569d72b8bd5cac5d90fb19c61c34edc65bb191efbd545f88399ad6',  # noqa
+    #
+    # Source: tcgaextract_rgb.tiff
+    'tcgaextract_rgb.tiff': 'sha512:1ff135eb0ff8864a876a19ae3dec579f27f1718726a68643f6a40a244fdfa08e81f63f1413c198b38384cb34e8705bc60a6c69ef2b706cb0419f6ec091b2b621',  # noqa
+    #
+    # Source: tcgaextract_ihergb_labeled.tiff
+    'tcgaextract_ihergb_labeled.tiff': 'sha512:faf5c8da95a5e624c70300afb98318e3421cc86ac27755f207075fa2f68aa23d099bec802007a86533579c6aadc97b4ce710d272eb871172d4b2c7e9ff6e9cad',  # noqa
 }
 
 

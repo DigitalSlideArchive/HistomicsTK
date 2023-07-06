@@ -216,9 +216,10 @@
     <description>Choose if image inversion is needed</description>
     <string-enumeration>
       <name>ImageInversionForm</name>
-      <description>Image inversion may be needed for greyscale images with bright nuclei and dark background. default option will automatically invert the image if it is sinlge channel. Choose if color inversion is needed.</description>
+      <label>Invert Image</label>
+      <description>Image inversion may be needed for greyscale images with bright nuclei and dark background. default option will automatically invert the image if it is single channel. Choose if color inversion is needed.</description>
       <channel>input</channel>
-      <longflag>output_form</longflag>
+      <longflag>invert_image</longflag>
       <element>Yes</element>
       <element>No</element>
       <element>default</element>

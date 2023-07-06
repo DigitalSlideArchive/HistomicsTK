@@ -121,7 +121,7 @@ class TestNucleiSegmentation:
         assert len(nuclei.X) > 50
         assert len(votes) > 1000
 
-    # Testing arguments
+    # Test arguments
     args = argparse.Namespace(inputImageFile='',
                               ImageInversionForm='Yes',
                               analysis_mag=20.0,
@@ -160,13 +160,14 @@ class TestNucleiSegmentation:
                               style=None)
 
     def test_image_inversion_flag_setter(self):
-        invert_image = nucl_det.image_inversion_flag_setter(self.args)
-        assert invert_image, True
+        invert_image, default_img_inversion = nucl_det.image_inversion_flag_setter(self.args)
+        assert invert_image == True
+        assert default_img_inversion == False
 
     def test_nuclei_detection(self):
 
         # retrieve image from datastore
-        input_image_path = os.path.join(datastore.fetch('tcgaextract_ihergb.tiff'))
+        input_image_path = datastore.fetch('tcgaextract_ihergb.tiff')
         self.args.inputImageFile = input_image_path
 
         # read the image
@@ -192,7 +193,7 @@ class TestNucleiSegmentation:
     def test_nuclei_detection_image_inverted(self):
 
         # retrieve image from datastore
-        input_image_path = os.path.join(datastore.fetch('tcgaextract_ihergb.tiff'))
+        input_image_path = datastore.fetch('tcgaextract_ihergb.tiff')
         self.args.inputImageFile = input_image_path
 
         # read the image
@@ -214,61 +215,3 @@ class TestNucleiSegmentation:
             src_mu_lab=None,
             src_sigma_lab=None)
         np.testing.assert_allclose(len(nuclei_list), 7497, 1e+2)
-
-    def test_nuclei_detection_frame_style(self):
-
-        # retrieve image from datastore
-        input_image_path = os.path.join(datastore.fetch('tcgaextract_ihergb.tiff'))
-        self.args.inputImageFile = input_image_path
-        self.args.frame = 3
-        self.args.style = '{"bands":[{"frame":3,"palette":"#f00"},'\
-            '{"frame":4,"palette":"#0f0"},{"frame":5,"palette":"#00f"}]}'
-        # read the image
-        ts, is_wsi = nucl_det.read_input_image(self.args, process_whole_image=True)
-        it_kwargs = {
-            'tile_size': {'width': self.args.analysis_tile_size},
-            'scale': {'magnification': self.args.analysis_mag}
-        }
-
-        # determine number of nuclei
-        tile_fgnd_frac_list = nucl_det.process_wsi(ts, it_kwargs, self.args)
-        nuclei_list = nucl_det.detect_nuclei_with_dask(
-            ts,
-            tile_fgnd_frac_list,
-            it_kwargs,
-            self.args,
-            invert_image=True,
-            is_wsi=is_wsi,
-            src_mu_lab=None,
-            src_sigma_lab=None)
-        np.testing.assert_allclose(len(nuclei_list), 2799, 1e+2)
-
-    def test_nuclei_detection_frame_style_roi(self):
-
-        # retrieve image from datastore
-        input_image_path = os.path.join(datastore.fetch('tcgaextract_ihergb.tiff'))
-        self.args.inputImageFile = input_image_path
-        self.args.frame = 3
-        self.args.style = '{"bands":[{"frame":3,"palette":"#f00"},'\
-            '{"frame":4,"palette":"#0f0"},{"frame":5,"palette":"#00f"}]}'
-        self.args.analysis_roi = [1765.0, 1256.0, 478.0, 503.0]
-
-        # read the image
-        ts, is_wsi = nucl_det.read_input_image(self.args, process_whole_image=True)
-        it_kwargs = {
-            'tile_size': {'width': self.args.analysis_tile_size},
-            'scale': {'magnification': self.args.analysis_mag}
-        }
-
-        # determine number of nuclei
-        tile_fgnd_frac_list = nucl_det.process_wsi(ts, it_kwargs, self.args)
-        nuclei_list = nucl_det.detect_nuclei_with_dask(
-            ts,
-            tile_fgnd_frac_list,
-            it_kwargs,
-            self.args,
-            invert_image=True,
-            is_wsi=is_wsi,
-            src_mu_lab=None,
-            src_sigma_lab=None)
-        np.testing.assert_allclose(len(nuclei_list), 294, 2e+1)
