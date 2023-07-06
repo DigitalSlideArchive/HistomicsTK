@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import pprint
 import time
 
 import large_image
@@ -17,11 +18,42 @@ from histomicstk.cli.utils import CLIArgumentParser
 logging.basicConfig(level=logging.CRITICAL)
 
 
+def read_input_image(args, process_whole_image=False):
+    # read input image and check if it is WSI
+    print('\n>> Reading input image ... \n')
+
+    ts = large_image.getTileSource(args.inputImageFile, style=args.style)
+
+    ts_metadata = ts.getMetadata()
+
+    print(json.dumps(ts_metadata, indent=2))
+
+    is_wsi = ts_metadata['magnification'] is not None
+
+    return ts, is_wsi
+
+
+def image_inversion_flag_setter(args=None):
+    # generates image inversion flags
+    invert_image, default_img_inversion = False, False
+    if args.ImageInversionForm == "Yes":
+        invert_image = True
+    if args.ImageInversionForm == "No":
+        invert_image = False
+    if args.ImageInversionForm == "default":
+        default_img_inversion = True
+    return invert_image, default_img_inversion
+
+
 def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
-                       src_mu_lab=None, src_sigma_lab=None):
+                       src_mu_lab=None, src_sigma_lab=None, invert_image=False,
+                       style=None, default_img_inversion=False):
+
+    # Flags
+    single_channel = False
 
     # get slide tile source
-    ts = large_image.getTileSource(slide_path)
+    ts = large_image.getTileSource(slide_path, style=style)
 
     # get requested tile
     tile_info = ts.getSingleTile(
@@ -29,8 +61,18 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         **it_kwargs)
 
-    # get tile image
-    im_tile = tile_info['tile'][:, :, :3]
+    # get tile image & check number of channels
+    single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
+    if single_channel:
+        im_tile = np.dstack((tile_info['tile'], tile_info['tile'], tile_info['tile']))
+        if default_img_inversion:
+            invert_image = True
+    else:
+        im_tile = tile_info['tile'][:, :, :3]
+
+    # perform image inversion
+    if invert_image:
+        im_tile = np.max(im_tile) - im_tile
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,
@@ -42,8 +84,8 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     # perform color decovolution
     w = cli_utils.get_stain_matrix(args)
 
+    # perform deconvolution
     im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
-
     im_nuclei_stain = im_stains[:, :, 0].astype(float)
 
     # segment nuclear foreground
@@ -76,154 +118,90 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     return nuclei_annot_list
 
 
-def main(args):
-    import dask
+def process_wsi_as_whole_image(ts, invert_image=False, args=None, default_img_inversion=False):
+    print('\n>> Computing tissue/foreground mask at low-res ...\n')
 
-    total_start_time = time.time()
+    start_time = time.time()
+    # segment wsi foreground at low resolution
+    im_fgnd_mask_lres, fgnd_seg_scale = \
+        cli_utils.segment_wsi_foreground_at_low_res(
+            ts, invert_image=invert_image, frame=args.frame,
+            default_img_inversion=default_img_inversion)
 
-    print('\n>> CLI Parameters ...\n')
+    fgnd_time = time.time() - start_time
 
-    print(args)
+    print('low-res foreground mask computation time = {}'.format(
+        cli_utils.disp_time_hms(fgnd_time)))
 
-    if not os.path.isfile(args.inputImageFile):
-        raise OSError('Input image file does not exist.')
+    return im_fgnd_mask_lres, fgnd_seg_scale
 
-    if len(args.reference_mu_lab) != 3:
-        raise ValueError('Reference Mean LAB should be a 3 element vector.')
 
-    if len(args.reference_std_lab) != 3:
-        raise ValueError('Reference Stddev LAB should be a 3 element vector.')
+def process_wsi(ts, it_kwargs, args, im_fgnd_mask_lres=None,
+                fgnd_seg_scale=None, process_whole_image=False):
 
-    if len(args.analysis_roi) != 4:
-        raise ValueError('Analysis ROI must be a vector of 4 elements.')
-
-    if np.all(np.array(args.analysis_roi) == -1):
-        process_whole_image = True
-    else:
-        process_whole_image = False
-
-    #
-    # Initiate Dask client
-    #
-    print('\n>> Creating Dask client ...\n')
+    # process the wsi
+    print('\n>> Computing foreground fraction of all tiles ...\n')
 
     start_time = time.time()
 
-    c = cli_utils.create_dask_client(args)
+    num_tiles = ts.getSingleTile(**it_kwargs)['iterator_range']['position']
 
-    print(c)
+    print(f'Number of tiles = {num_tiles}')
 
-    dask_setup_time = time.time() - start_time
-    print('Dask setup time = {}'.format(
-        cli_utils.disp_time_hms(dask_setup_time)))
+    if process_whole_image:
 
-    #
-    # Read Input Image
-    #
-    print('\n>> Reading input image ... \n')
+        tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
+            args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
+            it_kwargs, style=args.style
+        )
 
-    ts = large_image.getTileSource(args.inputImageFile)
+    else:
 
-    ts_metadata = ts.getMetadata()
+        tile_fgnd_frac_list = np.full(num_tiles, 1.0)
 
-    print(json.dumps(ts_metadata, indent=2))
+    num_fgnd_tiles = np.count_nonzero(
+        tile_fgnd_frac_list >= args.min_fgnd_frac)
 
-    is_wsi = ts_metadata['magnification'] is not None
-
-    #
-    # Compute tissue/foreground mask at low-res for whole slide images
-    #
-    if is_wsi and process_whole_image:
-
-        print('\n>> Computing tissue/foreground mask at low-res ...\n')
-
-        start_time = time.time()
-
-        im_fgnd_mask_lres, fgnd_seg_scale = \
-            cli_utils.segment_wsi_foreground_at_low_res(ts)
-
-        fgnd_time = time.time() - start_time
-
-        print('low-res foreground mask computation time = {}'.format(
-            cli_utils.disp_time_hms(fgnd_time)))
-
-    #
-    # Compute foreground fraction of tiles in parallel using Dask
-    #
-    tile_fgnd_frac_list = [1.0]
-
-    it_kwargs = {
-        'tile_size': {'width': args.analysis_tile_size},
-        'scale': {'magnification': args.analysis_mag},
-    }
-
-    if not process_whole_image:
-
-        it_kwargs['region'] = {
-            'left': args.analysis_roi[0],
-            'top': args.analysis_roi[1],
-            'width': args.analysis_roi[2],
-            'height': args.analysis_roi[3],
-            'units': 'base_pixels'
-        }
-
-    if is_wsi:
-
-        print('\n>> Computing foreground fraction of all tiles ...\n')
-
-        start_time = time.time()
-
-        num_tiles = ts.getSingleTile(**it_kwargs)['iterator_range']['position']
-
-        print(f'Number of tiles = {num_tiles}')
-
-        if process_whole_image:
-
-            tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
-                args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
-                it_kwargs
-            )
-
-        else:
-
-            tile_fgnd_frac_list = np.full(num_tiles, 1.0)
-
-        num_fgnd_tiles = np.count_nonzero(
-            tile_fgnd_frac_list >= args.min_fgnd_frac)
-
+    if not num_fgnd_tiles:
+        tile_fgnd_frac_list = np.full(num_tiles, 1.0)
+        percent_fgnd_tiles = 100
+        num_fgnd_tiles = np.count_nonzero(tile_fgnd_frac_list)
+    else:
         percent_fgnd_tiles = 100.0 * num_fgnd_tiles / num_tiles
 
-        fgnd_frac_comp_time = time.time() - start_time
+    fgnd_frac_comp_time = time.time() - start_time
 
-        print('Number of foreground tiles = {:d} ({:2f}%%)'.format(
-            num_fgnd_tiles, percent_fgnd_tiles))
+    print('Number of foreground tiles = {:d} ({:2f}%%)'.format(
+        num_fgnd_tiles, percent_fgnd_tiles))
 
-        print('Tile foreground fraction computation time = {}'.format(
-            cli_utils.disp_time_hms(fgnd_frac_comp_time)))
+    print('Tile foreground fraction computation time = {}'.format(
+        cli_utils.disp_time_hms(fgnd_frac_comp_time)))
 
-    #
-    # Compute reinhard stats for color normalization
-    #
-    src_mu_lab = None
-    src_sigma_lab = None
+    return tile_fgnd_frac_list
 
-    if is_wsi and process_whole_image:
 
-        print('\n>> Computing reinhard color normalization stats ...\n')
+def compute_reinhard_norm(args, invert_image=False, default_img_inversion=False):
+    print('\n>> Computing reinhard color normalization stats ...\n')
 
-        start_time = time.time()
+    start_time = time.time()
+    src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
+        args.inputImageFile, 0.01, magnification=args.analysis_mag,
+        invert_image=invert_image, style=args.style, frame=args.frame,
+        default_img_inversion=default_img_inversion)
 
-        src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats(
-            args.inputImageFile, 0.01, magnification=args.analysis_mag)
+    rstats_time = time.time() - start_time
 
-        rstats_time = time.time() - start_time
+    print('Reinhard stats computation time = {}'.format(
+        cli_utils.disp_time_hms(rstats_time)))
+    return src_mu_lab, src_sigma_lab
 
-        print('Reinhard stats computation time = {}'.format(
-            cli_utils.disp_time_hms(rstats_time)))
 
-    #
-    # Detect nuclei in parallel using Dask
-    #
+def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
+                            invert_image=False, is_wsi=False, src_mu_lab=None,
+                            src_sigma_lab=None, default_img_inversion=False):
+
+    import dask
+
     print('\n>> Detecting nuclei ...\n')
 
     start_time = time.time()
@@ -242,7 +220,8 @@ def main(args):
             args.inputImageFile,
             tile_position,
             args, it_kwargs,
-            src_mu_lab, src_sigma_lab
+            src_mu_lab, src_sigma_lab, invert_image=invert_image, style=args.style,
+            default_img_inversion=default_img_inversion
         )
 
         # append result to list
@@ -259,10 +238,145 @@ def main(args):
 
     print('Nuclei detection time = {}'.format(
         cli_utils.disp_time_hms(nuclei_detection_time)))
+    return nuclei_list
+
+
+def main(args):
+
+    # Flags
+    invert_image = False
+    default_img_inversion = False
+    process_whole_image = False
+
+    # initial arguments
+    it_kwargs = {
+        'tile_size': {'width': args.analysis_tile_size},
+        'scale': {'magnification': args.analysis_mag}
+    }
+
+    total_start_time = time.time()
+
+    print('\n>> CLI Parameters ...\n')
+    pprint.pprint(vars(args))
+
+    if not os.path.isfile(args.inputImageFile):
+        raise OSError('Input image file does not exist.')
+
+    if len(args.reference_mu_lab) != 3:
+        raise ValueError('Reference Mean LAB should be a 3 element vector.')
+
+    if len(args.reference_std_lab) != 3:
+        raise ValueError('Reference Stddev LAB should be a 3 element vector.')
+
+    if len(args.analysis_roi) != 4:
+        raise ValueError('Analysis ROI must be a vector of 4 elements.')
+
+    if np.all(np.array(args.analysis_roi) == -1):
+        process_whole_image = True
+    else:
+        process_whole_image = False
+
+    # retrive style and frame
+    if not args.style or args.style.startswith('{#control'):
+        args.style = None
+    if not args.frame or args.frame.startswith('{#control'):
+        args.frame = None
+    elif not args.frame.isdigit():
+        raise Exception("The given frame value is not an integer")
+    else:
+        it_kwargs['frame'] = args.frame
+
+    #
+    # Initiate Dask client
+    #
+    print('\n>> Creating Dask client ...\n')
+
+    start_time = time.time()
+
+    c = cli_utils.create_dask_client(args)
+
+    print(c)
+
+    dask_setup_time = time.time() - start_time
+    print('Dask setup time = {}'.format(
+        cli_utils.disp_time_hms(dask_setup_time)))
+
+    #
+    # color inversion flag
+    #
+    invert_image, default_img_inversion = image_inversion_flag_setter(args)
+
+    #
+    # Read Input Image
+    #
+    ts, is_wsi = read_input_image(args, process_whole_image)
+
+    #
+    # Compute foreground fraction of tiles in parallel using Dask
+    #
+    tile_fgnd_frac_list = [1.0]
+
+    if not process_whole_image:
+
+        it_kwargs['region'] = {
+            'left': args.analysis_roi[0],
+            'top': args.analysis_roi[1],
+            'width': args.analysis_roi[2],
+            'height': args.analysis_roi[3],
+            'units': 'base_pixels'
+        }
+
+    if is_wsi:
+
+        if process_whole_image:
+
+            im_fgnd_mask_lres, fgnd_seg_scale = process_wsi_as_whole_image(
+                ts, invert_image=invert_image, args=args,
+                default_img_inversion=default_img_inversion)
+            tile_fgnd_frac_list = process_wsi(ts,
+                                              it_kwargs,
+                                              args,
+                                              im_fgnd_mask_lres,
+                                              fgnd_seg_scale,
+                                              process_whole_image)
+        else:
+            tile_fgnd_frac_list = process_wsi(ts, it_kwargs, args)
+
+    #
+    # Compute reinhard stats for color normalization
+    #
+    src_mu_lab = None
+    src_sigma_lab = None
+
+    if is_wsi and process_whole_image:
+        # get a tile
+        tile_info = ts.getSingleTile(
+            format=large_image.tilesource.TILE_FORMAT_NUMPY,
+            frame=args.frame)
+        # get tile image & check number of channels
+        single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
+        if not single_channel:
+            src_mu_lab, src_sigma_lab = compute_reinhard_norm(
+                args, invert_image=invert_image, default_img_inversion=default_img_inversion)
+
+    #
+    # Detect nuclei in parallel using Dask
+    #
+    nuclei_list = detect_nuclei_with_dask(
+        ts,
+        tile_fgnd_frac_list,
+        it_kwargs,
+        args,
+        invert_image,
+        is_wsi,
+        src_mu_lab,
+        src_sigma_lab,
+        default_img_inversion=default_img_inversion)
 
     #
     # Write annotation file
     #
+
     print('\n>> Writing annotation file ...\n')
 
     annot_fname = os.path.splitext(
@@ -284,4 +398,48 @@ def main(args):
 
 if __name__ == '__main__':
 
+    # import argparse
+
+    # args = argparse.Namespace(ImageInversionForm='Yes',
+    #                             analysis_mag=20.0,
+    #                             analysis_roi=[-1.0,
+    #                                             -1.0,
+    #                                             -1.0,
+    #                                             -1.0],
+    #                             analysis_tile_size=1024.0,
+    #                             foreground_threshold=60.0,
+    #                             frame='0',
+    #                             ignore_border_nuclei=False,
+    #                             inputImageFile='/workspaces/HistomicsTK/tests/externaldata/tcgaextract_ihergb_labeledmag.tiff',
+    #                             local_max_search_radius=10.0,
+    #                             max_radius=20.0,
+    #                             min_fgnd_frac=0.02,
+    #                             min_nucleus_area=80.0,
+    #                             min_radius=6.0,
+    #                             nuclei_annotation_format='boundary',
+    #                             num_threads_per_worker=1,
+    #                             num_workers=-1,
+    #                             outputNucleiAnnotationFile='/workspaces/HistomicsTK/tests/externaldata/large_img.qptiff.anot',
+    #                             reference_mu_lab=[8.63234435,
+    #                                                 -0.11501964,
+    #                                                 0.03868433],
+    #                             reference_std_lab=[0.57506023,
+    #                                                 0.10403329,
+    #                                                 0.01364062],
+    #                             scheduler='',
+    #                             stain_1='hematoxylin',
+    #                             stain_1_vector=[-1.0,
+    #                                             -1.0,
+    #                                             -1.0],
+    #                             stain_2='eosin',
+    #                             stain_2_vector=[-1.0,
+    #                                             -1.0,
+    #                                             -1.0],
+    #                             stain_3='null',
+    #                             stain_3_vector=[-1.0,
+    #                                             -1.0,
+    #                                             -1.0],
+    #                             style='{}')
+
+    # main(args)
     main(CLIArgumentParser().parse_args())

@@ -49,7 +49,8 @@ def get_stain_matrix(args, count=3):
     return np.array([get_stain_vector(args, i + 1) for i in range(count)]).T
 
 
-def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
+def segment_wsi_foreground_at_low_res(
+        ts, lres_size=2048, invert_image=False, frame=None, default_img_inversion=False):
 
     ts_metadata = ts.getMetadata()
 
@@ -65,10 +66,28 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
 
     im_lres, _ = ts.getRegion(
         scale=fgnd_seg_scale,
-        format=large_image.tilesource.TILE_FORMAT_NUMPY
+        format=large_image.tilesource.TILE_FORMAT_NUMPY,
+        frame=frame
     )
 
-    im_lres = im_lres[:, :, :3]
+    # check number of channels
+    if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
+        im_lres = np.dstack((im_lres, im_lres, im_lres))
+        if default_img_inversion:
+            invert_image = True
+    else:
+        im_lres = im_lres[:, :, :3]
+
+    # perform image inversion
+    if invert_image:
+        im_lres = np.max(im_lres) - im_lres
+
+    # casting the float to integers
+    if issubclass(im_lres.dtype.type, np.floating) and np.max(im_lres) > 1:
+        if np.min(im_lres) >= 0 and np.max(im_lres) < 256:
+            im_lres = im_lres.astype(np.uint8)
+        elif np.min(im_lres) >= 0 and np.max(im_lres) < 65536:
+            im_lres = im_lres.astype(np.uint16)
 
     # compute foreground mask at low-res
     im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)
