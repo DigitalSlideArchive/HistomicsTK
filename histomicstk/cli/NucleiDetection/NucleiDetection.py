@@ -380,9 +380,6 @@ def main(args):
 
     print('\n>> Writing annotation file ...\n')
 
-    annot_fname = os.path.splitext(
-        os.path.basename(args.outputNucleiAnnotationFile))[0]
-
     annotation = {
         'name': annot_fname + '-nuclei-' + args.nuclei_annotation_format,
         'elements': nuclei_list,
@@ -403,49 +400,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-
-    # import argparse
-
-    # args = argparse.Namespace(ImageInversionForm='Yes',
-    #                             analysis_mag=20.0,
-    #                             analysis_roi=[-1.0,
-    #                                             -1.0,
-    #                                             -1.0,
-    #                                             -1.0],
-    #                             analysis_tile_size=1024.0,
-    #                             foreground_threshold=60.0,
-    #                             frame='0',
-    #                             ignore_border_nuclei=False,
-    #                             inputImageFile='/workspaces/HistomicsTK/tests/externaldata/tcgaextract_ihergb_labeledmag.tiff',
-    #                             local_max_search_radius=10.0,
-    #                             max_radius=20.0,
-    #                             min_fgnd_frac=0.02,
-    #                             min_nucleus_area=80.0,
-    #                             min_radius=6.0,
-    #                             nuclei_annotation_format='boundary',
-    #                             num_threads_per_worker=1,
-    #                             num_workers=-1,
-    #                             outputNucleiAnnotationFile='/workspaces/HistomicsTK/tests/externaldata/large_img.qptiff.anot',
-    #                             reference_mu_lab=[8.63234435,
-    #                                                 -0.11501964,
-    #                                                 0.03868433],
-    #                             reference_std_lab=[0.57506023,
-    #                                                 0.10403329,
-    #                                                 0.01364062],
-    #                             scheduler='',
-    #                             stain_1='hematoxylin',
-    #                             stain_1_vector=[-1.0,
-    #                                             -1.0,
-    #                                             -1.0],
-    #                             stain_2='eosin',
-    #                             stain_2_vector=[-1.0,
-    #                                             -1.0,
-    #                                             -1.0],
-    #                             stain_3='null',
-    #                             stain_3_vector=[-1.0,
-    #                                             -1.0,
-    #                                             -1.0],
-    #                             style='{}')
-
-    # main(args)
+    
     main(CLIArgumentParser().parse_args())
