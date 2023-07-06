@@ -383,11 +383,13 @@ def main(args):
         os.path.basename(args.outputNucleiAnnotationFile))[0]
 
     annotation = {
-        'name': 'NucleiDetection',
-        'src_mu_lab': src_mu_lab,
-        'src_sigma_lab': src_sigma_lab,
+        'name': annot_fname + '-nuclei-' + args.nuclei_annotation_format,
         'elements': nuclei_list,
-        'input_parameters': args
+        'attributes': {
+            'src_mu_lab': src_mu_lab,
+            'src_sigma_lab': src_sigma_lab,
+            'params': vars(args),
+        },
     }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
