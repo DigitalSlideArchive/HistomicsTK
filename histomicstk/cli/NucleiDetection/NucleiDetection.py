@@ -386,8 +386,8 @@ def main(args):
         'name': annot_fname + '-nuclei-' + args.nuclei_annotation_format,
         'elements': nuclei_list,
         'attributes': {
-            'src_mu_lab': src_mu_lab,
-            'src_sigma_lab': src_sigma_lab,
+            'src_mu_lab': None if src_mu_lab is None else src_mu_lab.tolist(),
+            'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab.tolist(),
             'params': vars(args),
         },
     }
