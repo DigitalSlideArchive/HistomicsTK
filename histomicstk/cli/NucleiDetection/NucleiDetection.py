@@ -381,12 +381,22 @@ def main(args):
     print('\n>> Writing annotation file ...\n')
 
     annotation = {
+<<<<<<< HEAD
         'name': 'NucleiDetection',
         'elements': nuclei_list,
         'src_mu_lab': src_mu_lab,
         'src_sigma_lab': src_sigma_lab,
         'inverted_image': invert_image or default_img_inversion,
         'input_parameters': args
+=======
+        'name': annot_fname + '-nuclei-' + args.nuclei_annotation_format,
+        'elements': nuclei_list,
+        'attributes': {
+            'src_mu_lab': None if src_mu_lab is None else src_mu_lab.tolist(),
+            'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab.tolist(),
+            'params': vars(args),
+        },
+>>>>>>> 15262df548a2579846a0dcfd8b7f41e30ddff58e
     }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
@@ -399,5 +409,9 @@ def main(args):
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 15262df548a2579846a0dcfd8b7f41e30ddff58e
     main(CLIArgumentParser().parse_args())
