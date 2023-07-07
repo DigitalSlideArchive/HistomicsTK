@@ -386,8 +386,11 @@ def main(args):
 
     print('\n>> Writing annotation file ...\n')
 
+    annot_fname = os.path.splitext(
+        os.path.basename(args.outputNucleiAnnotationFile))[0]
+
     annotation = {
-        'name': 'NucleiDetection',
+        'name': annot_fname + '-nuclei-' + args.nuclei_annotation_format,
         'elements': nuclei_list,
         'attributes': {
             'src_mu_lab': None if src_mu_lab is None else src_mu_lab.tolist(),
