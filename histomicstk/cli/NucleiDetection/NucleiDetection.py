@@ -101,10 +101,11 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
         args.local_max_search_radius
     )
 
-    # Delete border nuclei
+    # TODO 306 Delete border nuclei
+    overlap_size = 1/64
     if args.ignore_border_nuclei is True:
 
-        im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
+        im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask,overlap_size)
 
     # generate nuclei annotations
     nuclei_annot_list = []

@@ -3,8 +3,8 @@ import numpy as np
 from .condense import condense
 from .delete import delete
 
-
-def delete_border(im_label):
+#TODO added overlap size
+def delete_border(im_label, overlap_size=None):
     """
     Deletes objects touching the border of the image and relabel
 
@@ -28,12 +28,17 @@ def delete_border(im_label):
     im_label_del = np.zeros_like(im_label)
 
     if np.any(im_label):
+   
+        if overlap_size is None:
+            overlap_size = min(im_label.shape)//64
+        else:
+            overlap_size = int(min(im_label.shape) * overlap_size)
 
         im_border_mask = np.zeros_like(im_label)
-        im_border_mask[:, 0] = 1
-        im_border_mask[:, -1] = 1
-        im_border_mask[0, :] = 1
-        im_border_mask[-1, :] = 1
+        im_border_mask[:, 0:overlap_size] = 1
+        im_border_mask[:, -overlap_size:] = 1
+        im_border_mask[0:overlap_size, :] = 1
+        im_border_mask[-overlap_size:, :] = 1
 
         border_indices = np.unique(im_label[im_border_mask > 0])
         border_indices = border_indices[border_indices > 0]
@@ -42,5 +47,6 @@ def delete_border(im_label):
             return im_label
 
         im_label_del = condense(delete(im_label, border_indices))
+        print('---> overlap size ', overlap_size)
 
     return im_label_del
