@@ -380,6 +380,9 @@ def main(args):
 
     print('\n>> Writing annotation file ...\n')
 
+    annot_fname = os.path.splitext(
+        os.path.basename(args.outputNucleiAnnotationFile))[0]
+
     annotation = {
         'name': 'NucleiDetection',
         'elements': nuclei_list,
@@ -399,5 +402,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-
     main(CLIArgumentParser().parse_args())
