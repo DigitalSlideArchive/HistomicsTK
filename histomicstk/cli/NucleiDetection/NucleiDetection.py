@@ -70,6 +70,13 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     else:
         im_tile = tile_info['tile'][:, :, :3]
 
+    # casting image datatype
+    if issubclass(im_tile.dtype.type, np.floating) and np.max(im_tile) > 1:
+        if np.min(im_tile) >= 0 and np.max(im_tile) < 256:
+            im_tile = im_tile.astype(np.uint8)
+        elif np.min(im_tile) >= 0 and np.max(im_tile) < 65536:
+            im_tile = im_tile.astype(np.uint16)
+
     # perform image inversion
     if invert_image:
         im_tile = np.max(im_tile) - im_tile
@@ -382,10 +389,11 @@ def main(args):
     annotation = {
         'name': 'NucleiDetection',
         'elements': nuclei_list,
-        'src_mu_lab': src_mu_lab,
-        'src_sigma_lab': src_sigma_lab,
-        'inverted_image': invert_image or default_img_inversion,
-        'input_parameters': args
+        'attributes': {
+            'src_mu_lab': None if src_mu_lab is None else src_mu_lab.tolist(),
+            'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab.tolist(),
+            'params': vars(args),
+        },
     }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
@@ -398,5 +406,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    
+
     main(CLIArgumentParser().parse_args())
