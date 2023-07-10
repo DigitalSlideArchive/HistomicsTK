@@ -70,6 +70,13 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     else:
         im_tile = tile_info['tile'][:, :, :3]
 
+    # cast the float dtype to uint16
+    if issubclass(im_tile.dtype.type, np.floating) and np.max(im_tile) > 1:
+        if np.min(im_tile) >= 0 and np.max(im_tile) < 256:
+            im_tile = im_tile.astype(np.uint8)
+        elif np.min(im_tile) >= 0 and np.max(im_tile) < 65536:
+            im_tile = im_tile.astype(np.uint16)
+
     # perform image inversion
     if invert_image:
         im_tile = np.max(im_tile) - im_tile
