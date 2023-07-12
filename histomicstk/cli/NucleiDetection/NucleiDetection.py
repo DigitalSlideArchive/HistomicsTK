@@ -45,46 +45,6 @@ def image_inversion_flag_setter(args=None):
     return invert_image, default_img_inversion
 
 
-def process_tile_with_overlap(tile_info, tile_overlap, im_nuclei_seg_mask):
-    edge_selection = {'l': False, 'r': False, 't': False, 'b': False}
-    # get all the required parameters
-    x_max = tile_info['iterator_range']['level_x_max']
-    y_max = tile_info['iterator_range']['level_y_max']
-    curr_x = tile_info['tile_position']['level_x']
-    curr_y = tile_info['tile_position']['level_y']
-
-    if curr_x == 0 and curr_y == 0:
-        edge_selection['l', 'r', 't', 'b'] = False
-
-    elif curr_x == x_max - 1 and curr_y == 0:
-        edge_selection['l'] = True
-
-    elif curr_x == 0 and curr_y == y_max - 1:
-        edge_selection['t'] = True
-
-    elif curr_x == x_max - 1 and curr_y == y_max - 1:
-        edge_selection['t', 'l'] = True
-
-    elif curr_x == 0:
-        edge_selection['t'] = True
-
-    elif curr_x == x_max - 1:
-        edge_selection['t', 'l'] = True
-
-    elif curr_y == 0:
-        edge_selection['l'] = True
-
-    elif curr_y == y_max - 1:
-        edge_selection['t', 'l'] = True
-
-    else:
-        edge_selection['t', 'l'] = True
-
-    im_nuclei_seg_mask = htk_seg_label.delete_overlap(
-        im_nuclei_seg_mask, tile_overlap=tile_overlap, l=edge_selection['l'], r=edge_selection['r'], t=edge_selection['t'], b=edge_selection['b'])
-    return im_nuclei_seg_mask
-
-
 def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                        src_sigma_lab=None, invert_image=False,
                        default_img_inversion=False, tile_overlap=128):
@@ -139,7 +99,9 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
     # Delete overlapping border nuclei
     if tile_overlap > 0:
 
-        im_nuclei_seg_mask = process_tile_with_overlap(tile_info, tile_overlap, im_nuclei_seg_mask)
+        im_nuclei_seg_mask = htk_seg_label.delete_overlap(
+            im_nuclei_seg_mask, overlap_info=tile_info['tile_overlap'], tile_size={
+                'height': tile_info['gheight'], 'width': tile_info['gwidth']})
 
     # generate nuclei annotations
     nuclei_annot_list = []
@@ -313,7 +275,7 @@ def main(args):
     it_kwargs = {
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
-        'tile_overlap': {'x': args.tile_overlap_value, 'y': args.tile_overlap_value},
+        'tile_overlap': {'x': args.tile_overlap_value, 'y': args.tile_overlap_value, 'edges': True},
         'style': {args.style}
     }
 
