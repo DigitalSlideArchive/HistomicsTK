@@ -2,7 +2,8 @@ import numpy as np
 import skimage.io
 
 from histomicstk.preprocessing import color_deconvolution as htk_dcv
-from histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca import argpercentile as htk_ap
+from histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca import \
+    argpercentile as htk_ap
 
 from .datastore import datastore
 
