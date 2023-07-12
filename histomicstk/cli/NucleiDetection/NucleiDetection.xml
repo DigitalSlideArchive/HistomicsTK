@@ -160,6 +160,13 @@
       <longflag>min_nucleus_area</longflag>
       <default>80</default>
     </double>
+      <double>
+      <name>tile_overlap_value</name>
+      <label>Tile Overlap</label>
+      <description>Tile overlap size in pixels</description>
+      <longflag>tile_overlap_value</longflag>
+      <default>0</default>
+    </double>
     <boolean>
       <name>ignore_border_nuclei</name>
       <label>Ignore Border Nuclei</label>

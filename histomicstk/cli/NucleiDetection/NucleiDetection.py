@@ -45,21 +45,51 @@ def image_inversion_flag_setter(args=None):
     return invert_image, default_img_inversion
 
 
-def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
-                       src_mu_lab=None, src_sigma_lab=None, invert_image=False,
-                       style=None, default_img_inversion=False):
+def process_tile_with_overlap(tile_info, tile_overlap, im_nuclei_seg_mask):
+    edge_selection = {'l': False, 'r': False, 't': False, 'b': False}
+    # get all the required parameters
+    x_max = tile_info['iterator_range']['level_x_max']
+    y_max = tile_info['iterator_range']['level_y_max']
+    curr_x = tile_info['tile_position']['level_x']
+    curr_y = tile_info['tile_position']['level_y']
 
+    if curr_x == 0 and curr_y == 0:
+        edge_selection['l', 'r', 't', 'b'] = False
+
+    elif curr_x == x_max - 1 and curr_y == 0:
+        edge_selection['l'] = True
+
+    elif curr_x == 0 and curr_y == y_max - 1:
+        edge_selection['t'] = True
+
+    elif curr_x == x_max - 1 and curr_y == y_max - 1:
+        edge_selection['t', 'l'] = True
+
+    elif curr_x == 0:
+        edge_selection['t'] = True
+
+    elif curr_x == x_max - 1:
+        edge_selection['t', 'l'] = True
+
+    elif curr_y == 0:
+        edge_selection['l'] = True
+
+    elif curr_y == y_max - 1:
+        edge_selection['t', 'l'] = True
+
+    else:
+        edge_selection['t', 'l'] = True
+
+    im_nuclei_seg_mask = htk_seg_label.delete_overlap(
+        im_nuclei_seg_mask, tile_overlap=tile_overlap, l=edge_selection['l'], r=edge_selection['r'], t=edge_selection['t'], b=edge_selection['b'])
+    return im_nuclei_seg_mask
+
+
+def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
+                       src_sigma_lab=None, invert_image=False,
+                       default_img_inversion=False, tile_overlap=128):
     # Flags
     single_channel = False
-
-    # get slide tile source
-    ts = large_image.getTileSource(slide_path, style=style)
-
-    # get requested tile
-    tile_info = ts.getSingleTile(
-        tile_position=tile_position,
-        format=large_image.tilesource.TILE_FORMAT_NUMPY,
-        **it_kwargs)
 
     # get tile image & check number of channels
     single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
@@ -105,6 +135,11 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     if args.ignore_border_nuclei is True:
 
         im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
+
+    # Delete overlapping border nuclei
+    if tile_overlap > 0:
+
+        im_nuclei_seg_mask = process_tile_with_overlap(tile_info, tile_overlap, im_nuclei_seg_mask)
 
     # generate nuclei annotations
     nuclei_annot_list = []
@@ -217,11 +252,11 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
 
         # detect nuclei
         cur_nuclei_list = dask.delayed(detect_tile_nuclei)(
-            args.inputImageFile,
-            tile_position,
-            args, it_kwargs,
-            src_mu_lab, src_sigma_lab, invert_image=invert_image, style=args.style,
-            default_img_inversion=default_img_inversion
+            tile,
+            args,
+            src_mu_lab, src_sigma_lab, invert_image=invert_image,
+            default_img_inversion=default_img_inversion,
+            tile_overlap=args.tile_overlap_value
         )
 
         # append result to list
@@ -248,12 +283,6 @@ def main(args):
     default_img_inversion = False
     process_whole_image = False
 
-    # initial arguments
-    it_kwargs = {
-        'tile_size': {'width': args.analysis_tile_size},
-        'scale': {'magnification': args.analysis_mag}
-    }
-
     total_start_time = time.time()
 
     print('\n>> CLI Parameters ...\n')
@@ -276,9 +305,19 @@ def main(args):
     else:
         process_whole_image = False
 
-    # retrive style and frame
+    # retrive style
     if not args.style or args.style.startswith('{#control'):
         args.style = None
+
+    # initial arguments
+    it_kwargs = {
+        'tile_size': {'width': args.analysis_tile_size},
+        'scale': {'magnification': args.analysis_mag},
+        'tile_overlap': {'x': args.tile_overlap_value, 'y': args.tile_overlap_value},
+        'style': {args.style}
+    }
+
+    # retrive frame
     if not args.frame or args.frame.startswith('{#control'):
         args.frame = None
     elif not args.frame.isdigit():

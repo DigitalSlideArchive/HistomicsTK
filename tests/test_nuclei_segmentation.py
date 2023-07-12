@@ -157,7 +157,8 @@ class TestNucleiSegmentation:
                               stain_3_vector=[-1.0,
                                               -1.0,
                                               -1.0],
-                              style=None)
+                              style=None,
+                              tile_overlap_value=0)
 
     def test_image_inversion_flag_setter(self):
         invert_image, default_img_inversion = nucl_det.image_inversion_flag_setter(self.args)
@@ -215,3 +216,29 @@ class TestNucleiSegmentation:
             src_mu_lab=None,
             src_sigma_lab=None)
         np.testing.assert_allclose(len(nuclei_list), 7497, 1e+2)
+
+    def test_tile_overlap(self):
+        # retrieve image from datastore
+        input_image_path = datastore.fetch('tcgaextract_ihergb.tiff')
+        self.args.inputImageFile = input_image_path
+        self.args.tile_overlap_value = 128
+
+        # read the image
+        ts, is_wsi = nucl_det.read_input_image(self.args, process_whole_image=True)
+        it_kwargs = {
+            'tile_size': {'width': self.args.analysis_tile_size},
+            'scale': {'magnification': self.args.analysis_mag},
+            'tile_overlap': {'x': self.args.tile_overlap_value, 'y': self.args.tile_overlap_value},
+        }
+        # determine number of nuclei
+        tile_fgnd_frac_list = nucl_det.process_wsi(ts, it_kwargs, self.args)
+        nuclei_list = nucl_det.detect_nuclei_with_dask(
+            ts,
+            tile_fgnd_frac_list,
+            it_kwargs,
+            self.args,
+            invert_image=True,
+            is_wsi=is_wsi,
+            src_mu_lab=None,
+            src_sigma_lab=None)
+        np.testing.assert_allclose(len(nuclei_list), 3000, 1e+2)
