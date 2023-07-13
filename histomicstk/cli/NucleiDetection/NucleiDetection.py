@@ -47,7 +47,7 @@ def image_inversion_flag_setter(args=None):
 
 def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                        src_sigma_lab=None, invert_image=False,
-                       default_img_inversion=False, tile_overlap=128):
+                       default_img_inversion=False):
     # Flags
     single_channel = False
 
@@ -97,11 +97,10 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
         im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
 
     # Delete overlapping border nuclei
-    if tile_overlap > 0:
+    if any(tile_info.values()) > 0:
 
         im_nuclei_seg_mask = htk_seg_label.delete_overlap(
-            im_nuclei_seg_mask, overlap_info=tile_info['tile_overlap'], tile_size={
-                'height': tile_info['gheight'], 'width': tile_info['gwidth']})
+            im_nuclei_seg_mask, overlap_info=tile_info['tile_overlap'])
 
     # generate nuclei annotations
     nuclei_annot_list = []
@@ -218,7 +217,6 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
             args,
             src_mu_lab, src_sigma_lab, invert_image=invert_image,
             default_img_inversion=default_img_inversion,
-            tile_overlap=args.tile_overlap_value
         )
 
         # append result to list
@@ -275,7 +273,7 @@ def main(args):
     it_kwargs = {
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
-        'tile_overlap': {'x': args.tile_overlap_value, 'y': args.tile_overlap_value, 'edges': True},
+        'tile_overlap': {'x': args.tile_overlap_value, 'y': args.tile_overlap_value},
         'style': {args.style}
     }
 

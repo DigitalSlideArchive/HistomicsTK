@@ -4,7 +4,7 @@ from .condense import condense
 from .delete import delete
 
 
-def delete_overlap(im_label, overlap_info, tile_size):
+def delete_overlap(im_label, overlap_info):
     """
     Deletes overlapping regions from an image label based on overlap information and tile size.
 
@@ -14,13 +14,9 @@ def delete_overlap(im_label, overlap_info, tile_size):
                             It should have the following keys:
                             'left', 'right', 'top', and 'bottom',
                             each specifying the overlap amount in pixels.
-        tile_size (dict): Dictionary specifying the size of the tile.
-                            It should have the following keys:
-                          'height' and 'width', each specifying the tile size in pixels.
 
     Returns:
         ndarray: Image label with overlapping regions deleted.
-
     Note:
         This function assumes the necessary imports, such as `np`, are already present.
 
@@ -31,15 +27,6 @@ def delete_overlap(im_label, overlap_info, tile_size):
     right_overlap = max(overlap_info['right'] // 2, 0)
     top_overlap = max(overlap_info['top'] // 2, 0)
     bottom_overlap = max(overlap_info['bottom'] // 2, 0)
-
-    # Check if the tile size is smaller than 1.5 times the overlap in height or width
-    if tile_size['height'] < overlap_info['top']  \
-            or tile_size['height'] < overlap_info['bottom']:
-        top_overlap, bottom_overlap = 0, 0
-
-    if tile_size['width'] < overlap_info['left'] \
-            or tile_size['width'] < overlap_info['right']:
-        left_overlap, right_overlap = 0, 0
 
     im_label_del = np.zeros_like(im_label)
 
