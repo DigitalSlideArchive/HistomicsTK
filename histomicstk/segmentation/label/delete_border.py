@@ -25,8 +25,6 @@ def delete_border(im_label):
 
     """
 
-    im_label_del = np.zeros_like(im_label)
-
     if np.any(im_label):
 
         im_border_mask = np.zeros_like(im_label)
@@ -41,6 +39,9 @@ def delete_border(im_label):
         if len(border_indices) == 0:
             return im_label
 
+        # Condense and delete the border regions from the image label
+        im_label_del = np.zeros_like(im_label)
         im_label_del = condense(delete(im_label, border_indices))
-
-    return im_label_del
+        return im_label_del
+    else:
+        return im_label
