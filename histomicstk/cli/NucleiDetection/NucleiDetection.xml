@@ -153,13 +153,20 @@
       <longflag>local_max_search_radius</longflag>
       <default>10</default>
     </double>
-    <double>
+    <integer>
       <name>min_nucleus_area</name>
       <label>Minimum Nucleus Area</label>
       <description>Minimum area that each nucleus should have</description>
       <longflag>min_nucleus_area</longflag>
       <default>80</default>
-    </double>
+    </integer>
+      <integer>
+      <name>tile_overlap_value</name>
+      <label>Tile Overlap</label>
+      <description>Tile overlap size in pixels</description>
+      <longflag>tile_overlap_value</longflag>
+      <default>0</default>
+    </integer>
     <boolean>
       <name>ignore_border_nuclei</name>
       <label>Ignore Border Nuclei</label>
