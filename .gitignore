@@ -89,9 +89,10 @@ HistomicsTK.code-workspace
 HistomicsTKDocker.code-workspace
 
 # debugging
-histomicstk/Debugging
 .devcontainer/
 MANIFEST.in
+.pre-commit-config.yaml
+run_tests_code_cleanup.sh
 
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is
