@@ -1,10 +1,12 @@
 import json
 import pprint
 import time
+from pathlib import Path
 
 import large_image
 import numpy as np
 
+import histomicstk
 import histomicstk.segmentation.positive_pixel_count as ppc
 from histomicstk.cli import utils
 from histomicstk.cli.utils import CLIArgumentParser
@@ -115,7 +117,12 @@ def main(opts):
     annotation = {
         'name': 'Positive Pixel Count',
         'description': 'Used params: %r\nResults: %r' % (vars(opts), stats._asdict()),
-        'attributes': {'params': vars(opts), 'stats': stats._asdict()},
+        'attributes': {
+            'params': vars(opts),
+            'stats': stats._asdict(),
+            'cli': Path(__file__).stem,
+            'version': histomicstk.__version__,
+        },
         'elements': [{
             'type': 'image',
             'girderId': 'outputLabelImage',
