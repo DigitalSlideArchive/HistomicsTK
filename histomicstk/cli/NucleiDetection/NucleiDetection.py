@@ -97,7 +97,7 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
         im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
 
     # Delete overlapping border nuclei
-    if any(tile_info.values()) > 0:
+    if any(tile_info['tile_overlap'].values()) > 0:
 
         im_nuclei_seg_mask = htk_seg_label.delete_overlap(
             im_nuclei_seg_mask, overlap_info=tile_info['tile_overlap'])

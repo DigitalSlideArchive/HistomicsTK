@@ -89,7 +89,6 @@ HistomicsTK.code-workspace
 HistomicsTKDocker.code-workspace
 
 # debugging
-histomicstk/Debugging
 .devcontainer/
 MANIFEST.in
 .pre-commit-config.yaml
