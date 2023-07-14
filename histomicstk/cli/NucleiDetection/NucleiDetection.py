@@ -3,10 +3,12 @@ import logging
 import os
 import pprint
 import time
+from pathlib import Path
 
 import large_image
 import numpy as np
 
+import histomicstk
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.label as htk_seg_label
@@ -389,6 +391,8 @@ def main(args):
             'src_mu_lab': None if src_mu_lab is None else src_mu_lab.tolist(),
             'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab.tolist(),
             'params': vars(args),
+            'cli': Path(__file__).stem,
+            'version': histomicstk.__version__,
         },
     }
 
