@@ -23,30 +23,33 @@ def delete_overlap(im_label, overlap_info):
     """
 
     # Compute the half of the overlap values
-    left_overlap = max(overlap_info['left'] // 2, 0)
-    right_overlap = max(overlap_info['right'] // 2, 0)
-    top_overlap = max(overlap_info['top'] // 2, 0)
-    bottom_overlap = max(overlap_info['bottom'] // 2, 0)
+    left_overlap = overlap_info['left'] // 2
+    right_overlap = overlap_info['right'] // 2
+    top_overlap = overlap_info['top'] // 2
+    bottom_overlap = overlap_info['bottom'] // 2
 
+    if not np.any(im_label):
+        return im_label
+
+    # Create a border mask based on the overlap values
+    im_border_mask = np.zeros_like(im_label)
+    if left_overlap:
+        im_border_mask[:, :left_overlap] = True
+    if right_overlap:
+        im_border_mask[:, -right_overlap:] = True
+    if top_overlap:
+        im_border_mask[:top_overlap, :] = True
+    if bottom_overlap:
+        im_border_mask[-bottom_overlap:, :] = True
+
+    # Find unique indices of the border regions
+    border_indices = np.unique(im_label[im_border_mask > 0])
+    border_indices = border_indices[border_indices > 0]
+
+    if len(border_indices) == 0:
+        return im_label
+
+    # Condense and delete the overlap regions from the image label
     im_label_del = np.zeros_like(im_label)
-
-    if np.any(im_label):
-
-        # Create a border mask based on the overlap values
-        im_border_mask = np.zeros_like(im_label)
-        im_border_mask[:left_overlap, :] = left_overlap > 0
-        im_border_mask[-right_overlap:, :] = right_overlap > 0
-        im_border_mask[:, :top_overlap] = top_overlap > 0
-        im_border_mask[:, -bottom_overlap:] = bottom_overlap > 0
-
-        # Find unique indices of the border regions
-        border_indices = np.unique(im_label[im_border_mask > 0])
-        border_indices = border_indices[border_indices > 0]
-
-        if len(border_indices) == 0:
-            return im_label
-
-        # Condense and delete the border regions from the image label
-        im_label_del = condense(delete(im_label, border_indices))
-
+    im_label_del = condense(delete(im_label, border_indices))
     return im_label_del

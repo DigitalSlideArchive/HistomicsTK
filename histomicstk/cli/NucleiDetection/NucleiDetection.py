@@ -3,10 +3,12 @@ import logging
 import os
 import pprint
 import time
+from pathlib import Path
 
 import large_image
 import numpy as np
 
+import histomicstk
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.label as htk_seg_label
@@ -97,7 +99,7 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
         im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
 
     # Delete overlapping border nuclei
-    if any(tile_info.values()) > 0:
+    if any(tile_info['tile_overlap'].values()) > 0:
 
         im_nuclei_seg_mask = htk_seg_label.delete_overlap(
             im_nuclei_seg_mask, overlap_info=tile_info['tile_overlap'])
@@ -388,6 +390,8 @@ def main(args):
             'src_mu_lab': None if src_mu_lab is None else src_mu_lab.tolist(),
             'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab.tolist(),
             'params': vars(args),
+            'cli': Path(__file__).stem,
+            'version': histomicstk.__version__,
         },
     }
 
