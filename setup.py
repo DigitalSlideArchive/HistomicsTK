@@ -53,6 +53,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'girder-client',
+        # version
+        'importlib-metadata<5 ; python_version < "3.8"',
         # scientific packages
         'nimfa',
         'numpy',
