@@ -257,9 +257,9 @@ def createSuperPixels(opts):  # noqa
             annotation = [annotation, bboxannotation]
         annotation.append({
             'attributes': {
-            'params': vars(opts),
-            'cli': Path(__file__).stem,
-            'version': histomicstk.__version__,
+                'params': vars(opts),
+                'cli': Path(__file__).stem,
+                'version': histomicstk.__version__,
             }}
         )
         with open(opts.outputAnnotationFile, 'w') as annotation_file:
