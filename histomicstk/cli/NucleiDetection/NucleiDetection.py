@@ -6,6 +6,9 @@ import time
 
 import large_image
 import numpy as np
+from shapely.geometry import Polygon
+from shapely.ops import unary_union
+from shapely.validation import make_valid
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
@@ -236,6 +239,91 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
     return nuclei_list
 
 
+def overlapping_nuclei_removal(nuclei_list, search_area):
+    print('\n>> Overlapping nuclei removal...\n')
+    start_time = time.time()
+
+    pop_list = []
+    merged_polygons = []
+
+    # Take the first element of the data list
+    sample_element = nuclei_list[0]
+
+    # Iterate over the elements in the data list along with their index
+    for i, sample in enumerate(nuclei_list):
+        # Find the maximum x-coordinate and y-coordinate in the current 'points' attribute
+        curr_x = max([sublist[0] for sublist in sample['points']])
+        curr_y = max([sublist[1] for sublist in sample['points']])
+
+        # Iterate over the remaining elements
+        for j in range(i + 1, len(nuclei_list) - 1):
+            # Find the maximum x-coordinate and y-coordinate j-th element
+            given_x = max([sublist[0] for sublist in nuclei_list[j]['points']])
+            given_y = max([sublist[1] for sublist in nuclei_list[j]['points']])
+
+            # Check if the maximum x and y coordinates of the j-th element are within given units
+            if given_x < curr_x + search_area and given_y < curr_y + search_area:
+
+                # Check if the polygons represented by the i-th and j-th elements intersect
+                poly1 = make_valid(Polygon(sample['points']))
+                poly2 = make_valid(Polygon(nuclei_list[j]['points']))
+                if poly1.intersects(poly2):
+                    # Merge the polygons using unary_union
+                    merged_polygon = unary_union([poly1, poly2])
+
+                    # Append the merged_polygon to the list of merged polygons
+                    merged_polygons.append(merged_polygon)
+
+                    # Add the current i and j indices to the pop_list if they are not already
+                    # present
+                    if i not in pop_list:
+                        pop_list.append(i)
+                    if j not in pop_list:
+                        pop_list.append(j)
+
+    def _remove_indexes(lst, indexes):
+        # Sort the indexes in descending order
+        indexes.sort(reverse=True)
+
+        # Remove the elements at the specified indexes
+        for index in indexes:
+            if 0 <= index < len(lst):
+                del lst[index]
+
+        return lst
+
+    nuclei_list = _remove_indexes(nuclei_list, pop_list)
+
+    # convert all the data in merged_polygons to list
+    overlapping_nuclei_count = 0
+    if merged_polygons:
+        for element in merged_polygons:
+
+            if element.geom_type == 'GeometryCollection':
+                for i in range(len(element.geoms)):
+                    if element.geoms[i].geom_type == 'Polygon':
+                        rlist = list(element.geoms[i].exterior.coords)
+
+            elif element.geom_type == 'MultiPolygon':
+                for polygon in list(element.geoms):
+                    rlist = list(polygon.exterior.coords)
+
+            else:
+                rlist = list(element.exterior.coords)
+
+            sample_element['points'] = rlist
+            nuclei_list.append(sample_element)
+            overlapping_nuclei_count += 1
+
+    overlap_detection_time = time.time() - start_time
+    print('Number of overlapping nuclei {}'.format(overlapping_nuclei_count))
+    print('Number of nuclei after overlap removal {}'.format(len(nuclei_list)))
+    print('Nuclei overlap detection time = {}\n'.format(
+        cli_utils.disp_time_hms(overlap_detection_time)))
+
+    return nuclei_list
+
+
 def main(args):
 
     # Flags
@@ -390,6 +478,9 @@ def main(args):
             'params': vars(args),
         },
     }
+
+    if args.merge_overlapping_nuclei_segmentation:
+        nuclei_list = overlapping_nuclei_removal(nuclei_list, search_area=args.search_area_size)
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)

@@ -174,6 +174,20 @@
       <longflag>ignore_border_nuclei</longflag>
       <default>false</default>
     </boolean>
+        <boolean>
+      <name>merge_overlapping_nuclei_segmentation</name>
+      <label>Merge overlapping nuclei segmentation</label>
+      <description>Merge overlapping nuclei segmentation from the given region</description>
+      <longflag>merge_overlapping_nuclei_segmentation</longflag>
+      <default>false</default>
+    </boolean>
+      <integer>
+      <name>search_area_size</name>
+      <label>Overlap removal search area</label>
+      <description>The size of the search area impacts merging overlapping nuclei in segmentation. A larger area improves merging accuracy but increases search time.</description>
+      <longflag>search_area_size</longflag>
+      <default>100</default>
+    </integer>
   </parameters>
   <parameters advanced="true">
     <label>WSI Analysis</label>
