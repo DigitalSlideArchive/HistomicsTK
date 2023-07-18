@@ -1,7 +1,7 @@
 import json
-import numpy
-
 from pathlib import Path
+
+import numpy
 
 import histomicstk
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
