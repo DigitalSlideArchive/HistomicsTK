@@ -33,13 +33,14 @@ def main(args):
     # record stain color metadata
     stain_color_metadata = []
     for i, stain in enumerate(w_est.T):
-        stain_color_metadata = 'stainColor_{} = {}\n'.format(i + 1, ','.join(map(str, stain)))
+        stain_color_metadata = 'stainColor_{} : {}\n'.format(i + 1, ','.join(map(str, stain)))
 
     annotation = {
         'name': 'SeperateStainsXuSnmf',
-        'stainColor': stain_color_metadata,
+        'stain_color': stain_color_metadata,
         'attributes': {
             'params': vars(args),
+            'return_parameters': args.returnParameterFile,
             'cli': Path(__file__).stem,
             'version': histomicstk.__version__,
         },
