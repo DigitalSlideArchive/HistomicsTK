@@ -9,7 +9,6 @@ import large_image
 import numpy as np
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
-from shapely.validation import make_valid
 
 import histomicstk
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
@@ -241,11 +240,11 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
     return nuclei_list
 
 
-def overlapping_nuclei_removal(nuclei_list, search_area):
+def processing_overlapping_nuclei(nuclei_list, search_area, overlap_size, merge_nuclei=False, ):
     print('\n>> Overlapping nuclei removal...\n')
     start_time = time.time()
 
-    pop_list = []
+    removable_indexes = []
     merged_polygons = []
 
     # Take the first element of the data list
@@ -267,21 +266,20 @@ def overlapping_nuclei_removal(nuclei_list, search_area):
             if given_x < curr_x + search_area and given_y < curr_y + search_area:
 
                 # Check if the polygons represented by the i-th and j-th elements intersect
-                poly1 = make_valid(Polygon(sample['points']))
-                poly2 = make_valid(Polygon(nuclei_list[j]['points']))
-                if poly1.intersects(poly2):
-                    # Merge the polygons using unary_union
-                    merged_polygon = unary_union([poly1, poly2])
+                poly1 = Polygon(sample['points']).buffer(0)
+                poly2 = Polygon(nuclei_list[j]['points']).buffer(0)
+                if poly1.intersects(poly2) and (poly1.intersection(
+                        poly2).area / poly1.area) * 100 > overlap_size:
+                    if merge_nuclei:
+                        # Merge the polygons using unary_union
+                        merged_polygon = unary_union([poly1, poly2]).buffer(0)
 
-                    # Append the merged_polygon to the list of merged polygons
-                    merged_polygons.append(merged_polygon)
+                        # Append the merged_polygon to the list of merged polygons
+                        merged_polygons.append(merged_polygon)
 
-                    # Add the current i and j indices to the pop_list if they are not already
-                    # present
-                    if i not in pop_list:
-                        pop_list.append(i)
-                    if j not in pop_list:
-                        pop_list.append(j)
+                    # Add the j indices to the removable_indexes if they are not already
+                    if j not in removable_indexes:
+                        removable_indexes.append(j)
 
     def _remove_indexes(lst, indexes):
         # Sort the indexes in descending order
@@ -294,31 +292,24 @@ def overlapping_nuclei_removal(nuclei_list, search_area):
 
         return lst
 
-    nuclei_list = _remove_indexes(nuclei_list, pop_list)
+    nuclei_list = _remove_indexes(nuclei_list, removable_indexes)
 
-    # convert all the data in merged_polygons to list
-    overlapping_nuclei_count = 0
-    if merged_polygons:
-        for element in merged_polygons:
+    if merge_nuclei:
+        # Add polygons present in merged_polygons to the nuclei_list
+        if merged_polygons:
+            for element in merged_polygons:
+                if element.geom_type == 'MultiPolygon':
+                    for polygon in list(element.geoms):
+                        Plist = list(polygon.exterior.coords)
 
-            if element.geom_type == 'GeometryCollection':
-                for i in range(len(element.geoms)):
-                    if element.geoms[i].geom_type == 'Polygon':
-                        rlist = list(element.geoms[i].exterior.coords)
+                else:
+                    Plist = list(element.exterior.coords)
 
-            elif element.geom_type == 'MultiPolygon':
-                for polygon in list(element.geoms):
-                    rlist = list(polygon.exterior.coords)
-
-            else:
-                rlist = list(element.exterior.coords)
-
-            sample_element['points'] = rlist
-            nuclei_list.append(sample_element)
-            overlapping_nuclei_count += 1
+                sample_element['points'] = Plist
+                nuclei_list.append(sample_element)
 
     overlap_detection_time = time.time() - start_time
-    print('Number of overlapping nuclei {}'.format(overlapping_nuclei_count))
+    # print('Number of overlapping nuclei {}'.format(overlapping_nuclei_count))
     print('Number of nuclei after overlap removal {}'.format(len(nuclei_list)))
     print('Nuclei overlap detection time = {}\n'.format(
         cli_utils.disp_time_hms(overlap_detection_time)))
@@ -374,6 +365,10 @@ def main(args):
         raise Exception("The given frame value is not an integer")
     else:
         it_kwargs['frame'] = args.frame
+
+    # retrive merge / removal options
+    merge_nuclei = args.merge_overlapping_nuclei_segmentation
+    remove_nuclei = args.remove_overlapping_nuclei_segmentation
 
     #
     # Initiate Dask client
@@ -462,12 +457,6 @@ def main(args):
         src_sigma_lab,
         default_img_inversion=default_img_inversion)
 
-    #
-    # Write annotation file
-    #
-
-    print('\n>> Writing annotation file ...\n')
-
     annot_fname = os.path.splitext(
         os.path.basename(args.outputNucleiAnnotationFile))[0]
 
@@ -483,8 +472,20 @@ def main(args):
         },
     }
 
-    if args.merge_overlapping_nuclei_segmentation:
-        nuclei_list = overlapping_nuclei_removal(nuclei_list, search_area=args.search_area_size)
+    #
+    # Remove / merge overlapping nuclei
+    #
+    if merge_nuclei or remove_nuclei:
+        nuclei_list = processing_overlapping_nuclei(nuclei_list,
+                                                    search_area=args.search_area_size,
+                                                    merge_nuclei=merge_nuclei,
+                                                    overlap_size=args.overlap_size)
+
+    #
+    # Write annotation file
+    #
+
+    print('\n>> Writing annotation file ...\n')
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
