@@ -243,6 +243,36 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
 def processing_overlapping_nuclei(nuclei_list, search_area, overlap_size, merge_nuclei=False, ):
     print('\n>> Overlapping nuclei removal...\n')
     start_time = time.time()
+    import dask
+
+    def _remove_indexes(lst, indexes):
+        # Sort the indexes in descending order
+        indexes.sort(reverse=True)
+
+        # Remove the elements at the specified indexes
+        for index in indexes:
+            if 0 <= index < len(lst):
+                del lst[index]
+
+        return lst
+
+    @dask.delayed
+    def _process_polygons(sample, nuclei_list, j, overlap_size,
+                          merge_nuclei, merged_polygons, removable_indexes):
+        poly1 = Polygon(sample['points']).buffer(0)
+        poly2 = Polygon(nuclei_list[j]['points']).buffer(0)
+        if poly1.intersects(poly2) and (poly1.intersection(
+                poly2).area / poly1.area) * 100 > overlap_size:
+            if merge_nuclei:
+                # Merge the polygons using unary_union
+                merged_polygon = unary_union([poly1, poly2]).buffer(0)
+
+                # Append the merged_polygon to the list of merged polygons
+                merged_polygons.append(merged_polygon)
+
+            # Add the j indices to the removable_indexes if they are not already
+            if j not in removable_indexes:
+                removable_indexes.append(j)
 
     removable_indexes = []
     merged_polygons = []
@@ -264,22 +294,14 @@ def processing_overlapping_nuclei(nuclei_list, search_area, overlap_size, merge_
 
             # Check if the maximum x and y coordinates of the j-th element are within given units
             if given_x < curr_x + search_area and given_y < curr_y + search_area:
-
-                # Check if the polygons represented by the i-th and j-th elements intersect
-                poly1 = Polygon(sample['points']).buffer(0)
-                poly2 = Polygon(nuclei_list[j]['points']).buffer(0)
-                if poly1.intersects(poly2) and (poly1.intersection(
-                        poly2).area / poly1.area) * 100 > overlap_size:
-                    if merge_nuclei:
-                        # Merge the polygons using unary_union
-                        merged_polygon = unary_union([poly1, poly2]).buffer(0)
-
-                        # Append the merged_polygon to the list of merged polygons
-                        merged_polygons.append(merged_polygon)
-
-                    # Add the j indices to the removable_indexes if they are not already
-                    if j not in removable_indexes:
-                        removable_indexes.append(j)
+                _process_polygons(
+                    sample,
+                    nuclei_list,
+                    j,
+                    overlap_size,
+                    merge_nuclei,
+                    merged_polygons,
+                    removable_indexes)
 
     def _remove_indexes(lst, indexes):
         # Sort the indexes in descending order
@@ -476,10 +498,12 @@ def main(args):
     # Remove / merge overlapping nuclei
     #
     if merge_nuclei or remove_nuclei:
+        import dask
         nuclei_list = processing_overlapping_nuclei(nuclei_list,
                                                     search_area=args.search_area_size,
                                                     merge_nuclei=merge_nuclei,
                                                     overlap_size=args.overlap_size)
+        dask.compute(nuclei_list)
 
     #
     # Write annotation file
