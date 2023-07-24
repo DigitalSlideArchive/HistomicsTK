@@ -5,10 +5,10 @@ scikit-build>=0.8.1
 setuptools
 wheel
 # Also needed for installation
-cython<3
+cython
 numpy>=1.12.1
 setuptools-scm
 # Needed for tests
 docker
-docker-compose
+# docker-compose
 requests
