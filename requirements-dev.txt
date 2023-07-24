@@ -5,7 +5,7 @@ scikit-build>=0.8.1
 setuptools
 wheel
 # Also needed for installation
-cython
+cython<3
 numpy>=1.12.1
 setuptools-scm
 # Needed for tests
