@@ -1,4 +1,4 @@
-FROM python:3.7-slim
+FROM python:3.11-slim
 
 LABEL HISTOMICSTK_GC_TEST=TRUE
 
@@ -8,8 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 RUN pip install --no-cache-dir -U pip
 
 # Only sources needed in the test are added.
-RUN pip install --pre --find-links https://girder.github.io/large_image_wheels \
-    'celery<5' \
+RUN pip install --find-links https://girder.github.io/large_image_wheels \
     histomicsui[analysis] \
     large-image-source-openslide \
     pooch \
