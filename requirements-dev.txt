@@ -10,5 +10,5 @@ numpy>=1.12.1
 setuptools-scm
 # Needed for tests
 docker
-docker-compose
+# docker-compose
 requests
