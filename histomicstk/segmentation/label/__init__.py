@@ -35,6 +35,6 @@ __all__ = (
     'split',
     'trace_object_boundaries',
     'width_open',
-    'delete_overlap'
-    'remove_overlap_nuclei'
+    'delete_overlap',
+    'remove_overlap_nuclei',
 )
