@@ -1,8 +1,6 @@
 import os
 import subprocess
-import tempfile
 import time
-import warnings
 
 import docker
 import girder_client
@@ -20,15 +18,19 @@ def getTestFilePath(name):
 
 
 def _get_htk_ipaddr(dclient):
-    # search docker containers for a DSA docker container
-    # and fetch its IP address
+    """
+    Search docker containers for a DSA docker container and fetch its IP
+    address
+    """
     return list(dclient.containers.list(
         filters={'label': 'HISTOMICSTK_GC_TEST'})[0].attrs[
             'NetworkSettings']['Networks'].values())[0]['IPAddress']
 
 
 def _connect_girder_client_to_local_dsa(ip):
-    # connect a girder client to the local DSA docker
+    """
+    Connect a girder client to the local DSA docker
+    """
     apiUrl = 'http://%s:8080/api/v1' % ip
     gc = girder_client.GirderClient(apiUrl=apiUrl)
     gc.authenticate('admin', 'password')
@@ -42,55 +44,52 @@ def _connect_to_existing_local_dsa():
 
 
 def _create_and_connect_to_local_dsa():
-    # create a local dsa docker and connect to it
+    """
+    Create a local dsa docker and connect to it
+    """
     cwd = os.getcwd()
     thisDir = os.path.dirname(os.path.realpath(__file__))
     externdatadir = os.path.join(thisDir, '..', '.tox', 'externaldata')
     if not os.path.exists(externdatadir):
         os.makedirs(externdatadir)
     os.chdir(thisDir)
-    outfilePath = os.path.join(
-        tempfile.gettempdir(), 'histomicstk_test_girder_log.txt')
-    with open(outfilePath, 'w') as outfile:
 
-        # build a DSA docker container locally
-        proc = subprocess.Popen([
-            'docker-compose', 'up', '--build'],
-            close_fds=True, stdout=outfile, stderr=outfile)
+    # build a DSA docker container locally
+    subprocess.check_call(['docker', 'compose', 'up', '--build', '-d'])
 
-        os.chdir(cwd)
-        timeout = time.time() + 1200
+    os.chdir(cwd)
+    timeout = time.time() + 1200
 
-        # connect to docker and take a look at all its containers
-        client = docker.from_env(version='auto')
-        while time.time() < timeout:
-            try:
-                ipaddr = _get_htk_ipaddr(client)
-                if ipaddr:
-                    gc = _connect_girder_client_to_local_dsa(ipaddr)
-                    break
-            except Exception:  # noqa
-                # warnings.warn(
-                #     "Looks like the local DSA docker image is still "
-                #     "initializing. Will wait a few seconds and try again.",
-                # )
-                time.sleep(0.1)
+    # connect to docker and take a look at all its containers
+    client = docker.from_env(version='auto')
+    while time.time() < timeout:
+        try:
+            ipaddr = _get_htk_ipaddr(client)
+            if ipaddr:
+                gc = _connect_girder_client_to_local_dsa(ipaddr)
+                break
+        except Exception:  # noqa
+            # warnings.warn(
+            #     "Looks like the local DSA docker image is still "
+            #     "initializing. Will wait a few seconds and try again.",
+            # )
+            time.sleep(0.1)
 
-    return gc, proc
+    return gc
 
 
-# TODO -- refactor to session scope by figuring out pytest issue (bug?)
-# See https://docs.pytest.org/en/latest/fixture.html
+def _disconnect_local_dsa():
+    cwd = os.getcwd()
+    thisDir = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(thisDir)
+    subprocess.check_call(['docker', 'compose', 'down'])
+    os.chdir(cwd)
+
+
 # Note:
-#     We could use scope='session' to create the DSA docker instance once
-#     and reuse it for all test modules. However, pytest seems to have a
-#     bug when yield is used (as oppoed to return) and it does not run the
-#     teardown code properly. Instead, the girderClient fixture is called
-#     again between modules, causing a stopIteration error.
-#     Until this bug is fixed, we restrict the scope to the "module" level
-#     to ensure: 1. Safe teardown, and 2. That edits to the database
-#     done by one module do not carry over to the next module.
-#
+#   We could use scope='session' to create the DSA docker instance once and
+#   reuse it for all test modules. However, some modules currently expect a
+#   fresh database.
 
 # @pytest.fixture(scope='session')
 @pytest.fixture(scope='module')
@@ -116,7 +115,7 @@ def girderClient():
     server is fully initialized. To manually start a DSA docker image, navigate
     to the directory where this file exists, and start the container:
     $ cd HistomicsTK/tests/
-    $ docker-compose up --build
+    $ docker compose up --build
 
     Of course, you need to have docker installed and to either
     run this as sudo or be added to the docker group by the system admins.
@@ -125,16 +124,8 @@ def girderClient():
         # First we try to connect to any existing local DSA docker
         yield _connect_to_existing_local_dsa()
 
-    except Exception as e:
-        warnings.warn(
-            e.__repr__() + '\n'
-            "Looks like there's no existing local DSA docker running; "
-            'will create one now and try again.',
-            stacklevel=2
-        )
+    except Exception:
         # create a local dsa docker and connect to it
-        gc, proc = _create_and_connect_to_local_dsa()
-
+        gc = _create_and_connect_to_local_dsa()
         yield gc
-        proc.terminate()
-        proc.wait()
+    _disconnect_local_dsa()

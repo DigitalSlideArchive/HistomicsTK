@@ -3,10 +3,12 @@ import logging
 import os
 import pprint
 import time
+from pathlib import Path
 
 import large_image
 import numpy as np
 
+import histomicstk
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.label as htk_seg_label
@@ -45,21 +47,11 @@ def image_inversion_flag_setter(args=None):
     return invert_image, default_img_inversion
 
 
-def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
-                       src_mu_lab=None, src_sigma_lab=None, invert_image=False,
-                       style=None, default_img_inversion=False):
-
+def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
+                       src_sigma_lab=None, invert_image=False,
+                       default_img_inversion=False):
     # Flags
     single_channel = False
-
-    # get slide tile source
-    ts = large_image.getTileSource(slide_path, style=style)
-
-    # get requested tile
-    tile_info = ts.getSingleTile(
-        tile_position=tile_position,
-        format=large_image.tilesource.TILE_FORMAT_NUMPY,
-        **it_kwargs)
 
     # get tile image & check number of channels
     single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
@@ -112,6 +104,12 @@ def detect_tile_nuclei(slide_path, tile_position, args, it_kwargs,
     if args.ignore_border_nuclei is True:
 
         im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
+
+    # Delete overlapping border nuclei
+    if any(tile_info['tile_overlap'].values()) > 0:
+
+        im_nuclei_seg_mask = htk_seg_label.delete_overlap(
+            im_nuclei_seg_mask, overlap_info=tile_info['tile_overlap'])
 
     # generate nuclei annotations
     nuclei_annot_list = []
@@ -224,11 +222,10 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
 
         # detect nuclei
         cur_nuclei_list = dask.delayed(detect_tile_nuclei)(
-            args.inputImageFile,
-            tile_position,
-            args, it_kwargs,
-            src_mu_lab, src_sigma_lab, invert_image=invert_image, style=args.style,
-            default_img_inversion=default_img_inversion
+            tile,
+            args,
+            src_mu_lab, src_sigma_lab, invert_image=invert_image,
+            default_img_inversion=default_img_inversion,
         )
 
         # append result to list
@@ -255,12 +252,6 @@ def main(args):
     default_img_inversion = False
     process_whole_image = False
 
-    # initial arguments
-    it_kwargs = {
-        'tile_size': {'width': args.analysis_tile_size},
-        'scale': {'magnification': args.analysis_mag}
-    }
-
     total_start_time = time.time()
 
     print('\n>> CLI Parameters ...\n')
@@ -283,9 +274,19 @@ def main(args):
     else:
         process_whole_image = False
 
-    # retrive style and frame
+    # retrive style
     if not args.style or args.style.startswith('{#control'):
         args.style = None
+
+    # initial arguments
+    it_kwargs = {
+        'tile_size': {'width': args.analysis_tile_size},
+        'scale': {'magnification': args.analysis_mag},
+        'tile_overlap': {'x': args.tile_overlap_value, 'y': args.tile_overlap_value},
+        'style': {args.style}
+    }
+
+    # retrive frame
     if not args.frame or args.frame.startswith('{#control'):
         args.frame = None
     elif not args.frame.isdigit():
@@ -396,6 +397,8 @@ def main(args):
             'src_mu_lab': None if src_mu_lab is None else src_mu_lab.tolist(),
             'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab.tolist(),
             'params': vars(args),
+            'cli': Path(__file__).stem,
+            'version': histomicstk.__version__,
         },
     }
 
