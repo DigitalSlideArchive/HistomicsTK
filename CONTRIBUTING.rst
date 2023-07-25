@@ -159,7 +159,7 @@ There are two 'types' of unit tests on HistomicsTK.
     server is fully initialized. To manually start a DSA docker image::
 
       $ cd HistomicsTK/tests/
-      $ docker-compose up --build
+      $ docker compose up --build
 
   You can run your tests using something like::
 

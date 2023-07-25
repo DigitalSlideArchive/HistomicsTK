@@ -10,7 +10,7 @@ services:
     depends_on:
       - mongodb
     volumes:
-      - ../.tox/externaldata:/tests/externaldata
+      - ../.tox/externaldata:/root/.cache/pooch/externaldata
   mongodb:
     image: "circleci/mongo:5.0-ram"
     command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
