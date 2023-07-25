@@ -28,7 +28,7 @@ def main(args):
 
     annotation = {
         'name': 'Background Intensity',
-        'backgroundIntensity': map(str, I_0),
+        'backgroundIntensity': list(map(str, I_0)),
         'attributes': {
             'params': vars(args),
             'return_params': args.returnParameterFile,
