@@ -236,6 +236,11 @@ def createSuperPixels(opts):  # noqa
                 'categories': categories,
                 'boundaries': opts.boundaries,
             }],
+            'attributes': {
+                'params': vars(opts),
+                'cli': Path(__file__).stem,
+                'version': histomicstk.__version__,
+            },
         }
         if len(bboxes) and str(opts.bounding).lower() != 'separate':
             annotation['elements'][0]['user'] = {'bbox': bboxesUser}
@@ -255,13 +260,6 @@ def createSuperPixels(opts):  # noqa
                 } for bidx, (bcx, bcy, bw, bh) in enumerate(bboxes)],
             }
             annotation = [annotation, bboxannotation]
-        annotation.append({
-            'attributes': {
-                'params': vars(opts),
-                'cli': Path(__file__).stem,
-                'version': histomicstk.__version__,
-            }}
-        )
         with open(opts.outputAnnotationFile, 'w') as annotation_file:
             json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
         if hasattr(opts, 'callback'):
