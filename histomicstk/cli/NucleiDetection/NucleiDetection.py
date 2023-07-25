@@ -7,8 +7,6 @@ from pathlib import Path
 
 import large_image
 import numpy as np
-from shapely.geometry import Polygon
-from shapely.ops import unary_union
 
 import histomicstk
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
@@ -240,105 +238,6 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
     return nuclei_list
 
 
-def processing_overlapping_nuclei(nuclei_list, search_area, overlap_size, merge_nuclei=False, ):
-    print('\n>> Overlapping nuclei removal...\n')
-    start_time = time.time()
-    import dask
-
-    def _remove_indexes(lst, indexes):
-        # Sort the indexes in descending order
-        indexes.sort(reverse=True)
-
-        # Remove the elements at the specified indexes
-        for index in indexes:
-            if 0 <= index < len(lst):
-                del lst[index]
-
-        return lst
-
-    @dask.delayed
-    def _process_polygons(sample, nuclei_list, j, overlap_size,
-                          merge_nuclei, merged_polygons, removable_indexes):
-        poly1 = Polygon(sample['points']).buffer(0)
-        poly2 = Polygon(nuclei_list[j]['points']).buffer(0)
-        if poly1.intersects(poly2) and (poly1.intersection(
-                poly2).area / poly1.area) * 100 > overlap_size:
-            if merge_nuclei:
-                # Merge the polygons using unary_union
-                merged_polygon = unary_union([poly1, poly2]).buffer(0)
-
-                # Append the merged_polygon to the list of merged polygons
-                merged_polygons.append(merged_polygon)
-
-            # Add the j indices to the removable_indexes if they are not already
-            if j not in removable_indexes:
-                removable_indexes.append(j)
-
-    removable_indexes = []
-    merged_polygons = []
-
-    # Take the first element of the data list
-    sample_element = nuclei_list[0]
-
-    # Iterate over the elements in the data list along with their index
-    for i, sample in enumerate(nuclei_list):
-        # Find the maximum x-coordinate and y-coordinate in the current 'points' attribute
-        curr_x = max([sublist[0] for sublist in sample['points']])
-        curr_y = max([sublist[1] for sublist in sample['points']])
-
-        # Iterate over the remaining elements
-        for j in range(i + 1, len(nuclei_list) - 1):
-            # Find the maximum x-coordinate and y-coordinate j-th element
-            given_x = max([sublist[0] for sublist in nuclei_list[j]['points']])
-            given_y = max([sublist[1] for sublist in nuclei_list[j]['points']])
-
-            # Check if the maximum x and y coordinates of the j-th element are within given units
-            if given_x < curr_x + search_area and given_y < curr_y + search_area:
-                _process_polygons(
-                    sample,
-                    nuclei_list,
-                    j,
-                    overlap_size,
-                    merge_nuclei,
-                    merged_polygons,
-                    removable_indexes)
-
-    def _remove_indexes(lst, indexes):
-        # Sort the indexes in descending order
-        indexes.sort(reverse=True)
-
-        # Remove the elements at the specified indexes
-        for index in indexes:
-            if 0 <= index < len(lst):
-                del lst[index]
-
-        return lst
-
-    nuclei_list = _remove_indexes(nuclei_list, removable_indexes)
-
-    if merge_nuclei:
-        # Add polygons present in merged_polygons to the nuclei_list
-        if merged_polygons:
-            for element in merged_polygons:
-                if element.geom_type == 'MultiPolygon':
-                    for polygon in list(element.geoms):
-                        Plist = list(polygon.exterior.coords)
-
-                else:
-                    Plist = list(element.exterior.coords)
-
-                sample_element['points'] = Plist
-                nuclei_list.append(sample_element)
-
-    overlap_detection_time = time.time() - start_time
-    # print('Number of overlapping nuclei {}'.format(overlapping_nuclei_count))
-    print('Number of nuclei after overlap removal {}'.format(len(nuclei_list)))
-    print('Nuclei overlap detection time = {}\n'.format(
-        cli_utils.disp_time_hms(overlap_detection_time)))
-
-    return nuclei_list
-
-
 def main(args):
 
     # Flags
@@ -387,10 +286,6 @@ def main(args):
         raise Exception("The given frame value is not an integer")
     else:
         it_kwargs['frame'] = args.frame
-
-    # retrive merge / removal options
-    merge_nuclei = args.merge_overlapping_nuclei_segmentation
-    remove_nuclei = args.remove_overlapping_nuclei_segmentation
 
     #
     # Initiate Dask client
@@ -479,6 +374,26 @@ def main(args):
         src_sigma_lab,
         default_img_inversion=default_img_inversion)
 
+    #
+    # Remove overlapping nuclei
+    #
+    if args.remove_overlapping_nuclei_segmentation:
+        print('\n>> Removing overlapping nuclei segmentations ...\n')
+        nuclei_removal_start_time = time.time()
+
+        nuclei_list = htk_seg_label.remove_overlap_nuclei(nuclei_list)
+
+        nuclei_removal_setup_time = time.time() - nuclei_removal_start_time
+
+        print('Number of nuclei after overlap removal {}'.format(len(nuclei_list)))
+        print('Nuclei removal processing time = {}'.format(
+            cli_utils.disp_time_hms(nuclei_removal_setup_time)))
+
+    #
+    # Write annotation file
+    #
+    print('\n>> Writing annotation file ...\n')
+
     annot_fname = os.path.splitext(
         os.path.basename(args.outputNucleiAnnotationFile))[0]
 
@@ -493,23 +408,6 @@ def main(args):
             'version': histomicstk.__version__,
         },
     }
-
-    #
-    # Remove / merge overlapping nuclei
-    #
-    if merge_nuclei or remove_nuclei:
-        import dask
-        nuclei_list = processing_overlapping_nuclei(nuclei_list,
-                                                    search_area=args.search_area_size,
-                                                    merge_nuclei=merge_nuclei,
-                                                    overlap_size=args.overlap_size)
-        dask.compute(nuclei_list)
-
-    #
-    # Write annotation file
-    #
-
-    print('\n>> Writing annotation file ...\n')
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)

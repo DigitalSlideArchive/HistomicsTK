@@ -177,31 +177,10 @@
     <boolean>
       <name>remove_overlapping_nuclei_segmentation</name>
       <label>Remove overlapping nuclei</label>
-      <description>Remove/Merge overlapping nuclei segmentation from the given region. It is recommended to use this approach when defining the tile overlap parameter.</description>
+      <description>Remove overlapping nuclei segmentation from the given region. It is recommended to use this approach when defining the tile overlap parameter.</description>
       <longflag>remove_overlapping_nuclei_segmentation</longflag>
       <default>false</default>
     </boolean>
-    <boolean>
-      <name>merge_overlapping_nuclei_segmentation</name>
-      <label>Merge overlapping nuclei</label>
-      <description></description>
-      <longflag>merge_overlapping_nuclei_segmentation</longflag>
-      <default>false</default>
-    </boolean>
-    <integer>
-      <name>overlap_size</name>
-      <label>Overlap area</label>
-      <description>Provide the overlap area in percentage. Any nuclei having an overlap greater than this value will only undergo removal/merging.</description>
-      <longflag>overlap_size</longflag>
-      <default>30</default>
-    </integer>
-    <integer>
-      <name>search_area_size</name>
-      <label>Overlap removal search area</label>
-      <description>The size of the search area (in pixels) impacts merging / removal of overlapping nuclei in segmentation. A larger area improves merging accuracy but increases search time.</description>
-      <longflag>search_area_size</longflag>
-      <default>100</default>
-    </integer>
   </parameters>
   <parameters advanced="true">
     <label>WSI Analysis</label>
