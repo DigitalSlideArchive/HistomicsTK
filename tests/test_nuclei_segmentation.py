@@ -1,5 +1,6 @@
 import argparse
 import os
+import tempfile
 
 import numpy as np
 import skimage.io
@@ -12,6 +13,9 @@ import histomicstk.segmentation as htk_seg
 import histomicstk.segmentation.label as htk_seg_label
 
 from .datastore import datastore
+
+# Enable to generate groundtruth files in the /tmp directory
+GENERATE_GROUNDTRUTH = bool(os.environ.get('GENERATE_GROUNDTRUTH'))
 
 
 class TestNucleiSegmentation:
@@ -62,6 +66,10 @@ class TestNucleiSegmentation:
         # check if segmentation mask matches ground truth
         gtruth_mask_file = os.path.join(datastore.fetch(
             'Easy1_nuclei_seg_kofahi.npy'))
+
+        if GENERATE_GROUNDTRUTH:
+            gtruth_mask_file = os.path.join(tempfile.gettempdir(), 'Easy1_nuclei_seg_kofahi.npy')
+            np.save(gtruth_mask_file, im_nuclei_seg_mask.astype(np.uint8))
 
         im_gtruth_mask = np.load(gtruth_mask_file)
 

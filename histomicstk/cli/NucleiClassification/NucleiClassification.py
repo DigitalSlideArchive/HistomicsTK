@@ -1,6 +1,7 @@
 import colorsys
 import json
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -12,6 +13,7 @@ except ImportError:
 
 import logging
 
+import histomicstk
 from histomicstk.cli import utils as cli_utils
 from histomicstk.cli.utils import CLIArgumentParser
 
@@ -185,7 +187,14 @@ def main(args):
             'name': annot_fname + '-nuclei-class-' + str(c),
             'elements': nuclei_annot_by_class[c]
         })
+    annotation.append({
+        'attributes': {
+            'params': vars(args),
+            'cli': Path(__file__).stem,
+            'version': histomicstk.__version__
 
+        }
+    })
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
 
