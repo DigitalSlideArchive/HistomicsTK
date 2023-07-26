@@ -258,6 +258,11 @@ def createSuperPixels(opts):  # noqa
                     'fillColor': 'rgba(0,0,0,0)',
                     'lineColor': opts.default_strokeColor,
                 } for bidx, (bcx, bcy, bw, bh) in enumerate(bboxes)],
+                'attributes': {
+                    'params': vars(opts),
+                    'cli': Path(__file__).stem,
+                    'version': histomicstk.__version__,
+                },
             }
             annotation = [annotation, bboxannotation]
         with open(opts.outputAnnotationFile, 'w') as annotation_file:
