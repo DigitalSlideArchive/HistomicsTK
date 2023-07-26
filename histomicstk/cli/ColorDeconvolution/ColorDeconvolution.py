@@ -62,6 +62,11 @@ def main(args):
                     'yoffset': region.get('top', 0),
                 },
             }],
+            'attributes': {
+                'cli': Path(__file__).stem,
+                'params': vars(args),
+                'version': histomicstk.__version__,
+            },
         }, {
             'name': 'Deconvolution %s ' % (
                 args.stain_2 if args.stain_2 != 'custom' else str(args.stain_2_vector)),
@@ -73,6 +78,11 @@ def main(args):
                     'yoffset': region.get('top', 0),
                 },
             }],
+            'attributes': {
+                'cli': Path(__file__).stem,
+                'params': vars(args),
+                'version': histomicstk.__version__,
+            },
         }, {
             'name': 'Deconvolution %s ' % (
                 args.stain_3 if args.stain_3 != 'custom' else str(args.stain_3_vector)),
@@ -84,15 +94,12 @@ def main(args):
                     'yoffset': region.get('top', 0),
                 },
             }],
-        },
-            {
             'attributes': {
                 'cli': Path(__file__).stem,
                 'params': vars(args),
                 'version': histomicstk.__version__,
             }
-        }
-        ]
+        }]
         if args.stain_3 == 'null':
             annotation[2:3] = []
         if args.stain_2 == 'null':
