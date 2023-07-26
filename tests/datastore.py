@@ -23,7 +23,7 @@ registry = {
     'Easy1_nuclei_fgnd_mask.npz': 'sha512:7559357672971ef525857d4f526e26b48af19ae3a63f00cbfdb303be049bd5b2d4d914302b59a0eaadabdee0670381114abed22009f353391a4a2150045776c8',  # noqa
     #
     # Source: Easy1_nuclei_seg_kofahi.npy
-    'Easy1_nuclei_seg_kofahi.npy': 'sha512:abc098a60e93ed8151d4cfc9991f7ce6ba27d08a22d66e0167bc119ba99addf7a7c4a5f3714bb694b6df53d526d358400632fb7295b4f94ad721da1922ee7794',  # noqa
+    'Easy1_nuclei_seg_kofahi.npy': 'sha512:171573fb72ae05991cec8baee63eb3e8faa06053592bfe725acb9f8d77590b5871a86808a85f8e7e3eab0bd17d10cf5aa4a09d3152dbcbe5f9697053992c6f57',  # noqa
     #
     # Source: Easy1_nuclei_stain.npz
     'Easy1_nuclei_stain.npz': 'sha512:79bb23f71eb4fce6c582e789a4467b8511712c60f44df12e90d9301f9b9fb8163b0926d29ee968c7111f0901bd6e0db97562e53f8f88e2122ba43df561c2d774',  # noqa
