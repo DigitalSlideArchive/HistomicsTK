@@ -110,6 +110,10 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
     flag_nuclei_found = np.any(im_nuclei_seg_mask)
 
     if flag_nuclei_found:
+        if args.nuclei_annotation_format == 'bbox' and args.remove_overlapping_nuclei_segmentation:
+            nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
+                im_nuclei_seg_mask, tile_info, 'boundary')
+            return nuclei_annot_list
         nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
             im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
 
@@ -381,8 +385,8 @@ def main(args):
         print('\n>> Removing overlapping nuclei segmentations ...\n')
         nuclei_removal_start_time = time.time()
 
-        nuclei_list = htk_seg_label.remove_overlap_nuclei(nuclei_list)
-
+        nuclei_list = htk_seg_label.remove_overlap_nuclei(
+            nuclei_list, args.nuclei_annotation_format)
         nuclei_removal_setup_time = time.time() - nuclei_removal_start_time
 
         print('Number of nuclei after overlap removal {}'.format(len(nuclei_list)))
