@@ -17,7 +17,41 @@ def create_polygon(coordinates):
     return Polygon(coordinates).buffer(0)
 
 
-def remove_overlap_nuclei(nuclei_list):
+def convert_polygons_tobbox(nuclei_list):
+    """
+    Convert nuclei segmentation data from polygon format to bounding box format.
+
+    Parameters:
+    nuclei_list (list): A list of dictionaries, where each dictionary represents a nuclei object.
+
+    Returns:
+    list: The modified 'nuclei_list', where each nuclei object has been transformed
+    to a bounding box representation.
+    """
+    for nuclei in nuclei_list:
+        # Set 'type' property of the nuclei to 'rectangle'
+        nuclei['type'] = 'rectangle'
+        nuclei['rotation'] = 0
+
+        # Calculate the minimum and maximum x and y coordinates to obtain the bounding box.
+        minx = min(p[0] for p in nuclei['points'])
+        maxx = max(p[0] for p in nuclei['points'])
+        miny = min(p[1] for p in nuclei['points'])
+        maxy = max(p[1] for p in nuclei['points'])
+
+        # Calculate the center of the bounding box, width, height
+        nuclei['center'] = [(minx + maxx) / 2, (miny + maxy) / 2, 0]
+        nuclei['width'] = maxx - minx
+        nuclei['height'] = maxy - miny
+
+        # Remove the 'closed' and 'points'
+        nuclei.pop('closed')
+        nuclei.pop('points')
+
+    return nuclei_list
+
+
+def remove_overlap_nuclei(nuclei_list, nuclei_format):
     """
     Remove overlapping nuclei from the given list using parallel processing.
 
@@ -46,5 +80,9 @@ def remove_overlap_nuclei(nuclei_list):
         ix for ix in rt.query(
             polygons[index]) if ix < index and polygons[index].intersects(
             polygons[ix]))]
+
+    # if nuclei_format is bbox - convert polygons to bbox
+    if nuclei_format == 'bbox':
+        output_list = convert_polygons_tobbox(output_list)
 
     return output_list
