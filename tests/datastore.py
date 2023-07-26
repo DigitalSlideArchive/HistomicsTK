@@ -3,7 +3,6 @@ import os
 import pooch
 
 registry = {
-    #
     # Source: Easy1.png
     'Easy1.png': 'sha512:feaf2b24c4ab3123caf1aa35f51acb1d8b83b34941b28d130f878702fd3be4ae9bf46176209f7511d1213da511d414c2b4b7738ad567b089224de9d6c189e664',  # noqa
     #

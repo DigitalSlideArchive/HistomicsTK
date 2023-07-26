@@ -16,10 +16,6 @@ sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import htk_test_utilities as utilities  # noqa
 from htk_test_utilities import getTestFilePath, girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -38,14 +34,13 @@ def test_prep(girderClient):  # noqa
     cfg.gc = girderClient
 
     # get original item
-    iteminfo = cfg.gc.get('/item', parameters={
-        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+    iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
     # create the folder to "back up"
     folderinfo = cfg.gc.post(
         '/folder', data={
             'parentId': iteminfo['folderId'],
-            'name': 'test'
+            'name': 'test-parser'
         })
     cfg.folderid = folderinfo['_id']
 
@@ -53,7 +48,7 @@ def test_prep(girderClient):  # noqa
     subf = cfg.gc.post(
         '/folder', data={
             'parentId': cfg.folderid,
-            'name': 'test_sub'
+            'name': 'test-parser-sub'
         })
 
     # copy the item multiple times to create dummy database
@@ -81,15 +76,16 @@ class TestDatabaseParser:
             save_json=True, save_sqlite=True)
 
         assert not len({
-            'test.json', 'test.sqlite',
+            'test-parser.json',
+            'test-parser.sqlite',
             'test_dbsqlite-0.json',
             'test_dbsqlite-0_annotations.json',
             'test_dbsqlite-1.json',
             'test_dbsqlite-1_annotations.json',
-            'test_sub',
+            'test-parser-sub',
         } - set(os.listdir(savepath)))
 
-        sql_engine = db.create_engine('sqlite:///%s/test.sqlite' % savepath)
+        sql_engine = db.create_engine('sqlite:///%s/test-parser.sqlite' % savepath)
         dbcon = sql_engine.connect()
 
         result = pd.read_sql_query(text("""SELECT count(*) FROM 'folders';"""), dbcon)
@@ -118,18 +114,18 @@ class TestDatabaseParser:
         )
 
         assert not len({
-            'test.sqlite',
+            'test-parser.sqlite',
             'test_dbsqlite-0_docs.csv',
             'test_dbsqlite-0_elements.csv',
             'test_dbsqlite-1_docs.csv',
             'test_dbsqlite-1_elements.csv',
-            'test_sub'} - set(os.listdir(savepath)))
+            'test-parser-sub'} - set(os.listdir(savepath)))
 
-        files = [j for j in os.listdir(os.path.join(savepath, 'test_sub'))]
+        files = [j for j in os.listdir(os.path.join(savepath, 'test-parser-sub'))]
         assert len([j for j in files if j.endswith('_docs.csv')]) == 2
         assert len([j for j in files if j.endswith('_elements.csv')]) == 2
 
-        sql_engine = db.create_engine('sqlite:///%s/test.sqlite' % savepath)
+        sql_engine = db.create_engine('sqlite:///%s/test-parser.sqlite' % savepath)
         dbcon = sql_engine.connect()
 
         result = pd.read_sql_query(text(

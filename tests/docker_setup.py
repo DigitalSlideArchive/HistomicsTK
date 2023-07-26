@@ -1,5 +1,6 @@
 import json
 import os
+import stat
 
 import cherrypy
 from datastore import datastore
@@ -17,6 +18,14 @@ def namedFolder(user, folderName='Public'):
         'parentId': user['_id'],
         'name': folderName,
     })[0]
+
+
+def chmodDataFile(fname, action, pup):
+    try:
+        os.chmod(fname, os.stat(fname).st_mode | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+    except Exception:
+        pass
+    return fname
 
 
 cherrypy.config['database']['uri'] = 'mongodb://mongodb:27017/girder'
@@ -37,7 +46,7 @@ dataFiles = {
         'name': 'TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs'},
 }
 for key, entry in dataFiles.items():
-    path = datastore.fetch(entry['name'])
+    path = datastore.fetch(entry['name'], processor=chmodDataFile)
     query = {'folderId': publicFolder['_id'], 'name': os.path.basename(path)}
     if not Item().findOne(query):
         with ProgressContext(False, user=adminUser) as ctx:
@@ -50,15 +59,14 @@ for key, entry in dataFiles.items():
 annotationFiles = {
     'tcga1': {
         'item': 'tcga1',
-        'name': 'TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-'
-                '7F0A2ECA0F39.svs_annotations.json',
+        'name': 'TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs_annotations.json',  # noqa
     }
 }
 for key, entry in annotationFiles.items():
     item = dataFiles[entry['item']]['item']
     query = {'_active': {'$ne': False}, 'itemId': item['_id']}
     if not Annotation().findOne(query):
-        path = datastore.fetch(entry['name'])
+        path = datastore.fetch(entry['name'], processor=chmodDataFile)
         annotations = json.load(open(path))
         if not isinstance(annotations, list):
             annotations = [annotations]

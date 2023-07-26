@@ -27,10 +27,6 @@ sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 # import htk_test_utilities as utilities  # noqa
 from htk_test_utilities import getTestFilePath, girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -48,8 +44,7 @@ cfg = Cfg()
 @pytest.mark.usefixtures('girderClient')  # noqa
 def test_prep(girderClient):  # noqa
     cfg.gc = girderClient
-    cfg.iteminfo = cfg.gc.get('/item', parameters={
-        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+    cfg.iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
     cfg.GTcodes = read_csv(getTestFilePath('saliency_GTcodes.csv'))
 
 
