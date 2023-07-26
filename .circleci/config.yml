@@ -67,23 +67,6 @@ jobs:
   # use a CircleCI docker environment, since those environments run sub dockers
   # in a separate environment.  The 201808-01 machine environment has versions
   # of Python 2.7, 3.5, 3.6, 3.7 with specific subversions.
-  py36:
-    working_directory: ~/project
-    machine:
-      image: ubuntu-2004:202111-02
-    steps:
-      - checkout
-      - upgradepython:
-          version: 3.6.15
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.6.15
-      - docker-compose
-      - tox:
-          env: py36
-      - coverage
   py37:
     working_directory: ~/project
     machine:
@@ -327,13 +310,6 @@ workflows:
   version: 2
   ci:
     jobs:
-      - py36:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
       - py37:
           filters:
             tags:
@@ -392,7 +368,6 @@ workflows:
                 - gh-pages
       - release:
           requires:
-            - py36
             - py37
             - py38
             - py39
@@ -408,7 +383,6 @@ workflows:
               only: master
       - docs-deploy:
           requires:
-            - py36
             - py37
             - py38
             - py39
@@ -426,7 +400,6 @@ workflows:
                 - sphinx
       - publish_docker:
           requires:
-            - py36
             - py37
             - py38
             - py39
@@ -451,7 +424,6 @@ workflows:
               only:
                 - master
     jobs:
-      - py36
       - py37
       - py38
       - py39
@@ -462,7 +434,6 @@ workflows:
       - wheels
       - publish_docker:
           requires:
-            - py36
             - py37
             - py38
             - py39
