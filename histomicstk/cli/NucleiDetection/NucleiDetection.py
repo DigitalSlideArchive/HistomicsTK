@@ -47,6 +47,21 @@ def image_inversion_flag_setter(args=None):
     return invert_image, default_img_inversion
 
 
+def validate_args(args):
+    # validates the input arguments
+    if not os.path.isfile(args.inputImageFile):
+        raise OSError('Input image file does not exist.')
+
+    if len(args.reference_mu_lab) != 3:
+        raise ValueError('Reference Mean LAB should be a 3 element vector.')
+
+    if len(args.reference_std_lab) != 3:
+        raise ValueError('Reference Stddev LAB should be a 3 element vector.')
+
+    if len(args.analysis_roi) != 4:
+        raise ValueError('Analysis ROI must be a vector of 4 elements.')
+
+
 def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                        src_sigma_lab=None, invert_image=False,
                        default_img_inversion=False):
@@ -254,17 +269,7 @@ def main(args):
     print('\n>> CLI Parameters ...\n')
     pprint.pprint(vars(args))
 
-    if not os.path.isfile(args.inputImageFile):
-        raise OSError('Input image file does not exist.')
-
-    if len(args.reference_mu_lab) != 3:
-        raise ValueError('Reference Mean LAB should be a 3 element vector.')
-
-    if len(args.reference_std_lab) != 3:
-        raise ValueError('Reference Stddev LAB should be a 3 element vector.')
-
-    if len(args.analysis_roi) != 4:
-        raise ValueError('Analysis ROI must be a vector of 4 elements.')
+    validate_args(args)
 
     if np.all(np.array(args.analysis_roi) == -1):
         process_whole_image = True
