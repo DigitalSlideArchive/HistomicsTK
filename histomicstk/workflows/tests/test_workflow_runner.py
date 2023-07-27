@@ -16,10 +16,6 @@ thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
 from tests.htk_test_utilities import girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -40,14 +36,13 @@ class TestWorkflows:
         cfg.gc = girderClient
 
         # get original item
-        original_iteminfo = cfg.gc.get('/item', parameters={
-            'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+        original_iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
         # create a sample folder
         cfg.posted_folder = cfg.gc.post(
             '/folder', data={
                 'parentId': original_iteminfo['folderId'],
-                'name': 'test'
+                'name': 'test-workflow'
             })
 
         # copy the item a couple of times

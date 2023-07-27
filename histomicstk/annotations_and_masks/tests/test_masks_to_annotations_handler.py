@@ -115,8 +115,22 @@ class TestMasksToAnnotations:
     def test_get_annotation_documents_from_contours(self, girderClient):  # noqa
         """Test get_contours_from_bin_mask()."""
         self._setup()
-        sampleSlideItem = girderClient.resourceLookup(
-            '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')  # noqa
+        original_iteminfo = girderClient.get(
+            '/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+
+        folder = girderClient.post(
+            '/folder', data={
+                'parentId': original_iteminfo['folderId'],
+                'name': 'test-masks-annot-handler'
+            })
+
+        # copy the item
+        sampleSlideItem = girderClient.post(
+            '/item/%s/copy' % original_iteminfo['_id'], data={
+                'name': 'TCGA-A2-A0YE-01Z.svs',
+                'copyAnnotations': True,
+                'folderId': folder['_id'],
+            })
         sampleSlideId = str(sampleSlideItem['_id'])
         # get list of annotation documents
         annprops = {

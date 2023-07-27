@@ -86,13 +86,7 @@ def _disconnect_local_dsa():
     os.chdir(cwd)
 
 
-# Note:
-#   We could use scope='session' to create the DSA docker instance once and
-#   reuse it for all test modules. However, some modules currently expect a
-#   fresh database.
-
-# @pytest.fixture(scope='session')
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def girderClient():
     """
     Yield an authenticated girder client that points to the server.
