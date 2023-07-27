@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <executable>
   <category>HistomicsTK</category>
-  <title>Performs Adaptive Color Deconvolution</title>
-  <description>Uses sparse non-negative matrix factorization to adaptively deconvolve a given RGB image into intensity images representing distinct stains.</description>
+  <title>Adaptive Color Deconvolution</title>
+  <description>Use sparse non-negative matrix factorization to adaptively deconvolve a given RGB image into intensity images representing distinct stains.</description>
   <version>0.1.0</version>
   <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
   <license>Apache 2.0</license>
@@ -23,6 +23,7 @@
       <label>Background Intensity</label>
       <index>1</index>
       <description>Background intensity in each channel</description>
+      <default>255,255,255</default>
     </double-vector>
     <float>
       <name>sample_sample_fraction</name>
@@ -30,9 +31,9 @@
       <longflag>sampleFraction</longflag>
       <description>Fraction of pixels to sample.  Specify either this or --sampleApproximateTotal</description>
       <constraints>
-	<maximum>1</maximum>
+        <maximum>1</maximum>
       </constraints>
-      <default>-1</default>
+      <default>0.1</default>
     </float>
     <float>
       <name>sample_magnification</name>
@@ -55,8 +56,8 @@
       <description>Minimum background coverage required for a tile to
       be sampled from.</description>
       <constraints>
-	<minimum>0</minimum>
-	<maximum>1</maximum>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
       </constraints>
       <default>0.1</default>
     </float>
@@ -112,24 +113,13 @@
       <longflag>beta</longflag>
       <default>0.5</default>
     </double>
-    <double-vector>
-      <name>stainColor_1</name>
-      <label>Color of stain 1</label>
+    <file fileExtensions=".anot" reference="sample_slide_path">
+      <name>outputAnnotationFile</name>
+      <label>Output SDA colors of each stain</label>
+      <description>Output stain annotation file (*.anot)</description>
       <channel>output</channel>
-      <description>SDA color of stain 1</description>
-    </double-vector>
-    <double-vector>
-      <name>stainColor_2</name>
-      <label>Color of stain 2</label>
-      <channel>output</channel>
-      <description>SDA color of stain 2</description>
-    </double-vector>
-    <double-vector>
-      <name>stainColor_3</name>
-      <label>Color of stain 3</label>
-      <channel>output</channel>
-      <description>SDA color of stain 3</description>
-    </double-vector>
+      <index>2</index>
+    </file>
   </parameters>
   <parameters advanced="true">
     <label>Dask</label>
