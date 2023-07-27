@@ -25,10 +25,6 @@ sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 # import htk_test_utilities as utilities  # noqa
 from htk_test_utilities import getTestFilePath, girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -45,8 +41,7 @@ def test_prep(girderClient):  # noqa
 
     cfg.gc = girderClient
 
-    iteminfo = cfg.gc.get('/item', parameters={
-        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+    iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
     # get RGB region at a small magnification
     MAG = 1.5

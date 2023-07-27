@@ -30,6 +30,24 @@ class TestPolygonMerger:
     @pytest.mark.usefixtures('girderClient')  # noqa
     def test_polygon_merger_tiled_masks(self, girderClient):  # noqa
         """Test Polygon_merger.run()."""
+
+        original_iteminfo = girderClient.get(
+            '/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+
+        folder = girderClient.post(
+            '/folder', data={
+                'parentId': original_iteminfo['folderId'],
+                'name': 'test-polygon-merge'
+            })
+
+        # copy the item
+        sampleSlideItem = girderClient.post(
+            '/item/%s/copy' % original_iteminfo['_id'], data={
+                'name': 'TCGA-A2-A0YE-01Z.svs',
+                'copyAnnotations': True,
+                'folderId': folder['_id'],
+            })
+
         # read GTCodes dataframe
         gtcodePath = getTestFilePath('sample_GTcodes.csv')
         GTCodes_df = read_csv(gtcodePath)
@@ -55,8 +73,6 @@ class TestPolygonMerger:
             'mostly_lymphocytic_infiltrate'}
 
         # deleting existing annotations in target slide (if any)
-        sampleSlideItem = girderClient.resourceLookup(
-            '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')  # noqa
         sampleSlideId = str(sampleSlideItem['_id'])
         delete_annotations_in_slide(girderClient, sampleSlideId)
 

@@ -1,6 +1,7 @@
 import json
 import math
 import os
+from pathlib import Path
 
 import large_image
 import numpy
@@ -8,6 +9,7 @@ import pyvips
 import scipy
 import skimage
 
+import histomicstk
 from histomicstk.cli import utils
 from histomicstk.cli.utils import CLIArgumentParser
 
@@ -222,7 +224,6 @@ def createSuperPixels(opts):  # noqa
         region_dict = utils.get_region_dict(opts.roi, None, ts)
         annotation = {
             'name': annotation_name,
-            'description': 'Used params %r' % vars(opts),
             'elements': [{
                 'type': 'pixelmap',
                 'girderId': 'outputImageFile',
@@ -235,6 +236,11 @@ def createSuperPixels(opts):  # noqa
                 'categories': categories,
                 'boundaries': opts.boundaries,
             }],
+            'attributes': {
+                'params': vars(opts),
+                'cli': Path(__file__).stem,
+                'version': histomicstk.__version__,
+            },
         }
         if len(bboxes) and str(opts.bounding).lower() != 'separate':
             annotation['elements'][0]['user'] = {'bbox': bboxesUser}
@@ -242,7 +248,6 @@ def createSuperPixels(opts):  # noqa
             bboxannotation = {
                 'name': '%s bounding boxes' % os.path.splitext(
                     os.path.basename(opts.outputAnnotationFile))[0],
-                'description': 'Used params %r' % vars(opts),
                 'elements': [{
                     'type': 'rectangle',
                     'center': [bcx, bcy, 0],
@@ -253,6 +258,11 @@ def createSuperPixels(opts):  # noqa
                     'fillColor': 'rgba(0,0,0,0)',
                     'lineColor': opts.default_strokeColor,
                 } for bidx, (bcx, bcy, bw, bh) in enumerate(bboxes)],
+                'attributes': {
+                    'params': vars(opts),
+                    'cli': Path(__file__).stem,
+                    'version': histomicstk.__version__,
+                },
             }
             annotation = [annotation, bboxannotation]
         with open(opts.outputAnnotationFile, 'w') as annotation_file:
