@@ -10,32 +10,29 @@ from histomicstk.preprocessing.color_deconvolution import \
     rgb_separate_stains_macenko_pca
 
 
-def main(args):
-    args = utils.splitArgs(args)
+def main(origargs):
+    args = utils.splitArgs(origargs)
     args.macenko.I_0 = numpy.array(args.macenko.I_0)
 
     utils.create_dask_client(args.dask)
     sample = utils.sample_pixels(args.sample)
     stain_matrix = rgb_separate_stains_macenko_pca(sample.T, **vars(args.macenko))
 
-    # record stain color metadata
-    stain_color_metadata = []
-    for i, stain in enumerate(stain_matrix.T):
-        stain_color_metadata = 'stainColor_{} : {}\n'.format(i + 1, ','.join(map(str, stain)))
-
+    # record metadata
     annotation = {
         'name': 'SeperateStainsMacenkoPCA',
-        'stain_color': stain_color_metadata,
         'attributes': {
-            'params': vars(args),
-            'return_parameters': args.returnParameterFile,
+            'params': vars(origargs),
             'cli': Path(__file__).stem,
             'version': histomicstk.__version__,
         },
     }
+    for i, stain in enumerate(stain_matrix.T):
+        annotation['attributes']['stainColor_{}'.format(i + 1)] = stain.tolist()
 
-    with open(args.returnParameterFile, 'w') as metadata_file:
-        json.dump(annotation, metadata_file, seperators=(',', ':'), sort_keys=False)
+
+    with open(args.outputAnnotationFile, 'w') as annotation_file:
+        json.dump(annotation, annotation_file, sort_keys=False)
 
 
 if __name__ == '__main__':
