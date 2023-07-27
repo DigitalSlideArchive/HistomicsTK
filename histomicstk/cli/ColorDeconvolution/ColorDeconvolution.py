@@ -68,7 +68,7 @@ def main(args):
                 'version': histomicstk.__version__,
             },
         }, {
-            'name': 'Deconvolution %s ' % (
+            'name': 'Deconvolution %s' % (
                 args.stain_2 if args.stain_2 != 'custom' else str(args.stain_2_vector)),
             'elements': [{
                 'type': 'image',
@@ -84,7 +84,7 @@ def main(args):
                 'version': histomicstk.__version__,
             },
         }, {
-            'name': 'Deconvolution %s ' % (
+            'name': 'Deconvolution %s' % (
                 args.stain_3 if args.stain_3 != 'custom' else str(args.stain_3_vector)),
             'elements': [{
                 'type': 'image',
@@ -101,7 +101,7 @@ def main(args):
             }
         }]
         if args.stain_3 == 'null':
-            annotation[2:3] = []
+            annotation[2:] = []
         if args.stain_2 == 'null':
             annotation[1:2] = []
 
