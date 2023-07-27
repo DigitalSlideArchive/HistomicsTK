@@ -17,10 +17,6 @@ thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
 from tests.htk_test_utilities import girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -39,8 +35,21 @@ class TestAnnotAndMaskUtils:
     @pytest.mark.usefixtures('girderClient')  # noqa
     def test_prep(self, girderClient):  # noqa
         cfg.gc = girderClient
-        cfg.iteminfo = cfg.gc.get('/item', parameters={
-            'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+        original_iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+
+        cfg.folder = cfg.gc.post(
+            '/folder', data={
+                'parentId': original_iteminfo['folderId'],
+                'name': 'test-annot-and-mask'
+            })
+
+        # copy the item
+        cfg.iteminfo = cfg.gc.post(
+            '/item/%s/copy' % original_iteminfo['_id'], data={
+                'name': 'TCGA-A2-A0YE-01Z.svs',
+                'copyAnnotations': True,
+                'folderId': cfg.folder['_id'],
+            })
         cfg.annotations = cfg.gc.get('/annotation/item/' + cfg.iteminfo['_id'])
 
     def test_get_image_from_htk_response(self):
