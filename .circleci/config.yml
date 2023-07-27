@@ -81,8 +81,17 @@ jobs:
             pyenv versions
             pyenv global 3.7.16
       - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py37
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   py38:
     working_directory: ~/project
@@ -98,8 +107,17 @@ jobs:
             pyenv versions
             pyenv global 3.8.16
       - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py38
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   py39:
     working_directory: ~/project
@@ -115,8 +133,17 @@ jobs:
             pyenv versions
             pyenv global 3.9.16
       - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py39
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   py310:
     working_directory: ~/project
@@ -132,8 +159,17 @@ jobs:
             pyenv versions
             pyenv global 3.10.10
       - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py310
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   py311:
     working_directory: ~/project
@@ -149,8 +185,17 @@ jobs:
             pyenv versions
             pyenv global 3.11.2
       - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py311
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   lint_and_docs:
     working_directory: ~/project

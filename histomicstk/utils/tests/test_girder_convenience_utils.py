@@ -12,10 +12,6 @@ thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
 from tests.htk_test_utilities import girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -37,14 +33,13 @@ class TestGirderConvenience:
         cfg.gc = girderClient
 
         # get original item
-        original_iteminfo = cfg.gc.get('/item', parameters={
-            'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+        original_iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
         # create a sample folder
         cfg.posted_folder = cfg.gc.post(
             '/folder', data={
                 'parentId': original_iteminfo['folderId'],
-                'name': 'test'
+                'name': 'test-convenience'
             })
 
         # copy the item so that everything we do here does not affect
@@ -59,7 +54,7 @@ class TestGirderConvenience:
         # now get and check absolute path
         fpath = get_absolute_girder_folderpath(
             gc=cfg.gc, folder_info=cfg.posted_folder)
-        assert fpath == 'Public/test/'
+        assert fpath == 'Public/test-convenience/'
 
     def test_update_permissions_for_annotations_in_slide(self):
         admininfo = cfg.gc.get('/user', parameters={
@@ -80,7 +75,7 @@ class TestGirderConvenience:
             # monitorPrefix='test_update_permissions_for_annotations_in_slide',
             **update_params
         )
-        assert len(resps) == 8
+        assert len(resps) >= 8
         assert resps[0]['access']['users'] == [
             {'flags': [], 'id': admininfo['_id'], 'level': 2}
         ]

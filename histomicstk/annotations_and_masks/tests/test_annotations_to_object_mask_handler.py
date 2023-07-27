@@ -20,10 +20,6 @@ sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import htk_test_utilities as utilities  # noqa
 from htk_test_utilities import getTestFilePath, girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -48,8 +44,7 @@ def test_prep(girderClient):  # noqa
 
     cfg.gc = girderClient
 
-    iteminfo = cfg.gc.get('/item', parameters={
-        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+    iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
     # read GTCodes dataframe
     gtcodePath = getTestFilePath('sample_GTcodes.csv')
@@ -120,8 +115,6 @@ class TestGetSlideRegionNoMask:
 
     def test_annotations_to_contours_no_mask_1(self):
         """Test annotations_to_contours_no_mask()."""
-        if sys.version_info < (3, ):
-            return
         # get specified region -- without providing scaled annotations
         roi_out_1 = annotations_to_contours_no_mask(
             mode='manual_bounds', **cfg.test_annots_to_contours_kwargs)
@@ -146,8 +139,6 @@ class TestGetSlideRegionNoMask:
 
     def test_annotations_to_contours_no_mask_2(self):
         """Test get_image_and_mask_from_slide()."""
-        if sys.version_info < (3, ):
-            return
         # get ROI bounding everything
         roi_out = annotations_to_contours_no_mask(
             mode='min_bounding_box', slide_annotations=cfg.slide_annotations,
@@ -167,8 +158,6 @@ class TestGetSlideRegionNoMask:
 
     def test_get_all_rois_from_slide_v2(self):
         """Test get_all_rois_from_slide_v2()."""
-        if sys.version_info < (3, ):
-            return
         # First we test the object segmentation mode
         cfg.get_all_rois_kwargs['mode'] = 'object'
         savenames = get_all_rois_from_slide_v2(**cfg.get_all_rois_kwargs)
