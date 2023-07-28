@@ -1,9 +1,7 @@
 FROM dockcross/manylinux2014-x64
 
-# Don't build python < 3.6
-RUN rm -rf /opt/python/cp27*
-RUN rm -rf /opt/python/cp34*
-RUN rm -rf /opt/python/cp35*
+# Don't build python < 3.7
+RUN rm -rf /opt/python/cp36*
 RUN rm -rf /opt/python/pp*
 
 RUN for PYBIN in /opt/python/*/bin; do \
@@ -11,7 +9,9 @@ RUN for PYBIN in /opt/python/*/bin; do \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \
-      if [[ "${PYBIN}" =~ "310" ]]; then \
+      if [[ "${PYBIN}" =~ "cp311" ]]; then \
+        export VERSIONS="numpy==1.23.*"; \
+      elif [[ "${PYBIN}" =~ "310" ]]; then \
         export VERSIONS="numpy==1.21.*"; \
       elif [[ "${PYBIN}" =~ "39" ]]; then \
         export VERSIONS="numpy==1.19.*"; \

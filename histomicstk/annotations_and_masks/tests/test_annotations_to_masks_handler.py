@@ -22,10 +22,6 @@ sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import htk_test_utilities as utilities  # noqa
 from htk_test_utilities import getTestFilePath, girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -51,8 +47,21 @@ def test_prep(girderClient):  # noqa
 
     cfg.gc = girderClient
 
-    cfg.iteminfo = cfg.gc.get('/item', parameters={
-        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+    original_iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+
+    cfg.folder = cfg.gc.post(
+        '/folder', data={
+            'parentId': original_iteminfo['folderId'],
+            'name': 'test-annot-and-mask-handler'
+        })
+
+    # copy the item
+    cfg.iteminfo = cfg.gc.post(
+        '/item/%s/copy' % original_iteminfo['_id'], data={
+            'name': 'TCGA-A2-A0YE-01Z.svs',
+            'copyAnnotations': True,
+            'folderId': cfg.folder['_id'],
+        })
 
     # read GTCodes dataframe
     gtcodePath = getTestFilePath('sample_GTcodes.csv')
@@ -134,8 +143,6 @@ class TestGetROIMasks:
 
     def test_get_all_rois_from_slide(self, tmpdir):  # noqa
         """Test get_all_roi_masks_for_slide() as-is without tiling."""
-        if sys.version_info < (3, ):
-            return
         # just a temp directory to save masks for now
         base_savepath = str(tmpdir)
         savepaths = {
@@ -175,8 +182,6 @@ class TestGetROIMasks:
 
     def test_get_all_rois_from_slide_tiled(self, tmpdir):  # noqa
         """Test get_all_roi_masks_for_slide() with tiling."""
-        if sys.version_info < (3, ):
-            return
         # just a temp directory to save masks for now
         base_savepath = str(tmpdir)
         savepaths = {
@@ -218,8 +223,6 @@ class TestGetROIMasks:
 
     def test_get_image_and_mask_manual_bounds(self):
         """Test get_image_and_mask_from_slide()."""
-        if sys.version_info < (3, ):
-            return
         # get specified region -- without providing scaled annotations
         roi_out_1 = get_image_and_mask_from_slide(
             mode='manual_bounds', **cfg.get_kwargs)
@@ -247,8 +250,6 @@ class TestGetROIMasks:
 
     def test_get_image_and_mask_minbbox(self):
         """Test get_image_and_mask_from_slide()."""
-        if sys.version_info < (3, ):
-            return
         # get ROI bounding everything
         roi_out = get_image_and_mask_from_slide(
             mode='min_bounding_box',

@@ -85,8 +85,7 @@ setup(
         # forms to be in the environment (such as a headed form) without
         # causing conflicts
         [
-            'opencv-python-headless ; python_version >= "3.7"',
-            'opencv-python-headless<4.7 ; python_version < "3.7"',
+            'opencv-python-headless',
         ] if not importlib.util.find_spec('cv2') else []
     ),
     license='Apache Software License 2.0',
@@ -95,7 +94,6 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -105,5 +103,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     zip_safe=False,
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 )

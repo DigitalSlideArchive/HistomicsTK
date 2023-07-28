@@ -15,10 +15,6 @@ sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import tests.htk_test_utilities as utilities  # noqa
 from tests.htk_test_utilities import getTestFilePath, girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -64,14 +60,13 @@ def test_prep(girderClient):  # noqa
     os.mkdir(cfg.combinedvis_savepath)
 
     # get original item
-    iteminfo = cfg.gc.get('/item', parameters={
-        'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+    iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
     # create the folder to parse its contents into galleries
     folderinfo = cfg.gc.post(
         '/folder', data={
             'parentId': iteminfo['folderId'],
-            'name': 'test'
+            'name': 'test-review'
         })
     cfg.folderid = folderinfo['_id']
 
@@ -79,13 +74,13 @@ def test_prep(girderClient):  # noqa
     post_folderinfo = cfg.gc.post(
         '/folder', data={
             'parentId': iteminfo['folderId'],
-            'name': 'test-post'
+            'name': 'test-review-post'
         })
     cfg.post_folderid = post_folderinfo['_id']
 
     # copy the item multiple times to create dummy database
     for i in range(2):
-        _ = cfg.gc.post(
+        cfg.gc.post(
             '/item/%s/copy' % iteminfo['_id'], data={
                 'name': 'testSlide%dForRevGal' % i,
                 'copyAnnotations': True,
@@ -98,8 +93,6 @@ class TestReviewGallery:
 
     def test_get_all_rois_from_folder_v2(self):
         """Test get_all_rois_from_folder_v2()."""
-        if sys.version_info < (3, ):
-            return
         # params for getting all rois for slide
         get_all_rois_kwargs = {
             'GTCodes_dict': cfg.GTCodes_dict,
@@ -129,6 +122,7 @@ class TestReviewGallery:
 
         # a couple of checks
         all_fovs = os.listdir(cfg.combinedvis_savepath)
+
         fovdict = {}
         for fov in all_fovs:
             slide = fov.split('_')[0]
@@ -152,8 +146,6 @@ class TestReviewGallery:
 
     def test_create_review_galleries(self):
         """Test create_review_galleries()."""
-        if sys.version_info < (3, ):
-            return
         create_review_galleries_kwargs = {
             'tilepath_base': cfg.combinedvis_savepath,
             'upload_results': True,

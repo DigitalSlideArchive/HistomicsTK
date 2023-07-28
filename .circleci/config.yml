@@ -67,23 +67,6 @@ jobs:
   # use a CircleCI docker environment, since those environments run sub dockers
   # in a separate environment.  The 201808-01 machine environment has versions
   # of Python 2.7, 3.5, 3.6, 3.7 with specific subversions.
-  py36:
-    working_directory: ~/project
-    machine:
-      image: ubuntu-2004:202111-02
-    steps:
-      - checkout
-      - upgradepython:
-          version: 3.6.15
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.6.15
-      - docker-compose
-      - tox:
-          env: py36
-      - coverage
   py37:
     working_directory: ~/project
     machine:
@@ -98,8 +81,17 @@ jobs:
             pyenv versions
             pyenv global 3.7.16
       - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py37
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   py38:
     working_directory: ~/project
@@ -115,8 +107,17 @@ jobs:
             pyenv versions
             pyenv global 3.8.16
       - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py38
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   py39:
     working_directory: ~/project
@@ -132,8 +133,17 @@ jobs:
             pyenv versions
             pyenv global 3.9.16
       - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py39
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   py310:
     working_directory: ~/project
@@ -149,8 +159,17 @@ jobs:
             pyenv versions
             pyenv global 3.10.10
       - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py310
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   py311:
     working_directory: ~/project
@@ -166,8 +185,17 @@ jobs:
             pyenv versions
             pyenv global 3.11.2
       - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py311
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   lint_and_docs:
     working_directory: ~/project
@@ -327,13 +355,6 @@ workflows:
   version: 2
   ci:
     jobs:
-      - py36:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
       - py37:
           filters:
             tags:
@@ -392,7 +413,6 @@ workflows:
                 - gh-pages
       - release:
           requires:
-            - py36
             - py37
             - py38
             - py39
@@ -408,7 +428,6 @@ workflows:
               only: master
       - docs-deploy:
           requires:
-            - py36
             - py37
             - py38
             - py39
@@ -426,7 +445,6 @@ workflows:
                 - sphinx
       - publish_docker:
           requires:
-            - py36
             - py37
             - py38
             - py39
@@ -451,7 +469,6 @@ workflows:
               only:
                 - master
     jobs:
-      - py36
       - py37
       - py38
       - py39
@@ -462,7 +479,6 @@ workflows:
       - wheels
       - publish_docker:
           requires:
-            - py36
             - py37
             - py38
             - py39
