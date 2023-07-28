@@ -1,5 +1,6 @@
 import json
 import logging
+import numpy as np
 from pathlib import Path
 
 import large_image
@@ -11,15 +12,9 @@ from histomicstk.cli.utils import CLIArgumentParser
 
 logging.basicConfig()
 
+def colordeconvolve(args):
 
-def main(args):
     import skimage.io
-
-    # Read Input Image
-    print('>> Reading input image')
-
-    print(args.inputImageFile)
-
     ts = large_image.getTileSource(args.inputImageFile)
 
     im_input = ts.getRegion(
@@ -49,8 +44,52 @@ def main(args):
     print(args.outputStainImageFile_3)
     skimage.io.imsave(args.outputStainImageFile_3, im_stains[:, :, 2])
 
+    region = utils.get_region_dict(args.region, args.maxRegionSize, ts)['region']
+
+    return region
+
+def colordeconvolve_WSI(args):
+    sink0 = large_image.new()
+    sink1 = large_image.new()
+    sink2 = large_image.new()
+    ts = large_image.getTileSource(args.inputImageFile)
+
+    # Create stain matrix
+    print('>> Creating stain matrix')
+
+    w = utils.get_stain_matrix(args)
+    print(w)
+
+    for tile in ts.tileIterator():
+        im_stains = htk_cd.color_deconvolution(tile['tile'], w).Stains
+        sink0.addTile(im_stains[:, :, 0], tile['x'], tile['y'])
+        sink1.addTile(im_stains[:, :, 1], tile['x'], tile['y'])
+        sink2.addTile(im_stains[:, :, 2], tile['x'], tile['y'])
+    sink0.write(args.outputStainImageFile_1)
+    sink1.write(args.outputStainImageFile_2)
+    sink2.write(args.outputStainImageFile_3)
+
+
+    region = utils.get_region_dict(args.region, args.maxRegionSize, ts)
+    print(region)
+
+    return region
+
+def main(args):
+
+
+    # Read Input Image
+    print('>> Reading input image')
+
+    print(args.inputImageFile)
+
+    if np.all(np.array(args.region) == -1):
+        region = colordeconvolve_WSI(args)
+    else:
+        region = colordeconvolve_ROI(args)
+
     if args.outputAnnotationFile:
-        region = utils.get_region_dict(args.region, args.maxRegionSize, ts)['region']
+
         annotation = [{
             'name': 'Deconvolution %s' % (
                 args.stain_1 if args.stain_1 != 'custom' else str(args.stain_1_vector)),
