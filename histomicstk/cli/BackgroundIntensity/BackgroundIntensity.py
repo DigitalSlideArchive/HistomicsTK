@@ -8,7 +8,7 @@ from histomicstk.preprocessing.color_normalization import background_intensity
 
 
 def main(args):
-    other_args = {'returnParameterFile', 'scheduler'}
+    other_args = {'outputAnnotationFile', 'scheduler'}
     kwargs = {k: v for k, v in vars(args).items()
               if k not in other_args}
     # Allow (some) default parameters to work.  Assume certain values
@@ -27,17 +27,16 @@ def main(args):
     print('\n>> Writing annotation file ...\n')
 
     annotation = {
-        'name': 'Background Intensity',
-        'backgroundIntensity': list(map(str, I_0)),
+        'name': 'BackgroundIntensity',
+        'intensity_values': list(map(str, I_0)),
         'attributes': {
             'params': vars(args),
-            'return_params': args.returnParameterFile,
             'cli': Path(__file__).stem,
             'version': histomicstk.__version__,
         },
     }
 
-    with open(args.returnParameterFile, 'w') as annotation_file:
+    with open(args.outputAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
 
 
