@@ -174,6 +174,13 @@
       <longflag>ignore_border_nuclei</longflag>
       <default>false</default>
     </boolean>
+    <boolean>
+      <name>remove_overlapping_nuclei_segmentation</name>
+      <label>Remove overlapping nuclei</label>
+      <description>Remove overlapping nuclei segmentation from the given region. It is recommended to use this approach when defining the tile overlap parameter.</description>
+      <longflag>remove_overlapping_nuclei_segmentation</longflag>
+      <default>false</default>
+    </boolean>
   </parameters>
   <parameters advanced="true">
     <label>WSI Analysis</label>

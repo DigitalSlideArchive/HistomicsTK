@@ -47,6 +47,21 @@ def image_inversion_flag_setter(args=None):
     return invert_image, default_img_inversion
 
 
+def validate_args(args):
+    # validates the input arguments
+    if not os.path.isfile(args.inputImageFile):
+        raise OSError('Input image file does not exist.')
+
+    if len(args.reference_mu_lab) != 3:
+        raise ValueError('Reference Mean LAB should be a 3 element vector.')
+
+    if len(args.reference_std_lab) != 3:
+        raise ValueError('Reference Stddev LAB should be a 3 element vector.')
+
+    if len(args.analysis_roi) != 4:
+        raise ValueError('Analysis ROI must be a vector of 4 elements.')
+
+
 def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                        src_sigma_lab=None, invert_image=False,
                        default_img_inversion=False):
@@ -110,8 +125,11 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
     flag_nuclei_found = np.any(im_nuclei_seg_mask)
 
     if flag_nuclei_found:
+        format = args.nuclei_annotation_format
+        if args.nuclei_annotation_format == 'bbox' and args.remove_overlapping_nuclei_segmentation:
+            format = 'boundary'
         nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
-            im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
+            im_nuclei_seg_mask, tile_info, format)
 
     return nuclei_annot_list
 
@@ -250,17 +268,7 @@ def main(args):
     print('\n>> CLI Parameters ...\n')
     pprint.pprint(vars(args))
 
-    if not os.path.isfile(args.inputImageFile):
-        raise OSError('Input image file does not exist.')
-
-    if len(args.reference_mu_lab) != 3:
-        raise ValueError('Reference Mean LAB should be a 3 element vector.')
-
-    if len(args.reference_std_lab) != 3:
-        raise ValueError('Reference Stddev LAB should be a 3 element vector.')
-
-    if len(args.analysis_roi) != 4:
-        raise ValueError('Analysis ROI must be a vector of 4 elements.')
+    validate_args(args)
 
     if np.all(np.array(args.analysis_roi) == -1):
         process_whole_image = True
@@ -375,9 +383,23 @@ def main(args):
         default_img_inversion=default_img_inversion)
 
     #
+    # Remove overlapping nuclei
+    #
+    if args.remove_overlapping_nuclei_segmentation:
+        print('\n>> Removing overlapping nuclei segmentations ...\n')
+        nuclei_removal_start_time = time.time()
+
+        nuclei_list = htk_seg_label.remove_overlap_nuclei(
+            nuclei_list, args.nuclei_annotation_format)
+        nuclei_removal_setup_time = time.time() - nuclei_removal_start_time
+
+        print('Number of nuclei after overlap removal {}'.format(len(nuclei_list)))
+        print('Nuclei removal processing time = {}'.format(
+            cli_utils.disp_time_hms(nuclei_removal_setup_time)))
+
+    #
     # Write annotation file
     #
-
     print('\n>> Writing annotation file ...\n')
 
     annot_fname = os.path.splitext(
