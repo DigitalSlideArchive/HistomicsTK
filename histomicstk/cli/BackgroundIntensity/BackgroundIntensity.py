@@ -28,8 +28,8 @@ def main(args):
 
     annotation = {
         'name': 'BackgroundIntensity',
-        'intensity_values': list(map(str, I_0)),
         'attributes': {
+            'intensity_values': I_0.tolist(),
             'params': vars(args),
             'cli': Path(__file__).stem,
             'version': histomicstk.__version__,
