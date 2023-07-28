@@ -95,8 +95,8 @@ def main(args):
 
     print(args.inputImageFile)
 
-    transform = colorDeconvolve_ROI(args) if np.any(
-        args.region) == -1 else colorDeconvolve_WSI(args)
+    transform = colorDeconvolve_ROI(args) if np.all(np.array(
+        args.region)) == -1 else colorDeconvolve_WSI(args)
 
     if args.outputAnnotationFile:
 
