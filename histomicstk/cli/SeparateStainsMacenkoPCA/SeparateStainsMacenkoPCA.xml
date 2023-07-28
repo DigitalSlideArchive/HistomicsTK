@@ -96,24 +96,13 @@
       </constraints>
       <default>0.99</default>
     </double>
-    <double-vector>
-      <name>stainColor_1</name>
-      <label>Color of stain 1</label>
+  <file fileExtensions=".anot" reference="sample_slide_path">
+      <name>outputAnnotationFile</name>
+      <label>Output SDA colors of each stain</label>
+      <description>Output stain annotation file (*.anot)</description>
       <channel>output</channel>
-      <description>SDA color of stain 1</description>
-    </double-vector>
-    <double-vector>
-      <name>stainColor_2</name>
-      <label>Color of stain 2</label>
-      <channel>output</channel>
-      <description>SDA color of stain 2</description>
-    </double-vector>
-    <double-vector>
-      <name>stainColor_3</name>
-      <label>Color of stain 3</label>
-      <channel>output</channel>
-      <description>SDA color of stain 3</description>
-    </double-vector>
+      <index>2</index>
+    </file>
   </parameters>
   <parameters advanced="true">
     <label>Dask</label>
