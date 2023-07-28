@@ -60,7 +60,7 @@
       <description>Use instead of sample_fraction to specify roughly how many pixels to sample.  The fewer tiles are excluded, the more accurate this will be.</description>
       <default>-1</default>
     </integer>
-    <file fileExtensions=".anot" reference="sample_slide_path">
+    <file fileExtensions=".anot" reference="slide_path">
       <name>outputAnnotationFile</name>
       <label>Output intensity in SDA space</label>
       <description>Output intensity in SDA space (*.anot)</description>
