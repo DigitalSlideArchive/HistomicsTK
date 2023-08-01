@@ -80,6 +80,7 @@
       <label>Output Label Image</label>
       <description>Color-coded image of the region, showing the various classes of pixel</description>
       <channel>output</channel>
+      <index>2</index>
     </image>
     <string-enumeration>
       <name>outputImageForm</name>
@@ -97,6 +98,7 @@
       <description>Annotation to relate the image to the source (*.anot)</description>
       <channel>output</channel>
       <longflag>image_annotation</longflag>
+      <index>2</index>
     </file>
   </parameters>
   <parameters>
