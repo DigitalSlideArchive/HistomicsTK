@@ -49,7 +49,8 @@ def tile_positive_pixel_count(imagePath, tilePosition, it_kwargs, ppc_params,
     if not useAlpha:
         ppcimg = ppcimg[:, :, :3]
 
-    # Return the result, colored image, tile's x and y coordinates, mask, and tile processing start time
+    # Return the result, colored image, tile's x and y coordinates, mask, and
+    # tile processing start time
     return result, ppcimg, tile['x'], tile['y'], mask, tile_start_time
 
 
@@ -114,7 +115,8 @@ def main(opts):
     start_time = time.time()
 
     if tileCount > 4 and getattr(opts, 'scheduler', None) != 'none':
-        # If tile count is large and Dask scheduler is not disabled, use Dask for parallel processing
+        # If tile count is large and Dask scheduler is not disabled, use Dask for
+        # parallel processing
         print('>> Creating Dask client')
         client = utils.create_dask_client(opts)
         dask_setup_time = time.time() - start_time
