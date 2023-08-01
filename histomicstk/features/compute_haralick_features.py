@@ -282,6 +282,8 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
     eps = np.finfo(float).eps  # small constant to avoid div / 0
 
     for i in range(numLabels):
+        if rprops[i] is None:
+            continue
 
         # get bounds of an intensity image
         minr, minc, maxr, maxc = rprops[i].bbox

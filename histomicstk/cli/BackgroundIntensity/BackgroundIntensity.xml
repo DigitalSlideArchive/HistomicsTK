@@ -26,7 +26,7 @@
       <constraints>
 	<maximum>1</maximum>
       </constraints>
-      <default>-1</default>
+      <default>0.1</default>
     </float>
     <float>
       <name>magnification</name>
@@ -60,12 +60,13 @@
       <description>Use instead of sample_fraction to specify roughly how many pixels to sample.  The fewer tiles are excluded, the more accurate this will be.</description>
       <default>-1</default>
     </integer>
-    <double-vector>
-      <name>BackgroundIntensity</name>
-      <label>Background Intensity</label>
+    <file fileExtensions=".anot" reference="slide_path">
+      <name>outputAnnotationFile</name>
+      <label>Output intensity in SDA space</label>
+      <description>Output intensity in SDA space (*.anot)</description>
       <channel>output</channel>
-      <description>Output intensity in SDA space</description>
-    </double-vector>
+      <index>2</index>
+    </file>
   </parameters>
   <parameters advanced="true">
     <label>Dask</label>

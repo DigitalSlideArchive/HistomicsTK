@@ -2,10 +2,12 @@ import json
 import logging
 import os
 import time
+from pathlib import Path
 
 import large_image
 import numpy as np
 
+import histomicstk
 import histomicstk.features as htk_features
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
@@ -222,7 +224,7 @@ def main(args):
 
         else:
 
-            tile_fgnd_frac_list = [1.0] * num_tiles
+            tile_fgnd_frac_list = np.full(num_tiles, 1.0)
 
         num_fgnd_tiles = np.count_nonzero(
             tile_fgnd_frac_list >= args.min_fgnd_frac)
@@ -316,7 +318,13 @@ def main(args):
 
     annotation = {
         'name': annot_fname + '-nuclei-' + args.nuclei_annotation_format,
-        'elements': nuclei_annot_list
+        'elements': nuclei_annot_list,
+        'attributes': {
+            'src_mu_lab': None if src_mu_lab is None else src_mu_lab.tolist(),
+            'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab.tolist(),
+            'params': vars(args),
+            'cli': Path(__file__).stem,
+            'version': histomicstk.__version__, }
     }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
