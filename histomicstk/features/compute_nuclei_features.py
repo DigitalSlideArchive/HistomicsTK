@@ -187,7 +187,8 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
 
         # ensure that cytoplasm props order corresponds to the nuclei
         lablocs = {v['label']: i for i, v in enumerate(cyto_props)}
-        cyto_props = [cyto_props[lablocs[v['label']]] for v in nuclei_props]
+        cyto_props = [cyto_props[lablocs[v['label']]] if v['label'] in lablocs else None
+                      for v in nuclei_props]
 
     # compute morphometry features
     if morphometry_features_flag:

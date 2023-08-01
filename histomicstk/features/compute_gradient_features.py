@@ -93,6 +93,8 @@ def compute_gradient_features(im_label, im_intensity,
     cannyG = canny(im_intensity)
 
     for i in range(numLabels):
+        if rprops[i] is None:
+            continue
 
         # get gradients of object pixels
         pixelGradients = np.sort(
