@@ -111,18 +111,8 @@ def main(opts):
             utils.disp_time_hms(time.time() - sink_start_time),
             utils.disp_time_hms(time.time() - start_time)))
     pprint.pprint(stats._asdict())
-    with open(opts.returnParameterFile, 'w') as f:
-        for k, v in zip(stats._fields, stats):
-            f.write(f'{k} = {v}\n')
     annotation = {
         'name': 'Positive Pixel Count',
-        'description': 'Used params: %r\nResults: %r' % (vars(opts), stats._asdict()),
-        'attributes': {
-            'params': vars(opts),
-            'stats': stats._asdict(),
-            'cli': Path(__file__).stem,
-            'version': histomicstk.__version__,
-        },
         'elements': [{
             'type': 'image',
             'girderId': 'outputLabelImage',
@@ -132,6 +122,12 @@ def main(opts):
                 'yoffset': tiparams.get('region', {}).get('top', 0),
             },
         }],
+        'attributes': {
+            'params': vars(opts),
+            'stats': stats._asdict(),
+            'cli': Path(__file__).stem,
+            'version': histomicstk.__version__,
+        },
     }
     with open(opts.outputAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
