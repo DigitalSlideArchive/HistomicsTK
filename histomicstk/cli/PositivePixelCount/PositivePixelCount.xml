@@ -99,64 +99,6 @@
       <longflag>image_annotation</longflag>
     </file>
   </parameters>
-  <parameters>
-    <label>Output parameters</label>
-    <description>Parameters for output</description>
-    <float>
-      <name>NumberWeakPositive</name>
-      <label>Number of Weak Positive Pixels</label>
-      <channel>output</channel>
-      <description>Number of pixels classified as weak positive</description>
-    </float>
-    <float>
-      <name>NumberPositive</name>
-      <label>Number of Positive Pixels</label>
-      <channel>output</channel>
-      <description>Number of pixels classified as simply positive</description>
-    </float>
-    <float>
-      <name>NumberStrongPositive</name>
-      <label>Number of Strong Positive Pixels</label>
-      <channel>output</channel>
-      <description>Number of pixels classified as strong positive</description>
-    </float>
-    <float>
-      <name>IntensitySumWeakPositive</name>
-      <label>Sum of Intensities of Weak Positive Pixels</label>
-      <channel>output</channel>
-      <description>Number of pixels classified as weak positive</description>
-    </float>
-    <float>
-      <name>IntensitySumPositive</name>
-      <label>Sum of Intensities of Positive Pixels</label>
-      <channel>output</channel>
-      <description>Number of pixels classified as simply positive</description>
-    </float>
-    <float>
-      <name>IntensitySumStrongPositive</name>
-      <label>Sum of Intensities of Strong Positive Pixels</label>
-      <channel>output</channel>
-      <description>Number of pixels classified as strong positive</description>
-    </float>
-    <float>
-      <name>IntensityAverage</name>
-      <label>Average Intensity</label>
-      <channel>output</channel>
-      <description>Average intensity of across all positive pixels</description>
-    </float>
-    <float>
-      <name>RatioStrongToTotal</name>
-      <label>Ratio of Strong Pixels to Total Pixels</label>
-      <channel>output</channel>
-      <description>The fraction of positive pixels that are strong</description>
-    </float>
-    <float>
-      <name>IntensityAverageWeakAndPositive</name>
-      <label>Average Intensity of Weak and Plain Positive Pixels</label>
-      <channel>output</channel>
-      <description>Average intensity of positive pixels excluding strong positive pixels</description>
-    </float>
-  </parameters>
   <parameters advanced="true">
     <label>Frame and Style</label>
     <description>Frame parameters</description>
