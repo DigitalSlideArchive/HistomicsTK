@@ -76,7 +76,7 @@ def main(opts):
     print('region: %r %r' % (tiparams, region_polygons))
 
     # Set tile size and useAlpha flag
-    tileSize = 2048
+    tileSize = 4096
     useAlpha = len(opts.region) > 6
 
     # Define the color map for label images
