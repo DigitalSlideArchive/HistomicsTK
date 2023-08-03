@@ -16,6 +16,7 @@ import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.utils as htk_utils
 from histomicstk.cli import utils as cli_utils
 from histomicstk.cli.utils import CLIArgumentParser
+from histomicstk.preprocessing import color_conversion
 
 logging.basicConfig(level=logging.CRITICAL)
 
@@ -216,7 +217,7 @@ def compute_reinhard_norm(args, invert_image=False, default_img_inversion=False)
 
     print('Reinhard stats computation time = {}'.format(
         cli_utils.disp_time_hms(rstats_time)))
-    return src_mu_lab, src_sigma_lab
+    return src_mu_lab.tolist(), src_sigma_lab.tolist()
 
 
 def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
@@ -375,6 +376,19 @@ def main(args):
             src_mu_lab, src_sigma_lab = compute_reinhard_norm(
                 args, invert_image=invert_image, default_img_inversion=default_img_inversion)
 
+    # Calculate src_mu_lab and src_sigma_lab for a single tile
+    if src_mu_lab is None or src_sigma_lab is None:
+        src_mu_lab, src_sigma_lab = compute_reinhard_norm(
+            args, invert_image=invert_image, default_img_inversion=default_img_inversion)
+
+    # Calculate src_mu_lab and src_sigma_lab for WSI
+    if src_mu_lab is None or src_sigma_lab is None:
+        im_src, _ = ts.getThumbnail(
+            width=1024, height=1024, format=large_image.constants.TILE_FORMAT_NUMPY)
+        im_lab = color_conversion.rgb_to_lab(im_src)
+        src_mu_lab = [im_lab[..., i].mean() for i in range(3)]
+        src_sigma_lab = [im_lab[..., i].std() for i in range(3)]
+
     #
     # Detect nuclei in parallel using Dask
     #
@@ -416,8 +430,8 @@ def main(args):
         'name': annot_fname + '-nuclei-' + args.nuclei_annotation_format,
         'elements': nuclei_list,
         'attributes': {
-            'src_mu_lab': None if src_mu_lab is None else src_mu_lab.tolist(),
-            'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab.tolist(),
+            'src_mu_lab': None if src_mu_lab is None else src_mu_lab,
+            'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab,
             'params': vars(args),
             'cli': Path(__file__).stem,
             'version': histomicstk.__version__,
