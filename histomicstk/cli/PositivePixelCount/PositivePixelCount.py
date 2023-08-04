@@ -53,7 +53,7 @@ def main(opts):
         **{k: getattr(opts, k) for k in ppc.Parameters._fields}
     )
     results = []
-    if 'left' in tiparams.get('region', {}):
+    if sink and 'left' in tiparams.get('region', {}):
         sink.crop = (
             tiparams['region']['left'], tiparams['region']['top'],
             tiparams['region']['width'], tiparams['region']['height'])
