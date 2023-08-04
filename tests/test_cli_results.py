@@ -54,4 +54,4 @@ class TestNucleiDetection:
     def test_detection(self, filename, params, roi):
         src = datastore.fetch(filename)
         annot = self._runTest([src] + params + roi)
-        assert 2000 < len(annot['elements']) < 3000
+        assert 2000 < len(annot['elements']) < 4000

@@ -365,19 +365,13 @@ def main(args):
     src_mu_lab = None
     src_sigma_lab = None
 
-    if is_wsi and process_whole_image:
-        # get a tile
-        tile_info = ts.getSingleTile(
-            format=large_image.tilesource.TILE_FORMAT_NUMPY,
-            frame=args.frame)
-        # get tile image & check number of channels
-        single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
-        if not single_channel:
-            src_mu_lab, src_sigma_lab = compute_reinhard_norm(
-                args, invert_image=invert_image, default_img_inversion=default_img_inversion)
-
     # Calculate src_mu_lab and src_sigma_lab for a single tile
-    if src_mu_lab is None or src_sigma_lab is None:
+    tile_info = ts.getSingleTile(
+        format=large_image.tilesource.TILE_FORMAT_NUMPY,
+        frame=args.frame)
+    # get tile image & check number of channels
+    single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
+    if not single_channel:
         src_mu_lab, src_sigma_lab = compute_reinhard_norm(
             args, invert_image=invert_image, default_img_inversion=default_img_inversion)
 
@@ -385,9 +379,11 @@ def main(args):
     if src_mu_lab is None or src_sigma_lab is None:
         im_src, _ = ts.getThumbnail(
             width=1024, height=1024, format=large_image.constants.TILE_FORMAT_NUMPY)
-        im_lab = color_conversion.rgb_to_lab(im_src)
-        src_mu_lab = [im_lab[..., i].mean() for i in range(3)]
-        src_sigma_lab = [im_lab[..., i].std() for i in range(3)]
+        single_channel = len(im_src.shape) <= 2 or im_src.shape[2] == 1
+        if not single_channel:
+            im_lab = color_conversion.rgb_to_lab(im_src)
+            src_mu_lab = [im_lab[..., i].mean() for i in range(3)]
+            src_sigma_lab = [im_lab[..., i].std() for i in range(3)]
 
     #
     # Detect nuclei in parallel using Dask
