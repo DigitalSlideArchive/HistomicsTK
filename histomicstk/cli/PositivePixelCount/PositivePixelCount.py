@@ -193,9 +193,10 @@ def main(opts):
     }
 
     # Save the annotation dictionary to the output annotation file
-    with open(opts.outputAnnotationFile, 'w') as annotation_file:
-        json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
-    print('Finished time %s' % (utils.disp_time_hms(time.time() - start_time)))
+    if opts.outputAnnotationFile:
+        with open(opts.outputAnnotationFile, 'w') as annotation_file:
+            json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
+        print('Finished time %s' % (utils.disp_time_hms(time.time() - start_time)))
 
 
 if __name__ == '__main__':
