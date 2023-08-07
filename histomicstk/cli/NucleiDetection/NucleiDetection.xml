@@ -163,9 +163,9 @@
       <integer>
       <name>tile_overlap_value</name>
       <label>Tile Overlap</label>
-      <description>Tile overlap size in pixels</description>
+      <description>Tile overlap size in pixels, Default value of -1 indicate that the tile overlap will be set to (max_radius + 1) * 4</description>
       <longflag>tile_overlap_value</longflag>
-      <default>84</default>
+      <default>-1</default>
     </integer>
     <boolean>
       <name>ignore_border_nuclei</name>
