@@ -11,7 +11,23 @@ from histomicstk.cli import utils as cli_utils
 def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                        src_sigma_lab=None, invert_image=False,
                        default_img_inversion=False, return_fdata=False):
-    print('>> detecting tile nuclei')
+    """
+    Detect nuclei within a tile image and generate annotations.
+
+    Args:
+        tile_info (dict): Information about the tile image.
+        args: Arguments from the cli.
+        src_mu_lab: Source mean in LAB color space.
+        src_sigma_lab: Source standard deviation in LAB color space.
+        invert_image (bool): Invert the image.
+        default_img_inversion (bool): Apply default image inversion.
+        return_fdata (bool): Return computed features.
+
+    Returns:
+        nuclei_annot_list (list): List of nuclei annotations.
+        fdata: Computed nuclei features.
+    """
+
     # Flags
     single_channel = False
 
@@ -71,34 +87,37 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
 
     flag_nuclei_found = np.any(im_nuclei_seg_mask)
 
-    if flag_nuclei_found:
-        format = args.nuclei_annotation_format
-        if args.nuclei_annotation_format == 'bbox' and args.remove_overlapping_nuclei_segmentation:
-            format = 'boundary'
-        nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
-            im_nuclei_seg_mask, tile_info, format)
-    # compute nuclei features
+    # compute nuclei features and nuclei_annot_list
     fdata = None
 
-    if flag_nuclei_found and return_fdata:
+    if flag_nuclei_found:
+        if args.nuclei_annotation_format:
+            format = args.nuclei_annotation_format
+            if args.nuclei_annotation_format == 'bbox' and - \
+                    args.remove_overlapping_nuclei_segmentation:
+                format = 'boundary'
 
-        if args.cytoplasm_features:
-            im_cytoplasm_stain = im_stains[:, :, 1].astype(float)
-        else:
-            im_cytoplasm_stain = None
+        nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
+            im_nuclei_seg_mask, tile_info, format)
 
-        fdata = htk_features.compute_nuclei_features(
-            im_nuclei_seg_mask, im_nuclei_stain, im_cytoplasm_stain,
-            fsd_bnd_pts=args.fsd_bnd_pts,
-            fsd_freq_bins=args.fsd_freq_bins,
-            cyto_width=args.cyto_width,
-            num_glcm_levels=args.num_glcm_levels,
-            morphometry_features_flag=args.morphometry_features,
-            fsd_features_flag=args.fsd_features,
-            intensity_features_flag=args.intensity_features,
-            gradient_features_flag=args.gradient_features,
-        )
+        if return_fdata:
+            if args.cytoplasm_features:
+                im_cytoplasm_stain = im_stains[:, :, 1].astype(float)
+            else:
+                im_cytoplasm_stain = None
 
-        fdata.columns = ['Feature.' + col for col in fdata.columns]
+            fdata = htk_features.compute_nuclei_features(
+                im_nuclei_seg_mask, im_nuclei_stain, im_cytoplasm_stain,
+                fsd_bnd_pts=args.fsd_bnd_pts,
+                fsd_freq_bins=args.fsd_freq_bins,
+                cyto_width=args.cyto_width,
+                num_glcm_levels=args.num_glcm_levels,
+                morphometry_features_flag=args.morphometry_features,
+                fsd_features_flag=args.fsd_features,
+                intensity_features_flag=args.intensity_features,
+                gradient_features_flag=args.gradient_features,
+            )
+
+            fdata.columns = ['Feature.' + col for col in fdata.columns]
 
     return nuclei_annot_list, fdata

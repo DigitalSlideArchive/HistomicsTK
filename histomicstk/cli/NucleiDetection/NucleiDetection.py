@@ -9,7 +9,6 @@ import large_image
 import numpy as np
 
 import histomicstk
-import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.label as htk_seg_label
 import histomicstk.segmentation.nuclear as htk_nuclear
@@ -60,78 +59,6 @@ def validate_args(args):
 
     if len(args.analysis_roi) != 4:
         raise ValueError('Analysis ROI must be a vector of 4 elements.')
-
-
-def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
-                       src_sigma_lab=None, invert_image=False,
-                       default_img_inversion=False):
-    # Flags
-    single_channel = False
-
-    # get tile image & check number of channels
-    single_channel = len(tile_info['tile'].shape) <= 2 or tile_info['tile'].shape[2] == 1
-    if single_channel:
-        im_tile = np.dstack((tile_info['tile'], tile_info['tile'], tile_info['tile']))
-        if default_img_inversion:
-            invert_image = True
-    else:
-        im_tile = tile_info['tile'][:, :, :3]
-
-    # perform image inversion
-    if invert_image:
-        im_tile = np.max(im_tile) - im_tile
-
-    # perform color normalization
-    im_nmzd = htk_cnorm.reinhard(im_tile,
-                                 args.reference_mu_lab,
-                                 args.reference_std_lab,
-                                 src_mu=src_mu_lab,
-                                 src_sigma=src_sigma_lab)
-
-    # perform color decovolution
-    w = cli_utils.get_stain_matrix(args)
-
-    # perform deconvolution
-    im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
-    im_nuclei_stain = im_stains[:, :, 0].astype(float)
-
-    # segment nuclear foreground
-    im_nuclei_fgnd_mask = im_nuclei_stain < args.foreground_threshold
-
-    # segment nuclei
-    im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
-        im_nuclei_stain,
-        im_nuclei_fgnd_mask,
-        args.min_radius,
-        args.max_radius,
-        args.min_nucleus_area,
-        args.local_max_search_radius
-    )
-
-    # Delete border nuclei
-    if args.ignore_border_nuclei is True:
-
-        im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
-
-    # Delete overlapping border nuclei
-    if any(tile_info['tile_overlap'].values()) > 0:
-
-        im_nuclei_seg_mask = htk_seg_label.delete_overlap(
-            im_nuclei_seg_mask, overlap_info=tile_info['tile_overlap'])
-
-    # generate nuclei annotations
-    nuclei_annot_list = []
-
-    flag_nuclei_found = np.any(im_nuclei_seg_mask)
-
-    if flag_nuclei_found:
-        format = args.nuclei_annotation_format
-        if args.nuclei_annotation_format == 'bbox' and args.remove_overlapping_nuclei_segmentation:
-            format = 'boundary'
-        nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
-            im_nuclei_seg_mask, tile_info, format)
-
-    return nuclei_annot_list
 
 
 def process_wsi_as_whole_image(ts, invert_image=False, args=None, default_img_inversion=False):
@@ -232,7 +159,7 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
             continue
 
         # detect nuclei
-        cur_nuclei_list = dask.delayed(detect_tile_nuclei)(
+        cur_nuclei_list = dask.delayed(htk_nuclear.detect_tile_nuclei)(
             tile,
             args,
             src_mu_lab, src_sigma_lab, invert_image=invert_image,
@@ -245,7 +172,7 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
     tile_nuclei_list = dask.delayed(tile_nuclei_list).compute()
 
     nuclei_list = [anot
-                   for anot_list in tile_nuclei_list for anot in anot_list]
+                   for anot_list, _ in tile_nuclei_list for anot in anot_list]
 
     nuclei_detection_time = time.time() - start_time
 
