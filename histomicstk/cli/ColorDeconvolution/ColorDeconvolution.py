@@ -20,6 +20,8 @@ def colorDeconvolve(args):
     ts = large_image.getTileSource(args.inputImageFile)
     region = {}
     it_kwargs = {}
+    tileSize=8192
+    it_kwargs['tile_size'] = dict(width=tileSize, height=tileSize)
 
     # Provides crop area if ROI present in arguments
     if np.all(np.array(args.region) != -1):
@@ -30,13 +32,10 @@ def colorDeconvolve(args):
             'height': args.region[3],
             'units': 'base_pixels'
         }
-        sink0.crop = (it_kwargs['region']['left'], it_kwargs['region']['top'],
-                      it_kwargs['region']['width'], it_kwargs['region']['height'])
-        sink1.crop = (it_kwargs['region']['left'], it_kwargs['region']['top'],
-                      it_kwargs['region']['width'], it_kwargs['region']['height'])
-        sink2.crop = (it_kwargs['region']['left'], it_kwargs['region']['top'],
-                      it_kwargs['region']['width'], it_kwargs['region']['height'])
-        region = utils.get_region_dict(args.region, args.maxRegionSize, ts)['region']
+        sink0.crop = tuple(args.region)
+        sink1.crop = tuple(args.region)
+        sink2.crop = tuple(args.region)
+        region = utils.get_region_dict(args.region, None, ts)['region']
 
     # Create stain matrix
     print('>> Creating stain matrix')
