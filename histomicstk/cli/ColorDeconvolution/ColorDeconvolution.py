@@ -20,7 +20,7 @@ def colorDeconvolve(args):
     ts = large_image.getTileSource(args.inputImageFile)
     region = {}
     it_kwargs = {}
-    tileSize=8192
+    tileSize = 8192
     it_kwargs['tile_size'] = dict(width=tileSize, height=tileSize)
 
     # Provides crop area if ROI present in arguments
