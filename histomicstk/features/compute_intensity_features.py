@@ -129,6 +129,8 @@ def compute_intensity_features(
         return x
 
     for i in range(numLabels):
+        if rprops[i] is None:
+            continue
 
         # get intensities of object pixels
         pixelIntensities = np.sort(
