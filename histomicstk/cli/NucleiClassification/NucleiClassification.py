@@ -1,6 +1,7 @@
 import colorsys
 import json
 import os
+import time
 from pathlib import Path
 
 import numpy as np
@@ -56,6 +57,51 @@ def gen_distinct_rgb_colors(n, seed=None):
 
     return color_list
 
+def process_feature_and_annotation(args):
+
+    #
+    # Detect and compute nuclei features in parallel using Dask
+    #
+    print('\n>> Detecting nuclei and computing features ...\n')
+
+    start_time = time.time()
+
+    tile_result_list = []
+
+    for tile in ts.tileIterator(**it_kwargs):
+
+        tile_position = tile['tile_position']['position']
+
+        if is_wsi and tile_fgnd_frac_list[tile_position] <= args.min_fgnd_frac:
+            continue
+
+        # detect nuclei
+        cur_result = dask.delayed(compute_tile_nuclei_features)(
+            args.inputImageFile,
+            tile_position,
+            args, it_kwargs,
+            src_mu_lab, src_sigma_lab
+        )
+
+        # append result to list
+        tile_result_list.append(cur_result)
+
+    tile_result_list = dask.delayed(tile_result_list).compute()
+
+    nuclei_annot_list = [annot
+                         for annot_list, fdata in tile_result_list
+                         for annot in annot_list]
+
+    nuclei_fdata = pd.DataFrame()
+
+    if len(nuclei_annot_list) > 0:
+
+        nuclei_fdata = pd.concat([
+            fdata
+            for annot_list, fdata in tile_result_list if fdata is not None],
+            ignore_index=True
+        )
+    return None, None
 
 def read_feature_file(args):
     import dask.dataframe as dd
@@ -76,15 +122,6 @@ def read_feature_file(args):
     return ddf
 
 
-def check_args(args):
-
-    if not os.path.isfile(args.inputImageFile):
-        raise OSError('Input image file does not exist.')
-
-    if not os.path.isfile(args.inputModelFile):
-        raise OSError('Input model file does not exist.')
-
-
 def main(args):
     import pandas as pd
 
@@ -102,40 +139,48 @@ def main(args):
     print(c)
 
     #
+    # Check if input feature files are available
+    #
+    if not os.path.isfile(args.inputImageFile) and  not os.path.isfile(args.inputModelFile):
+        process_feature_annotation()
+
+    #
     # read model file
     #
     print('\n>> Loading classification model ...\n')
 
     clf_model = joblib.load(args.inputModelFile)
 
-    #
-    # read feature file
-    #
-    print('\n>> Loading nuclei feature file ...\n')
+    if args.inputImageFile and args.inputModelFile:
+        # read feature file
+        #
+        print('\n>> Loading nuclei feature file ...\n')
 
-    ddf = read_feature_file(args)
+        ddf = read_feature_file(args)
 
-    if len(ddf.columns) != clf_model.n_features_in_:
+        if len(ddf.columns) != clf_model.n_features_in_:
 
-        raise ValueError('The number of features of the classification model '
-                         'and the input feature file do not match.')
+            raise ValueError('The number of features of the classification model '
+                            'and the input feature file do not match.')
 
-    #
-    # read nuclei annotation file
-    #
-    print('\n>> Loading nuclei annotation file ...\n')
+        #
+        # read nuclei annotation file
+        #
+        print('\n>> Loading nuclei annotation file ...\n')
 
-    with open(args.inputNucleiAnnotationFile) as f:
+        with open(args.inputNucleiAnnotationFile) as f:
 
-        annotation_data = json.load(f)
-        nuclei_annot_list = annotation_data.get(
-            'elements', annotation_data.get(
-                'annotation', {}).get('elements'))
+            annotation_data = json.load(f)
+            nuclei_annot_list = annotation_data.get(
+                'elements', annotation_data.get(
+                    'annotation', {}).get('elements'))
 
-    if len(nuclei_annot_list) != len(ddf.index):
+        if len(nuclei_annot_list) != len(ddf.index):
 
-        raise ValueError('The number of nuclei in the feature file and the '
-                         'annotation file do not match')
+            raise ValueError('The number of nuclei in the feature file and the '
+                            'annotation file do not match')
+    else:
+        nuclei_annot_list, ddf = process_feature_and_annotation(args)
 
     #
     # Perform nuclei classification
