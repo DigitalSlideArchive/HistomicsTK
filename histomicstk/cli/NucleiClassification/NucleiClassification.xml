@@ -28,25 +28,24 @@
     <file fileExtensions=".csv|.h5">
       <name>inputNucleiFeatureFile</name>
       <label>Input Nuclei Feature File</label>
-      <channel>input</channel>
-      <index>2</index>
+      <channel>output</channel>
+      <flag>feturefile</flag>
       <description>Input nuclei feature file (*.csv, *.h5) containing the features of all nuclei to be classified</description>
     </file>
     <file fileExtensions=".anot">
       <name>inputNucleiAnnotationFile</name>
       <label>Input Nuclei Annotation File</label>
-      <channel>input</channel>
-      <index>3</index>
+      <channel>output</channel>
       <description>Input nuclei annotation file (*.anot) containing nuclei annotations in the same order as their features in the feature file</description>
     </file>
-    <file fileExtensions=".anot" reference="inputImageFile">
+  </parameters>
+  <file fileExtensions=".anot" reference="inputImageFile">
       <name>outputNucleiAnnotationFile</name>
       <label>Output Nuclei Annotation File</label>
       <channel>output</channel>
-      <index>4</index>
+      <index>2</index>
       <description>Output nuclei annotation file (*.anot) with the same nuclei in input nuclei annotation file if provided) with nuclei sorted into groups based on class and accompanied by heatmaps of the classification probabilities</description>
-    </file>
-  </parameters>
+  </file>
   <parameters advanced="true">
     <label>Dask</label>
     <description>Dask parameters</description>

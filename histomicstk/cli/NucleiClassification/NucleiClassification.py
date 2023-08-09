@@ -2,9 +2,12 @@ import colorsys
 import json
 import os
 import time
+import pandas as pd
 from pathlib import Path
+import large_image
 
 import numpy as np
+import histomicstk.segmentation.nuclear as htk_nuclear
 
 try:
     import joblib
@@ -57,7 +60,43 @@ def gen_distinct_rgb_colors(n, seed=None):
 
     return color_list
 
+
 def process_feature_and_annotation(args):
+
+    # set reference values
+    args.reference_mu_lab = [8.63234435, -0.11501964, 0.03868433]
+    args.reference_std_lab = [0.57506023, 0.10403329, 0.01364062]
+    args.foreground_threshold = 60
+    args.min_radius = 6
+    args.max_radius = 20
+    args.min_nucleus_area = 80
+    args.local_max_search_radius = 10
+    args.nuclei_annotation_format = "boundary"
+
+    import dask
+
+    #
+    # Compute foreground fraction of tiles in parallel using Dask
+    #
+    tile_fgnd_frac_list = [1.0]
+
+    it_kwargs = {}
+
+    #
+    # Read Input Image
+    #
+    print('\n>> Reading input image ... \n')
+
+    ts = large_image.getTileSource(args.inputImageFile)
+
+    ts_metadata = ts.getMetadata()
+
+    print(json.dumps(ts_metadata, indent=2))
+
+    is_wsi = ts_metadata['magnification'] is not None
+
+    src_mu_lab = None
+    src_sigma_lab = None
 
     #
     # Detect and compute nuclei features in parallel using Dask
@@ -72,15 +111,12 @@ def process_feature_and_annotation(args):
 
         tile_position = tile['tile_position']['position']
 
-        if is_wsi and tile_fgnd_frac_list[tile_position] <= args.min_fgnd_frac:
-            continue
-
         # detect nuclei
-        cur_result = dask.delayed(compute_tile_nuclei_features)(
-            args.inputImageFile,
-            tile_position,
-            args, it_kwargs,
-            src_mu_lab, src_sigma_lab
+        cur_result = dask.delayed(htk_nuclear.detect_tile_nuclei)(
+            tile,
+            args,
+            src_mu_lab, src_sigma_lab,
+            return_fdata=True
         )
 
         # append result to list
@@ -101,7 +137,11 @@ def process_feature_and_annotation(args):
             for annot_list, fdata in tile_result_list if fdata is not None],
             ignore_index=True
         )
-    return None, None
+    processing_time = time.time - start_time
+    print('Nuclei detection and feature extraction time = {}'.format(
+        cli_utils.disp_time_hms(processing_time)))
+    return nuclei_annot_list, pd.DataFrame(nuclei_fdata)
+
 
 def read_feature_file(args):
     import dask.dataframe as dd
@@ -123,7 +163,6 @@ def read_feature_file(args):
 
 
 def main(args):
-    import pandas as pd
 
     print('\n>> CLI Parameters ...\n')
 
@@ -139,21 +178,15 @@ def main(args):
     print(c)
 
     #
-    # Check if input feature files are available
-    #
-    if not os.path.isfile(args.inputImageFile) and  not os.path.isfile(args.inputModelFile):
-        process_feature_annotation()
-
-    #
     # read model file
     #
     print('\n>> Loading classification model ...\n')
 
     clf_model = joblib.load(args.inputModelFile)
 
-    if args.inputImageFile and args.inputModelFile:
+    if args.inputNucleiFeatureFile and args.inputNucleiAnnotationFile:
+
         # read feature file
-        #
         print('\n>> Loading nuclei feature file ...\n')
 
         ddf = read_feature_file(args)
@@ -161,7 +194,7 @@ def main(args):
         if len(ddf.columns) != clf_model.n_features_in_:
 
             raise ValueError('The number of features of the classification model '
-                            'and the input feature file do not match.')
+                             'and the input feature file do not match.')
 
         #
         # read nuclei annotation file
@@ -178,7 +211,7 @@ def main(args):
         if len(nuclei_annot_list) != len(ddf.index):
 
             raise ValueError('The number of nuclei in the feature file and the '
-                            'annotation file do not match')
+                             'annotation file do not match')
     else:
         nuclei_annot_list, ddf = process_feature_and_annotation(args)
 
