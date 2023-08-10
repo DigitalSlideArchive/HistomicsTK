@@ -28,14 +28,14 @@
     <file fileExtensions=".csv|.h5">
       <name>inputNucleiFeatureFile</name>
       <label>Input Nuclei Feature File</label>
-      <channel>output</channel>
+      <channel>input</channel>
       <flag>feturefile</flag>
       <description>Input nuclei feature file (*.csv, *.h5) containing the features of all nuclei to be classified</description>
     </file>
     <file fileExtensions=".anot">
       <name>inputNucleiAnnotationFile</name>
       <label>Input Nuclei Annotation File</label>
-      <channel>output</channel>
+      <channel>input</channel>
       <description>Input nuclei annotation file (*.anot) containing nuclei annotations in the same order as their features in the feature file</description>
     </file>
   </parameters>

@@ -5,6 +5,9 @@ import time
 import pandas as pd
 from pathlib import Path
 import large_image
+import dask.dataframe as dd
+import dask
+
 
 import numpy as np
 import histomicstk.segmentation.nuclear as htk_nuclear
@@ -62,6 +65,7 @@ def gen_distinct_rgb_colors(n, seed=None):
 
 
 def process_feature_and_annotation(args):
+    print('>> Starting process features')
 
     # set reference values
     args.reference_mu_lab = [8.63234435, -0.11501964, 0.03868433]
@@ -72,8 +76,27 @@ def process_feature_and_annotation(args):
     args.min_nucleus_area = 80
     args.local_max_search_radius = 10
     args.nuclei_annotation_format = "boundary"
-
-    import dask
+    args.stain_1 = "hematoxylin"
+    args.stain_1_vector = [-1.0, -1.0, -1.0]
+    args.stain_2 = "eosin"
+    args.stain_2_vector = [-1.0, -1.0, -1.0]
+    args.stain_3 = "null"
+    args.stain_3_vector = [-1.0, -1.0, -1.0]
+    args.ignore_border_nuclei = False
+    args.cyto_width = 8
+    args.cytoplasm_features = True
+    args.fsd_bnd_pts = 128
+    args.fsd_features = True
+    args.fsd_freq_bins = 6
+    args.gradient_features = True
+    args.haralick_features = True
+    args.morphometry_features = True
+    args.intensity_features = True
+    args.gradient_features = True
+    args.fsd_features = True
+    args.num_glcm_levels = 32
+    args.min_fgnd_frac = .25
+    args.analysis_roi = [1397.0, 860.0, 867.0, 974.0]
 
     #
     # Compute foreground fraction of tiles in parallel using Dask
@@ -81,6 +104,13 @@ def process_feature_and_annotation(args):
     tile_fgnd_frac_list = [1.0]
 
     it_kwargs = {}
+    it_kwargs['region'] = {
+        'left': args.analysis_roi[0],
+        'top': args.analysis_roi[1],
+        'width': args.analysis_roi[2],
+        'height': args.analysis_roi[3],
+        'units': 'base_pixels'
+    }
 
     #
     # Read Input Image
@@ -94,6 +124,31 @@ def process_feature_and_annotation(args):
     print(json.dumps(ts_metadata, indent=2))
 
     is_wsi = ts_metadata['magnification'] is not None
+
+    if not is_wsi:
+
+        print('\n>> Computing foreground fraction of all tiles ...\n')
+
+        start_time = time.time()
+
+        num_tiles = ts.getSingleTile(**it_kwargs)['iterator_range']['position']
+
+        print(f'Number of tiles = {num_tiles}')
+
+        tile_fgnd_frac_list = np.full(num_tiles, 1.0)
+
+        num_fgnd_tiles = np.count_nonzero(
+            tile_fgnd_frac_list >= args.min_fgnd_frac)
+
+        percent_fgnd_tiles = 100.0 * num_fgnd_tiles / num_tiles
+
+        fgnd_frac_comp_time = time.time() - start_time
+
+        print('Number of foreground tiles = {:d} ({:2f}%%)'.format(
+            num_fgnd_tiles, percent_fgnd_tiles))
+
+        print('Tile foreground fraction computation time = {}'.format(
+            cli_utils.disp_time_hms(fgnd_frac_comp_time)))
 
     src_mu_lab = None
     src_sigma_lab = None
@@ -110,6 +165,9 @@ def process_feature_and_annotation(args):
     for tile in ts.tileIterator(**it_kwargs):
 
         tile_position = tile['tile_position']['position']
+
+        # if is_wsi and tile_fgnd_frac_list[tile_position] <= args.min_fgnd_frac:
+        #     continue
 
         # detect nuclei
         cur_result = dask.delayed(htk_nuclear.detect_tile_nuclei)(
@@ -137,14 +195,16 @@ def process_feature_and_annotation(args):
             for annot_list, fdata in tile_result_list if fdata is not None],
             ignore_index=True
         )
-    processing_time = time.time - start_time
-    print('Nuclei detection and feature extraction time = {}'.format(
-        cli_utils.disp_time_hms(processing_time)))
-    return nuclei_annot_list, pd.DataFrame(nuclei_fdata)
+    # processing_time = time.time - start_time
+    # print(processing_time)
+    # print('Nuclei detection and feature extraction time = {}'.format(
+    #     cli_utils.disp_time_hms(processing_time)))
+    df = pd.DataFrame(nuclei_fdata)
+    print('>>len of df', len(df))
+    return nuclei_annot_list, dd.from_pandas(df, npartitions=1)
 
 
 def read_feature_file(args):
-    import dask.dataframe as dd
 
     fname, feature_file_format = os.path.splitext(args.inputNucleiFeatureFile)
 
@@ -181,10 +241,9 @@ def main(args):
     # read model file
     #
     print('\n>> Loading classification model ...\n')
-
     clf_model = joblib.load(args.inputModelFile)
 
-    if args.inputNucleiFeatureFile and args.inputNucleiAnnotationFile:
+    if not args.inputNucleiFeatureFile and not args.inputNucleiAnnotationFile:
 
         # read feature file
         print('\n>> Loading nuclei feature file ...\n')
@@ -207,6 +266,8 @@ def main(args):
             nuclei_annot_list = annotation_data.get(
                 'elements', annotation_data.get(
                     'annotation', {}).get('elements'))
+            print(nuclei_annot_list)
+            print(ddf)
 
         if len(nuclei_annot_list) != len(ddf.index):
 
@@ -214,6 +275,14 @@ def main(args):
                              'annotation file do not match')
     else:
         nuclei_annot_list, ddf = process_feature_and_annotation(args)
+
+        print(nuclei_annot_list)
+        print(ddf)
+
+        if len(nuclei_annot_list) != len(ddf.index):
+            print(len(nuclei_annot_list), len(ddf))
+            raise ValueError('The number of nuclei in the feature file and the '
+                             'annotation file do not match')
 
     #
     # Perform nuclei classification
