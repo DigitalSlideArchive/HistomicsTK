@@ -276,8 +276,9 @@ def main(args):
         process_whole_image = False
 
     # Provide default value for tile_overlap
-    tile_overlap = args.tile_overlap_value if args.tile_overlap_value != - \
-        1 else ((args.max_radius + 1) * 4)
+    tile_overlap = args.tile_overlap_value
+    if tile_overlap == -1:
+        tile_overlap = (args.max_radius + 1) * 4
 
     # retrive style
     if not args.style or args.style.startswith('{#control'):
