@@ -25,24 +25,24 @@
       <longflag>region</longflag>
       <default>-1,-1,-1,-1</default>
     </region>
-    <image fileExtensions=".png" reference="inputImageFile">
+    <image fileExtensions=".tiff" reference="inputImageFile">
       <name>outputStainImageFile_1</name>
       <label>Output Image of Stain 1</label>
-      <description>Output Image of Stain 1 (*.png)</description>
+      <description>Output Image of Stain 1 (*.tiff)</description>
       <channel>output</channel>
       <index>1</index>
     </image>
-    <image fileExtensions=".png" reference="inputImageFile">
+    <image fileExtensions=".tiff" reference="inputImageFile">
       <name>outputStainImageFile_2</name>
       <label>Output Image of Stain 2</label>
-      <description>Output Image of Stain 2 (*.png)</description>
+      <description>Output Image of Stain 2 (*.tiff)</description>
       <channel>output</channel>
       <index>2</index>
     </image>
-    <image fileExtensions=".png" reference="inputImageFile">
+    <image fileExtensions=".tiff" reference="inputImageFile">
       <name>outputStainImageFile_3</name>
       <label>Output Image of Stain 3</label>
-      <description>Output Image of Stain 3 (*.png)</description>
+      <description>Output Image of Stain 3 (*.tiff)</description>
       <channel>output</channel>
       <index>3</index>
     </image>
