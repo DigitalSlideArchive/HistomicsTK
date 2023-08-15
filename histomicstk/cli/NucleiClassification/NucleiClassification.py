@@ -115,7 +115,7 @@ def main(args):
 
     ddf = read_feature_file(args)
 
-    if len(ddf.columns) != clf_model.n_features_:
+    if len(ddf.columns) != clf_model.n_features_in_:
 
         raise ValueError('The number of features of the classification model '
                          'and the input feature file do not match.')
@@ -127,7 +127,10 @@ def main(args):
 
     with open(args.inputNucleiAnnotationFile) as f:
 
-        nuclei_annot_list = json.load(f)['elements']
+        annotation_data = json.load(f)
+        nuclei_annot_list = annotation_data.get(
+            'elements', annotation_data.get(
+                'annotation', {}).get('elements'))
 
     if len(nuclei_annot_list) != len(ddf.index):
 
@@ -141,7 +144,7 @@ def main(args):
 
     def predict_nuclei_class_prob(df, clf_model):
 
-        return pd.DataFrame(data=clf_model.predict_proba(df.as_matrix()),
+        return pd.DataFrame(data=clf_model.predict_proba(df.values),
                             columns=clf_model.classes_)
 
     outfmt = pd.DataFrame(columns=clf_model.classes_, dtype=np.float64)

@@ -202,6 +202,11 @@ def main(args):
     else:
         process_whole_image = False
 
+    # Provide default value for tile_overlap
+    tile_overlap = args.tile_overlap_value
+    if tile_overlap == -1:
+        tile_overlap = (args.max_radius + 1) * 4
+
     # retrive style
     if not args.style or args.style.startswith('{#control'):
         args.style = None
@@ -210,7 +215,7 @@ def main(args):
     it_kwargs = {
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
-        'tile_overlap': {'x': args.tile_overlap_value, 'y': args.tile_overlap_value},
+        'tile_overlap': {'x': tile_overlap, 'y': tile_overlap},
         'style': {args.style}
     }
 

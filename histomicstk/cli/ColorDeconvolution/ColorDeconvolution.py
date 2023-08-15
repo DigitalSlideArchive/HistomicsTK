@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 
 import large_image
+import numpy as np
 
 import histomicstk
 import histomicstk.preprocessing.color_deconvolution as htk_cd
@@ -12,20 +13,29 @@ from histomicstk.cli.utils import CLIArgumentParser
 logging.basicConfig()
 
 
-def main(args):
-    import skimage.io
-
-    # Read Input Image
-    print('>> Reading input image')
-
-    print(args.inputImageFile)
-
+def colorDeconvolve(args):
+    sink0 = large_image.new()
+    sink1 = large_image.new()
+    sink2 = large_image.new()
     ts = large_image.getTileSource(args.inputImageFile)
+    region = {}
+    it_kwargs = {}
+    tileSize = 8192
+    it_kwargs['tile_size'] = dict(width=tileSize, height=tileSize)
 
-    im_input = ts.getRegion(
-        format=large_image.tilesource.TILE_FORMAT_NUMPY,
-        **utils.get_region_dict(args.region, args.maxRegionSize, ts)
-    )[0]
+    # Provides crop area if ROI present in arguments
+    if np.all(np.array(args.region) != -1):
+        it_kwargs['region'] = {
+            'left': args.region[0],
+            'top': args.region[1],
+            'width': args.region[2],
+            'height': args.region[3],
+            'units': 'base_pixels'
+        }
+        sink0.crop = tuple(args.region)
+        sink1.crop = tuple(args.region)
+        sink2.crop = tuple(args.region)
+        region = utils.get_region_dict(args.region, None, ts)['region']
 
     # Create stain matrix
     print('>> Creating stain matrix')
@@ -35,22 +45,36 @@ def main(args):
 
     # Perform color deconvolution
     print('>> Performing color deconvolution')
-    im_stains = htk_cd.color_deconvolution(im_input, w).Stains
+    for tile in ts.tileIterator(**it_kwargs):
+        im_stains = htk_cd.color_deconvolution(tile['tile'], w).Stains
+        sink0.addTile(im_stains[:, :, 0], tile['x'], tile['y'])
+        sink1.addTile(im_stains[:, :, 1], tile['x'], tile['y'])
+        sink2.addTile(im_stains[:, :, 2], tile['x'], tile['y'])
 
-    # write stain images to output
+    # Write stain images to output
     print('>> Outputting individual stain images')
 
     print(args.outputStainImageFile_1)
-    skimage.io.imsave(args.outputStainImageFile_1, im_stains[:, :, 0])
-
+    sink0.write(args.outputStainImageFile_1)
     print(args.outputStainImageFile_2)
-    skimage.io.imsave(args.outputStainImageFile_2, im_stains[:, :, 1])
-
+    sink1.write(args.outputStainImageFile_2)
     print(args.outputStainImageFile_3)
-    skimage.io.imsave(args.outputStainImageFile_3, im_stains[:, :, 2])
+    sink2.write(args.outputStainImageFile_3)
+
+    return region
+
+
+def main(args):
+
+    # Read Input Image
+    print('>> Reading input image')
+
+    print(args.inputImageFile)
+
+    region = colorDeconvolve(args)
 
     if args.outputAnnotationFile:
-        region = utils.get_region_dict(args.region, args.maxRegionSize, ts)['region']
+
         annotation = [{
             'name': 'Deconvolution %s' % (
                 args.stain_1 if args.stain_1 != 'custom' else str(args.stain_1_vector)),
@@ -60,12 +84,12 @@ def main(args):
                 'transform': {
                     'xoffset': region.get('left', 0),
                     'yoffset': region.get('top', 0),
-                },
+                }
             }],
             'attributes': {
                 'cli': Path(__file__).stem,
                 'params': vars(args),
-                'version': histomicstk.__version__,
+                'version': histomicstk.__version__
             },
         }, {
             'name': 'Deconvolution %s' % (
@@ -76,12 +100,12 @@ def main(args):
                 'transform': {
                     'xoffset': region.get('left', 0),
                     'yoffset': region.get('top', 0),
-                },
+                }
             }],
             'attributes': {
                 'cli': Path(__file__).stem,
                 'params': vars(args),
-                'version': histomicstk.__version__,
+                'version': histomicstk.__version__
             },
         }, {
             'name': 'Deconvolution %s' % (
@@ -92,12 +116,12 @@ def main(args):
                 'transform': {
                     'xoffset': region.get('left', 0),
                     'yoffset': region.get('top', 0),
-                },
+                }
             }],
             'attributes': {
                 'cli': Path(__file__).stem,
                 'params': vars(args),
-                'version': histomicstk.__version__,
+                'version': histomicstk.__version__
             }
         }]
         if args.stain_3 == 'null':
