@@ -95,14 +95,16 @@ def process_feature_and_annotation(args):
     args.fsd_features = True
     args.num_glcm_levels = 32
     args.min_fgnd_frac = .25
-    args.analysis_roi = [1416, 336, 1724, 2374]
+    #args.analysis_roi = [1416, 336, 1724, 2374]
+    args.analysis_roi = None
 
     #
     # Compute foreground fraction of tiles in parallel using Dask
     #
 
     it_kwargs = {}
-    it_kwargs['region'] = {
+    if args.analysis_roi:
+        it_kwargs['region'] = {
         'left': args.analysis_roi[0],
         'top': args.analysis_roi[1],
         'width': args.analysis_roi[2],
@@ -161,6 +163,8 @@ def process_feature_and_annotation(args):
         )
 
     df = pd.DataFrame(nuclei_fdata)
+    print('>>> dataframe', df)
+    print('>>> nuclei list', nuclei_annot_list)
     print('>>len of output', len(df), len(nuclei_annot_list))
     return nuclei_annot_list, dd.from_pandas(df, npartitions=1)
 
@@ -204,7 +208,7 @@ def main(args):
     print('\n>> Loading classification model ...\n')
     clf_model = joblib.load(args.inputModelFile)
 
-    if not args.inputNucleiFeatureFile and not args.inputNucleiAnnotationFile:
+    if args.inputNucleiFeatureFile and args.inputNucleiAnnotationFile:
 
         # read feature file
         print('\n>> Loading nuclei feature file ...\n')
@@ -212,6 +216,7 @@ def main(args):
         ddf = read_feature_file(args)
 
         if len(ddf.columns) != clf_model.n_features_in_:
+            print('>>> Number of columns and RF',len(ddf.columns),clf_model.n_features_in_)
 
             raise ValueError('The number of features of the classification model '
                              'and the input feature file do not match.')
@@ -231,6 +236,7 @@ def main(args):
             print(ddf)
 
         if len(nuclei_annot_list) != len(ddf.index):
+            print('>> the difference ',len(nuclei_annot_list),len(ddf.index))
 
             raise ValueError('The number of nuclei in the feature file and the '
                              'annotation file do not match')
