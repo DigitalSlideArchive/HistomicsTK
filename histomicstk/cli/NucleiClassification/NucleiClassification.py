@@ -26,6 +26,48 @@ from histomicstk.cli.utils import CLIArgumentParser
 logging.basicConfig(level=logging.CRITICAL)
 
 
+def set_reference_values(args):
+    """
+    Set reference values and configuration parameters for feature extraction.
+
+    Args:
+        args (dict): Configuration parameters for feature extraction.
+
+    Returns:
+        dict: Updated configuration parameters with reference values set.
+    """
+    args.reference_mu_lab = [8.63234435, -0.11501964, 0.03868433]
+    args.reference_std_lab = [0.57506023, 0.10403329, 0.01364062]
+    args.foreground_threshold = 60
+    args.min_radius = 6
+    args.max_radius = 20
+    args.min_nucleus_area = 80
+    args.local_max_search_radius = 10
+    args.nuclei_annotation_format = "boundary"
+    args.stain_1 = "hematoxylin"
+    args.stain_1_vector = [-1.0, -1.0, -1.0]
+    args.stain_2 = "eosin"
+    args.stain_2_vector = [-1.0, -1.0, -1.0]
+    args.stain_3 = "null"
+    args.stain_3_vector = [-1.0, -1.0, -1.0]
+    args.ignore_border_nuclei = False
+    args.cyto_width = 8
+    args.cytoplasm_features = True
+    args.fsd_bnd_pts = 128
+    args.fsd_features = True
+    args.fsd_freq_bins = 6
+    args.gradient_features = True
+    args.haralick_features = True
+    args.morphometry_features = True
+    args.intensity_features = True
+    args.gradient_features = True
+    args.fsd_features = True
+    args.num_glcm_levels = 32
+    args.min_fgnd_frac = .25
+    args.analysis_roi = None
+    return args
+
+
 def gen_distinct_rgb_colors(n, seed=None):
     """
     Generates N visually distinct RGB colors
@@ -64,53 +106,23 @@ def gen_distinct_rgb_colors(n, seed=None):
 
 
 def process_feature_and_annotation(args):
-    print('>> Starting process features')
+    """
+    Process nuclei feature extraction and annotation from an input image.
 
-    # set reference values
-    args.reference_mu_lab = [8.63234435, -0.11501964, 0.03868433]
-    args.reference_std_lab = [0.57506023, 0.10403329, 0.01364062]
-    args.foreground_threshold = 60
-    args.min_radius = 6
-    args.max_radius = 20
-    args.min_nucleus_area = 80
-    args.local_max_search_radius = 10
-    args.nuclei_annotation_format = "boundary"
-    args.stain_1 = "hematoxylin"
-    args.stain_1_vector = [-1.0, -1.0, -1.0]
-    args.stain_2 = "eosin"
-    args.stain_2_vector = [-1.0, -1.0, -1.0]
-    args.stain_3 = "null"
-    args.stain_3_vector = [-1.0, -1.0, -1.0]
-    args.ignore_border_nuclei = False
-    args.cyto_width = 8
-    args.cytoplasm_features = True
-    args.fsd_bnd_pts = 128
-    args.fsd_features = True
-    args.fsd_freq_bins = 6
-    args.gradient_features = True
-    args.haralick_features = True
-    args.morphometry_features = True
-    args.intensity_features = True
-    args.gradient_features = True
-    args.fsd_features = True
-    args.num_glcm_levels = 32
-    args.min_fgnd_frac = .25
-    #args.analysis_roi = [1416, 336, 1724, 2374]
-    args.analysis_roi = None
+    Args:
+        args (dict): Configuration parameters for feature extraction.
+
+    Returns:
+        tuple: A tuple containing nuclei annotations (list) and feature data (Dask DataFrame).
+    """
+
+    print('>> Starting process features and annotation')
 
     #
-    # Compute foreground fraction of tiles in parallel using Dask
+    # Set arguments required for nuclei feature extraction
     #
-
+    args = set_reference_values(args)
     it_kwargs = {}
-    if args.analysis_roi:
-        it_kwargs['region'] = {
-        'left': args.analysis_roi[0],
-        'top': args.analysis_roi[1],
-        'width': args.analysis_roi[2],
-        'height': args.analysis_roi[3],
-        'units': 'base_pixels'
-    }
 
     #
     # Read Input Image
@@ -161,15 +173,23 @@ def process_feature_and_annotation(args):
             for annot_list, fdata in tile_result_list if fdata is not None],
             ignore_index=True
         )
+    # remove any NaN element, make the number nuclei and features same.
+    df = pd.DataFrame(nuclei_fdata).dropna()
+    df = df[:len(nuclei_annot_list)]
 
-    df = pd.DataFrame(nuclei_fdata)
-    print('>>> dataframe', df)
-    print('>>> nuclei list', nuclei_annot_list)
-    print('>>len of output', len(df), len(nuclei_annot_list))
     return nuclei_annot_list, dd.from_pandas(df, npartitions=1)
 
 
 def read_feature_file(args):
+    """
+    Read nuclei feature data from a specified file.
+
+    Args:
+        args (dict): Configuration parameters including the input feature file path.
+
+    Returns:
+        dask.dataframe.DataFrame: A Dask DataFrame containing the nuclei feature data.
+    """
 
     fname, feature_file_format = os.path.splitext(args.inputNucleiFeatureFile)
 
@@ -216,7 +236,6 @@ def main(args):
         ddf = read_feature_file(args)
 
         if len(ddf.columns) != clf_model.n_features_in_:
-            print('>>> Number of columns and RF',len(ddf.columns),clf_model.n_features_in_)
 
             raise ValueError('The number of features of the classification model '
                              'and the input feature file do not match.')
@@ -236,7 +255,6 @@ def main(args):
             print(ddf)
 
         if len(nuclei_annot_list) != len(ddf.index):
-            print('>> the difference ',len(nuclei_annot_list),len(ddf.index))
 
             raise ValueError('The number of nuclei in the feature file and the '
                              'annotation file do not match')
