@@ -6,7 +6,7 @@
   <version>0.1.0</version>
   <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
   <license>Apache 2.0</license>
-  <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware)</contributor>
+  <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware), Subin Erattakulangara (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
   <parameters>
     <label>IO</label>
