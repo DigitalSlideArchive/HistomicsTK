@@ -36,7 +36,7 @@
       <name>inputNucleiAnnotationFile</name>
       <label>Input Nuclei Annotation File</label>
       <channel>input</channel>
-      <longflag>annotation-filexx</longflag>
+      <longflag>annotation-file</longflag>
       <description>Input nuclei annotation file (*.anot) containing nuclei annotations in the same order as their features in the feature file</description>
     </file>
     <file fileExtensions=".anot" reference="inputImageFile">

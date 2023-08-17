@@ -116,7 +116,7 @@ def process_feature_and_annotation(args):
         tuple: A tuple containing nuclei annotations (list) and feature data (Dask DataFrame).
     """
 
-    print('>> Starting process features and annotation')
+    print('>> Generating features and annotation')
 
     #
     # Set arguments required for nuclei feature extraction
