@@ -163,9 +163,9 @@
       <integer>
       <name>tile_overlap_value</name>
       <label>Tile Overlap</label>
-      <description>Tile overlap size in pixels</description>
+      <description>Tile overlap size in pixels, Default value of -1 indicate that the tile overlap will be set to (max_radius + 1) * 4</description>
       <longflag>tile_overlap_value</longflag>
-      <default>0</default>
+      <default>-1</default>
     </integer>
     <boolean>
       <name>ignore_border_nuclei</name>
@@ -179,7 +179,7 @@
       <label>Remove overlapping nuclei</label>
       <description>Remove overlapping nuclei segmentation from the given region. It is recommended to use this approach when defining the tile overlap parameter.</description>
       <longflag>remove_overlapping_nuclei_segmentation</longflag>
-      <default>false</default>
+      <default>True</default>
     </boolean>
   </parameters>
   <parameters advanced="true">

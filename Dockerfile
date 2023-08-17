@@ -4,7 +4,7 @@
 #
 # All plugins of HistomicsTK should derive from this docker image
 
-FROM python:3.8-slim
+FROM python:3.11-slim
 LABEL maintainer="Kitware, Inc. <kitware@kitware.com>"
 
 RUN apt-get update && \
