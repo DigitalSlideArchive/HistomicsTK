@@ -247,7 +247,10 @@ def main(args):
 
         with open(args.inputNucleiAnnotationFile) as f:
 
-        nuclei_annot_list = json.load(f)['elements']
+            annotation_data = json.load(f)
+            nuclei_annot_list = annotation_data.get(
+                'elements', annotation_data.get(
+                    'annotation', {}).get('elements'))
 
         if len(nuclei_annot_list) != len(ddf.index):
 
