@@ -9,6 +9,7 @@ import large_image
 import numpy as np
 import pandas as pd
 
+import histomicstk.segmentation.label as htk_seg_label
 import histomicstk.segmentation.nuclear as htk_nuclear
 
 try:
@@ -122,7 +123,8 @@ def process_feature_and_annotation(args):
     # Set arguments required for nuclei feature extraction
     #
     args = set_reference_values(args)
-    it_kwargs = {}
+    tile_overlap = (args.max_radius + 1) * 4
+    it_kwargs = {'tile_overlap': {'x': tile_overlap, 'y': tile_overlap}}
 
     #
     # Read Input Image
@@ -163,6 +165,10 @@ def process_feature_and_annotation(args):
     nuclei_annot_list = [annot
                          for annot_list, fdata in tile_result_list
                          for annot in annot_list]
+
+    # remove overlapping nuclei
+    nuclei_annot_list = htk_seg_label.remove_overlap_nuclei(
+        nuclei_annot_list, args.nuclei_annotation_format)
 
     nuclei_fdata = pd.DataFrame()
 
