@@ -193,6 +193,7 @@ def main(args):
     it_kwargs = {
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
+        'tile_overlap': {'x': 84, 'y': 84}
     }
 
     if not process_whole_image:
@@ -291,6 +292,10 @@ def main(args):
     nuclei_annot_list = [annot
                          for annot_list, fdata in tile_result_list
                          for annot in annot_list]
+
+    # remove overlapping nuclei
+    nuclei_annot_list = htk_seg_label.remove_overlap_nuclei(
+        nuclei_annot_list, 'boundary')
 
     nuclei_fdata = pd.DataFrame()
 
