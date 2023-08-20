@@ -1,3 +1,5 @@
+import numpy as np
+
 from histomicstk.segmentation import label as htk_label
 
 from .compute_fsd_features import compute_fsd_features
@@ -7,7 +9,7 @@ from .compute_intensity_features import compute_intensity_features
 from .compute_morphometry_features import compute_morphometry_features
 
 
-def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
+def compute_nuclei_features(im_label, tile_info, im_nuclei=None, im_cytoplasm=None,
                             fsd_bnd_pts=128, fsd_freq_bins=6, cyto_width=8,
                             num_glcm_levels=32,
                             morphometry_features_flag=True,
@@ -158,6 +160,12 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
 
     feature_list = []
 
+    # load tile info
+    gx = tile_info['gx']
+    gy = tile_info['gy']
+    wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
+    hfrac = tile_info['gheight'] / np.double(tile_info['height'])
+
     # get the objects in im_label
     nuclei_props = regionprops(im_label, intensity_image=im_nuclei)
 
@@ -165,17 +173,17 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
     idata = pd.DataFrame()
     for i, nprop in enumerate(nuclei_props):
         idata.at[i, 'Label'] = nprop.label
-        idata.at[i, 'Identifier.Xmin'] = nprop.bbox[1]
-        idata.at[i, 'Identifier.Ymin'] = nprop.bbox[0]
-        idata.at[i, 'Identifier.Xmax'] = nprop.bbox[3]
-        idata.at[i, 'Identifier.Ymax'] = nprop.bbox[2]
-        idata.at[i, 'Identifier.CentroidX'] = nprop.centroid[1]
-        idata.at[i, 'Identifier.CentroidY'] = nprop.centroid[0]
+        idata.at[i, 'Identifier.Xmin'] = np.round(gx + nprop.bbox[1] * wfrac, 2)
+        idata.at[i, 'Identifier.Ymin'] = np.round(gy + nprop.bbox[0] * hfrac, 2)
+        idata.at[i, 'Identifier.Xmax'] = np.round(gx + nprop.bbox[3] * wfrac, 2)
+        idata.at[i, 'Identifier.Ymax'] = np.round(gy + nprop.bbox[2] * hfrac, 2)
+        idata.at[i, 'Identifier.CentroidX'] = np.round(gx + nprop.centroid[1] * wfrac, 2)
+        idata.at[i, 'Identifier.CentroidY'] = np.round(gy + nprop.centroid[0] * hfrac, 2)
         if im_nuclei is not None:
             # intensity-weighted centroid
             wcy, wcx = nprop.weighted_centroid
-            idata.at[i, 'Identifier.WeightedCentroidX'] = wcx
-            idata.at[i, 'Identifier.WeightedCentroidY'] = wcy
+            idata.at[i, 'Identifier.WeightedCentroidX'] = np.round(gx + wcx * wfrac, 2)
+            idata.at[i, 'Identifier.WeightedCentroidY'] = np.round(gy + wcy * hfrac, 2)
     feature_list.append(idata)
 
     # compute cytoplasm mask
