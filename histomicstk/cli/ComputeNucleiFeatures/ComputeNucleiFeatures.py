@@ -306,7 +306,8 @@ def main(args):
             for annot_list, fdata in tile_result_list if fdata is not None],
             ignore_index=True
         )
-
+    # replace any NaN in the feature colums with Zero vaue
+    nuclei_fdata.fillna(0)
     nuclei_detection_time = time.time() - start_time
 
     print(f'Number of nuclei = {len(nuclei_annot_list)}')
