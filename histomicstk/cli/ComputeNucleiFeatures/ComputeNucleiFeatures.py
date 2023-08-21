@@ -2,13 +2,18 @@ import json
 import logging
 import os
 import time
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import large_image
 import numpy as np
+import pandas as pd
+import shapely
+from shapely.geometry import Polygon
 
 import histomicstk
 import histomicstk.preprocessing.color_normalization as htk_cnorm
+import histomicstk.segmentation.label as htk_seg_label
 import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.utils as htk_utils
 from histomicstk.cli import utils as cli_utils
@@ -33,6 +38,59 @@ def check_args(args):
 
     if os.path.splitext(args.outputNucleiFeatureFile)[1] not in ['.csv', '.h5']:
         raise ValueError('Extension of output feature file must be .csv or .h5')
+
+
+def create_polygon(data):
+    return (data[0], Polygon(data[1]).buffer(0))
+
+
+def synchronize_annotation_and_features(segmentations, features):
+
+    # Process polygons in parallel
+    with ProcessPoolExecutor() as executor:
+        feature_polygons = list(executor.map(create_polygon,
+                                             ((idx2,
+                                               [(nuclei['Feature.Identifier.Xmin'],
+                                                 nuclei['Feature.Identifier.Ymin']),
+                                                   (nuclei['Feature.Identifier.Xmax'],
+                                                    nuclei['Feature.Identifier.Ymin']),
+                                                   (nuclei['Feature.Identifier.Xmax'],
+                                                    nuclei['Feature.Identifier.Ymax']),
+                                                   (nuclei['Feature.Identifier.Xmin'],
+                                                    nuclei['Feature.Identifier.Ymax'])]) for idx2,
+                                                 nuclei in features.iterrows())))
+        annot_polygons = list(
+            executor.map(
+                create_polygon,
+                ((idx1,
+                  nuclei['points']) for idx1,
+                    nuclei in enumerate(segmentations))))
+    # Build STRtrees
+    feature_tree = shapely.strtree.STRtree([poly[1] for poly in feature_polygons])
+
+    intersecting_polygons_order = []
+    intersecting_features_order = []
+
+    # Find and remove unwanted entries
+    for annot_polygon in annot_polygons:
+        intersecting_candidates = feature_tree.query(annot_polygon[1])
+        if intersecting_candidates.any():
+            for element in intersecting_candidates:
+                if element not in intersecting_features_order:
+                    intersecting_features_order.append(element)
+                    intersecting_polygons_order.append(annot_polygon[0])
+                    break
+
+    # Filtered segmentation
+    filtered_segmentations = [segmentation for idx, segmentation in enumerate(
+        segmentations) if idx in intersecting_polygons_order]
+
+    # Filtered features
+    filtered_features = [
+        feature for idx,
+        feature in features.iterrows() if idx in intersecting_features_order]
+
+    return filtered_segmentations, pd.DataFrame(filtered_features)
 
 
 def main(args):
@@ -222,6 +280,13 @@ def main(args):
     # replace any NaN in the feature colums with Zero vaue
     nuclei_fdata.fillna(0)
     nuclei_detection_time = time.time() - start_time
+
+    #
+    # Synchronize the features and nuclei annotation
+    #
+    if True:
+        nuclei_annot_list, nuclei_fdata = synchronize_annotation_and_features(
+            nuclei_annot_list, nuclei_fdata)
 
     print(f'Number of nuclei = {len(nuclei_annot_list)}')
     print('Nuclei detection time = {}'.format(

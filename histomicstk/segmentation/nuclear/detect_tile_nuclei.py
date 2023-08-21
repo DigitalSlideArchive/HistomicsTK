@@ -107,7 +107,7 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                 im_cytoplasm_stain = None
 
             fdata = htk_features.compute_nuclei_features(
-                im_nuclei_seg_mask, im_nuclei_stain, im_cytoplasm_stain,
+                im_nuclei_seg_mask, tile_info, im_nuclei_stain, im_cytoplasm_stain,
                 fsd_bnd_pts=args.fsd_bnd_pts,
                 fsd_freq_bins=args.fsd_freq_bins,
                 cyto_width=args.cyto_width,
