@@ -8,100 +8,13 @@ import large_image
 import numpy as np
 
 import histomicstk
-import histomicstk.features as htk_features
-import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
-import histomicstk.segmentation.label as htk_seg_label
 import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.utils as htk_utils
 from histomicstk.cli import utils as cli_utils
 from histomicstk.cli.utils import CLIArgumentParser
 
 logging.basicConfig(level=logging.CRITICAL)
-
-
-def compute_tile_nuclei_features(slide_path, tile_position, args, it_kwargs,
-                                 src_mu_lab=None, src_sigma_lab=None):
-
-    # get slide tile source
-    ts = large_image.getTileSource(slide_path)
-
-    # get requested tile
-    tile_info = ts.getSingleTile(
-        tile_position=tile_position,
-        format=large_image.tilesource.TILE_FORMAT_NUMPY,
-        **it_kwargs)
-
-    # get tile image
-    im_tile = tile_info['tile'][:, :, :3]
-
-    # perform color normalization
-    im_nmzd = htk_cnorm.reinhard(im_tile,
-                                 args.reference_mu_lab,
-                                 args.reference_std_lab,
-                                 src_mu=src_mu_lab,
-                                 src_sigma=src_sigma_lab)
-
-    # perform color decovolution
-    w = cli_utils.get_stain_matrix(args)
-
-    im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
-
-    im_nuclei_stain = im_stains[:, :, 0].astype(float)
-
-    # segment nuclear foreground
-    im_nuclei_fgnd_mask = im_nuclei_stain < args.foreground_threshold
-
-    # segment nuclei
-    im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
-        im_nuclei_stain,
-        im_nuclei_fgnd_mask,
-        args.min_radius,
-        args.max_radius,
-        args.min_nucleus_area,
-        args.local_max_search_radius
-    )
-
-    # Delete border nuclei
-    if args.ignore_border_nuclei is True:
-
-        im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
-
-    # generate nuclei annotations
-    nuclei_annot_list = []
-
-    flag_nuclei_found = np.any(im_nuclei_seg_mask)
-
-    if flag_nuclei_found:
-
-        nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
-            im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
-
-    # compute nuclei features
-    fdata = None
-
-    if flag_nuclei_found:
-
-        if args.cytoplasm_features:
-            im_cytoplasm_stain = im_stains[:, :, 1].astype(float)
-        else:
-            im_cytoplasm_stain = None
-
-        fdata = htk_features.compute_nuclei_features(
-            im_nuclei_seg_mask, tile_info, im_nuclei_stain, im_cytoplasm_stain,
-            fsd_bnd_pts=args.fsd_bnd_pts,
-            fsd_freq_bins=args.fsd_freq_bins,
-            cyto_width=args.cyto_width,
-            num_glcm_levels=args.num_glcm_levels,
-            morphometry_features_flag=args.morphometry_features,
-            fsd_features_flag=args.fsd_features,
-            intensity_features_flag=args.intensity_features,
-            gradient_features_flag=args.gradient_features,
-        )
-
-        fdata.columns = ['Feature.' + col for col in fdata.columns]
-
-    return nuclei_annot_list, fdata
 
 
 def check_args(args):
@@ -277,11 +190,11 @@ def main(args):
             continue
 
         # detect nuclei
-        cur_result = dask.delayed(compute_tile_nuclei_features)(
-            args.inputImageFile,
-            tile_position,
-            args, it_kwargs,
-            src_mu_lab, src_sigma_lab
+        cur_result = dask.delayed(htk_nuclear.detect_tile_nuclei)(
+            tile,
+            args,
+            src_mu_lab, src_sigma_lab,
+            return_fdata=True
         )
 
         # append result to list
