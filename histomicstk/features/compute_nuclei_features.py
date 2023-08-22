@@ -28,6 +28,10 @@ def compute_nuclei_features(im_label, tile_info=None, im_nuclei=None, im_cytopla
         object it belongs to. Non-zero values are considered to be foreground
         objects.
 
+    tile_info : array_like
+        provides the details of the tile from a tileIterator process. Used to
+        give reference to annotation location of the bounding boxes.
+
     im_nuclei : array_like
         Nucleus channel intensity image.
 
@@ -159,6 +163,10 @@ def compute_nuclei_features(im_label, tile_info=None, im_nuclei=None, im_cytopla
     #  improving efficiency in the future somehow (cython? reuse? etc)
 
     feature_list = []
+    gx = 0
+    gy = 0
+    wfrac = 1
+    hfrac = 1
 
     # load tile info
     if tile_info:
@@ -166,11 +174,6 @@ def compute_nuclei_features(im_label, tile_info=None, im_nuclei=None, im_cytopla
         gy = tile_info['gy']
         wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
         hfrac = tile_info['gheight'] / np.double(tile_info['height'])
-    else:
-        gx = 0
-        gy = 0
-        wfrac =1
-        hfrac =1
 
     # get the objects in im_label
     nuclei_props = regionprops(im_label, intensity_image=im_nuclei)

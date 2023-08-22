@@ -112,7 +112,7 @@ class TestFeatureExtraction:
 
         # compute nuclei features
         fdata_nuclei = htk_features.compute_nuclei_features(
-            im_nuclei_seg_mask, im_nuclei_stain,
+            im_nuclei_seg_mask, None, im_nuclei_stain,
             im_cytoplasm=im_cytoplasm_stain)
 
         cfg.im_input = im_input
