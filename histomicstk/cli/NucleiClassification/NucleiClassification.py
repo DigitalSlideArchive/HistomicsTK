@@ -179,10 +179,8 @@ def process_feature_and_annotation(args):
             for annot_list, fdata in tile_result_list if fdata is not None],
             ignore_index=True
         )
-    # remove any NaN element, make the number nuclei and features same.
-    df = pd.DataFrame(nuclei_fdata).dropna()
-    df = df[:len(nuclei_annot_list)]
-
+    # Fill any instances with NaN as zero
+    df = pd.DataFrame(nuclei_fdata).fillna(0)
     return nuclei_annot_list, dd.from_pandas(df, npartitions=1)
 
 
@@ -210,7 +208,8 @@ def read_feature_file(args):
     else:
         raise ValueError('Extension of output feature file must be .csv or .h5')
 
-    return ddf
+    # Fill any instances with NaN as zero
+    return ddf.fillna(0)
 
 
 def main(args):
