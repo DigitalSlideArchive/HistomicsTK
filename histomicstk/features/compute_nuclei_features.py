@@ -9,7 +9,7 @@ from .compute_intensity_features import compute_intensity_features
 from .compute_morphometry_features import compute_morphometry_features
 
 
-def compute_nuclei_features(im_label, tile_info, im_nuclei=None, im_cytoplasm=None,
+def compute_nuclei_features(im_label, tile_info=None, im_nuclei=None, im_cytoplasm=None,
                             fsd_bnd_pts=128, fsd_freq_bins=6, cyto_width=8,
                             num_glcm_levels=32,
                             morphometry_features_flag=True,
@@ -161,10 +161,16 @@ def compute_nuclei_features(im_label, tile_info, im_nuclei=None, im_cytoplasm=No
     feature_list = []
 
     # load tile info
-    gx = tile_info['gx']
-    gy = tile_info['gy']
-    wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
-    hfrac = tile_info['gheight'] / np.double(tile_info['height'])
+    if tile_info:
+        gx = tile_info['gx']
+        gy = tile_info['gy']
+        wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
+        hfrac = tile_info['gheight'] / np.double(tile_info['height'])
+    else:
+        gx = 0
+        gy = 0
+        wfrac =1
+        hfrac =1
 
     # get the objects in im_label
     nuclei_props = regionprops(im_label, intensity_image=im_nuclei)
