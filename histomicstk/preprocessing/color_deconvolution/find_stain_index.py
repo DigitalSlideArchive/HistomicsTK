@@ -1,5 +1,6 @@
-from . import _linalg as linalg
 import numpy as np
+
+from . import _linalg as linalg
 
 
 def find_stain_index(reference, w):
