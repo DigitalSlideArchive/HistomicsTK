@@ -54,6 +54,26 @@ def find_and_remove_non_overlapping_polygons(parameters):
                 intersecting_features_order.append(element)
                 intersecting_polygons_order.append(annot_polygon[0])
                 break
+# code for finding overlapping poly
+
+
+def find_overlapping_poly(parameters):
+    annot_polygon, feature_tree = parameters
+    intersecting_candidates = feature_tree.query(annot_polygon[1])
+    return annot_polygon[0], list(intersecting_candidates)
+
+
+# code for data processing
+intersecting_polygons_order = []
+intersecting_features_order = []
+
+
+def process_data(intersecting_candidate):
+    for element in intersecting_candidate[1]:
+        if element not in intersecting_features_order:
+            intersecting_features_order.append(element)
+            intersecting_polygons_order.append(intersecting_candidate[0])
+            break
 
 
 def synchronize_annotation_and_features(segmentations, features):
@@ -80,16 +100,24 @@ def synchronize_annotation_and_features(segmentations, features):
     # Build STRtrees
     feature_tree = shapely.strtree.STRtree([poly[1] for poly in feature_polygons])
 
-    intersecting_polygons_order = []
-    intersecting_features_order = []
-
     # using thredpool executor
-    with ThreadPoolExecutor() as executor:
-        parameters = [(annot_polygon, feature_tree,
-                       intersecting_features_order, intersecting_polygons_order)
-                      for annot_polygon in annot_polygons]
-        executor.map(find_and_remove_non_overlapping_polygons, parameters)
+    # with ThreadPoolExecutor() as executor:
+    #     parameters = [(annot_polygon, feature_tree,
+    #                    intersecting_features_order, intersecting_polygons_order)
+    #                   for annot_polygon in annot_polygons]
+    #     executor.map(find_and_remove_non_overlapping_polygons, parameters)
+    # overlapping poly function
 
+    overlap_poly = []
+    # using process pool executor
+    with ProcessPoolExecutor() as executor:
+        overlap_poly = list(executor.map(find_overlapping_poly, ((
+            annot_polygon, feature_tree) for annot_polygon in annot_polygons)))
+
+    for data in overlap_poly:
+        process_data(data)
+
+    print(intersecting_features_order)
     # Filtered segmentation
     filtered_segmentations = [segmentation for idx, segmentation in enumerate(
         segmentations) if idx in intersecting_polygons_order]
