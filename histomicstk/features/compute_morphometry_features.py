@@ -1,3 +1,4 @@
+import warnings
 from collections import OrderedDict
 
 import numpy as np
@@ -205,6 +206,8 @@ def _fractal_dimension(Z):
         counts.append(boxcount(Z, size))
 
     # Fit the successive log(sizes) with log (counts)
-    coeffs = np.polyfit(np.log(sizes), np.log(counts), 1)
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', np.RankWarning)
+        coeffs = np.polyfit(np.log(sizes), np.log(counts), 1)
 
     return -coeffs[0]
