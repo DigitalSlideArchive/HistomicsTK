@@ -33,5 +33,7 @@ def find_stain_index(reference, w):
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
 
     """
-    dot_products = np.dot(linalg.normalize(reference), linalg.normalize(w))
+    dot_products = np.dot(
+        linalg.normalize(np.array(reference)), linalg.normalize(np.array(w))
+    )
     return np.argmax(np.abs(dot_products))
