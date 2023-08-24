@@ -3,9 +3,9 @@ import numpy as np
 
 
 def find_stain_index(reference, w):
-    """Identify the stain vector in w that best alignes with the reference vector. 
-    
-    This is used with adaptive deconvolution routines where the order of returned stain 
+    """Identify the stain vector in w that best alignes with the reference vector.
+
+    This is used with adaptive deconvolution routines where the order of returned stain
     vectors is not guaranteed. This function identifies the stain vector of w that most
     closely aligns with the provided reference.
 
@@ -23,7 +23,7 @@ def find_stain_index(reference, w):
 
     Notes
     -----
-    Vectors are normalized to unit-norm prior to comparison using dot product. Alignment 
+    Vectors are normalized to unit-norm prior to comparison using dot product. Alignment
     is determined by vector angles and not distances.
 
     See Also
@@ -32,8 +32,5 @@ def find_stain_index(reference, w):
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
 
     """
-    dot_products = np.dot(
-        linalg.normalize(reference),
-        linalg.normalize(w)
-    )
+    dot_products = np.dot(linalg.normalize(reference), linalg.normalize(w))
     return np.argmax(np.abs(dot_products))
