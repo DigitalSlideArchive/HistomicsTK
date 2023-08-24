@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import time
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 
 import large_image
@@ -44,6 +44,18 @@ def create_polygon(data):
     return (data[0], Polygon(data[1]).buffer(0))
 
 
+def find_and_remove_non_overlapping_polygons(parameters):
+    annot_polygon, feature_tree, \
+        intersecting_features_order, intersecting_polygons_order = parameters
+    intersecting_candidates = feature_tree.query(annot_polygon[1])
+    if intersecting_candidates.any():
+        for element in intersecting_candidates:
+            if element not in intersecting_features_order:
+                intersecting_features_order.append(element)
+                intersecting_polygons_order.append(annot_polygon[0])
+                break
+
+
 def synchronize_annotation_and_features(segmentations, features):
 
     # Process polygons in parallel
@@ -71,15 +83,12 @@ def synchronize_annotation_and_features(segmentations, features):
     intersecting_polygons_order = []
     intersecting_features_order = []
 
-    # Find and remove unwanted entries
-    for annot_polygon in annot_polygons:
-        intersecting_candidates = feature_tree.query(annot_polygon[1])
-        if intersecting_candidates.any():
-            for element in intersecting_candidates:
-                if element not in intersecting_features_order:
-                    intersecting_features_order.append(element)
-                    intersecting_polygons_order.append(annot_polygon[0])
-                    break
+    # using thredpool executor
+    with ThreadPoolExecutor() as executor:
+        parameters = [(annot_polygon, feature_tree,
+                       intersecting_features_order, intersecting_polygons_order)
+                      for annot_polygon in annot_polygons]
+        executor.map(find_and_remove_non_overlapping_polygons, parameters)
 
     # Filtered segmentation
     filtered_segmentations = [segmentation for idx, segmentation in enumerate(
@@ -280,17 +289,20 @@ def main(args):
     # replace any NaN in the feature colums with Zero vaue
     nuclei_fdata.fillna(0)
     nuclei_detection_time = time.time() - start_time
-
+    print(f'Number of nuclei = {len(nuclei_annot_list)}')
+    print('Nuclei detection time = {}'.format(
+        cli_utils.disp_time_hms(nuclei_detection_time)))
     #
     # Synchronize the features and nuclei annotation
     #
+    print('>> Synchronize number of nuclei and features')
     if True:
         nuclei_annot_list, nuclei_fdata = synchronize_annotation_and_features(
             nuclei_annot_list, nuclei_fdata)
 
-    print(f'Number of nuclei = {len(nuclei_annot_list)}')
-    print('Nuclei detection time = {}'.format(
-        cli_utils.disp_time_hms(nuclei_detection_time)))
+    synchronization_time = time.time() - start_time
+    print('syncronization time = {}'.format(
+        cli_utils.disp_time_hms(synchronization_time)))
 
     #
     # Write annotation file
