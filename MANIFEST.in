@@ -1,0 +1,11 @@
+exclude *
+prune *
+include LICENSE
+include NOTICE
+include *.rst
+global-include CMakeLists.txt
+include setup.py
+include pyproject.toml
+include requirements-dev.txt
+graft histomicstk
+global-exclude *.py[co] __pycache__
