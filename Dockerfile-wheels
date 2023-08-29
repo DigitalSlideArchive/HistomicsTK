@@ -31,6 +31,8 @@ RUN for PYBIN in /opt/python/*/bin; do \
     done
 
 ENV htk_path=/HistomicsTK
+WORKDIR /HistomicsTK
+
 RUN mkdir -p $htk_path
 
 COPY . $htk_path/

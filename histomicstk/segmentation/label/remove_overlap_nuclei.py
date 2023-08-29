@@ -1,5 +1,4 @@
 import shapely
-from shapely.geometry import Polygon
 
 
 def create_polygon(coordinates):
@@ -12,7 +11,7 @@ def create_polygon(coordinates):
     Returns:
         shapely.geometry.Polygon: The polygon created from the points.
     """
-    return Polygon(coordinates).buffer(0)
+    return shapely.geometry.Polygon(coordinates).buffer(0)
 
 
 def convert_polygons_tobbox(nuclei_list):

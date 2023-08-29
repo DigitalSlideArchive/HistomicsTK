@@ -1,28 +1,31 @@
 import numpy as np
 
+from . import _linalg as linalg
+
 
 def find_stain_index(reference, w):
-    """Find the index of the stain column vector in w corresponding to the
-    reference vector.  Useful in connection with adaptive
-    deconvolution routines in order to find the column corresponding
-    with a certain expected stain.
+    """Identify the stain vector in w that best alignes with the reference vector.
+
+    This is used with adaptive deconvolution routines where the order of returned stain
+    vectors is not guaranteed. This function identifies the stain vector of w that most
+    closely aligns with the provided reference.
 
     Parameters
     ----------
     reference : array_like
-        1D array that is the stain vector to find
+        1D array representing the stain vector query.
     w : array_like
-        2D array of columns the same size as reference.
-        The columns should be normalized.
+        3xN array of where columns represent stain vectors to search.
 
     Returns
     -------
     i : int
-        Column of w corresponding to reference
+        Column index of stain vector with best alignment to reference.
 
     Notes
     -----
-    The index of the vector with the smallest distance is returned.
+    Vectors are normalized to unit-norm prior to comparison using dot product. Alignment
+    is determined by vector angles and not distances.
 
     See Also
     --------
@@ -30,5 +33,7 @@ def find_stain_index(reference, w):
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
 
     """
-    dists = [np.linalg.norm(w[i] - reference) for i in range(w.shape[0])]
-    return np.argmin(dists)
+    dot_products = np.dot(
+        linalg.normalize(np.array(reference)), linalg.normalize(np.array(w))
+    )
+    return np.argmax(np.abs(dot_products))
