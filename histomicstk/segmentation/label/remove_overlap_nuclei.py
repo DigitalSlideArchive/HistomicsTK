@@ -1,7 +1,4 @@
-from concurrent.futures import ProcessPoolExecutor
-
 import shapely
-from shapely.geometry import Polygon
 
 
 def create_polygon(coordinates):
@@ -14,7 +11,7 @@ def create_polygon(coordinates):
     Returns:
         shapely.geometry.Polygon: The polygon created from the points.
     """
-    return Polygon(coordinates).buffer(0)
+    return shapely.geometry.Polygon(coordinates).buffer(0)
 
 
 def convert_polygons_tobbox(nuclei_list):
@@ -64,13 +61,7 @@ def remove_overlap_nuclei(nuclei_list, nuclei_format):
     Returns:
         output_list (list): A new list with overlapping nuclei removed.
     """
-
-    # Use ProcessPoolExecutor for parallel processing of polygon creation
-    with ProcessPoolExecutor() as executor:
-        polygons = list(
-            executor.map(
-                create_polygon,
-                (nuclei['points'] for nuclei in nuclei_list)))
+    polygons = [create_polygon(nuclei['points']) for nuclei in nuclei_list]
 
     # Build the STRtree from all the polygons
     rt = shapely.strtree.STRtree(polygons)
