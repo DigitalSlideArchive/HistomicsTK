@@ -46,7 +46,7 @@ setup(
     author='Kitware, Inc.',
     author_email='developers@digitalslidearchive.net',
     url='https://github.com/DigitalSlideArchive/HistomicsTK',
-    packages=find_packages(exclude=['tests', '*_test']),
+    packages=find_packages(exclude=['tests', '*_test*']),
     package_dir={
         'histomicstk': 'histomicstk',
     },
