@@ -14,22 +14,22 @@ Input files required by **Nuclei Classification CLI**:
 
 Launch an image within the DSA interface and navigate to the *Nuclei classification panel*. The appearance of the panel will resemble the provided image below. You can obtain the exemplar image from the following source above.
 
-![nucleiClass-panel.png](docs/examples/doc_files/NucleiClassification/nucleiClass-panel.png)
+![nucleiClass-panel.png](./doc_files/NucleiClassification/nucleiClass-panel.png)
 
 ## Step 2
 
 Download the trained model from the resource given above or generate a classification model using your dataset and subsequently upload the corresponding file to the designated **Input Model File** section. A tutorial for training the classifier can be found in this [example](link to second tutorial).
 
-![inputmodel-fie.png](docs/examples/doc_files/NucleiClassification/inputmodel-fie.png)
+![inputmodel-fie.png](./doc_files/NucleiClassification/inputmodel-fie.png)
 
 ## Step 3 (optional)
 
 Users can easily create individual *nuclei feature* and *nuclei annotation* files by accessing the **ComputeNucleiFeaturesPanel** in DSA. This approach offers a more convenient method for adjusting the output feature and annotation files according to their preferences.
 
-![nucleiFeature-extraction.png](docs/examples/doc_files/NucleiClassification/nucleiFeature-extraction.png)
+![nucleiFeature-extraction.png](./doc_files/NucleiClassification/nucleiFeature-extraction.png)
 
 ## Step 4
 
 DSA incorporates inherent functionality for generating both nuclei features and nuclei annotations in instances where users omit furnishing these for nuclei classification. Consequently, you can simply select the **Submit** option and await the system to autonomously generate the outcomes. The outcomes will bear resemblance to the provided reference image below.
 
-![results.png](docs/examples/doc_files/NucleiClassification/results.png)
+![results.png](./doc_files/NucleiClassification/results.png)
