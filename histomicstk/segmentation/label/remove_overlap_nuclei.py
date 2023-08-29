@@ -1,5 +1,3 @@
-from concurrent.futures import ProcessPoolExecutor
-
 import shapely
 from shapely.geometry import Polygon
 
@@ -64,13 +62,7 @@ def remove_overlap_nuclei(nuclei_list, nuclei_format):
     Returns:
         output_list (list): A new list with overlapping nuclei removed.
     """
-
-    # Use ProcessPoolExecutor for parallel processing of polygon creation
-    with ProcessPoolExecutor() as executor:
-        polygons = list(
-            executor.map(
-                create_polygon,
-                (nuclei['points'] for nuclei in nuclei_list)))
+    polygons = [create_polygon(nuclei['points']) for nuclei in nuclei_list]
 
     # Build the STRtree from all the polygons
     rt = shapely.strtree.STRtree(polygons)

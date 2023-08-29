@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import time
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 
 import large_image
@@ -54,6 +53,7 @@ def find_and_remove_non_overlapping_polygons(parameters):
                 intersecting_features_order.append(element)
                 intersecting_polygons_order.append(annot_polygon[0])
                 break
+
 # code for finding overlapping poly
 
 
@@ -79,45 +79,26 @@ def process_data(intersecting_candidate):
 def synchronize_annotation_and_features(segmentations, features):
 
     # Process polygons in parallel
-    with ProcessPoolExecutor() as executor:
-        feature_polygons = list(executor.map(create_polygon,
-                                             ((idx2,
-                                               [(nuclei['Feature.Identifier.Xmin'],
-                                                 nuclei['Feature.Identifier.Ymin']),
-                                                   (nuclei['Feature.Identifier.Xmax'],
-                                                    nuclei['Feature.Identifier.Ymin']),
-                                                   (nuclei['Feature.Identifier.Xmax'],
-                                                    nuclei['Feature.Identifier.Ymax']),
-                                                   (nuclei['Feature.Identifier.Xmin'],
-                                                    nuclei['Feature.Identifier.Ymax'])]) for idx2,
-                                                 nuclei in features.iterrows())))
-        annot_polygons = list(
-            executor.map(
-                create_polygon,
-                ((idx1,
-                  nuclei['points']) for idx1,
-                    nuclei in enumerate(segmentations))))
+    feature_polygons = [create_polygon((idx2, [
+        (nuclei['Feature.Identifier.Xmin'], nuclei['Feature.Identifier.Ymin']),
+        (nuclei['Feature.Identifier.Xmax'], nuclei['Feature.Identifier.Ymin']),
+        (nuclei['Feature.Identifier.Xmax'], nuclei['Feature.Identifier.Ymax']),
+        (nuclei['Feature.Identifier.Xmin'], nuclei['Feature.Identifier.Ymax'])
+    ]))
+        for idx2, nuclei in features.iterrows()
+    ]
+    annot_polygons = [create_polygon((idx1,
+                                      nuclei['points'])) for idx1,
+                      nuclei in enumerate(segmentations)]
     # Build STRtrees
     feature_tree = shapely.strtree.STRtree([poly[1] for poly in feature_polygons])
 
-    # using thredpool executor
-    # with ThreadPoolExecutor() as executor:
-    #     parameters = [(annot_polygon, feature_tree,
-    #                    intersecting_features_order, intersecting_polygons_order)
-    #                   for annot_polygon in annot_polygons]
-    #     executor.map(find_and_remove_non_overlapping_polygons, parameters)
-    # overlapping poly function
-
-    overlap_poly = []
-    # using process pool executor
-    with ProcessPoolExecutor() as executor:
-        overlap_poly = list(executor.map(find_overlapping_poly, ((
-            annot_polygon, feature_tree) for annot_polygon in annot_polygons)))
+    overlap_poly = [find_overlapping_poly((
+        annot_polygon, feature_tree)) for annot_polygon in annot_polygons]
 
     for data in overlap_poly:
         process_data(data)
 
-    print(intersecting_features_order)
     # Filtered segmentation
     filtered_segmentations = [segmentation for idx, segmentation in enumerate(
         segmentations) if idx in intersecting_polygons_order]
