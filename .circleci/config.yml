@@ -303,28 +303,6 @@ jobs:
             cd ..
             python3 -m pip install histomicstk --pre --find-links project/wheels --find-links https://girder.github.io/large_image_wheels
             python3 -c "import histomicstk"
-  release:
-    working_directory: ~/project
-    docker:
-      - image: cimg/python:3.9
-      - image: docker:git
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Setup virtual environment
-          command: |
-            if [ ! -d env ]; then python -m virtualenv env || python -m venv env; fi
-            echo ". $CIRCLE_WORKING_DIRECTORY/env/bin/activate" >> $BASH_ENV
-      - run:
-          name: Install python packages
-          command: pip install setuptools_scm twine
-      - run:
-          name: Build wheels
-          command: ./build_wheels.sh
-      - run:
-          name: Release to PyPi
-          command: twine upload --verbose --skip-existing wheels/* dist/*
   docs-deploy:
     working_directory: ~/project
     docker:
@@ -411,21 +389,6 @@ workflows:
             branches:
               ignore:
                 - gh-pages
-      - release:
-          requires:
-            - py37
-            - py38
-            - py39
-            - py310
-            - py311
-            - lint_and_docs
-            - wheels
-            - docker
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              only: master
       - docs-deploy:
           requires:
             - py37
