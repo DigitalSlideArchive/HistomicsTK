@@ -57,21 +57,18 @@ jobs:
           name: docs
           path: ./docs/_build
   build_wheels:
-    name: Build wheels on ${{ matrix.buildplat[0] }} / ${{ matrix.buildplat[1] }} for ${{ matrix.python }}
+    name: Wheels for ${{ matrix.python }} / ${{ matrix.buildplat[0] }} / ${{ matrix.buildplat[1] }}
     runs-on: ${{ matrix.buildplat[0] }}
     # Don't build external PRs.
     if: github.repository == 'DigitalSlideArchive/HistomicsTK'
     strategy:
       matrix:
+        # See matplotlib for some of the rationale of this
         buildplat:
-          - [ubuntu-latest, manylinux_x86_64]
-          - [ubuntu-latest, musllinux_x86_64]
-          - [macos-latest, macosx_*]
-          - [windows-latest, win_amd64]
+          - [ubuntu-latest, x86_64]
+          - [macos-latest, "x86_64 arm64"]
+          - [windows-latest, auto64]
         python: ["cp37", "cp38", "cp39", "cp310", "cp311"]
-        exclude:
-          - buildplat:
-            - [windows-latest, win32]
       fail-fast: false
 
     steps:
@@ -87,7 +84,10 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.14.1
         env:
-          CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
+          CIBW_BUILD: ${{ matrix.python }}-*
+          CIBW_TEST_SKIP: "*-macosx_arm64"
+          CIBW_ARCHS: ${{ matrix.buildplat[1] }}
+          MACOSX_DEPLOYMENT_TARGET: "10.12"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -130,7 +130,8 @@ jobs:
         with:
           name: artifact
           path: dist
-          skip-existing: true
       - name: List dist directory
         run: ls dist
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true

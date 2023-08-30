@@ -152,6 +152,7 @@ cython_debug/
 .idea/
 
 .vscode
+*.sw[po]
 
 # temporary downloaded data when doing unit testing locally
 tests/externaldata/
