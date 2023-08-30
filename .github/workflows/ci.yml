@@ -130,7 +130,8 @@ jobs:
         with:
           name: artifact
           path: dist
-          skip-existing: true
       - name: List dist directory
         run: ls dist
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
