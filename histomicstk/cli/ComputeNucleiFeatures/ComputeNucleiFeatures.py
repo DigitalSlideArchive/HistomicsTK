@@ -39,47 +39,41 @@ def check_args(args):
         raise ValueError('Extension of output feature file must be .csv or .h5')
 
 
-def create_polygon(data):
-    return (data[0], Polygon(data[1]).buffer(0))
-
-
-def find_and_remove_non_overlapping_polygons(parameters):
-    annot_polygon, feature_tree, \
-        intersecting_features_order, intersecting_polygons_order = parameters
-    intersecting_candidates = feature_tree.query(annot_polygon[1])
-    if intersecting_candidates.any():
-        for element in intersecting_candidates:
-            if element not in intersecting_features_order:
-                intersecting_features_order.append(element)
-                intersecting_polygons_order.append(annot_polygon[0])
-                break
-
-# code for finding overlapping poly
-
-
-def find_overlapping_poly(parameters):
-    annot_polygon, feature_tree = parameters
-    intersecting_candidates = feature_tree.query(annot_polygon[1])
-    return annot_polygon[0], list(intersecting_candidates)
-
-
-# code for data processing
-intersecting_polygons_order = []
-intersecting_features_order = []
-
-
-def process_data(intersecting_candidate):
-    for element in intersecting_candidate[1]:
-        if element not in intersecting_features_order:
-            intersecting_features_order.append(element)
-            intersecting_polygons_order.append(intersecting_candidate[0])
-            break
-
-
 def synchronize_annotation_and_features(segmentations, features):
+    """
+    Synchronize annotation and feature data.
 
-    # Process polygons in parallel
-    feature_polygons = [create_polygon((idx2, [
+    Args:
+        segmentations (list): List of annotation data.
+        features (pd.DataFrame): DataFrame containing feature data.
+
+    Returns:
+        Tuple: A tuple containing filtered segmentations and a DataFrame of filtered features.
+    """
+
+    # Initialize arrays to find overlapping polygons
+    intersecting_polygons_order = []
+    intersecting_features_order = []
+
+    def _create_polygon(data):
+        """Create a polygon from input data."""
+        return (data[0], Polygon(data[1]).buffer(0))
+
+    def _find_overlapping_poly(parameters):
+        """Find overlapping polygons between an annotation polygon and a feature tree."""
+        annot_polygon, feature_tree = parameters
+        intersecting_candidates = feature_tree.query(annot_polygon[1])
+        return annot_polygon[0], list(intersecting_candidates)
+
+    def _process_intersecting_polygons(intersecting_candidate):
+        """Process intersecting candidate data and update order lists."""
+        new_elements = set(intersecting_candidate[1]) - set(intersecting_features_order)
+        if new_elements:
+            intersecting_features_order.append(next(iter(new_elements)))
+            intersecting_polygons_order.append(intersecting_candidate[0])
+
+    # Generate polygons from feature data
+    feature_polygons = [_create_polygon((idx2, [
         (nuclei['Feature.Identifier.Xmin'], nuclei['Feature.Identifier.Ymin']),
         (nuclei['Feature.Identifier.Xmax'], nuclei['Feature.Identifier.Ymin']),
         (nuclei['Feature.Identifier.Xmax'], nuclei['Feature.Identifier.Ymax']),
@@ -87,23 +81,28 @@ def synchronize_annotation_and_features(segmentations, features):
     ]))
         for idx2, nuclei in features.iterrows()
     ]
-    annot_polygons = [create_polygon((idx1,
+    
+    # Generate polygons from annotation data
+    annot_polygons = [_create_polygon((idx1,
                                       nuclei['points'])) for idx1,
                       nuclei in enumerate(segmentations)]
-    # Build STRtrees
+    
+    # Build STRtrees for polygons from feature data
     feature_tree = shapely.strtree.STRtree([poly[1] for poly in feature_polygons])
-
-    overlap_poly = [find_overlapping_poly((
+    
+    # Evaluate the list of overlapping polygons
+    overlap_poly = [_find_overlapping_poly((
         annot_polygon, feature_tree)) for annot_polygon in annot_polygons]
 
+    # Process data to find overlapping polygons
     for data in overlap_poly:
-        process_data(data)
+        _process_intersecting_polygons(data)
 
-    # Filtered segmentation
+    # Filter annotations array
     filtered_segmentations = [segmentation for idx, segmentation in enumerate(
         segmentations) if idx in intersecting_polygons_order]
 
-    # Filtered features
+    # Filtered features array
     filtered_features = [
         feature for idx,
         feature in features.iterrows() if idx in intersecting_features_order]
@@ -308,6 +307,7 @@ def main(args):
     if True:
         nuclei_annot_list, nuclei_fdata = synchronize_annotation_and_features(
             nuclei_annot_list, nuclei_fdata)
+    print(len(nuclei_annot_list), len(nuclei_fdata))
 
     synchronization_time = time.time() - start_time
     print('syncronization time = {}'.format(
