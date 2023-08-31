@@ -189,11 +189,10 @@ def main(args):
             continue
 
         # detect nuclei
-        cur_result = dask.delayed(htk_nuclear.detect_tile_nuclei)(
+        cur_result = dask.delayed(htk_nuclear.features_and_nuclei)(
             tile,
             args,
             src_mu_lab, src_sigma_lab,
-            return_fdata=True
         )
 
         # append result to list

@@ -5,6 +5,7 @@ segmenting nuclei from histopathology images.
 
 from .detect_nuclei_kofahi import detect_nuclei_kofahi
 from .detect_tile_nuclei import detect_tile_nuclei
+from .features_and_nuclei import features_and_nuclei
 from .gaussian_voting import gaussian_voting
 from .gvf_tracking import gvf_tracking
 from .max_clustering import max_clustering
@@ -16,5 +17,6 @@ __all__ = (
     'gvf_tracking',
     'max_clustering',
     'min_model',
-    'detect_tile_nuclei'
+    'detect_tile_nuclei',
+    'features_and_nuclei'
 )

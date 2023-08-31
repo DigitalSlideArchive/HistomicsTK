@@ -19,6 +19,7 @@ from .shuffle import shuffle
 from .split import split
 from .trace_object_boundaries import trace_object_boundaries
 from .width_open import width_open
+from .compute_nuclei_features_and_annotations import compute_nuclei_features_and_annotations
 
 # list out things that are available for public use
 __all__ = (
@@ -37,4 +38,5 @@ __all__ = (
     'width_open',
     'delete_overlap',
     'remove_overlap_nuclei',
+    'compute_nuclei_features_and_annotations'
 )
