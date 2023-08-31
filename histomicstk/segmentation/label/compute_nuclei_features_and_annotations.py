@@ -46,8 +46,6 @@ def compute_nuclei_features_and_annotations(im_label,tile_info, im_nuclei=None, 
 
     #start the data counter
     i = 1
-    X = []
-    Y = []
     x_start = -1
     y_start = -1
     max_length = float('inf')
@@ -88,141 +86,15 @@ def compute_nuclei_features_and_annotations(im_label,tile_info, im_nuclei=None, 
         bx, by = _remove_thin_colinear_spurs(bx, by,0.01)
 
         if len(bx) > 0:
-                X.append(bx)
-                Y.append(by)
-
-                #extract features
-                idata.at[i, 'Label'] = rprops.label
-                idata.at[i, 'Identifier.Xmin'] = rprops.bbox[1]
-                idata.at[i, 'Identifier.Ymin'] = rprops.bbox[0]
-                idata.at[i, 'Identifier.Xmax'] = rprops.bbox[3]
-                idata.at[i, 'Identifier.Ymax'] = rprops.bbox[2]
-                idata.at[i, 'Identifier.CentroidX'] = rprops.centroid[1]
-                idata.at[i, 'Identifier.CentroidY'] = rprops.centroid[0]
-                if im_nuclei is not None:
-                    # intensity-weighted centroid
-                    wcy, wcx = rprops.weighted_centroid
-                    idata.at[i, 'Identifier.WeightedCentroidX'] = wcx
-                    idata.at[i, 'Identifier.WeightedCentroidY'] = wcy
-                feature_list.append(idata)
-
-                # compute cytoplasm mask
-                if im_cytoplasm is not None:
-
-                    cyto_mask = htk_label.dilate_xor(im_label, neigh_width=cyto_width)
-
-                    cyto_props = regionprops(cyto_mask, intensity_image=im_cytoplasm)
-
-                    # ensure that cytoplasm props order corresponds to the nuclei
-                    lablocs = {v['label']: i for i, v in enumerate(cyto_props)}
-                    cyto_props = [cyto_props[lablocs[v['label']]] if v['label'] in lablocs else None
-                                for v in nuclei_props]
-
-                # compute morphometry features
-                if morphometry_features_flag:
-
-                    fmorph = compute_morphometry_features(im_label, rprops=nuclei_props)
-
-                    feature_list.append(fmorph)
-
-                # compute FSD features
-                if fsd_features_flag:
-
-                    ffsd = compute_fsd_features(im_label, fsd_bnd_pts, fsd_freq_bins,
-                                                cyto_width, rprops=nuclei_props)
-
-                    feature_list.append(ffsd)
-
-                # compute nuclei intensity features
-                if intensity_features_flag:
-
-                    fint_nuclei = compute_intensity_features(im_label, im_nuclei,
-                                                            rprops=nuclei_props)
-                    fint_nuclei.columns = ['Nucleus.' + col
-                                        for col in fint_nuclei.columns]
-
-                    feature_list.append(fint_nuclei)
-
-                # compute cytoplasm intensity features
-                if intensity_features_flag and im_cytoplasm is not None:
-
-                    fint_cytoplasm = compute_intensity_features(cyto_mask, im_cytoplasm,
-                                                                rprops=cyto_props)
-                    fint_cytoplasm.columns = ['Cytoplasm.' + col
-                                            for col in fint_cytoplasm.columns]
-
-                    feature_list.append(fint_cytoplasm)
-
-                # compute nuclei gradient features
-                if gradient_features_flag:
-
-                    fgrad_nuclei = compute_gradient_features(im_label, im_nuclei,
-                                                            rprops=nuclei_props)
-                    fgrad_nuclei.columns = ['Nucleus.' + col
-                                            for col in fgrad_nuclei.columns]
-
-                    feature_list.append(fgrad_nuclei)
-
-                # compute cytoplasm gradient features
-                if gradient_features_flag and im_cytoplasm is not None:
-
-                    fgrad_cytoplasm = compute_gradient_features(cyto_mask, im_cytoplasm,
-                                                                rprops=cyto_props)
-                    fgrad_cytoplasm.columns = ['Cytoplasm.' + col
-                                            for col in fgrad_cytoplasm.columns]
-
-                    feature_list.append(fgrad_cytoplasm)
-
-                # compute nuclei haralick features
-                if haralick_features_flag:
-
-                    fharalick_nuclei = compute_haralick_features(
-                        im_label, im_nuclei,
-                        num_levels=num_glcm_levels,
-                        rprops=nuclei_props
-                    )
-
-                    fharalick_nuclei.columns = ['Nucleus.' + col
-                                                for col in fharalick_nuclei.columns]
-
-                    feature_list.append(fharalick_nuclei)
-
-                # compute cytoplasm haralick features
-                if haralick_features_flag and im_cytoplasm is not None:
-
-                    fharalick_cytoplasm = compute_haralick_features(
-                        cyto_mask, im_cytoplasm,
-                        num_levels=num_glcm_levels,
-                        rprops=cyto_props
-                    )
-
-                    fharalick_cytoplasm.columns = ['Cytoplasm.' + col
-                                                for col in fharalick_cytoplasm.columns]
-
-                    feature_list.append(fharalick_cytoplasm)
-
-    print('>>concat all the feature data')
-
-    # Merge all features
-    fdata = pd.concat(feature_list, axis=1)
-
-    print('>>concat all the nuclei annotations')
-
-    #merge all nuclei segs
-    for j in range(len(X)):
-        bx, by = X[j],Y[j]
-
-        for i in range(len(bx)):
             # get boundary points and convert to base pixel space
-
             num_points = len(bx)
 
             if num_points < 3:
                 continue
 
             cur_points = np.zeros((num_points, 3))
-            cur_points[:, 0] = np.round(gx + bx[i] * wfrac, 2)
-            cur_points[:, 1] = np.round(gy + by[i] * hfrac, 2)
+            cur_points[:, 0] = np.round(gx + bx * wfrac, 2)
+            cur_points[:, 1] = np.round(gy + by * hfrac, 2)
             cur_points = cur_points.tolist()
 
             # create annotation json
@@ -235,6 +107,121 @@ def compute_nuclei_features_and_annotations(im_label,tile_info, im_nuclei=None, 
             }
 
             nuclei_annot_list.append(cur_annot)
+
+            #extract features
+            idata.at[i, 'Label'] = rprops.label
+            idata.at[i, 'Identifier.Xmin'] = rprops.bbox[1]
+            idata.at[i, 'Identifier.Ymin'] = rprops.bbox[0]
+            idata.at[i, 'Identifier.Xmax'] = rprops.bbox[3]
+            idata.at[i, 'Identifier.Ymax'] = rprops.bbox[2]
+            idata.at[i, 'Identifier.CentroidX'] = rprops.centroid[1]
+            idata.at[i, 'Identifier.CentroidY'] = rprops.centroid[0]
+            if im_nuclei is not None:
+                # intensity-weighted centroid
+                wcy, wcx = rprops.weighted_centroid
+                idata.at[i, 'Identifier.WeightedCentroidX'] = wcx
+                idata.at[i, 'Identifier.WeightedCentroidY'] = wcy
+            feature_list.append(idata)
+
+            # # compute cytoplasm mask
+            # if im_cytoplasm is not None:
+
+            #     cyto_mask = htk_label.dilate_xor(im_label, neigh_width=cyto_width)
+
+            #     cyto_props = regionprops(cyto_mask, intensity_image=im_cytoplasm)
+
+            #     # ensure that cytoplasm props order corresponds to the nuclei
+            #     lablocs = {v['label']: i for i, v in enumerate(cyto_props)}
+            #     cyto_props = [cyto_props[lablocs[v['label']]] if v['label'] in lablocs else None
+            #                 for v in nuclei_props]
+
+            # # compute morphometry features
+            if morphometry_features_flag:
+
+                fmorph = compute_morphometry_features(im_label, rprops=nuclei_props)
+
+                feature_list.append(fmorph)
+
+                # # compute FSD features
+                # if fsd_features_flag:
+
+                #     ffsd = compute_fsd_features(im_label, fsd_bnd_pts, fsd_freq_bins,
+                #                                 cyto_width, rprops=nuclei_props)
+
+                #     feature_list.append(ffsd)
+
+                # # compute nuclei intensity features
+                # if intensity_features_flag:
+
+                #     fint_nuclei = compute_intensity_features(im_label, im_nuclei,
+                #                                             rprops=nuclei_props)
+                #     fint_nuclei.columns = ['Nucleus.' + col
+                #                         for col in fint_nuclei.columns]
+
+                #     feature_list.append(fint_nuclei)
+
+                # # compute cytoplasm intensity features
+                # if intensity_features_flag and im_cytoplasm is not None:
+
+                #     fint_cytoplasm = compute_intensity_features(cyto_mask, im_cytoplasm,
+                #                                                 rprops=cyto_props)
+                #     fint_cytoplasm.columns = ['Cytoplasm.' + col
+                #                             for col in fint_cytoplasm.columns]
+
+                #     feature_list.append(fint_cytoplasm)
+
+                # # compute nuclei gradient features
+                # if gradient_features_flag:
+
+                #     fgrad_nuclei = compute_gradient_features(im_label, im_nuclei,
+                #                                             rprops=nuclei_props)
+                #     fgrad_nuclei.columns = ['Nucleus.' + col
+                #                             for col in fgrad_nuclei.columns]
+
+                #     feature_list.append(fgrad_nuclei)
+
+                # # compute cytoplasm gradient features
+                # if gradient_features_flag and im_cytoplasm is not None:
+
+                #     fgrad_cytoplasm = compute_gradient_features(cyto_mask, im_cytoplasm,
+                #                                                 rprops=cyto_props)
+                #     fgrad_cytoplasm.columns = ['Cytoplasm.' + col
+                #                             for col in fgrad_cytoplasm.columns]
+
+                #     feature_list.append(fgrad_cytoplasm)
+
+                # # compute nuclei haralick features
+                # if haralick_features_flag:
+
+                #     fharalick_nuclei = compute_haralick_features(
+                #         im_label, im_nuclei,
+                #         num_levels=num_glcm_levels,
+                #         rprops=nuclei_props
+                #     )
+
+                #     fharalick_nuclei.columns = ['Nucleus.' + col
+                #                                 for col in fharalick_nuclei.columns]
+
+                #     feature_list.append(fharalick_nuclei)
+
+                # # compute cytoplasm haralick features
+                # if haralick_features_flag and im_cytoplasm is not None:
+
+                #     fharalick_cytoplasm = compute_haralick_features(
+                #         cyto_mask, im_cytoplasm,
+                #         num_levels=num_glcm_levels,
+                #         rprops=cyto_props
+                #     )
+
+                #     fharalick_cytoplasm.columns = ['Cytoplasm.' + col
+                #                                 for col in fharalick_cytoplasm.columns]
+
+                #     feature_list.append(fharalick_cytoplasm)
+
+    print('>>concat all the feature data')
+
+    # Merge all features
+    fdata = pd.concat(feature_list, axis=1)
 
     return fdata, nuclei_annot_list
 
