@@ -201,33 +201,40 @@ def compute_nuclei_features_and_annotations(im_label,tile_info, im_nuclei=None, 
 
                     feature_list.append(fharalick_cytoplasm)
 
+    print('>>concat all the feature data')
+
     # Merge all features
     fdata = pd.concat(feature_list, axis=1)
 
+    print('>>concat all the nuclei annotations')
+
     #merge all nuclei segs
-    for i in range(len(X)):
+    for j in range(len(X)):
+        bx, by = X[j],Y[j]
 
-        # get boundary points and convert to base pixel space
-        num_points = len(X[i])
+        for i in range(len(bx)):
+            # get boundary points and convert to base pixel space
 
-        if num_points < 3:
-            continue
+            num_points = len(bx)
 
-        cur_points = np.zeros((num_points, 3))
-        cur_points[:, 0] = np.round(gx + bx[i] * wfrac, 2)
-        cur_points[:, 1] = np.round(gy + by[i] * hfrac, 2)
-        cur_points = cur_points.tolist()
+            if num_points < 3:
+                continue
 
-        # create annotation json
-        cur_annot = {
-            'type': 'polyline',
-            'points': cur_points,
-            'closed': True,
-            'fillColor': 'rgba(0,0,0,0)',
-            'lineColor': 'rgb(0,255,0)'
-        }
+            cur_points = np.zeros((num_points, 3))
+            cur_points[:, 0] = np.round(gx + bx[i] * wfrac, 2)
+            cur_points[:, 1] = np.round(gy + by[i] * hfrac, 2)
+            cur_points = cur_points.tolist()
 
-        nuclei_annot_list.append(cur_annot)
+            # create annotation json
+            cur_annot = {
+                'type': 'polyline',
+                'points': cur_points,
+                'closed': True,
+                'fillColor': 'rgba(0,0,0,0)',
+                'lineColor': 'rgb(0,255,0)'
+            }
+
+            nuclei_annot_list.append(cur_annot)
 
     return fdata, nuclei_annot_list
 
