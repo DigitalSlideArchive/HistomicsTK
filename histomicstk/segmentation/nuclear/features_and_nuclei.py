@@ -1,6 +1,5 @@
 import numpy as np
 
-import histomicstk.features as htk_features
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.label as htk_seg_label
@@ -9,8 +8,8 @@ from histomicstk.cli import utils as cli_utils
 
 
 def features_and_nuclei(tile_info, args, src_mu_lab=None,
-                       src_sigma_lab=None, invert_image=False,
-                       default_img_inversion=False, return_fdata=False):
+                        src_sigma_lab=None, invert_image=False,
+                        default_img_inversion=False, return_fdata=False):
     """
     Detect nuclei within a tile image and generate annotations.
 
@@ -96,16 +95,16 @@ def features_and_nuclei(tile_info, args, src_mu_lab=None,
         im_cytoplasm_stain = None
     if flag_nuclei_found:
         fdata, nuclei_annot_list = htk_seg_label.compute_nuclei_features_and_annotations(
-                    im_nuclei_seg_mask,tile_info, im_nuclei_stain, im_cytoplasm_stain,
-                    fsd_bnd_pts=args.fsd_bnd_pts,
-                    fsd_freq_bins=args.fsd_freq_bins,
-                    cyto_width=args.cyto_width,
-                    num_glcm_levels=args.num_glcm_levels,
-                    morphometry_features_flag=args.morphometry_features,
-                    fsd_features_flag=args.fsd_features,
-                    intensity_features_flag=args.intensity_features,
-                    gradient_features_flag=args.gradient_features,
-                )
+            im_nuclei_seg_mask, tile_info, im_nuclei_stain, im_cytoplasm_stain,
+            fsd_bnd_pts=args.fsd_bnd_pts,
+            fsd_freq_bins=args.fsd_freq_bins,
+            cyto_width=args.cyto_width,
+            num_glcm_levels=args.num_glcm_levels,
+            morphometry_features_flag=args.morphometry_features,
+            fsd_features_flag=args.fsd_features,
+            intensity_features_flag=args.intensity_features,
+            gradient_features_flag=args.gradient_features,
+        )
 
         fdata.columns = ['Feature.' + col for col in fdata.columns]
 
