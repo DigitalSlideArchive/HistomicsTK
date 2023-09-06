@@ -1,3 +1,4 @@
+from histomicstk.cli import utils as cli_utils
 from histomicstk.segmentation import label as htk_label
 
 from .compute_fsd_features import compute_fsd_features
@@ -14,7 +15,10 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
                             fsd_features_flag=True,
                             intensity_features_flag=True,
                             gradient_features_flag=True,
-                            haralick_features_flag=True
+                            haralick_features_flag=True,
+                            tile_info=None,
+                            im_nuclei_seg_mask=None,
+                            format=None
                             ):
     """
     Calculates features for nuclei classification
@@ -81,6 +85,8 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
     fdata : pandas.DataFrame
         A pandas data frame containing the features listed below for each
         object/label
+    nuclei_annot_list : List
+        List containing the boundaries of segmented nuclei in the input image.
 
     Notes
     -----
@@ -276,4 +282,11 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
     # Merge all features
     fdata = pd.concat(feature_list, axis=1)
 
-    return fdata
+    # Create nuclei segmentation with the generated regionprops
+    nuclei_annot_list, selected_rows = cli_utils.create_tile_nuclei_annotations(
+        im_nuclei_seg_mask, tile_info, format, nuclei_props)
+
+    # Drop all rows which are not found in nuclei detection
+    fdata = fdata[fdata.index.isin(selected_rows)]
+
+    return fdata, nuclei_annot_list

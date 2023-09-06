@@ -172,7 +172,7 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
     tile_nuclei_list = dask.delayed(tile_nuclei_list).compute()
 
     nuclei_list = [anot
-                   for anot_list, _ in tile_nuclei_list for anot in anot_list]
+                   for anot_list in tile_nuclei_list for anot in anot_list]
 
     nuclei_detection_time = time.time() - start_time
 
