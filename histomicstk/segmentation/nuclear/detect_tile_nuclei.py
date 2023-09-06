@@ -121,8 +121,8 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
         else:
             nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
                 im_nuclei_seg_mask, tile_info, format)
-            
+
     if return_fdata:
         return nuclei_annot_list, fdata
-    
+
     return nuclei_annot_list

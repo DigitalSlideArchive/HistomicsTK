@@ -147,7 +147,8 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info, regio
 
     if region_props:
         by, bx, selected_rows = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
-                                                                      trace_all=True, region_props=region_props)
+                                                                      trace_all=True,
+                                                                      region_props=region_props)
     else:
         by, bx = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
                                                        trace_all=True)
