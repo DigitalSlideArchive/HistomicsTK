@@ -18,7 +18,8 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
                             haralick_features_flag=True,
                             tile_info=None,
                             im_nuclei_seg_mask=None,
-                            format=None
+                            format=None,
+                            return_nuclei_annotation=False
                             ):
     """
     Calculates features for nuclei classification
@@ -79,6 +80,9 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
         A flag that can be used to specify whether or not to compute
         haralick features from intensity and cytoplasm channels.
         See `histomicstk.features.compute_haralick_features` for more details.
+
+    return_nuclei_annotation :  bool, optional
+        Returns the nuclei annotation if kept True
 
     Returns
     -------
@@ -282,11 +286,13 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
     # Merge all features
     fdata = pd.concat(feature_list, axis=1)
 
-    # Create nuclei segmentation with the generated regionprops
-    nuclei_annot_list, selected_rows = cli_utils.create_tile_nuclei_annotations(
-        im_nuclei_seg_mask, tile_info, format, nuclei_props)
+    if return_nuclei_annotation:
+        # Create nuclei segmentation with the generated regionprops
+        nuclei_annot_list, selected_rows = cli_utils.create_tile_nuclei_annotations(
+            im_nuclei_seg_mask, tile_info, format, nuclei_props)
 
-    # Drop all rows which are not found in nuclei detection
-    fdata = fdata[fdata.index.isin(selected_rows)]
+        # Drop all rows which are not found in nuclei detection
+        fdata = fdata[fdata.index.isin(selected_rows)]
+        return fdata, nuclei_annot_list
 
-    return fdata, nuclei_annot_list
+    return fdata

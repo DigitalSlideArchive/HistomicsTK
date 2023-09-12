@@ -48,7 +48,7 @@ def convert_polygons_tobbox(nuclei_list):
     return nuclei_list
 
 
-def remove_overlap_nuclei(nuclei_list, nuclei_format, return_selected_nuclei = False):
+def remove_overlap_nuclei(nuclei_list, nuclei_format, return_selected_nuclei=False):
     """
     Remove overlapping nuclei from the given list using spatial indexing and parallel processing.
 
@@ -69,16 +69,16 @@ def remove_overlap_nuclei(nuclei_list, nuclei_format, return_selected_nuclei = F
     rt = shapely.strtree.STRtree(polygons)
 
     # Find and remove any overlapping polygons
-    if return_selected_nuclei:
-        output = [(nuclei, index) for index, nuclei in enumerate(nuclei_list) if not any(
-            ix for ix in rt.query(polygons[index]) if ix < index and polygons[index].intersects(polygons[ix]))]
+    output = [(nuclei, index) for index, nuclei in enumerate(nuclei_list) if not any(
+        ix for ix in rt.query(polygons[index]) if ix < index and polygons[index].intersects(polygons[ix]))]
 
-        output_list, selected_nuclei = (zip(*output) if return_selected_nuclei else ([nuclei for nuclei, _ in output], []))
+    output_list, selected_nuclei = (
+        zip(*output) if return_selected_nuclei else ([nuclei for nuclei, _ in output], []))
 
     # if nuclei_format is bbox - convert polygons to bbox
     if nuclei_format == 'bbox':
         output_list = convert_polygons_tobbox(output_list)
-    
+
     if return_selected_nuclei:
         return output_list, selected_nuclei
 

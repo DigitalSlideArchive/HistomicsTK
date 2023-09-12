@@ -227,7 +227,7 @@ def main(args):
     print(f'Number of nuclei = {len(nuclei_annot_list)}')
     print('Nuclei detection time = {}'.format(
         cli_utils.disp_time_hms(nuclei_detection_time)))
-    
+
     #
     # Remove overlapping nuclei
     #
@@ -239,7 +239,7 @@ def main(args):
             nuclei_annot_list, args.nuclei_annotation_format, return_selected_nuclei=True)
         nuclei_removal_setup_time = time.time() - nuclei_removal_start_time
 
-        #remove features for overlapping nuclei
+        # Remove features for overlapping nuclei
         nuclei_fdata = nuclei_fdata[nuclei_fdata.index.isin(selected_nuclei)]
 
         print('Number of nuclei after overlap removal {}'.format(len(nuclei_annot_list)))

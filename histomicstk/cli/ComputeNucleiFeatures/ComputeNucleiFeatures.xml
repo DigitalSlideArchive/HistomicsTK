@@ -213,6 +213,15 @@
       <longflag>tile_overlap_value</longflag>
       <default>-1</default>
     </integer>
+    <string-enumeration>
+      <name>nuclei_annotation_format</name>
+      <label>Nuclei annotation format</label>
+      <description>Format of the output nuclei annotations</description>
+      <longflag>nuclei_annotation_format</longflag>
+      <element>bbox</element>
+      <element>boundary</element>
+      <default>boundary</default>
+    </string-enumeration>
     <boolean>
       <name>ignore_border_nuclei</name>
       <label>Ignore Border Nuclei</label>
@@ -227,15 +236,6 @@
       <longflag>remove_overlapping_nuclei_segmentation</longflag>
       <default>True</default>
     </boolean>
-    <string-enumeration>
-      <name>nuclei_annotation_format</name>
-      <label>Nuclei annotation format</label>
-      <description>Format of the output nuclei annotations</description>
-      <longflag>nuclei_annotation_format</longflag>
-      <element>bbox</element>
-      <element>boundary</element>
-      <default>boundary</default>
-    </string-enumeration>
   </parameters>
   <parameters>
     <label>Feature extraction</label>

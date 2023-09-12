@@ -115,7 +115,8 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                 gradient_features_flag=args.gradient_features,
                 tile_info=tile_info,
                 im_nuclei_seg_mask=im_nuclei_seg_mask,
-                format=format
+                format=format,
+                return_nuclei_annotation=True
             )
             fdata.columns = ['Feature.' + col for col in fdata.columns]
         else:
