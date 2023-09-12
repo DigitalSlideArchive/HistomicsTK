@@ -48,18 +48,20 @@ def convert_polygons_tobbox(nuclei_list):
     return nuclei_list
 
 
-def remove_overlap_nuclei(nuclei_list, nuclei_format):
+def remove_overlap_nuclei(nuclei_list, nuclei_format, return_selected_nuclei = False):
     """
-    Remove overlapping nuclei from the given list using parallel processing.
+    Remove overlapping nuclei from the given list using spatial indexing and parallel processing.
 
-    This function creates a single shapely STRtree from all the polygons in the nuclei_list
-    and filters out the overlapping polygons.
+    This function removes overlapping nuclei polygons from the input list using an STRtree spatial index.
 
     Args:
         nuclei_list (list): A list of dictionaries, each containing 'points' representing a polygon.
+        nuclei_format (str, optional): The format of nuclei in the output list ('polygon' or 'bbox').
+        return_selected_nuclei (bool, optional): If True, also returns the indices of selected nuclei. Default is False.
 
     Returns:
         output_list (list): A new list with overlapping nuclei removed.
+        selected_nuclei (list, optional): A list of indices of selected nuclei (only if return_selected_nuclei is True).
     """
     polygons = [create_polygon(nuclei['points']) for nuclei in nuclei_list]
 
@@ -67,13 +69,17 @@ def remove_overlap_nuclei(nuclei_list, nuclei_format):
     rt = shapely.strtree.STRtree(polygons)
 
     # Find and remove any overlapping polygons
-    output_list = [nuclei for index, nuclei in enumerate(nuclei_list) if not any(
-        ix for ix in rt.query(
-            polygons[index]) if ix < index and polygons[index].intersects(
-            polygons[ix]))]
+    if return_selected_nuclei:
+        output = [(nuclei, index) for index, nuclei in enumerate(nuclei_list) if not any(
+            ix for ix in rt.query(polygons[index]) if ix < index and polygons[index].intersects(polygons[ix]))]
+
+        output_list, selected_nuclei = (zip(*output) if return_selected_nuclei else ([nuclei for nuclei, _ in output], []))
 
     # if nuclei_format is bbox - convert polygons to bbox
     if nuclei_format == 'bbox':
         output_list = convert_polygons_tobbox(output_list)
+    
+    if return_selected_nuclei:
+        return output_list, selected_nuclei
 
     return output_list

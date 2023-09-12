@@ -9,6 +9,7 @@ import numpy as np
 
 import histomicstk
 import histomicstk.preprocessing.color_normalization as htk_cnorm
+import histomicstk.segmentation.label as htk_seg_label
 import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.utils as htk_utils
 from histomicstk.cli import utils as cli_utils
@@ -53,6 +54,11 @@ def main(args):
         process_whole_image = True
     else:
         process_whole_image = False
+
+    # Provide default value for tile_overlap
+    tile_overlap = args.tile_overlap_value
+    if tile_overlap == -1:
+        tile_overlap = (args.max_radius + 1) * 4
 
     #
     # Initiate Dask client
@@ -106,6 +112,7 @@ def main(args):
     it_kwargs = {
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
+        'tile_overlap': {'x': tile_overlap, 'y': tile_overlap},
     }
 
     if not process_whole_image:
@@ -220,6 +227,24 @@ def main(args):
     print(f'Number of nuclei = {len(nuclei_annot_list)}')
     print('Nuclei detection time = {}'.format(
         cli_utils.disp_time_hms(nuclei_detection_time)))
+    
+    #
+    # Remove overlapping nuclei
+    #
+    if args.remove_overlapping_nuclei_segmentation:
+        print('\n>> Removing overlapping nuclei segmentations ...\n')
+        nuclei_removal_start_time = time.time()
+
+        nuclei_annot_list, selected_nuclei = htk_seg_label.remove_overlap_nuclei(
+            nuclei_annot_list, args.nuclei_annotation_format, return_selected_nuclei=True)
+        nuclei_removal_setup_time = time.time() - nuclei_removal_start_time
+
+        #remove features for overlapping nuclei
+        nuclei_fdata = nuclei_fdata[nuclei_fdata.index.isin(selected_nuclei)]
+
+        print('Number of nuclei after overlap removal {}'.format(len(nuclei_annot_list)))
+        print('Nuclei removal processing time = {}'.format(
+            cli_utils.disp_time_hms(nuclei_removal_setup_time)))
 
     #
     # Write annotation file
