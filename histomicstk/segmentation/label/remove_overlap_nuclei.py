@@ -50,18 +50,18 @@ def convert_polygons_tobbox(nuclei_list):
 
 def remove_overlap_nuclei(nuclei_list, nuclei_format, return_selected_nuclei=False):
     """
-    Remove overlapping nuclei from the given list using spatial indexing and parallel processing.
+    Remove overlapping nuclei using spatial indexing and parallel processing.
 
-    This function removes overlapping nuclei polygons from the input list using an STRtree spatial index.
+    This function removes overlapping nuclei polygons from input using an STRtree index.
 
     Args:
-        nuclei_list (list): A list of dictionaries, each containing 'points' representing a polygon.
-        nuclei_format (str, optional): The format of nuclei in the output list ('polygon' or 'bbox').
-        return_selected_nuclei (bool, optional): If True, also returns the indices of selected nuclei. Default is False.
+        nuclei_list (list): List of dictionaries with 'points' for polygons.
+        nuclei_format (str, optional): Output format ('polygon' or 'bbox').
+        return_selected (bool, optional): Return indices of selected nuclei (default: False).
 
     Returns:
-        output_list (list): A new list with overlapping nuclei removed.
-        selected_nuclei (list, optional): A list of indices of selected nuclei (only if return_selected_nuclei is True).
+        output_list (list): New list with overlapping nuclei removed.
+        selected_nuclei (list, optional): Indices of selected nuclei.
     """
     polygons = [create_polygon(nuclei['points']) for nuclei in nuclei_list]
 
@@ -70,7 +70,8 @@ def remove_overlap_nuclei(nuclei_list, nuclei_format, return_selected_nuclei=Fal
 
     # Find and remove any overlapping polygons
     output = [(nuclei, index) for index, nuclei in enumerate(nuclei_list) if not any(
-        ix for ix in rt.query(polygons[index]) if ix < index and polygons[index].intersects(polygons[ix]))]
+        ix for ix in rt.query(polygons[index])
+        if ix < index and polygons[index].intersects(polygons[ix]))]
 
     output_list, selected_nuclei = (
         zip(*output) if return_selected_nuclei else ([nuclei for nuclei, _ in output], []))
