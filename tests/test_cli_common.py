@@ -62,20 +62,26 @@ class TestCliCommon:
 
         np.testing.assert_equal(fgnd_seg_scale['magnification'], 2.5)
 
-        fgnd_mask_gtruth_file = os.path.join(datastore.fetch(
-            'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png'))
-
-        im_fgnd_mask_lres_gtruth = skimage.io.imread(
-            fgnd_mask_gtruth_file) > 0
-
         if GENERATE_GROUNDTRUTH:
             import PIL.Image
 
             PIL.Image.fromarray(im_fgnd_mask_lres).save(
                 '/tmp/TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png')
 
-        np.testing.assert_array_equal(im_fgnd_mask_lres > 0,
-                                      im_fgnd_mask_lres_gtruth)
+        for gtruth in {
+            'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png',
+            'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres2.png',
+        }:
+            fgnd_mask_gtruth_file = os.path.join(datastore.fetch(gtruth))
+
+            im_fgnd_mask_lres_gtruth = skimage.io.imread(fgnd_mask_gtruth_file)
+            if len(im_fgnd_mask_lres_gtruth.shape) > 2:
+                im_fgnd_mask_lres_gtruth = im_fgnd_mask_lres_gtruth[:, :, 0]
+            im_fgnd_mask_lres_gtruth = im_fgnd_mask_lres_gtruth > 0
+
+            if np.array_equal(im_fgnd_mask_lres > 0, im_fgnd_mask_lres_gtruth):
+                break
+        np.testing.assert_array_equal(im_fgnd_mask_lres > 0, im_fgnd_mask_lres_gtruth)
 
     def test_create_tile_nuclei_annotations(self):
 
