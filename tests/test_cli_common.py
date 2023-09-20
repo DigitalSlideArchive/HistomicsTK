@@ -1,6 +1,7 @@
 import collections
 import json
 import os
+import tempfile
 from argparse import Namespace
 
 import large_image
@@ -65,8 +66,8 @@ class TestCliCommon:
         if GENERATE_GROUNDTRUTH:
             import PIL.Image
 
-            PIL.Image.fromarray(im_fgnd_mask_lres).save(
-                '/tmp/TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png')
+            PIL.Image.fromarray(im_fgnd_mask_lres).save(os.path.join(
+                tempfile.gettempdir(), 'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png'))
 
         for gtruth in {
             'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png',
@@ -210,10 +211,12 @@ class TestCliCommon:
             nuclei_bndry_annot_list.extend(cur_bndry_annot_list)
 
         if GENERATE_GROUNDTRUTH:
-            open('/tmp/TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot', 'w').write(
-                json.dumps({'elements': nuclei_bbox_annot_list}))
-            open('/tmp/TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot', 'w').write(
-                json.dumps({'elements': nuclei_bndry_annot_list}))
+            open(os.path.join(
+                tempfile.gettempdir(), 'TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot'),
+                'w').write(json.dumps({'elements': nuclei_bbox_annot_list}))
+            open(os.path.join(
+                tempfile.gettempdir(), 'TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot'),
+                'w').write(json.dumps({'elements': nuclei_bndry_annot_list}))
 
         # compare nuclei bbox annotations with gtruth
         nuclei_bbox_annot_gtruth_file = os.path.join(datastore.fetch(
