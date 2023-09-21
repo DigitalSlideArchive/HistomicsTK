@@ -8,7 +8,8 @@ def trace_object_boundaries(im_label,
                             x_start=None, y_start=None,
                             max_length=None,
                             simplify_colinear_spurs=True,
-                            eps_colinear_area=0.01):
+                            eps_colinear_area=0.01,
+                            region_props=None):
     """Performs exterior boundary tracing of one or more objects in a label
     mask. If a starting point is not provided then a raster scan will be performed
     to identify the starting pixel.
@@ -69,10 +70,11 @@ def trace_object_boundaries(im_label,
 
     X = []
     Y = []
+    selected_rows = []
 
     if trace_all:
 
-        rprops = regionprops(im_label)
+        rprops = region_props if region_props else regionprops(im_label)
         numLabels = len(rprops)
 
         x_start = -1
@@ -109,6 +111,7 @@ def trace_object_boundaries(im_label,
                                                      eps_colinear_area)
 
             if len(bx) > 0:
+                selected_rows.append(i)
                 X.append(bx)
                 Y.append(by)
 
@@ -140,6 +143,8 @@ def trace_object_boundaries(im_label,
         if len(bx) > 0:
             X.append(bx)
             Y.append(by)
+    if region_props:
+        return X, Y, selected_rows
 
     return X, Y
 

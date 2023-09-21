@@ -95,7 +95,7 @@ def segment_wsi_foreground_at_low_res(
     return im_fgnd_mask_lres, fgnd_seg_scale
 
 
-def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
+def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info, region_props=None):
     import skimage.measure
 
     nuclei_annot_list = []
@@ -105,7 +105,8 @@ def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
     wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
     hfrac = tile_info['gheight'] / np.double(tile_info['height'])
 
-    nuclei_obj_props = skimage.measure.regionprops(im_nuclei_seg_mask)
+    nuclei_obj_props = region_props if region_props else skimage.measure.regionprops(
+        im_nuclei_seg_mask)
 
     for i in range(len(nuclei_obj_props)):
         cx = nuclei_obj_props[i].centroid[1]
@@ -135,7 +136,7 @@ def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
     return nuclei_annot_list
 
 
-def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
+def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info, region_props=None):
 
     nuclei_annot_list = []
 
@@ -144,9 +145,13 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
     wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
     hfrac = tile_info['gheight'] / np.double(tile_info['height'])
 
-    by, bx = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
-                                                   trace_all=True)
-
+    if region_props:
+        by, bx, selected_rows = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
+                                                                      trace_all=True,
+                                                                      region_props=region_props)
+    else:
+        by, bx = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
+                                                       trace_all=True)
     for i in range(len(bx)):
 
         # get boundary points and convert to base pixel space
@@ -170,21 +175,22 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
         }
 
         nuclei_annot_list.append(cur_annot)
-
+    if region_props:
+        return nuclei_annot_list, selected_rows
     return nuclei_annot_list
 
 
-def create_tile_nuclei_annotations(im_nuclei_seg_mask, tile_info, format):
+def create_tile_nuclei_annotations(im_nuclei_seg_mask, tile_info, format, region_props=None):
 
     if format == 'bbox':
 
         return create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask,
-                                                   tile_info)
+                                                   tile_info, region_props)
 
     elif format == 'boundary':
 
         return create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask,
-                                                       tile_info)
+                                                       tile_info, region_props)
     else:
 
         raise ValueError('Invalid value passed for nuclei_annotation_format')
