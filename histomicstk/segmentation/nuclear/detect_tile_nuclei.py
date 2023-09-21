@@ -97,16 +97,13 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                     args.remove_overlapping_nuclei_segmentation:
                 format = 'boundary'
 
-        nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
-            im_nuclei_seg_mask, tile_info, format)
-
         if return_fdata:
             if args.cytoplasm_features:
                 im_cytoplasm_stain = im_stains[:, :, 1].astype(float)
             else:
                 im_cytoplasm_stain = None
-
-            fdata = htk_features.compute_nuclei_features(
+            # Generate features and nuclei annotation simultaniously
+            fdata, nuclei_annot_list = htk_features.compute_nuclei_features(
                 im_nuclei_seg_mask, im_nuclei_stain, im_cytoplasm_stain,
                 fsd_bnd_pts=args.fsd_bnd_pts,
                 fsd_freq_bins=args.fsd_freq_bins,
@@ -116,8 +113,17 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                 fsd_features_flag=args.fsd_features,
                 intensity_features_flag=args.intensity_features,
                 gradient_features_flag=args.gradient_features,
+                tile_info=tile_info,
+                im_nuclei_seg_mask=im_nuclei_seg_mask,
+                format=format,
+                return_nuclei_annotation=True
             )
-
             fdata.columns = ['Feature.' + col for col in fdata.columns]
+        else:
+            nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
+                im_nuclei_seg_mask, tile_info, format)
 
-    return nuclei_annot_list, fdata
+    if return_fdata:
+        return nuclei_annot_list, fdata
+
+    return nuclei_annot_list

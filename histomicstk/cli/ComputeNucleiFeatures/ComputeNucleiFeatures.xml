@@ -206,13 +206,13 @@
       <longflag>min_nucleus_area</longflag>
       <default>80</default>
     </double>
-    <boolean>
-      <name>ignore_border_nuclei</name>
-      <label>Ignore Border Nuclei</label>
-      <description>Ignore/drop nuclei touching the image/tile border</description>
-      <longflag>ignore_border_nuclei</longflag>
-      <default>false</default>
-    </boolean>
+    <integer>
+      <name>tile_overlap_value</name>
+      <label>Tile Overlap</label>
+      <description>Tile overlap size in pixels, Default value of -1 indicate that the tile overlap will be set to (max_radius + 1) * 4</description>
+      <longflag>tile_overlap_value</longflag>
+      <default>-1</default>
+    </integer>
     <string-enumeration>
       <name>nuclei_annotation_format</name>
       <label>Nuclei annotation format</label>
@@ -222,6 +222,20 @@
       <element>boundary</element>
       <default>boundary</default>
     </string-enumeration>
+    <boolean>
+      <name>ignore_border_nuclei</name>
+      <label>Ignore Border Nuclei</label>
+      <description>Ignore/drop nuclei touching the image/tile border</description>
+      <longflag>ignore_border_nuclei</longflag>
+      <default>false</default>
+    </boolean>
+    <boolean>
+      <name>remove_overlapping_nuclei_segmentation</name>
+      <label>Remove overlapping nuclei</label>
+      <description>Remove overlapping nuclei segmentation from the given region. It is recommended to use this approach when defining the tile overlap parameter.</description>
+      <longflag>remove_overlapping_nuclei_segmentation</longflag>
+      <default>True</default>
+    </boolean>
   </parameters>
   <parameters>
     <label>Feature extraction</label>
