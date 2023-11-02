@@ -4,7 +4,7 @@ from . import _linalg as linalg
 
 
 def find_stain_index(reference, w):
-    """Identify the stain vector in w that best alignes with the reference vector.
+    """Identify the stain vector in w that best aligns with the reference vector.
 
     This is used with adaptive deconvolution routines where the order of returned stain
     vectors is not guaranteed. This function identifies the stain vector of w that most

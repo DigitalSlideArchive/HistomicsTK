@@ -1,0 +1,72 @@
+# Initially run
+#   pre-commit install
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+  - id: check-added-large-files
+  - id: check-ast
+  - id: check-builtin-literals
+  - id: check-case-conflict
+  - id: check-docstring-first
+  - id: check-executables-have-shebangs
+  - id: check-json
+  - id: check-merge-conflict
+  - id: check-shebang-scripts-are-executable
+  # - id: check-symlinks
+  # - id: check-toml
+  # - id: check-xml
+  - id: check-yaml
+  - id: debug-statements
+  - id: destroyed-symlinks
+  - id: detect-private-key
+  - id: double-quote-string-fixer
+  - id: end-of-file-fixer
+  - id: fix-byte-order-marker
+  - id: forbid-new-submodules
+  - id: mixed-line-ending
+  - id: trailing-whitespace
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.10.0
+  hooks:
+  - id: python-no-eval
+  - id: python-no-log-warn
+  - id: rst-backticks
+  - id: rst-directive-colons
+  - id: rst-inline-touching-normal
+  - id: text-unicode-replacement-char
+- repo: https://github.com/Lucas-C/pre-commit-hooks-markup
+  rev: v1.0.1
+  hooks:
+  - id: rst-linter
+    files: README.rst
+    name: rst-linter of README.rst
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.2.6
+  hooks:
+  - id: codespell
+    exclude: (?x)^(.*\.ipynb)$
+    args:
+      - --ignore-words-list
+      - "hist,indext,pixelx,thex,subtile,nd,hsi,bult,vor"
+- repo: https://github.com/syntaqx/git-hooks
+  rev: v0.0.18
+  hooks:
+  - id: circleci-config-validate
+- repo: https://github.com/asottile/pyupgrade
+  rev: v3.15.0
+  hooks:
+    - id: pyupgrade
+      args:
+        - --py37-plus
+        - --keep-percent-format
+- repo: https://github.com/pre-commit/mirrors-autopep8
+  rev: v2.0.4
+  hooks:
+    - id: autopep8
+- repo: https://github.com/PyCQA/flake8
+  rev: 6.1.0
+  hooks:
+    - id: flake8

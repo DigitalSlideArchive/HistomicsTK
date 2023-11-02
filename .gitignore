@@ -90,7 +90,6 @@ HistomicsTKDocker.code-workspace
 
 # debugging
 .devcontainer/
-.pre-commit-config.yaml
 run_tests_code_cleanup.sh
 
 # pyenv

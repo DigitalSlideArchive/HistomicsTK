@@ -337,7 +337,7 @@ def contours_to_labeled_object_mask(
         print to screen?
 
     monitorprefix : str
-        prefix to add to printed statemens
+        prefix to add to printed statements
 
     Returns
     -------
@@ -507,7 +507,7 @@ def get_all_rois_from_slide_v2(
     to use the data for object localization or classification or segmentation
     tasks. If you would like to get semantic segmentation masks, i.e. you do
     not really care about individual objects, you can use either version 1
-    or this method. They re-use much of the same code-base, but some edge
+    or this method. They reuse much of the same code-base, but some edge
     cases maybe better handled by version 1. For example, since
     this version uses shapely first to crop, some objects may be incorrectly
     parsed by shapely. Version 1, using PIL.ImageDraw may not have these
