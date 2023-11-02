@@ -124,7 +124,7 @@ def _get_visualization_zoomout(
     Returns
     -------
     np.array
-        Zoomed out visualization. Outpu from _visualize_annotations_on_rgb().
+        Zoomed out visualization. Output from _visualize_annotations_on_rgb().
 
     """
     # get append string for server request

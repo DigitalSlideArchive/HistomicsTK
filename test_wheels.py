@@ -19,11 +19,11 @@ python "$CLIPATH/NucleiDetection/NucleiDetection.py" tcga.svs sample.anot \\
 true"""
 
 containers = [
-    'python:3.7',
     'python:3.8',
     'python:3.9',
     'python:3.10',
     'python:3.11',
+    'python:3.12',
     'centos/python-38-centos7',
 ]
 
@@ -35,5 +35,5 @@ for container in containers:
         '--rm', container, 'sh', '-c', script])
 
 # To test manually, run a container such as
-#  docker run -v `pwd`/docs:/wheels --rm -it python:3.7 bash
+#  docker run -v `pwd`/docs:/wheels --rm -it python:3.12 bash
 # and then enter the script commands directly

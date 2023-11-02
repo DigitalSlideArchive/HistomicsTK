@@ -1,7 +1,8 @@
 FROM dockcross/manylinux2014-x64
 
-# Don't build python < 3.7
+# Don't build python < 3.8
 RUN rm -rf /opt/python/cp36*
+RUN rm -rf /opt/python/cp37*
 RUN rm -rf /opt/python/pp*
 
 RUN for PYBIN in /opt/python/*/bin; do \
@@ -9,7 +10,9 @@ RUN for PYBIN in /opt/python/*/bin; do \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \
-      if [[ "${PYBIN}" =~ "cp311" ]]; then \
+      if [[ "${PYBIN}" =~ "312" ]]; then \
+        export VERSIONS="numpy==1.26.*"; \
+      elif [[ "${PYBIN}" =~ "311" ]]; then \
         export VERSIONS="numpy==1.23.*"; \
       elif [[ "${PYBIN}" =~ "310" ]]; then \
         export VERSIONS="numpy==1.21.*"; \
@@ -17,8 +20,6 @@ RUN for PYBIN in /opt/python/*/bin; do \
         export VERSIONS="numpy==1.19.*"; \
       elif [[ "${PYBIN}" =~ "38" ]]; then \
         export VERSIONS="numpy==1.17.*"; \
-      elif [[ "${PYBIN}" =~ "37" ]]; then \
-        export VERSIONS="numpy==1.14.*"; \
       else \
         # This could be numpy 1.11, but we specify 1.12.1 as our minimum \
         export VERSIONS="numpy==1.12.*"; \

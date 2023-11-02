@@ -617,7 +617,7 @@ def _get_idxs_for_all_rois(GTCodes, element_infos):
 
 def get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi, iou_thresh=0.0):
-    """Find indices of **potentially** included annoations within the ROI.
+    """Find indices of **potentially** included annotations within the ROI.
 
     We say "potentially" because this uses the IoU of roi and annotation as a
     fast indicator of potential inclusion. This helps dramatically scale down
