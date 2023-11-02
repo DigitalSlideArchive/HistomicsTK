@@ -28,7 +28,7 @@ def main(origargs):
         },
     }
     for i, stain in enumerate(stain_matrix.T):
-        annotation['attributes']['stainColor_{}'.format(i + 1)] = stain.tolist()
+        annotation['attributes'][f'stainColor_{i + 1}'] = stain.tolist()
 
     with open(args.outputAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, sort_keys=False)

@@ -63,32 +63,6 @@ commands:
           command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; ./codecov --disable search pycov gcov --file .tox/coverage/py_coverage.xml .tox/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
 
 jobs:
-  py37:
-    working_directory: ~/project
-    machine:
-      image: ubuntu-2004:202111-02
-    steps:
-      - checkout
-      - upgradepython:
-          version: "3.7"
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.7
-      - docker-compose
-      - restore_cache:
-          name: Restore external data cache
-          keys:
-            - tox-externaldata-{{ checksum "tests/datastore.py" }}
-      - tox:
-          env: py37
-      - save_cache:
-          name: Save external data cache
-          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
-          paths:
-            - ./.tox/externaldata
-      - coverage
   py38:
     working_directory: ~/project
     machine:
@@ -193,10 +167,36 @@ jobs:
           paths:
             - ./.tox/externaldata
       - coverage
+  py312:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - upgradepython:
+          version: "3.12"
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.12
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
+      - tox:
+          env: py312
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
+      - coverage
   lint_and_docs:
     working_directory: ~/project
     docker:
-      - image: cimg/python:3.9
+      - image: cimg/python:3.11
     steps:
       - checkout
       - run:
@@ -329,13 +329,6 @@ workflows:
   version: 2
   ci:
     jobs:
-      - py37:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
       - py38:
           filters:
             tags:
@@ -358,6 +351,13 @@ workflows:
               ignore:
                 - gh-pages
       - py311:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py312:
           filters:
             tags:
               only: /^v.*/
@@ -387,11 +387,11 @@ workflows:
                 - gh-pages
       - docs-deploy:
           requires:
-            - py37
             - py38
             - py39
             - py310
             - py311
+            - py312
             - lint_and_docs
             - wheels
             - docker
@@ -404,11 +404,11 @@ workflows:
                 - sphinx
       - publish_docker:
           requires:
-            - py37
             - py38
             - py39
             - py310
             - py311
+            - py312
             - lint_and_docs
             - docker
             - wheels
@@ -428,21 +428,21 @@ workflows:
               only:
                 - master
     jobs:
-      - py37
       - py38
       - py39
       - py310
       - py311
+      - py312
       - lint_and_docs
       - docker
       - wheels
       - publish_docker:
           requires:
-            - py37
             - py38
             - py39
             - py310
             - py311
+            - py312
             - lint_and_docs
             - docker
             - wheels

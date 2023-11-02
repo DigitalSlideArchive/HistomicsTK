@@ -1,5 +1,5 @@
 ========================
-HistomicsTK |codecov-io| 
+HistomicsTK |codecov-io|
 ========================
 
 .. |codecov-io| image:: https://codecov.io/github/DigitalSlideArchive/HistomicsTK/coverage.svg?branch=master

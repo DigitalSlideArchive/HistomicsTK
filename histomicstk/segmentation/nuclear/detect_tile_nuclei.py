@@ -102,7 +102,7 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                 im_cytoplasm_stain = im_stains[:, :, 1].astype(float)
             else:
                 im_cytoplasm_stain = None
-            # Generate features and nuclei annotation simultaniously
+            # Generate features and nuclei annotation simultaneously
             fdata, nuclei_annot_list = htk_features.compute_nuclei_features(
                 im_nuclei_seg_mask, im_nuclei_stain, im_cytoplasm_stain,
                 fsd_bnd_pts=args.fsd_bnd_pts,
