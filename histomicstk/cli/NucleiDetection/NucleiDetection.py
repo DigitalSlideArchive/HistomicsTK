@@ -114,7 +114,7 @@ def process_wsi(ts, it_kwargs, args, im_fgnd_mask_lres=None,
 
     fgnd_frac_comp_time = time.time() - start_time
 
-    print('Number of foreground tiles = {:d} ({:2f}%%)'.format(
+    print('Number of foreground tiles = {:d} ({:.2f}%)'.format(
         num_fgnd_tiles, percent_fgnd_tiles))
 
     print('Tile foreground fraction computation time = {}'.format(
