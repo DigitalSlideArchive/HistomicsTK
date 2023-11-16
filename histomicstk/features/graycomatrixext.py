@@ -209,7 +209,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
             cur_glcm += cur_glcm.T
 
         # normalize if asked
-        if normed:
+        if normed and cur_glcm.sum():
             cur_glcm /= cur_glcm.sum()
 
         glcm[:, :, i] = cur_glcm

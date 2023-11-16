@@ -1,4 +1,6 @@
 """Compute intensity features in labeled image."""
+import warnings
+
 import numpy as np
 
 
@@ -123,7 +125,9 @@ def compute_intensity_features(
     # conditionally execute calculations if x in the features list
     def _conditional_execution(feature, func, *args, **kwargs):
         if feature in feature_list:
-            fdata.at[i, feature] = func(*args, **kwargs)
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                fdata.at[i, feature] = func(*args, **kwargs)
 
     def _return_input(x):
         return x

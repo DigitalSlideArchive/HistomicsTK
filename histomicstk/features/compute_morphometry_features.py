@@ -206,8 +206,12 @@ def _fractal_dimension(Z):
         counts.append(boxcount(Z, size))
 
     # Fit the successive log(sizes) with log (counts)
+    coeffs = [0]
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', np.RankWarning)
-        coeffs = np.polyfit(np.log(sizes), np.log(counts), 1)
-
+        if len(counts):
+            try:
+                coeffs = np.polyfit(np.log(sizes), np.log(counts), 1)
+            except TypeError:
+                pass
     return -coeffs[0]
