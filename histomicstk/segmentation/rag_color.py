@@ -28,7 +28,6 @@ def rag_color(adj_mat):
     histomicstk.segmentation.rag_add_layer
 
     """
-
     # initialize colors and color count
     Colors = np.zeros((adj_mat.shape[0], 1), dtype=int)
     Colors[0] = 1

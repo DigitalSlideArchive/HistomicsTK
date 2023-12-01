@@ -129,7 +129,8 @@ class TestGetSlideRegionNoMask:
                 'bounds', 'rgb', 'contours', 'visualization'}
             assert roi_out['rgb'].shape == (200, 251, 3)
             assert roi_out['visualization'].shape == (200, 251, 3)
-            assert len(roi_out['contours']) > 56 and (
+            assert len(roi_out['contours']) > 56
+            assert (
                 len(roi_out['contours']) < 68)
             assert set(roi_out['contours'][0].keys()) == {
                 'annidx', 'elementidx', 'element_girder_id', 'type', 'label',
@@ -148,7 +149,8 @@ class TestGetSlideRegionNoMask:
             'bounds', 'rgb', 'contours', 'visualization'}
         assert roi_out['rgb'].shape == (321, 351, 3)
         assert roi_out['visualization'].shape == (321, 351, 3)
-        assert len(roi_out['contours']) > 72 and (
+        assert len(roi_out['contours']) > 72
+        assert (
             len(roi_out['contours']) < 80)
         assert set(roi_out['contours'][0].keys()) == {
             'annidx', 'elementidx', 'element_girder_id', 'type', 'label',

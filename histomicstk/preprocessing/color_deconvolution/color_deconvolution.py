@@ -118,14 +118,14 @@ def _reorder_stains(W, stains=None):
     to reorder the stains matrix to the order provided by this parameter
 
     Parameters
-    ------------
+    ----------
     W : np array
         A 3x3 matrix of stain column vectors.
     stains : list, optional
         List of stain names (order is important). Default is H&E.
 
     Returns
-    ------------
+    -------
     np array
         A re-ordered 3x3 matrix of stain column vectors.
 
@@ -154,7 +154,7 @@ def stain_unmixing_routine(
     """Perform stain unmixing using the method of choice (wrapper).
 
     Parameters
-    ------------
+    ----------
     im_rgb : array_like
         An RGB image (m x n x 3) to unmix.
 
@@ -179,7 +179,7 @@ def stain_unmixing_routine(
         sharpie marker, white space, etc may throw off the normalization.
 
     Returns
-    --------
+    -------
     Wc : array_like
         A 3x3 complemented stain matrix.
 
@@ -217,7 +217,8 @@ def stain_unmixing_routine(
         assert mask_out is None, 'Masking is not yet implemented in xu_snmf.'
 
     else:
-        raise ValueError('Unknown/Unimplemented deconvolution method.')
+        msg = 'Unknown/Unimplemented deconvolution method.'
+        raise ValueError(msg)
 
     # get W_source
     W_source = stain_deconvolution(im_rgb, **stain_unmixing_params)
@@ -236,7 +237,7 @@ def color_deconvolution_routine(
     """Unmix stains mixing followed by deconvolution (wrapper).
 
     Parameters
-    ------------
+    ----------
     im_rgb : array_like
         An RGB image (m x n x 3) to color normalize
 
@@ -256,7 +257,7 @@ def color_deconvolution_routine(
         Passed as-is to stain_unmixing_routine() if W_source is None.
 
     Returns
-    --------
+    -------
     Output from color_deconvolution()
 
     See Also

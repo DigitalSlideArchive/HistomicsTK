@@ -21,19 +21,24 @@ logging.basicConfig(level=logging.CRITICAL)
 def check_args(args):
 
     if not os.path.isfile(args.inputImageFile):
-        raise OSError('Input image file does not exist.')
+        msg = 'Input image file does not exist.'
+        raise OSError(msg)
 
     if len(args.reference_mu_lab) != 3:
-        raise ValueError('Reference Mean LAB should be a 3 element vector.')
+        msg = 'Reference Mean LAB should be a 3 element vector.'
+        raise ValueError(msg)
 
     if len(args.reference_std_lab) != 3:
-        raise ValueError('Reference Stddev LAB should be a 3 element vector.')
+        msg = 'Reference Stddev LAB should be a 3 element vector.'
+        raise ValueError(msg)
 
     if len(args.analysis_roi) != 4:
-        raise ValueError('Analysis ROI must be a vector of 4 elements.')
+        msg = 'Analysis ROI must be a vector of 4 elements.'
+        raise ValueError(msg)
 
     if os.path.splitext(args.outputNucleiFeatureFile)[1] not in ['.csv', '.h5']:
-        raise ValueError('Extension of output feature file must be .csv or .h5')
+        msg = 'Extension of output feature file must be .csv or .h5'
+        raise ValueError(msg)
 
 
 def main(args):
@@ -122,7 +127,7 @@ def main(args):
             'top': args.analysis_roi[1],
             'width': args.analysis_roi[2],
             'height': args.analysis_roi[3],
-            'units': 'base_pixels'
+            'units': 'base_pixels',
         }
 
     if is_wsi:
@@ -139,7 +144,7 @@ def main(args):
 
             tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
                 args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
-                it_kwargs
+                it_kwargs,
             )
 
         else:
@@ -200,7 +205,7 @@ def main(args):
             tile,
             args,
             src_mu_lab, src_sigma_lab,
-            return_fdata=True
+            return_fdata=True,
         )
 
         # append result to list
@@ -219,7 +224,7 @@ def main(args):
         nuclei_fdata = pd.concat([
             fdata
             for annot_list, fdata in tile_result_list if fdata is not None],
-            ignore_index=True
+            ignore_index=True,
         )
 
     nuclei_detection_time = time.time() - start_time
@@ -262,7 +267,7 @@ def main(args):
             'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab.tolist(),
             'params': vars(args),
             'cli': Path(__file__).stem,
-            'version': histomicstk.__version__, }
+            'version': histomicstk.__version__},
     }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
@@ -284,7 +289,8 @@ def main(args):
 
     else:
 
-        raise ValueError('Extension of output feature file must be .csv or .h5')
+        msg = 'Extension of output feature file must be .csv or .h5'
+        raise ValueError(msg)
 
     total_time_taken = time.time() - total_start_time
 

@@ -166,6 +166,7 @@ def estimate_variance(x, y, peak):
     each side of the peak to estimate the full-width-half-maximum (FWHM) and
     variance of the peak. If tracing fails on either side, the FWHM is
     estimated as twice the HWHM.
+
     Parameters
     ----------
     x : array_like
@@ -174,17 +175,18 @@ def estimate_variance(x, y, peak):
         vector of y-histogram locations.
     peak : double
         index of peak in y to estimate variance of
+
     Returns
     -------
     scale : double
         Standard deviation of normal distribution approximating peak. Value is
         -1 if fitting process fails.
+
     See Also
     --------
     SimpleMask
 
     """
-
     # analyze peak to estimate variance parameter via FWHM
     peak = int(peak)
     Left = peak

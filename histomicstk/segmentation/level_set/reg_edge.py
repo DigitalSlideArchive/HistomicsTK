@@ -72,7 +72,7 @@ def reg_edge(im_input, im_phi, well='double', sigma=1.5, dt=1.0, mu=0.2,
     dG = np.gradient(G)
 
     # perform regularized level-set evolutions with time step dt
-    for i in range(0, iter):
+    for i in range(iter):
 
         # fix boundary conditions
         im_phi = neumann_bounds(im_phi)

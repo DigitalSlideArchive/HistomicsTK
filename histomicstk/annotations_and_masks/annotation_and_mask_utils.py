@@ -24,7 +24,7 @@ def get_image_from_htk_response(resp):
            response from server request
 
     Returns
-    --------
+    -------
     Pillow Image object
         a pillow Image object of the image
 
@@ -42,7 +42,7 @@ def scale_slide_annotations(slide_annotations, sf):
     Works in place, but returns slide_annotations anyways.
 
     Parameters
-    -----------
+    ----------
     slide_annotations : list of dicts
         response from server request
 
@@ -50,14 +50,14 @@ def scale_slide_annotations(slide_annotations, sf):
         scale factor to multiply coordinates
 
     Returns
-    ---------
+    -------
     list of dicts
 
     """
     if sf == 1.0:
         return slide_annotations
 
-    for annidx, ann in enumerate(slide_annotations):
+    for _annidx, ann in enumerate(slide_annotations):
         for element in ann['annotation']['elements']:
             for key in element.keys():
 
@@ -75,7 +75,7 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
     This also gets the string to append to server request for getting rgb.
 
     Parameters
-    -----------
+    ----------
     gc : Girder client instance
         gc should be authoenticated.
     slide_id : str
@@ -90,7 +90,7 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
         scaling at base (scan) magnification.
 
     Returns
-    ----------
+    -------
     float
         how much smaller (0.1 means 10x smaller) is requested image
         compared to scan magnification (slide coordinates)
@@ -126,7 +126,7 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
     ... web_client/annotations/rotate.js.
 
     Parameters
-    -----------
+    ----------
     point_list : list of tuples
         (x,y) coordinates
 
@@ -137,7 +137,7 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
         central point coordinates
 
     Returns
-    --------
+    -------
     list of tuples
 
     """
@@ -165,7 +165,7 @@ def get_rotated_rectangular_coords(
     of course is applicable to any rotated rectangular annotation.
 
     Parameters
-    -----------
+    ----------
     roi_center : tuple or list
         (x, y) format
     roi_width : float
@@ -173,7 +173,7 @@ def get_rotated_rectangular_coords(
     roi_rotation : float
 
     Returns
-    --------
+    -------
     dict
         includes roi corners (x, y) and bounds
 
@@ -201,7 +201,7 @@ def get_rotated_rectangular_coords(
         'x_min': roi_corners[:, 0].min(),
         'x_max': roi_corners[:, 0].max(),
         'y_min': roi_corners[:, 1].min(),
-        'y_max': roi_corners[:, 1].max()
+        'y_max': roi_corners[:, 1].max(),
     }
 
     return roi_info
@@ -211,12 +211,12 @@ def get_bboxes_from_slide_annotations(slide_annotations):
     """Given a slide annotation list, gets information on bounding boxes.
 
     Parameters
-    -----------
+    ----------
     slide_annotations : list of dicts
         response from server request
 
     Returns
-    ---------
+    -------
     Pandas DataFrame
         The columns annidx and elementidx encode the
         dict index of annotation document and element, respectively, in the
@@ -227,7 +227,7 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 
     element_infos = DataFrame(columns=[
         'annidx', 'elementidx', 'type', 'group',
-        'xmin', 'xmax', 'ymin', 'ymax', ])
+        'xmin', 'xmax', 'ymin', 'ymax'])
 
     for annidx, ann in enumerate(slide_annotations):
         for elementidx, element in enumerate(ann['annotation']['elements']):
@@ -295,7 +295,8 @@ def _get_coords_from_element(element):
              (xmin, ymax), (xmin, ymin)], dtype='int32')
 
     else:
-        raise Exception('Unsupported element type:', element['type'])
+        msg = 'Unsupported element type:'
+        raise Exception(msg, element['type'])
 
     return coords
 
@@ -315,7 +316,7 @@ def _maybe_crop_polygon(vertices, bounds_polygon):
         polygon = bounds_polygon.intersection(elpoly)
 
         if polygon.geom_type in ('Polygon', 'LineString'):
-            polygons_to_add = [polygon, ]
+            polygons_to_add = [polygon]
         else:
             polygons_to_add = [
                 p for p in polygon if p.geom_type == 'Polygon']
@@ -415,7 +416,7 @@ def parse_slide_annotations_into_tables(
     as polygons for simplicity.
 
     Parameters
-    -----------
+    ----------
     slide_annotations : list of dicts
         response from server request
 
@@ -436,7 +437,7 @@ def parse_slide_annotations_into_tables(
         see cropping_bounds description.
 
     Returns
-    ---------
+    -------
     Pandas DataFrame
         Summary of key properties of the annotation documents. It has the
         following columns:
@@ -501,7 +502,7 @@ def parse_slide_annotations_into_tables(
         'elementidx', 'element_girder_id',
         'type', 'group', 'label', 'color',
         'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
-        'coords_x', 'coords_y'
+        'coords_x', 'coords_y',
     ])
 
     if cfg.cropping_bounds is not None:
@@ -533,7 +534,7 @@ def parse_slide_annotations_into_tables(
         for key in [
                 '_modelType', '_version',
                 'itemId', 'created', 'creatorId',
-                'public', 'updated', 'updatedId', ]:
+                'public', 'updated', 'updatedId']:
             if key in cfg.ann:
                 cfg.annotation_infos.loc[annno, key] = cfg.ann[key]
 
@@ -558,7 +559,7 @@ def parse_slide_annotations_into_tables(
                     (cfg.cropping_polygon_vertices is None)) \
                     or (element['type'] == 'point') \
                     or (not use_shapely):
-                all_coords = [coords, ]
+                all_coords = [coords]
             else:
                 all_coords = _maybe_crop_polygon(coords, bounds_polygon)
 
@@ -576,14 +577,14 @@ def np_vec_no_jit_iou(bboxes1, bboxes2):
             -iou-in-numpy-and-tensor-flow-4fa16231b63d
 
     Parameters
-    -----------
+    ----------
     bboxes1 : np array
         columns encode bounding box corners xmin, ymin, xmax, ymax
     bboxes2 : np array
         same as bboxes 1
 
     Returns
-    --------
+    -------
     np array
         IoU values for each pair from bboxes1 & bboxes2
 
@@ -625,7 +626,7 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
     whether the annotation polygons actually overlap the ROI can be done.
 
     Parameters
-    -----------
+    ----------
     element_infos : pandas DataFrame
         result from running get_bboxes_from_slide_annotations()
     idx_for_roi : int
@@ -634,7 +635,7 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
         overlap threshold to be considered within ROI
 
     Returns
-    --------
+    -------
     list
         indices relative to element_infos
 
@@ -657,13 +658,13 @@ def create_mask_from_coords(coords):
     Source: This is modified from code by Juan Carlos from David Gutman Lab.
 
     Parameters
-    -----------
+    ----------
     coords : np array
         must be in the form (e.g. ([x1,y1],[x2,y2],[x3,y3],.....,[xn,yn])),
         where xn and yn corresponds to the nth vertex coordinate.
 
     Returns
-    --------
+    -------
     np array
         binary mask
 
@@ -706,7 +707,8 @@ def _get_element_mask(elinfo, slide_annotations):
             roi_height=element['height'], roi_rotation=element['rotation'])
         coords = infoDict['roi_corners']
     else:
-        raise Exception('cannot create mask from point annotation!')
+        msg = 'cannot create mask from point annotation!'
+        raise Exception(msg)
 
     mask = create_mask_from_coords(coords)
     return coords, mask

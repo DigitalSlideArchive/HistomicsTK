@@ -39,7 +39,8 @@ def embed_boundaries(im_input, im_perim, color=None):
 
     # check for consistent shapes between 'im_input' and 'im_perim'
     if im_input.shape[0:2] != im_perim.shape[0:2]:
-        raise ValueError("'im_input' and 'im_perim' must have same shape")
+        msg = "'im_input' and 'im_perim' must have same shape"
+        raise ValueError(msg)
 
     # determine image type
     if np.issubclass_(im_input.dtype.type, np.float_):

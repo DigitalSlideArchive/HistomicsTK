@@ -30,14 +30,20 @@ def get_stain_vector(args, index):
     stain_vector = args['stain_' + str(index) + '_vector']
     if all(x == -1 for x in stain_vector):  # Magic default value
         if stain == 'custom':
-            raise ValueError('If "custom" is chosen for a stain, '
-                             'a stain vector must be provided.')
+            msg = (
+                'If "custom" is chosen for a stain, '
+                'a stain vector must be provided.'
+            )
+            raise ValueError(msg)
         return htk_cdeconv.stain_color_map[stain]
     else:
         if stain == 'custom':
             return stain_vector
-        raise ValueError('Unless "custom" is chosen for a stain, '
-                         'no stain vector may be provided.')
+        msg = (
+            'Unless "custom" is chosen for a stain, '
+            'no stain vector may be provided.'
+        )
+        raise ValueError(msg)
 
 
 def get_stain_matrix(args, count=3):
@@ -67,7 +73,7 @@ def segment_wsi_foreground_at_low_res(
     im_lres, _ = ts.getRegion(
         scale=fgnd_seg_scale,
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
-        frame=frame
+        frame=frame,
     )
 
     # check number of channels
@@ -128,7 +134,7 @@ def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info, region_pr
             'height': height,
             'rotation': 0,
             'fillColor': 'rgba(0,0,0,0)',
-            'lineColor': 'rgb(0,255,0)'
+            'lineColor': 'rgb(0,255,0)',
         }
 
         nuclei_annot_list.append(cur_bbox)
@@ -171,7 +177,7 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info, regio
             'points': cur_points,
             'closed': True,
             'fillColor': 'rgba(0,0,0,0)',
-            'lineColor': 'rgb(0,255,0)'
+            'lineColor': 'rgb(0,255,0)',
         }
 
         nuclei_annot_list.append(cur_annot)
@@ -193,7 +199,8 @@ def create_tile_nuclei_annotations(im_nuclei_seg_mask, tile_info, format, region
                                                        tile_info, region_props)
     else:
 
-        raise ValueError('Invalid value passed for nuclei_annotation_format')
+        msg = 'Invalid value passed for nuclei_annotation_format'
+        raise ValueError(msg)
 
 
 def create_dask_client(args):
@@ -254,7 +261,7 @@ def create_dask_client(args):
             n_workers=num_workers,
             memory_limit=0,
             threads_per_worker=num_threads_per_worker,
-            silence_logs=False
+            silence_logs=False,
         )
 
     return dask.distributed.Client(scheduler)
@@ -280,7 +287,8 @@ def get_region_polygons(region):
         A list of lists of x, y tuples.
     """
     if len(region) % 2 or len(region) < 4:
-        raise ValueError('region must be 4, 6, or a list of 2n values.')
+        msg = 'region must be 4, 6, or a list of 2n values.'
+        raise ValueError(msg)
     region = [float(v) for v in region]
     if region == [-1] * 4:
         return []
@@ -385,9 +393,9 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
         {'region': region_subdict}
 
     """
-
     if len(region) % 2 or len(region) < 4:
-        raise ValueError('region must be 4, 6, or a list of 2n values.')
+        msg = 'region must be 4, 6, or a list of 2n values.'
+        raise ValueError(msg)
 
     useWholeImage = region == [-1] * 4
 
@@ -403,14 +411,18 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
 
     if maxRegionSize is not None and maxRegionSize > 0:
         if tilesource is None:
-            raise ValueError('tilesource must be provided if maxRegionSize is specified')
+            msg = 'tilesource must be provided if maxRegionSize is specified'
+            raise ValueError(msg)
         if useWholeImage:
             size = max(tilesource.sizeX, tilesource.sizeY)
         else:
             size = max(region[-2:])
         if size > maxRegionSize:
-            raise ValueError('Requested region is too large!  '
-                             'Please see --maxRegionSize')
+            msg = (
+                'Requested region is too large!  '
+                'Please see --maxRegionSize'
+            )
+            raise ValueError(msg)
     # If a tilesource was specified, restrict the region to the image size
     if not useWholeImage and tilesource:
         minx = max(0, region[0])
@@ -427,7 +439,6 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
 def disp_time_hms(seconds):
     """Converts time from seconds to a string of the form hours:minutes:seconds
     """
-
     return str(timedelta(seconds=seconds))
 
 

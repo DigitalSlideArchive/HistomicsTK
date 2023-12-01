@@ -58,7 +58,7 @@ def gradient_diffusion(im_dx, im_dy, im_fgnd_mask,
     im_vy = im_dy.copy()
 
     # iterate for prescribed number of iterations
-    for it in range(iterations):
+    for _it in range(iterations):
 
         # calculate divergence of current solution
         vXY, vXX = np.gradient(im_vx)

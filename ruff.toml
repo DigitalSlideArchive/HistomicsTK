@@ -1,0 +1,64 @@
+include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
+exclude = [
+    "build",
+    "*/web_client/*",
+    "*/*egg*/*",
+]
+ignore = [
+    "B017",
+    "B026",
+    "B904",
+    "B905",
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+    "D200",
+    "D203",
+    "D205",
+    "D212",
+    "D213",
+    "D400",
+    "D401",
+    "D404",
+    "D415",
+    "D417",
+    "E741",
+    "C408",
+    "PT011",
+    "PT012",
+    "PT017",
+]
+line-length = 100
+select = [
+    "B",  # bugbear
+    "C90",  # mccabe
+    "D",  # pydocstyle
+    "E",  # pycodestyle errors
+    "F",  # pyflakes
+    "Q",  # flake8-quotes
+    # "I",  # isort
+    "W",  # pycodestyle warnings
+    "YTT",
+    "ASYNC",
+    "COM",
+    "C4",
+    "EM",
+    "EXE",
+    "ISC",
+    "G",
+    "PIE",
+    # "PYI",
+    "PT",
+    "RSE",
+]
+
+[flake8-quotes]
+inline-quotes = "single"
+
+[mccabe]
+max-complexity = 14

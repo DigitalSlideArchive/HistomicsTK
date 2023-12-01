@@ -25,7 +25,7 @@ def _sanity_checks(
         MPP, MAG, mode, bounds, idx_for_roi, get_rgb, get_visualization):
 
     # MPP precedes MAG
-    if all([j is not None for j in (MPP, MAG)]):
+    if all(j is not None for j in (MPP, MAG)):
         MAG = None
 
     # some sanity checks
@@ -76,7 +76,7 @@ def _keep_relevant_elements_for_roi(
     overlaps = get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi=idx_for_roi)
     if mode == 'polygonal_bounds':
-        overlaps = overlaps + [idx_for_roi, ]
+        overlaps = overlaps + [idx_for_roi]
     elinfos_roi = element_infos.loc[overlaps, :]
 
     # update roiinfo -- remember, annotation elements can be
@@ -189,7 +189,7 @@ def annotations_to_contours_no_mask(
         add text labels to visualization?
 
     Returns
-    --------
+    -------
     dict
         Results dict containing one or more of the following keys
         - bounds: dict of bounds at scan magnification
@@ -376,7 +376,8 @@ def contours_to_labeled_object_mask(
         return gtcodesdf
 
     if mode not in ['semantic', 'object']:
-        raise Exception('Unknown run mode:', mode)
+        msg = 'Unknown run mode:'
+        raise Exception(msg, mode)
 
     # make sure roi is overlaid first + other processing
     gtcodes = _process_gtcodes(gtcodes)
@@ -391,7 +392,8 @@ def contours_to_labeled_object_mask(
 
     # Make sure we don't run out of object encoding values.
     if N_elements > 17437:  # max unique products
-        raise Exception('Too many objects!!')
+        msg = 'Too many objects!!'
+        raise Exception(msg)
 
     # Add roiinfo & init roi
     roiinfo = {
@@ -430,7 +432,7 @@ def contours_to_labeled_object_mask(
             'bbox_area', axis=0, ascending=False, inplace=True)
 
         # Go through elements and add to ROI mask
-        for elId, elinfo in elinfos_relevant.iterrows():
+        for _elId, elinfo in elinfos_relevant.iterrows():
 
             elNo += 1
             elcountStr = '%s: Overlay level %d: Element %d of %d: %s' % (
@@ -591,7 +593,7 @@ def get_all_rois_from_slide_v2(
         that will be passed internally (mentioned earlier here).
 
     Returns
-    --------
+    -------
     list of dicts
         each entry contains the following keys
         mask - path to saved mask
@@ -617,7 +619,8 @@ def get_all_rois_from_slide_v2(
     # convert to df and sanity check
     gtcodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
     if any(gtcodes_df.loc[:, 'GT_code'] <= 0):
-        raise Exception('All GT_code must be > 0')
+        msg = 'All GT_code must be > 0'
+        raise Exception(msg)
 
     # if not given, assign name of first file associated with girder item
     if slide_name is None:

@@ -16,5 +16,5 @@ __all__ = (
     'gvf_tracking',
     'max_clustering',
     'min_model',
-    'detect_tile_nuclei'
+    'detect_tile_nuclei',
 )

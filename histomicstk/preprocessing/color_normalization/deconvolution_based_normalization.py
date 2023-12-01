@@ -26,7 +26,7 @@ def deconvolution_based_normalization(
     which the color characteristics need to be transferred.
 
     Parameters
-    ------------
+    ----------
     im_src : array_like
         An RGB image (m x n x 3) to color normalize
 
@@ -65,7 +65,7 @@ def deconvolution_based_normalization(
         k,v for stain_unmixing_routine().
 
     Returns
-    --------
+    -------
     array_like
         Color Normalized RGB image (m x n x 3)
 

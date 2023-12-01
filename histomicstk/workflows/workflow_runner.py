@@ -12,8 +12,8 @@ class Slide_iterator(Base_HTK_Class):
     def __init__(self, gc, source_folder_id, **kwargs):
         """Init Slide_iterator object.
 
-        Arguments
-        -----------
+        Arguments:
+        ---------
         gc : object
             girder client object
         source_folder_id : str
@@ -76,8 +76,8 @@ class Workflow_runner(Base_HTK_Class):
             recursive=False, catch_exceptions=True, **kwargs):
         """Init Workflow_runner object.
 
-        Arguments
-        -----------
+        Arguments:
+        ---------
         slide_iterator : object
             Slide_iterator object
         workflow : method
@@ -141,7 +141,7 @@ class Workflow_runner(Base_HTK_Class):
 
                     if self.keep_log:
                         self.cpr1.logger.exception(
-                            '%s: SEE EXCEPTIONS FILE: %s' % (
+                            '%s: SEE EXCEPTIONS FILE: %s', (
                                 monitorStr, self.exception_path))
                         with open(self.exception_path, 'a') as f:
                             print(str(e))
@@ -158,7 +158,7 @@ class Workflow_runner(Base_HTK_Class):
 
                 fpath = self.gc.get('/folder/%s/rootpath' % folder['_id'])
                 fpath = '/'.join(
-                    [j['object']['name'] for j in fpath]
+                    [j['object']['name'] for j in fpath],
                 ) + '/' + folder['name'] + '/'
 
                 self.monitorPrefix = '%s: %s' % (self.originalPrefix, fpath)
@@ -179,8 +179,8 @@ class Annotation_iterator(Base_HTK_Class):
             self, gc, slide_id, callback=None, callback_kwargs=None, **kwargs):
         """Init Annotation_iterator object.
 
-        Arguments
-        -----------
+        Arguments:
+        ---------
         gc : object
             girder client object
         slide_id : str
@@ -230,6 +230,6 @@ class Annotation_iterator(Base_HTK_Class):
         """Apply callback to all annotations and return output list."""
         runner = self.yield_callback_output_for_annotation()
         outputs = []
-        for annidx in range(self.n_annotations):
+        for _annidx in range(self.n_annotations):
             outputs.append(next(runner))
         return outputs

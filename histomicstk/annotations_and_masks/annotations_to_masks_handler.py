@@ -37,7 +37,7 @@ def get_roi_mask(
     overlap with the region of interest (ROI) and assigns them to mask.
 
     Parameters
-    -----------
+    ----------
     slide_annotations : list of dicts
         response from server request
     element_infos : pandas DataFrame.
@@ -83,7 +83,7 @@ def get_roi_mask(
         text to prepend to printed statements
 
     Returns
-    --------
+    -------
     Np array
         (N x 2), where pixel values encode class membership.
         IMPORTANT NOTE: Zero pixels have special meaning and do NOT
@@ -105,7 +105,7 @@ def get_roi_mask(
     idxs_for_all_rois = _get_idxs_for_all_rois(
         GTCodes=GTCodes_df, element_infos=element_infos)
     overlaps = list(set(overlaps) - set(idxs_for_all_rois))
-    elinfos_roi = element_infos.loc[[idx_for_roi, ] + overlaps, :]
+    elinfos_roi = element_infos.loc[[idx_for_roi] + overlaps, :]
 
     # Add roiinfo
     roiinfo['XMIN'] = int(np.min(elinfos_roi.xmin))
@@ -128,7 +128,8 @@ def get_roi_mask(
 
     # only parse if roi is polygonal or rectangular
     if elinfos_roi.loc[idx_for_roi, 'type'] == 'point':
-        raise Exception('roi cannot be a point!')
+        msg = 'roi cannot be a point!'
+        raise Exception(msg)
 
     # make sure ROI is overlaid first & assigned background class if relevant
     roi_group = elinfos_roi.loc[idx_for_roi, 'group']
@@ -163,7 +164,7 @@ def get_roi_mask(
             'bbox_area', axis=0, ascending=False, inplace=True)
 
         # Go through elements and add to ROI mask
-        for elId, elinfo in elinfos_relevant.iterrows():
+        for _elId, elinfo in elinfos_relevant.iterrows():
 
             elNo += 1
             elcountStr = '%s: Overlay level %d: Element %d of %d: %s' % (
@@ -218,7 +219,7 @@ def get_mask_from_slide(
     coordinates in roiinfo are used.
 
     Parameters
-    -----------
+    ----------
     GTCodes_dict : dict
         the ground truth codes and information dict.
         This is a dict that is indexed by the annotation group name and
@@ -257,7 +258,7 @@ def get_mask_from_slide(
         extra kwargs for get_roi_mask()
 
     Returns
-    --------
+    -------
     Np array
         (N x 2), where pixel values encode class membership.
         IMPORTANT NOTE: Zero pixels have special meaning and do NOT
@@ -277,12 +278,13 @@ def get_mask_from_slide(
     GTCodes = DataFrame.from_dict(GTCodes_dict, orient='index')
 
     # some sanity checks
-    assert all([j in GTCodes.columns for j in [
+    assert all(j in GTCodes.columns for j in [
         'group', 'overlay_order', 'GT_code', 'is_roi', 'is_background_class',
-        'color']]), 'GTCodes_dict does not follow schema'
+        'color']), 'GTCodes_dict does not follow schema'
     assert all(GTCodes.loc[:, 'GT_code'] > 0), 'All GT_code must be > 0'
     assert sf > 0, 'sf must be positive.'
-    assert (roiinfo['XMAX'] > roiinfo['XMIN']) and (
+    assert (roiinfo['XMAX'] > roiinfo['XMIN'])
+    assert (
         roiinfo['YMAX'] > roiinfo['YMIN'])
 
     # use given ROI bounds, after scaling
@@ -307,7 +309,7 @@ def get_mask_from_slide(
              'lineColor': 'rgb(0, 0, 0)',
              'fillColor': 'rgba(0, 0, 0, 0)',
              'lineWidth': 4.6,
-             'type': 'rectangle', }
+             'type': 'rectangle'},
         ],
         'name': 'superROI'},
     })
@@ -384,7 +386,7 @@ def _visualize_annotations_on_rgb(
     ax.set_xlim(0.0, rgb.shape[1])
     ax.set_ylim(0.0, rgb.shape[0])
 
-    for idx, ann in enumerate(contours_list):
+    for _idx, ann in enumerate(contours_list):
         xy = np.array([
             [int(j) for j in ann[k].split(',')]
             for k in ('coords_x', 'coords_y')]).T
@@ -427,7 +429,7 @@ def _sanity_checks(
         get_rgb, get_contours, get_visualization):
 
     # MPP precedes MAG
-    if all([j is not None for j in (MPP, MAG)]):
+    if all(j is not None for j in (MPP, MAG)):
         MAG = None
 
     # some sanity checks
@@ -454,9 +456,10 @@ def _sanity_checks(
         assert get_rgb, 'cannot get visualization without rgb.'
 
     if not get_roi_mask_kwargs['crop_to_roi']:
-        assert (not get_rgb) and (not get_visualization), \
-            'Handling overflowing annotations while also getting RGB is' \
-            'not currently supported.'
+        assert not get_rgb, \
+            'Handling overflowing annotations while also getting RGB is not currently supported.'
+        assert not get_visualization, \
+            'Handling overflowing annotations while also getting RGB is not currently supported.'
 
     return (
         MPP, MAG, mode, bounds, idx_for_roi, get_roi_mask_kwargs,
@@ -477,7 +480,8 @@ def _get_roi_bounds_by_run_mode(
         }
 
     elif mode == 'manual_bounds':
-        assert (bounds['XMAX'] > bounds['XMIN']) and (
+        assert (bounds['XMAX'] > bounds['XMIN'])
+        assert (
             bounds['YMAX'] > bounds['YMIN'])
 
     elif mode == 'min_bounding_box':
@@ -515,9 +519,8 @@ def _get_rgb_and_pad_roi(gc, slide_id, bounds, appendStr, ROI, tau=10):
     # sometimes there's a couple of pixel difference d.t. rounding, so pad
     pad_y = rgb.shape[0] - ROI.shape[0]
     pad_x = rgb.shape[1] - ROI.shape[1]
-    assert all([np.abs(j) < tau for j in (pad_y, pad_x)]), \
-        'too much difference in size between image and mask.'\
-        'something is wrong!'
+    assert all(np.abs(j) < tau for j in (pad_y, pad_x)), \
+        'too much difference in size between image and mask.  Something is wrong!'
 
     if pad_y > 0:
         ROI = np.pad(ROI, pad_width=((0, pad_y), (0, 0)), mode='constant')
@@ -545,7 +548,7 @@ def get_image_and_mask_from_slide(
     implementation details.
 
     Parameters
-    -----------
+    ----------
     gc : object
         girder client object to make requests, for example:
         gc = girder_client.GirderClient(apiUrl = APIURL)
@@ -634,7 +637,7 @@ def get_image_and_mask_from_slide(
         being returned
 
     Returns
-    --------
+    -------
     dict
         Results dict containing one or more of the following keys
         bounds: dict of bounds at scan magnification
@@ -677,7 +680,7 @@ def get_image_and_mask_from_slide(
     bounds = _get_roi_bounds_by_run_mode(
         gc=gc, slide_id=slide_id, mode=mode, bounds=bounds,
         element_infos=element_infos, idx_for_roi=idx_for_roi, sf=sf)
-    result = {'bounds': bounds, }
+    result = {'bounds': bounds}
 
     # get mask for specified area
     if mode == 'polygonal_bounds':
@@ -748,7 +751,7 @@ def _roi_getter_asis(
             problem = '\n   '
             problem += e.__repr__()
             problem += '\n'
-            warn(problem)
+            warn(problem)  # noqa B028
             roi_out = None
 
         yield roi_out
@@ -808,7 +811,7 @@ def _roi_getter_tiled(
                     problem = '\n'
                     problem += e.__repr__()
                     problem += '\n'
-                    warn(problem)
+                    warn(problem)  # noqa B028
                     roi_out = None
 
                 yield roi_out
@@ -817,7 +820,7 @@ def _roi_getter_tiled(
 def get_all_rois_from_slide(  # noqa: C901
         gc, slide_id, GTCodes_dict, save_directories,
         get_image_and_mask_from_slide_kwargs=None, max_roiside=None,
-        slide_name=None, verbose=True, monitorPrefix='', ):
+        slide_name=None, verbose=True, monitorPrefix=''):
     """Parse annotations and saves ground truth masks for ALL ROIs.
 
     Get all ROIs in a single slide. This is mainly uses
@@ -825,7 +828,7 @@ def get_all_rois_from_slide(  # noqa: C901
     for implementation details.
 
     Parameters
-    -----------
+    ----------
     gc : object
         girder client object to make requests, for example:
         gc = girder_client.GirderClient(apiUrl = APIURL)
@@ -879,7 +882,7 @@ def get_all_rois_from_slide(  # noqa: C901
         text to prepend to printed statements
 
     Returns
-    --------
+    -------
     list of dicts
         each entry contains the following keys
         - ROI: path to saved mask (labeled image)
@@ -904,7 +907,7 @@ def get_all_rois_from_slide(  # noqa: C901
             'discard_nonenclosed_background': True,
             'background_group': 'mostly_stroma',
             'MIN_SIZE': 10, 'MAX_SIZE': None,
-            'verbose': False, 'monitorPrefix': ''
+            'verbose': False, 'monitorPrefix': '',
         },
         'get_rgb': True,
         'get_contours': True,
@@ -919,7 +922,8 @@ def get_all_rois_from_slide(  # noqa: C901
     # convert to df and sanity check
     GTCodes_df = DataFrame.from_dict(GTCodes_dict, orient='index')
     if any(GTCodes_df.loc[:, 'GT_code'] <= 0):
-        raise Exception('All GT_code must be > 0')
+        msg = 'All GT_code must be > 0'
+        raise Exception(msg)
 
     # if not given, assign name of first file associated with girder item
     if slide_name is None:

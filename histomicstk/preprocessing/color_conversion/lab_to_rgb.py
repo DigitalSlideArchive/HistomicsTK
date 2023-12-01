@@ -32,7 +32,6 @@ def lab_to_rgb(im_lab):
        J. Opt. Soc. Am. A 15, 2036-2045 (1998).
 
     """
-
     # get input image dimensions
     m = im_lab.shape[0]
     n = im_lab.shape[1]
