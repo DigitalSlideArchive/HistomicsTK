@@ -314,7 +314,7 @@ def main(args):
     for c in clf_model.classes_:
 
         annotation.append({
-            'name': annot_fname + '-nuclei-class-' + str(c),
+            'name': 'Class ' + str(c) + " " + annot_fname,
             'elements': nuclei_annot_by_class[c]
         })
     annotation.append({
