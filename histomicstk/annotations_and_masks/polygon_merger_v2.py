@@ -21,7 +21,7 @@ class Polygon_merger_v2(Base_HTK_Class):
         """Init Polygon_merger object.
 
         Arguments:
-        -----------
+        ---------
         contours_df : pandas DataFrame
             The following columns are needed.
 
@@ -220,7 +220,7 @@ class Polygon_merger_v2(Base_HTK_Class):
             self, merged_multipolygon, group, monitorPrefix=''):
         """Add merged polygons to self.new_contours df (Internal)."""
         if merged_multipolygon.geom_type == 'Polygon':
-            merged_multipolygon = [merged_multipolygon, ]
+            merged_multipolygon = [merged_multipolygon]
         elif (merged_multipolygon.geom_type == 'MultiPolygon' and
                 hasattr(merged_multipolygon, 'geoms')):
             merged_multipolygon = merged_multipolygon.geoms

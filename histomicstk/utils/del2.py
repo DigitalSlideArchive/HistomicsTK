@@ -23,7 +23,6 @@ def del2(im_input):
     histomicstk.segmentation.level_set.reg_edge
 
     """
-
     # initialize output
     im_lap = np.zeros(im_input.shape)
 

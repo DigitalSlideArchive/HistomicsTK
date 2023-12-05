@@ -138,7 +138,7 @@ def compute_intensity_features(
 
         # get intensities of object pixels
         pixelIntensities = np.sort(
-            im_intensity[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
+            im_intensity[rprops[i].coords[:, 0], rprops[i].coords[:, 1]],
         )
 
         # simple descriptors

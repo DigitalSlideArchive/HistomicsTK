@@ -9,6 +9,7 @@ from ..preprocessing.color_conversion import rgb_to_hsi
 # This can be an enum in Python >= 3.4
 class Labels:
     """Labels for the output image of the positive pixel count routines."""
+
     NEGATIVE = 0
     WEAK = 1
     PLAIN = 2
@@ -82,7 +83,7 @@ def count_slide(slide_path, params, region=None,
     This routine can also create a label image.
 
     Parameters
-    ---------
+    ----------
     slide_path : string (path)
         Path to the slide to analyze.
     params : Parameters
@@ -127,7 +128,7 @@ def count_slide(slide_path, params, region=None,
                 slide_path, params, kwargs, position,
                 min(tile_grouping, total_tiles - position)))
         results = delayed(_combine)(results).compute()
-    return _totals_to_stats(results),
+    return (_totals_to_stats(results),)
 
 
 def _combine(results):
@@ -233,7 +234,7 @@ def _totals_to_stats(total):
         RatioStrongToPixels=t.NumberStrongPositive / (t.NumberTotalPixels or 1),
         RatioWeakToPixels=t.NumberWeakPositive / (t.NumberTotalPixels or 1),
         RatioTotalToPixels=all_positive / (t.NumberTotalPixels or 1),
-        **t._asdict()
+        **t._asdict(),
     )
 
 

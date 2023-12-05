@@ -130,7 +130,7 @@ class TestCliCommon:
             'width': int(ts_metadata['tileWidth'] * np.floor(
                 1.0 * args.analysis_tile_size / ts_metadata['tileWidth'])),
             'height': int(ts_metadata['tileHeight'] * np.floor(
-                1.0 * args.analysis_tile_size / ts_metadata['tileHeight']))
+                1.0 * args.analysis_tile_size / ts_metadata['tileHeight'])),
         }
 
         # define ROI
@@ -144,7 +144,7 @@ class TestCliCommon:
         it_kwargs = {
             'tile_size': {'width': args.analysis_tile_size},
             'scale': {'magnification': args.analysis_mag},
-            'region': roi
+            'region': roi,
         }
 
         # create dask client
@@ -157,7 +157,7 @@ class TestCliCommon:
         # compute tile foreground fraction
         tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
             wsi_path, im_fgnd_mask_lres, fgnd_seg_scale,
-            it_kwargs
+            it_kwargs,
         )
 
         num_fgnd_tiles = np.count_nonzero(
@@ -194,7 +194,7 @@ class TestCliCommon:
                 args.min_radius,
                 args.max_radius,
                 args.min_nucleus_area,
-                args.local_max_search_radius
+                args.local_max_search_radius,
             )
 
             # generate nuclei annotations as bboxes
@@ -239,7 +239,7 @@ class TestCliCommon:
 
         # compare nuclei boundary annotations with gtruth
         nuclei_bndry_annot_gtruth_file = os.path.join(datastore.fetch(
-            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot'
+            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot',
         ))
 
         with open(nuclei_bndry_annot_gtruth_file) as fbndry_annot:

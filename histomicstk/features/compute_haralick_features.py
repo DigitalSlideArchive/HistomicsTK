@@ -242,7 +242,8 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
 
     # check for consistent shapes between 'I' and 'Label'
     if im_intensity.shape != im_label.shape:
-        raise ValueError("Inputs 'I' and 'Label' must have same shape")
+        msg = "Inputs 'I' and 'Label' must have same shape"
+        raise ValueError(msg)
 
     num_dims = len(im_intensity.shape)
 
@@ -256,8 +257,9 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
 
         # check sanity
         if offsets.shape[1] != num_dims:
+            msg = 'Dimension mismatch between input image and offsets'
             raise ValueError(
-                'Dimension mismatch between input image and offsets'
+                msg,
             )
 
     num_offsets = offsets.shape[0]

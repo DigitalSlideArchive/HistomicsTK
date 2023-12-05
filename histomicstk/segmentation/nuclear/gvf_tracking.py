@@ -86,7 +86,7 @@ def gvf_tracking(I, Mask, K=1000, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
     i, j = np.nonzero(Mask)
 
     # track pixels
-    for index, (x, y) in enumerate(zip(j, i)):
+    for _index, (x, y) in enumerate(zip(j, i)):
 
         # initialize angle, trajectory length, novel flag, and allocation count
         phi = 0

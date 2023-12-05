@@ -68,7 +68,7 @@ def glog(im_input, alpha=1, range=None, theta=np.pi / 4, tau=0.6, eps=0.6):
 
     # re-normalized based on global max and local min, count threshold pixels
     Zeta = np.zeros((len(Sigma), 1))
-    for i, s in enumerate(Sigma):
+    for i, _s in enumerate(Sigma):
         Bins[i] = (Bins[i] - Min[i]) / (l_g - Min[i])
         Zeta[i] = np.sum(H[i][Bins[i][0:-1] > tau])
 

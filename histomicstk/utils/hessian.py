@@ -41,6 +41,6 @@ def hessian(im_input, sigma):
     # format output
     im_hess = np.concatenate(
         (dxx[:, :, None], dxy[:, :, None], dxy[:, :, None], dyy[:, :, None]),
-        axis=2
+        axis=2,
     )
     return im_hess

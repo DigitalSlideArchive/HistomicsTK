@@ -19,7 +19,7 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
                             tile_info=None,
                             im_nuclei_seg_mask=None,
                             format=None,
-                            return_nuclei_annotation=False
+                            return_nuclei_annotation=False,
                             ):
     """
     Calculates features for nuclei classification
@@ -261,7 +261,7 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
         fharalick_nuclei = compute_haralick_features(
             im_label, im_nuclei,
             num_levels=num_glcm_levels,
-            rprops=nuclei_props
+            rprops=nuclei_props,
         )
 
         fharalick_nuclei.columns = ['Nucleus.' + col
@@ -275,7 +275,7 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
         fharalick_cytoplasm = compute_haralick_features(
             cyto_mask, im_cytoplasm,
             num_levels=num_glcm_levels,
-            rprops=cyto_props
+            rprops=cyto_props,
         )
 
         fharalick_cytoplasm.columns = ['Cytoplasm.' + col

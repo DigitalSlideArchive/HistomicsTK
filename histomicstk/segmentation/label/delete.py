@@ -19,8 +19,8 @@ def delete(im_label, indices):
     Deleted : array_like
         A label image where all values in 'indices' are set to zero.
 
-    Notes:
-    ------
+    Notes
+    -----
     A call to CondenseLabel can squeeze label image values to fill in gaps from
     deleted values.
 

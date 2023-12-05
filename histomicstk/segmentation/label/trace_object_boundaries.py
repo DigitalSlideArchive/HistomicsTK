@@ -88,7 +88,7 @@ def trace_object_boundaries(im_label,
             # grab label mask
             lmask = (
                 im_label[
-                    min_row:max_row, min_col:max_col
+                    min_row:max_row, min_col:max_col,
                 ] == rprops[i].label
             ).astype(bool)
 
@@ -100,7 +100,7 @@ def trace_object_boundaries(im_label,
 
             by, bx = _trace_object_boundaries_cython(
                 np.ascontiguousarray(
-                    mask, dtype=int), conn, x_start, y_start, max_length
+                    mask, dtype=int), conn, x_start, y_start, max_length,
             )
 
             bx = bx + min_row - 1
@@ -121,11 +121,13 @@ def trace_object_boundaries(im_label,
         numLabels = len(rprops)
 
         if numLabels > 1:
-            raise ValueError('Number of labels should be 1 !!')
+            msg = 'Number of labels should be 1 !!'
+            raise ValueError(msg)
 
         if (x_start is None and y_start is not None) | \
                 (x_start is not None and y_start is None):
-            raise ValueError('x_start or y_start is not defined !!')
+            msg = 'x_start or y_start is not defined !!'
+            raise ValueError(msg)
 
         if x_start is None and y_start is None:
             x_start = -1
@@ -133,7 +135,7 @@ def trace_object_boundaries(im_label,
 
         by, bx = _trace_object_boundaries_cython(
             np.ascontiguousarray(
-                im_label, dtype=int), conn, x_start, y_start, max_length
+                im_label, dtype=int), conn, x_start, y_start, max_length,
         )
 
         if simplify_colinear_spurs:
@@ -152,7 +154,6 @@ def trace_object_boundaries(im_label,
 def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0):
     """Simplifies the given list of points by removing colinear spurs
     """
-
     keep = []  # indices of points to keep
 
     anchor = -1
@@ -174,7 +175,7 @@ def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0):
 
         # compute area of triangle formed by triplet
         area = 0.5 * np.linalg.det(
-            np.array([[x1, x2, x3], [y1, y2, y3], [1, 1, 1]])
+            np.array([[x1, x2, x3], [y1, y2, y3], [1, 1, 1]]),
         )
 
         # if area > cutoff, add testpos to keep and move anchor to testpos

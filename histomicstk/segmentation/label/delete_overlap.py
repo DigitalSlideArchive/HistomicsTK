@@ -9,6 +9,7 @@ def delete_overlap(im_label, overlap_info):
     Deletes overlapping regions from an image label based on overlap information and tile size.
 
     Args:
+    ----
         im_label (ndarray): Image label represented as a NumPy array.
         overlap_info (dict): Dictionary containing overlap information.
                             It should have the following keys:
@@ -16,12 +17,14 @@ def delete_overlap(im_label, overlap_info):
                             each specifying the overlap amount in pixels.
 
     Returns:
+    -------
         ndarray: Image label with overlapping regions deleted.
+
     Note:
+    ----
         This function assumes the necessary imports, such as `np`, are already present.
 
     """
-
     # Compute the half of the overlap values
     left_overlap = overlap_info['left'] // 2
     right_overlap = overlap_info['right'] // 2

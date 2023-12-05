@@ -49,16 +49,20 @@ def image_inversion_flag_setter(args=None):
 def validate_args(args):
     # validates the input arguments
     if not os.path.isfile(args.inputImageFile):
-        raise OSError('Input image file does not exist.')
+        msg = 'Input image file does not exist.'
+        raise OSError(msg)
 
     if len(args.reference_mu_lab) != 3:
-        raise ValueError('Reference Mean LAB should be a 3 element vector.')
+        msg = 'Reference Mean LAB should be a 3 element vector.'
+        raise ValueError(msg)
 
     if len(args.reference_std_lab) != 3:
-        raise ValueError('Reference Stddev LAB should be a 3 element vector.')
+        msg = 'Reference Stddev LAB should be a 3 element vector.'
+        raise ValueError(msg)
 
     if len(args.analysis_roi) != 4:
-        raise ValueError('Analysis ROI must be a vector of 4 elements.')
+        msg = 'Analysis ROI must be a vector of 4 elements.'
+        raise ValueError(msg)
 
 
 def process_wsi_as_whole_image(ts, invert_image=False, args=None, default_img_inversion=False):
@@ -95,7 +99,7 @@ def process_wsi(ts, it_kwargs, args, im_fgnd_mask_lres=None,
 
         tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
             args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
-            it_kwargs, style=args.style
+            it_kwargs, style=args.style,
         )
 
     else:
@@ -216,14 +220,15 @@ def main(args):
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
         'tile_overlap': {'x': tile_overlap, 'y': tile_overlap},
-        'style': {args.style}
+        'style': {args.style},
     }
 
     # retrieve frame
     if not args.frame or args.frame.startswith('{#control'):
         args.frame = None
     elif not args.frame.isdigit():
-        raise Exception('The given frame value is not an integer')
+        msg = 'The given frame value is not an integer'
+        raise Exception(msg)
     else:
         it_kwargs['frame'] = args.frame
 
@@ -264,7 +269,7 @@ def main(args):
             'top': args.analysis_roi[1],
             'width': args.analysis_roi[2],
             'height': args.analysis_roi[3],
-            'units': 'base_pixels'
+            'units': 'base_pixels',
         }
 
     if is_wsi:

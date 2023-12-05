@@ -119,7 +119,7 @@ def createSuperPixels(opts):  # noqa
             mask *= (segments != -1)
         if str(opts.bounding).lower() not in {'', 'none'}:
             regions = skimage.measure.regionprops(1 + segments)
-            for pidx, props in enumerate(regions):
+            for _pidx, props in enumerate(regions):
                 by0, bx0, by1, bx1 = props.bbox
                 bboxes.append((
                     ((bx0 + bx1) / 2 + tx0) * scale + x0,

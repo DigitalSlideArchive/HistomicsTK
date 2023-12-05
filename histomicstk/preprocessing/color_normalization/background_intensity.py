@@ -16,7 +16,8 @@ def background_intensity(*args, **kwargs):
 
     """
     if 'background' in kwargs:
-        raise ValueError('"background" argument may not be specified')
+        msg = '"background" argument may not be specified'
+        raise ValueError(msg)
 
     kwargs['background'] = True
 

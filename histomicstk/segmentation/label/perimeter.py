@@ -26,7 +26,6 @@ def perimeter(im_label, conn=4):
     histomicstk.segmentation.embed_boundaries
 
     """
-
     # initialize temporary variable
     Mask = np.zeros(im_label.shape)
     Temp = np.zeros(im_label.shape)

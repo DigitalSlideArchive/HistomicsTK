@@ -21,12 +21,12 @@ class TestGLCMMatrixGeneration:
         res_skim = skimage.feature.graycomatrix(
             image, [1],
             [0, np.pi / 4.0, np.pi / 2.0, 3 * np.pi / 4.0],
-            levels=4
+            levels=4,
         )
 
         res_htk = htk.features.graycomatrixext(
             image, num_levels=4, gray_limits=[0, 3],
-            offsets=np.array([[0, 1], [1, 1], [1, 0], [1, -1]])
+            offsets=np.array([[0, 1], [1, 1], [1, 0], [1, -1]]),
         )
 
         np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
@@ -35,12 +35,12 @@ class TestGLCMMatrixGeneration:
         res_skim = skimage.feature.graycomatrix(
             image, [1],
             [0, np.pi / 4.0, np.pi / 2.0, 3 * np.pi / 4.0],
-            levels=4, normed=True
+            levels=4, normed=True,
         )
 
         res_htk = htk.features.graycomatrixext(
             image, num_levels=4, gray_limits=[0, 3], normed=True,
-            offsets=np.array([[0, 1], [1, 1], [1, 0], [1, -1]])
+            offsets=np.array([[0, 1], [1, 1], [1, 0], [1, -1]]),
         )
 
         np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))
@@ -49,12 +49,12 @@ class TestGLCMMatrixGeneration:
         res_skim = skimage.feature.graycomatrix(
             image, [1],
             [0, np.pi / 4.0, np.pi / 2.0, 3 * np.pi / 4.0],
-            levels=4, symmetric=True
+            levels=4, symmetric=True,
         )
 
         res_htk = htk.features.graycomatrixext(
             image, num_levels=4, gray_limits=[0, 3], symmetric=True,
-            offsets=np.array([[0, 1], [1, 1], [1, 0], [1, -1]])
+            offsets=np.array([[0, 1], [1, 1], [1, 0], [1, -1]]),
         )
 
         np.testing.assert_allclose(np.squeeze(res_htk), np.squeeze(res_skim))

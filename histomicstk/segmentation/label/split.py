@@ -44,7 +44,8 @@ def split(im_label, conn=8):
         Kernel[1, :] = True
         Kernel[:, 1] = True
     else:
-        raise ValueError("Input 'conn' must be 4 or 8")
+        msg = "Input 'conn' must be 4 or 8"
+        raise ValueError(msg)
 
     # condense label image
     if np.unique(Split).size - 1 != Split.max():

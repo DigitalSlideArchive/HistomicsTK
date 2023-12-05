@@ -22,7 +22,6 @@ def eigen(im_hess):
         M x N x 2 eigenvector for lambda_(:,:,1)
 
     """
-
     # get size of H
     sizeX = im_hess.shape[0]
     sizeY = im_hess.shape[1]

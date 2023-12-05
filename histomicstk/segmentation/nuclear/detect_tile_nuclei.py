@@ -15,6 +15,7 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
     Detect nuclei within a tile image and generate annotations.
 
     Args:
+    ----
         tile_info (dict): Information about the tile image.
         args: Arguments from the cli.
         src_mu_lab: Source mean in LAB color space.
@@ -24,10 +25,10 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
         return_fdata (bool): Return computed features.
 
     Returns:
+    -------
         nuclei_annot_list (list): List of nuclei annotations.
         fdata: Computed nuclei features.
     """
-
     # Flags
     single_channel = False
 
@@ -68,7 +69,7 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
         args.min_radius,
         args.max_radius,
         args.min_nucleus_area,
-        args.local_max_search_radius
+        args.local_max_search_radius,
     )
 
     # Delete border nuclei
@@ -116,7 +117,7 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
                 tile_info=tile_info,
                 im_nuclei_seg_mask=im_nuclei_seg_mask,
                 format=format,
-                return_nuclei_annotation=True
+                return_nuclei_annotation=True,
             )
             fdata.columns = ['Feature.' + col for col in fdata.columns]
         else:

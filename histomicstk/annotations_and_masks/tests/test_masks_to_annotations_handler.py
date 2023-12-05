@@ -121,7 +121,7 @@ class TestMasksToAnnotations:
         folder = girderClient.post(
             '/folder', data={
                 'parentId': original_iteminfo['folderId'],
-                'name': 'test-masks-annot-handler'
+                'name': 'test-masks-annot-handler',
             })
 
         # copy the item
@@ -155,7 +155,7 @@ class TestMasksToAnnotations:
             'test_mostly_tumor-0',
             'test_mostly_tumor-1',
             'test_normal_acinus_or_duct-0',
-            'test_roi-0'
+            'test_roi-0',
         }
 
         # deleting existing annotations in target slide (if any)

@@ -78,7 +78,7 @@ class TestTissueDetection():
                 '/annotation?itemId=' + cfg.iteminfo['_id'], json=doc)
             for doc in annotation_docs
         ]
-        assert all(['annotation' in resp for resp in resps])
+        assert all('annotation' in resp for resp in resps)
 
 
 class TestCellularityDetection:
@@ -96,10 +96,8 @@ class TestCellularityDetection:
 
         # check
         assert len(tissue_pieces) == 3
-        assert all([
-            j in tissue_pieces[0].__dict__.keys() for j in
-            ('labeled', 'ymin', 'xmin', 'ymax', 'xmax')
-        ])
+        assert all(j in tissue_pieces[0].__dict__.keys() for j in
+                   ('labeled', 'ymin', 'xmin', 'ymax', 'xmax'))
 
         # cleanup
         shutil.rmtree(cfg.logging_savepath_cdt)
@@ -121,7 +119,7 @@ class TestCellularityDetection:
                 'deconvolve_first': False,
                 'n_thresholding_steps': 2,
                 'sigma': 1.5,
-                'min_size': 500, },
+                'min_size': 500},
             verbose=1, monitorPrefix='test',
             logging_savepath=cfg.logging_savepath_cds)
         cds.set_color_normalization_values(
@@ -130,11 +128,9 @@ class TestCellularityDetection:
 
         # check
         assert len(tissue_pieces) == 2
-        assert all([
-            j in tissue_pieces[0].__dict__.keys()
-            for j in ('tissue_mask', 'ymin', 'xmin', 'ymax', 'xmax',
-                      'spixel_mask', 'fdata', 'cluster_props')
-        ])
+        assert all(j in tissue_pieces[0].__dict__.keys()
+                   for j in ('tissue_mask', 'ymin', 'xmin', 'ymax', 'xmax',
+                             'spixel_mask', 'fdata', 'cluster_props'))
         assert len(tissue_pieces[0].cluster_props) == 5
 
         # cleanup

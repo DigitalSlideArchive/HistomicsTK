@@ -67,7 +67,6 @@ def min_model(I, Delta=0.3, MaxLength=255, Compaction=3,
        Scientific Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
-
     # identify contour seed points
     X, Y, Min, Max = seed_contours(I, Delta)
 
@@ -142,7 +141,6 @@ def seed_contours(I, Delta=0.3):  # noqa
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
-
     # initialize outputs
     X = []
     Y = []
@@ -302,7 +300,6 @@ def trace_contours(I, X, Y, Min, Max, MaxLength=255):
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
-
     # initialize list of lists containing contours
     cXs = []
     cYs = []
@@ -736,7 +733,6 @@ def angle_score(ax1, ay1, bx1, by1, ax2, ay2, bx2, by2, cx1, cy1, cx2, cy2):
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
-
     # calculate angle of hull at first concavity - y is inverted
     jHullAlpha = np.arctan2(ay1 - by1, bx1 - ax1)
 
@@ -776,7 +772,6 @@ def length_score(x1, y1, x2, y2, d1, d2):
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
-
     # calculate length of cut
     r = ((x1 - x2)**2 + (y1 - y2)**2) ** 0.5
 
@@ -806,7 +801,6 @@ def cut(Mask, x1, y1, x2, y2):
     Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
-
     # copy input
     Cut = Mask.copy()
 

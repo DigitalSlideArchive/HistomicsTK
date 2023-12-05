@@ -6,9 +6,11 @@ def create_polygon(coordinates):
     Create a shapely Polygon from a list of points.
 
     Args:
+    ----
         points (list): A list containing tuples representing the points of the polygon.
 
     Returns:
+    -------
         shapely.geometry.Polygon: The polygon created from the points.
     """
     return shapely.geometry.Polygon(coordinates).buffer(0)
@@ -18,10 +20,12 @@ def convert_polygons_tobbox(nuclei_list):
     """
     Convert nuclei segmentation data from polygon format to bounding box format.
 
-    Parameters:
+    Parameters
+    ----------
     nuclei_list (list): A list of dictionaries, where each dictionary represents a nuclei object.
 
-    Returns:
+    Returns
+    -------
     list: The modified 'nuclei_list', where each nuclei object has been transformed
     to a bounding box representation.
     """
@@ -55,11 +59,13 @@ def remove_overlap_nuclei(nuclei_list, nuclei_format, return_selected_nuclei=Fal
     This function removes overlapping nuclei polygons from input using an STRtree index.
 
     Args:
+    ----
         nuclei_list (list): List of dictionaries with 'points' for polygons.
         nuclei_format (str, optional): Output format ('polygon' or 'bbox').
         return_selected (bool, optional): Return indices of selected nuclei (default: False).
 
     Returns:
+    -------
         output_list (list): New list with overlapping nuclei removed.
         selected_nuclei (list, optional): Indices of selected nuclei.
     """

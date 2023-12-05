@@ -42,8 +42,11 @@ def fit_poisson_mixture(im_input, mu=None, tol=0.1):
 
     # check if intensity values in 'I' are integer type
     if not np.issubdtype(im_input.dtype, np.integer):
-        raise TypeError('Inputs for Poisson mixture modeling should be integer'
-                        ' type')
+        msg = (
+            'Inputs for Poisson mixture modeling should be integer'
+            ' type'
+        )
+        raise TypeError(msg)
 
     # generate a small number for conditioning calculations
     Small = np.finfo(float).eps

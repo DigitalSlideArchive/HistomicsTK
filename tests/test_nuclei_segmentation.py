@@ -43,7 +43,7 @@ class TestNucleiSegmentation:
             'hematoxylin': [0.65, 0.70, 0.29],
             'eosin': [0.07, 0.99, 0.11],
             'dab': [0.27, 0.57, 0.78],
-            'null': [0.0, 0.0, 0.0]
+            'null': [0.0, 0.0, 0.0],
         }
 
         w = htk_cdeconv.rgb_separate_stains_macenko_pca(im_nmzd, im_nmzd.max())
@@ -58,7 +58,7 @@ class TestNucleiSegmentation:
         im_nuclei_seg_mask = htk_seg.nuclear.detect_nuclei_kofahi(
             im_nuclei_stain, im_nuclei_stain < 60,
             min_radius=20, max_radius=30,
-            min_nucleus_area=80, local_max_search_radius=10
+            min_nucleus_area=80, local_max_search_radius=10,
         )
 
         num_nuclei = len(np.unique(im_nuclei_seg_mask)) - 1
@@ -83,7 +83,7 @@ class TestNucleiSegmentation:
         im_nuclei_seg_mask = htk_seg.nuclear.detect_nuclei_kofahi(
             255 * np.ones_like(im_nuclei_stain), np.ones_like(im_nuclei_stain),
             min_radius=20, max_radius=30,
-            min_nucleus_area=80, local_max_search_radius=10
+            min_nucleus_area=80, local_max_search_radius=10,
         )
 
         num_nuclei = len(np.unique(im_nuclei_seg_mask)) - 1
@@ -113,7 +113,7 @@ class TestNucleiSegmentation:
             'hematoxylin': [0.65, 0.70, 0.29],
             'eosin': [0.07, 0.99, 0.11],
             'dab': [0.27, 0.57, 0.78],
-            'null': [0.0, 0.0, 0.0]
+            'null': [0.0, 0.0, 0.0],
         }
 
         w = htk_cdeconv.rgb_separate_stains_macenko_pca(im_nmzd, im_nmzd.max())
@@ -184,7 +184,7 @@ class TestNucleiSegmentation:
         ts, is_wsi = nucl_det.read_input_image(self.args, process_whole_image=True)
         it_kwargs = {
             'tile_size': {'width': self.args.analysis_tile_size},
-            'scale': {'magnification': self.args.analysis_mag}
+            'scale': {'magnification': self.args.analysis_mag},
         }
 
         # determine number of nuclei
@@ -210,7 +210,7 @@ class TestNucleiSegmentation:
         ts, is_wsi = nucl_det.read_input_image(self.args, process_whole_image=True)
         it_kwargs = {
             'tile_size': {'width': self.args.analysis_tile_size},
-            'scale': {'magnification': self.args.analysis_mag}
+            'scale': {'magnification': self.args.analysis_mag},
         }
 
         # determine number of nuclei
