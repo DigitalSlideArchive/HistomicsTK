@@ -35,7 +35,7 @@ class TestNucleiDetection:
             _runCLITest('NucleiDetection', args)
             return json.load(open(outpath))
 
-    @pytest.mark.parametrize('filename,params', [
+    @pytest.mark.parametrize(('filename', 'params'), [
         ('tcgaextract_rgb.tiff', []),
         ('tcgaextract_rgbmag.tiff', []),
         ('tcgaextract_ihergb_labeled.tiff', []),
@@ -44,8 +44,8 @@ class TestNucleiDetection:
             'bands': [
                 {'palette': '#FF0000', 'framedelta': 3},
                 {'palette': '#00FF00', 'framedelta': 4},
-                {'palette': '#0000FF', 'framedelta': 5}
-            ]
+                {'palette': '#0000FF', 'framedelta': 5},
+            ],
         })]),
         ('tcgaextract_ihergb_labeledmag.tiff', []),
         ('tcgaextract_ihergb_labeledmag.tiff', ['--frame', '1', '--invert_image', 'No']),
@@ -53,8 +53,8 @@ class TestNucleiDetection:
             'bands': [
                 {'palette': '#FF0000', 'framedelta': 3},
                 {'palette': '#00FF00', 'framedelta': 4},
-                {'palette': '#0000FF', 'framedelta': 5}
-            ]
+                {'palette': '#0000FF', 'framedelta': 5},
+            ],
         })]),
     ])
     @pytest.mark.parametrize('roi', [[], ['--analysis_roi=1,1,3998,2998']])
@@ -76,7 +76,7 @@ class TestComputeNucleiFeatures:
             _runCLITest('ComputeNucleiFeatures', args)
             return pandas.read_csv(outpath1), json.load(open(outpath2))
 
-    @pytest.mark.parametrize('filename,params', [
+    @pytest.mark.parametrize(('filename', 'params'), [
         ('tcgaextract_rgb.tiff', []),
     ])
     @pytest.mark.parametrize('roi', [[], ['--analysis_roi=1,1,3998,2998']])

@@ -66,7 +66,7 @@ def test_prep(girderClient):  # noqa
     folderinfo = cfg.gc.post(
         '/folder', data={
             'parentId': iteminfo['folderId'],
-            'name': 'test-review'
+            'name': 'test-review',
         })
     cfg.folderid = folderinfo['_id']
 
@@ -74,7 +74,7 @@ def test_prep(girderClient):  # noqa
     post_folderinfo = cfg.gc.post(
         '/folder', data={
             'parentId': iteminfo['folderId'],
-            'name': 'test-review-post'
+            'name': 'test-review-post',
         })
     cfg.post_folderid = post_folderinfo['_id']
 

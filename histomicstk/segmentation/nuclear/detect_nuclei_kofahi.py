@@ -62,7 +62,7 @@ def detect_nuclei_kofahi(im_nuclei_stain, im_nuclei_fgnd_mask, min_radius,
     im_log_max, im_sigma_max = htk_shape_filters.cdog(
         im_nuclei_stain, im_nuclei_fgnd_mask,
         sigma_min=min_radius / np.sqrt(2),
-        sigma_max=max_radius / np.sqrt(2)
+        sigma_max=max_radius / np.sqrt(2),
     )
 
     # apply local maximum clustering

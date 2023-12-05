@@ -96,7 +96,7 @@ def get_all_rois_from_folder_v2(
         ),
         workflow=_get_all_rois,
         workflow_kwargs=get_all_rois_kwargs,
-        monitorPrefix=monitor
+        monitorPrefix=monitor,
     )
     workflow_runner.run()
 
@@ -201,7 +201,7 @@ def _get_review_visualization(rgb, vis, vis_zoomout):
     fig, ax = plt.subplots(
         1, 3, dpi=100,
         figsize=(3 * wmax / 1000, hmax / 1000),
-        gridspec_kw={'wspace': 0.01, 'hspace': 0}
+        gridspec_kw={'wspace': 0.01, 'hspace': 0},
     )
 
     ax[0].imshow(vis)
@@ -369,14 +369,14 @@ def create_review_galleries(
         # this will store the roi contours
         contours = []
 
-        for row in range(tiles_per_column):
+        for _row in range(tiles_per_column):
 
             rowpos = im.height + padding
 
             # initialize "row" strip image
             row_im = pyvips.Image.black(1, 1, bands=3)
 
-            for col in range(tiles_per_row):
+            for _col in range(tiles_per_row):
 
                 if tileidx == n_tiles:
                     break

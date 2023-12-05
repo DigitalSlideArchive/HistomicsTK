@@ -39,7 +39,7 @@ class TestGirderConvenience:
         cfg.posted_folder = cfg.gc.post(
             '/folder', data={
                 'parentId': original_iteminfo['folderId'],
-                'name': 'test-convenience'
+                'name': 'test-convenience',
             })
 
         # copy the item so that everything we do here does not affect
@@ -73,11 +73,11 @@ class TestGirderConvenience:
         resps = update_permissions_for_annotations_in_slide(
             gc=cfg.gc, slide_id=cfg.iteminfo['_id'],
             # monitorPrefix='test_update_permissions_for_annotations_in_slide',
-            **update_params
+            **update_params,
         )
         assert len(resps) >= 8
         assert resps[0]['access']['users'] == [
-            {'flags': [], 'id': admininfo['_id'], 'level': 2}
+            {'flags': [], 'id': admininfo['_id'], 'level': 2},
         ]
         assert resps[0]['access']['groups'] == []
 

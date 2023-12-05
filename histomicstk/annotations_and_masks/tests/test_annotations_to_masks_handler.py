@@ -52,7 +52,7 @@ def test_prep(girderClient):  # noqa
     cfg.folder = cfg.gc.post(
         '/folder', data={
             'parentId': original_iteminfo['folderId'],
-            'name': 'test-annot-and-mask-handler'
+            'name': 'test-annot-and-mask-handler',
         })
 
     # copy the item
@@ -73,7 +73,7 @@ def test_prep(girderClient):  # noqa
         'iou_thresh': 0.0,
         'crop_to_roi': True,
         'use_shapely': True,
-        'verbose': False
+        'verbose': False,
     }
     cfg.get_contours_kwargs = {
         'groups_to_get': None,
@@ -82,7 +82,7 @@ def test_prep(girderClient):  # noqa
         'discard_nonenclosed_background': True,
         'background_group': 'mostly_stroma',
         'MIN_SIZE': 10, 'MAX_SIZE': None,
-        'verbose': False, 'monitorPrefix': ''
+        'verbose': False, 'monitorPrefix': '',
     }
 
     # Microns-per-pixel / Magnification (either or)
@@ -177,7 +177,7 @@ class TestGetROIMasks:
         assert {
             'TCGA-A2-A0YE_left-57604_top-35808_bottom-37445_right-59441.png',
             'TCGA-A2-A0YE_left-58483_top-38223_bottom-39780_right-60399.png',
-            'TCGA-A2-A0YE_left-59201_top-33493_bottom-38063_right-63732.png'
+            'TCGA-A2-A0YE_left-59201_top-33493_bottom-38063_right-63732.png',
         } == {os.path.basename(savename['ROI']) for savename in savenames}
 
     def test_get_all_rois_from_slide_tiled(self, tmpdir):  # noqa
@@ -239,13 +239,14 @@ class TestGetROIMasks:
             assert roi_out['ROI'].shape == (200, 250)
             assert roi_out['rgb'].shape == (200, 250, 3)
             assert roi_out['visualization'].shape == (200, 250, 3)
-            assert len(roi_out['contours']) > 26 and (
+            assert len(roi_out['contours']) > 26
+            assert (
                 len(roi_out['contours']) < 32)
             assert set(roi_out['contours'][0].keys()) == {
                 'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
                 'has_holes', 'touches_edge-top', 'touches_edge-left',
                 'touches_edge-bottom', 'touches_edge-right', 'coords_x',
-                'coords_y'
+                'coords_y',
             }
 
     def test_get_image_and_mask_minbbox(self):
@@ -261,11 +262,12 @@ class TestGetROIMasks:
         assert roi_out['ROI'].shape == (321, 351)
         assert roi_out['rgb'].shape == (321, 351, 3)
         assert roi_out['visualization'].shape == (321, 351, 3)
-        assert len(roi_out['contours']) > 26 and (
+        assert len(roi_out['contours']) > 26
+        assert (
             len(roi_out['contours']) < 32)
         assert set(roi_out['contours'][0].keys()) == {
             'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
             'has_holes', 'touches_edge-top', 'touches_edge-left',
             'touches_edge-bottom', 'touches_edge-right', 'coords_x',
-            'coords_y'
+            'coords_y',
         }

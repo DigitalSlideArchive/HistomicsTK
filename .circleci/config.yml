@@ -203,7 +203,7 @@ jobs:
           name: Install dependencies
           command: sudo apt-get update -yq && sudo apt install -yq pandoc
       - tox:
-          env: docs,flake8
+          env: docs,lint
       - store_artifacts:
           path: docs/_build/html
       - persist_to_workspace:

@@ -35,7 +35,6 @@ def vesselness(im_input, sigma):
        Interventation. MICCAI98. Springer Berlin Heidelberg,1998. 130-137.
 
     """
-
     # calculate hessian matrix
     H = sigma ** 2 * htk_utils.hessian(im_input, sigma)
 

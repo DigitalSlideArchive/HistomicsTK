@@ -58,7 +58,6 @@ def reinhard_stats(
     histomicstk.preprocessing.color_normalization.reinhard
 
     """
-
     # generate a sampling of sample_pixels_rgb pixels from whole-slide image
     sample_pixels_rgb = sample_pixels(
         slide_path,
@@ -68,7 +67,7 @@ def reinhard_stats(
         invert_image=invert_image,
         style=style,
         frame=frame,
-        default_img_inversion=default_img_inversion
+        default_img_inversion=default_img_inversion,
     )
 
     # reshape the Nx3 pixel array into a 1 x N x 3 image for lab_mean_std

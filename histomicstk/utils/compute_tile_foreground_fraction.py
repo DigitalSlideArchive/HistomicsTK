@@ -64,7 +64,7 @@ def compute_tile_foreground_fraction(slide_path, im_fgnd_mask_lres,
             tile_fgnd_frac.append(
                 dask.delayed(_compute_tile_foreground_fraction_single)(
                     slide_path, im_fgnd_mask_lres, fgnd_seg_scale,
-                    it_kwargs, tile_position
+                    it_kwargs, tile_position,
                 ))
 
         tile_fgnd_frac = dask.delayed(tile_fgnd_frac).compute()
@@ -75,13 +75,14 @@ def compute_tile_foreground_fraction(slide_path, im_fgnd_mask_lres,
 
         tile_fgnd_frac = _compute_tile_foreground_fraction_single(
             slide_path, im_fgnd_mask_lres, fgnd_seg_scale,
-            it_kwargs, tile_position, style=style
+            it_kwargs, tile_position, style=style,
         )
 
     else:
 
+        msg = 'Invalid value for tile_position. Must be None or int'
         raise ValueError(
-            'Invalid value for tile_position. Must be None or int')
+            msg)
 
     return tile_fgnd_frac
 

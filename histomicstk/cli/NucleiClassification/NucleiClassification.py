@@ -32,9 +32,11 @@ def set_reference_values(args):
     Set reference values and configuration parameters for feature extraction.
 
     Args:
+    ----
         args (dict): Configuration parameters for feature extraction.
 
     Returns:
+    -------
         dict: Updated configuration parameters with reference values set.
     """
     args.reference_mu_lab = [8.63234435, -0.11501964, 0.03868433]
@@ -44,12 +46,12 @@ def set_reference_values(args):
     args.max_radius = 20
     args.min_nucleus_area = 80
     args.local_max_search_radius = 10
-    args.nuclei_annotation_format = "boundary"
-    args.stain_1 = "hematoxylin"
+    args.nuclei_annotation_format = 'boundary'
+    args.stain_1 = 'hematoxylin'
     args.stain_1_vector = [-1.0, -1.0, -1.0]
-    args.stain_2 = "eosin"
+    args.stain_2 = 'eosin'
     args.stain_2_vector = [-1.0, -1.0, -1.0]
-    args.stain_3 = "null"
+    args.stain_3 = 'null'
     args.stain_3_vector = [-1.0, -1.0, -1.0]
     args.ignore_border_nuclei = False
     args.cyto_width = 8
@@ -92,7 +94,6 @@ def gen_distinct_rgb_colors(n, seed=None):
     .. [#] http://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/  # noqa
 
     """
-
     np.random.seed(seed)
     h = np.random.random()
     np.random.seed(None)
@@ -111,12 +112,13 @@ def process_feature_and_annotation(args):
     Process nuclei feature extraction and annotation from an input image.
 
     Args:
+    ----
         args (dict): Configuration parameters for feature extraction.
 
     Returns:
+    -------
         tuple: A tuple containing nuclei annotations (list) and feature data (Dask DataFrame).
     """
-
     print('>> Generating features and annotation')
 
     #
@@ -154,7 +156,7 @@ def process_feature_and_annotation(args):
             tile,
             args,
             src_mu_lab, src_sigma_lab,
-            return_fdata=True
+            return_fdata=True,
         )
 
         # append result to list
@@ -177,7 +179,7 @@ def process_feature_and_annotation(args):
         nuclei_fdata = pd.concat([
             fdata
             for annot_list, fdata in tile_result_list if fdata is not None],
-            ignore_index=True
+            ignore_index=True,
         )
     # Fill any instances with NaN as zero
     df = pd.DataFrame(nuclei_fdata).fillna(0)
@@ -189,12 +191,13 @@ def read_feature_file(args):
     Read nuclei feature data from a specified file.
 
     Args:
+    ----
         args (dict): Configuration parameters including the input feature file path.
 
     Returns:
+    -------
         dask.dataframe.DataFrame: A Dask DataFrame containing the nuclei feature data.
     """
-
     fname, feature_file_format = os.path.splitext(args.inputNucleiFeatureFile)
 
     if feature_file_format == '.csv':
@@ -206,7 +209,8 @@ def read_feature_file(args):
         ddf = dd.read_hdf(args.inputNucleiFeatureFile, 'Features')
 
     else:
-        raise ValueError('Extension of output feature file must be .csv or .h5')
+        msg = 'Extension of output feature file must be .csv or .h5'
+        raise ValueError(msg)
 
     # Fill any instances with NaN as zero
     return ddf.fillna(0)
@@ -242,8 +246,11 @@ def main(args):
 
         if len(ddf.columns) != clf_model.n_features_in_:
 
-            raise ValueError('The number of features of the classification model '
-                             'and the input feature file do not match.')
+            msg = (
+                'The number of features of the classification model '
+                'and the input feature file do not match.'
+            )
+            raise ValueError(msg)
 
         #
         # read nuclei annotation file
@@ -259,8 +266,11 @@ def main(args):
 
         if len(nuclei_annot_list) != len(ddf.index):
 
-            raise ValueError('The number of nuclei in the feature file and the '
-                             'annotation file do not match')
+            msg = (
+                'The number of nuclei in the feature file and the '
+                'annotation file do not match'
+            )
+            raise ValueError(msg)
     else:
         nuclei_annot_list, ddf = process_feature_and_annotation(args)
 
@@ -314,16 +324,16 @@ def main(args):
     for c in clf_model.classes_:
 
         annotation.append({
-            'name': 'Class ' + str(c) + " " + annot_fname,
-            'elements': nuclei_annot_by_class[c]
+            'name': 'Class ' + str(c) + ' ' + annot_fname,
+            'elements': nuclei_annot_by_class[c],
         })
     annotation.append({
         'attributes': {
             'params': vars(args),
             'cli': Path(__file__).stem,
-            'version': histomicstk.__version__
+            'version': histomicstk.__version__,
 
-        }
+        },
     })
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
         json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)

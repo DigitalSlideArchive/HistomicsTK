@@ -42,7 +42,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
 
     # List of feature names
     feature_list = []
-    for i in range(0, Fs):
+    for i in range(Fs):
         feature_list = np.append(feature_list, 'Shape.FSD' + str(i + 1))
 
     # get Label size x
@@ -62,8 +62,8 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
     # fourier descriptors, spaced evenly over the interval 1:K/2
     Interval = np.round(
         np.power(
-            2, np.linspace(0, np.log2(K) - 1, Fs + 1, endpoint=True)
-        )
+            2, np.linspace(0, np.log2(K) - 1, Fs + 1, endpoint=True),
+        ),
     ).astype(np.uint8)
 
     for i in range(numLabels):
@@ -76,7 +76,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
         ).astype(bool)
         # find boundaries
         Bounds = np.argwhere(
-            find_boundaries(lmask, mode='inner').astype(np.uint8) == 1
+            find_boundaries(lmask, mode='inner').astype(np.uint8) == 1,
         )
         # check length of boundaries
         if len(Bounds) < 2:
@@ -112,7 +112,6 @@ def _InterpolateArcLength(X, Y, K):
         arc-length spacing.
 
     """
-
     # generate spaced points 0, 1/k, 1
     interval = np.linspace(0, 1, K + 1)
     # get segment lengths
@@ -163,7 +162,6 @@ def _FSDs(X, Y, K, Intervals):
         cumulative angular function, summed over defined 'Intervals'.
 
     """
-
     # check input 'Intervals'
     if Intervals[0] != 1.:
         Intervals = np.hstack((1., Intervals))
@@ -180,7 +178,7 @@ def _FSDs(X, Y, K, Intervals):
         # calculate curvature
         Curvature = np.arctan2(
             (iY[1:] - iY[:-1]),
-            (iX[1:] - iX[:-1])
+            (iX[1:] - iX[:-1]),
         )
         # make curvature cumulative
         Curvature = Curvature - Curvature[0]
@@ -192,7 +190,7 @@ def _FSDs(X, Y, K, Intervals):
         # calculate 'F' values
         for i in range(L - 1):
             F[i] = np.round(
-                fX[Intervals[i] - 1:Intervals[i + 1]].sum(), L
+                fX[Intervals[i] - 1:Intervals[i + 1]].sum(), L,
             ).real.astype(float)
 
     return F
@@ -226,7 +224,6 @@ def _GetBounds(bbox, delta, M, N):
         Maximum column of the region bounds.
 
     """
-
     min_row, min_col, max_row, max_col = bbox
 
     min_row_out = max(0, (min_row - delta))

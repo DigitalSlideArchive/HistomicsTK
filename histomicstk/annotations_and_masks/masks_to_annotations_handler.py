@@ -16,12 +16,12 @@ def get_contours_from_bin_mask(bin_mask):
     """Given a binary mask, get opencv contours.
 
     Parameters
-    -----------
+    ----------
     bin_mask : nd array
         ground truth mask (m,n) - int32 with [0, 1] values.
 
     Returns
-    --------
+    -------
     dict
         a dictionary with the following keys:
         - contour group: the actual contour x,y coordinates.
@@ -270,7 +270,7 @@ def get_contours_from_mask(
     """Parse ground truth mask and gets contours for annotations.
 
     Parameters
-    -----------
+    ----------
     MASK : nd array
         ground truth mask (m,n) where pixel values encode group membership.
     GTCodes_df : pandas Dataframe
@@ -322,7 +322,7 @@ def get_contours_from_mask(
         text to prepend to printed statements
 
     Returns
-    --------
+    -------
     pandas DataFrame
         contours extracted from input mask. The following columns are output.
 
@@ -359,7 +359,8 @@ def get_contours_from_mask(
     from pandas import concat
 
     if MASK.sum() < 3:
-        raise Exception('Mask is empty!!')
+        msg = 'Mask is empty!!'
+        raise Exception(msg)
     cpr = Print_and_log(verbose=verbose)
     _print = cpr._print
     if groups_to_get is not None:
@@ -401,7 +402,7 @@ def get_contours_from_mask(
         MASK_BIN = np.zeros(MASK.shape, dtype=np.uint8)
         MASK_BIN[MASK > 0] = GTCodes_df.loc[roi_group, 'GT_code']
         contours_df_roi = _get_contours_df(
-            MASK=MASK_BIN, groups_to_get=[roi_group, ],
+            MASK=MASK_BIN, groups_to_get=[roi_group],
             monitorPrefix='%s: %s' % (monitorPrefix, roi_group),
             **cont_kwargs)
         contours_df = concat(
@@ -423,7 +424,7 @@ def get_single_annotation_document_from_contours(
     github.com/girder/large_image/blob/master/docs/annotations.md .
 
     Parameters
-    -----------
+    ----------
     contours_df_slice : pandas DataFrame
         The following columns are of relevance and must be contained.
 
@@ -455,7 +456,7 @@ def get_single_annotation_document_from_contours(
         text to prepend to printed statements
 
     Returns
-    --------
+    -------
     dict
         DSA-style annotation document ready to be post for viewing.
 
@@ -528,7 +529,7 @@ def get_annotation_documents_from_contours(
     be referenced for implementation details and further explanation.
 
     Parameters
-    -----------
+    ----------
     contours_df : pandas DataFrame
         WARNING - This is modified inside the function, so pass a copy.
         This dataframe includes data on contours extracted from input mask
@@ -568,7 +569,7 @@ def get_annotation_documents_from_contours(
         text to prepend to printed statements
 
     Returns
-    --------
+    -------
     list of dicts
         DSA-style annotation document.
 

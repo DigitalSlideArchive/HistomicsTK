@@ -51,7 +51,7 @@ jobs:
           pip install tox
       - name: Run tox for lint and docs
         run: |
-          tox -e flake8,docs
+          tox -e lint,docs
       - uses: actions/upload-artifact@v3
         with:
           name: docs

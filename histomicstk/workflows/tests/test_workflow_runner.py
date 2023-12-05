@@ -42,7 +42,7 @@ class TestWorkflows:
         cfg.posted_folder = cfg.gc.post(
             '/folder', data={
                 'parentId': original_iteminfo['folderId'],
-                'name': 'test-workflow'
+                'name': 'test-workflow',
             })
 
         # copy the item a couple of times
@@ -66,8 +66,8 @@ class TestWorkflows:
             slide_info = next(si)
             if i == 0:
                 assert all(
-                    [k in slide_info.keys() for k in
-                     ('name', '_id', 'levels', 'magnification')])
+                    k in slide_info.keys() for k in
+                    ('name', '_id', 'levels', 'magnification'))
 
     def test_runner_using_annotation_style_update(self):
         """Test workflow runner for cellularity detection."""

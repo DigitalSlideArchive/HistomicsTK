@@ -88,7 +88,7 @@ def main(opts):
 
     # Set positive pixel count parameters
     ppc_params = ppc.Parameters(
-        **{k: getattr(opts, k) for k in ppc.Parameters._fields}
+        **{k: getattr(opts, k) for k in ppc.Parameters._fields},
     )
 
     # Initialize a list to store results

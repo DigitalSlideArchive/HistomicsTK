@@ -63,7 +63,7 @@ def get_absolute_girder_folderpath(gc, folder_id=None, folder_info=None):
         absolute path to folder in the girder server.
 
     """
-    assert any([j is not None for j in (folder_id, folder_info)])
+    assert any(j is not None for j in (folder_id, folder_info))
     if folder_id is not None:
         folder_info = gc.get('/folder/%s' % folder_id)
     fpath = gc.get('/folder/%s/rootpath' % folder_info['_id'])
@@ -119,8 +119,9 @@ def update_permissions_for_annotation(
     if annotation is not None:
         annotation_id = annotation['_id']
     elif annotation_id is None:
+        msg = 'You must provide either the annotation or its girder id.'
         raise Exception(
-            'You must provide either the annotation or its girder id.')
+            msg)
 
     # get current permissions
     current = gc.get('/annotation/%s/access' % annotation_id)
@@ -251,7 +252,7 @@ def update_styles_for_annotation(gc, annotation, changes):
     # find out if annotation needs editing
     if 'groups' not in annotation.keys():
         return
-    elif not any([g in changes.keys() for g in annotation['groups']]):
+    elif not any(g in changes.keys() for g in annotation['groups']):
         return
 
     # edit elements one by one
@@ -376,8 +377,9 @@ def revert_annotation(
     if annotation is not None:
         annotation_id = annotation['_id']
     elif annotation_id is None:
+        msg = 'You must provide either the annotation or its girder id.'
         raise Exception(
-            'You must provide either the annotation or its girder id.')
+            msg)
 
     history = gc.get('/annotation/%s/history' % annotation_id)
 
@@ -487,7 +489,7 @@ def reproduce_annotations_workflow(
     """Dump annotations into single slide from local folder (Internal function).
 
     Parameters
-    -----------
+    ----------
     gc : girder_client.GirderClient
         authenticated girder client instance
 
@@ -547,7 +549,7 @@ def reproduce_annotations_from_backup(gc, folderid, local):
     local annotations (from JSON files) are posted to them.
 
     Parameters
-    -----------
+    ----------
     gc : girder_client.GirderClient
         authenticated girder client instance
 

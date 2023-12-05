@@ -261,7 +261,7 @@ latex_documents = [
 man_pages = [
     ('index', 'HistomicsTK',
      'HistomicsTK Documentation',
-     ['Kitware, Inc.'], 1)
+     ['Kitware, Inc.'], 1),
 ]
 
 # If true, show URL addresses after external links.

@@ -52,8 +52,9 @@ class Base_HTK_Class:
         # To NOT silently ignore rejected keys
         rejected_keys = set(kwargs.keys()) - set(allowed_attr)
         if rejected_keys:
+            msg = f'Invalid arguments in constructor:{rejected_keys}'
             raise ValueError(
-                f'Invalid arguments in constructor:{rejected_keys}')
+                msg)
 
         # configure logger
         self.keep_log = self.logging_savepath is not None

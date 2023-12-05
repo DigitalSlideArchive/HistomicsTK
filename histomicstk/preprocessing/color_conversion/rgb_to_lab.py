@@ -11,7 +11,7 @@ _lms2lab = np.dot(
               [0, 0, 1 / (2**0.5)]]),
     np.array([[1, 1, 1],
               [1, 1, -2],
-              [1, -1, 0]])
+              [1, -1, 0]]),
 )
 
 
@@ -40,7 +40,6 @@ def rgb_to_lab(im_rgb):
        J. Opt. Soc. Am. A vol.15, pp.2036-2045, 1998.
 
     """
-
     # get input image dimensions
     m = im_rgb.shape[0]
     n = im_rgb.shape[1]

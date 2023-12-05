@@ -52,7 +52,7 @@ def max_clustering(im_response, im_fgnd_mask, r=10):
 
     # find local maxima of all foreground pixels
     mval, mind = _max_clustering_cython(
-        im_response, im_fgnd_mask.astype(np.int32), r
+        im_response, im_fgnd_mask.astype(np.int32), r,
     )
 
     # identify connected regions of local maxima and define their seeds

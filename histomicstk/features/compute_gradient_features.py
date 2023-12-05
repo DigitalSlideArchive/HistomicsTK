@@ -98,7 +98,7 @@ def compute_gradient_features(im_label, im_intensity,
 
         # get gradients of object pixels
         pixelGradients = np.sort(
-            diffG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
+            diffG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]],
         )
 
         # compute mean

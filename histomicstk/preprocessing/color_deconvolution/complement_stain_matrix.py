@@ -23,7 +23,6 @@ def complement_stain_matrix(w):
     histomicstk.preprocessing.color_deconvolution.color_deconvolution
 
     """
-
     stain0 = w[:, 0]
     stain1 = w[:, 1]
     stain2 = np.cross(stain0, stain1)
