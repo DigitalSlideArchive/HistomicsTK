@@ -45,7 +45,7 @@ dataFiles = {
     'tcga1': {
         'name': 'TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs'},
 }
-for key, entry in dataFiles.items():
+for _key, entry in dataFiles.items():
     path = datastore.fetch(entry['name'], processor=chmodDataFile)
     query = {'folderId': publicFolder['_id'], 'name': os.path.basename(path)}
     if not Item().findOne(query):
@@ -60,9 +60,9 @@ annotationFiles = {
     'tcga1': {
         'item': 'tcga1',
         'name': 'TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs_annotations.json',  # noqa
-    }
+    },
 }
-for key, entry in annotationFiles.items():
+for _key, entry in annotationFiles.items():
     item = dataFiles[entry['item']]['item']
     query = {'_active': {'$ne': False}, 'itemId': item['_id']}
     if not Annotation().findOne(query):

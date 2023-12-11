@@ -15,8 +15,8 @@ def cellularity_detection_workflow(
     The cellularity detection algorithm can either be
     Cellularity_detector_superpixels or Cellularity_detector_thresholding.
 
-    Arguments
-    -----------
+    Arguments:
+    ---------
     gc : object
         girder client object
     cdo : object

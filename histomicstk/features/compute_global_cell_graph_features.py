@@ -148,8 +148,7 @@ def _compute_global_cell_graph_features(
     tree = KDTree(centroids)
     neighbors_in_distance = {
         # Yes, we just throw away the actual points
-        r: _pop_stats(np.stack(np.array([
-            m for m in map(len, tree.query_ball_tree(tree, r))])) - 1)
+        r: _pop_stats(np.stack(np.array(list(map(len, tree.query_ball_tree(tree, r))))) - 1)
         for r in neighbor_distances
     }
 
@@ -168,7 +167,7 @@ def _poly_area(vertices):
 
 def _poly_signed_area(vertices):
     return .5 * linalg.det(
-        np.stack((vertices, np.roll(vertices, -1, axis=-2)), -1)
+        np.stack((vertices, np.roll(vertices, -1, axis=-2)), -1),
     ).sum(-1)
 
 

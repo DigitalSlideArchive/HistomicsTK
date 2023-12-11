@@ -26,7 +26,7 @@ class Polygon_merger(Base_HTK_Class):
         """Init Polygon_merger object.
 
         Arguments:
-        -----------
+        ---------
         maskpaths : list
             list of strings representing pathos to masks
         GTCodes_df : pandas DataFrame
@@ -110,8 +110,9 @@ class Polygon_merger(Base_HTK_Class):
 
         # some sanity checks
         assert not (
-            self.contkwargs['get_roi_contour']
-            or self.contkwargs['discard_nonenclosed_background'])
+            self.contkwargs['get_roi_contour'])
+        assert not (
+            self.contkwargs['discard_nonenclosed_background'])
         self.contkwargs['verbose'] = self.verbose > 1
 
     def set_contours_from_all_masks(self, monitorPrefix=''):
@@ -183,7 +184,8 @@ class Polygon_merger(Base_HTK_Class):
         The pattern _left-123_ and _top-123_ is assumed to
         encode the x and y offset of the mask at base magnification.
 
-        Returns:
+        Returns
+        -------
         - dict: indexed by maskname, each entry is a dict with keys
         top and left.
 
@@ -201,6 +203,7 @@ class Polygon_merger(Base_HTK_Class):
         """Get dictionary of roi bounding boxes.
 
         Arguments:
+        ---------
         - roi_offsets: dict (default, None): dict indexed by maskname,
         each entry is a dict with keys top and left each is an integer.
         If None, then the x and y offset is inferred from mask name.
@@ -516,7 +519,7 @@ class Polygon_merger(Base_HTK_Class):
 
     def _drop_merged_edge_contours(self, merge_df):
         """Drop edge contours that have already been merged (Internal)."""
-        for roiname, edge_df in self.edge_contours.items():
+        for roiname, _edge_df in self.edge_contours.items():
             nids = []
             for rid in [1, 2]:
                 neststr = 'nest%d' % rid
@@ -574,7 +577,8 @@ class Polygon_merger(Base_HTK_Class):
     def get_concatenated_contours(self):
         """Get concatenated contours and overall bounding box.
 
-        Returns:
+        Returns
+        -------
         - pandas DataFrame: has the same structure as output from
         get_contours_from_mask().
 
@@ -610,7 +614,8 @@ class Polygon_merger(Base_HTK_Class):
     def run(self):
         """Run full pipeline to get merged contours.
 
-        Returns:
+        Returns
+        -------
         - pandas DataFrame: has the same structure as output from
         get_contours_from_mask().
 

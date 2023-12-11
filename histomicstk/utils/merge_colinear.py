@@ -20,7 +20,6 @@ def merge_colinear(x, y):
         Y with colinear boundary points removed.
 
     """
-
     # detect and delete points that are the same as the following point.
     Repeats = np.argwhere((np.diff(x) == 0) & (np.diff(y) == 0))
     xout = np.delete(x, Repeats)

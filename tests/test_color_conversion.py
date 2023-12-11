@@ -10,36 +10,36 @@ class TestColorConversion:
 
         np.testing.assert_array_almost_equal(
             np.round(rgb_to_od(np.zeros((3, 3, 3)) + 117.0), 4),
-            np.zeros((3, 3, 3)) + 35.6158
+            np.zeros((3, 3, 3)) + 35.6158,
         )
 
         # check corner cases
         np.testing.assert_array_almost_equal(
             rgb_to_od(np.zeros((3, 3, 3)) + 255.0),
-            np.zeros((3, 3, 3))
+            np.zeros((3, 3, 3)),
         )
 
         np.testing.assert_array_almost_equal(
             rgb_to_od(np.zeros((3, 3, 3))),
-            np.zeros((3, 3, 3)) + 255.0
+            np.zeros((3, 3, 3)) + 255.0,
         )
 
     def test_od_to_rgb(self):
 
         np.testing.assert_array_almost_equal(
             od_to_rgb(np.zeros((3, 3, 3)) + 35.6158),
-            np.zeros((3, 3, 3)) + 116.99987889
+            np.zeros((3, 3, 3)) + 116.99987889,
         )
 
         # check corner cases
         np.testing.assert_array_almost_equal(
             od_to_rgb(np.zeros((3, 3, 3))),
-            np.zeros((3, 3, 3)) + 255.0
+            np.zeros((3, 3, 3)) + 255.0,
         )
 
         np.testing.assert_array_almost_equal(
             od_to_rgb(np.zeros((3, 3, 3)) + 255.0),
-            np.zeros((3, 3, 3))
+            np.zeros((3, 3, 3)),
         )
 
     def test_rgb_to_od_to_rgb(self):
@@ -50,7 +50,7 @@ class TestColorConversion:
 
         np.testing.assert_array_almost_equal(
             od_to_rgb(rgb_to_od(im_rand)),
-            im_rand
+            im_rand,
         )
 
     def test_rgb_to_lab_to_rgb(self):
@@ -61,5 +61,5 @@ class TestColorConversion:
 
         np.testing.assert_array_almost_equal(
             np.round(lab_to_rgb(rgb_to_lab(im_rand))),
-            im_rand
+            im_rand,
         )

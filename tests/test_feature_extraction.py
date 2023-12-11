@@ -104,7 +104,7 @@ class TestFeatureExtraction:
             args.min_radius,
             args.max_radius,
             args.min_nucleus_area,
-            args.local_max_search_radius
+            args.local_max_search_radius,
         )
 
         # perform connected component analysis

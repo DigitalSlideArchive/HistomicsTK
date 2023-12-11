@@ -54,7 +54,7 @@ class RTree:
             'longest_kmeans': 0.0,
             'sum_kmeans_iter_f': 0,
             'count_kmeans_iter_f': 0,
-            'avg_kmeans_iter_f': 0.0
+            'avg_kmeans_iter_f': 0.0,
         }
 
         # This round: not using objects directly -- they
@@ -115,7 +115,7 @@ class _NodeCursor:
     @classmethod
     def create_with_children(cls, children, rooto):
         """Placeholder."""
-        rect = union_all([c for c in children])
+        rect = union_all(list(children))
         # nr = Rect(rect.x,rect.y,rect.xx,rect.yy)
         assert not rect.swapped_x
         nc = _NodeCursor.create(rooto, rect)
@@ -252,7 +252,7 @@ class _NodeCursor:
         """Placeholder."""
         # i = self.index
         c = 0
-        for x in self.children():
+        for _x in self.children():
             c += 1
         return c
 

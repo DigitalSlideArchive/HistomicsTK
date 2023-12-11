@@ -30,7 +30,7 @@ def colorDeconvolve(args):
             'top': args.region[1],
             'width': args.region[2],
             'height': args.region[3],
-            'units': 'base_pixels'
+            'units': 'base_pixels',
         }
         sink0.crop = tuple(args.region)
         sink1.crop = tuple(args.region)
@@ -84,12 +84,12 @@ def main(args):
                 'transform': {
                     'xoffset': region.get('left', 0),
                     'yoffset': region.get('top', 0),
-                }
+                },
             }],
             'attributes': {
                 'cli': Path(__file__).stem,
                 'params': vars(args),
-                'version': histomicstk.__version__
+                'version': histomicstk.__version__,
             },
         }, {
             'name': 'Deconvolution %s' % (
@@ -100,12 +100,12 @@ def main(args):
                 'transform': {
                     'xoffset': region.get('left', 0),
                     'yoffset': region.get('top', 0),
-                }
+                },
             }],
             'attributes': {
                 'cli': Path(__file__).stem,
                 'params': vars(args),
-                'version': histomicstk.__version__
+                'version': histomicstk.__version__,
             },
         }, {
             'name': 'Deconvolution %s' % (
@@ -116,13 +116,13 @@ def main(args):
                 'transform': {
                     'xoffset': region.get('left', 0),
                     'yoffset': region.get('top', 0),
-                }
+                },
             }],
             'attributes': {
                 'cli': Path(__file__).stem,
                 'params': vars(args),
-                'version': histomicstk.__version__
-            }
+                'version': histomicstk.__version__,
+            },
         }]
         if args.stain_3 == 'null':
             annotation[2:] = []

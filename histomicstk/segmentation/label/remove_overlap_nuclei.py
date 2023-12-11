@@ -1,7 +1,4 @@
-from concurrent.futures import ProcessPoolExecutor
-
 import shapely
-from shapely.geometry import Polygon
 
 
 def create_polygon(coordinates):
@@ -9,22 +6,26 @@ def create_polygon(coordinates):
     Create a shapely Polygon from a list of points.
 
     Args:
+    ----
         points (list): A list containing tuples representing the points of the polygon.
 
     Returns:
+    -------
         shapely.geometry.Polygon: The polygon created from the points.
     """
-    return Polygon(coordinates).buffer(0)
+    return shapely.geometry.Polygon(coordinates).buffer(0)
 
 
 def convert_polygons_tobbox(nuclei_list):
     """
     Convert nuclei segmentation data from polygon format to bounding box format.
 
-    Parameters:
+    Parameters
+    ----------
     nuclei_list (list): A list of dictionaries, where each dictionary represents a nuclei object.
 
-    Returns:
+    Returns
+    -------
     list: The modified 'nuclei_list', where each nuclei object has been transformed
     to a bounding box representation.
     """
@@ -51,38 +52,41 @@ def convert_polygons_tobbox(nuclei_list):
     return nuclei_list
 
 
-def remove_overlap_nuclei(nuclei_list, nuclei_format):
+def remove_overlap_nuclei(nuclei_list, nuclei_format, return_selected_nuclei=False):
     """
-    Remove overlapping nuclei from the given list using parallel processing.
+    Remove overlapping nuclei using spatial indexing and parallel processing.
 
-    This function creates a single shapely STRtree from all the polygons in the nuclei_list
-    and filters out the overlapping polygons.
+    This function removes overlapping nuclei polygons from input using an STRtree index.
 
     Args:
-        nuclei_list (list): A list of dictionaries, each containing 'points' representing a polygon.
+    ----
+        nuclei_list (list): List of dictionaries with 'points' for polygons.
+        nuclei_format (str, optional): Output format ('polygon' or 'bbox').
+        return_selected (bool, optional): Return indices of selected nuclei (default: False).
 
     Returns:
-        output_list (list): A new list with overlapping nuclei removed.
+    -------
+        output_list (list): New list with overlapping nuclei removed.
+        selected_nuclei (list, optional): Indices of selected nuclei.
     """
-
-    # Use ProcessPoolExecutor for parallel processing of polygon creation
-    with ProcessPoolExecutor() as executor:
-        polygons = list(
-            executor.map(
-                create_polygon,
-                (nuclei['points'] for nuclei in nuclei_list)))
+    polygons = [create_polygon(nuclei['points']) for nuclei in nuclei_list]
 
     # Build the STRtree from all the polygons
     rt = shapely.strtree.STRtree(polygons)
 
     # Find and remove any overlapping polygons
-    output_list = [nuclei for index, nuclei in enumerate(nuclei_list) if not any(
-        ix for ix in rt.query(
-            polygons[index]) if ix < index and polygons[index].intersects(
-            polygons[ix]))]
+    output = [(nuclei, index) for index, nuclei in enumerate(nuclei_list) if not any(
+        ix for ix in rt.query(polygons[index])
+        if ix < index and polygons[index].intersects(polygons[ix]))]
+
+    output_list, selected_nuclei = (
+        zip(*output) if return_selected_nuclei else ([nuclei for nuclei, _ in output], []))
 
     # if nuclei_format is bbox - convert polygons to bbox
     if nuclei_format == 'bbox':
         output_list = convert_polygons_tobbox(output_list)
+
+    if return_selected_nuclei:
+        return output_list, selected_nuclei
 
     return output_list

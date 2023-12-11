@@ -22,7 +22,7 @@ def perturb_stain_concentration(
     random uniform distribution in the range [-sigma2, sigma2].
 
     Parameters
-    ------------
+    ----------
     StainsFloat : array_like
         An intensity image (m, n, 3) of deconvolved stains that is unbounded,
         suitable for reconstructing color images of deconvolved stains
@@ -48,7 +48,7 @@ def perturb_stain_concentration(
         parameter, see beginning of this docstring.
 
     Returns
-    --------
+    -------
     array_like
         Color augmented RGB image (m x n x 3)
 
@@ -110,7 +110,7 @@ def rgb_perturb_stain_concentration(
     """Apply wrapper that calls perturb_stain_concentration() on RGB.
 
     Parameters
-    ------------
+    ----------
     im_rgb : array_like
         An RGB image (m x n x 3) to color normalize
 
@@ -121,7 +121,7 @@ def rgb_perturb_stain_concentration(
         Passed as-is to perturb_stain_concentration()
 
     Returns
-    --------
+    -------
     array_like
         Color augmented RGB image (m x n x 3)
 

@@ -60,7 +60,7 @@ def chan_vese(im_input, im_mask, sigma,
     im_phi = mask_to_sdf(im_mask)
 
     # evolve level set function
-    for i in range(0, iter):
+    for _i in range(iter):
 
         # calculate interior and exterior averages
         C1 = np.sum(im_input[im_phi > 0]) / (np.sum(im_phi > 0) + 1e-10)

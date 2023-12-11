@@ -31,8 +31,8 @@ class CD_single_tissue_piece:
     def __init__(self, cd, tissue_mask, monitorPrefix=''):
         """Detect cellularity in one tissue piece (Internal).
 
-        Arguments
-        ----------
+        Arguments:
+        ---------
         cd : object
             Cellularity_detector_superpixels instance
         tissue_mask : np array
@@ -89,7 +89,7 @@ class CD_single_tissue_piece:
         """Load RGB from server for single tissue piece."""
         # load RGB for this tissue piece at saliency magnification
         getStr = '/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG' % (
-            self.cd.slide_id, self.xmin, self.xmax, self.ymin, self.ymax
+            self.cd.slide_id, self.xmin, self.xmax, self.ymin, self.ymax,
         ) + '&magnification=%d' % self.cd.MAG
         resp = self.cd.gc.get(getStr, jsonResp=False)
         self.tissue_rgb = get_image_from_htk_response(resp)
@@ -169,7 +169,7 @@ class CD_single_tissue_piece:
         # Index is corresponding pixel value in the superpixel mask
         # IMPORTANT: this assumes that regionprops output is sorted by unique
         # pixel values in label mask, which it is by default
-        self.fdata.index = set(np.unique(self.spixel_mask)) - {0, }
+        self.fdata.index = set(np.unique(self.spixel_mask)) - {0}
 
     def set_superpixel_assignment(self):
         """Fit gaussian mixture model to features and get assignment."""
@@ -323,7 +323,7 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
         """Init Cellularity_Detector_Superpixels object.
 
         Arguments:
-        -----------
+        ---------
         gc : object
             girder client object
         slide_id : str
@@ -483,7 +483,7 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
         labeled = self.set_slide_info_and_get_tissue_mask()
 
         # Go through tissue pieces and do run sequence
-        unique_tvals = list(set(np.unique(labeled)) - {0, })
+        unique_tvals = list(set(np.unique(labeled)) - {0})
         tissue_pieces = [None for _ in range(len(unique_tvals))]
         for idx, tval in enumerate(unique_tvals):
             monitorPrefix = '%s: Tissue piece %d of %d' % (
@@ -533,7 +533,8 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
             thumbnail_rgb, **self.get_tissue_mask_kwargs)
 
         if len(np.unique(labeled)) < 2:
-            raise ValueError('No tissue detected!')
+            msg = 'No tissue detected!'
+            raise ValueError(msg)
 
         if self.visualize_tissue_boundary:
             annotation_docs = get_tissue_boundary_annotation_documents(

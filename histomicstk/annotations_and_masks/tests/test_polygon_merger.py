@@ -30,14 +30,13 @@ class TestPolygonMerger:
     @pytest.mark.usefixtures('girderClient')  # noqa
     def test_polygon_merger_tiled_masks(self, girderClient):  # noqa
         """Test Polygon_merger.run()."""
-
         original_iteminfo = girderClient.get(
             '/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
         folder = girderClient.post(
             '/folder', data={
                 'parentId': original_iteminfo['folderId'],
-                'name': 'test-polygon-merge'
+                'name': 'test-polygon-merge',
             })
 
         # copy the item

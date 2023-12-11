@@ -109,7 +109,7 @@ def _add_annotation_docs_to_sqlite(dbcon, annotation_docs, item):
             'updatedId': String(),
             'groups': String(),
             'element_count': Integer(),
-            'element_details': Integer(), },
+            'element_details': Integer()},
         index=False,
     )
 
@@ -136,7 +136,7 @@ def _add_annotation_elements_to_sqlite(dbcon, annotation_elements):
             'ymax': Integer(),
             'bbox_area': Integer(),
             'coords_x': String(),
-            'coords_y': String(), },
+            'coords_y': String()},
         index=False,
     )
 
@@ -199,7 +199,7 @@ def dump_annotations_workflow(
     """Dump annotations for single slide into the local folder.
 
     Parameters
-    -----------
+    ----------
     gc : girder_client.GirderClient
         authenticated girder client instance
 
@@ -285,7 +285,7 @@ def dump_annotations_locally(
     annotations there. Adapted from Lee A.D. Cooper
 
     Parameters
-    -----------
+    ----------
     gc : girder_client.GirderClient
         authenticated girder client instance
 

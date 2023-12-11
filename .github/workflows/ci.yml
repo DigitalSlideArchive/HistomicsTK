@@ -1,0 +1,135 @@
+name: Build
+
+on:
+  push:
+  # pull_request:
+  #   branches:
+  #     - master
+  release:
+    types:
+      - created
+  # schedule:
+  #   - cron: "0 7 * * 1"
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # Runs can be slow, so don't use resources unless we mean to publish
+    if: github.repository == 'DigitalSlideArchive/HistomicsTK' && ( startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master' )
+    strategy:
+      matrix:
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install tox
+        run: |
+          pip install --upgrade pip
+          pip install tox tox-gh-actions
+      - name: Run tox
+        env:
+          PYTEST_ADDOPTS: "--durations=0 -vv"
+        run: |
+          tox
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: nikeee/setup-pandoc@v1
+      - name: Install tox
+        run: |
+          pip install --upgrade pip
+          pip install tox
+      - name: Run tox for lint and docs
+        run: |
+          tox -e lint,docs
+      - uses: actions/upload-artifact@v3
+        with:
+          name: docs
+          path: ./docs/_build
+  build_wheels:
+    name: Wheels for ${{ matrix.python }} / ${{ matrix.buildplat[0] }} / ${{ matrix.buildplat[1] }}
+    runs-on: ${{ matrix.buildplat[0] }}
+    # Don't build external PRs.
+    if: github.repository == 'DigitalSlideArchive/HistomicsTK'
+    strategy:
+      matrix:
+        # See matplotlib for some of the rationale of this
+        buildplat:
+          - [ubuntu-latest, x86_64]
+          - [macos-latest, "x86_64 arm64"]
+          - [windows-latest, auto64]
+        python: ["cp38", "cp39", "cp310", "cp311", "cp312"]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - run: git status && git tag --list && pwd
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.2
+        env:
+          CIBW_BUILD: ${{ matrix.python }}-*
+          CIBW_TEST_SKIP: "*-macosx_arm64"
+          CIBW_ARCHS: ${{ matrix.buildplat[1] }}
+          MACOSX_DEPLOYMENT_TARGET: "10.12"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          # name: ${{ matrix.python }}-${{ startsWith(matrix.buildplat[1], 'macosx') && 'macosx' || matrix.buildplat[1] }}
+          path: ./wheelhouse/*.whl
+  make_sdist:
+    name: Make SDist
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Build SDist
+      run: pipx run build --sdist
+    - uses: actions/upload-artifact@v3
+      with:
+        # name: sdist
+        path: dist/*.tar.gz
+
+  # Still on Circle-CI
+  #   - docker
+  #   - publish-docker
+  #   - docs-deploy
+
+  release:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - lint
+      - build_wheels
+      - make_sdist
+    if: github.repository == 'DigitalSlideArchive/HistomicsTK' && ( startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master' )
+    environment:
+      name: pypi
+      url: https://pypi.org/p/histomicstk
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact
+          path: dist
+      - name: List dist directory
+        run: ls dist
+      - uses: pypa/gh-action-pypi-publish@release/v1

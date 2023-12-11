@@ -24,7 +24,6 @@ def delete_border(im_label):
     histomicstk.segmentation.label.delete
 
     """
-
     if not np.any(im_label):
         return im_label
 

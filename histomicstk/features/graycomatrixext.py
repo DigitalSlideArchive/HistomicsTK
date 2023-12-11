@@ -102,7 +102,6 @@ def graycomatrixext(im_input, im_roi_mask=None,
        Vol. 1, Addison-Wesley, 1992, p. 459.
 
     """
-
     num_dims = len(im_input.shape)
 
     # roi mask
@@ -112,14 +111,16 @@ def graycomatrixext(im_input, im_roi_mask=None,
         im_roi_mask = np.ones_like(im_input, dtype='bool')
 
     if im_input.shape != im_roi_mask.shape:
-        raise ValueError('size mismatch between input image and roi mask')
+        msg = 'size mismatch between input image and roi mask'
+        raise ValueError(msg)
 
     # gray_limits
     if gray_limits is None:
 
         gray_limits = _default_gray_limits(im_input)
 
-    assert len(gray_limits) == 2 and gray_limits[0] < gray_limits[1]
+    assert len(gray_limits) == 2
+    assert gray_limits[0] < gray_limits[1]
 
     # num_levels
     if num_levels is None:
@@ -136,8 +137,9 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
         # check sanity
         if offsets.shape[1] != num_dims:
+            msg = 'Dimension mismatch between input image and offsets'
             raise ValueError(
-                'Dimension mismatch between input image and offsets'
+                msg,
             )
 
     num_offsets = offsets.shape[0]
@@ -209,7 +211,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
             cur_glcm += cur_glcm.T
 
         # normalize if asked
-        if normed:
+        if normed and cur_glcm.sum():
             cur_glcm /= cur_glcm.sum()
 
         glcm[:, :, i] = cur_glcm
@@ -235,7 +237,8 @@ def _default_gray_limits(im_input):
 
     else:
 
-        raise ValueError('The type of the argument im_input is invalid')
+        msg = 'The type of the argument im_input is invalid'
+        raise ValueError(msg)
 
     return gray_limits
 
@@ -254,7 +257,8 @@ def _default_num_levels(im_input):
 
     else:
 
-        raise ValueError('The type of the argument im_input is invalid')
+        msg = 'The type of the argument im_input is invalid'
+        raise ValueError(msg)
 
     return num_levels
 
@@ -266,7 +270,7 @@ def _default_offsets(im_input):
     if num_dims == 2:
 
         offsets = np.array([
-            [0, 1], [1, 0], [1, 1], [1, -1]
+            [0, 1], [1, 0], [1, 1], [1, -1],
         ])
 
     else:

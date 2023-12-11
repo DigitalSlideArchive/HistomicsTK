@@ -40,7 +40,7 @@ class TestAnnotAndMaskUtils:
         cfg.folder = cfg.gc.post(
             '/folder', data={
                 'parentId': original_iteminfo['folderId'],
-                'name': 'test-annot-and-mask'
+                'name': 'test-annot-and-mask',
             })
 
         # copy the item
@@ -63,7 +63,6 @@ class TestAnnotAndMaskUtils:
 
     def test_get_bboxes_from_slide_annotations(self):
         """Test get_bboxes_from_slide_annotations."""
-
         element_infos = get_bboxes_from_slide_annotations(
             copy.deepcopy(cfg.annotations))
 
@@ -88,7 +87,7 @@ class TestAnnotAndMaskUtils:
             'elementidx', 'element_girder_id',
             'type', 'group', 'label', 'color',
             'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
-            'coords_x', 'coords_y'
+            'coords_x', 'coords_y',
         }
         assert set(element_infos.loc[:, 'type']) == {'polyline', 'rectangle'}
 

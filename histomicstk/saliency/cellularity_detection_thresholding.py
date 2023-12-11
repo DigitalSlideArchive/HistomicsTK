@@ -34,8 +34,8 @@ class CDT_single_tissue_piece:
     def __init__(self, cdt, tissue_mask, monitorPrefix=''):
         """Detect whitespace, saliency, etc in one tissue piece (Internal).
 
-        Arguments
-        ----------
+        Arguments:
+        ---------
         cdt : object
             Cellularity_detector_thresholding instance
         tissue_mask : np array
@@ -87,7 +87,7 @@ class CDT_single_tissue_piece:
         """Load RGB from server for single tissue piece."""
         # load RGB for this tissue piece at saliency magnification
         getStr = '/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG' % (
-            self.cdt.slide_id, self.xmin, self.xmax, self.ymin, self.ymax
+            self.cdt.slide_id, self.xmin, self.xmax, self.ymin, self.ymax,
         ) + '&magnification=%d' % self.cdt.MAG
         resp = self.cdt.gc.get(getStr, jsonResp=False)
         self.tissue_rgb = get_image_from_htk_response(resp)
@@ -136,7 +136,8 @@ class CDT_single_tissue_piece:
                     just_threshold=True,
                     get_tissue_mask_kwargs=self.cdt.get_tissue_mask_kwargs2)
             else:
-                raise ValueError('Unknown component name.')
+                msg = 'Unknown component name.'
+                raise ValueError(msg)
 
             lab[self.labeled == 0] = 0  # restrict to tissue mask
             self.labeled[lab > 0] = self.cdt.GTcodes.loc[component, 'GT_code']
@@ -316,7 +317,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         """Init Cellularity_Detector_Superpixels object.
 
         Arguments:
-        -----------
+        ---------
         gc : object
             girder client object
 
@@ -467,7 +468,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             'target_W_macenko': np.array([
                 [0.5807549, 0.08314027, 0.08213795],
                 [0.71681094, 0.90081588, 0.41999816],
-                [0.38588316, 0.42616716, -0.90380025]
+                [0.38588316, 0.42616716, -0.90380025],
             ]),
 
             # TCGA-A2-A3XS-DX1_xmin21421_ymin37486_.png, Amgad et al, 2019)
@@ -484,7 +485,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             },
 
             # components to extract by HSI thresholding
-            'keep_components': ['blue_sharpie', 'blood', 'whitespace', ],
+            'keep_components': ['blue_sharpie', 'blood', 'whitespace'],
 
             # kwargs for getting components masks
             'get_tissue_mask_kwargs2': {
@@ -581,7 +582,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         labeled = self.set_slide_info_and_get_tissue_mask()
 
         # Go through tissue pieces and do run sequence
-        unique_tvals = list(set(np.unique(labeled)) - {0, })
+        unique_tvals = list(set(np.unique(labeled)) - {0})
         tissue_pieces = [None for _ in range(len(unique_tvals))]
         for idx, tval in enumerate(unique_tvals):
             monitorPrefix = '%s: Tissue piece %d of %d' % (
@@ -604,7 +605,8 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             self, ref_image_path, color_normalization_method='macenko_pca'):
         """Set color normalization values to use from target image.
 
-        Arguments
+        Arguments:
+        ---------
         ref_image_path, str
         >    path to target (reference) image
         color_normalization_method, str
@@ -650,7 +652,8 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             thumbnail_rgb, **self.get_tissue_mask_kwargs)
 
         if len(np.unique(labeled)) < 2:
-            raise ValueError('No tissue detected!')
+            msg = 'No tissue detected!'
+            raise ValueError(msg)
 
         # Find size relative to WSI
         self.slide_info['F_tissue'] = self.slide_info[

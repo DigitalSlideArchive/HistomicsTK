@@ -40,7 +40,7 @@ def test_prep(girderClient):  # noqa
     folderinfo = cfg.gc.post(
         '/folder', data={
             'parentId': iteminfo['folderId'],
-            'name': 'test-parser'
+            'name': 'test-parser',
         })
     cfg.folderid = folderinfo['_id']
 
@@ -48,7 +48,7 @@ def test_prep(girderClient):  # noqa
     subf = cfg.gc.post(
         '/folder', data={
             'parentId': cfg.folderid,
-            'name': 'test-parser-sub'
+            'name': 'test-parser-sub',
         })
 
     # copy the item multiple times to create dummy database
@@ -67,7 +67,6 @@ class TestDatabaseParser:
 
     def test_dump_annotations_locally_1(self):
         """Test dump annotations locally."""
-
         savepath = tempfile.mkdtemp()
 
         # recursively save annotations -- JSONs + sqlite for folders/items
@@ -99,7 +98,6 @@ class TestDatabaseParser:
 
     def test_dump_annotations_locally_2(self):
         """Test dump annotations locally."""
-
         savepath = tempfile.mkdtemp()
 
         # recursively save annotations -- parse to csv + sqlite
@@ -110,7 +108,7 @@ class TestDatabaseParser:
             callback_kwargs={
                 'save_csv': True,
                 'save_sqlite': True,
-            }
+            },
         )
 
         assert not len({
@@ -121,7 +119,7 @@ class TestDatabaseParser:
             'test_dbsqlite-1_elements.csv',
             'test-parser-sub'} - set(os.listdir(savepath)))
 
-        files = [j for j in os.listdir(os.path.join(savepath, 'test-parser-sub'))]
+        files = list(os.listdir(os.path.join(savepath, 'test-parser-sub')))
         assert len([j for j in files if j.endswith('_docs.csv')]) == 2
         assert len([j for j in files if j.endswith('_elements.csv')]) == 2
 

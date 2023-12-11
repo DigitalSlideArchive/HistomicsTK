@@ -90,8 +90,6 @@ HistomicsTKDocker.code-workspace
 
 # debugging
 .devcontainer/
-MANIFEST.in
-.pre-commit-config.yaml
 run_tests_code_cleanup.sh
 
 # pyenv
@@ -153,6 +151,7 @@ cython_debug/
 .idea/
 
 .vscode
+*.sw[po]
 
 # temporary downloaded data when doing unit testing locally
 tests/externaldata/

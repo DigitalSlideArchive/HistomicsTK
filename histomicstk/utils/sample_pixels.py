@@ -57,8 +57,8 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
     import dask.distributed
 
     if (sample_fraction is None) == (sample_approximate_total is None):
-        raise ValueError('Exactly one of sample_fraction and ' +
-                         'sample_approximate_total must have a value.')
+        msg = 'Exactly one of sample_fraction and sample_approximate_total must have a value.'
+        raise ValueError(msg)
 
     ts = large_image.getTileSource(slide_path, style=style)
 
@@ -70,7 +70,7 @@ def sample_pixels(slide_path, sample_fraction=None, magnification=None,
     im_lres, _ = ts.getRegion(
         format=large_image.tilesource.TILE_FORMAT_NUMPY,
         scale=scale_lres,
-        frame=frame
+        frame=frame,
     )
 
     # check number of channels
@@ -179,7 +179,7 @@ def _sample_pixels_tile(slide_path, iter_args, positions, sample_fraction,
         # get tile foreground mask at resolution of current tile
         tile_fgnd_mask = np.array(PIL.Image.fromarray(tile_fgnd_mask_lres).resize(
             im_tile.shape[:2],
-            resample=PIL.Image.NEAREST
+            resample=PIL.Image.NEAREST,
         ))
 
         # generate linear indices of sample pixels in fgnd mask

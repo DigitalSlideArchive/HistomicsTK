@@ -22,14 +22,14 @@ def get_slide_thumbnail(gc, slide_id):
     """Get slide thumbnail using girder client.
 
     Parameters
-    -------------
+    ----------
     gc : object
         girder client to use
     slide_id : str
         girder ID of slide
 
     Returns
-    ---------
+    -------
     np array
         RGB slide thumbnail at lowest level
 
@@ -52,7 +52,7 @@ def get_tissue_mask(
     """Get binary tissue mask from slide thumbnail.
 
     Parameters
-    -----------
+    ----------
     thumbnail_im : np array
         (m, n, 3) nd array of thumbnail RGB image
         or (m, n) nd array of thumbnail grayscale image
@@ -71,7 +71,7 @@ def get_tissue_mask(
         minimum size (in pixels) of contiguous tissue regions to keep
 
     Returns
-    --------
+    -------
     np int32 array
         each unique value represents a unique tissue region
     np bool array
@@ -140,7 +140,7 @@ def get_tissue_boundary_annotation_documents(
     """Get annotation documents of tissue boundaries to visualize on DSA.
 
     Parameters
-    -----------
+    ----------
     gc : object
         girder client to use
     slide_id : str
@@ -160,7 +160,7 @@ def get_tissue_boundary_annotation_documents(
         get_single_annotation_document_from_contours() for details.
 
     Returns
-    --------
+    -------
     list of dicts
         each dict is an annotation document that you can post to DSA
 
@@ -208,7 +208,7 @@ def threshold_multichannel(
     connected components) to get each contiguous tissue piece.
 
     Parameters
-    -----------
+    ----------
     im : np array
         (m, n, 3) array of Hue, Saturation, Intensity (in this order)
     thresholds : dict
@@ -221,7 +221,7 @@ def threshold_multichannel(
         key-value pairs of parameters to pass to get_tissue_mask()
 
     Returns
-    --------
+    -------
     np int32 array
         if not just_threshold, unique values represent unique tissue regions
     np bool array
