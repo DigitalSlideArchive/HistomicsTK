@@ -52,7 +52,7 @@ jobs:
       - name: Run tox for lint and docs
         run: |
           tox -e lint,docs
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: docs
           path: ./docs/_build
@@ -89,7 +89,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.buildplat[1] }}
           MACOSX_DEPLOYMENT_TARGET: "10.12"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           # name: ${{ matrix.python }}-${{ startsWith(matrix.buildplat[1], 'macosx') && 'macosx' || matrix.buildplat[1] }}
           path: ./wheelhouse/*.whl
@@ -102,7 +102,7 @@ jobs:
         fetch-depth: 0
     - name: Build SDist
       run: pipx run build --sdist
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         # name: sdist
         path: dist/*.tar.gz
