@@ -28,6 +28,7 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
     -------
         nuclei_annot_list (list): List of nuclei annotations.
         fdata: Computed nuclei features.
+
     """
     # Flags
     single_channel = False
