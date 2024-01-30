@@ -285,6 +285,7 @@ def get_region_polygons(region):
     -------
     polygons: list
         A list of lists of x, y tuples.
+
     """
     if len(region) % 2 or len(region) < 4:
         msg = 'region must be 4, 6, or a list of 2n values.'
@@ -338,6 +339,7 @@ def polygons_to_binary_mask(polygons, x=0, y=0, width=None, height=None):
     mask: numpy.array
         A 1-bit numpy array where 1 is inside an odd number of polygons.  This
         can return None if polygons was None.
+
     """
     import PIL.Image
     import PIL.ImageChops
