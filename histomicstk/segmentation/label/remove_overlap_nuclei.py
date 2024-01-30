@@ -12,6 +12,7 @@ def create_polygon(coordinates):
     Returns:
     -------
         shapely.geometry.Polygon: The polygon created from the points.
+
     """
     return shapely.geometry.Polygon(coordinates).buffer(0)
 
@@ -28,6 +29,7 @@ def convert_polygons_tobbox(nuclei_list):
     -------
     list: The modified 'nuclei_list', where each nuclei object has been transformed
     to a bounding box representation.
+
     """
     for nuclei in nuclei_list:
         # Set 'type' property of the nuclei to 'rectangle'
@@ -68,6 +70,7 @@ def remove_overlap_nuclei(nuclei_list, nuclei_format, return_selected_nuclei=Fal
     -------
         output_list (list): New list with overlapping nuclei removed.
         selected_nuclei (list, optional): Indices of selected nuclei.
+
     """
     polygons = [create_polygon(nuclei['points']) for nuclei in nuclei_list]
 

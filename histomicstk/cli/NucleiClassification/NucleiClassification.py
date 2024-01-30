@@ -38,6 +38,7 @@ def set_reference_values(args):
     Returns:
     -------
         dict: Updated configuration parameters with reference values set.
+
     """
     args.reference_mu_lab = [8.63234435, -0.11501964, 0.03868433]
     args.reference_std_lab = [0.57506023, 0.10403329, 0.01364062]
@@ -118,6 +119,7 @@ def process_feature_and_annotation(args):
     Returns:
     -------
         tuple: A tuple containing nuclei annotations (list) and feature data (Dask DataFrame).
+
     """
     print('>> Generating features and annotation')
 
@@ -197,6 +199,7 @@ def read_feature_file(args):
     Returns:
     -------
         dask.dataframe.DataFrame: A Dask DataFrame containing the nuclei feature data.
+
     """
     fname, feature_file_format = os.path.splitext(args.inputNucleiFeatureFile)
 
