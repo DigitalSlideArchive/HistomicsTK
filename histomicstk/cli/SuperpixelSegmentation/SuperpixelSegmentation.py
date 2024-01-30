@@ -237,7 +237,7 @@ def createSuperPixels(opts):  # noqa
                 'boundaries': opts.boundaries,
             }],
             'attributes': {
-                'params': vars(opts),
+                'params': {k: v for k, v in vars(opts).items() if not callable(v)},
                 'cli': Path(__file__).stem,
                 'version': histomicstk.__version__,
             },
@@ -259,14 +259,19 @@ def createSuperPixels(opts):  # noqa
                     'lineColor': opts.default_strokeColor,
                 } for bidx, (bcx, bcy, bw, bh) in enumerate(bboxes)],
                 'attributes': {
-                    'params': vars(opts),
+                    'params': {k: v for k, v in vars(opts).items() if not callable(v)},
                     'cli': Path(__file__).stem,
                     'version': histomicstk.__version__,
                 },
             }
             annotation = [annotation, bboxannotation]
         with open(opts.outputAnnotationFile, 'w') as annotation_file:
-            json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
+            try:
+                json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
+            except Exception:
+                print('Failed to serialize annotation')
+                print(repr(annotation))
+                raise
         if hasattr(opts, 'callback'):
             opts.callback('file', 2, 2)
 
