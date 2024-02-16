@@ -82,3 +82,12 @@ def reinhard_stats(
     stats = ReinhardStats(Mu, Sigma)
 
     return stats
+
+
+def reinhard_stats_rgb(rgb_image):
+    rgb_pixels = np.reshape(rgb_image, (1, rgb_image.shape[0] * rgb_image.shape[1], 3))
+
+    Mu, Sigma = color_conversion.lab_mean_std(rgb_pixels)
+
+    # build named tuple for output
+    return collections.namedtuple('ReinhardStats', ['Mu', 'Sigma'])(Mu, Sigma)

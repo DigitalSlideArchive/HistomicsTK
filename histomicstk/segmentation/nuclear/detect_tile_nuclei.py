@@ -44,7 +44,9 @@ def detect_tile_nuclei(tile_info, args, src_mu_lab=None,
 
     # perform image inversion
     if invert_image:
-        im_tile = np.max(im_tile) - im_tile
+        im_tile = (np.iinfo(im_tile.dtype).max
+                   if im_tile.dtype.kind == 'u'
+                   else np.max(im_tile)) - im_tile
 
     # perform color normalization
     im_nmzd = htk_cnorm.reinhard(im_tile,

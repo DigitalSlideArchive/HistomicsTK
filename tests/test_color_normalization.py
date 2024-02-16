@@ -102,8 +102,8 @@ class TestReinhardNormalizationInvert:
             wsi_path, 0.1, magnification=20, invert_image=True)
 
         # With icc correction
-        gt_mean = [3.95768563, -0.15254668, 0.02557574]
-        gt_stddev = [0.4689624, 0.12877607, 0.03364667]
+        gt_mean = [4.450183, -0.113605, 0.018066]
+        gt_stddev = [0.13857672, 0.08909213, 0.02234654]
 
         np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-2)
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)

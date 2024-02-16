@@ -61,7 +61,7 @@ class TestNucleiDetection:
     def test_detection(self, filename, params, roi):
         src = datastore.fetch(filename)
         annot = self._runTest([src] + params + roi)
-        assert 2000 < len(annot['elements']) < 3000
+        assert 2500 < len(annot['elements']) < 3500
 
 
 class TestComputeNucleiFeatures:
@@ -83,7 +83,7 @@ class TestComputeNucleiFeatures:
     def test_detection(self, filename, params, roi):
         src = datastore.fetch(filename)
         feat, annot = self._runTest([src] + params + roi)
-        assert 2000 < len(annot['elements']) < 3000
+        assert 2500 < len(annot['elements']) < 3500
         assert len(feat) == len(annot['elements'])
 
 
