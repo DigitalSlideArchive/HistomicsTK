@@ -187,7 +187,7 @@ def detect_nuclei_with_dask(ts, tile_fgnd_frac_list, it_kwargs, args,
     return nuclei_list
 
 
-def main(args):
+def main(args):  # noqa
 
     # Flags
     invert_image = False
@@ -220,7 +220,7 @@ def main(args):
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
         'tile_overlap': {'x': tile_overlap, 'y': tile_overlap},
-        'style': {args.style},
+        'style': args.style,
     }
 
     # retrieve frame
@@ -230,7 +230,7 @@ def main(args):
         msg = 'The given frame value is not an integer'
         raise Exception(msg)
     else:
-        it_kwargs['frame'] = args.frame
+        it_kwargs['frame'] = int(args.frame)
 
     #
     # Initiate Dask client
@@ -304,6 +304,27 @@ def main(args):
         if not single_channel:
             src_mu_lab, src_sigma_lab = compute_reinhard_norm(
                 args, invert_image=invert_image, default_img_inversion=default_img_inversion)
+
+    if src_mu_lab is None:
+        smallImage, _ = ts.getRegion(
+            output=dict(maxWidth=4096, maxHeight=4096), resample=False,
+            region=it_kwargs.get('region', {}),
+            format=large_image.tilesource.TILE_FORMAT_NUMPY,
+            frame=args.frame)
+        if len(smallImage.shape) == 2:
+            smallImage = np.resize(smallImage, (smallImage.shape[0], smallImage.shape[1], 1))
+        if smallImage.shape[2] < 3:
+            if default_img_inversion or invert_image:
+                smallImage = (np.iinfo(smallImage.dtype).max
+                              if smallImage.dtype.kind == 'u'
+                              else np.max(smallImage)) - smallImage
+            smallImage = np.repeat(smallImage[:, :, :1], 3, 2)
+        elif not default_img_inversion and invert_image:
+            smallImage = (np.iinfo(smallImage.dtype).max
+                          if smallImage.dtype.kind == 'u'
+                          else np.max(smallImage)) - smallImage
+        smallImage = smallImage[:, :, :3]
+        src_mu_lab, src_sigma_lab = htk_cnorm.reinhard_stats_rgb(smallImage)
 
     #
     # Detect nuclei in parallel using Dask
