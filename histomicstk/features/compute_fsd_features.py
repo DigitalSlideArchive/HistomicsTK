@@ -186,7 +186,7 @@ def _FSDs(X, Y, K, Intervals):
         fX = np.fft.fft(Curvature).T
         # spectral energy
         fX = fX * fX.conj()
-        fX = (fX / fX.sum()) if fX.sum() else 0
+        fX = (fX / fX.sum()) if fX.sum() else fX
         # calculate 'F' values
         for i in range(L - 1):
             F[i] = np.round(
