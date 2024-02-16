@@ -374,7 +374,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             pxy_ijr = np.ravel(pxy_ij)
             HXY1 = -np.dot(nGLCMr, np.log2(pxy_ijr + e))
             HXY2 = -np.dot(pxy_ijr, np.log2(pxy_ijr + e))
-            ldata.at[r, 'Haralick.IMC1'] = (HXY - HXY1) / max(HX, HY)
+            ldata.at[r, 'Haralick.IMC1'] = ((HXY - HXY1) / max(HX, HY)) if max(HX, HY) else 0
 
             # computes information measures of correlation
             ldata.at[r, 'Haralick.IMC2'] = \
