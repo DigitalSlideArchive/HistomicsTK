@@ -6,7 +6,7 @@ from .background_intensity import background_intensity
 from .deconvolution_based_normalization import \
     deconvolution_based_normalization
 from .reinhard import reinhard
-from .reinhard_stats import reinhard_stats
+from .reinhard_stats import reinhard_stats, reinhard_stats_rgb
 
 # list out things that are available for public use
 __all__ = (
@@ -15,5 +15,6 @@ __all__ = (
     'background_intensity',
     'reinhard',
     'reinhard_stats',
+    'reinhard_stats_rgb',
     'deconvolution_based_normalization',
 )

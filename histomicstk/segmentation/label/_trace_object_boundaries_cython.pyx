@@ -275,179 +275,183 @@ def _isbf(long[:, :] mask, long[:, :] mask_90, long[:, :] mask_180, long[:, :] m
 
     cdef long i, j, t
 
-    with nogil:
-        # push the first x and y points
-        list_bx.push_back(x_start);
-        list_by.push_back(y_start);
+    # check degenerate case where mask contains 1 pixel
+    cdef long sum = np.sum(mask)
 
-    while(True):
-
-        h = np.zeros((row_isbf, col_isbf), dtype=int)
-
+    if sum > 1:
         with nogil:
-            with cython.boundscheck(False):
-                # initialize a and b which are indices of ISBF
-                a = 0
-                b = 0
+            # push the first x and y points
+            list_bx.push_back(x_start);
+            list_by.push_back(y_start);
 
-                # get length of the current linked list
-                size_boundary = list_bx.size()
+        while(True):
 
-                x = list_bx[size_boundary-1]
-                y = list_by[size_boundary-1]
+            h = np.zeros((row_isbf, col_isbf), dtype=int)
 
-                if (DX == 1) & (DY == 0):
-                    for i in range(ncols-x-2, ncols-x+1):
-                        for j in range(y-1, y+1):
-                            h[a, b] = mask_90[i, j]
-                            b = b + 1
-                        b = 0
-                        a = a + 1
-                    angle = M_PI/2
+            with nogil:
+                with cython.boundscheck(False):
+                    # initialize a and b which are indices of ISBF
+                    a = 0
+                    b = 0
 
-                elif (DX == 0) & (DY == -1):
-                    for i in range(y-1, y+2):
-                        for j in range(x-1, x+1):
-                            h[a, b] = mask[i, j]
-                            b = b + 1
-                        b = 0
-                        a = a + 1
-                    angle = 0
+                    # get length of the current linked list
+                    size_boundary = list_bx.size()
 
-                elif (DX == -1) & (DY == 0):
-                    for i in range(x-1, x+2):
-                        for j in range(nrows-y-2, nrows-y):
-                            h[a, b] = mask_270[i, j]
-                            b = b + 1
-                        b = 0
-                        a = a + 1
-                    angle = 3*M_PI/2
+                    x = list_bx[size_boundary-1]
+                    y = list_by[size_boundary-1]
 
-                else:
-                    for i in range(nrows-y-2, nrows-y+1):
-                        for j in range(ncols-x-2, ncols-x):
-                            h[a, b] = mask_180[i, j]
-                            b = b + 1
-                        b = 0
-                        a = a + 1
-                    angle = M_PI
+                    if (DX == 1) & (DY == 0):
+                        for i in range(ncols-x-2, ncols-x+1):
+                            for j in range(y-1, y+1):
+                                h[a, b] = mask_90[i, j]
+                                b = b + 1
+                            b = 0
+                            a = a + 1
+                        angle = M_PI/2
 
-                cX = vector[int](1)
-                cY = vector[int](1)
+                    elif (DX == 0) & (DY == -1):
+                        for i in range(y-1, y+2):
+                            for j in range(x-1, x+1):
+                                h[a, b] = mask[i, j]
+                                b = b + 1
+                            b = 0
+                            a = a + 1
+                        angle = 0
 
-                if h[1, 0] == 1:
-                    # 'left' neighbor
-                    cX[0] = -1
-                    cY[0] = 0
-                    DX = -1
-                    DY = 0
-                else:
-                    if (h[2][0] == 1) & (h[2][1] != 1):
-                        # inner-outer corner at left-rear
-                        cX[0] = -1
-                        cY[0] = 1
-                        DX = 0
-                        DY = 1
+                    elif (DX == -1) & (DY == 0):
+                        for i in range(x-1, x+2):
+                            for j in range(nrows-y-2, nrows-y):
+                                h[a, b] = mask_270[i, j]
+                                b = b + 1
+                            b = 0
+                            a = a + 1
+                        angle = 3*M_PI/2
+
                     else:
-                        if h[0, 0] == 1:
-                            if h[0, 1] == 1:
-                                # inner corner at front
-                                cX[0] = 0
-                                cY[0] = -1
-                                cX.push_back(-1)
-                                cY.push_back(0)
-                                DX = 0
-                                DY = -1
-                            else:
-                                # inner-outer corner at front-left
-                                cX[0] = -1
-                                cY[0] = -1
-                                DX = 0
-                                DY = -1
-                        elif h[0, 1] == 1:
-                            # front neighbor
-                            cX[0] = 0
-                            cY[0] = -1
-                            DX = 1
-                            DY = 0
-                        else:
-                            # outer corner
+                        for i in range(nrows-y-2, nrows-y+1):
+                            for j in range(ncols-x-2, ncols-x):
+                                h[a, b] = mask_180[i, j]
+                                b = b + 1
+                            b = 0
+                            a = a + 1
+                        angle = M_PI
+
+                    cX = vector[int](1)
+                    cY = vector[int](1)
+
+                    if h[1, 0] == 1:
+                        # 'left' neighbor
+                        cX[0] = -1
+                        cY[0] = 0
+                        DX = -1
+                        DY = 0
+                    else:
+                        if (h[2][0] == 1) & (h[2][1] != 1):
+                            # inner-outer corner at left-rear
+                            cX[0] = -1
+                            cY[0] = 1
                             DX = 0
                             DY = 1
+                        else:
+                            if h[0, 0] == 1:
+                                if h[0, 1] == 1:
+                                    # inner corner at front
+                                    cX[0] = 0
+                                    cY[0] = -1
+                                    cX.push_back(-1)
+                                    cY.push_back(0)
+                                    DX = 0
+                                    DY = -1
+                                else:
+                                    # inner-outer corner at front-left
+                                    cX[0] = -1
+                                    cY[0] = -1
+                                    DX = 0
+                                    DY = -1
+                            elif h[0, 1] == 1:
+                                # front neighbor
+                                cX[0] = 0
+                                cY[0] = -1
+                                DX = 1
+                                DY = 0
+                            else:
+                                # outer corner
+                                DX = 0
+                                DY = 1
 
-                # transform points by incoming directions and add to contours
-                s = sin(angle)
-                c = cos(angle)
+                    # transform points by incoming directions and add to contours
+                    s = sin(angle)
+                    c = cos(angle)
 
-                if (cX[0]!=0) | (cY[0]!=0):
+                    if (cX[0]!=0) | (cY[0]!=0):
 
-                    for t in range(cX.size()):
+                        for t in range(cX.size()):
 
-                        cx = c*cX[t] - s*cY[t]
-                        cy = s*cX[t] + c*cY[t]
+                            cx = c*cX[t] - s*cY[t]
+                            cy = s*cX[t] + c*cY[t]
 
-                        with gil:
-                            list_bx.push_back(list_bx.back()+int(round(cx)))
-                            list_by.push_back(list_by.back()+int(round(cy)))
+                            with gil:
+                                list_bx.push_back(list_bx.back()+int(round(cx)))
+                                list_by.push_back(list_by.back()+int(round(cy)))
 
-                ci = c*DX - s*DY
-                cj = s*DX + c*DY
+                    ci = c*DX - s*DY
+                    cj = s*DX + c*DY
 
-                DX = int(round(ci))
-                DY = int(round(cj))
+                    DX = int(round(ci))
+                    DY = int(round(cj))
 
-                # get length of the current linked list
-                size_boundary = list_bx.size()
+                    # get length of the current linked list
+                    size_boundary = list_bx.size()
 
-                if size_boundary > 3:
+                    if size_boundary > 3:
 
-                    fx1 = list_bx[0]
-                    fx2 = list_bx[1]
-                    fy1 = list_by[0]
-                    fy2 = list_by[1]
-                    lx1 = list_bx[size_boundary-1]
-                    ly1 = list_by[size_boundary-1]
-                    lx2 = list_bx[size_boundary-2]
-                    ly2 = list_by[size_boundary-2]
-                    lx3 = list_bx[size_boundary-3]
-                    ly3 = list_by[size_boundary-3]
-                    lx4 = list_bx[size_boundary-4]
-                    ly4 = list_by[size_boundary-4]
+                        fx1 = list_bx[0]
+                        fx2 = list_bx[1]
+                        fy1 = list_by[0]
+                        fy2 = list_by[1]
+                        lx1 = list_bx[size_boundary-1]
+                        ly1 = list_by[size_boundary-1]
+                        lx2 = list_bx[size_boundary-2]
+                        ly2 = list_by[size_boundary-2]
+                        lx3 = list_bx[size_boundary-3]
+                        ly3 = list_by[size_boundary-3]
+                        lx4 = list_bx[size_boundary-4]
+                        ly4 = list_by[size_boundary-4]
 
-                    # check if the first and the last x and y are equal
-                    if (size_boundary > max_length) | \
-                            ((lx1 == fx2)&(lx2 == fx1)&(ly1 == fy2)&(ly2 == fy1)):
-                        # remove the last element
-                        list_bx.pop_back()
-                        list_by.pop_back()
-                        break
-                    if cX.size() == 2:
-                        if (lx2 == fx2)&(lx3 == fx1)&(ly2 == fy2)&(ly3 == fy1):
-                            list_bx.pop_back()
-                            list_by.pop_back()
+                        # check if the first and the last x and y are equal
+                        if (size_boundary > max_length) | \
+                                ((lx1 == fx2)&(lx2 == fx1)&(ly1 == fy2)&(ly2 == fy1)):
+                            # remove the last element
                             list_bx.pop_back()
                             list_by.pop_back()
                             break
-                    # detect cycle
-                    if (lx1 == lx3)&(ly1 == ly3)&(lx2 == lx4)&(ly2 == ly4):
-                        list_bx.pop_back()
-                        list_by.pop_back()
-                        list_bx.pop_back()
-                        list_by.pop_back()
-                        # change direction from M_PI to 3*M_PI/2
-                        if (DX == 0) & (DY == 1):
-                            DX = -1
-                            DY = 0
-                        # from M_PI/2 to M_PI
-                        elif (DX == 1) & (DY == 0):
-                            DX = 0
-                            DY = 1
-                        # from 0 to M_PI/2
-                        elif (DX == 0) & (DY == -1):
-                            DX = 1
-                            DY = 0
-                        else:
-                            DX = 0
-                            DY = -1
+                        if cX.size() == 2:
+                            if (lx2 == fx2)&(lx3 == fx1)&(ly2 == fy2)&(ly3 == fy1):
+                                list_bx.pop_back()
+                                list_by.pop_back()
+                                list_bx.pop_back()
+                                list_by.pop_back()
+                                break
+                        # detect cycle
+                        if (lx1 == lx3)&(ly1 == ly3)&(lx2 == lx4)&(ly2 == ly4):
+                            list_bx.pop_back()
+                            list_by.pop_back()
+                            list_bx.pop_back()
+                            list_by.pop_back()
+                            # change direction from M_PI to 3*M_PI/2
+                            if (DX == 0) & (DY == 1):
+                                DX = -1
+                                DY = 0
+                            # from M_PI/2 to M_PI
+                            elif (DX == 1) & (DY == 0):
+                                DX = 0
+                                DY = 1
+                            # from 0 to M_PI/2
+                            elif (DX == 0) & (DY == -1):
+                                DX = 1
+                                DY = 0
+                            else:
+                                DX = 0
+                                DY = -1
 
     return list_bx, list_by
