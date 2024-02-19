@@ -54,6 +54,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
+              'sphinxcontrib.jquery',
               'IPython.sphinxext.ipython_console_highlighting',
               'nbsphinx']
 
