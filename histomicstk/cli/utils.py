@@ -211,6 +211,10 @@ def create_dask_client(args):
       empty string to start one locally
 
     """
+    # Dask is noisy.  Stop that
+    import os
+    os.environ.setdefault('DASK_DISTRIBUTED__LOGGING__DISTRIBUTED', 'warning')
+
     import dask
     import psutil
 

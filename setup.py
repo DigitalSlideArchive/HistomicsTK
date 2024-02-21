@@ -84,5 +84,8 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     zip_safe=False,
+    entry_points={
+        'console_scripts': ['histomicstk = histomicstk.cli.__main__:main'],
+    },
     python_requires='>=3.8',
 )
