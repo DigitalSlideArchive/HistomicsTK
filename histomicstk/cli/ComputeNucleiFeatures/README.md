@@ -73,7 +73,7 @@ optional arguments:
   --analysis_tile_size <double>
                         Tile size for blockwise analysis (default: 4096.0)
   --cyto_width <integer>
-                        Width of ring-like neighborghood region around each
+                        Width of ring-like neighborhood region around each
                         nucleus to be considered as cytoplasm (default: 8)
   --cytoplasm <boolean>
                         Compute Intensity and Gradient features from the
