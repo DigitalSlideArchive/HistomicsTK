@@ -243,7 +243,7 @@
     <integer>
       <name>cyto_width</name>
       <label>Cytoplasm width</label>
-      <description>Width of ring-like neighborghood region around each nucleus to be considered as cytoplasm</description>
+      <description>Width of ring-like neighborhood region around each nucleus to be considered as cytoplasm</description>
       <longflag>cyto_width</longflag>
       <default>8</default>
     </integer>
