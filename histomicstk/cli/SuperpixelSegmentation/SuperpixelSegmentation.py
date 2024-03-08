@@ -4,8 +4,8 @@ import os
 from pathlib import Path
 
 import large_image
-import numpy
-import pyvips
+import large_image_source_zarr
+import numpy as np
 import scipy
 import skimage
 
@@ -30,7 +30,6 @@ def createSuperPixels(opts):  # noqa
     ts = large_image.open(opts.inputImageFile)
     meta = ts.getMetadata()
     found = 0
-    strips = []
     bboxes = []
     bboxesUser = []
     tiparams = {}
@@ -40,6 +39,7 @@ def createSuperPixels(opts):  # noqa
     if opts.magnification:
         tiparams['scale'] = {'magnification': opts.magnification}
 
+    sink = large_image_source_zarr.new()
     print('>> Generating superpixels')
     if opts.slic_zero:
         print('>> Using SLIC Zero for segmentation')
@@ -60,30 +60,27 @@ def createSuperPixels(opts):  # noqa
             scale = meta['magnification'] / tile['magnification']
         x0 = tiparams.get('region', {}).get('left', 0)
         y0 = tiparams.get('region', {}).get('top', 0)
-        # tx0 = tile['x'] - x0
-        # ty0 = tile['y'] - y0
         tx0 = int((tile['gx'] - x0) / scale)
         ty0 = int((tile['gy'] - y0) / scale)
         img = tile['tile']
+        if img.shape[2] in {2, 4}:
+            img = img[:, :, :-1]
         n_pixels = tile['width'] * tile['height']
         mask = None
         if overlap:
-            mask = numpy.ones(img.shape[:2])
-            for y, simg in strips:
-                if (y < ty0 + tile['height'] and y + simg.height > ty0 and simg.width > tx0):
-                    suby = max(0, y - ty0)
-                    subimg = simg.crop(
-                        tx0,
-                        max(0, ty0 - y),
-                        min(tile['width'], simg.width),
-                        min(tile['height'], simg.height - max(0, ty0 - y)))
-                    # Our mask is true when a pixel has not been set
-                    submask = numpy.ndarray(
-                        buffer=subimg[3].write_to_memory(),
-                        dtype=numpy.uint8,
-                        shape=[subimg.height, subimg.width]) == 0
-                    mask[suby:suby + submask.shape[0], :submask.shape[1]] *= submask
-            n_pixels = numpy.count_nonzero(mask)
+            if sink.sizeX:
+                mask, _ = sink.getRegion(
+                    format=large_image.constants.TILE_FORMAT_NUMPY,
+                    region=dict(
+                        left=tx0, top=ty0, width=tile['width'], height=tile['height']))
+                mask = (mask[:, :, -1] == 0)
+            else:
+                mask = np.ones(img.shape[:2], dtype=bool)
+            if mask.shape[0] < img.shape[0] or mask.shape[1] < img.shape[1]:
+                mask2 = np.ones(img.shape[:2], dtype=bool)
+                mask2[:mask.shape[0], :mask.shape[1]] = mask
+                mask = mask2
+            n_pixels = np.count_nonzero(mask)
         n_segments = math.ceil(n_pixels / averageSize)
         segments = skimage.segmentation.slic(
             img,
@@ -96,7 +93,7 @@ def createSuperPixels(opts):  # noqa
             mask=mask,
         )
         # We now have an array that is the same size as the image
-        maxValue = numpy.max(segments) + 1
+        maxValue = np.max(segments) + 1
         if overlap:
             # Keep any segment that is at all in the non-overlap region
             core = segments[
@@ -105,14 +102,14 @@ def createSuperPixels(opts):  # noqa
             coremask = mask[
                 :tile['height'] - tile['tile_overlap']['bottom'],
                 :tile['width'] - tile['tile_overlap']['right']]
-            core[numpy.where(coremask != 1)] = -1
-            usedIndices = numpy.unique(core)
-            usedIndices = numpy.delete(usedIndices, numpy.where(usedIndices < 0))
+            core[np.where(coremask != 1)] = -1
+            usedIndices = np.unique(core)
+            usedIndices = np.delete(usedIndices, np.where(usedIndices < 0))
             usedLut = [-1] * maxValue
             for idx, used in enumerate(usedIndices):
                 if used >= 0:
                     usedLut[used] = idx
-            usedLut = numpy.array(usedLut, dtype=int)
+            usedLut = np.array(usedLut, dtype=int)
             print('reduced from %d to %d' % (maxValue, len(usedIndices)))
             maxValue = len(usedIndices)
             segments = usedLut[segments]
@@ -145,38 +142,10 @@ def createSuperPixels(opts):  # noqa
         segments += found
         found += int(maxValue)
         if mask is None:
-            data = numpy.dstack((
-                (segments % 256).astype(int),
-                (segments / 256).astype(int) % 256,
-                (segments / 65536).astype(int) % 256)).astype('B')
+            data = segments.astype(np.uint32)[..., np.newaxis]
         else:
-            data = numpy.dstack((
-                (segments % 256).astype(int),
-                (segments / 256).astype(int) % 256,
-                (segments / 65536).astype(int) % 256,
-                mask * 255)).astype('B')
-        # For overlay, suppose we make any value whose centroid is in the
-        # overlap region transparent.  Then, use vips to overlap the
-        # images rather than inserting them.
-        vimg = pyvips.Image.new_from_memory(
-            numpy.ascontiguousarray(data).data,
-            data.shape[1], data.shape[0], data.shape[2],
-            large_image.constants.dtypeToGValue[data.dtype.char])
-        vimg = vimg.copy(interpretation=pyvips.Interpretation.RGB)
-        vimgTemp = pyvips.Image.new_temp_file('%s.v')
-        vimg.write(vimgTemp)
-        vimg = vimgTemp
-        x = tx0
-        ty = tile['tile_position']['region_y']
-        while len(strips) <= ty:
-            strips.append(None)
-        if strips[ty] is None:
-            strip = pyvips.Image.black(
-                tiparams.get('region', {}).get('width', meta['sizeX']),
-                vimg.height, bands=vimg.bands)
-            strip = strip.copy(interpretation=pyvips.Interpretation.RGB)
-            strips[ty] = [ty0, strip]
-        strips[ty][1] = strips[ty][1].composite([vimg], pyvips.BlendMode.OVER, x=int(x), y=0)
+            data = np.dstack((segments.astype(np.uint32), mask)).astype(np.uint32)
+        sink.addTile(data, tx0, ty0, mask=mask)
         if hasattr(opts, 'callback'):
             opts.callback('tiles', tile['tile_position']['position'] + 1,
                           tile['iterator_range']['position'])
@@ -185,29 +154,26 @@ def createSuperPixels(opts):  # noqa
     print('>> Found %d superpixels' % found)
     if found > 256 ** 3:
         print('Too many superpixels')
-    img = pyvips.Image.black(
-        tiparams.get('region', {}).get('width', meta['sizeX']) / scale,
-        tiparams.get('region', {}).get('height', meta['sizeY']) / scale,
-        bands=strips[0][1].bands)
-    img = img.copy(interpretation=pyvips.Interpretation.RGB)
-    for stripidx in range(len(strips)):
-        img = img.composite(
-            [strips[stripidx][1]], pyvips.BlendMode.OVER, x=0, y=int(strips[stripidx][0]))
-    # Discard alpha band, if any.
-    img = img[:3]
+    sink2 = large_image_source_zarr.new()
+    for y in range(0, sink.sizeY, 4096):
+        for x in range(0, sink.sizeX, 4096):
+            tile = sink.getRegion(
+                format=large_image.constants.TILE_FORMAT_NUMPY,
+                region=dict(
+                    left=x, top=y, width=min(sink.sizeX - x, 4096),
+                    height=min(sink.sizeY - y, 4096)))[0][:, :, 0]
+            tile = np.dstack((
+                (tile % 256).astype(int),
+                ((tile // 256) % 256).astype(int),
+                ((tile // 65536) % 256).astype(int))).astype('B')
+            sink2.addTile(tile, x, y)
     # Add program run parameters to the image description and list the
     # superpixel count
-    img.set_type(
-        pyvips.GValue.gstr_type, 'image-description',
-        json.dumps(dict(
-            {k: v for k, v in vars(opts).items() if k != 'callback'}, indexCount=found)))
-    img.write_to_file(
-        opts.outputImageFile, tile=True, tile_width=256, tile_height=256, pyramid=True,
-        region_shrink=pyvips.RegionShrink.NEAREST,
-        # We'd prefer max, but to do so we need to compute max of the
-        # superpixel, not the faux-color it is mapped to.
-        # region_shrink=pyvips.RegionShrink.MAX,
-        bigtiff=True, compression='lzw', predictor='horizontal')
+    # img.set_type(
+    #     pyvips.GValue.gstr_type, 'image-description',
+    #     json.dumps(dict(
+    #         {k: v for k, v in vars(opts).items() if k != 'callback'}, indexCount=found)))
+    sink2.write(opts.outputImageFile, lossy=False)
 
     if hasattr(opts, 'callback'):
         opts.callback('file', 1, 2 if opts.outputAnnotationFile else 1)
