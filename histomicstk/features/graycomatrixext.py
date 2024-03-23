@@ -1,9 +1,16 @@
 import numpy as np
 
 
-def graycomatrixext(im_input, im_roi_mask=None,
-                    offsets=None, num_levels=None, gray_limits=None,
-                    symmetric=False, normed=False, exclude_boundary=False):
+def graycomatrixext(
+    im_input,
+    im_roi_mask=None,
+    offsets=None,
+    num_levels=None,
+    gray_limits=None,
+    symmetric=False,
+    normed=False,
+    exclude_boundary=False,
+):
     """Computes gray-level co-occurence matrix (GLCM) within a region of
     interest (ROI) of an image. GLCM is a 2D histogram/matrix containing the
     counts/probabilities of co-occuring intensity values at a given offset
@@ -27,7 +34,7 @@ def graycomatrixext(im_input, im_roi_mask=None,
     offsets : array_like, optional
         A (num_offsets, num_image_dims) array of offset vectors
         specifying the distance between the pixel-of-interest and
-        its neighbor. Note that the first dimension corresponds to
+        its neighbor. Note athat the first dimension corresponds to
         the rows.
 
         Because this offset is often expressed as an angle, the
@@ -106,17 +113,15 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
     # roi mask
     if im_roi_mask is None:
-
         # compute glcm for whole input image
-        im_roi_mask = np.ones_like(im_input, dtype='bool')
+        im_roi_mask = np.ones_like(im_input, dtype="bool")
 
     if im_input.shape != im_roi_mask.shape:
-        msg = 'size mismatch between input image and roi mask'
+        msg = "size mismatch between input image and roi mask"
         raise ValueError(msg)
 
     # gray_limits
     if gray_limits is None:
-
         gray_limits = _default_gray_limits(im_input)
 
     assert len(gray_limits) == 2
@@ -124,20 +129,17 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
     # num_levels
     if num_levels is None:
-
         num_levels = _default_num_levels(im_input)
 
     # offsets
     if offsets is None:
-
         # set default offset value
         offsets = _default_offsets(im_input)
 
     else:
-
         # check sanity
         if offsets.shape[1] != num_dims:
-            msg = 'Dimension mismatch between input image and offsets'
+            msg = "Dimension mismatch between input image and offsets"
             raise ValueError(
                 msg,
             )
@@ -145,11 +147,11 @@ def graycomatrixext(im_input, im_roi_mask=None,
     num_offsets = offsets.shape[0]
 
     # scale input intensity image
-    im_input = im_input.astype('float')
+    im_input = im_input.astype("float")
     im_input -= gray_limits[0]
     im_input /= float(gray_limits[1] - gray_limits[0])
-    im_input *= (num_levels - 1)
-    im_input = np.round(im_input).astype('int')
+    im_input *= num_levels - 1
+    im_input = np.round(im_input).astype("int")
 
     # compute glcm for each offset
     glcm = np.zeros((num_levels, num_levels, num_offsets))
@@ -163,7 +165,6 @@ def graycomatrixext(im_input, im_roi_mask=None,
     roi_lin_ind = np.ravel_multi_index(roi_coord_ind, im_roi_mask.shape)
 
     for i in range(num_offsets):
-
         # compute indices of neighboring pixels by applying the offset
         neigh_coord_ind = [None] * len(roi_coord_ind)
 
@@ -171,19 +172,18 @@ def graycomatrixext(im_input, im_roi_mask=None,
             neigh_coord_ind[j] = roi_coord_ind[j] + offsets[i, j]
 
         # throw out pixels with invalid neighbors
-        neigh_valid = np.ones_like(neigh_coord_ind[0], dtype='bool')
+        neigh_valid = np.ones_like(neigh_coord_ind[0], dtype="bool")
 
         for j in range(num_dims):
-
             neigh_valid[neigh_coord_ind[j] < 0] = False
             neigh_valid[neigh_coord_ind[j] >= im_roi_mask.shape[j]] = False
 
         for j in range(num_dims):
-            neigh_coord_ind[j] = np.compress(neigh_valid, neigh_coord_ind[j],
-                                             axis=0).astype(np.int64)
+            neigh_coord_ind[j] = np.compress(
+                neigh_valid, neigh_coord_ind[j], axis=0
+            ).astype(np.int64)
 
-        neigh_lin_ind = np.ravel_multi_index(neigh_coord_ind,
-                                             im_roi_mask.shape)
+        neigh_lin_ind = np.ravel_multi_index(neigh_coord_ind, im_roi_mask.shape)
 
         if exclude_boundary:
             neigh_valid[im_roi_mask_flat[neigh_lin_ind] == 0] = False
@@ -220,61 +220,54 @@ def graycomatrixext(im_input, im_roi_mask=None,
 
 
 def _default_gray_limits(im_input):
-
     assert isinstance(im_input, np.ndarray)
 
     if np.issubdtype(im_input.dtype, np.bool_):
-
         gray_limits = [0, 1]
 
     elif np.issubdtype(im_input.dtype, np.integer):
-
         gray_limits = [0, 255]
 
     elif np.issubdtype(im_input.dtype, np.floating):
-
         gray_limits = [0.0, 1.0]
 
     else:
-
-        msg = 'The type of the argument im_input is invalid'
+        msg = "The type of the argument im_input is invalid"
         raise ValueError(msg)
 
     return gray_limits
 
 
 def _default_num_levels(im_input):
-
     assert isinstance(im_input, np.ndarray)
 
     if np.issubdtype(im_input.dtype, np.bool_):
-
         num_levels = 2
 
     elif np.issubdtype(im_input.dtype, np.number):
-
         num_levels = 32
 
     else:
-
-        msg = 'The type of the argument im_input is invalid'
+        msg = "The type of the argument im_input is invalid"
         raise ValueError(msg)
 
     return num_levels
 
 
 def _default_offsets(im_input):
-
     num_dims = len(im_input.shape)
 
     if num_dims == 2:
-
-        offsets = np.array([
-            [0, 1], [1, 0], [1, 1], [1, -1],
-        ])
+        offsets = np.array(
+            [
+                [0, 1],
+                [1, 0],
+                [1, 1],
+                [1, -1],
+            ]
+        )
 
     else:
-
         # TODO: need to come up with a better strategy for 3D and higher
         offsets = np.identity(num_dims)
 

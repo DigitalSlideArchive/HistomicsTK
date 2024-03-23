@@ -1,8 +1,11 @@
 import numpy as np
+import pandas as pd
+import scipy.stats
+from skimage.feature import canny
+from skimage.measure import regionprops
 
 
-def compute_gradient_features(im_label, im_intensity,
-                              num_hist_bins=10, rprops=None):
+def compute_gradient_features(im_label, im_intensity, num_hist_bins=10, rprops=None):
     """Calculates gradient features from an intensity image.
 
     Parameters
@@ -61,74 +64,70 @@ def compute_gradient_features(im_label, im_intensity,
        and statistics tables and formulae," Crc Press, 1999.
 
     """
-    import pandas as pd
-    import scipy.stats
-    from skimage.feature import canny
-    from skimage.measure import regionprops
 
     # List of feature names
     feature_list = [
-        'Gradient.Mag.Mean',
-        'Gradient.Mag.Std',
-        'Gradient.Mag.Skewness',
-        'Gradient.Mag.Kurtosis',
-        'Gradient.Mag.HistEntropy',
-        'Gradient.Mag.HistEnergy',
-        'Gradient.Canny.Sum',
-        'Gradient.Canny.Mean',
+        "Gradient.Mag.Mean",
+        "Gradient.Mag.Std",
+        "Gradient.Mag.Skewness",
+        "Gradient.Mag.Kurtosis",
+        "Gradient.Mag.HistEntropy",
+        "Gradient.Mag.HistEnergy",
+        "Gradient.Canny.Sum",
+        "Gradient.Canny.Mean",
     ]
 
-    # compute object properties if not provided
+    # Compute object properties if not provided
     if rprops is None:
         rprops = regionprops(im_label)
 
-    # create pandas data frame containing the features for each object
     numFeatures = len(feature_list)
     numLabels = len(rprops)
-    fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)),
-                         columns=feature_list)
 
     Gx, Gy = np.gradient(im_intensity)
     diffG = np.sqrt(Gx**2 + Gy**2)
     cannyG = canny(im_intensity)
 
+    # Prepare data collection
+    data = []
+
     for i in range(numLabels):
-        if rprops[i] is None:
-            continue
+        pixelGradients = np.sort(diffG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]])
 
-        # get gradients of object pixels
-        pixelGradients = np.sort(
-            diffG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]],
-        )
-
-        # compute mean
-        fdata.at[i, 'Gradient.Mag.Mean'] = np.mean(pixelGradients)
-
-        # compute standard deviation
-        fdata.at[i, 'Gradient.Mag.Std'] = np.std(pixelGradients)
-
-        # compute skewness
-        fdata.at[i, 'Gradient.Mag.Skewness'] = scipy.stats.skew(pixelGradients)
-
-        # compute kurtosis
-        fdata.at[i, 'Gradient.Mag.Kurtosis'] = \
-            scipy.stats.kurtosis(pixelGradients)
-
-        # compute intensity histogram
+        # Compute intensity histogram
         hist, bins = np.histogram(pixelGradients, bins=num_hist_bins)
         prob = hist / np.sum(hist, dtype=np.float32)
 
-        # compute entropy
-        fdata.at[i, 'Gradient.Mag.HistEntropy'] = scipy.stats.entropy(prob)
-
-        # compute energy
-        fdata.at[i, 'Gradient.Mag.HistEnergy'] = np.sum(prob**2)
-
+        # Canny edges for the object
         bw_canny = cannyG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
-        canny_sum = np.sum(bw_canny).astype('float')
+        canny_sum = np.sum(bw_canny).astype("float")
 
-        fdata.at[i, 'Gradient.Canny.Sum'] = canny_sum
+        # Aggregate features
+        features = [
+            np.mean(pixelGradients),  # Mean
+            np.std(pixelGradients),  # Std
+            scipy.stats.skew(pixelGradients),  # Skewness
+            scipy.stats.kurtosis(pixelGradients),  # Kurtosis
+            scipy.stats.entropy(prob),  # HistEntropy
+            np.sum(prob**2),  # HistEnergy
+            canny_sum,  # Canny.Sum
+            canny_sum / len(pixelGradients),  # Canny.Mean
+        ]
 
-        fdata.at[i, 'Gradient.Canny.Mean'] = canny_sum / len(pixelGradients)
+        data.append(features)
+
+    # Create DataFrame
+    feature_list = [
+        "Gradient.Mag.Mean",
+        "Gradient.Mag.Std",
+        "Gradient.Mag.Skewness",
+        "Gradient.Mag.Kurtosis",
+        "Gradient.Mag.HistEntropy",
+        "Gradient.Mag.HistEnergy",
+        "Gradient.Canny.Sum",
+        "Gradient.Canny.Mean",
+    ]
+
+    fdata = pd.DataFrame(data, columns=feature_list)
 
     return fdata

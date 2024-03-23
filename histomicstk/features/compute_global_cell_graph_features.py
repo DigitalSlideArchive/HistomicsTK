@@ -3,18 +3,19 @@ from collections import namedtuple
 import numpy as np
 from numpy import linalg
 
-PopStats = namedtuple('PopStats', ['mean', 'stddev', 'min_max_ratio', 'disorder'])
-PolyProps = namedtuple('PolyProps', ['area', 'peri', 'max_dist'])
-TriProps = namedtuple('TriProps', ['sides', 'area'])
-DensityProps = namedtuple('DensityProps', ['neighbors_in_distance',
-                                           'distance_for_neighbors'])
-Props = namedtuple('Props', ['voronoi', 'delaunay', 'mst_branches', 'density'])
+PopStats = namedtuple("PopStats", ["mean", "stddev", "min_max_ratio", "disorder"])
+PolyProps = namedtuple("PolyProps", ["area", "peri", "max_dist"])
+TriProps = namedtuple("TriProps", ["sides", "area"])
+DensityProps = namedtuple(
+    "DensityProps", ["neighbors_in_distance", "distance_for_neighbors"]
+)
+Props = namedtuple("Props", ["voronoi", "delaunay", "mst_branches", "density"])
 
 
 def compute_global_cell_graph_features(
-        centroids,
-        neighbor_distances=None,
-        neighbor_counts=(3, 5, 7),
+    centroids,
+    neighbor_distances=None,
+    neighbor_counts=(3, 5, 7),
 ):
     r"""Compute global (i.e., not per-nucleus) features of the nuclei with
     the given centroids based on the partitioning of the space into
@@ -81,18 +82,20 @@ def compute_global_cell_graph_features(
 
     """
     if neighbor_distances is None:
-        neighbor_distances = 10. * np.arange(1, 6)
-    return _flatten_to_dataframe(_compute_global_cell_graph_features(
-        centroids,
-        neighbor_distances,
-        neighbor_counts,
-    ))
+        neighbor_distances = 10.0 * np.arange(1, 6)
+    return _flatten_to_dataframe(
+        _compute_global_cell_graph_features(
+            centroids,
+            neighbor_distances,
+            neighbor_counts,
+        )
+    )
 
 
 def _compute_global_cell_graph_features(
-        centroids,
-        neighbor_distances,
-        neighbor_counts,
+    centroids,
+    neighbor_distances,
+    neighbor_counts,
 ):
     """Internal support for compute_global_cell_graph_features that
     returns its result in a nested nametuple structure instead of a
@@ -137,8 +140,9 @@ def _compute_global_cell_graph_features(
     areas = np.array([_poly_area(centroids[t]) for t in tris])
     tri_props = TriProps._make(map(_pop_stats, (sides, areas)))
 
-    graph = sparse.coo_matrix((ridge_lengths, np.sort(ridge_points).T),
-                              (len(centroids), len(centroids)))
+    graph = sparse.coo_matrix(
+        (ridge_lengths, np.sort(ridge_points).T), (len(centroids), len(centroids))
+    )
     mst = minimum_spanning_tree(graph)
     # Without looking into exactly how minimum_spanning_tree
     # constructs its output, elimate any explicit zeros to be on the
@@ -148,14 +152,20 @@ def _compute_global_cell_graph_features(
     tree = KDTree(centroids)
     neighbors_in_distance = {
         # Yes, we just throw away the actual points
-        r: _pop_stats(np.stack(np.array(list(map(len, tree.query_ball_tree(tree, r))))) - 1)
+        r: _pop_stats(
+            np.stack(np.array(list(map(len, tree.query_ball_tree(tree, r))))) - 1
+        )
         for r in neighbor_distances
     }
 
-    distance_for_neighbors = dict(zip(
-        neighbor_counts,
-        map(_pop_stats, tree.query(centroids, [c + 1 for c in neighbor_counts])[0].T),
-    ))
+    distance_for_neighbors = dict(
+        zip(
+            neighbor_counts,
+            map(
+                _pop_stats, tree.query(centroids, [c + 1 for c in neighbor_counts])[0].T
+            ),
+        )
+    )
     density_props = DensityProps(neighbors_in_distance, distance_for_neighbors)
 
     return Props(poly_props, tri_props, mst_branches, density_props)
@@ -166,7 +176,7 @@ def _poly_area(vertices):
 
 
 def _poly_signed_area(vertices):
-    return .5 * linalg.det(
+    return 0.5 * linalg.det(
         np.stack((vertices, np.roll(vertices, -1, axis=-2)), -1),
     ).sum(-1)
 
@@ -180,7 +190,7 @@ def _dist(x, y):
     (i),(i)->().
 
     """
-    return (np.subtract(x, y) ** 2).sum(-1) ** .5
+    return (np.subtract(x, y) ** 2).sum(-1) ** 0.5
 
 
 def _pop_stats(pop):
@@ -208,7 +218,7 @@ def _flatten_to_dataframe(nt):
     return DataFrame(_flatten_to_dict(nt), index=[0])
 
 
-def _flatten_to_dict(nt, prefix=''):
+def _flatten_to_dict(nt, prefix=""):
     result = {}
     assert isinstance(nt, (tuple, dict))
     if isinstance(nt, tuple):
@@ -223,5 +233,5 @@ def _flatten_to_dict(nt, prefix=''):
             # Terminate
             result[prefix + k] = v
         else:
-            result.update(_flatten_to_dict(v, prefix + k + '_'))
+            result.update(_flatten_to_dict(v, prefix + k + "_"))
     return result
