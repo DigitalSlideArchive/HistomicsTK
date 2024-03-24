@@ -9,19 +9,6 @@ from .compute_morphometry_features import compute_morphometry_features
 
 from histomicstk.segmentation import label as htk_label
 
-from concurrent.futures import ProcessPoolExecutor
-
-import multiprocessing
-
-import sys
-
-import time
-
-import pickle
-
-sys.setrecursionlimit(2000)  # Increase the recursion limit; adjust the number as needed
-
-
 def compute_nuclei_features(
     im_label,
     im_nuclei=None,
@@ -168,21 +155,21 @@ def compute_nuclei_features(
             haralick_features_flag,
         ]
     ):
-        assert im_nuclei is not None, "You must provide nuclei intensity!"
+        assert im_nuclei is not None, 'You must provide nuclei intensity!'
 
     inputs = {
-        "im_label": im_label,
-        "im_nuclei": im_nuclei,
-        "im_cytoplasm": im_cytoplasm,
-        "fsd_bnd_pts": fsd_bnd_pts,
-        "fsd_freq_bins": fsd_freq_bins,
-        "cyto_width": cyto_width,
-        "num_glcm_levels": num_glcm_levels,
-        "morphometry_features_flag": morphometry_features_flag,
-        "fsd_features_flag": fsd_features_flag,
-        "intensity_features_flag": intensity_features_flag,
-        "gradient_features_flag": gradient_features_flag,
-        "haralick_features_flag": haralick_features_flag,
+        'im_label': im_label,
+        'im_nuclei': im_nuclei,
+        'im_cytoplasm': im_cytoplasm,
+        'fsd_bnd_pts': fsd_bnd_pts,
+        'fsd_freq_bins': fsd_freq_bins,
+        'cyto_width': cyto_width,
+        'num_glcm_levels': num_glcm_levels,
+        'morphometry_features_flag': morphometry_features_flag,
+        'fsd_features_flag': fsd_features_flag,
+        'intensity_features_flag': intensity_features_flag,
+        'gradient_features_flag': gradient_features_flag,
+        'haralick_features_flag': haralick_features_flag,
     }
 
     # TODO: this pipeline uses loops a lot. For each set of features it
@@ -202,18 +189,18 @@ def compute_nuclei_features(
     def process_nucleus(nprop, im_nuclei_bool):
         for nprop in nuclei_props:
             row = {
-                "Label": nprop.label,
-                "Identifier.Xmin": nprop.bbox[1],
-                "Identifier.Ymin": nprop.bbox[0],
-                "Identifier.Xmax": nprop.bbox[3],
-                "Identifier.Ymax": nprop.bbox[2],
-                "Identifier.CentroidX": nprop.centroid[1],
-                "Identifier.CentroidY": nprop.centroid[0],
+                'Label': nprop.label,
+                'Identifier.Xmin': nprop.bbox[1],
+                'Identifier.Ymin': nprop.bbox[0],
+                'Identifier.Xmax': nprop.bbox[3],
+                'Identifier.Ymax': nprop.bbox[2],
+                'Identifier.Centroid': nprop.centroid[1],
+                'Identifier.CentroidY': nprop.centroid[0],
             }
             if im_nuclei_bool:
                 wcy, wcx = nprop.weighted_centroid
-                row["Identifier.WeightedCentroidX"] = wcx
-                row["Identifier.WeightedCentroidY"] = wcy
+                row['Identifier.WeightedCentroidX'] = wcx
+                row['Identifier.WeightedCentroidY'] = wcy
             data.append(row)
         return pd.DataFrame(data)
 
@@ -229,8 +216,8 @@ def compute_nuclei_features(
         cyto_props = regionprops(cyto_mask, intensity_image=im_cytoplasm)
 
         # ensure that cytoplasm props order corresponds to the nuclei
-        lablocs = {v["label"]: i for i, v in enumerate(cyto_props)}
-        cyto_props = [cyto_props[lablocs[v["label"]]] for v in nuclei_props]
+        lablocs = {v['label']: i for i, v in enumerate(cyto_props)}
+        cyto_props = [cyto_props[lablocs[v['label']]] for v in nuclei_props]
 
     # compute morphometry features
     if morphometry_features_flag:
@@ -251,7 +238,7 @@ def compute_nuclei_features(
         fint_nuclei = compute_intensity_features(
             im_label, im_nuclei, rprops=nuclei_props
         )
-        fint_nuclei.columns = ["Nucleus." + col for col in fint_nuclei.columns]
+        fint_nuclei.columns = ['Nucleus.' + col for col in fint_nuclei.columns]
 
         feature_list.append(fint_nuclei)
 
@@ -260,7 +247,7 @@ def compute_nuclei_features(
         fint_cytoplasm = compute_intensity_features(
             cyto_mask, im_cytoplasm, rprops=cyto_props
         )
-        fint_cytoplasm.columns = ["Cytoplasm." + col for col in fint_cytoplasm.columns]
+        fint_cytoplasm.columns = ['Cytoplasm.' + col for col in fint_cytoplasm.columns]
 
         feature_list.append(fint_cytoplasm)
 
@@ -269,7 +256,7 @@ def compute_nuclei_features(
         fgrad_nuclei = compute_gradient_features(
             im_label, im_nuclei, rprops=nuclei_props
         )
-        fgrad_nuclei.columns = ["Nucleus." + col for col in fgrad_nuclei.columns]
+        fgrad_nuclei.columns = ['Nucleus.' + col for col in fgrad_nuclei.columns]
 
         feature_list.append(fgrad_nuclei)
 
@@ -279,7 +266,7 @@ def compute_nuclei_features(
             cyto_mask, im_cytoplasm, rprops=cyto_props
         )
         fgrad_cytoplasm.columns = [
-            "Cytoplasm." + col for col in fgrad_cytoplasm.columns
+            'Cytoplasm.' + col for col in fgrad_cytoplasm.columns
         ]
 
         feature_list.append(fgrad_cytoplasm)
@@ -291,7 +278,7 @@ def compute_nuclei_features(
         )
 
         fharalick_nuclei.columns = [
-            "Nucleus." + col for col in fharalick_nuclei.columns
+            'Nucleus.' + col for col in fharalick_nuclei.columns
         ]
 
         feature_list.append(fharalick_nuclei)
@@ -303,7 +290,7 @@ def compute_nuclei_features(
         )
 
         fharalick_cytoplasm.columns = [
-            "Cytoplasm." + col for col in fharalick_cytoplasm.columns
+            'Cytoplasm.' + col for col in fharalick_cytoplasm.columns
         ]
 
         feature_list.append(fharalick_cytoplasm)

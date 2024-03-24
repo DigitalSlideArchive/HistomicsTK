@@ -42,7 +42,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
     # List of feature names
     feature_list = []
     for i in range(Fs):
-        feature_list = np.append(feature_list, "Shape.FSD" + str(i + 1))
+        feature_list = np.append(feature_list, 'Shape.FSD' + str(i + 1))
 
     # get Label size x
     sizex = im_label.shape[0]
@@ -74,7 +74,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
         lmask = im_label[min_row:max_row, min_col:max_col] == rprops[i].label
 
         # find boundaries
-        Bounds = np.argwhere(find_boundaries(lmask, mode="inner"))
+        Bounds = np.argwhere(find_boundaries(lmask, mode='inner'))
 
         # check length of boundaries
         if len(Bounds) < 2:

@@ -217,25 +217,25 @@ def compute_haralick_features(
 
     # List of feature names
     feature_list = [
-        "Haralick.ASM",
-        "Haralick.Contrast",
-        "Haralick.Correlation",
-        "Haralick.SumOfSquares",
-        "Haralick.IDM",
-        "Haralick.SumAverage",
-        "Haralick.SumVariance",
-        "Haralick.SumEntropy",
-        "Haralick.Entropy",
-        "Haralick.DifferenceVariance",
-        "Haralick.DifferenceEntropy",
-        "Haralick.IMC1",
-        "Haralick.IMC2",
+        'Haralick.ASM',
+        'Haralick.Contrast',
+        'Haralick.Correlation',
+        'Haralick.SumOfSquares',
+        'Haralick.IDM',
+        'Haralick.SumAverage',
+        'Haralick.SumVariance',
+        'Haralick.SumEntropy',
+        'Haralick.Entropy',
+        'Haralick.DifferenceVariance',
+        'Haralick.DifferenceEntropy',
+        'Haralick.IMC1',
+        'Haralick.IMC2',
     ]
 
     agg_feature_list = []
     for fname in feature_list:
-        agg_feature_list.append(fname + ".Mean")
-        agg_feature_list.append(fname + ".Range")
+        agg_feature_list.append(fname + '.Mean')
+        agg_feature_list.append(fname + '.Range')
 
     # num_levels
     if num_levels is None:
@@ -243,7 +243,7 @@ def compute_haralick_features(
 
     # check for consistent shapes between 'I' and 'Label'
     if im_intensity.shape != im_label.shape:
-        raise ValueError("Inputs 'I' and 'Label' must have same shape")
+        raise ValueError('Inputs I and Label must have same shape')
 
     num_dims = len(im_intensity.shape)
 
@@ -255,7 +255,7 @@ def compute_haralick_features(
     else:
         # check sanity
         if offsets.shape[1] != num_dims:
-            raise ValueError("Dimension mismatch between input image and offsets")
+            raise ValueError('Dimension mismatch between input image and offsets')
 
     num_offsets = offsets.shape[0]
 

@@ -97,47 +97,47 @@ def compute_morphometry_features(im_label, rprops=None):
 
     # compute object properties if not provided
     if rprops is None:
-        rprops = regionprops(im_label, coordinates="rc")
+        rprops = regionprops(im_label, coordinates='rc')
     intensity_wtd = rprops[0]._intensity_image is not None
 
     # Define the feature list as tuples of (feature name, attribute or function)
     feature_list = [
-        ("Orientation.Orientation", "orientation"),
-        ("Size.Area", "area"),
-        ("Size.ConvexHullArea", "convex_area"),
-        ("Size.MajorAxisLength", "major_axis_length"),
-        ("Size.MinorAxisLength", "minor_axis_length"),
-        ("Size.Perimeter", "perimeter"),
+        ('Orientation.Orientation', 'orientation'),
+        ('Size.Area', 'area'),
+        ('Size.ConvexHullArea', 'convex_area'),
+        ('Size.MajorAxisLength', 'major_axis_length'),
+        ('Size.MinorAxisLength', 'minor_axis_length'),
+        ('Size.Perimeter', 'perimeter'),
         (
-            "Shape.Circularity",
+            'Shape.Circularity',
             lambda rp: 4
             * np.pi
             * rp.area
             / (rp.perimeter**2 if rp.perimeter > 0 else 1),
         ),
-        ("Shape.Eccentricity", "eccentricity"),
-        ("Shape.EquivalentDiameter", "equivalent_diameter"),
-        ("Shape.Extent", "extent"),
-        ("Shape.FractalDimension", lambda rp: _fractal_dimension(rp.image)),
+        ('Shape.Eccentricity', 'eccentricity'),
+        ('Shape.EquivalentDiameter', 'equivalent_diameter'),
+        ('Shape.Extent', 'extent'),
+        ('Shape.FractalDimension', lambda rp: _fractal_dimension(rp.image)),
         (
-            "Shape.MinorMajorAxisRatio",
+            'Shape.MinorMajorAxisRatio',
             lambda rp: rp.minor_axis_length / rp.major_axis_length
             if rp.major_axis_length > 0
             else 1,
         ),
-        ("Shape.Solidity", "solidity"),
+        ('Shape.Solidity', 'solidity'),
     ]
 
     # Add Hu moments features
     hu_moments = [
-        ("Shape.HuMoments" + str(k), lambda rp, k=k: rp.moments_hu[k - 1])
+        ('Shape.HuMoments' + str(k), lambda rp, k=k: rp.moments_hu[k - 1])
         for k in range(1, 8)
     ]
     feature_list.extend(hu_moments)
     if intensity_wtd:
         wtd_hu_moments = [
             (
-                "Shape.WeightedHuMoments" + str(k),
+                'Shape.WeightedHuMoments' + str(k),
                 lambda rp, k=k: rp.weighted_moments_hu[k - 1],
             )
             for k in range(1, 8)

@@ -114,10 +114,10 @@ def graycomatrixext(
     # roi mask
     if im_roi_mask is None:
         # compute glcm for whole input image
-        im_roi_mask = np.ones_like(im_input, dtype="bool")
+        im_roi_mask = np.ones_like(im_input, dtype='bool')
 
     if im_input.shape != im_roi_mask.shape:
-        msg = "size mismatch between input image and roi mask"
+        msg = 'size mismatch between input image and roi mask'
         raise ValueError(msg)
 
     # gray_limits
@@ -139,7 +139,7 @@ def graycomatrixext(
     else:
         # check sanity
         if offsets.shape[1] != num_dims:
-            msg = "Dimension mismatch between input image and offsets"
+            msg = 'Dimension mismatch between input image and offsets'
             raise ValueError(
                 msg,
             )
@@ -147,11 +147,11 @@ def graycomatrixext(
     num_offsets = offsets.shape[0]
 
     # scale input intensity image
-    im_input = im_input.astype("float")
+    im_input = im_input.astype('float')
     im_input -= gray_limits[0]
     im_input /= float(gray_limits[1] - gray_limits[0])
     im_input *= num_levels - 1
-    im_input = np.round(im_input).astype("int")
+    im_input = np.round(im_input).astype('int')
 
     # compute glcm for each offset
     glcm = np.zeros((num_levels, num_levels, num_offsets))
@@ -172,7 +172,7 @@ def graycomatrixext(
             neigh_coord_ind[j] = roi_coord_ind[j] + offsets[i, j]
 
         # throw out pixels with invalid neighbors
-        neigh_valid = np.ones_like(neigh_coord_ind[0], dtype="bool")
+        neigh_valid = np.ones_like(neigh_coord_ind[0], dtype='bool')
 
         for j in range(num_dims):
             neigh_valid[neigh_coord_ind[j] < 0] = False
@@ -232,7 +232,7 @@ def _default_gray_limits(im_input):
         gray_limits = [0.0, 1.0]
 
     else:
-        msg = "The type of the argument im_input is invalid"
+        msg = 'The type of the argument im_input is invalid'
         raise ValueError(msg)
 
     return gray_limits
@@ -248,7 +248,7 @@ def _default_num_levels(im_input):
         num_levels = 32
 
     else:
-        msg = "The type of the argument im_input is invalid"
+        msg = 'The type of the argument im_input is invalid'
         raise ValueError(msg)
 
     return num_levels

@@ -3,13 +3,13 @@ from collections import namedtuple
 import numpy as np
 from numpy import linalg
 
-PopStats = namedtuple("PopStats", ["mean", "stddev", "min_max_ratio", "disorder"])
-PolyProps = namedtuple("PolyProps", ["area", "peri", "max_dist"])
-TriProps = namedtuple("TriProps", ["sides", "area"])
+PopStats = namedtuple('PopStats', ['mean', 'stddev', 'min_max_ratio', 'disorder'])
+PolyProps = namedtuple('PolyProps', ['area', 'peri', 'max_dist'])
+TriProps = namedtuple('TriProps', ['sides', 'area'])
 DensityProps = namedtuple(
-    "DensityProps", ["neighbors_in_distance", "distance_for_neighbors"]
+    'DensityProps', ['neighbors_in_distance', 'distance_for_neighbors']
 )
-Props = namedtuple("Props", ["voronoi", "delaunay", "mst_branches", "density"])
+Props = namedtuple('Props', ['voronoi', 'delaunay', 'mst_branches', 'density'])
 
 
 def compute_global_cell_graph_features(
@@ -218,7 +218,7 @@ def _flatten_to_dataframe(nt):
     return DataFrame(_flatten_to_dict(nt), index=[0])
 
 
-def _flatten_to_dict(nt, prefix=""):
+def _flatten_to_dict(nt, prefix=''):
     result = {}
     assert isinstance(nt, (tuple, dict))
     if isinstance(nt, tuple):
@@ -233,5 +233,5 @@ def _flatten_to_dict(nt, prefix=""):
             # Terminate
             result[prefix + k] = v
         else:
-            result.update(_flatten_to_dict(v, prefix + k + "_"))
+            result.update(_flatten_to_dict(v, prefix + k + '_'))
     return result

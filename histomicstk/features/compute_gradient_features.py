@@ -67,14 +67,14 @@ def compute_gradient_features(im_label, im_intensity, num_hist_bins=10, rprops=N
 
     # List of feature names
     feature_list = [
-        "Gradient.Mag.Mean",
-        "Gradient.Mag.Std",
-        "Gradient.Mag.Skewness",
-        "Gradient.Mag.Kurtosis",
-        "Gradient.Mag.HistEntropy",
-        "Gradient.Mag.HistEnergy",
-        "Gradient.Canny.Sum",
-        "Gradient.Canny.Mean",
+        'Gradient.Mag.Mean',
+        'Gradient.Mag.Std',
+        'Gradient.Mag.Skewness',
+        'Gradient.Mag.Kurtosis',
+        'Gradient.Mag.HistEntropy',
+        'Gradient.Mag.HistEnergy',
+        'Gradient.Canny.Sum',
+        'Gradient.Canny.Mean',
     ]
 
     # Compute object properties if not provided
@@ -100,7 +100,7 @@ def compute_gradient_features(im_label, im_intensity, num_hist_bins=10, rprops=N
 
         # Canny edges for the object
         bw_canny = cannyG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
-        canny_sum = np.sum(bw_canny).astype("float")
+        canny_sum = np.sum(bw_canny).astype('float')
 
         # Aggregate features
         features = [
@@ -118,14 +118,14 @@ def compute_gradient_features(im_label, im_intensity, num_hist_bins=10, rprops=N
 
     # Create DataFrame
     feature_list = [
-        "Gradient.Mag.Mean",
-        "Gradient.Mag.Std",
-        "Gradient.Mag.Skewness",
-        "Gradient.Mag.Kurtosis",
-        "Gradient.Mag.HistEntropy",
-        "Gradient.Mag.HistEnergy",
-        "Gradient.Canny.Sum",
-        "Gradient.Canny.Mean",
+        'Gradient.Mag.Mean',
+        'Gradient.Mag.Std',
+        'Gradient.Mag.Skewness',
+        'Gradient.Mag.Kurtosis',
+        'Gradient.Mag.HistEntropy',
+        'Gradient.Mag.HistEnergy',
+        'Gradient.Canny.Sum',
+        'Gradient.Canny.Mean',
     ]
 
     fdata = pd.DataFrame(data, columns=feature_list)
