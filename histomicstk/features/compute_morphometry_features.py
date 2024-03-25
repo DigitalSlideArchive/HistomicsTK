@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import numpy as np
 import pandas as pd
 from skimage.measure import regionprops
@@ -94,7 +93,6 @@ def compute_morphometry_features(im_label, rprops=None):
         intensity image.
 
     """
-
     # compute object properties if not provided
     if rprops is None:
         rprops = regionprops(im_label, coordinates='rc')
@@ -144,12 +142,11 @@ def compute_morphometry_features(im_label, rprops=None):
         ]
         feature_list.extend(wtd_hu_moments)
 
-    num_labels = len(rprops)
     data = []
 
     for prop in rprops:
         row = []
-        for name, attr in feature_list:
+        for _, attr in feature_list:
             if callable(attr):
                 value = attr(prop)
             else:

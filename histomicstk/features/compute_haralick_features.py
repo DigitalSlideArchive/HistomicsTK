@@ -214,7 +214,6 @@ def compute_haralick_features(
        computer vision," Journal of Open Research Software, vol 1, 2013.
 
     """
-
     # List of feature names
     feature_list = [
         'Haralick.ASM',
@@ -243,7 +242,8 @@ def compute_haralick_features(
 
     # check for consistent shapes between 'I' and 'Label'
     if im_intensity.shape != im_label.shape:
-        raise ValueError('Inputs I and Label must have same shape')
+        err_str = 'Inputs I and Label must have same shape'
+        raise ValueError(err_str)
 
     num_dims = len(im_intensity.shape)
 
@@ -255,7 +255,8 @@ def compute_haralick_features(
     else:
         # check sanity
         if offsets.shape[1] != num_dims:
-            raise ValueError('Dimension mismatch between input image and offsets')
+            err_str = 'Dimension mismatch between input image and offsets'
+            raise ValueError(err_str)
 
     num_offsets = offsets.shape[0]
 

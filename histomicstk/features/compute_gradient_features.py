@@ -64,7 +64,6 @@ def compute_gradient_features(im_label, im_intensity, num_hist_bins=10, rprops=N
        and statistics tables and formulae," Crc Press, 1999.
 
     """
-
     # List of feature names
     feature_list = [
         'Gradient.Mag.Mean',
@@ -81,7 +80,6 @@ def compute_gradient_features(im_label, im_intensity, num_hist_bins=10, rprops=N
     if rprops is None:
         rprops = regionprops(im_label)
 
-    numFeatures = len(feature_list)
     numLabels = len(rprops)
 
     Gx, Gy = np.gradient(im_intensity)

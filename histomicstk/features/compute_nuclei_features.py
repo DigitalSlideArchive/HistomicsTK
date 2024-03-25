@@ -157,21 +157,6 @@ def compute_nuclei_features(
     ):
         assert im_nuclei is not None, 'You must provide nuclei intensity!'
 
-    inputs = {
-        'im_label': im_label,
-        'im_nuclei': im_nuclei,
-        'im_cytoplasm': im_cytoplasm,
-        'fsd_bnd_pts': fsd_bnd_pts,
-        'fsd_freq_bins': fsd_freq_bins,
-        'cyto_width': cyto_width,
-        'num_glcm_levels': num_glcm_levels,
-        'morphometry_features_flag': morphometry_features_flag,
-        'fsd_features_flag': fsd_features_flag,
-        'intensity_features_flag': intensity_features_flag,
-        'gradient_features_flag': gradient_features_flag,
-        'haralick_features_flag': haralick_features_flag,
-    }
-
     # TODO: this pipeline uses loops a lot. For each set of features it
     #  iterates over all nuclei, which may become an issue when one needs to
     #  do this for lots and lots of slides and 10^6+ nuclei. Consider

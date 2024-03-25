@@ -113,7 +113,6 @@ def _InterpolateArcLength(X, Y, K):
         arc-length spacing.
 
     """
-
     # generate spaced points 0, 1/k, 1
     interval = np.linspace(0, 1, K + 1)
     # get segment lengths
@@ -164,7 +163,6 @@ def _FSDs(X, Y, K, Intervals):
         cumulative angular function, summed over defined 'Intervals'.
 
     """
-
     # check input 'Intervals'
     if Intervals[0] != 1.0:
         Intervals = np.hstack((1.0, Intervals))
@@ -224,7 +222,6 @@ def _GetBounds(bbox, delta, M, N):
         Maximum column of the region bounds.
 
     """
-
     min_row, min_col, max_row, max_col = bbox
 
     min_row_out = max(0, (min_row - delta))
