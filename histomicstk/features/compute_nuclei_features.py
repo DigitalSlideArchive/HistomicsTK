@@ -171,21 +171,31 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
     # get the objects in im_label
     nuclei_props = regionprops(im_label, intensity_image=im_nuclei)
 
-    # extract object locations and identifiers
-    idata = pd.DataFrame()
-    for i, nprop in enumerate(nuclei_props):
-        idata.at[i, 'Label'] = nprop.label
-        idata.at[i, 'Identifier.Xmin'] = nprop.bbox[1]
-        idata.at[i, 'Identifier.Ymin'] = nprop.bbox[0]
-        idata.at[i, 'Identifier.Xmax'] = nprop.bbox[3]
-        idata.at[i, 'Identifier.Ymax'] = nprop.bbox[2]
-        idata.at[i, 'Identifier.CentroidX'] = nprop.centroid[1]
-        idata.at[i, 'Identifier.CentroidY'] = nprop.centroid[0]
-        if im_nuclei is not None:
-            # intensity-weighted centroid
-            wcy, wcx = nprop.weighted_centroid
-            idata.at[i, 'Identifier.WeightedCentroidX'] = wcx
-            idata.at[i, 'Identifier.WeightedCentroidY'] = wcy
+    im_nuclei_bool = im_nuclei is not None
+
+    data = []
+
+    def process_nucleus(nprop, im_nuclei_bool):
+        for nprop in nuclei_props:
+            row = {
+                'Label': nprop.label,
+                'Identifier.Xmin': nprop.bbox[1],
+                'Identifier.Ymin': nprop.bbox[0],
+                'Identifier.Xmax': nprop.bbox[3],
+                'Identifier.Ymax': nprop.bbox[2],
+                'Identifier.Centroid': nprop.centroid[1],
+                'Identifier.CentroidY': nprop.centroid[0],
+            }
+            if im_nuclei_bool:
+                wcy, wcx = nprop.weighted_centroid
+                row['Identifier.WeightedCentroidX'] = wcx
+                row['Identifier.WeightedCentroidY'] = wcy
+            data.append(row)
+        return pd.DataFrame(data)
+
+    # Now, create the DataFrame in one go
+    idata = process_nucleus(nuclei_props, im_nuclei_bool)
+
     feature_list.append(idata)
 
     # compute cytoplasm mask
