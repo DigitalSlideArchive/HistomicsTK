@@ -1,7 +1,4 @@
 import numpy as np
-import pandas as pd
-from skimage.measure import regionprops
-from skimage.segmentation import find_boundaries
 
 
 def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
@@ -39,6 +36,10 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
        ICIMADE01, 2001.
 
     """
+    import pandas as pd
+    from skimage.measure import regionprops
+    from skimage.segmentation import find_boundaries
+
     # List of feature names
     feature_list = []
     for i in range(Fs):
@@ -71,11 +72,11 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
         )
 
         # grab label mask
-        lmask = im_label[min_row:max_row, min_col:max_col] == rprops[i].label
-
+        lmask = (im_label[min_row:max_row, min_col:max_col] == rprops[i].label).astype(bool)
         # find boundaries
-        Bounds = np.argwhere(find_boundaries(lmask, mode='inner'))
-
+        Bounds = np.argwhere(
+            find_boundaries(lmask, mode='inner').astype(np.uint8) == 1,
+        )
         # check length of boundaries
         if len(Bounds) < 2:
             data_list.append(np.zeros(numFeatures))
@@ -116,7 +117,7 @@ def _InterpolateArcLength(X, Y, K):
     # generate spaced points 0, 1/k, 1
     interval = np.linspace(0, 1, K + 1)
     # get segment lengths
-    slens = np.sqrt(np.diff(X) ** 2 + np.diff(Y) ** 2)
+    slens = np.sqrt(np.diff(X)**2 + np.diff(Y)**2)
     # normalize to unit length
     slens = np.true_divide(slens, slens.sum())
     # calculate cumulative length along boundary
@@ -164,20 +165,23 @@ def _FSDs(X, Y, K, Intervals):
 
     """
     # check input 'Intervals'
-    if Intervals[0] != 1.0:
-        Intervals = np.hstack((1.0, Intervals))
+    if Intervals[0] != 1.:
+        Intervals = np.hstack((1., Intervals))
     if Intervals[-1] != (K / 2):
         Intervals = np.hstack((Intervals, float(K)))
     # get length of intervals
     L = len(Intervals)
     # initialize F
-    F = np.zeros((L - 1,)).astype(float)
+    F = np.zeros((L - 1, )).astype(float)
     # interpolate boundaries
     iX, iY = _InterpolateArcLength(X, Y, K)
     # check if iXY.iX is not empty
     if iX.size:
         # calculate curvature
-        Curvature = np.arctan2((iY[1:] - iY[:-1]), (iX[1:] - iX[:-1]))
+        Curvature = np.arctan2(
+            (iY[1:] - iY[:-1]),
+            (iX[1:] - iX[:-1]),
+        )
         # make curvature cumulative
         Curvature = Curvature - Curvature[0]
         # calculate FFT
@@ -188,7 +192,7 @@ def _FSDs(X, Y, K, Intervals):
         # calculate 'F' values
         for i in range(L - 1):
             F[i] = np.round(
-                fX[Intervals[i] - 1 : Intervals[i + 1]].sum(), L
+                fX[Intervals[i] - 1:Intervals[i + 1]].sum(), L,
             ).real.astype(float)
 
     return F
@@ -213,11 +217,11 @@ def _GetBounds(bbox, delta, M, N):
     Returns
     -------
     min_row : int
-        Minum row of the region bounds.
+        Minimum row of the region bounds.
     max_row : int
         Maximum row of the region bounds.
     min_col : int
-        Minum column of the region bounds.
+        Minimum column of the region bounds.
     max_col : int
         Maximum column of the region bounds.
 

@@ -5,8 +5,8 @@ import numpy as np
 
 
 def compute_intensity_features(
-    im_label, im_intensity, num_hist_bins=10, rprops=None, feature_list=None
-):
+        im_label, im_intensity, num_hist_bins=10,
+        rprops=None, feature_list=None):
     """Calculate intensity features from an intensity image.
 
     Parameters
@@ -109,9 +109,8 @@ def compute_intensity_features(
     if feature_list is None:
         feature_list = default_feature_list
     else:
-        assert all(
-            j in default_feature_list for j in feature_list
-        ), 'Some feature names are not recognized.'
+        assert all(j in default_feature_list for j in feature_list), \
+            'Some feature names are not recognized.'
 
     # compute object properties if not provided
     if rprops is None:
@@ -120,7 +119,8 @@ def compute_intensity_features(
     # create pandas data frame containing the features for each object
     numFeatures = len(feature_list)
     numLabels = len(rprops)
-    fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)), columns=feature_list)
+    fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)),
+                         columns=feature_list)
 
     # conditionally execute calculations if x in the features list
     def _conditional_execution(feature, func, *args, **kwargs):
@@ -147,34 +147,37 @@ def compute_intensity_features(
         _conditional_execution('Intensity.Min', np.min, pixelIntensities)
         _conditional_execution('Intensity.Max', np.max, pixelIntensities)
         _conditional_execution('Intensity.Mean', _return_input, meanIntensity)
-        _conditional_execution('Intensity.Median', _return_input, medianIntensity)
         _conditional_execution(
-            'Intensity.MeanMedianDiff', _return_input, meanIntensity - medianIntensity
-        )
+            'Intensity.Median', _return_input, medianIntensity)
+        _conditional_execution(
+            'Intensity.MeanMedianDiff', _return_input,
+            meanIntensity - medianIntensity)
         _conditional_execution('Intensity.Std', np.std, pixelIntensities)
-        _conditional_execution('Intensity.Skewness', scipy.stats.skew, pixelIntensities)
         _conditional_execution(
-            'Intensity.Kurtosis', scipy.stats.kurtosis, pixelIntensities
-        )
+            'Intensity.Skewness', scipy.stats.skew, pixelIntensities)
+        _conditional_execution(
+            'Intensity.Kurtosis', scipy.stats.kurtosis, pixelIntensities)
 
         # inter-quartile range
-        _conditional_execution('Intensity.IQR', scipy.stats.iqr, pixelIntensities)
+        _conditional_execution(
+            'Intensity.IQR', scipy.stats.iqr, pixelIntensities)
 
         # median absolute deviation
         _conditional_execution(
-            'Intensity.MAD', np.median, np.abs(pixelIntensities - medianIntensity)
-        )
+            'Intensity.MAD', np.median,
+            np.abs(pixelIntensities - medianIntensity))
 
         # histogram-based features
-        if any(
-            j in feature_list for j in ['Intensity.HistEntropy', 'Intensity.HistEnergy']
-        ):
+        if any(j in feature_list for j in [
+                'Intensity.HistEntropy', 'Intensity.HistEnergy']):
+
             # compute intensity histogram
             hist, bins = np.histogram(pixelIntensities, bins=num_hist_bins)
             prob = hist / np.sum(hist, dtype=np.float32)
 
             # entropy and energy
-            _conditional_execution('Intensity.HistEntropy', scipy.stats.entropy, prob)
+            _conditional_execution(
+                'Intensity.HistEntropy', scipy.stats.entropy, prob)
             _conditional_execution('Intensity.HistEnergy', np.sum, prob**2)
 
     return fdata

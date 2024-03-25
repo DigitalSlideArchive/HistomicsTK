@@ -1,6 +1,7 @@
+import warnings
+from collections import OrderedDict
+
 import numpy as np
-import pandas as pd
-from skimage.measure import regionprops
 
 
 def compute_morphometry_features(im_label, rprops=None):
@@ -30,7 +31,7 @@ def compute_morphometry_features(im_label, rprops=None):
     List of morphometry features computed by this function:
 
     Orientation.Orientation :  float
-        Angle between the horizonal axis and the major axis of the ellipse
+        Angle between the horizontal axis and the major axis of the ellipse
         that has the same second moments as the region,
         ranging from `-pi/2` to `pi/2` counter-clockwise.
 
@@ -93,6 +94,9 @@ def compute_morphometry_features(im_label, rprops=None):
         intensity image.
 
     """
+    import pandas as pd
+    from skimage.measure import regionprops
+
     # compute object properties if not provided
     if rprops is None:
         rprops = regionprops(im_label, coordinates='rc')
@@ -181,8 +185,7 @@ def _fractal_dimension(Z):
         S = np.add.reduceat(
             np.add.reduceat(arr, np.arange(0, arr.shape[0], k), axis=0),
             np.arange(0, arr.shape[1], k),
-            axis=1,
-        )
+            axis=1)
         # We count non-empty (0) and non-full boxes (k*k)
         return len(np.where((S > 0) & (S < k * k))[0])
 
@@ -204,6 +207,12 @@ def _fractal_dimension(Z):
         counts.append(boxcount(Z, size))
 
     # Fit the successive log(sizes) with log (counts)
-    coeffs = np.polyfit(np.log(sizes), np.log(counts), 1)
-
+    coeffs = [0]
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', np.RankWarning)
+        if len(counts):
+            try:
+                coeffs = np.polyfit(np.log(sizes), np.log(counts), 1)
+            except TypeError:
+                pass
     return -coeffs[0]
