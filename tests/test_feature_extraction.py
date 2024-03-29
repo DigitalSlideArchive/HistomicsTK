@@ -18,7 +18,7 @@ sys.path.insert(0, thisDir)
 import htk_test_utilities as utilities  # noqa
 
 try:
-    from datastore import datastore  # noqa
+    from .datastore import datastore  # noqa
 except ModuleNotFoundError:  # local prototyping
     from datastore import datastore  # noqa
 
@@ -301,8 +301,6 @@ class TestFeatureExtraction:
             utilities.getTestFilePath(test_file),
             index_col=None)
         
-        print(fdata)
-        print(fdata_gtruth)
         pd.testing.assert_frame_equal(
             fdata, fdata_gtruth, atol=1e-2)
 
