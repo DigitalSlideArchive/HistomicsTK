@@ -149,11 +149,16 @@ def compute_morphometry_features(im_label, rprops=None):
 
     for prop in rprops:
         row = []
-        for _, attr in feature_list:
+        for name, attr in feature_list:
             if callable(attr):
                 value = attr(prop)
             else:
                 value = getattr(prop, attr, np.nan)
+              
+            # Check if the feature is Area or ConvexHullArea and ensure it is a float
+            if name in ('Size.Area', 'Size.ConvexHullArea'):
+                value = float(value)  # Cast to float here
+            
             row.append(value)
         data.append(row)
 
