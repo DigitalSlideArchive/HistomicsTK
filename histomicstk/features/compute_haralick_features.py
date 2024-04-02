@@ -287,6 +287,9 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
     )  # Alternating mean and range
 
     for i in range(numLabels):
+        if rprops[i] is None:
+            continue
+        
         # get bounds of an intensity image
         minr, minc, maxr, maxc = rprops[i].bbox
 
