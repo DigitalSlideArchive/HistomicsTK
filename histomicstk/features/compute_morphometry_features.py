@@ -98,7 +98,7 @@ def compute_morphometry_features(im_label, rprops=None):
 
     # compute object properties if not provided
     if rprops is None:
-        rprops = regionprops(im_label, coordinates='rc')
+        rprops = regionprops(im_label)
     intensity_wtd = rprops[0]._intensity_image is not None
 
     # Define the feature list as tuples of (feature name, attribute or function)
