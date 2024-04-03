@@ -193,10 +193,18 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
             data.append(row)
         return pd.DataFrame(data)
 
-    # Now, create the DataFrame in one go
+    # create the DataFrame in one step
     idata = process_nucleus(nuclei_props, im_nuclei_bool)
-
     feature_list.append(idata)
+
+    def conditional(flag, func, args, kwargs, prefix=None):
+        if flag:
+            output = func(*args, **kwargs)
+            if prefix:
+                output.columns = [prefix + col for col in output.columns]
+            return output
+        else:
+            return pd.DataFrame()  # return an empty DataFrame if condition is not met
 
     # compute cytoplasm mask
     if im_cytoplasm is not None:
@@ -211,97 +219,70 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
                       for v in nuclei_props]
 
     # compute morphometry features
-    if morphometry_features_flag:
-
-        fmorph = compute_morphometry_features(im_label, rprops=nuclei_props)
-
-        feature_list.append(fmorph)
+    fmorph = conditional(
+    	morphometry_features_flag, compute_morphometry_features, 
+    	[im_label], {"rprops": nuclei_props},
+    )
 
     # compute FSD features
-    if fsd_features_flag:
-
-        ffsd = compute_fsd_features(im_label, fsd_bnd_pts, fsd_freq_bins,
-                                    cyto_width, rprops=nuclei_props)
-
-        feature_list.append(ffsd)
+    ffsd = conditional(
+    	fsd_features_flag, compute_fsd_features,
+    	[im_label, fsd_bnd_pts, fsd_freq_bins, cyto_width],
+    	{"rprops": nuclei_props},
+    )
 
     # compute nuclei intensity features
-    if intensity_features_flag:
-
-        fint_nuclei = compute_intensity_features(im_label, im_nuclei,
-                                                 rprops=nuclei_props)
-        fint_nuclei.columns = ['Nucleus.' + col
-                               for col in fint_nuclei.columns]
-
-        feature_list.append(fint_nuclei)
+    fint_nuclei = conditional(
+    	intensity_features_flag, compute_intensity_features,
+    	[im_label, im_nuclei], {"rprops": nuclei_props},
+    	"Nucleus."
+    )
 
     # compute cytoplasm intensity features
-    if intensity_features_flag and im_cytoplasm is not None:
+    fint_cytoplasm = conditional(
+    	intensity_features_flag and im_cytoplasm, compute_intensity_features,
+    	[cyto_mask, im_cytoplasm], {"rprops": cyto_props},
+    	"Cytoplasm."
+    )
 
-        fint_cytoplasm = compute_intensity_features(cyto_mask, im_cytoplasm,
-                                                    rprops=cyto_props)
-        fint_cytoplasm.columns = ['Cytoplasm.' + col
-                                  for col in fint_cytoplasm.columns]
+    fgrad_nuclei = conditional(
+        gradient_features_flag, compute_gradient_features,
+        [im_label, im_nuclei], {"rprops": nuclei_props},
+        "Nucleus."
+    )
 
-        feature_list.append(fint_cytoplasm)
-
-    # compute nuclei gradient features
-    if gradient_features_flag:
-
-        fgrad_nuclei = compute_gradient_features(im_label, im_nuclei,
-                                                 rprops=nuclei_props)
-        fgrad_nuclei.columns = ['Nucleus.' + col
-                                for col in fgrad_nuclei.columns]
-
-        feature_list.append(fgrad_nuclei)
-
-    # compute cytoplasm gradient features
-    if gradient_features_flag and im_cytoplasm is not None:
-
-        fgrad_cytoplasm = compute_gradient_features(cyto_mask, im_cytoplasm,
-                                                    rprops=cyto_props)
-        fgrad_cytoplasm.columns = ['Cytoplasm.' + col
-                                   for col in fgrad_cytoplasm.columns]
-
-        feature_list.append(fgrad_cytoplasm)
+    # compute cytoplasm gradient features, handling None cytoplasm with an empty DataFrame
+    fgrad_cytoplasm = conditional(
+        gradient_features_flag and im_cytoplasm is not None, compute_gradient_features,
+        [cyto_mask, im_cytoplasm], {"rprops": cyto_props},
+        "Cytoplasm."
+    )
 
     # compute nuclei haralick features
-    if haralick_features_flag:
-
-        fharalick_nuclei = compute_haralick_features(
-            im_label, im_nuclei,
-            num_levels=num_glcm_levels,
-            rprops=nuclei_props,
-        )
-
-        fharalick_nuclei.columns = ['Nucleus.' + col
-                                    for col in fharalick_nuclei.columns]
-
-        feature_list.append(fharalick_nuclei)
+    fharalick_nuclei = conditional(
+        haralick_features_flag, compute_haralick_features,
+        [im_label, im_nuclei], {"num_levels": num_glcm_levels, "rprops": nuclei_props},
+        "Nucleus."
+    )
 
     # compute cytoplasm haralick features
-    if haralick_features_flag and im_cytoplasm is not None:
+    fharalick_cytoplasm = conditional(
+        haralick_features_flag and im_cytoplasm is not None, compute_haralick_features,
+        [cyto_mask, im_cytoplasm], {"num_levels": num_glcm_levels, "rprops": cyto_props},
+        "Cytoplasm."
+    )
 
-        fharalick_cytoplasm = compute_haralick_features(
-            cyto_mask, im_cytoplasm,
-            num_levels=num_glcm_levels,
-            rprops=cyto_props,
-        )
-
-        fharalick_cytoplasm.columns = ['Cytoplasm.' + col
-                                       for col in fharalick_cytoplasm.columns]
-
-        feature_list.append(fharalick_cytoplasm)
-
-    # Merge all features
+    # combine all feature DataFrames
+    feature_list = feature_list + [fmorph, ffsd, fint_nuclei, fint_cytoplasm, fgrad_nuclei, fgrad_cytoplasm, fharalick_nuclei, fharalick_cytoplasm]
+    # merge all features
     fdata = pd.concat(feature_list, axis=1)
 
     if return_nuclei_annotation:
-        # Create nuclei segmentation with the generated regionprops
+        # create nuclei segmentation with the generated regionprops
         nuclei_annot_list, selected_rows = cli_utils.create_tile_nuclei_annotations(
             im_nuclei_seg_mask, tile_info, format, nuclei_props)
 
-        # Drop all rows which are not found in nuclei detection
+        # drop all rows which are not found in nuclei detection
         fdata = fdata[fdata.index.isin(selected_rows)]
         return fdata, nuclei_annot_list
 
