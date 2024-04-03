@@ -59,7 +59,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
 
     # pre-compute Interval outside the loop
     Interval = np.round(
-        np.power(2, np.linspace(0, np.log2(K) - 1, Fs + 1, endpoint=True))
+        np.power(2, np.linspace(0, np.log2(K) - 1, Fs + 1, endpoint=True)),
     ).astype(np.uint8)
 
     # initialize an empty list to collect data
@@ -68,7 +68,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
     for i in range(numLabels):
         # get bounds of dilated nucleus
         min_row, max_row, min_col, max_col = _GetBounds(
-            rprops[i].bbox, Delta, sizex, sizey
+            rprops[i].bbox, Delta, sizex, sizey,
         )
 
         # grab label mask
