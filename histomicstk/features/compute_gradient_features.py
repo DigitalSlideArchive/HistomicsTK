@@ -94,7 +94,7 @@ def compute_gradient_features(im_label, im_intensity,
     for i in range(numLabels):
         if rprops[i] is None:
             continue
-        
+
         # get gradients of object pixels
         pixelGradients = np.sort(diffG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]])
 
