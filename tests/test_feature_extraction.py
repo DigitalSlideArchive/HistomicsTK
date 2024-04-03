@@ -300,7 +300,7 @@ class TestFeatureExtraction:
         fdata_gtruth = pd.read_csv(
             utilities.getTestFilePath(test_file),
             index_col=None)
-        
+
         pd.testing.assert_frame_equal(
             fdata, fdata_gtruth, atol=1e-2)
 
