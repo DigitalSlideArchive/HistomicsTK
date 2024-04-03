@@ -267,7 +267,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
     # create pandas data frame containing the features for each object
     numLabels = len(rprops)
     fdata = pd.DataFrame(
-        np.zeros((numLabels, len(agg_feature_list))), columns=agg_feature_list
+        np.zeros((numLabels, len(agg_feature_list))), columns=agg_feature_list,
     )
 
     n_Minus = np.arange(num_levels)
@@ -283,13 +283,13 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
 
     # Initialize the array for aggregated features
     aggregated_features = np.zeros(
-        (numLabels, 2 * num_features)
+        (numLabels, 2 * num_features),
     )  # Alternating mean and range
 
     for i in range(numLabels):
         if rprops[i] is None:
             continue
-        
+
         # get bounds of an intensity image
         minr, minc, maxr, maxc = rprops[i].bbox
 
