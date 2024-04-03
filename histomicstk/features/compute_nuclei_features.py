@@ -275,7 +275,7 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
         feature_list.append(conditional(
             haralick_features_flag,
             compute_haralick_features,
-            [cyto_mask, im_cytoplasm], {'num_levels':num_glcm_levels, 'rprops':cyto_props},
+            [cyto_mask, im_cytoplasm], {'num_levels': num_glcm_levels, 'rprops': cyto_props},
             prefix='Cytoplasm.',
         ))
 
