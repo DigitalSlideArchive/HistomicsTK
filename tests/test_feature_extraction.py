@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 
+import numpy as np
 import packaging.version
 import pandas as pd
 import skimage.io
