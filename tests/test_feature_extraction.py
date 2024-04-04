@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 
+import numpy as np
 import packaging.version
 import pandas as pd
 import skimage.io
@@ -112,8 +113,8 @@ class TestFeatureExtraction:
 
         # compute nuclei features
         fdata_nuclei = htk_features.compute_nuclei_features(
-            im_nuclei_seg_mask, im_nuclei_stain,
-            im_cytoplasm=im_cytoplasm_stain)
+            im_nuclei_seg_mask, im_nuclei_stain.astype(np.uint8),
+            im_cytoplasm=im_cytoplasm_stain.astype(np.uint8))
 
         cfg.im_input = im_input
         cfg.im_input_nmzd = im_input_nmzd
@@ -188,7 +189,7 @@ class TestFeatureExtraction:
             expected_feature_list.append(col + '.Range')
 
         fdata = htk_features.compute_haralick_features(
-            cfg.im_nuclei_seg_mask, cfg.im_nuclei_stain)
+            cfg.im_nuclei_seg_mask, cfg.im_nuclei_stain.astype(np.uint8))
 
         check_fdata_sanity(fdata, expected_feature_list)
 
