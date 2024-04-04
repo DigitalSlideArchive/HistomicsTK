@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Tue Sep 24 00:43:04 2019.
 
@@ -7,8 +6,6 @@ Created on Tue Sep 24 00:43:04 2019.
 import datetime
 import logging
 import os
-
-# %% ==========================================================================
 
 
 class Print_and_log:
@@ -26,8 +23,6 @@ class Print_and_log:
             print(text)
         if self.keep_log:
             self.logger.info(text)
-
-# %% ==========================================================================
 
 
 class Base_HTK_Class:
@@ -57,8 +52,9 @@ class Base_HTK_Class:
         # To NOT silently ignore rejected keys
         rejected_keys = set(kwargs.keys()) - set(allowed_attr)
         if rejected_keys:
+            msg = f'Invalid arguments in constructor:{rejected_keys}'
             raise ValueError(
-                f"Invalid arguments in constructor:{rejected_keys}")
+                msg)
 
         # configure logger
         self.keep_log = self.logging_savepath is not None
@@ -66,7 +62,7 @@ class Base_HTK_Class:
             logger = logging.getLogger()
             self.logname = os.path.join(
                 self.logging_savepath,
-                datetime.datetime.now().strftime("%Y-%m-%d_%H-%M") + '.log')
+                datetime.datetime.now().strftime('%Y-%m-%d_%H-%M') + '.log')
             logging.basicConfig(filename=self.logname, level=logging.INFO)
         else:
             logger = None
@@ -77,6 +73,4 @@ class Base_HTK_Class:
         self.cpr2 = Print_and_log(verbose=self.verbose >= 2, logger=logger)
         self._print2 = self.cpr2._print
         if self.keep_log:
-            self._print1("Saving logs to: %s" % self.logname)
-
-# %% ==========================================================================
+            self._print1('Saving logs to: %s' % self.logname)

@@ -19,8 +19,8 @@ def delete(im_label, indices):
     Deleted : array_like
         A label image where all values in 'indices' are set to zero.
 
-    Notes:
-    ------
+    Notes
+    -----
     A call to CondenseLabel can squeeze label image values to fill in gaps from
     deleted values.
 
@@ -29,17 +29,17 @@ def delete(im_label, indices):
     histomicstk.segmentation.label.condense
 
     """
-    import scipy.ndimage.measurements as ms
+    import scipy.ndimage as ndi
 
     # initialize output
     Deleted = im_label.copy()
 
     # get extent of each object
-    Locations = ms.find_objects(Deleted)
+    Locations = ndi.find_objects(Deleted)
 
     # fill in new values
     for i in np.arange(indices.size):
-        if Locations[indices[i]-1] is not None:
+        if Locations[indices[i] - 1] is not None:
             Patch = Deleted[Locations[indices[i] - 1]]
             Patch[Patch == indices[i]] = 0
 

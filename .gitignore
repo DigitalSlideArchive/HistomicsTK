@@ -84,6 +84,14 @@ target/
 profile_default/
 ipython_config.py
 
+# workspace
+HistomicsTK.code-workspace
+HistomicsTKDocker.code-workspace
+
+# debugging
+.devcontainer/
+run_tests_code_cleanup.sh
+
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is
 #   intended to run in multiple environments; otherwise, check them in:
@@ -143,6 +151,7 @@ cython_debug/
 .idea/
 
 .vscode
+*.sw[po]
 
 # temporary downloaded data when doing unit testing locally
 tests/externaldata/

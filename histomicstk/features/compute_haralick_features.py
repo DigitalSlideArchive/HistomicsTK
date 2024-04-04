@@ -242,7 +242,8 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
 
     # check for consistent shapes between 'I' and 'Label'
     if im_intensity.shape != im_label.shape:
-        raise ValueError("Inputs 'I' and 'Label' must have same shape")
+        msg = "Inputs 'I' and 'Label' must have same shape"
+        raise ValueError(msg)
 
     num_dims = len(im_intensity.shape)
 
@@ -256,8 +257,9 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
 
         # check sanity
         if offsets.shape[1] != num_dims:
+            msg = 'Dimension mismatch between input image and offsets'
             raise ValueError(
-                'Dimension mismatch between input image and offsets'
+                msg,
             )
 
     num_offsets = offsets.shape[0]
@@ -282,6 +284,8 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
     eps = np.finfo(float).eps  # small constant to avoid div / 0
 
     for i in range(numLabels):
+        if rprops[i] is None:
+            continue
 
         # get bounds of an intensity image
         minr, minc, maxr, maxc = rprops[i].bbox
@@ -344,33 +348,33 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
 
             # computes sum entropy
             ldata.at[r, 'Haralick.SumEntropy'] = \
-                -np.dot(pxPlusy, np.log2(pxPlusy+e))
+                -np.dot(pxPlusy, np.log2(pxPlusy + e))
 
             # computes entropy
             ldata.at[r, 'Haralick.Entropy'] = \
-                -np.dot(nGLCMr, np.log2(nGLCMr+e))
+                -np.dot(nGLCMr, np.log2(nGLCMr + e))
 
             # computes variance px-y
             ldata.at[r, 'Haralick.DifferenceVariance'] = np.var(pxMinusy)
 
             # computes difference entropy px-y
             ldata.at[r, 'Haralick.DifferenceEntropy'] = \
-                -np.dot(pxMinusy, np.log2(pxMinusy+e))
+                -np.dot(pxMinusy, np.log2(pxMinusy + e))
 
             # computes information measures of correlation
             # gets entropies of px and py
-            HX = -np.dot(px, np.log2(px+e))
-            HY = -np.dot(py, np.log2(py+e))
+            HX = -np.dot(px, np.log2(px + e))
+            HY = -np.dot(py, np.log2(py + e))
             HXY = ldata.at[r, 'Haralick.Entropy']
             pxy_ij = np.outer(px, py)
             pxy_ijr = np.ravel(pxy_ij)
-            HXY1 = -np.dot(nGLCMr, np.log2(pxy_ijr+e))
-            HXY2 = -np.dot(pxy_ijr, np.log2(pxy_ijr+e))
-            ldata.at[r, 'Haralick.IMC1'] = (HXY-HXY1)/max(HX, HY)
+            HXY1 = -np.dot(nGLCMr, np.log2(pxy_ijr + e))
+            HXY2 = -np.dot(pxy_ijr, np.log2(pxy_ijr + e))
+            ldata.at[r, 'Haralick.IMC1'] = ((HXY - HXY1) / max(HX, HY)) if max(HX, HY) else 0
 
             # computes information measures of correlation
             ldata.at[r, 'Haralick.IMC2'] = \
-                np.sqrt(max(0, 1 - np.exp(-2.0*(HXY2-HXY))))
+                np.sqrt(max(0, 1 - np.exp(-2.0 * (HXY2 - HXY))))
 
         fdata.values[i, ::2] = np.mean(ldata.values, axis=0)
         fdata.values[i, 1::2] = np.ptp(ldata.values, axis=0)

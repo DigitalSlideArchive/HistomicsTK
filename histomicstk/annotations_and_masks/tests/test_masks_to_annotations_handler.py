@@ -6,6 +6,7 @@ Created on Tue Aug 20 18:13:37 2019.
 import os
 import sys
 
+import pandas as pd
 import pytest
 from imageio import imread
 from pandas import read_csv
@@ -58,7 +59,7 @@ class TestMasksToAnnotations:
             discard_nonenclosed_background=True,
             background_group='mostly_stroma',
             MIN_SIZE=30, MAX_SIZE=None, verbose=False,
-            monitorPrefix=self.MASKNAME[:12] + ": getting contours")
+            monitorPrefix=self.MASKNAME[:12] + ': getting contours')
 
         # make sure it is what we expect
         assert set(contours_df.columns) == set(self.CONTOURS_DF.columns)
@@ -77,7 +78,7 @@ class TestMasksToAnnotations:
             discard_nonenclosed_background=True,
             background_group='mostly_stroma',
             MIN_SIZE=30, MAX_SIZE=None, verbose=False,
-            monitorPrefix=self.MASKNAME[:12] + ": getting contours")
+            monitorPrefix=self.MASKNAME[:12] + ': getting contours')
 
         # make sure it is what we expect
         assert set(contours_df.columns) == set(self.CONTOURS_DF.columns)
@@ -88,14 +89,14 @@ class TestMasksToAnnotations:
         """Test get_contours_from_mask()."""
         self._setup()
         groups_to_get = None
-        gtcodes = self.GTCodes_df.append({
+        gtcodes = pd.concat([self.GTCodes_df, pd.DataFrame([{
             'group': 'zeroes',
             'overlay_order': 4,
             'GT_code': 0,
             'is_roi': 0,
             'is_background_class': 0,
             'color': 'rgb(0,128,0)',
-            'comments': 'zeroes'}, ignore_index=True)
+            'comments': 'zeroes'}])], ignore_index=True)
         gtcodes.index = gtcodes.loc[:, 'group']
         contours_df = get_contours_from_mask(
             MASK=self.MASK, GTCodes_df=gtcodes,
@@ -114,8 +115,22 @@ class TestMasksToAnnotations:
     def test_get_annotation_documents_from_contours(self, girderClient):  # noqa
         """Test get_contours_from_bin_mask()."""
         self._setup()
-        sampleSlideItem = girderClient.resourceLookup(
-            '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')  # noqa
+        original_iteminfo = girderClient.get(
+            '/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+
+        folder = girderClient.post(
+            '/folder', data={
+                'parentId': original_iteminfo['folderId'],
+                'name': 'test-masks-annot-handler',
+            })
+
+        # copy the item
+        sampleSlideItem = girderClient.post(
+            '/item/%s/copy' % original_iteminfo['_id'], data={
+                'name': 'TCGA-A2-A0YE-01Z.svs',
+                'copyAnnotations': True,
+                'folderId': folder['_id'],
+            })
         sampleSlideId = str(sampleSlideItem['_id'])
         # get list of annotation documents
         annprops = {
@@ -128,7 +143,7 @@ class TestMasksToAnnotations:
             self.CONTOURS_DF.copy(), separate_docs_by_group=True,
             annots_per_doc=10, docnamePrefix='test', annprops=annprops,
             verbose=False,
-            monitorPrefix=self.MASKNAME[:12] + ": annotation docs")
+            monitorPrefix=self.MASKNAME[:12] + ': annotation docs')
 
         # make sure its what we expect
         assert len(annotation_docs) == 8
@@ -140,7 +155,7 @@ class TestMasksToAnnotations:
             'test_mostly_tumor-0',
             'test_mostly_tumor-1',
             'test_normal_acinus_or_duct-0',
-            'test_roi-0'
+            'test_roi-0',
         }
 
         # deleting existing annotations in target slide (if any)
@@ -148,6 +163,6 @@ class TestMasksToAnnotations:
 
         # post annotations to slide -- make sure it posts without errors
         resp = girderClient.post(
-            "/annotation?itemId=" + sampleSlideId,
+            '/annotation?itemId=' + sampleSlideId,
             json=annotation_docs[0])
         assert 'annotation' in resp.keys()

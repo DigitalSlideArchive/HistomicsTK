@@ -59,7 +59,7 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
     # convert image to grayscale, flatten and sample
     im_rgb = 255 * color.rgb2gray(im_rgb)
     im_rgb = im_rgb.astype(np.uint8)
-    num_samples = np.int(fraction * im_rgb.size)
+    num_samples = int(fraction * im_rgb.size)
     sI = np.random.choice(im_rgb.flatten(), num_samples)[:, np.newaxis]
 
     # kernel-density smoothed histogram
@@ -79,7 +79,7 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
     if len(Peaks) > 1:
         TissuePeak = Peaks[yHist[Peaks[1:]].argmax() + 1]
     else:  # no peak found - take initial guess at 2/3 distance from origin
-        TissuePeak = xHist[int(np.round(0.66*xHist.size))].item()
+        TissuePeak = xHist[int(np.round(0.66 * xHist.size))].item()
 
     # analyze background peak to estimate variance parameter via FWHM
     BGScale = estimate_variance(xHist, yHist, BGPeak)
@@ -93,6 +93,11 @@ def simple_mask(im_rgb, bandwidth=2, bgnd_std=2.5, tissue_std=30,
 
     # solve for mixing parameter
     Mix = yHist[BGPeak] * (BGScale * (2 * np.pi)**0.5)
+    try:
+        if len(Mix) == 1:
+            Mix = Mix[0]
+    except Exception:
+        pass
 
     # flatten kernel-smoothed histogram and corresponding x values for
     # optimization
@@ -161,6 +166,7 @@ def estimate_variance(x, y, peak):
     each side of the peak to estimate the full-width-half-maximum (FWHM) and
     variance of the peak. If tracing fails on either side, the FWHM is
     estimated as twice the HWHM.
+
     Parameters
     ----------
     x : array_like
@@ -169,18 +175,20 @@ def estimate_variance(x, y, peak):
         vector of y-histogram locations.
     peak : double
         index of peak in y to estimate variance of
+
     Returns
     -------
     scale : double
         Standard deviation of normal distribution approximating peak. Value is
         -1 if fitting process fails.
+
     See Also
     --------
     SimpleMask
 
     """
-
     # analyze peak to estimate variance parameter via FWHM
+    peak = int(peak)
     Left = peak
     while y[Left] > y[peak] / 2 and Left >= 0:
         Left -= 1
@@ -211,5 +219,9 @@ def estimate_variance(x, y, peak):
             LeftSlope = y[Left + 1] - y[Left] / (x[Left + 1] - x[Left])
             Left = (y[peak] / 2 - y[Left]) / LeftSlope + x[Left]
             scale = 2 * (x[peak] - Left) / 2.355
-
+    try:
+        if len(scale) == 1:
+            scale = scale[0]
+    except Exception:
+        pass
     return scale

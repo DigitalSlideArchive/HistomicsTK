@@ -23,6 +23,16 @@ commands:
           command: |
             (while true; do date; tail -n 3 /tmp/histomicstk_test_girder_log.txt 2>/dev/null || true; sleep 60; done) &
             tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
+  docker-compose:
+    description: "Install docker compose extension"
+    steps:
+      - run:
+          name: Install docker compose
+          command: |
+            DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+            mkdir -p $DOCKER_CONFIG/cli-plugins
+            curl -SL https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
+            chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
   upgradepython:
     description: "Upgrade python"
     parameters:
@@ -44,49 +54,15 @@ commands:
     steps:
       - run:
           name: Install Codecov client
-          command: pip install codecov==2.1.9
+          command: |
+              curl -Os https://uploader.codecov.io/latest/linux/codecov
+              chmod +x codecov
       - run:
           name: Upload coverage
           # Retry as codecov can be flaky
-          command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; codecov --required --disable search pycov gcov --root project --file .tox/coverage/py_coverage.xml && s=0 && break || s=$?; done; (exit $s)
+          command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; ./codecov --disable search pycov gcov --file .tox/coverage/py_coverage.xml .tox/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
 
 jobs:
-  # Because some of our tests use docker-compose as part of the test, we can't
-  # use a CircleCI docker environment, since those environments run sub dockers
-  # in a separate environment.  The 201808-01 machine environment has versions
-  # of Python 2.7, 3.5, 3.6, 3.7 with specific subversions.
-  py36:
-    working_directory: ~/project
-    machine:
-      image: ubuntu-2004:202111-02
-    steps:
-      - checkout
-      - upgradepython:
-          version: 3.6.15
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.6.15
-      - tox:
-          env: py36
-      - coverage
-  py37:
-    working_directory: ~/project
-    machine:
-      image: ubuntu-2004:202111-02
-    steps:
-      - checkout
-      - upgradepython:
-          version: 3.7.13
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.7.13
-      - tox:
-          env: py37
-      - coverage
   py38:
     working_directory: ~/project
     machine:
@@ -94,14 +70,24 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.8.13
+          version: "3.8"
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.8.13
+            pyenv global 3.8
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py38
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   py39:
     working_directory: ~/project
@@ -110,14 +96,24 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.9.12
+          version: "3.9"
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.9.12
+            pyenv global 3.9
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py39
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   py310:
     working_directory: ~/project
@@ -126,26 +122,88 @@ jobs:
     steps:
       - checkout
       - upgradepython:
-          version: 3.10.4
+          version: "3.10"
       - run:
           name: Use pyenv to set python version
           command: |
             pyenv versions
-            pyenv global 3.10.4
+            pyenv global 3.10
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py310
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
+      - coverage
+  py311:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - upgradepython:
+          version: "3.11"
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.11
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
+      - tox:
+          env: py311
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
+      - coverage
+  py312:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - upgradepython:
+          version: "3.12"
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.12
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
+      - tox:
+          env: py312
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
       - coverage
   lint_and_docs:
     working_directory: ~/project
     docker:
-      - image: circleci/python:3.9
+      - image: cimg/python:3.11
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: sudo apt-get update -yq && sudo apt install -yq pandoc
       - tox:
-          env: docs,flake8
+          env: docs,lint
       - store_artifacts:
           path: docs/_build/html
       - persist_to_workspace:
@@ -207,7 +265,7 @@ jobs:
   wheels:
     working_directory: ~/project
     docker:
-      - image: circleci/python:3.9
+      - image: cimg/python:3.9
       - image: docker:git
     steps:
       - checkout
@@ -241,28 +299,6 @@ jobs:
             cd ..
             python3 -m pip install histomicstk --pre --find-links project/wheels --find-links https://girder.github.io/large_image_wheels
             python3 -c "import histomicstk"
-  release:
-    working_directory: ~/project
-    docker:
-      - image: circleci/python:3.9
-      - image: docker:git
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Setup virtual environment
-          command: |
-            if [ ! -d env ]; then python -m virtualenv env || python -m venv env; fi
-            echo ". $CIRCLE_WORKING_DIRECTORY/env/bin/activate" >> $BASH_ENV
-      - run:
-          name: Install python packages
-          command: pip install setuptools_scm twine
-      - run:
-          name: Build wheels
-          command: ./build_wheels.sh
-      - run:
-          name: Release to PyPi
-          command: twine upload --verbose wheels/* dist/*
   docs-deploy:
     working_directory: ~/project
     docker:
@@ -293,20 +329,6 @@ workflows:
   version: 2
   ci:
     jobs:
-      - py36:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
-      - py37:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
       - py38:
           filters:
             tags:
@@ -322,6 +344,20 @@ workflows:
               ignore:
                 - gh-pages
       - py310:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py311:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py312:
           filters:
             tags:
               only: /^v.*/
@@ -349,28 +385,13 @@ workflows:
             branches:
               ignore:
                 - gh-pages
-      - release:
-          requires:
-            - py36
-            - py37
-            - py38
-            - py39
-            - py310
-            - lint_and_docs
-            - wheels
-            - docker
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              only: master
       - docs-deploy:
           requires:
-            - py36
-            - py37
             - py38
             - py39
             - py310
+            - py311
+            - py312
             - lint_and_docs
             - wheels
             - docker
@@ -383,11 +404,11 @@ workflows:
                 - sphinx
       - publish_docker:
           requires:
-            - py36
-            - py37
             - py38
             - py39
             - py310
+            - py311
+            - py312
             - lint_and_docs
             - docker
             - wheels
@@ -407,21 +428,21 @@ workflows:
               only:
                 - master
     jobs:
-      - py36
-      - py37
       - py38
       - py39
       - py310
+      - py311
+      - py312
       - lint_and_docs
       - docker
       - wheels
       - publish_docker:
           requires:
-            - py36
-            - py37
             - py38
             - py39
             - py310
+            - py311
+            - py312
             - lint_and_docs
             - docker
             - wheels

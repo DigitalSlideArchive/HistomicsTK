@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Tue Oct 22 02:37:52 2019.
 
@@ -32,11 +31,11 @@ Image.MAX_IMAGE_PIXELS = None
 class CDT_single_tissue_piece:
     """Detect various regions in a single tissue piece (internal)."""
 
-    def __init__(self, cdt, tissue_mask, monitorPrefix=""):
+    def __init__(self, cdt, tissue_mask, monitorPrefix=''):
         """Detect whitespace, saliency, etc in one tissue piece (Internal).
 
-        Arguments
-        ----------
+        Arguments:
+        ---------
         cdt : object
             Cellularity_detector_thresholding instance
         tissue_mask : np array
@@ -52,25 +51,25 @@ class CDT_single_tissue_piece:
     def run(self):
         """Get cellularity and optionally visualize on DSA."""
         self.restrict_mask_to_single_tissue_piece()
-        self.cdt._print2("%s: set_tissue_rgb()" % self.monitorPrefix)
+        self.cdt._print2('%s: set_tissue_rgb()' % self.monitorPrefix)
         self.set_tissue_rgb()
-        self.cdt._print2("%s: initialize_labeled_mask()" % self.monitorPrefix)
+        self.cdt._print2('%s: initialize_labeled_mask()' % self.monitorPrefix)
         self.initialize_labeled_mask()
         self.cdt._print2(
-            "%s: assign_components_by_thresholding()" % self.monitorPrefix)
+            '%s: assign_components_by_thresholding()' % self.monitorPrefix)
         self.assign_components_by_thresholding()
         self.cdt._print2(
-            "%s: color_normalize_unspecified_components()"
+            '%s: color_normalize_unspecified_components()'
             % self.monitorPrefix)
         self.color_normalize_unspecified_components()
         self.cdt._print2(
-            "%s: find_potentially_cellular_regions()" % self.monitorPrefix)
+            '%s: find_potentially_cellular_regions()' % self.monitorPrefix)
         self.find_potentially_cellular_regions()
         self.cdt._print2(
-            "%s: find_top_cellular_regions()" % self.monitorPrefix)
+            '%s: find_top_cellular_regions()' % self.monitorPrefix)
         self.find_top_cellular_regions()
         if self.cdt.visualize:
-            self.cdt._print2("%s: visualize_results()" % self.monitorPrefix)
+            self.cdt._print2('%s: visualize_results()' % self.monitorPrefix)
             self.visualize_results()
 
     def restrict_mask_to_single_tissue_piece(self):
@@ -78,8 +77,8 @@ class CDT_single_tissue_piece:
         # find coordinates at scan magnification
         tloc = np.argwhere(self.tissue_mask)
         F = self.cdt.slide_info['F_tissue']
-        self.ymin, self.xmin = [int(j) for j in np.min(tloc, axis=0) * F]
-        self.ymax, self.xmax = [int(j) for j in np.max(tloc, axis=0) * F]
+        self.ymin, self.xmin = (int(j) for j in np.min(tloc, axis=0) * F)
+        self.ymax, self.xmax = (int(j) for j in np.max(tloc, axis=0) * F)
         self.tissue_mask = self.tissue_mask[
             int(self.ymin / F): int(self.ymax / F),
             int(self.xmin / F): int(self.xmax / F)]
@@ -87,9 +86,9 @@ class CDT_single_tissue_piece:
     def set_tissue_rgb(self):
         """Load RGB from server for single tissue piece."""
         # load RGB for this tissue piece at saliency magnification
-        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
-            self.cdt.slide_id, self.xmin, self.xmax, self.ymin, self.ymax
-            ) + "&magnification=%d" % self.cdt.MAG
+        getStr = '/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG' % (
+            self.cdt.slide_id, self.xmin, self.xmax, self.ymin, self.ymax,
+        ) + '&magnification=%d' % self.cdt.MAG
         resp = self.cdt.gc.get(getStr, jsonResp=False)
         self.tissue_rgb = get_image_from_htk_response(resp)
 
@@ -108,7 +107,7 @@ class CDT_single_tissue_piece:
         """Get components by thresholding in HSI and LAB spaces."""
         # get HSI and LAB images
         self.cdt._print2(
-            "%s: -- get HSI and LAB images ..." % self.monitorPrefix)
+            '%s: -- get HSI and LAB images ...' % self.monitorPrefix)
         tissue_hsi = rgb_to_hsi(self.tissue_rgb)
         tissue_lab = rgb_to_lab(self.tissue_rgb)
 
@@ -119,7 +118,7 @@ class CDT_single_tissue_piece:
 
         for component in self.cdt.ordered_components:
 
-            self.cdt._print2("%s: -- thresholding %s ..." % (
+            self.cdt._print2('%s: -- thresholding %s ...' % (
                 self.monitorPrefix, component))
 
             if component in hsi_components:
@@ -137,7 +136,8 @@ class CDT_single_tissue_piece:
                     just_threshold=True,
                     get_tissue_mask_kwargs=self.cdt.get_tissue_mask_kwargs2)
             else:
-                raise ValueError("Unknown component name.")
+                msg = 'Unknown component name.'
+                raise ValueError(msg)
 
             lab[self.labeled == 0] = 0  # restrict to tissue mask
             self.labeled[lab > 0] = self.cdt.GTcodes.loc[component, 'GT_code']
@@ -150,25 +150,25 @@ class CDT_single_tissue_piece:
         """Color normalize "true" tissue components."""
         if self.cdt.color_normalization_method == 'reinhard':
             self.cdt._print2(
-                "%s: -- reinhard normalization ..." % self.monitorPrefix)
+                '%s: -- reinhard normalization ...' % self.monitorPrefix)
             self.tissue_rgb = reinhard(
                 self.tissue_rgb,
                 target_mu=self.cdt.target_stats_reinhard['mu'],
                 target_sigma=self.cdt.target_stats_reinhard['sigma'],
                 mask_out=self.labeled != self.cdt.GTcodes
-                    .loc["not_specified", "GT_code"])
+                .loc['not_specified', 'GT_code'])
 
         elif self.cdt.color_normalization_method == 'macenko_pca':
             self.cdt._print2(
-                "%s: -- macenko normalization ..." % self.monitorPrefix)
+                '%s: -- macenko normalization ...' % self.monitorPrefix)
             self.tissue_rgb = deconvolution_based_normalization(
                 self.tissue_rgb, W_target=self.cdt.target_W_macenko,
                 mask_out=self.labeled != self.cdt.GTcodes
-                    .loc["not_specified", "GT_code"],
+                .loc['not_specified', 'GT_code'],
                 stain_unmixing_routine_params=self.
                 cdt.stain_unmixing_routine_params)
         else:
-            self.cdt._print2("%s: -- No normalization!" % self.monitorPrefix)
+            self.cdt._print2('%s: -- No normalization!' % self.monitorPrefix)
 
     def find_potentially_cellular_regions(self):
         """Find regions that are potentially cellular."""
@@ -176,7 +176,7 @@ class CDT_single_tissue_piece:
         from skimage.filters import gaussian
 
         mask_out = self.labeled != self.cdt.GTcodes.loc[
-            "not_specified", "GT_code"]
+            'not_specified', 'GT_code']
 
         # deconvolvve to ge hematoxylin channel (cellular areas)
         # hematoxylin channel return shows MINIMA so we invert
@@ -222,7 +222,7 @@ class CDT_single_tissue_piece:
         intensity_feats.index = unique
 
         # get top n brightest regions from the largest areas
-        intensity_feats.sort_values("Intensity.Mean", axis=0, inplace=True)
+        intensity_feats.sort_values('Intensity.Mean', axis=0, inplace=True)
         discard = np.array(intensity_feats.index[:-self.cdt.cellular_top_n])
         discard = np.in1d(top_cellular, discard).reshape(top_cellular.shape)
         top_cellular[discard] = 0
@@ -242,7 +242,7 @@ class CDT_single_tissue_piece:
             discard_nonenclosed_background=True,
             MIN_SIZE=15, MAX_SIZE=None,
             verbose=self.cdt.verbose == 3,
-            monitorPrefix=self.monitorPrefix + ": -- contours")
+            monitorPrefix=self.monitorPrefix + ': -- contours')
 
         # get annotation docs
         annprops = {
@@ -256,12 +256,12 @@ class CDT_single_tissue_piece:
             contours_df.copy(), separate_docs_by_group=True,
             docnamePrefix=self.cdt.docnameprefix,
             annprops=annprops, verbose=self.cdt.verbose == 3,
-            monitorPrefix=self.monitorPrefix + ": -- annotation docs")
+            monitorPrefix=self.monitorPrefix + ': -- annotation docs')
 
         # post annotations to slide
         for doc in annotation_docs:
             _ = self.cdt.gc.post(
-                "/annotation?itemId=" + self.cdt.slide_id, json=doc)
+                '/annotation?itemId=' + self.cdt.slide_id, json=doc)
 
 
 class Cellularity_detector_thresholding(Base_HTK_Class):
@@ -317,7 +317,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         """Init Cellularity_Detector_Superpixels object.
 
         Arguments:
-        -----------
+        ---------
         gc : object
             girder client object
 
@@ -334,7 +334,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
                 group name of annotation, eg. mostly_tumor
             overlay_order: int
                 how early to place the annotation in the
-                mask. Larger values means this annotation group is overlayed
+                mask. Larger values means this annotation group is overlaid
                 last and overwrites whatever overlaps it.
             GT_code: int
                 desired ground truth code (in the mask).
@@ -466,15 +466,15 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             # and using reordered such that columns are the order:
             # Hamtoxylin, Eosin, Null
             'target_W_macenko': np.array([
-                [0.5807549,  0.08314027,  0.08213795],
-                [0.71681094,  0.90081588,  0.41999816],
-                [0.38588316,  0.42616716, -0.90380025]
+                [0.5807549, 0.08314027, 0.08213795],
+                [0.71681094, 0.90081588, 0.41999816],
+                [0.38588316, 0.42616716, -0.90380025],
             ]),
 
             # TCGA-A2-A3XS-DX1_xmin21421_ymin37486_.png, Amgad et al, 2019)
             # Reinhard color norm. standard
             'target_stats_reinhard': {
-                'mu': np.array([8.74108109, -0.12440419,  0.0444982]),
+                'mu': np.array([8.74108109, -0.12440419, 0.0444982]),
                 'sigma': np.array([0.6135447, 0.10989545, 0.0286032]),
             },
 
@@ -485,7 +485,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             },
 
             # components to extract by HSI thresholding
-            'keep_components': ['blue_sharpie', 'blood', 'whitespace', ],
+            'keep_components': ['blue_sharpie', 'blood', 'whitespace'],
 
             # kwargs for getting components masks
             'get_tissue_mask_kwargs2': {
@@ -554,20 +554,20 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
     def fix_GTcodes(self):
         """Fix self.GTcodes (important!)."""
         # validate
-        self.GTcodes.index = self.GTcodes.loc[:, "group"]
+        self.GTcodes.index = self.GTcodes.loc[:, 'group']
         necessary_indexes = self.keep_components + [
             'outside_tissue', 'not_specified',
             'maybe_cellular', 'top_cellular']
         assert all(j in list(self.GTcodes.index) for j in necessary_indexes)
 
-        # Make sure the first things layed out are the "background" components
+        # Make sure the first things laid out are the "background" components
         min_val = np.min(self.GTcodes.loc[:, 'overlay_order'])
         self.GTcodes.loc['outside_tissue', 'overlay_order'] = min_val - 2
         self.GTcodes.loc['not_specified', 'overlay_order'] = min_val - 1
 
         # reorder in overlay order (important)
         self.GTcodes.sort_values('overlay_order', axis=0, inplace=True)
-        self.ordered_components = list(self.GTcodes.loc[:, "group"])
+        self.ordered_components = list(self.GTcodes.loc[:, 'group'])
 
         # only keep relevant components (for HSI/LAB thresholding)
         for c in self.ordered_components[:]:
@@ -578,15 +578,15 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         """Run full pipeline to detect cellular regions."""
         # get mask, each unique value is a single tissue piece
         self._print1(
-            "%s: set_slide_info_and_get_tissue_mask()" % self.monitorPrefix)
+            '%s: set_slide_info_and_get_tissue_mask()' % self.monitorPrefix)
         labeled = self.set_slide_info_and_get_tissue_mask()
 
         # Go through tissue pieces and do run sequence
-        unique_tvals = list(set(np.unique(labeled)) - {0, })
+        unique_tvals = list(set(np.unique(labeled)) - {0})
         tissue_pieces = [None for _ in range(len(unique_tvals))]
         for idx, tval in enumerate(unique_tvals):
-            monitorPrefix = "%s: Tissue piece %d of %d" % (
-                self.monitorPrefix, idx+1, len(unique_tvals))
+            monitorPrefix = '%s: Tissue piece %d of %d' % (
+                self.monitorPrefix, idx + 1, len(unique_tvals))
             self._print1(monitorPrefix)
             tissue_pieces[idx] = CDT_single_tissue_piece(
                 self, tissue_mask=labeled == tval, monitorPrefix=monitorPrefix)
@@ -605,7 +605,8 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             self, ref_image_path, color_normalization_method='macenko_pca'):
         """Set color normalization values to use from target image.
 
-        Arguments
+        Arguments:
+        ---------
         ref_image_path, str
         >    path to target (reference) image
         color_normalization_method, str
@@ -633,14 +634,14 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
                 stains=['hematoxylin', 'eosin'])
         else:
             raise ValueError(
-                "Unknown color_normalization_method: %s" %
+                'Unknown color_normalization_method: %s' %
                 (color_normalization_method))
 
         self.color_normalization_method = color_normalization_method
 
     def set_slide_info_and_get_tissue_mask(self):
         """Set self.slide_info dict and self.labeled tissue mask."""
-        # This is a presistent dict to store information about slide
+        # This is a persistent dict to store information about slide
         self.slide_info = self.gc.get('item/%s/tiles' % self.slide_id)
 
         # get tissue mask
@@ -651,7 +652,8 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
             thumbnail_rgb, **self.get_tissue_mask_kwargs)
 
         if len(np.unique(labeled)) < 2:
-            raise ValueError("No tissue detected!")
+            msg = 'No tissue detected!'
+            raise ValueError(msg)
 
         # Find size relative to WSI
         self.slide_info['F_tissue'] = self.slide_info[

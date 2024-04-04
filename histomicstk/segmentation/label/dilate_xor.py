@@ -25,7 +25,7 @@ def dilate_xor(im_label, neigh_width=8):
         other pixels (including the ones inside objects) are set to zero.
 
     """
-    from scipy.ndimage.morphology import distance_transform_edt
+    from scipy.ndimage import distance_transform_edt
 
     # For each background pixel compute the distance to the nearest object and
     # the indices of the nearest object pixel
@@ -35,7 +35,7 @@ def dilate_xor(im_label, neigh_width=8):
 
     # Get indices of background pixels within a given distance from an object
     neigh_rind, neigh_cind = np.where(
-        np.logical_and(im_dist > 0, im_dist <= neigh_width)
+        np.logical_and(im_dist > 0, im_dist <= neigh_width),
     )
 
     # generate labeled neighborhood mask

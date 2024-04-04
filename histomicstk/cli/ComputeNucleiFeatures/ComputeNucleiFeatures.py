@@ -2,12 +2,12 @@ import json
 import logging
 import os
 import time
+from pathlib import Path
 
 import large_image
 import numpy as np
 
-import histomicstk.features as htk_features
-import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
+import histomicstk
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.label as htk_seg_label
 import histomicstk.segmentation.nuclear as htk_nuclear
@@ -18,106 +18,27 @@ from histomicstk.cli.utils import CLIArgumentParser
 logging.basicConfig(level=logging.CRITICAL)
 
 
-def compute_tile_nuclei_features(slide_path, tile_position, args, it_kwargs,
-                                 src_mu_lab=None, src_sigma_lab=None):
-
-    # get slide tile source
-    ts = large_image.getTileSource(slide_path)
-
-    # get requested tile
-    tile_info = ts.getSingleTile(
-        tile_position=tile_position,
-        format=large_image.tilesource.TILE_FORMAT_NUMPY,
-        **it_kwargs)
-
-    # get tile image
-    im_tile = tile_info['tile'][:, :, :3]
-
-    # perform color normalization
-    im_nmzd = htk_cnorm.reinhard(im_tile,
-                                 args.reference_mu_lab,
-                                 args.reference_std_lab,
-                                 src_mu=src_mu_lab,
-                                 src_sigma=src_sigma_lab)
-
-    # perform color decovolution
-    w = cli_utils.get_stain_matrix(args)
-
-    im_stains = htk_cdeconv.color_deconvolution(im_nmzd, w).Stains
-
-    im_nuclei_stain = im_stains[:, :, 0].astype(float)
-
-    # segment nuclear foreground
-    im_nuclei_fgnd_mask = im_nuclei_stain < args.foreground_threshold
-
-    # segment nuclei
-    im_nuclei_seg_mask = htk_nuclear.detect_nuclei_kofahi(
-        im_nuclei_stain,
-        im_nuclei_fgnd_mask,
-        args.min_radius,
-        args.max_radius,
-        args.min_nucleus_area,
-        args.local_max_search_radius
-    )
-
-    # Delete border nuclei
-    if args.ignore_border_nuclei is True:
-
-        im_nuclei_seg_mask = htk_seg_label.delete_border(im_nuclei_seg_mask)
-
-    # generate nuclei annotations
-    nuclei_annot_list = []
-
-    flag_nuclei_found = np.any(im_nuclei_seg_mask)
-
-    if flag_nuclei_found:
-
-        nuclei_annot_list = cli_utils.create_tile_nuclei_annotations(
-            im_nuclei_seg_mask, tile_info, args.nuclei_annotation_format)
-
-    # compute nuclei features
-    fdata = None
-
-    if flag_nuclei_found:
-
-        if args.cytoplasm_features:
-            im_cytoplasm_stain = im_stains[:, :, 1].astype(float)
-        else:
-            im_cytoplasm_stain = None
-
-        fdata = htk_features.compute_nuclei_features(
-            im_nuclei_seg_mask, im_nuclei_stain, im_cytoplasm_stain,
-            fsd_bnd_pts=args.fsd_bnd_pts,
-            fsd_freq_bins=args.fsd_freq_bins,
-            cyto_width=args.cyto_width,
-            num_glcm_levels=args.num_glcm_levels,
-            morphometry_features_flag=args.morphometry_features,
-            fsd_features_flag=args.fsd_features,
-            intensity_features_flag=args.intensity_features,
-            gradient_features_flag=args.gradient_features,
-        )
-
-        fdata.columns = ['Feature.' + col for col in fdata.columns]
-
-    return nuclei_annot_list, fdata
-
-
 def check_args(args):
 
     if not os.path.isfile(args.inputImageFile):
-        raise OSError('Input image file does not exist.')
+        msg = 'Input image file does not exist.'
+        raise OSError(msg)
 
     if len(args.reference_mu_lab) != 3:
-        raise ValueError('Reference Mean LAB should be a 3 element vector.')
+        msg = 'Reference Mean LAB should be a 3 element vector.'
+        raise ValueError(msg)
 
     if len(args.reference_std_lab) != 3:
-        raise ValueError('Reference Stddev LAB should be a 3 element vector.')
+        msg = 'Reference Stddev LAB should be a 3 element vector.'
+        raise ValueError(msg)
 
     if len(args.analysis_roi) != 4:
-        raise ValueError('Analysis ROI must be a vector of 4 elements.')
+        msg = 'Analysis ROI must be a vector of 4 elements.'
+        raise ValueError(msg)
 
     if os.path.splitext(args.outputNucleiFeatureFile)[1] not in ['.csv', '.h5']:
-        raise ValueError('Extension of output feature file must be .csv or .h5')
+        msg = 'Extension of output feature file must be .csv or .h5'
+        raise ValueError(msg)
 
 
 def main(args):
@@ -138,6 +59,11 @@ def main(args):
         process_whole_image = True
     else:
         process_whole_image = False
+
+    # Provide default value for tile_overlap
+    tile_overlap = args.tile_overlap_value
+    if tile_overlap == -1:
+        tile_overlap = (args.max_radius + 1) * 4
 
     #
     # Initiate Dask client
@@ -191,6 +117,7 @@ def main(args):
     it_kwargs = {
         'tile_size': {'width': args.analysis_tile_size},
         'scale': {'magnification': args.analysis_mag},
+        'tile_overlap': {'x': tile_overlap, 'y': tile_overlap},
     }
 
     if not process_whole_image:
@@ -200,7 +127,7 @@ def main(args):
             'top': args.analysis_roi[1],
             'width': args.analysis_roi[2],
             'height': args.analysis_roi[3],
-            'units': 'base_pixels'
+            'units': 'base_pixels',
         }
 
     if is_wsi:
@@ -217,12 +144,12 @@ def main(args):
 
             tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
                 args.inputImageFile, im_fgnd_mask_lres, fgnd_seg_scale,
-                it_kwargs
+                it_kwargs,
             )
 
         else:
 
-            tile_fgnd_frac_list = [1.0] * num_tiles
+            tile_fgnd_frac_list = np.full(num_tiles, 1.0)
 
         num_fgnd_tiles = np.count_nonzero(
             tile_fgnd_frac_list >= args.min_fgnd_frac)
@@ -231,7 +158,7 @@ def main(args):
 
         fgnd_frac_comp_time = time.time() - start_time
 
-        print('Number of foreground tiles = {:d} ({:2f}%%)'.format(
+        print('Number of foreground tiles = {:d} ({:.2f}%)'.format(
             num_fgnd_tiles, percent_fgnd_tiles))
 
         print('Tile foreground fraction computation time = {}'.format(
@@ -274,11 +201,11 @@ def main(args):
             continue
 
         # detect nuclei
-        cur_result = dask.delayed(compute_tile_nuclei_features)(
-            args.inputImageFile,
-            tile_position,
-            args, it_kwargs,
-            src_mu_lab, src_sigma_lab
+        cur_result = dask.delayed(htk_nuclear.detect_tile_nuclei)(
+            tile,
+            args,
+            src_mu_lab, src_sigma_lab,
+            return_fdata=True,
         )
 
         # append result to list
@@ -297,14 +224,32 @@ def main(args):
         nuclei_fdata = pd.concat([
             fdata
             for annot_list, fdata in tile_result_list if fdata is not None],
-            ignore_index=True
+            ignore_index=True,
         )
 
     nuclei_detection_time = time.time() - start_time
 
-    print('Number of nuclei = {}'.format(len(nuclei_annot_list)))
+    print(f'Number of nuclei = {len(nuclei_annot_list)}')
     print('Nuclei detection time = {}'.format(
         cli_utils.disp_time_hms(nuclei_detection_time)))
+
+    #
+    # Remove overlapping nuclei
+    #
+    if args.remove_overlapping_nuclei_segmentation:
+        print('\n>> Removing overlapping nuclei segmentations ...\n')
+        nuclei_removal_start_time = time.time()
+
+        nuclei_annot_list, selected_nuclei = htk_seg_label.remove_overlap_nuclei(
+            nuclei_annot_list, args.nuclei_annotation_format, return_selected_nuclei=True)
+        nuclei_removal_setup_time = time.time() - nuclei_removal_start_time
+
+        # Remove features for overlapping nuclei
+        nuclei_fdata = nuclei_fdata[nuclei_fdata.index.isin(selected_nuclei)]
+
+        print(f'Number of nuclei after overlap removal {len(nuclei_annot_list)}')
+        print('Nuclei removal processing time = {}'.format(
+            cli_utils.disp_time_hms(nuclei_removal_setup_time)))
 
     #
     # Write annotation file
@@ -316,11 +261,17 @@ def main(args):
 
     annotation = {
         'name': annot_fname + '-nuclei-' + args.nuclei_annotation_format,
-        'elements': nuclei_annot_list
+        'elements': nuclei_annot_list,
+        'attributes': {
+            'src_mu_lab': None if src_mu_lab is None else src_mu_lab.tolist(),
+            'src_sigma_lab': None if src_sigma_lab is None else src_sigma_lab.tolist(),
+            'params': vars(args),
+            'cli': Path(__file__).stem,
+            'version': histomicstk.__version__},
     }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
-        json.dump(annotation, annotation_file, indent=2, sort_keys=False)
+        json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
 
     #
     # Create CSV Feature file
@@ -338,7 +289,8 @@ def main(args):
 
     else:
 
-        raise ValueError('Extension of output feature file must be .csv or .h5')
+        msg = 'Extension of output feature file must be .csv or .h5'
+        raise ValueError(msg)
 
     total_time_taken = time.time() - total_start_time
 

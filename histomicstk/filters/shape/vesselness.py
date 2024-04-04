@@ -35,7 +35,6 @@ def vesselness(im_input, sigma):
        Interventation. MICCAI98. Springer Berlin Heidelberg,1998. 130-137.
 
     """
-
     # calculate hessian matrix
     H = sigma ** 2 * htk_utils.hessian(im_input, sigma)
 
@@ -43,7 +42,7 @@ def vesselness(im_input, sigma):
     E, V1, V2 = htk_utils.eigen(H)
 
     # compute blobness measures
-    Deviation = E[:, :, 0]/(E[:, :, 1] + np.spacing(1))
+    Deviation = E[:, :, 0] / (E[:, :, 1] + np.spacing(1))
     Frobenius = np.sqrt(E[:, :, 0]**2 + E[:, :, 1]**2)
 
     # calculate angles for 'Theta'

@@ -23,9 +23,8 @@ def rag(im_label, neigh_conn=4):
         and 'j' are neigh_conn.
 
     """
-
     # initialize adjacency matrix for im_label.max() total regions
-    adj_mat = np.zeros((im_label.max(), im_label.max()), dtype=np.bool)
+    adj_mat = np.zeros((im_label.max(), im_label.max()), dtype=bool)
 
     # process 4-neigh_conn horizontal connections
     Mask = (im_label[:, 1:-1] != im_label[:, 0:-2]) & \
@@ -59,7 +58,7 @@ def rag(im_label, neigh_conn=4):
                 im_label[Indices[0] + 1, Indices[1]][:, np.newaxis],
                 im_label[Indices[0], Indices[1] + 1][:, np.newaxis]),
                 axis=1)),
-            axis=0
+            axis=0,
         )
 
         # shift upper-left ([-1, 1])
@@ -72,13 +71,13 @@ def rag(im_label, neigh_conn=4):
                 im_label[Indices[0], Indices[1]][:, np.newaxis],
                 im_label[Indices[0] + 1, Indices[1] + 1][:, np.newaxis]),
                 axis=1)),
-            axis=0
+            axis=0,
         )
 
     # add entries to adjacency matrix
     for i in range(Xc.shape[0]):
-        adj_mat[Xc[i, 0]-1, Xc[i, 1]-1] = True
-        adj_mat[Xc[i, 1]-1, Xc[i, 0]-1] = True
+        adj_mat[Xc[i, 0] - 1, Xc[i, 1] - 1] = True
+        adj_mat[Xc[i, 1] - 1, Xc[i, 0] - 1] = True
 
     # return result
     return adj_mat

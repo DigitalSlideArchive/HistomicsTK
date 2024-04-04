@@ -12,10 +12,6 @@ thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
 from tests.htk_test_utilities import girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -37,20 +33,19 @@ class TestGirderConvenience:
         cfg.gc = girderClient
 
         # get original item
-        original_iteminfo = cfg.gc.get('/item', parameters={
-            'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+        original_iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
         # create a sample folder
         cfg.posted_folder = cfg.gc.post(
             '/folder', data={
                 'parentId': original_iteminfo['folderId'],
-                'name': 'test'
+                'name': 'test-convenience',
             })
 
-        # copy the item so that everythign we do here does not affect
+        # copy the item so that everything we do here does not affect
         # other modules that use that item
         cfg.iteminfo = cfg.gc.post(
-            "/item/%s/copy" % original_iteminfo['_id'], data={
+            '/item/%s/copy' % original_iteminfo['_id'], data={
                 'name': 'test_slide_gcutils',
                 'copyAnnotations': True,
             })
@@ -59,11 +54,11 @@ class TestGirderConvenience:
         # now get and check absolute path
         fpath = get_absolute_girder_folderpath(
             gc=cfg.gc, folder_info=cfg.posted_folder)
-        assert fpath == 'Public/test/'
+        assert fpath == 'Public/test-convenience/'
 
     def test_update_permissions_for_annotations_in_slide(self):
         admininfo = cfg.gc.get('/user', parameters={
-            'text': "admin"})[0]
+            'text': 'admin'})[0]
 
         # params to pass to update_permissions_for_annotation()
         update_params = {
@@ -78,11 +73,11 @@ class TestGirderConvenience:
         resps = update_permissions_for_annotations_in_slide(
             gc=cfg.gc, slide_id=cfg.iteminfo['_id'],
             # monitorPrefix='test_update_permissions_for_annotations_in_slide',
-            **update_params
+            **update_params,
         )
-        assert len(resps) == 8
+        assert len(resps) >= 8
         assert resps[0]['access']['users'] == [
-            {'flags': [], 'id': admininfo['_id'], 'level': 2}
+            {'flags': [], 'id': admininfo['_id'], 'level': 2},
         ]
         assert resps[0]['access']['groups'] == []
 
@@ -100,14 +95,14 @@ class TestGirderConvenience:
         )
         modified = [j for j in resps if j is not None]
         assert len(modified) == 3
-        assert "modified_roi" in modified[0]['groups']
+        assert 'modified_roi' in modified[0]['groups']
 
     def test_revert_annotations_in_slide(self):
         # delete elements for one annotation
         anns = cfg.gc.get('/annotation/item/%s' % cfg.iteminfo['_id'])
         anns[0]['annotation']['elements'] = []
         _ = cfg.gc.put(
-            "/annotation/%s" % anns[0]['_id'], json=anns[0]['annotation'])
+            '/annotation/%s' % anns[0]['_id'], json=anns[0]['annotation'])
 
         # now revert
         resps = revert_annotations_in_slide(

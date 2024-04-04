@@ -57,9 +57,9 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `HistomicsTK` for local development.
+Ready to contribute? Here's how to set up ``HistomicsTK`` for local development.
 
-1. Fork the `HistomicsTK` repo on GitHub.
+1. Fork the ``HistomicsTK`` repo on GitHub.
 2. Clone your fork locally::
 
    $ git clone git@github.com:your_name_here/HistomicsTK.git
@@ -70,8 +70,8 @@ Ready to contribute? Here's how to set up `HistomicsTK` for local development.
    $ cd HistomicsTK/
    $ python -m pip install setuptools-scm Cython>=0.25.2 scikit-build>=0.8.1 cmake>=0.6.0 numpy>=1.12.1
    $ python setup.py develop
-    
-Of course, any type of virtual python environment will do. These instructions are equally applicable inside `conda` environments.
+
+Of course, any type of virtual python environment will do. These instructions are equally applicable inside ``conda`` environments.
 
 4. Create a branch for local development::
 
@@ -95,19 +95,19 @@ Before you submit a pull request, check that it meets these guidelines:
 1. The pull request should include unit tests (see notes below).
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and make sure
-   your feature is reflected in one of the `.rst` files under `./docs/`.
+   your feature is reflected in one of the ``.rst`` files under ``./docs/``.
    If an existing module exists and your feature is appended to it,
    then you can ignore this step as Sphinx will render it automatically.
-   Otherwise, create a new `.rst` file.
-3. **(Optional)** Create a Jupyter Notebook or a detailed documentation `.rst`
-   under `./docs/examples/` to explain exactly how the feature should be used.
-4. The pull request should work for Python 3.6, 3.7, 3.8, and 3.9. Check that
-   the tests pass on the pull request for all supported Python versions.
+   Otherwise, create a new ``.rst`` file.
+3. **(Optional)** Create a Jupyter Notebook or a detailed documentation
+   ``.rst`` under ``./docs/examples/`` to explain exactly how the feature
+   should be used.
+4. The pull request should work for all currently supported Python versions.
 
 Unit Testing Notes
 ----------------------------
 
-There are two 'types` of unit tests on HistomicsTK.
+There are two 'types' of unit tests on HistomicsTK.
 
 * **Ordinary unit testing:**
 
@@ -158,7 +158,7 @@ There are two 'types` of unit tests on HistomicsTK.
     server is fully initialized. To manually start a DSA docker image::
 
       $ cd HistomicsTK/tests/
-      $ docker-compose up --build
+      $ docker compose up --build
 
   You can run your tests using something like::
 
@@ -181,7 +181,7 @@ standardized coding and documentation style of this repo. If you'd like
 to help the organizers integrate your changes seamlessly, check to see
 if the travis CI was passed. Otherwise, examine for errors and see if you
 can get them fixed. Oftentimes, the errors originate from code and docstring
-formatting and/or integration of jupyter notebooks into the documentaion
+formatting and/or integration of jupyter notebooks into the documentation
 examples. Here are some pointers to help you handle some of these issues:
 
 * Consider using ``flake8`` package to check if you comply with the

@@ -6,8 +6,15 @@ from histomicstk.preprocessing import color_conversion
 from histomicstk.utils import sample_pixels
 
 
-def reinhard_stats(slide_path, sample_fraction, magnification=None,
-                   tissue_seg_mag=1.25):
+def reinhard_stats(
+        slide_path,
+        sample_fraction,
+        magnification=None,
+        tissue_seg_mag=1.25,
+        invert_image=False,
+        style=None,
+        frame=None,
+        default_img_inversion=False):
     """Samples a whole-slide-image to determine colorspace statistics (mean,
     variance) needed to perform global Reinhard color normalization.
 
@@ -51,13 +58,16 @@ def reinhard_stats(slide_path, sample_fraction, magnification=None,
     histomicstk.preprocessing.color_normalization.reinhard
 
     """
-
     # generate a sampling of sample_pixels_rgb pixels from whole-slide image
     sample_pixels_rgb = sample_pixels(
         slide_path,
         sample_fraction=sample_fraction,
         magnification=magnification,
-        tissue_seg_mag=tissue_seg_mag
+        tissue_seg_mag=tissue_seg_mag,
+        invert_image=invert_image,
+        style=style,
+        frame=frame,
+        default_img_inversion=default_img_inversion,
     )
 
     # reshape the Nx3 pixel array into a 1 x N x 3 image for lab_mean_std
@@ -72,3 +82,12 @@ def reinhard_stats(slide_path, sample_fraction, magnification=None,
     stats = ReinhardStats(Mu, Sigma)
 
     return stats
+
+
+def reinhard_stats_rgb(rgb_image):
+    rgb_pixels = np.reshape(rgb_image, (1, rgb_image.shape[0] * rgb_image.shape[1], 3))
+
+    Mu, Sigma = color_conversion.lab_mean_std(rgb_pixels)
+
+    # build named tuple for output
+    return collections.namedtuple('ReinhardStats', ['Mu', 'Sigma'])(Mu, Sigma)

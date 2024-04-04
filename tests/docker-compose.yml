@@ -10,7 +10,7 @@ services:
     depends_on:
       - mongodb
     volumes:
-      - ../.tox/externaldata:/tests/externaldata
+      - ../.tox/externaldata:/root/.cache/pooch/externaldata
   mongodb:
-    image: "circleci/mongo:5.0-ram"
-    command: ["mongod", "--storageEngine", "ephemeralForTest", "--dbpath", "/dev/shm/mongo"]
+    image: "mongo:5.0"
+    command: ["bash", "-c", "mkdir /dev/shm/mongo && mongod --nojournal --dbpath=/dev/shm/mongo --storageEngine ephemeralForTest --noauth --bind_ip_all"]

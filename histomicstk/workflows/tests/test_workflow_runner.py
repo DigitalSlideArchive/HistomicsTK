@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Mon Sep 30 18:12:48 2019.
 
@@ -16,10 +15,6 @@ from histomicstk.workflows.workflow_runner import Slide_iterator
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
 from tests.htk_test_utilities import girderClient  # noqa
-
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
 
 
 class Cfg:
@@ -41,20 +36,19 @@ class TestWorkflows:
         cfg.gc = girderClient
 
         # get original item
-        original_iteminfo = cfg.gc.get('/item', parameters={
-            'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+        original_iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
 
         # create a sample folder
         cfg.posted_folder = cfg.gc.post(
             '/folder', data={
                 'parentId': original_iteminfo['folderId'],
-                'name': 'test'
+                'name': 'test-workflow',
             })
 
         # copy the item a couple of times
         for i in range(2):
             _ = cfg.gc.post(
-                "/item/%s/copy" % original_iteminfo['_id'], data={
+                '/item/%s/copy' % original_iteminfo['_id'], data={
                     'name': 'TCGA-A2-A0YE_copy-%d' % i,
                     'copyAnnotations': True,
                     'folderId': cfg.posted_folder['_id'],
@@ -71,9 +65,9 @@ class TestWorkflows:
         for i in range(2):
             slide_info = next(si)
             if i == 0:
-                assert(all(
-                    [k in slide_info.keys() for k in
-                     ('name', '_id', 'levels', 'magnification')]))
+                assert all(
+                    k in slide_info.keys() for k in
+                    ('name', '_id', 'levels', 'magnification'))
 
     def test_runner_using_annotation_style_update(self):
         """Test workflow runner for cellularity detection."""

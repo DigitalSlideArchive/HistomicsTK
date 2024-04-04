@@ -17,7 +17,6 @@ from histomicstk.utils.girder_convenience_utils import \
 from histomicstk.workflows.workflow_runner import (Slide_iterator,
                                                    Workflow_runner)
 
-# %%===========================================================================
 # Helper functions
 
 
@@ -92,7 +91,7 @@ def _add_folder_to_sqlite(dbcon, folder_info):
 
 def _add_annotation_docs_to_sqlite(dbcon, annotation_docs, item):
     # add full item path for convenience
-    annotation_docs.loc[:, "item_name"] = item['name']
+    annotation_docs.loc[:, 'item_name'] = item['name']
 
     # save tables to sqlite
     annotation_docs.to_sql(
@@ -110,7 +109,7 @@ def _add_annotation_docs_to_sqlite(dbcon, annotation_docs, item):
             'updatedId': String(),
             'groups': String(),
             'element_count': Integer(),
-            'element_details': Integer(), },
+            'element_details': Integer()},
         index=False,
     )
 
@@ -137,7 +136,7 @@ def _add_annotation_elements_to_sqlite(dbcon, annotation_elements):
             'ymax': Integer(),
             'bbox_area': Integer(),
             'coords_x': String(),
-            'coords_y': String(), },
+            'coords_y': String()},
         index=False,
     )
 
@@ -175,7 +174,7 @@ def parse_annotations_to_local_tables(
         text to prepend to printed statements
 
     """
-    print("%s: parse to tables" % monitorPrefix)
+    print('%s: parse to tables' % monitorPrefix)
     savepath_base = os.path.join(local, item['name'])
     annotation_docs, annotation_elements = \
         parse_slide_annotations_into_tables(annotations)
@@ -185,11 +184,11 @@ def parse_annotations_to_local_tables(
         annotation_elements.to_csv(savepath_base + '_elements.csv')
 
     if save_sqlite:
-        assert dbcon is not None, "You must connect to database first!"
+        assert dbcon is not None, 'You must connect to database first!'
         _add_annotation_docs_to_sqlite(dbcon, annotation_docs, item)
         _add_annotation_elements_to_sqlite(dbcon, annotation_elements)
 
-# %%===========================================================================
+
 # Workflow at a single slide level
 
 
@@ -200,7 +199,7 @@ def dump_annotations_workflow(
     """Dump annotations for single slide into the local folder.
 
     Parameters
-    -----------
+    ----------
     gc : girder_client.GirderClient
         authenticated girder client instance
 
@@ -241,7 +240,7 @@ def dump_annotations_workflow(
 
         # dump item information json
         if save_json:
-            print("%s: save item info" % monitorPrefix)
+            print('%s: save item info' % monitorPrefix)
             with open(savepath_base + '.json', 'w') as fout:
                 json.dump(item, fout)
 
@@ -250,20 +249,20 @@ def dump_annotations_workflow(
             _add_item_to_sqlite(dbcon, item)
 
         # pull annotation
-        print("%s: load annotations" % monitorPrefix)
+        print('%s: load annotations' % monitorPrefix)
         annotations = gc.get('/annotation/item/' + item['_id'])
 
         if annotations is not None:
 
             # dump annotations to JSON in local folder
             if save_json:
-                print("%s: save annotations" % monitorPrefix)
+                print('%s: save annotations' % monitorPrefix)
                 with open(savepath_base + '_annotations.json', 'w') as fout:
                     json.dump(annotations, fout)
 
             # run callback
             if callback is not None:
-                print("%s: run callback" % monitorPrefix)
+                print('%s: run callback' % monitorPrefix)
                 callback(
                     item=item, annotations=annotations, local=local,
                     dbcon=dbcon, monitorPrefix=monitorPrefix,
@@ -272,7 +271,7 @@ def dump_annotations_workflow(
     except Exception as e:
         print(str(e))
 
-# %%===========================================================================
+
 # Main method
 
 
@@ -286,7 +285,7 @@ def dump_annotations_locally(
     annotations there. Adapted from Lee A.D. Cooper
 
     Parameters
-    -----------
+    ----------
     gc : girder_client.GirderClient
         authenticated girder client instance
 
@@ -318,29 +317,29 @@ def dump_annotations_locally(
     callback_kwargs : dict
         kwargs to pass along to callback. DO NOT pass any of the parameters
         item, annotations, local, monitorPrefix, or dbcon as these will be
-        internally passed. Just include any specific paremeters for the
+        internally passed. Just include any specific parameters for the
         callback. See parse_annotations_to_local_tables() above for
         an example of a callback and the unir test of this function.
 
     """
     callback_kwargs = callback_kwargs or {}
-    assert(save_json or save_sqlite), "must save results somehow!"
+    assert save_json or save_sqlite, 'must save results somehow!'
     monitor = os.path.basename(local)
 
     # get folder info
-    folder_info = gc.get("folder/%s" % folderid)
+    folder_info = gc.get('folder/%s' % folderid)
     folder_info['folder_path'] = get_absolute_girder_folderpath(
         gc=gc, folder_info=folder_info)
 
     # connect to sqlite database -- only first stack does this
     if save_sqlite and (dbcon is None):
-        db_path = os.path.join(local, folder_info['name'] + ".sqlite")
+        db_path = os.path.join(local, folder_info['name'] + '.sqlite')
         sql_engine = create_engine('sqlite:///' + db_path, echo=False)
         dbcon = sql_engine.connect()
 
     # save folder information json
     if save_json:
-        print("%s: save folder info" % monitor)
+        print('%s: save folder info' % monitor)
         savepath = os.path.join(local, folder_info['name'] + '.json')
         with open(savepath, 'w') as fout:
             json.dump(folder_info, fout)
@@ -376,10 +375,8 @@ def dump_annotations_locally(
         new_folder = os.path.join(local, folder['name'])
         os.mkdir(new_folder)
 
-        # call self with same prameters
+        # call self with same parameters
         dump_annotations_locally(
             gc=gc, folderid=folder['_id'], local=new_folder,
             save_json=save_json, save_sqlite=save_sqlite, dbcon=dbcon,
             callback=callback, callback_kwargs=callback_kwargs)
-
-# %%===========================================================================

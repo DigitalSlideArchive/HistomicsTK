@@ -22,10 +22,6 @@ sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 import htk_test_utilities as utilities  # noqa
 from htk_test_utilities import getTestFilePath, girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -44,13 +40,28 @@ class Cfg:
 cfg = Cfg()
 
 # pytest runs tests in the order they appear in the module
+
+
 @pytest.mark.usefixtures('girderClient')  # noqa
 def test_prep(girderClient):  # noqa
 
     cfg.gc = girderClient
 
-    cfg.iteminfo = cfg.gc.get('/item', parameters={
-        'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+    original_iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+
+    cfg.folder = cfg.gc.post(
+        '/folder', data={
+            'parentId': original_iteminfo['folderId'],
+            'name': 'test-annot-and-mask-handler',
+        })
+
+    # copy the item
+    cfg.iteminfo = cfg.gc.post(
+        '/item/%s/copy' % original_iteminfo['_id'], data={
+            'name': 'TCGA-A2-A0YE-01Z.svs',
+            'copyAnnotations': True,
+            'folderId': cfg.folder['_id'],
+        })
 
     # read GTCodes dataframe
     gtcodePath = getTestFilePath('sample_GTcodes.csv')
@@ -62,7 +73,7 @@ def test_prep(girderClient):  # noqa
         'iou_thresh': 0.0,
         'crop_to_roi': True,
         'use_shapely': True,
-        'verbose': False
+        'verbose': False,
     }
     cfg.get_contours_kwargs = {
         'groups_to_get': None,
@@ -71,7 +82,7 @@ def test_prep(girderClient):  # noqa
         'discard_nonenclosed_background': True,
         'background_group': 'mostly_stroma',
         'MIN_SIZE': 10, 'MAX_SIZE': None,
-        'verbose': False, 'monitorPrefix': ""
+        'verbose': False, 'monitorPrefix': '',
     }
 
     # Microns-per-pixel / Magnification (either or)
@@ -132,8 +143,6 @@ class TestGetROIMasks:
 
     def test_get_all_rois_from_slide(self, tmpdir):  # noqa
         """Test get_all_roi_masks_for_slide() as-is without tiling."""
-        if sys.version_info < (3, ):
-            return
         # just a temp directory to save masks for now
         base_savepath = str(tmpdir)
         savepaths = {
@@ -168,14 +177,11 @@ class TestGetROIMasks:
         assert {
             'TCGA-A2-A0YE_left-57604_top-35808_bottom-37445_right-59441.png',
             'TCGA-A2-A0YE_left-58483_top-38223_bottom-39780_right-60399.png',
-            'TCGA-A2-A0YE_left-59201_top-33493_bottom-38063_right-63732.png'
+            'TCGA-A2-A0YE_left-59201_top-33493_bottom-38063_right-63732.png',
         } == {os.path.basename(savename['ROI']) for savename in savenames}
-
 
     def test_get_all_rois_from_slide_tiled(self, tmpdir):  # noqa
         """Test get_all_roi_masks_for_slide() with tiling."""
-        if sys.version_info < (3, ):
-            return
         # just a temp directory to save masks for now
         base_savepath = str(tmpdir)
         savepaths = {
@@ -217,8 +223,6 @@ class TestGetROIMasks:
 
     def test_get_image_and_mask_manual_bounds(self):
         """Test get_image_and_mask_from_slide()."""
-        if sys.version_info < (3, ):
-            return
         # get specified region -- without providing scaled annotations
         roi_out_1 = get_image_and_mask_from_slide(
             mode='manual_bounds', **cfg.get_kwargs)
@@ -235,19 +239,18 @@ class TestGetROIMasks:
             assert roi_out['ROI'].shape == (200, 250)
             assert roi_out['rgb'].shape == (200, 250, 3)
             assert roi_out['visualization'].shape == (200, 250, 3)
-            assert len(roi_out['contours']) > 26 and (
+            assert len(roi_out['contours']) > 26
+            assert (
                 len(roi_out['contours']) < 32)
             assert set(roi_out['contours'][0].keys()) == {
                 'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
                 'has_holes', 'touches_edge-top', 'touches_edge-left',
                 'touches_edge-bottom', 'touches_edge-right', 'coords_x',
-                'coords_y'
+                'coords_y',
             }
 
     def test_get_image_and_mask_minbbox(self):
         """Test get_image_and_mask_from_slide()."""
-        if sys.version_info < (3, ):
-            return
         # get ROI bounding everything
         roi_out = get_image_and_mask_from_slide(
             mode='min_bounding_box',
@@ -259,11 +262,12 @@ class TestGetROIMasks:
         assert roi_out['ROI'].shape == (321, 351)
         assert roi_out['rgb'].shape == (321, 351, 3)
         assert roi_out['visualization'].shape == (321, 351, 3)
-        assert len(roi_out['contours']) > 26 and (
+        assert len(roi_out['contours']) > 26
+        assert (
             len(roi_out['contours']) < 32)
         assert set(roi_out['contours'][0].keys()) == {
             'group', 'color', 'ymin', 'ymax', 'xmin', 'xmax',
             'has_holes', 'touches_edge-top', 'touches_edge-left',
             'touches_edge-bottom', 'touches_edge-right', 'coords_x',
-            'coords_y'
+            'coords_y',
         }

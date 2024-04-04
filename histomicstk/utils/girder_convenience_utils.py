@@ -63,14 +63,14 @@ def get_absolute_girder_folderpath(gc, folder_id=None, folder_info=None):
         absolute path to folder in the girder server.
 
     """
-    assert any([j is not None for j in (folder_id, folder_info)])
+    assert any(j is not None for j in (folder_id, folder_info))
     if folder_id is not None:
         folder_info = gc.get('/folder/%s' % folder_id)
     fpath = gc.get('/folder/%s/rootpath' % folder_info['_id'])
-    fpath = "/".join([
+    fpath = '/'.join([
         j['object']['name'] for j in fpath
         if j['object']['_modelType'] == 'folder'
-    ]) + "/" + folder_info['name'] + "/"
+    ]) + '/' + folder_info['name'] + '/'
     return fpath
 
 
@@ -119,8 +119,9 @@ def update_permissions_for_annotation(
     if annotation is not None:
         annotation_id = annotation['_id']
     elif annotation_id is None:
+        msg = 'You must provide either the annotation or its girder id.'
         raise Exception(
-            "You must provide either the annotation or its girder id.")
+            msg)
 
     # get current permissions
     current = gc.get('/annotation/%s/access' % annotation_id)
@@ -251,7 +252,7 @@ def update_styles_for_annotation(gc, annotation, changes):
     # find out if annotation needs editing
     if 'groups' not in annotation.keys():
         return
-    elif not any([g in changes.keys() for g in annotation['groups']]):
+    elif not any(g in changes.keys() for g in annotation['groups']):
         return
 
     # edit elements one by one
@@ -260,7 +261,7 @@ def update_styles_for_annotation(gc, annotation, changes):
             el.update(changes[el['group']])
     # print("  updating ...")
     return gc.put(
-        "/annotation/%s" % annotation['_id'], json=annotation['annotation'])
+        '/annotation/%s' % annotation['_id'], json=annotation['annotation'])
 
 
 def update_styles_for_annotations_in_slide(
@@ -357,7 +358,7 @@ def revert_annotation(
     annotation : dict
         overrides annotation_id if given
     version : int
-        versoin number for annotation. If None, and
+        version number for annotation. If None, and
         not revert_to_nonempty_elements
         the default behavior of the endpoint is evoked, which reverts the
         annotation if it was deleted and if not, reverts to the last version.
@@ -376,18 +377,19 @@ def revert_annotation(
     if annotation is not None:
         annotation_id = annotation['_id']
     elif annotation_id is None:
+        msg = 'You must provide either the annotation or its girder id.'
         raise Exception(
-            "You must provide either the annotation or its girder id.")
+            msg)
 
-    history = gc.get("/annotation/%s/history" % annotation_id)
+    history = gc.get('/annotation/%s/history' % annotation_id)
 
     # no need to revert if empty
-    if only_revert_if_empty and len(history[0]["groups"]) > 0:
-        return dict()
+    if only_revert_if_empty and len(history[0]['groups']) > 0:
+        return {}
 
     # cannot revert if only version
     if len(history) < 2:
-        return dict()
+        return {}
 
     if (version is None) and revert_to_nonempty_elements:
 
@@ -396,18 +398,18 @@ def revert_annotation(
         # indication if the annotation version actually has some elements.
         # TODO -- This is likely a bug (?); fix me!!!
         for ver in history:
-            if len(ver["groups"]) > 0:
+            if len(ver['groups']) > 0:
                 version = ver['_version']
                 break
 
-    ver = "" if version is None else "?version=%d" % version
+    ver = '' if version is None else '?version=%d' % version
 
     # if version is None:
     #     print("    Reverting ...")
     # else:
     #     print("    Reverting to version %d" % version)
 
-    return gc.put("/annotation/%s/history/revert%s" % (annotation_id, ver))
+    return gc.put('/annotation/%s/history/revert%s' % (annotation_id, ver))
 
 
 def revert_annotations_in_slide(
@@ -481,15 +483,13 @@ def revert_annotations_in_folder(
     )
     workflow_runner.run()
 
-# %%===========================================================================
-
 
 def reproduce_annotations_workflow(
         gc, folderid, annotation_jsonfile, monitorPrefix=''):
     """Dump annotations into single slide from local folder (Internal function).
 
     Parameters
-    -----------
+    ----------
     gc : girder_client.GirderClient
         authenticated girder client instance
 
@@ -514,7 +514,7 @@ def reproduce_annotations_workflow(
         # copy item without annotations
         with open(os.path.join(local, itemname + '.json')) as jf:
             source_item_info = json.load(jf)
-        print("%s: copy item" % monitorPrefix)
+        print('%s: copy item' % monitorPrefix)
         item = gc.post(
             '/item/%s/copy?folderId=%s&name=%s&copyAnnotations=False'
             % (source_item_info['_id'], folderid, itemname))
@@ -527,10 +527,10 @@ def reproduce_annotations_workflow(
         n_annotations = len(annotations)
         for anno, annotation in enumerate(annotations):
             try:
-                print("%s: post annotation %d of %d" % (
+                print('%s: post annotation %d of %d' % (
                     monitorPrefix, anno, n_annotations))
                 _ = gc.post(
-                    "/annotation?itemId=" + item['_id'],
+                    '/annotation?itemId=' + item['_id'],
                     json=annotation['annotation'])
             except Exception as e:
                 print(e.__repr__())
@@ -549,7 +549,7 @@ def reproduce_annotations_from_backup(gc, folderid, local):
     local annotations (from JSON files) are posted to them.
 
     Parameters
-    -----------
+    ----------
     gc : girder_client.GirderClient
         authenticated girder client instance
 
@@ -580,13 +580,10 @@ def reproduce_annotations_from_backup(gc, folderid, local):
             new_folder = gc.post('/folder?parentId=%s&name=%s' % (
                 folderid, subdir))
 
-            # call self with same prameters
+            # call self with same parameters
             reproduce_annotations_from_backup(
                 gc=gc, folderid=new_folder['_id'],
                 local=os.path.join(local, subdir))
 
         except Exception as e:
             print(e.__repr__())
-
-
-# %%===========================================================================

@@ -30,6 +30,23 @@ class TestPolygonMerger:
     @pytest.mark.usefixtures('girderClient')  # noqa
     def test_polygon_merger_tiled_masks(self, girderClient):  # noqa
         """Test Polygon_merger.run()."""
+        original_iteminfo = girderClient.get(
+            '/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+
+        folder = girderClient.post(
+            '/folder', data={
+                'parentId': original_iteminfo['folderId'],
+                'name': 'test-polygon-merge',
+            })
+
+        # copy the item
+        sampleSlideItem = girderClient.post(
+            '/item/%s/copy' % original_iteminfo['_id'], data={
+                'name': 'TCGA-A2-A0YE-01Z.svs',
+                'copyAnnotations': True,
+                'folderId': folder['_id'],
+            })
+
         # read GTCodes dataframe
         gtcodePath = getTestFilePath('sample_GTcodes.csv')
         GTCodes_df = read_csv(gtcodePath)
@@ -55,8 +72,6 @@ class TestPolygonMerger:
             'mostly_lymphocytic_infiltrate'}
 
         # deleting existing annotations in target slide (if any)
-        sampleSlideItem = girderClient.resourceLookup(
-            '/user/admin/Public/TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')  # noqa
         sampleSlideId = str(sampleSlideItem['_id'])
         delete_annotations_in_slide(girderClient, sampleSlideId)
 
@@ -64,12 +79,12 @@ class TestPolygonMerger:
         annotation_docs = get_annotation_documents_from_contours(
             contours_df.copy(), separate_docs_by_group=True,
             docnamePrefix='test',
-            verbose=False, monitorPrefix=sampleSlideId + ": annotation docs")
+            verbose=False, monitorPrefix=sampleSlideId + ': annotation docs')
 
         # post annotations to slide -- make sure it posts without errors
         for annotation_doc in annotation_docs:
             resp = girderClient.post(
-                "/annotation?itemId=" + sampleSlideId, json=annotation_doc)
+                '/annotation?itemId=' + sampleSlideId, json=annotation_doc)
             assert 'annotation' in resp.keys()
 
     def test_polygon_merger_rtree(self):
@@ -81,7 +96,7 @@ class TestPolygonMerger:
 
         # init & run polygon merger
         pm = Polygon_merger_v2(contours_df, verbose=0)
-        pm.unique_groups.remove("roi")
+        pm.unique_groups.remove('roi')
         pm.run()
 
         # make sure it is what we expect
@@ -91,17 +106,17 @@ class TestPolygonMerger:
 
         # add colors (aesthetic)
         for group in pm.unique_groups:
-            cs = contours_df.loc[contours_df.loc[:, "group"] == group, "color"]
+            cs = contours_df.loc[contours_df.loc[:, 'group'] == group, 'color']
             pm.new_contours.loc[
-                pm.new_contours.loc[:, "group"] == group, "color"] = cs.iloc[0]
+                pm.new_contours.loc[:, 'group'] == group, 'color'] = cs.iloc[0]
 
         # get rid of nonenclosed stroma (aesthetic)
         pm.new_contours = _discard_nonenclosed_background_group(
-            pm.new_contours, background_group="mostly_stroma")
+            pm.new_contours, background_group='mostly_stroma')
 
         # get list of annotation documents
         annotation_docs = get_annotation_documents_from_contours(
             pm.new_contours.copy(), separate_docs_by_group=True,
             docnamePrefix='test',
-            verbose=False, monitorPrefix="annotation docs")
+            verbose=False, monitorPrefix='annotation docs')
         assert len(annotation_docs) == 3

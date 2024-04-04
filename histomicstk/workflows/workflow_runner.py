@@ -1,12 +1,9 @@
-#!/usr/bin/env python3
 """
 Created on Mon Sep 30 22:09:40 2019.
 
 @author: mtageld
 """
 from histomicstk.utils.general_utils import Base_HTK_Class
-
-# %% ==========================================================================
 
 
 class Slide_iterator(Base_HTK_Class):
@@ -15,8 +12,8 @@ class Slide_iterator(Base_HTK_Class):
     def __init__(self, gc, source_folder_id, **kwargs):
         """Init Slide_iterator object.
 
-        Arguments
-        -----------
+        Arguments:
+        ---------
         gc : object
             girder client object
         source_folder_id : str
@@ -47,7 +44,7 @@ class Slide_iterator(Base_HTK_Class):
     def set_slide_ids(self):
         """Get dict of slide idx, indexed by name."""
         resp = self.gc.get(
-            "item?folderId=%s&limit=1000000" % self.source_folder_id)
+            'item?folderId=%s&limit=1000000' % self.source_folder_id)
         self.slide_ids = {j['name']: j['_id'] for j in resp}
         # find discard ids
         if self.keep_slides is not None:
@@ -65,12 +62,10 @@ class Slide_iterator(Base_HTK_Class):
                 slide_info = self.gc.get('item/%s/tiles' % sid)
             except Exception as e:
                 print(str(e))
-                slide_info = dict()
+                slide_info = {}
             slide_info['name'] = sname
             slide_info['_id'] = sid
             yield slide_info
-
-# %% ==========================================================================
 
 
 class Workflow_runner(Base_HTK_Class):
@@ -81,8 +76,8 @@ class Workflow_runner(Base_HTK_Class):
             recursive=False, catch_exceptions=True, **kwargs):
         """Init Workflow_runner object.
 
-        Arguments
-        -----------
+        Arguments:
+        ---------
         slide_iterator : object
             Slide_iterator object
         workflow : method
@@ -101,7 +96,7 @@ class Workflow_runner(Base_HTK_Class):
             [verbose, monitorPrefix, logging_savepath, suppress_warnings]
 
         """
-        default_attr = dict()
+        default_attr = {}
         default_attr.update(kwargs)
         super().__init__(default_attr=default_attr)
 
@@ -118,8 +113,6 @@ class Workflow_runner(Base_HTK_Class):
         self.si = slide_iterator.run()
         self.originalPrefix = self.monitorPrefix
 
-    # =========================================================================
-
     def run(self):
         """Run workflow for all slides."""
         self.n_slides = len(self.slide_iterator.slide_ids)
@@ -127,7 +120,7 @@ class Workflow_runner(Base_HTK_Class):
         def _run_slide(self, monitorStr):
 
             slide_info = next(self.si)
-            monitorStr += " (%s)" % (slide_info['name'])
+            monitorStr += ' (%s)' % (slide_info['name'])
 
             _ = self.workflow(
                 slide_id=slide_info['_id'], monitorPrefix=monitorStr,
@@ -135,7 +128,7 @@ class Workflow_runner(Base_HTK_Class):
 
         for sno in range(self.n_slides):
 
-            monitorStr = "%s: slide %d of %d" % (
+            monitorStr = '%s: slide %d of %d' % (
                 self.monitorPrefix, sno + 1, self.n_slides)
 
             if not self.catch_exceptions:
@@ -148,13 +141,13 @@ class Workflow_runner(Base_HTK_Class):
 
                     if self.keep_log:
                         self.cpr1.logger.exception(
-                            "%s: SEE EXCEPTIONS FILE: %s" % (
+                            '%s: SEE EXCEPTIONS FILE: %s', (
                                 monitorStr, self.exception_path))
                         with open(self.exception_path, 'a') as f:
                             print(str(e))
-                            f.write("%s\n" % monitorStr)
+                            f.write('%s\n' % monitorStr)
                             f.write(e.__repr__())
-                            f.write("\n---------------------------------\n")
+                            f.write('\n---------------------------------\n')
                     else:
                         print(e.__repr__())
 
@@ -164,11 +157,11 @@ class Workflow_runner(Base_HTK_Class):
                     parentId=self.slide_iterator.source_folder_id):
 
                 fpath = self.gc.get('/folder/%s/rootpath' % folder['_id'])
-                fpath = "/".join(
-                    [j['object']['name'] for j in fpath]
-                ) + "/" + folder['name'] + "/"
+                fpath = '/'.join(
+                    [j['object']['name'] for j in fpath],
+                ) + '/' + folder['name'] + '/'
 
-                self.monitorPrefix = "%s: %s" % (self.originalPrefix, fpath)
+                self.monitorPrefix = '%s: %s' % (self.originalPrefix, fpath)
 
                 # update slide iterator for subfolder
                 self.slide_iterator.source_folder_id = folder['_id']
@@ -178,8 +171,6 @@ class Workflow_runner(Base_HTK_Class):
                 # recurse
                 self.run()
 
-# %% ==========================================================================
-
 
 class Annotation_iterator(Base_HTK_Class):
     """Iterate through annotations in a girder item (slide)."""
@@ -188,8 +179,8 @@ class Annotation_iterator(Base_HTK_Class):
             self, gc, slide_id, callback=None, callback_kwargs=None, **kwargs):
         """Init Annotation_iterator object.
 
-        Arguments
-        -----------
+        Arguments:
+        ---------
         gc : object
             girder client object
         slide_id : str
@@ -207,7 +198,7 @@ class Annotation_iterator(Base_HTK_Class):
             suppress_warnings]
 
         """
-        default_attr = dict()
+        default_attr = {}
         default_attr.update(kwargs)
         super().__init__(default_attr=default_attr)
 
@@ -227,7 +218,7 @@ class Annotation_iterator(Base_HTK_Class):
         # yield one annotation at a time
         for annidx, ann in enumerate(self.slide_annotations):
             if self.verbose > 0:
-                print("%s: annotation %d of %d" % (
+                print('%s: annotation %d of %d' % (
                     self.monitorPrefix, annidx + 1, self.n_annotations))
             if self.callback is None:
                 yield ann
@@ -236,11 +227,9 @@ class Annotation_iterator(Base_HTK_Class):
                     gc=self.gc, annotation=ann, **self.callback_kwargs)
 
     def apply_callback_to_all_annotations(self):
-        """Apply callback to all annotations and resturn output list."""
+        """Apply callback to all annotations and return output list."""
         runner = self.yield_callback_output_for_annotation()
         outputs = []
-        for annidx in range(self.n_annotations):
+        for _annidx in range(self.n_annotations):
             outputs.append(next(runner))
         return outputs
-
-# %% ==========================================================================

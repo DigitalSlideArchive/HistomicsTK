@@ -36,7 +36,7 @@ def color_deconvolution(im_rgb, w, I_0=None):
     w : array_like
         A 3x3 matrix containing the color vectors in columns.
         For two stain images the third column is zero and will be
-        complemented using cross-product. Atleast two of the three
+        complemented using cross-product. At least two of the three
         columns must be non-zero.
     I_0 : float or array_like, optional
         A float a 3-vector containing background RGB intensities.
@@ -68,6 +68,12 @@ def color_deconvolution(im_rgb, w, I_0=None):
 
     """
     # complement stain matrix if needed
+    w = np.array(w)
+    if w.shape[1] < 3:
+        wc = np.zeros((w.shape[0], 3))
+        wc[:, :w.shape[1]] = w
+        w = wc
+
     if np.linalg.norm(w[:, 2]) <= 1e-16:
         wc = complement_stain_matrix(w)
     else:
@@ -112,21 +118,21 @@ def _reorder_stains(W, stains=None):
     to reorder the stains matrix to the order provided by this parameter
 
     Parameters
-    ------------
+    ----------
     W : np array
         A 3x3 matrix of stain column vectors.
     stains : list, optional
         List of stain names (order is important). Default is H&E.
 
     Returns
-    ------------
+    -------
     np array
         A re-ordered 3x3 matrix of stain column vectors.
 
     """
     stains = ['hematoxylin', 'eosin'] if stains is None else stains
 
-    assert len(stains) == 2, "Only two-stain matrices are supported for now."
+    assert len(stains) == 2, 'Only two-stain matrices are supported for now.'
 
     def _get_channel_order(W):
         first = find_stain_index(stain_color_map[stains[0]], W)
@@ -148,7 +154,7 @@ def stain_unmixing_routine(
     """Perform stain unmixing using the method of choice (wrapper).
 
     Parameters
-    ------------
+    ----------
     im_rgb : array_like
         An RGB image (m x n x 3) to unmix.
 
@@ -173,7 +179,7 @@ def stain_unmixing_routine(
         sharpie marker, white space, etc may throw off the normalization.
 
     Returns
-    --------
+    -------
     Wc : array_like
         A 3x3 complemented stain matrix.
 
@@ -208,10 +214,11 @@ def stain_unmixing_routine(
     elif stain_unmixing_method == 'xu_snmf':
         stain_deconvolution = rgb_separate_stains_xu_snmf
         stain_unmixing_params['I_0'] = None
-        assert mask_out is None, "Masking is not yet implemented in xu_snmf."
+        assert mask_out is None, 'Masking is not yet implemented in xu_snmf.'
 
     else:
-        raise ValueError("Unknown/Unimplemented deconvolution method.")
+        msg = 'Unknown/Unimplemented deconvolution method.'
+        raise ValueError(msg)
 
     # get W_source
     W_source = stain_deconvolution(im_rgb, **stain_unmixing_params)
@@ -230,7 +237,7 @@ def color_deconvolution_routine(
     """Unmix stains mixing followed by deconvolution (wrapper).
 
     Parameters
-    ------------
+    ----------
     im_rgb : array_like
         An RGB image (m x n x 3) to color normalize
 
@@ -250,7 +257,7 @@ def color_deconvolution_routine(
         Passed as-is to stain_unmixing_routine() if W_source is None.
 
     Returns
-    --------
+    -------
     Output from color_deconvolution()
 
     See Also

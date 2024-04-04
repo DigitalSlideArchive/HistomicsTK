@@ -51,16 +51,16 @@ def chan_vese(im_input, im_mask, sigma,
        Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.
 
     """
-    import scipy.ndimage.filters as filters
+    import scipy.ndimage as ndi
 
     # smoothed gradient of input image
-    im_input = filters.gaussian_filter(im_input, sigma, mode='constant', cval=0)
+    im_input = ndi.gaussian_filter(im_input, sigma, mode='constant', cval=0)
 
     # generate signed distance map
     im_phi = mask_to_sdf(im_mask)
 
     # evolve level set function
-    for i in range(0, iter):
+    for _i in range(iter):
 
         # calculate interior and exterior averages
         C1 = np.sum(im_input[im_phi > 0]) / (np.sum(im_phi > 0) + 1e-10)
@@ -77,7 +77,7 @@ def chan_vese(im_input, im_mask, sigma,
 
 
 def mask_to_sdf(im_mask):
-    from scipy.ndimage.morphology import distance_transform_edt as dtx
+    from scipy.ndimage import distance_transform_edt as dtx
 
     # convert binary mask to signed distance function
 
@@ -90,7 +90,7 @@ def kappa(im_phi):
     dPhi = np.gradient(im_phi)  # calculate gradient of level set image
     xdPhi = np.gradient(dPhi[1])
     ydPhi = np.gradient(dPhi[0])
-    K = (xdPhi[1]*(dPhi[0]**2) - 2*xdPhi[0]*dPhi[0]*dPhi[1] +
-         ydPhi[0]*(dPhi[1]**2)) / ((dPhi[0]**2 + dPhi[1]**2 + 1e-10)**(3/2))
-    K *= (xdPhi[1]**2 + ydPhi[0]**2)**(1/2)
+    K = (xdPhi[1] * (dPhi[0]**2) - 2 * xdPhi[0] * dPhi[0] * dPhi[1] +
+         ydPhi[0] * (dPhi[1]**2)) / ((dPhi[0]**2 + dPhi[1]**2 + 1e-10)**(3 / 2))
+    K *= (xdPhi[1]**2 + ydPhi[0]**2)**(1 / 2)
     return K

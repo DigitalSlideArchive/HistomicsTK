@@ -6,7 +6,7 @@ import numpy as np
 def gaussian_grad(im_input, sigma):
     """Performs smoothing with derivative gaussian kernel.
 
-    Uses seperable convolution to simultaneously smooth and calculate the
+    Uses separable convolution to simultaneously smooth and calculate the
     gradient of a grayscale image.
 
     Parameters
@@ -51,7 +51,7 @@ def gaussian_grad(im_input, sigma):
     dy = signal.convolve2d(dy, yGy, mode='same')
 
     # format output
-    Output = collections.namedtuple('Output', ['dx', 'dy'])
+    Output = collections.namedtuple('Output', ['dX', 'dY'])
     Gradients = Output(dx, dy)
 
     return Gradients

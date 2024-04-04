@@ -14,8 +14,6 @@ from shapely.geometry.polygon import Polygon
 
 Image.MAX_IMAGE_PIXELS = None
 
-# %%===========================================================================
-
 
 def get_image_from_htk_response(resp):
     """Given a histomicsTK girder response, get np array image.
@@ -26,7 +24,7 @@ def get_image_from_htk_response(resp):
            response from server request
 
     Returns
-    --------
+    -------
     Pillow Image object
         a pillow Image object of the image
 
@@ -37,8 +35,6 @@ def get_image_from_htk_response(resp):
     image = image.convert('RGB')
     return np.uint8(image)
 
-# %%===========================================================================
-
 
 def scale_slide_annotations(slide_annotations, sf):
     """Scales up or down annotations in a slide.
@@ -46,7 +42,7 @@ def scale_slide_annotations(slide_annotations, sf):
     Works in place, but returns slide_annotations anyways.
 
     Parameters
-    -----------
+    ----------
     slide_annotations : list of dicts
         response from server request
 
@@ -54,14 +50,14 @@ def scale_slide_annotations(slide_annotations, sf):
         scale factor to multiply coordinates
 
     Returns
-    ---------
+    -------
     list of dicts
 
     """
     if sf == 1.0:
         return slide_annotations
 
-    for annidx, ann in enumerate(slide_annotations):
+    for _annidx, ann in enumerate(slide_annotations):
         for element in ann['annotation']['elements']:
             for key in element.keys():
 
@@ -72,8 +68,6 @@ def scale_slide_annotations(slide_annotations, sf):
                     element[key] = (np.array(element[key]) * sf).astype(int).tolist()
     return slide_annotations
 
-# %%===========================================================================
-
 
 def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
     """Get how much is request region smaller than base.
@@ -81,7 +75,7 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
     This also gets the string to append to server request for getting rgb.
 
     Parameters
-    -----------
+    ----------
     gc : Girder client instance
         gc should be authoenticated.
     slide_id : str
@@ -96,7 +90,7 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
         scaling at base (scan) magnification.
 
     Returns
-    ----------
+    -------
     float
         how much smaller (0.1 means 10x smaller) is requested image
         compared to scan magnification (slide coordinates)
@@ -104,27 +98,25 @@ def get_scale_factor_and_appendStr(gc, slide_id, MPP=None, MAG=None):
         string to appnd to server request for getting slide region
 
     """
-    slide_info = gc.get("/item/%s/tiles" % slide_id)
+    slide_info = gc.get('/item/%s/tiles' % slide_id)
 
     if (MPP is not None) and (slide_info['mm_x'] is not None):
         mm = 0.001 * MPP
         sf = slide_info['mm_x'] / mm
-        appendStr = "&mm_x=%.8f&mm_y=%.8f" % (mm, mm)
+        appendStr = '&mm_x=%.8f&mm_y=%.8f' % (mm, mm)
 
     elif (MAG is not None) and (slide_info['magnification'] is not None):
         sf = MAG / slide_info['magnification']
-        appendStr = "&magnification=%.8f" % MAG
+        appendStr = '&magnification=%.8f' % MAG
 
     else:
         warnings.warn(
-            "NO SLIDE MAGNIFICATION FOUND; BASE MAGNIFICATION USED!",
-            RuntimeWarning)
+            'NO SLIDE MAGNIFICATION FOUND; BASE MAGNIFICATION USED!',
+            RuntimeWarning, stacklevel=1)
         sf = 1.0
-        appendStr = ""
+        appendStr = ''
 
     return sf, appendStr
-
-# %%===========================================================================
 
 
 def rotate_point_list(point_list, rotation, center=(0, 0)):
@@ -134,7 +126,7 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
     ... web_client/annotations/rotate.js.
 
     Parameters
-    -----------
+    ----------
     point_list : list of tuples
         (x,y) coordinates
 
@@ -145,7 +137,7 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
         central point coordinates
 
     Returns
-    --------
+    -------
     list of tuples
 
     """
@@ -164,8 +156,6 @@ def rotate_point_list(point_list, rotation, center=(0, 0)):
 
     return point_list_rotated
 
-# %%============================================================================
-
 
 def get_rotated_rectangular_coords(
         roi_center, roi_width, roi_height, roi_rotation=0):
@@ -175,7 +165,7 @@ def get_rotated_rectangular_coords(
     of course is applicable to any rotated rectangular annotation.
 
     Parameters
-    -----------
+    ----------
     roi_center : tuple or list
         (x, y) format
     roi_width : float
@@ -183,7 +173,7 @@ def get_rotated_rectangular_coords(
     roi_rotation : float
 
     Returns
-    --------
+    -------
     dict
         includes roi corners (x, y) and bounds
 
@@ -211,24 +201,22 @@ def get_rotated_rectangular_coords(
         'x_min': roi_corners[:, 0].min(),
         'x_max': roi_corners[:, 0].max(),
         'y_min': roi_corners[:, 1].min(),
-        'y_max': roi_corners[:, 1].max()
+        'y_max': roi_corners[:, 1].max(),
     }
 
     return roi_info
-
-# %%===========================================================================
 
 
 def get_bboxes_from_slide_annotations(slide_annotations):
     """Given a slide annotation list, gets information on bounding boxes.
 
     Parameters
-    -----------
+    ----------
     slide_annotations : list of dicts
         response from server request
 
     Returns
-    ---------
+    -------
     Pandas DataFrame
         The columns annidx and elementidx encode the
         dict index of annotation document and element, respectively, in the
@@ -239,7 +227,7 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 
     element_infos = DataFrame(columns=[
         'annidx', 'elementidx', 'type', 'group',
-        'xmin', 'xmax', 'ymin', 'ymax', ])
+        'xmin', 'xmax', 'ymin', 'ymax'])
 
     for annidx, ann in enumerate(slide_annotations):
         for elementidx, element in enumerate(ann['annotation']['elements']):
@@ -252,8 +240,8 @@ def get_bboxes_from_slide_annotations(slide_annotations):
             # get bounds
             if element['type'] == 'polyline':
                 coords = np.array(element['points'])[:, :-1]
-                xmin, ymin = [int(j) for j in np.min(coords, axis=0)]
-                xmax, ymax = [int(j) for j in np.max(coords, axis=0)]
+                xmin, ymin = (int(j) for j in np.min(coords, axis=0))
+                xmax, ymax = (int(j) for j in np.max(coords, axis=0))
 
             elif element['type'] == 'rectangle':
                 roiinfo = get_rotated_rectangular_coords(
@@ -282,8 +270,6 @@ def get_bboxes_from_slide_annotations(slide_annotations):
 
     return element_infos
 
-# %%===========================================================================
-
 
 def _get_coords_from_element(element):
 
@@ -309,7 +295,8 @@ def _get_coords_from_element(element):
              (xmin, ymax), (xmin, ymin)], dtype='int32')
 
     else:
-        raise Exception("Unsupported element type:", element['type'])
+        msg = 'Unsupported element type:'
+        raise Exception(msg, element['type'])
 
     return coords
 
@@ -329,7 +316,7 @@ def _maybe_crop_polygon(vertices, bounds_polygon):
         polygon = bounds_polygon.intersection(elpoly)
 
         if polygon.geom_type in ('Polygon', 'LineString'):
-            polygons_to_add = [polygon, ]
+            polygons_to_add = [polygon]
         else:
             polygons_to_add = [
                 p for p in polygon if p.geom_type == 'Polygon']
@@ -356,8 +343,8 @@ def _maybe_crop_polygon(vertices, bounds_polygon):
 
 def _parse_coords_to_str(vertices):
     return (
-        ",".join(str(j) for j in vertices[:, 0]),
-        ",".join(str(j) for j in vertices[:, 1]))
+        ','.join(str(j) for j in vertices[:, 0]),
+        ','.join(str(j) for j in vertices[:, 1]))
 
 
 def _add_element_to_final_df(vertices, cfg):
@@ -429,7 +416,7 @@ def parse_slide_annotations_into_tables(
     as polygons for simplicity.
 
     Parameters
-    -----------
+    ----------
     slide_annotations : list of dicts
         response from server request
 
@@ -450,7 +437,7 @@ def parse_slide_annotations_into_tables(
         see cropping_bounds description.
 
     Returns
-    ---------
+    -------
     Pandas DataFrame
         Summary of key properties of the annotation documents. It has the
         following columns:
@@ -515,12 +502,12 @@ def parse_slide_annotations_into_tables(
         'elementidx', 'element_girder_id',
         'type', 'group', 'label', 'color',
         'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
-        'coords_x', 'coords_y'
+        'coords_x', 'coords_y',
     ])
 
     if cfg.cropping_bounds is not None:
         assert cfg.cropping_polygon_vertices is None, \
-            "either give cropping bouns or vertices, not both"
+            'either give cropping bounds or vertices, not both'
         xmin, xmax, ymin, ymax = (
             cfg.cropping_bounds['XMIN'], cfg.cropping_bounds['XMAX'],
             cfg.cropping_bounds['YMIN'], cfg.cropping_bounds['YMAX'])
@@ -547,7 +534,7 @@ def parse_slide_annotations_into_tables(
         for key in [
                 '_modelType', '_version',
                 'itemId', 'created', 'creatorId',
-                'public', 'updated', 'updatedId', ]:
+                'public', 'updated', 'updatedId']:
             if key in cfg.ann:
                 cfg.annotation_infos.loc[annno, key] = cfg.ann[key]
 
@@ -572,7 +559,7 @@ def parse_slide_annotations_into_tables(
                     (cfg.cropping_polygon_vertices is None)) \
                     or (element['type'] == 'point') \
                     or (not use_shapely):
-                all_coords = [coords, ]
+                all_coords = [coords]
             else:
                 all_coords = _maybe_crop_polygon(coords, bounds_polygon)
 
@@ -590,14 +577,14 @@ def np_vec_no_jit_iou(bboxes1, bboxes2):
             -iou-in-numpy-and-tensor-flow-4fa16231b63d
 
     Parameters
-    -----------
+    ----------
     bboxes1 : np array
         columns encode bounding box corners xmin, ymin, xmax, ymax
     bboxes2 : np array
         same as bboxes 1
 
     Returns
-    --------
+    -------
     np array
         IoU values for each pair from bboxes1 & bboxes2
 
@@ -614,8 +601,6 @@ def np_vec_no_jit_iou(bboxes1, bboxes2):
     iou = interArea / (boxAArea + np.transpose(boxBArea) - interArea)
     return iou
 
-# %%===========================================================================
-
 
 def _get_idxs_for_all_rois(GTCodes, element_infos):
     """Get indices of ROIs within the element_infos dataframe.
@@ -630,12 +615,10 @@ def _get_idxs_for_all_rois(GTCodes, element_infos):
             idxs_for_all_rois.append(idx)
     return idxs_for_all_rois
 
-# %%===========================================================================
-
 
 def get_idxs_for_annots_overlapping_roi_by_bbox(
         element_infos, idx_for_roi, iou_thresh=0.0):
-    """Find indices of **potentially** included annoations within the ROI.
+    """Find indices of **potentially** included annotations within the ROI.
 
     We say "potentially" because this uses the IoU of roi and annotation as a
     fast indicator of potential inclusion. This helps dramatically scale down
@@ -643,7 +626,7 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
     whether the annotation polygons actually overlap the ROI can be done.
 
     Parameters
-    -----------
+    ----------
     element_infos : pandas DataFrame
         result from running get_bboxes_from_slide_annotations()
     idx_for_roi : int
@@ -652,7 +635,7 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
         overlap threshold to be considered within ROI
 
     Returns
-    --------
+    -------
     list
         indices relative to element_infos
 
@@ -668,8 +651,6 @@ def get_idxs_for_annots_overlapping_roi_by_bbox(
 
     return list(overlaps)
 
-# %%===========================================================================
-
 
 def create_mask_from_coords(coords):
     """Create a binary mask from given vertices coordinates.
@@ -677,13 +658,13 @@ def create_mask_from_coords(coords):
     Source: This is modified from code by Juan Carlos from David Gutman Lab.
 
     Parameters
-    -----------
-    coords : np arrray
+    ----------
+    coords : np array
         must be in the form (e.g. ([x1,y1],[x2,y2],[x3,y3],.....,[xn,yn])),
-        where xn and yn corresponds to the nth vertix coordinate.
+        where xn and yn corresponds to the nth vertex coordinate.
 
     Returns
-    --------
+    -------
     np array
         binary mask
 
@@ -708,8 +689,6 @@ def create_mask_from_coords(coords):
 
     return np.array(img, dtype='int32')
 
-# %%===========================================================================
-
 
 def _get_element_mask(elinfo, slide_annotations):
     """Get coordinates and mask for annotation element.
@@ -728,12 +707,11 @@ def _get_element_mask(elinfo, slide_annotations):
             roi_height=element['height'], roi_rotation=element['rotation'])
         coords = infoDict['roi_corners']
     else:
-        raise Exception("cannot create mask from point annotation!")
+        msg = 'cannot create mask from point annotation!'
+        raise Exception(msg)
 
     mask = create_mask_from_coords(coords)
     return coords, mask
-
-# %%===========================================================================
 
 
 def _add_element_to_roi(elinfo, ROI, GT_code, element_mask, roiinfo):
@@ -762,12 +740,10 @@ def _add_element_to_roi(elinfo, ROI, GT_code, element_mask, roiinfo):
 
     return ROI, element
 
-# %%===========================================================================
-
 
 def _get_and_add_element_to_roi(
         elinfo, slide_annotations, ROI, roiinfo, roi_polygon, GT_code,
-        use_shapely=True, verbose=True, monitorPrefix=""):
+        use_shapely=True, verbose=True, monitorPrefix=''):
     """Get element coords and mask and add to ROI (Internal)."""
     try:
         coords, element_mask = _get_element_mask(
@@ -780,7 +756,7 @@ def _get_and_add_element_to_roi(
             el_polygon = Polygon(coords)
             if el_polygon.distance(roi_polygon) > 2:
                 if verbose:
-                    print("%s: OUSIDE ROI." % monitorPrefix)
+                    print('%s: OUTSIDE ROI.' % monitorPrefix)
                 ADD_TO_ROI = False
 
         # Add element to ROI mask
@@ -791,11 +767,9 @@ def _get_and_add_element_to_roi(
 
     except Exception as e:
         if verbose:
-            print("%s: ERROR! (see below)" % monitorPrefix)
+            print('%s: ERROR! (see below)' % monitorPrefix)
             print(e)
     return ROI
-
-# %%===========================================================================
 
 
 def delete_annotations_in_slide(gc, slide_id):
@@ -804,16 +778,14 @@ def delete_annotations_in_slide(gc, slide_id):
     for ann in existing_annotations:
         gc.delete('/annotation/%s' % ann['_id'])
 
-# %%===========================================================================
-
 
 def _simple_add_element_to_roi(
         elinfo, ROI, roiinfo, GT_code, element=None,
-        verbose=True, monitorPrefix=""):
+        verbose=True, monitorPrefix=''):
     """Get element coords and mask and add to ROI (Internal)."""
 
     def _process_coords(k):
-        return np.array([int(j) for j in elinfo[k].split(",")])[..., None]
+        return np.array([int(j) for j in elinfo[k].split(',')])[..., None]
 
     try:
         if element is None:
@@ -821,7 +793,7 @@ def _simple_add_element_to_roi(
                 _process_coords(k) for k in ('coords_x', 'coords_y')], 1)
             element_mask = create_mask_from_coords(coords)
         else:
-            element_mask = element["mask"]
+            element_mask = element['mask']
 
         # Add element to ROI mask
         ROI, element = _add_element_to_roi(
@@ -830,8 +802,6 @@ def _simple_add_element_to_roi(
 
     except Exception as e:
         if verbose:
-            print("%s: ERROR! (see below)" % monitorPrefix)
+            print('%s: ERROR! (see below)' % monitorPrefix)
             print(e)
     return ROI, element
-
-# %%===========================================================================

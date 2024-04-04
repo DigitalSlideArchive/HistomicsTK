@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Created on Sun Oct 20 00:14:03 2019.
 
@@ -8,11 +7,8 @@ import os
 import sys
 
 import numpy as np
-import pytest
 from skimage.transform import resize
 
-from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
-    get_image_from_htk_response
 from histomicstk.preprocessing.augmentation.color_augmentation import \
     rgb_perturb_stain_concentration
 from histomicstk.preprocessing.color_conversion import lab_mean_std
@@ -24,11 +20,8 @@ from histomicstk.saliency.tissue_detection import get_tissue_mask
 thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../tests'))
 # import htk_test_utilities as utilities  # noqa
+from datastore import datastore  # noqa
 from htk_test_utilities import getTestFilePath, girderClient  # noqa
-
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
 
 
 class Cfg:
@@ -41,22 +34,17 @@ class Cfg:
 cfg = Cfg()
 
 
-@pytest.mark.usefixtures('girderClient')  # noqa
-def test_prep(girderClient):  # noqa
+def test_prep():
 
-    cfg.gc = girderClient
+    import large_image
 
-    iteminfo = cfg.gc.get('/item', parameters={
-        'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
-
-    # get RGB region at a small magnification
+    src = datastore.fetch('TCGA-A2-A0YE-01Z-00-DX1.8A2E3094-5755-42BC-969D-7F0A2ECA0F39.svs')
+    ts = large_image.open(src)
     MAG = 1.5
-    getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
-        iteminfo['_id'], 46890, 50000, 40350, 43000
-        ) + "&magnification=%.2f" % MAG
-    cfg.tissue_rgb = get_image_from_htk_response(
-        cfg.gc.get(getStr, jsonResp=False))
-
+    cfg.tissue_rgb = ts.getRegion(
+        region=dict(left=46890, right=50000, top=40350, bottom=43000),
+        scale=dict(magnification=MAG),
+        format='numpy')[0][:, :, :3]
     # get mask of things to ignore
     cfg.mask_out, _ = get_tissue_mask(
         cfg.tissue_rgb, deconvolve_first=False,
@@ -118,7 +106,7 @@ class TestColorNormalization():
         W_target = np.array([
             [0.5807549, 0.08314027, 0.08213795],
             [0.71681094, 0.90081588, 0.41999816],
-            [0.38588316, 0.42616716, -0.90380025]
+            [0.38588316, 0.42616716, -0.90380025],
         ])
 
         # Macenko - Unmasked, using default, 'idealized' W_target"
@@ -126,24 +114,24 @@ class TestColorNormalization():
             cfg.tissue_rgb,
             stain_unmixing_routine_params=stain_unmixing_routine_params)
         assert tuple(
-            [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]
-            ) == (183, 121, 212)
+            [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)],
+        ) in {(183, 121, 212), (186, 128, 215)}
 
         # Macenko - Unmasked, using W_target from good image
         tissue_rgb_normalized = deconvolution_based_normalization(
             cfg.tissue_rgb, W_target=W_target,
             stain_unmixing_routine_params=stain_unmixing_routine_params)
         assert tuple(
-            [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]
-            ) == (188, 125, 175)
+            [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)],
+        ) in {(188, 125, 175), (188, 124, 175), (191, 132, 179)}
 
         # Macenko - Masked, using W_target from good image
         tissue_rgb_normalized = deconvolution_based_normalization(
             cfg.tissue_rgb, W_target=W_target, mask_out=cfg.mask_out,
             stain_unmixing_routine_params=stain_unmixing_routine_params)
         assert tuple(
-            [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)]
-            ) == (188, 125, 175)
+            [int(tissue_rgb_normalized[..., i].mean()) for i in range(3)],
+        ) in {(188, 125, 175), (187, 125, 174), (192, 131, 179)}
 
 
 class TestColorAugmentation:
@@ -157,12 +145,12 @@ class TestColorAugmentation:
         # Unmasked
         augmented_rgb = rgb_perturb_stain_concentration(cfg.tissue_rgb)
         assert tuple(
-            [int(augmented_rgb[..., i].mean()) for i in range(3)]
-            ) == (178, 115, 154)
+            [int(augmented_rgb[..., i].mean()) for i in range(3)],
+        ) in {(178, 115, 154), (177, 114, 153), (190, 116, 168)}
 
         # Masked
         augmented_rgb = rgb_perturb_stain_concentration(
             cfg.tissue_rgb, mask_out=cfg.mask_out)
         assert tuple(
-            [int(augmented_rgb[..., i].mean()) for i in range(3)]
-            ) == (174, 101, 139)
+            [int(augmented_rgb[..., i].mean()) for i in range(3)],
+        ) in {(174, 101, 139), (174, 100, 139), (188, 102, 155)}

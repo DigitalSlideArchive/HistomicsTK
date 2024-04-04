@@ -1,10 +1,6 @@
-================================================
-HistomicsTK |build-status| |codecov-io| |gitter|
-================================================
-
-.. |build-status| image:: https://travis-ci.org/DigitalSlideArchive/HistomicsTK.svg?branch=master
-    :target: https://travis-ci.org/DigitalSlideArchive/HistomicsTK
-    :alt: Build Status
+========================
+HistomicsTK |codecov-io|
+========================
 
 .. |codecov-io| image:: https://codecov.io/github/DigitalSlideArchive/HistomicsTK/coverage.svg?branch=master
     :target: https://codecov.io/github/DigitalSlideArchive/HistomicsTK?branch=master
@@ -78,10 +74,6 @@ HistomicsTK can be used in two ways:
 
 Refer to `our website`_ for more information.
 
-For questions, comments, or to get in touch with the maintainers, head to our
-`Discourse forum`_, or use our `Gitter Chatroom`_.
-
-
 Previous Versions
 -----------------
 
@@ -103,9 +95,9 @@ See Also
 
 **Source repositories:** `Digital Slide Archive`_ | `HistomicsUI`_ | `large_image`_ | `slicer_cli_web`_
 
-**Discussion:** `Discourse forum`_ | `Gitter Chatroom`_
+**Discussion:** `GitHub Discussion`_ | `Discourse forum`_
 
-.. Links for everythign above (not rendered):
+.. Links for everything above (not rendered):
 .. _HistomicsTK: https://digitalslidearchive.github.io/digital_slide_archive/
 .. _Digital Slide Archive: http://github.com/DigitalSlideArchive/digital_slide_archive
 .. _HistomicsUI: http://github.com/DigitalSlideArchive/HistomicsUI
@@ -116,5 +108,6 @@ See Also
 .. _Docker: https://www.docker.com/
 .. _Kitware: http://www.kitware.com/
 .. _U24-CA194362-01: http://grantome.com/grant/NIH/U24-CA194362-01
+.. _GitHub Discussion: https://github.com/DigitalSlideArchive/digital_slide_archive/discussions
 .. _Discourse forum: https://discourse.girder.org/c/histomicstk
 .. _Gitter Chatroom: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge

@@ -6,7 +6,7 @@
   <version>0.1.0</version>
   <documentation-url>https://digitalslidearchive.github.io/HistomicsTK/</documentation-url>
   <license>Apache 2.0</license>
-  <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware)</contributor>
+  <contributor>Deepak Roy Chittajallu (Kitware), Neal Siekierski (Kitware), Subin Erattakulangara (Kitware)</contributor>
   <acknowledgements>This work is part of the HistomicsTK project.</acknowledgements>
   <parameters>
     <label>IO</label>
@@ -29,21 +29,21 @@
       <name>inputNucleiFeatureFile</name>
       <label>Input Nuclei Feature File</label>
       <channel>input</channel>
-      <index>2</index>
+      <longflag>feature-file</longflag>
       <description>Input nuclei feature file (*.csv, *.h5) containing the features of all nuclei to be classified</description>
     </file>
     <file fileExtensions=".anot">
       <name>inputNucleiAnnotationFile</name>
       <label>Input Nuclei Annotation File</label>
       <channel>input</channel>
-      <index>3</index>
+      <longflag>annotation-file</longflag>
       <description>Input nuclei annotation file (*.anot) containing nuclei annotations in the same order as their features in the feature file</description>
     </file>
     <file fileExtensions=".anot" reference="inputImageFile">
       <name>outputNucleiAnnotationFile</name>
       <label>Output Nuclei Annotation File</label>
       <channel>output</channel>
-      <index>4</index>
+      <index>2</index>
       <description>Output nuclei annotation file (*.anot) with the same nuclei in input nuclei annotation file if provided) with nuclei sorted into groups based on class and accompanied by heatmaps of the classification probabilities</description>
     </file>
   </parameters>

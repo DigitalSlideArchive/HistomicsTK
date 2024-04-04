@@ -18,7 +18,6 @@ from histomicstk.annotations_and_masks.masks_to_annotations_handler import \
 from histomicstk.workflows.workflow_runner import (Slide_iterator,
                                                    Workflow_runner)
 
-# %============================================================================
 # CONSTANTS
 
 # source: https://libvips.github.io/libvips/API/current/Examples.md.html
@@ -54,8 +53,6 @@ FORMAT_TO_DTYPE = {
     'dpcomplex': np.complex128,
 }
 
-# %============================================================================
-
 
 def get_all_rois_from_folder_v2(
         gc, folderid, get_all_rois_kwargs, monitor=''):
@@ -79,13 +76,13 @@ def get_all_rois_from_folder_v2(
     """
     def _get_all_rois(slide_id, monitorPrefix, **kwargs):
         sld = gc.get('/item/%s' % slide_id)
-        if "." not in sld['name']:
-            sld['name'] += "."
+        if '.' not in sld['name']:
+            sld['name'] += '.'
         sldname = sld['name'][:sld['name'].find('.')].replace('/', '_#_')
         return get_all_rois_from_slide_v2(
             slide_id=slide_id, monitorprefix=monitorPrefix,
             # encoding slide id makes things easier later
-            slide_name="%s_id-%s" % (sldname, slide_id),
+            slide_name='%s_id-%s' % (sldname, slide_id),
             **kwargs)
 
     # update with params
@@ -99,11 +96,9 @@ def get_all_rois_from_folder_v2(
         ),
         workflow=_get_all_rois,
         workflow_kwargs=get_all_rois_kwargs,
-        monitorPrefix=monitor
+        monitorPrefix=monitor,
     )
     workflow_runner.run()
-
-# %============================================================================
 
 
 def _get_visualization_zoomout(
@@ -129,7 +124,7 @@ def _get_visualization_zoomout(
     Returns
     -------
     np.array
-        Zoomed out visualization. Outpu from _visualize_annotations_on_rgb().
+        Zoomed out visualization. Output from _visualize_annotations_on_rgb().
 
     """
     # get append string for server request
@@ -155,7 +150,7 @@ def _get_visualization_zoomout(
     x_margin = (bounds['XMAX'] - bounds['XMIN']) * zoomout / 2
     y_margin = (bounds['YMAX'] - bounds['YMIN']) * zoomout / 2
     getStr = \
-        "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d" \
+        '/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d' \
         % (slide_id,
            max(0, bounds['XMIN'] - x_margin),
            bounds['XMAX'] + x_margin,
@@ -170,11 +165,11 @@ def _get_visualization_zoomout(
     xmax = xmin + (bounds['XMAX'] - bounds['XMIN']) * sf
     ymin = y_margin * sf
     ymax = ymin + (bounds['YMAX'] - bounds['YMIN']) * sf
-    xmin, xmax, ymin, ymax = [str(int(j)) for j in (xmin, xmax, ymin, ymax)]
+    xmin, xmax, ymin, ymax = (str(int(j)) for j in (xmin, xmax, ymin, ymax))
     contours_list = [{
         'color': 'rgb(255,255,0)',
-        'coords_x': ",".join([xmin, xmax, xmax, xmin, xmin]),
-        'coords_y': ",".join([ymin, ymin, ymax, ymax, ymin]),
+        'coords_x': ','.join([xmin, xmax, xmax, xmin, xmin]),
+        'coords_y': ','.join([ymin, ymin, ymax, ymax, ymin]),
     }]
 
     return _visualize_annotations_on_rgb(rgb_zoomout, contours_list)
@@ -188,7 +183,7 @@ def _get_review_visualization(rgb, vis, vis_zoomout):
     rgb : np.array
         mxnx3 rgb image
     vis : np.array
-        visualization of rgb with overlayed annotations
+        visualization of rgb with overlaid annotations
     vis_zoomout
         same as vis, but at a lower magnififcation.
 
@@ -206,7 +201,7 @@ def _get_review_visualization(rgb, vis, vis_zoomout):
     fig, ax = plt.subplots(
         1, 3, dpi=100,
         figsize=(3 * wmax / 1000, hmax / 1000),
-        gridspec_kw={'wspace': 0.01, 'hspace': 0}
+        gridspec_kw={'wspace': 0.01, 'hspace': 0},
     )
 
     ax[0].imshow(vis)
@@ -247,7 +242,7 @@ def _plot_rapid_review_vis(
     MPP : float
         microns per pixel
     MAG : float
-        magnification. superceded by MPP.
+        magnification. superseded by MPP.
     combinedvis_savepath : str
         path to save the combined visualization
     zoomout : float
@@ -269,23 +264,21 @@ def _plot_rapid_review_vis(
         MPP=MPP, MAG=MAG, zoomout=zoomout)
 
     # combined everything in a neat visualization for rapid review
-    ROINAMESTR = "%s_left-%d_top-%d_bottom-%d_right-%d" % (
+    ROINAMESTR = '%s_left-%d_top-%d_bottom-%d_right-%d' % (
         slide_name,
         roi_out['bounds']['XMIN'], roi_out['bounds']['YMIN'],
         roi_out['bounds']['YMAX'], roi_out['bounds']['XMAX'])
-    savename = os.path.join(combinedvis_savepath, ROINAMESTR + ".png")
+    savename = os.path.join(combinedvis_savepath, ROINAMESTR + '.png')
     rapid_review_vis = _get_review_visualization(
         rgb=roi_out['rgb'], vis=roi_out['visualization'],
         vis_zoomout=vis_zoomout)
 
     # save visualization for later use
     if verbose:
-        print("%s: Saving %s" % (monitorprefix, savename))
+        print('%s: Saving %s' % (monitorprefix, savename))
     imwrite(im=rapid_review_vis, uri=savename)
 
     return roi_out
-
-# %============================================================================
 
 
 def create_review_galleries(
@@ -335,7 +328,7 @@ def create_review_galleries(
         for par in ('gc', 'gallery_folderid', 'url'):
             if locals()[par] is None:
                 raise Exception(
-                    "%s cannot be None if upload_results!" % par)
+                    '%s cannot be None if upload_results!' % par)
 
     if gallery_savepath is None:
         gallery_savepath = tempfile.mkdtemp(prefix='gallery-')
@@ -343,10 +336,9 @@ def create_review_galleries(
     savepaths = []
     resps = []
 
-    tile_paths = [
+    tile_paths = sorted([
         os.path.join(tilepath_base, j) for j in
-        os.listdir(tilepath_base) if j.endswith('.png')]
-    tile_paths.sort()
+        os.listdir(tilepath_base) if j.endswith('.png')])
 
     def _parse_tilepath(tpath):
         basename = os.path.basename(tpath)
@@ -358,7 +350,7 @@ def create_review_galleries(
 
         # add URL in histomicsTK
         tileinfo['URL'] = url + \
-            "histomicstk#?image=%s&bounds=%s%%2C%s%%2C%s%%2C%s%%2C0" % (
+            'histomicstk#?image=%s&bounds=%s%%2C%s%%2C%s%%2C%s%%2C0' % (
                 tileinfo['id'],
                 tileinfo['left'], tileinfo['top'],
                 tileinfo['right'], tileinfo['bottom'])
@@ -377,27 +369,27 @@ def create_review_galleries(
         # this will store the roi contours
         contours = []
 
-        for row in range(tiles_per_column):
+        for _row in range(tiles_per_column):
 
             rowpos = im.height + padding
 
             # initialize "row" strip image
             row_im = pyvips.Image.black(1, 1, bands=3)
 
-            for col in range(tiles_per_row):
+            for _col in range(tiles_per_row):
 
                 if tileidx == n_tiles:
                     break
 
                 tilepath = tile_paths[tileidx]
 
-                print("Inserting tile %d of %d: %s" % (
+                print('Inserting tile %d of %d: %s' % (
                     tileidx, n_tiles, tilepath))
                 tileidx += 1
 
                 # # get tile from file
                 tile = pyvips.Image.new_from_file(
-                    tilepath, access="sequential")
+                    tilepath, access='sequential')
 
                 # insert tile into mosaic row
                 colpos = row_im.width + padding
@@ -412,14 +404,14 @@ def create_review_galleries(
                     ymin = rowpos
                     xmax = xmin + tile.width
                     ymax = ymin + tile.height
-                    xmin, xmax, ymin, ymax = [
-                        str(j) for j in (xmin, xmax, ymin, ymax)]
+                    xmin, xmax, ymin, ymax = (
+                        str(j) for j in (xmin, xmax, ymin, ymax))
                     contours.append({
                         'group': tileinfo['slide_name'],
                         'label': tileinfo['URL'],
                         'color': 'rgb(0,0,0)',
-                        'coords_x': ",".join([xmin, xmax, xmax, xmin, xmin]),
-                        'coords_y': ",".join([ymin, ymin, ymax, ymax, ymin]),
+                        'coords_x': ','.join([xmin, xmax, xmax, xmin, xmin]),
+                        'coords_y': ','.join([ymin, ymin, ymax, ymax, ymin]),
                     })
 
                     # Add a small contour so that when the pathologist
@@ -433,8 +425,8 @@ def create_review_galleries(
                         'group': tileinfo['slide_name'],
                         'label': tileinfo['URL'],
                         'color': 'rgb(0,0,0)',
-                        'coords_x': ",".join([xmin, xmax, xmax, xmin, xmin]),
-                        'coords_y': ",".join([ymin, ymin, ymax, ymax, ymin]),
+                        'coords_x': ','.join([xmin, xmax, xmax, xmin, xmin]),
+                        'coords_y': ','.join([ymin, ymin, ymax, ymax, ymin]),
                     })
 
             # insert row into main gallery
@@ -442,7 +434,7 @@ def create_review_galleries(
 
         filename = '%s_gallery-%d' % (nameprefix, galno + 1)
         savepath = os.path.join(gallery_savepath, filename + '.tiff')
-        print("Saving gallery %d of %d to %s" % (
+        print('Saving gallery %d of %d to %s' % (
             galno + 1, n_galleries, savepath))
 
         # save temporarily to disk to be uploaded
@@ -462,10 +454,8 @@ def create_review_galleries(
                 annprops=annprops)
             for doc in annotation_docs:
                 _ = gc.post(
-                    "/annotation?itemId=" + resps[-1]['itemId'], json=doc)
+                    '/annotation?itemId=' + resps[-1]['itemId'], json=doc)
         else:
             savepaths.append(savepath)
 
     return resps if upload_results else savepaths
-
-# %============================================================================

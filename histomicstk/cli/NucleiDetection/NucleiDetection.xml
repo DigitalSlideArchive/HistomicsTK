@@ -153,19 +153,33 @@
       <longflag>local_max_search_radius</longflag>
       <default>10</default>
     </double>
-    <double>
+    <integer>
       <name>min_nucleus_area</name>
       <label>Minimum Nucleus Area</label>
       <description>Minimum area that each nucleus should have</description>
       <longflag>min_nucleus_area</longflag>
       <default>80</default>
-    </double>
+    </integer>
+      <integer>
+      <name>tile_overlap_value</name>
+      <label>Tile Overlap</label>
+      <description>Tile overlap size in pixels, Default value of -1 indicate that the tile overlap will be set to (max_radius + 1) * 4</description>
+      <longflag>tile_overlap_value</longflag>
+      <default>-1</default>
+    </integer>
     <boolean>
       <name>ignore_border_nuclei</name>
       <label>Ignore Border Nuclei</label>
       <description>Ignore/drop nuclei touching the image/tile border</description>
       <longflag>ignore_border_nuclei</longflag>
       <default>false</default>
+    </boolean>
+    <boolean>
+      <name>remove_overlapping_nuclei_segmentation</name>
+      <label>Remove overlapping nuclei</label>
+      <description>Remove overlapping nuclei segmentation from the given region. It is recommended to use this approach when defining the tile overlap parameter.</description>
+      <longflag>remove_overlapping_nuclei_segmentation</longflag>
+      <default>True</default>
     </boolean>
   </parameters>
   <parameters advanced="true">
@@ -192,6 +206,39 @@
       <longflag>min_fgnd_frac</longflag>
       <default>0.25</default>
     </double>
+  </parameters>
+    <parameters advanced="true">
+    <label>Frame and Style</label>
+    <description>Frame parameters</description>
+    <string>
+      <name>frame</name>
+      <longflag>frame</longflag>
+      <label>Frame Index</label>
+      <description>Frame index in a multi-frame image</description>
+      <default>{#control:#current_image_frame#}</default>
+    </string>
+    <string>
+      <name>style</name>
+      <longflag>style</longflag>
+      <label>Style Options</label>
+      <description>Image style options for compositing a multi-frame image</description>
+      <default>{#control:#current_image_style#}</default>
+    </string>
+  </parameters>
+  <parameters advanced="true">
+    <label>Image inversion</label>
+    <description>Choose if image inversion is needed</description>
+    <string-enumeration>
+      <name>ImageInversionForm</name>
+      <label>Invert Image</label>
+      <description>Image inversion may be needed for greyscale images with bright nuclei and dark background. default option will automatically invert the image if it is single channel. Choose if color inversion is needed.</description>
+      <channel>input</channel>
+      <longflag>invert_image</longflag>
+      <element>Yes</element>
+      <element>No</element>
+      <element>default</element>
+      <default>default</default>
+    </string-enumeration>
   </parameters>
   <parameters advanced="true">
     <label>Dask</label>

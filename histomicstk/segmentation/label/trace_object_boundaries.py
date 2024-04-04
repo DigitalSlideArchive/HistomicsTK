@@ -8,7 +8,8 @@ def trace_object_boundaries(im_label,
                             x_start=None, y_start=None,
                             max_length=None,
                             simplify_colinear_spurs=True,
-                            eps_colinear_area=0.01):
+                            eps_colinear_area=0.01,
+                            region_props=None):
     """Performs exterior boundary tracing of one or more objects in a label
     mask. If a starting point is not provided then a raster scan will be performed
     to identify the starting pixel.
@@ -69,10 +70,11 @@ def trace_object_boundaries(im_label,
 
     X = []
     Y = []
+    selected_rows = []
 
     if trace_all:
 
-        rprops = regionprops(im_label)
+        rprops = region_props if region_props else regionprops(im_label)
         numLabels = len(rprops)
 
         x_start = -1
@@ -86,19 +88,19 @@ def trace_object_boundaries(im_label,
             # grab label mask
             lmask = (
                 im_label[
-                    min_row:max_row, min_col:max_col
+                    min_row:max_row, min_col:max_col,
                 ] == rprops[i].label
-            ).astype(np.bool)
+            ).astype(bool)
 
             mrows = max_row - min_row + 2
             mcols = max_col - min_col + 2
 
             mask = np.zeros((mrows, mcols))
-            mask[1:mrows-1, 1:mcols-1] = lmask
+            mask[1:mrows - 1, 1:mcols - 1] = lmask
 
             by, bx = _trace_object_boundaries_cython(
                 np.ascontiguousarray(
-                    mask, dtype=np.int), conn, x_start, y_start, max_length
+                    mask, dtype=int), conn, x_start, y_start, max_length,
             )
 
             bx = bx + min_row - 1
@@ -109,6 +111,7 @@ def trace_object_boundaries(im_label,
                                                      eps_colinear_area)
 
             if len(bx) > 0:
+                selected_rows.append(i)
                 X.append(bx)
                 Y.append(by)
 
@@ -118,11 +121,13 @@ def trace_object_boundaries(im_label,
         numLabels = len(rprops)
 
         if numLabels > 1:
-            raise ValueError("Number of labels should be 1 !!")
+            msg = 'Number of labels should be 1 !!'
+            raise ValueError(msg)
 
         if (x_start is None and y_start is not None) | \
                 (x_start is not None and y_start is None):
-            raise ValueError("x_start or y_start is not defined !!")
+            msg = 'x_start or y_start is not defined !!'
+            raise ValueError(msg)
 
         if x_start is None and y_start is None:
             x_start = -1
@@ -130,7 +135,7 @@ def trace_object_boundaries(im_label,
 
         by, bx = _trace_object_boundaries_cython(
             np.ascontiguousarray(
-                im_label, dtype=np.int), conn, x_start, y_start, max_length
+                im_label, dtype=int), conn, x_start, y_start, max_length,
         )
 
         if simplify_colinear_spurs:
@@ -140,6 +145,8 @@ def trace_object_boundaries(im_label,
         if len(bx) > 0:
             X.append(bx)
             Y.append(by)
+    if region_props:
+        return X, Y, selected_rows
 
     return X, Y
 
@@ -147,7 +154,6 @@ def trace_object_boundaries(im_label,
 def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0):
     """Simplifies the given list of points by removing colinear spurs
     """
-
     keep = []  # indices of points to keep
 
     anchor = -1
@@ -169,7 +175,7 @@ def _remove_thin_colinear_spurs(px, py, eps_colinear_area=0):
 
         # compute area of triangle formed by triplet
         area = 0.5 * np.linalg.det(
-            np.array([[x1, x2, x3], [y1, y2, y3], [1, 1, 1]])
+            np.array([[x1, x2, x3], [y1, y2, y3], [1, 1, 1]]),
         )
 
         # if area > cutoff, add testpos to keep and move anchor to testpos

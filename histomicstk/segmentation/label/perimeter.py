@@ -26,7 +26,6 @@ def perimeter(im_label, conn=4):
     histomicstk.segmentation.embed_boundaries
 
     """
-
     # initialize temporary variable
     Mask = np.zeros(im_label.shape)
     Temp = np.zeros(im_label.shape)
@@ -42,7 +41,7 @@ def perimeter(im_label, conn=4):
     Mask = np.logical_or(Mask, Temp)
 
     # additional calculations if conn == 8
-    if(conn == 8):
+    if conn == 8:
 
         # slope 1 diagonal shift
         Temp[1:-1, 0:-2] = np.not_equal(im_label[0:-2, 1:-2], im_label[1:-1, 0:-2])

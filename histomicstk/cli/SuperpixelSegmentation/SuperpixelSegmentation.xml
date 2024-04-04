@@ -56,6 +56,14 @@
        <channel>input</channel>
        <default>50</default>
     </integer>
+    <float>
+      <name>magnification</name>
+      <label>Magnification</label>
+      <longflag>magnification</longflag>
+      <description>If specified, the magnification that should be used for the superpixels.  If 0, the base magnfication is used</description>
+      <channel>input</channel>
+      <default>0</default>
+    </float>
     <boolean>
       <name>overlap</name>
       <label>Overlap</label>
@@ -72,6 +80,18 @@
       <channel>input</channel>
       <default>true</default>
     </boolean>
+    <string-enumeration>
+      <name>bounding</name>
+      <label>Bounding Boxes</label>
+      <longflag>bounding</longflag>
+      <description>If specified, output an annotation with the bounding box of each superpixel.  Internal adds a user.bbox field as a single array to the superpixel annotation with the base image coordinates left,top,right,bottom for each superpixel.</description>
+      <channel>input</channel>
+      <default>None</default>
+      <element>None</element>
+      <element>Separate</element>
+      <element>Internal</element>
+      <element>All</element>
+    </string-enumeration>
     <boolean>
       <name>slic_zero</name>
       <label>SLIC0</label>

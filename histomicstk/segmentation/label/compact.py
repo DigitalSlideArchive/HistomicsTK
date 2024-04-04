@@ -12,7 +12,7 @@ def compact(im_label, compaction=3):
     im_label : array_like
         A labeled segmentation mask
     compaction : int
-        Factor used in compacting objects to remove thin protrusions. Refered
+        Factor used in compacting objects to remove thin protrusions. Referred
         to as d in the reference below. Default value = 3.
 
     Notes
@@ -39,28 +39,27 @@ def compact(im_label, compaction=3):
            Scientific Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.
 
     """
-    import scipy.ndimage.filters as ft
-    import scipy.ndimage.morphology as mp
+    import scipy.ndimage as ndi
 
     # copy input image
     im_compact = im_label.copy()
 
     # generate distance map of label image
-    D = mp.distance_transform_cdt(im_compact > 0, metric='taxicab')
+    D = ndi.distance_transform_cdt(im_compact > 0, metric='taxicab')
 
     # define 4-neighbors filtering kernel
-    Kernel = np.zeros((3, 3), dtype=np.bool)
+    Kernel = np.zeros((3, 3), dtype=bool)
     Kernel[1, :] = True
     Kernel[:, 1] = True
 
     # sweep over distance values from d-1 to 1
-    for i in np.arange(compaction-1, 0, -1):
+    for i in np.arange(compaction - 1, 0, -1):
 
         # four-neighbor maxima of distance transform
-        MaxD = ft.maximum_filter(D, footprint=Kernel)
+        MaxD = ndi.maximum_filter(D, footprint=Kernel)
 
         # identify pixels whose max 4-neighbor is less than i+1
-        Decrement = (D == i) & (MaxD < i+1)
+        Decrement = (D == i) & (MaxD < i + 1)
 
         # decrement non-compact pixels
         D[Decrement] -= 1

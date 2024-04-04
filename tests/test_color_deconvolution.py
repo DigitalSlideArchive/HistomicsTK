@@ -1,24 +1,9 @@
-#!/usr/bin/env python
-
-###############################################################################
-#  Copyright Kitware Inc.
-#
-#  Licensed under the Apache License, Version 2.0 ( the "License" );
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-###############################################################################
-
 import numpy as np
 import skimage.io
+
 from histomicstk.preprocessing import color_deconvolution as htk_dcv
+from histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca import \
+    argpercentile as htk_ap
 
 from .datastore import datastore
 
@@ -37,6 +22,29 @@ class TestMacenko:
 
         np.testing.assert_allclose(w, w_expected, atol=1e-6)
 
+    def test_argpercentile(self):
+        arr = np.array([])
+        with np.testing.assert_raises(IndexError):
+            htk_ap(arr, 0.5)
+
+        arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+        w = htk_ap(arr, 0.5)
+        w_expected = 5
+        np.testing.assert_equal(w, w_expected)
+
+        w = htk_ap(arr, 0.1)
+        w_expected = 1
+        np.testing.assert_equal(w, w_expected)
+
+        w = htk_ap(arr, 0.0)
+        w_expected = 0
+        np.testing.assert_equal(w, w_expected)
+
+        w = htk_ap(arr, 0.99)
+        w_expected = 9
+        np.testing.assert_equal(w, w_expected)
+
 
 class TestColorDeconvolution:
 
@@ -53,4 +61,18 @@ class TestColorDeconvolution:
         im_reconv = htk_dcv.color_convolution(conv_result.StainsFloat,
                                               conv_result.Wc, 255)
 
+        np.testing.assert_allclose(im, im_reconv, atol=1)
+
+    def test_short_array(self):
+        im_path = datastore.fetch('Easy1.png')
+        im = skimage.io.imread(im_path)[..., :3]
+
+        w = [[0.650, 0.072],
+             [0.704, 0.990],
+             [0.286, 0.105]]
+
+        conv_result = htk_dcv.color_deconvolution(im, w, 255)
+
+        im_reconv = htk_dcv.color_convolution(conv_result.StainsFloat,
+                                              conv_result.Wc, 255)
         np.testing.assert_allclose(im, im_reconv, atol=1)

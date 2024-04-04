@@ -11,14 +11,12 @@ from imageio import imread
 from PIL import Image
 # import cv2
 from shapely.geometry.polygon import Polygon
-from shapely.ops import cascaded_union
+from shapely.ops import unary_union
 
 from histomicstk.annotations_and_masks.masks_to_annotations_handler import (
     _discard_nonenclosed_background_group, _parse_annot_coords,
     get_contours_from_mask)
 from histomicstk.utils.general_utils import Base_HTK_Class
-
-# %% =====================================================================
 
 
 class Polygon_merger(Base_HTK_Class):
@@ -28,7 +26,7 @@ class Polygon_merger(Base_HTK_Class):
         """Init Polygon_merger object.
 
         Arguments:
-        -----------
+        ---------
         maskpaths : list
             list of strings representing pathos to masks
         GTCodes_df : pandas DataFrame
@@ -99,7 +97,7 @@ class Polygon_merger(Base_HTK_Class):
 
         default_attr = {
             'verbose': 1,
-            'monitorPrefix': "",
+            'monitorPrefix': '',
             'imreader': imread,
             'imreader_kws': {},
             'merge_thresh': 3,
@@ -112,13 +110,12 @@ class Polygon_merger(Base_HTK_Class):
 
         # some sanity checks
         assert not (
-            self.contkwargs['get_roi_contour']
-            or self.contkwargs['discard_nonenclosed_background'])
+            self.contkwargs['get_roi_contour'])
+        assert not (
+            self.contkwargs['discard_nonenclosed_background'])
         self.contkwargs['verbose'] = self.verbose > 1
 
-    # %% =====================================================================
-
-    def set_contours_from_all_masks(self, monitorPrefix=""):
+    def set_contours_from_all_masks(self, monitorPrefix=''):
         """Get contours_df from all masks.
 
         This is a wrapper around get_contours_from_mask(), with the added
@@ -136,8 +133,8 @@ class Polygon_merger(Base_HTK_Class):
         """
         from pandas import DataFrame
 
-        ordinary_contours = dict()
-        edge_contours = dict()
+        ordinary_contours = {}
+        edge_contours = {}
 
         to_remove = []
 
@@ -154,7 +151,7 @@ class Polygon_merger(Base_HTK_Class):
             # extract contours
             contours_df = get_contours_from_mask(
                 MASK=MASK,
-                monitorPrefix="%s: mask %d of %d" % (
+                monitorPrefix='%s: mask %d of %d' % (
                     monitorPrefix, midx, len(self.maskpaths)),
                 **self.contkwargs)
 
@@ -181,20 +178,19 @@ class Polygon_merger(Base_HTK_Class):
         colnames = edge_contours[list(edge_contours.keys())[0]].columns
         self.merged_contours = DataFrame(columns=colnames)
 
-    # %% =====================================================================
-
     def _get_mask_offsets_from_masknames(self):
         """Get dictionary of mask offsets (top and left) (Internal).
 
         The pattern _left-123_ and _top-123_ is assumed to
         encode the x and y offset of the mask at base magnification.
 
-        Returns:
+        Returns
+        -------
         - dict: indexed by maskname, each entry is a dict with keys
         top and left.
 
         """
-        roi_offsets = dict()
+        roi_offsets = {}
         for maskpath in self.maskpaths:
             maskname = os.path.split(maskpath)[1]
             roi_offsets[maskname] = {
@@ -203,12 +199,11 @@ class Polygon_merger(Base_HTK_Class):
             }
         return roi_offsets
 
-    # %% =====================================================================
-
     def set_roi_bboxes(self, roi_offsets=None):
         """Get dictionary of roi bounding boxes.
 
         Arguments:
+        ---------
         - roi_offsets: dict (default, None): dict indexed by maskname,
         each entry is a dict with keys top and left each is an integer.
         If None, then the x and y offset is inferred from mask name.
@@ -240,8 +235,6 @@ class Polygon_merger(Base_HTK_Class):
 
         self.roiinfos = roiinfos
 
-    # %% =====================================================================
-
     def _get_roi_pairs(self):
         """Get unique roi pairs (Internal)."""
         ut = np.triu_indices(len(self.roinames), k=1)
@@ -249,8 +242,6 @@ class Polygon_merger(Base_HTK_Class):
         for pairidx in range(len(ut[0])):
             roi_pairs.append((ut[0][pairidx], ut[1][pairidx]))
         return roi_pairs
-
-    # %% =====================================================================
 
     def set_shared_roi_edges(self):
         """Get shared edges between rois in same slide (Internal)."""
@@ -301,15 +292,13 @@ class Polygon_merger(Base_HTK_Class):
 
         self.shared_edges = shared_edges
 
-    # %% =====================================================================
-
-    def _get_merge_pairs(self, edgepair, group, monitorPrefix=""):
+    def _get_merge_pairs(self, edgepair, group, monitorPrefix=''):
         """Get nest dfs and indices of which ones to merge (Internal)."""
         from pandas import DataFrame
 
         def _get_nests_slice(ridx=1):
             Nests = self.edge_contours[edgepair['roi%d-name' % ridx]]
-            edgevar = "touches_edge-%s" % (edgepair['roi%d-edge' % ridx])
+            edgevar = 'touches_edge-%s' % (edgepair['roi%d-edge' % ridx])
             Nests = Nests.loc[Nests.loc[:, edgevar] == 1, :]
             Nests = Nests.loc[Nests.loc[:, 'group'] == group, :]
             return Nests
@@ -325,7 +314,7 @@ class Polygon_merger(Base_HTK_Class):
         nno1Max = Nests1.shape[0]
         for nid1, nest1 in Nests1.iterrows():
             nno1 += 1
-            self._print2("%s: edge1-nest %d of %d" % (
+            self._print2('%s: edge1-nest %d of %d' % (
                 monitorPrefix, nno1, nno1Max))
             try:
                 coords = np.array(_parse_annot_coords(nest1))
@@ -336,7 +325,7 @@ class Polygon_merger(Base_HTK_Class):
                 polygons1.append((nid1, Polygon(coords)))
             except Exception as e:
                 self._print2(
-                    "%s: edge1-nest %d of %d: Shapely Error (below)" % (
+                    '%s: edge1-nest %d of %d: Shapely Error (below)' % (
                         monitorPrefix, nno1, nno1Max))
                 self._print2(e)
 
@@ -356,16 +345,16 @@ class Polygon_merger(Base_HTK_Class):
                 polygon2 = Polygon(coords)
             except Exception as e:
                 self._print2(
-                    "%s: edge2-nest %d of %d: Shapely Error (below)" % (
+                    '%s: edge2-nest %d of %d: Shapely Error (below)' % (
                         monitorPrefix, nno2, nno2Max))
                 self._print2(e)
                 continue
 
-            nno1Max = len(polygons1)-1
+            nno1Max = len(polygons1) - 1
             for nno1, poly1 in enumerate(polygons1):
                 self._print2(
-                    "%s: edge2-nest %d of %d: vs. edge1-nest %d of %d" % (
-                        monitorPrefix, nno2, nno2Max, nno1+1, nno1Max+1))
+                    '%s: edge2-nest %d of %d: vs. edge1-nest %d of %d' % (
+                        monitorPrefix, nno2, nno2Max, nno1 + 1, nno1Max + 1))
                 nid1, polygon1 = poly1
                 if polygon1.distance(polygon2) < self.merge_thresh:
                     idx = to_merge.shape[0]
@@ -376,9 +365,7 @@ class Polygon_merger(Base_HTK_Class):
 
         return to_merge
 
-    # %% =====================================================================
-
-    def _get_merge_df(self, group, monitorPrefix=""):
+    def _get_merge_df(self, group, monitorPrefix=''):
         """Get merge dataframe (pairs along shared edges) (Internal)."""
         from pandas import DataFrame, concat
 
@@ -387,14 +374,12 @@ class Polygon_merger(Base_HTK_Class):
             edgepair = dict(edgepair)
             to_merge = self._get_merge_pairs(
                 edgepair=edgepair, group=group,
-                monitorPrefix="%s: pair %d of %d" % (
+                monitorPrefix='%s: pair %d of %d' % (
                     monitorPrefix, rpno + 1, self.shared_edges.shape[0]))
             merge_df = concat((merge_df, to_merge), axis=0, ignore_index=True)
         return merge_df
 
-    # %% =====================================================================
-
-    def _get_merge_clusters_from_df(self, merge_df, monitorPrefix=""):
+    def _get_merge_clusters_from_df(self, merge_df, monitorPrefix=''):
         """Assign each nest to one cluster (Internal).
 
         That is, such that all nests that are connected to each other are
@@ -406,8 +391,8 @@ class Polygon_merger(Base_HTK_Class):
         # initi merge groups with clusters of size 2
         merge_groups = {'level-0': []}
         for _, merge in merge_df.iterrows():
-            nname1 = "%s_nid-%d" % (merge['nest1-roiname'], merge['nest1-nid'])
-            nname2 = "%s_nid-%d" % (merge['nest2-roiname'], merge['nest2-nid'])
+            nname1 = '%s_nid-%d' % (merge['nest1-roiname'], merge['nest1-nid'])
+            nname2 = '%s_nid-%d' % (merge['nest2-roiname'], merge['nest2-nid'])
             merge_groups['level-0'].append([nname1, nname2])
             checksum_ref.extend([nname1, nname2])
         checksum_ref = len(list(set(checksum_ref)))
@@ -416,8 +401,8 @@ class Polygon_merger(Base_HTK_Class):
         level = 0
         keep_going = True
         while keep_going:
-            self._print2("%s: level %d" % (monitorPrefix, level))
-            merge_groups['level-%d' % (level+1)] = []
+            self._print2('%s: level %d' % (monitorPrefix, level))
+            merge_groups['level-%d' % (level + 1)] = []
             reference = merge_groups['level-%d' % (level)][:]
             # compare each cluster to the others in current level
             for gid, mgroup in enumerate(merge_groups['level-%d' % (level)]):
@@ -430,15 +415,15 @@ class Polygon_merger(Base_HTK_Class):
                     # hierarchy and remove them both from this level
                     if (gid != gid2) and (
                             len(mgroupSet.intersection(mgroup2Set)) > 0):
-                        merge_groups['level-%d' % (level+1)].append(
+                        merge_groups['level-%d' % (level + 1)].append(
                             list(mgroupSet.union(set(mgroup2Set))))
                         reference[gid] = []
                         reference[gid2] = []
             # cleanup
             merge_groups['level-%d' % (level)] = [
                 j for j in reference if len(j) > 0]
-            if len(merge_groups['level-%d' % (level+1)]) < 1:
-                del merge_groups['level-%d' % (level+1)]
+            if len(merge_groups['level-%d' % (level + 1)]) < 1:
+                del merge_groups['level-%d' % (level + 1)]
                 keep_going = False
             level += 1
 
@@ -451,7 +436,7 @@ class Polygon_merger(Base_HTK_Class):
         # sanity check
         checksum = np.sum([len(j) for j in merge_clusters])
         assert checksum == checksum_ref, \
-            "checksum fail! not every value is assigned exactly one cluster."
+            'checksum fail! not every value is assigned exactly one cluster.'
 
         # restructure into dicts with roi name, nest id keys for convenience
         def _parse_to_dict(text):
@@ -461,8 +446,6 @@ class Polygon_merger(Base_HTK_Class):
             [_parse_to_dict(j) for j in cl] for cl in merge_clusters]
 
         return merge_clusters
-
-    # %% =====================================================================
 
     def _get_merged_polygon(self, cluster):
         """Merge polygons using shapely (Internal).
@@ -483,12 +466,10 @@ class Polygon_merger(Base_HTK_Class):
             coords = _parse_annot_coords(
                 nest, x_offset=roileft, y_offset=roitop)
             nest_polygons.append(Polygon(coords).buffer(buffer_size))
-        merged_polygon = cascaded_union(nest_polygons).buffer(-buffer_size)
+        merged_polygon = unary_union(nest_polygons).buffer(-buffer_size)
         return merged_polygon
 
-    # %% =====================================================================
-
-    def _get_all_merged_polygons(self, merge_clusters, monitorPrefix=""):
+    def _get_all_merged_polygons(self, merge_clusters, monitorPrefix=''):
         """Merge polygons using shapely (Internal).
 
         Given a a list of clusters from _get_merge_clusters_from_df(). Creates
@@ -499,22 +480,18 @@ class Polygon_merger(Base_HTK_Class):
         """
         merged_polygons = []
         for cid, cl in enumerate(merge_clusters):
-            self._print2("%s: cluster %d of %d" % (
-                monitorPrefix, cid+1, len(merge_clusters)))
+            self._print2('%s: cluster %d of %d' % (
+                monitorPrefix, cid + 1, len(merge_clusters)))
             merged_polygon = self._get_merged_polygon(cluster=cl)
             merged_polygons.append(merged_polygon)
         return merged_polygons
 
-    # %% =====================================================================
-
     def _get_coord_str_from_polygon(self, polygon):
         """Parse shapely polygon coordinates into string form (Internal)."""
         coords = np.int32(polygon.exterior.coords.xy)
-        coords_x = ",".join([str(j) for j in coords[0, :]])
-        coords_y = ",".join([str(j) for j in coords[1, :]])
+        coords_x = ','.join([str(j) for j in coords[0, :]])
+        coords_y = ','.join([str(j) for j in coords[1, :]])
         return coords_x, coords_y
-
-    # %% =====================================================================
 
     def _add_single_merged_edge_contour(self, polygon, group):
         """Add single contour to self.merged_contours (Internal)."""
@@ -528,25 +505,21 @@ class Polygon_merger(Base_HTK_Class):
         self.merged_contours.loc[idx, 'coords_x'] = coords_x
         self.merged_contours.loc[idx, 'coords_y'] = coords_y
 
-    # %% =====================================================================
-
     def _add_merged_edge_contours(
-            self, merged_polygons, group, monitorPrefix=""):
+            self, merged_polygons, group, monitorPrefix=''):
         """Add merged polygons to self.merged_contours df (Internal)."""
         for pno, geometry in enumerate(merged_polygons):
-            self._print2("%s: contour %d of %d" % (
-                monitorPrefix, pno+1, len(merged_polygons)))
-            if geometry.type == 'MultiPolygon':
+            self._print2('%s: contour %d of %d' % (
+                monitorPrefix, pno + 1, len(merged_polygons)))
+            if geometry.geom_type == 'MultiPolygon':
                 for polygon in geometry:
                     self._add_single_merged_edge_contour(polygon, group=group)
             else:
                 self._add_single_merged_edge_contour(geometry, group=group)
 
-    # %% =====================================================================
-
     def _drop_merged_edge_contours(self, merge_df):
         """Drop edge contours that have already been merged (Internal)."""
-        for roiname, edge_df in self.edge_contours.items():
+        for roiname, _edge_df in self.edge_contours.items():
             nids = []
             for rid in [1, 2]:
                 neststr = 'nest%d' % rid
@@ -554,23 +527,19 @@ class Polygon_merger(Base_HTK_Class):
                     :, neststr + '-roiname'] == roiname, neststr + '-nid']))
             self.edge_contours[roiname].drop(nids, axis=0, inplace=True)
 
-    # %% =====================================================================
-
     def _add_roi_offset_to_contours(self, roi_df, roiname):
         """Add roi offset to coordinates of polygons (Internal)."""
         for idx, annot in roi_df.iterrows():
             coords = np.int32(_parse_annot_coords(dict(annot)))
             coords[:, 0] = coords[:, 0] + self.roiinfos[roiname]['left']
             coords[:, 1] = coords[:, 1] + self.roiinfos[roiname]['top']
-            roi_df.loc[idx, 'coords_x'] = ",".join(
+            roi_df.loc[idx, 'coords_x'] = ','.join(
                 [str(j) for j in coords[:, 0]])
-            roi_df.loc[idx, 'coords_y'] = ",".join(
+            roi_df.loc[idx, 'coords_y'] = ','.join(
                 [str(j) for j in coords[:, 1]])
         return roi_df
 
-    # %% =====================================================================
-
-    def set_merged_contours(self, monitorPrefix=""):
+    def set_merged_contours(self, monitorPrefix=''):
         """Go through each group and merge contours.
 
         Sets:
@@ -579,38 +548,37 @@ class Polygon_merger(Base_HTK_Class):
         """
         for group in self.GTCodes_df.index:
 
-            monitorPrefix = "%s: %s" % (monitorPrefix, group)
+            monitorPrefix = '%s: %s' % (monitorPrefix, group)
 
             # get pairs of contours to merge
             merge_df = self._get_merge_df(
-                group=group, monitorPrefix="%s: _get_merge_df" % monitorPrefix)
+                group=group, monitorPrefix='%s: _get_merge_df' % monitorPrefix)
 
             # get clusters of polygons to merge
             merge_clusters = self._get_merge_clusters_from_df(
                 merge_df=merge_df,
-                monitorPrefix="%s: _get_merge_clusters_from_df" % (
+                monitorPrefix='%s: _get_merge_clusters_from_df' % (
                     monitorPrefix))
 
             # fetch merged polygons
             merged_polygons = self._get_all_merged_polygons(
                 merge_clusters=merge_clusters,
-                monitorPrefix="%s: _get_all_merged_polygons" % monitorPrefix)
+                monitorPrefix='%s: _get_all_merged_polygons' % monitorPrefix)
 
             # add medged contours to dataframe
             self._add_merged_edge_contours(
                 merged_polygons=merged_polygons, group=group,
-                monitorPrefix="%s: _add_merged_edge_contours" % monitorPrefix)
+                monitorPrefix='%s: _add_merged_edge_contours' % monitorPrefix)
 
             # drop merged edge contours from edge dataframes
-            self._print2("%s: _drop_merged_edge_contours" % monitorPrefix)
+            self._print2('%s: _drop_merged_edge_contours' % monitorPrefix)
             self._drop_merged_edge_contours(merge_df=merge_df)
-
-    # %% =====================================================================
 
     def get_concatenated_contours(self):
         """Get concatenated contours and overall bounding box.
 
-        Returns:
+        Returns
+        -------
         - pandas DataFrame: has the same structure as output from
         get_contours_from_mask().
 
@@ -636,50 +604,47 @@ class Polygon_merger(Base_HTK_Class):
             np.max([j['right'] for _, j in self.roiinfos.items()])))
         all_contours.loc[idx, 'group'] = self.roi_group
         all_contours.loc[idx, 'color'] = self.GTCodes_df.loc['roi', 'color']
-        all_contours.loc[idx, 'coords_x'] = ",".join(
+        all_contours.loc[idx, 'coords_x'] = ','.join(
             [left, right, right, left, left])
-        all_contours.loc[idx, 'coords_y'] = ",".join(
+        all_contours.loc[idx, 'coords_y'] = ','.join(
             [top, top, bottom, bottom, top])
 
         return all_contours
 
-    # %% =====================================================================
-
     def run(self):
         """Run full pipeline to get merged contours.
 
-        Returns:
+        Returns
+        -------
         - pandas DataFrame: has the same structure as output from
         get_contours_from_mask().
 
         """
         self._print1(
-            "\n%s: Set contours from all masks" % self.monitorPrefix)
+            '\n%s: Set contours from all masks' % self.monitorPrefix)
         self.set_contours_from_all_masks(
-            monitorPrefix="%s: set_contours_from_all_masks" %
+            monitorPrefix='%s: set_contours_from_all_masks' %
             self.monitorPrefix)
         self._print1(
-            "\n%s: Set ROI bounding boxes" % self.monitorPrefix)
+            '\n%s: Set ROI bounding boxes' % self.monitorPrefix)
         self.set_roi_bboxes()
         self._print1(
-            "\n%s: Set shard ROI edges" % self.monitorPrefix)
+            '\n%s: Set shard ROI edges' % self.monitorPrefix)
         self.set_shared_roi_edges()
         self._print1(
-            "\n%s: Set merged contours" % self.monitorPrefix)
+            '\n%s: Set merged contours' % self.monitorPrefix)
         self.set_merged_contours(
-            monitorPrefix="%s: set_merged_contours" % self.monitorPrefix)
+            monitorPrefix='%s: set_merged_contours' % self.monitorPrefix)
         self._print1(
-            "\n%s: Get concatenated contours" % self.monitorPrefix)
+            '\n%s: Get concatenated contours' % self.monitorPrefix)
         all_contours = self.get_concatenated_contours()
         if self.discard_nonenclosed_background:
             self._print2(
-                "\n%s: Discard nonenclosed background" %
+                '\n%s: Discard nonenclosed background' %
                 self.monitorPrefix)
             all_contours = _discard_nonenclosed_background_group(
                 all_contours, background_group=self.background_group,
                 verbose=self.verbose,
-                monitorPrefix="%s: _discard_nonenclosed_background_group" %
+                monitorPrefix='%s: _discard_nonenclosed_background_group' %
                 self.monitorPrefix)
         return all_contours
-
-# %% =====================================================================

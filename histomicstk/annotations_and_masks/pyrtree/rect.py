@@ -43,7 +43,7 @@ class Rect:
     minx/y and maxx/y.)
     """
 
-    __slots__ = ("x", "y", "xx", "yy", "swapped_x", "swapped_y")
+    __slots__ = ('x', 'y', 'xx', 'yy', 'swapped_x', 'swapped_y')
 
     def __init__(self, minx, miny, maxx, maxy):
         """Placeholder."""
@@ -70,12 +70,12 @@ class Rect:
     def write_raw_coords(self, toarray, idx):
         """Placeholder."""
         toarray[idx] = self.x
-        toarray[idx+1] = self.y
-        toarray[idx+2] = self.xx
-        toarray[idx+3] = self.yy
+        toarray[idx + 1] = self.y
+        toarray[idx + 2] = self.xx
+        toarray[idx + 3] = self.yy
         if (self.swapped_x):
             toarray[idx] = self.xx
-            toarray[idx+2] = self.x
+            toarray[idx + 2] = self.x
         if (self.swapped_y):
             toarray[idx + 1] = self.yy
             toarray[idx + 3] = self.y
@@ -90,12 +90,12 @@ class Rect:
         """Placeholder."""
         x = self.x
         y = self.y
-        return (x, y, self.xx-x, self.yy-y)
+        return (x, y, self.xx - x, self.yy - y)
 
     def grow(self, amt):
         """Placeholder."""
         a = amt * 0.5
-        return Rect(self.x-a, self.y-a, self.xx+a, self.yy+a)
+        return Rect(self.x - a, self.y - a, self.xx + a, self.yy + a)
 
     def intersect(self, o):
         """Placeholder."""
@@ -180,5 +180,5 @@ def union_all(kids):
     cur = NullRect
     for k in kids:
         cur = cur.union(k.rect)
-    assert(not cur.swapped_x)
+    assert not cur.swapped_x
     return cur

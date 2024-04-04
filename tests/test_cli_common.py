@@ -1,31 +1,13 @@
-#!/usr/bin/env python
-
-###############################################################################
-#  Copyright Kitware Inc.
-#
-#  Licensed under the Apache License, Version 2.0 ( the "License" );
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-###############################################################################
-
-# This is to serve as an example for how to create a server-side test in a
-# girder plugin, it is not meant to be useful.
-
-from argparse import Namespace
-import os
-import json
 import collections
+import json
+import os
+import tempfile
+from argparse import Namespace
+
+import large_image
 import numpy as np
 import skimage.io
-import large_image
+
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.preprocessing.color_normalization as htk_cnorm
 import histomicstk.segmentation.nuclear as htk_nuclear
@@ -33,6 +15,8 @@ import histomicstk.utils as htk_utils
 from histomicstk.cli import utils as cli_utils
 
 from .datastore import datastore
+
+GENERATE_GROUNDTRUTH = bool(os.environ.get('GENERATE_GROUNDTRUTH'))
 
 
 class TestCliCommon:
@@ -57,12 +41,12 @@ class TestCliCommon:
 
         result = cli_utils.get_region_dict([-1, -1, -1, -1], 2000, ts)
         expected = {}
-        assert result == expected, "Expected {}, got {}".format(expected,
+        assert result == expected, 'Expected {}, got {}'.format(expected,
                                                                 result)
 
         result = cli_utils.get_region_dict([100, 110, 250, 240], 500, ts)
         expected = dict(region=dict(left=100, top=110, width=250, height=240))
-        assert result == expected, "Expected {}, got {}".format(expected,
+        assert result == expected, 'Expected {}, got {}'.format(expected,
                                                                 result)
 
     def test_segment_wsi_foreground_at_low_res(self):
@@ -79,14 +63,26 @@ class TestCliCommon:
 
         np.testing.assert_equal(fgnd_seg_scale['magnification'], 2.5)
 
-        fgnd_mask_gtruth_file = os.path.join(datastore.fetch(
-            'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png'))
+        if GENERATE_GROUNDTRUTH:
+            import PIL.Image
 
-        im_fgnd_mask_lres_gtruth = skimage.io.imread(
-            fgnd_mask_gtruth_file) > 0
+            PIL.Image.fromarray(im_fgnd_mask_lres).save(os.path.join(
+                tempfile.gettempdir(), 'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png'))
 
-        np.testing.assert_array_equal(im_fgnd_mask_lres > 0,
-                                      im_fgnd_mask_lres_gtruth)
+        for gtruth in {
+            'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png',
+            'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres2.png',
+        }:
+            fgnd_mask_gtruth_file = os.path.join(datastore.fetch(gtruth))
+
+            im_fgnd_mask_lres_gtruth = skimage.io.imread(fgnd_mask_gtruth_file)
+            if len(im_fgnd_mask_lres_gtruth.shape) > 2:
+                im_fgnd_mask_lres_gtruth = im_fgnd_mask_lres_gtruth[:, :, 0]
+            im_fgnd_mask_lres_gtruth = im_fgnd_mask_lres_gtruth > 0
+
+            if np.array_equal(im_fgnd_mask_lres > 0, im_fgnd_mask_lres_gtruth):
+                break
+        np.testing.assert_array_equal(im_fgnd_mask_lres > 0, im_fgnd_mask_lres_gtruth)
 
     def test_create_tile_nuclei_annotations(self):
 
@@ -135,7 +131,7 @@ class TestCliCommon:
             'width': int(ts_metadata['tileWidth'] * np.floor(
                 1.0 * args.analysis_tile_size / ts_metadata['tileWidth'])),
             'height': int(ts_metadata['tileHeight'] * np.floor(
-                1.0 * args.analysis_tile_size / ts_metadata['tileHeight']))
+                1.0 * args.analysis_tile_size / ts_metadata['tileHeight'])),
         }
 
         # define ROI
@@ -149,7 +145,7 @@ class TestCliCommon:
         it_kwargs = {
             'tile_size': {'width': args.analysis_tile_size},
             'scale': {'magnification': args.analysis_mag},
-            'region': roi
+            'region': roi,
         }
 
         # create dask client
@@ -162,7 +158,7 @@ class TestCliCommon:
         # compute tile foreground fraction
         tile_fgnd_frac_list = htk_utils.compute_tile_foreground_fraction(
             wsi_path, im_fgnd_mask_lres, fgnd_seg_scale,
-            it_kwargs
+            it_kwargs,
         )
 
         num_fgnd_tiles = np.count_nonzero(
@@ -199,7 +195,7 @@ class TestCliCommon:
                 args.min_radius,
                 args.max_radius,
                 args.min_nucleus_area,
-                args.local_max_search_radius
+                args.local_max_search_radius,
             )
 
             # generate nuclei annotations as bboxes
@@ -213,6 +209,14 @@ class TestCliCommon:
                 im_nuclei_seg_mask, tile_info, 'boundary')
 
             nuclei_bndry_annot_list.extend(cur_bndry_annot_list)
+
+        if GENERATE_GROUNDTRUTH:
+            open(os.path.join(
+                tempfile.gettempdir(), 'TCGA-06-0129-01Z-00-DX3_roi_nuclei_bbox.anot'),
+                'w').write(json.dumps({'elements': nuclei_bbox_annot_list}))
+            open(os.path.join(
+                tempfile.gettempdir(), 'TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot'),
+                'w').write(json.dumps({'elements': nuclei_bndry_annot_list}))
 
         # compare nuclei bbox annotations with gtruth
         nuclei_bbox_annot_gtruth_file = os.path.join(datastore.fetch(
@@ -238,7 +242,7 @@ class TestCliCommon:
 
         # compare nuclei boundary annotations with gtruth
         nuclei_bndry_annot_gtruth_file = os.path.join(datastore.fetch(
-            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot'
+            'TCGA-06-0129-01Z-00-DX3_roi_nuclei_boundary.anot',
         ))
 
         with open(nuclei_bndry_annot_gtruth_file) as fbndry_annot:

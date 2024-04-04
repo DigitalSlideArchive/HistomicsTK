@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def glog(im_input, alpha=1, range=None, theta=np.pi/4, tau=0.6, eps=0.6):
+def glog(im_input, alpha=1, range=None, theta=np.pi / 4, tau=0.6, eps=0.6):
     """Performs generalized Laplacian of Gaussian blob detection.
 
     Parameters
@@ -54,9 +54,9 @@ def glog(im_input, alpha=1, range=None, theta=np.pi/4, tau=0.6, eps=0.6):
     Min = np.zeros((len(Sigma), 1))
     Max = np.zeros((len(Sigma), 1))
     for i, s in enumerate(Sigma):
-        Response = s**2 * ndi.filters.gaussian_laplace(im_input, s, output=None,
-                                                       mode='constant',
-                                                       cval=0.0)
+        Response = s**2 * ndi.gaussian_laplace(im_input, s, output=None,
+                                               mode='constant',
+                                               cval=0.0)
         Min[i] = Response.min()
         Max[i] = Response.max()
         Bins.append(np.arange(0.01 * np.floor(Min[i] / 0.01),
@@ -68,7 +68,7 @@ def glog(im_input, alpha=1, range=None, theta=np.pi/4, tau=0.6, eps=0.6):
 
     # re-normalized based on global max and local min, count threshold pixels
     Zeta = np.zeros((len(Sigma), 1))
-    for i, s in enumerate(Sigma):
+    for i, _s in enumerate(Sigma):
         Bins[i] = (Bins[i] - Min[i]) / (l_g - Min[i])
         Zeta[i] = np.sum(H[i][Bins[i][0:-1] > tau])
 
@@ -76,7 +76,7 @@ def glog(im_input, alpha=1, range=None, theta=np.pi/4, tau=0.6, eps=0.6):
     Index = np.argmax(Zeta)
 
     # define range for SigmaX
-    XRange = range(max(Index-2, 0), min(len(range), Index + 2) + 1)
+    XRange = range(max(Index - 2, 0), min(len(range), Index + 2) + 1)
     SigmaX = np.exp(range[XRange])
 
     # define rotation angles
@@ -100,7 +100,7 @@ def glog(im_input, alpha=1, range=None, theta=np.pi/4, tau=0.6, eps=0.6):
 
     # detect local maxima
     Disk = morphology.disk(3 * np.exp(range[Index]))
-    Maxima = ndi.filters.maximum_filter(Rsum, footprint=Disk)
+    Maxima = ndi.maximum_filter(Rsum, footprint=Disk)
     Maxima = Rsum == Maxima
 
     return Rsum, Maxima
@@ -117,8 +117,8 @@ def glogkernel(sigma_x, sigma_y, theta):
         np.sin(2 * theta) / (4 * sigma_y ** 2)
     c = np.sin(theta) ** 2 / (2 * sigma_x ** 2) + \
         np.cos(theta) ** 2 / (2 * sigma_y ** 2)
-    D2Gxx = ((2*a*X + 2*b*Y)**2 - 2*a) * np.exp(-(a*X**2 + 2*b*X*Y + c*Y**2))
-    D2Gyy = ((2*b*X + 2*c*Y)**2 - 2*c) * np.exp(-(a*X**2 + 2*b*X*Y + c*Y**2))
-    Gaussian = np.exp(-(a*X**2 + 2*b*X*Y + c*Y**2))
+    D2Gxx = ((2 * a * X + 2 * b * Y)**2 - 2 * a) * np.exp(-(a * X**2 + 2 * b * X * Y + c * Y**2))
+    D2Gyy = ((2 * b * X + 2 * c * Y)**2 - 2 * c) * np.exp(-(a * X**2 + 2 * b * X * Y + c * Y**2))
+    Gaussian = np.exp(-(a * X**2 + 2 * b * X * Y + c * Y**2))
     Kernel = (D2Gxx + D2Gyy) / np.sum(Gaussian.flatten())
     return Kernel

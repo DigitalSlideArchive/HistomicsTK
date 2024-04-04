@@ -17,10 +17,6 @@ thisDir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(thisDir, '../../../'))
 from tests.htk_test_utilities import girderClient  # noqa
 
-# # for protyping
-# from tests.htk_test_utilities import _connect_to_existing_local_dsa
-# girderClient = _connect_to_existing_local_dsa()
-
 
 class Cfg:
     def __init__(self):
@@ -39,13 +35,26 @@ class TestAnnotAndMaskUtils:
     @pytest.mark.usefixtures('girderClient')  # noqa
     def test_prep(self, girderClient):  # noqa
         cfg.gc = girderClient
-        cfg.iteminfo = cfg.gc.get('/item', parameters={
-            'text': "TCGA-A2-A0YE-01Z-00-DX1"})[0]
+        original_iteminfo = cfg.gc.get('/item', parameters={'text': 'TCGA-A2-A0YE-01Z-00-DX1'})[0]
+
+        cfg.folder = cfg.gc.post(
+            '/folder', data={
+                'parentId': original_iteminfo['folderId'],
+                'name': 'test-annot-and-mask',
+            })
+
+        # copy the item
+        cfg.iteminfo = cfg.gc.post(
+            '/item/%s/copy' % original_iteminfo['_id'], data={
+                'name': 'TCGA-A2-A0YE-01Z.svs',
+                'copyAnnotations': True,
+                'folderId': cfg.folder['_id'],
+            })
         cfg.annotations = cfg.gc.get('/annotation/item/' + cfg.iteminfo['_id'])
 
     def test_get_image_from_htk_response(self):
         """Test get_image_from_htk_response."""
-        getStr = "/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG" % (
+        getStr = '/item/%s/tiles/region?left=%d&right=%d&top=%d&bottom=%d&encoding=PNG' % (
             cfg.iteminfo['_id'], 59000, 59100, 35000, 35100)
         resp = cfg.gc.get(getStr, jsonResp=False)
         rgb = get_image_from_htk_response(resp)
@@ -54,7 +63,6 @@ class TestAnnotAndMaskUtils:
 
     def test_get_bboxes_from_slide_annotations(self):
         """Test get_bboxes_from_slide_annotations."""
-
         element_infos = get_bboxes_from_slide_annotations(
             copy.deepcopy(cfg.annotations))
 
@@ -73,14 +81,14 @@ class TestAnnotAndMaskUtils:
             'itemId', 'created', 'creatorId',
             'public', 'updated', 'updatedId',
             'groups', 'element_count', 'element_details',
-            }
+        }
         assert set(element_infos.columns) == {
             'annidx', 'annotation_girder_id',
             'elementidx', 'element_girder_id',
             'type', 'group', 'label', 'color',
             'xmin', 'xmax', 'ymin', 'ymax', 'bbox_area',
-            'coords_x', 'coords_y'
-            }
+            'coords_x', 'coords_y',
+        }
         assert set(element_infos.loc[:, 'type']) == {'polyline', 'rectangle'}
 
     def test_scale_slide_annotations(self):
@@ -95,9 +103,9 @@ class TestAnnotAndMaskUtils:
     def test_get_scale_factor_and_appendStr(self):
         """Test get_scale_factor_and_appendStr."""
         in_out = [
-            [(0.2, None), (1.2525, "&mm_x=0.00020000&mm_y=0.00020000")],
-            [(None, 10.), (0.25, "&magnification=10.00000000")],
-            [(None, None), (1.0, "")],
+            [(0.2, None), (1.2525, '&mm_x=0.00020000&mm_y=0.00020000')],
+            [(None, 10.), (0.25, '&magnification=10.00000000')],
+            [(None, None), (1.0, '')],
         ]
         for (MPP, MAG), (sftrue, apstr) in in_out:
             sf, appendStr = get_scale_factor_and_appendStr(

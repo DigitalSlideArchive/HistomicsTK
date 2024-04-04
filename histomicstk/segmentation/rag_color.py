@@ -28,9 +28,8 @@ def rag_color(adj_mat):
     histomicstk.segmentation.rag_add_layer
 
     """
-
     # initialize colors and color count
-    Colors = np.zeros((adj_mat.shape[0], 1), dtype=np.int)
+    Colors = np.zeros((adj_mat.shape[0], 1), dtype=int)
     Colors[0] = 1
     ColorCount = 1
 
@@ -40,7 +39,7 @@ def rag_color(adj_mat):
         # get indices neighbors of node 'i'
         Neighbors = np.nonzero(adj_mat[i, ])[0].flatten()
 
-        if(Neighbors.size > 0):
+        if Neighbors.size > 0:
 
             # get colors of neighbors
             NeighborColors = Colors[Neighbors]
@@ -50,7 +49,7 @@ def rag_color(adj_mat):
             if NeighborColors.size > 0:
 
                 # find lowest legal color of node 'i'
-                Reference = set(range(1, ColorCount+1))
+                Reference = set(range(1, ColorCount + 1))
                 Diff = Reference.difference(set(NeighborColors))
                 if len(Diff) == 0:
                     ColorCount += 1

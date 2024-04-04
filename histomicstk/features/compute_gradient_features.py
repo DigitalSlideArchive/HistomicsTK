@@ -93,10 +93,12 @@ def compute_gradient_features(im_label, im_intensity,
     cannyG = canny(im_intensity)
 
     for i in range(numLabels):
+        if rprops[i] is None:
+            continue
 
         # get gradients of object pixels
         pixelGradients = np.sort(
-            diffG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
+            diffG[rprops[i].coords[:, 0], rprops[i].coords[:, 1]],
         )
 
         # compute mean
@@ -114,7 +116,7 @@ def compute_gradient_features(im_label, im_intensity,
 
         # compute intensity histogram
         hist, bins = np.histogram(pixelGradients, bins=num_hist_bins)
-        prob = hist/np.sum(hist, dtype=np.float32)
+        prob = hist / np.sum(hist, dtype=np.float32)
 
         # compute entropy
         fdata.at[i, 'Gradient.Mag.HistEntropy'] = scipy.stats.entropy(prob)

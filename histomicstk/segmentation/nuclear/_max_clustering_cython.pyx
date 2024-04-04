@@ -22,7 +22,7 @@ def _max_clustering_cython(double[:, :] im not None, int[:, :] im_fgnd_mask not 
 
     # find local maximum of all requested pixels
     cdef double[:, ::1] local_max_val = np.zeros([sy, sx], dtype=float)
-    cdef long[:, ::1] local_max_ind = np.zeros([sy, sx], dtype=np.int)
+    cdef long[:, ::1] local_max_ind = np.zeros([sy, sx], dtype=np.int64)
     cdef int[:, ::1] peak_found = np.zeros([sy, sx], dtype=np.int32)
     cdef double min_im_val = np.min(im)
 
@@ -87,7 +87,7 @@ def _max_clustering_cython(double[:, :] im not None, int[:, :] im_fgnd_mask not 
                 peak_found[cy, cx] = 1
 
     # find local peaks of all requested pixels
-    cdef np.ndarray[np.long_t, ndim=2, mode='c'] maxpath_np = np.zeros([1000, 2], dtype=np.long)
+    cdef np.ndarray[np.int64_t, ndim=2, mode='c'] maxpath_np = np.zeros([1000, 2], dtype=np.int64)
     cdef long[:, ::1] maxpath = maxpath_np
     cdef long end_x, end_y, end_pos, end_ind, end_max_ind
     cdef long path_len = maxpath.shape[0]

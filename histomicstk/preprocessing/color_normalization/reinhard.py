@@ -107,7 +107,6 @@ def reinhard(
             original[np.not_equal(mask_out[:, :, 0], True)] = 0
             new[mask_out[:, :, 0]] = 0
             im_normalized[:, :, i] = new + original
-
     im_normalized = im_normalized.astype(np.uint8)
 
     return im_normalized

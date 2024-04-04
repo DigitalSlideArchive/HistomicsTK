@@ -21,21 +21,21 @@ def condense(im_label):
     histomicstk.segmentation.label.shuffle
 
     """
-    import scipy.ndimage.measurements as ms
+    import scipy.ndimage as ndi
 
     # initialize output
     Condensed = im_label.copy()
 
     # get extent of each object
-    Locations = ms.find_objects(Condensed)
+    Locations = ndi.find_objects(Condensed)
 
     # initialize counter
     Counter = 1
 
     # fill in new values
-    for i in np.arange(1, len(Locations)+1):
-        if Locations[i-1] is not None:
-            Patch = Condensed[Locations[i-1]]
+    for i in np.arange(1, len(Locations) + 1):
+        if Locations[i - 1] is not None:
+            Patch = Condensed[Locations[i - 1]]
             Patch[Patch == i] = Counter
             Counter += 1
 

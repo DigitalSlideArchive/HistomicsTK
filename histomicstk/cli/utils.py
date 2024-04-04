@@ -3,9 +3,9 @@ from datetime import timedelta
 
 import large_image
 import numpy as np
+from ctk_cli import CLIArgumentParser  # noqa I004
 # imported for side effects
 from slicer_cli_web import ctk_cli_adjustment  # noqa
-from ctk_cli import CLIArgumentParser  # noqa I004
 
 import histomicstk.preprocessing.color_deconvolution as htk_cdeconv
 import histomicstk.segmentation as htk_seg
@@ -14,7 +14,7 @@ import histomicstk.utils as htk_utils
 # These defaults are only used if girder is not present
 # Use memcached by default.
 large_image.config.setConfig('cache_backend', 'memcached')
-# If memcached is unavilable, specify the fraction of memory that python
+# If memcached is unavailable, specify the fraction of memory that python
 # caching is allowed to use.  This is deliberately small.
 large_image.config.setConfig('cache_python_memory_portion', 32)
 
@@ -30,14 +30,20 @@ def get_stain_vector(args, index):
     stain_vector = args['stain_' + str(index) + '_vector']
     if all(x == -1 for x in stain_vector):  # Magic default value
         if stain == 'custom':
-            raise ValueError('If "custom" is chosen for a stain, '
-                             'a stain vector must be provided.')
+            msg = (
+                'If "custom" is chosen for a stain, '
+                'a stain vector must be provided.'
+            )
+            raise ValueError(msg)
         return htk_cdeconv.stain_color_map[stain]
     else:
         if stain == 'custom':
             return stain_vector
-        raise ValueError('Unless "custom" is chosen for a stain, '
-                         'no stain vector may be provided.')
+        msg = (
+            'Unless "custom" is chosen for a stain, '
+            'no stain vector may be provided.'
+        )
+        raise ValueError(msg)
 
 
 def get_stain_matrix(args, count=3):
@@ -46,10 +52,11 @@ def get_stain_matrix(args, count=3):
     Return a numpy array of column vectors.
 
     """
-    return np.array([get_stain_vector(args, i+1) for i in range(count)]).T
+    return np.array([get_stain_vector(args, i + 1) for i in range(count)]).T
 
 
-def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
+def segment_wsi_foreground_at_low_res(
+        ts, lres_size=2048, invert_image=False, frame=None, default_img_inversion=False):
 
     ts_metadata = ts.getMetadata()
 
@@ -65,10 +72,28 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
 
     im_lres, _ = ts.getRegion(
         scale=fgnd_seg_scale,
-        format=large_image.tilesource.TILE_FORMAT_NUMPY
+        format=large_image.tilesource.TILE_FORMAT_NUMPY,
+        frame=frame,
     )
 
-    im_lres = im_lres[:, :, :3]
+    # check number of channels
+    if len(im_lres.shape) <= 2 or im_lres.shape[2] == 1:
+        im_lres = np.dstack((im_lres, im_lres, im_lres))
+        if default_img_inversion:
+            invert_image = True
+    else:
+        im_lres = im_lres[:, :, :3]
+
+    # perform image inversion
+    if invert_image:
+        im_lres = np.max(im_lres) - im_lres
+
+    # casting the float to integers
+    if issubclass(im_lres.dtype.type, np.floating) and np.max(im_lres) > 1:
+        if np.min(im_lres) >= 0 and np.max(im_lres) < 256:
+            im_lres = im_lres.astype(np.uint8)
+        elif np.min(im_lres) >= 0 and np.max(im_lres) < 65536:
+            im_lres = im_lres.astype(np.uint16)
 
     # compute foreground mask at low-res
     im_fgnd_mask_lres = htk_utils.simple_mask(im_lres)
@@ -76,7 +101,7 @@ def segment_wsi_foreground_at_low_res(ts, lres_size=2048):
     return im_fgnd_mask_lres, fgnd_seg_scale
 
 
-def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
+def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info, region_props=None):
     import skimage.measure
 
     nuclei_annot_list = []
@@ -86,7 +111,8 @@ def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
     wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
     hfrac = tile_info['gheight'] / np.double(tile_info['height'])
 
-    nuclei_obj_props = skimage.measure.regionprops(im_nuclei_seg_mask)
+    nuclei_obj_props = region_props if region_props else skimage.measure.regionprops(
+        im_nuclei_seg_mask)
 
     for i in range(len(nuclei_obj_props)):
         cx = nuclei_obj_props[i].centroid[1]
@@ -102,13 +128,13 @@ def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
 
         # create annotation json
         cur_bbox = {
-            "type": "rectangle",
-            "center": [cx, cy, 0],
-            "width": width,
-            "height": height,
-            "rotation": 0,
-            "fillColor": "rgba(0,0,0,0)",
-            "lineColor": "rgb(0,255,0)"
+            'type': 'rectangle',
+            'center': [cx, cy, 0],
+            'width': width,
+            'height': height,
+            'rotation': 0,
+            'fillColor': 'rgba(0,0,0,0)',
+            'lineColor': 'rgb(0,255,0)',
         }
 
         nuclei_annot_list.append(cur_bbox)
@@ -116,7 +142,7 @@ def create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask, tile_info):
     return nuclei_annot_list
 
 
-def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
+def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info, region_props=None):
 
     nuclei_annot_list = []
 
@@ -125,9 +151,13 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
     wfrac = tile_info['gwidth'] / np.double(tile_info['width'])
     hfrac = tile_info['gheight'] / np.double(tile_info['height'])
 
-    by, bx = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
-                                                   trace_all=True)
-
+    if region_props:
+        by, bx, selected_rows = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
+                                                                      trace_all=True,
+                                                                      region_props=region_props)
+    else:
+        by, bx = htk_seg.label.trace_object_boundaries(im_nuclei_seg_mask,
+                                                       trace_all=True)
     for i in range(len(bx)):
 
         # get boundary points and convert to base pixel space
@@ -143,32 +173,34 @@ def create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask, tile_info):
 
         # create annotation json
         cur_annot = {
-            "type": "polyline",
-            "points": cur_points,
-            "closed": True,
-            "fillColor": "rgba(0,0,0,0)",
-            "lineColor": "rgb(0,255,0)"
+            'type': 'polyline',
+            'points': cur_points,
+            'closed': True,
+            'fillColor': 'rgba(0,0,0,0)',
+            'lineColor': 'rgb(0,255,0)',
         }
 
         nuclei_annot_list.append(cur_annot)
-
+    if region_props:
+        return nuclei_annot_list, selected_rows
     return nuclei_annot_list
 
 
-def create_tile_nuclei_annotations(im_nuclei_seg_mask, tile_info, format):
+def create_tile_nuclei_annotations(im_nuclei_seg_mask, tile_info, format, region_props=None):
 
     if format == 'bbox':
 
         return create_tile_nuclei_bbox_annotations(im_nuclei_seg_mask,
-                                                   tile_info)
+                                                   tile_info, region_props)
 
     elif format == 'boundary':
 
         return create_tile_nuclei_boundary_annotations(im_nuclei_seg_mask,
-                                                       tile_info)
+                                                       tile_info, region_props)
     else:
 
-        raise ValueError('Invalid value passed for nuclei_annotation_format')
+        msg = 'Invalid value passed for nuclei_annotation_format'
+        raise ValueError(msg)
 
 
 def create_dask_client(args):
@@ -179,6 +211,10 @@ def create_dask_client(args):
       empty string to start one locally
 
     """
+    # Dask is noisy.  Stop that
+    import os
+    os.environ.setdefault('DASK_DISTRIBUTED__LOGGING__DISTRIBUTED', 'warning')
+
     import dask
     import psutil
 
@@ -229,7 +265,7 @@ def create_dask_client(args):
             n_workers=num_workers,
             memory_limit=0,
             threads_per_worker=num_threads_per_worker,
-            silence_logs=False
+            silence_logs=False,
         )
 
     return dask.distributed.Client(scheduler)
@@ -253,9 +289,11 @@ def get_region_polygons(region):
     -------
     polygons: list
         A list of lists of x, y tuples.
+
     """
     if len(region) % 2 or len(region) < 4:
-        raise ValueError('region must be 4, 6, or a list of 2n values.')
+        msg = 'region must be 4, 6, or a list of 2n values.'
+        raise ValueError(msg)
     region = [float(v) for v in region]
     if region == [-1] * 4:
         return []
@@ -305,6 +343,7 @@ def polygons_to_binary_mask(polygons, x=0, y=0, width=None, height=None):
     mask: numpy.array
         A 1-bit numpy array where 1 is inside an odd number of polygons.  This
         can return None if polygons was None.
+
     """
     import PIL.Image
     import PIL.ImageChops
@@ -360,9 +399,9 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
         {'region': region_subdict}
 
     """
-
     if len(region) % 2 or len(region) < 4:
-        raise ValueError('region must be 4, 6, or a list of 2n values.')
+        msg = 'region must be 4, 6, or a list of 2n values.'
+        raise ValueError(msg)
 
     useWholeImage = region == [-1] * 4
 
@@ -378,14 +417,18 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
 
     if maxRegionSize is not None and maxRegionSize > 0:
         if tilesource is None:
-            raise ValueError('tilesource must be provided if maxRegionSize is specified')
+            msg = 'tilesource must be provided if maxRegionSize is specified'
+            raise ValueError(msg)
         if useWholeImage:
             size = max(tilesource.sizeX, tilesource.sizeY)
         else:
             size = max(region[-2:])
         if size > maxRegionSize:
-            raise ValueError('Requested region is too large!  '
-                             'Please see --maxRegionSize')
+            msg = (
+                'Requested region is too large!  '
+                'Please see --maxRegionSize'
+            )
+            raise ValueError(msg)
     # If a tilesource was specified, restrict the region to the image size
     if not useWholeImage and tilesource:
         minx = max(0, region[0])
@@ -402,7 +445,6 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
 def disp_time_hms(seconds):
     """Converts time from seconds to a string of the form hours:minutes:seconds
     """
-
     return str(timedelta(seconds=seconds))
 
 

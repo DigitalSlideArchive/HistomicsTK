@@ -1,3 +1,4 @@
+from histomicstk.cli import utils as cli_utils
 from histomicstk.segmentation import label as htk_label
 
 from .compute_fsd_features import compute_fsd_features
@@ -14,7 +15,11 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
                             fsd_features_flag=True,
                             intensity_features_flag=True,
                             gradient_features_flag=True,
-                            haralick_features_flag=True
+                            haralick_features_flag=True,
+                            tile_info=None,
+                            im_nuclei_seg_mask=None,
+                            format=None,
+                            return_nuclei_annotation=False,
                             ):
     """
     Calculates features for nuclei classification
@@ -76,11 +81,16 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
         haralick features from intensity and cytoplasm channels.
         See `histomicstk.features.compute_haralick_features` for more details.
 
+    return_nuclei_annotation :  bool, optional
+        Returns the nuclei annotation if kept True
+
     Returns
     -------
     fdata : pandas.DataFrame
         A pandas data frame containing the features listed below for each
         object/label
+    nuclei_annot_list : List
+        List containing the boundaries of segmented nuclei in the input image.
 
     Notes
     -----
@@ -149,7 +159,7 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
         gradient_features_flag,
         haralick_features_flag,
     ]):
-        assert im_nuclei is not None, "You must provide nuclei intensity!"
+        assert im_nuclei is not None, 'You must provide nuclei intensity!'
 
     # TODO: this pipeline uses loops a lot. For each set of features it
     #  iterates over all nuclei, which may become an issue when one needs to
@@ -187,7 +197,8 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
 
         # ensure that cytoplasm props order corresponds to the nuclei
         lablocs = {v['label']: i for i, v in enumerate(cyto_props)}
-        cyto_props = [cyto_props[lablocs[v['label']]] for v in nuclei_props]
+        cyto_props = [cyto_props[lablocs[v['label']]] if v['label'] in lablocs else None
+                      for v in nuclei_props]
 
     # compute morphometry features
     if morphometry_features_flag:
@@ -250,7 +261,7 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
         fharalick_nuclei = compute_haralick_features(
             im_label, im_nuclei,
             num_levels=num_glcm_levels,
-            rprops=nuclei_props
+            rprops=nuclei_props,
         )
 
         fharalick_nuclei.columns = ['Nucleus.' + col
@@ -264,7 +275,7 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
         fharalick_cytoplasm = compute_haralick_features(
             cyto_mask, im_cytoplasm,
             num_levels=num_glcm_levels,
-            rprops=cyto_props
+            rprops=cyto_props,
         )
 
         fharalick_cytoplasm.columns = ['Cytoplasm.' + col
@@ -274,5 +285,14 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
 
     # Merge all features
     fdata = pd.concat(feature_list, axis=1)
+
+    if return_nuclei_annotation:
+        # Create nuclei segmentation with the generated regionprops
+        nuclei_annot_list, selected_rows = cli_utils.create_tile_nuclei_annotations(
+            im_nuclei_seg_mask, tile_info, format, nuclei_props)
+
+        # Drop all rows which are not found in nuclei detection
+        fdata = fdata[fdata.index.isin(selected_rows)]
+        return fdata, nuclei_annot_list
 
     return fdata

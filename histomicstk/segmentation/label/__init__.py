@@ -11,8 +11,10 @@ from .compact import compact
 from .condense import condense
 from .delete import delete
 from .delete_border import delete_border
+from .delete_overlap import delete_overlap
 from .dilate_xor import dilate_xor
 from .perimeter import perimeter
+from .remove_overlap_nuclei import remove_overlap_nuclei
 from .shuffle import shuffle
 from .split import split
 from .trace_object_boundaries import trace_object_boundaries
@@ -33,4 +35,6 @@ __all__ = (
     'split',
     'trace_object_boundaries',
     'width_open',
+    'delete_overlap',
+    'remove_overlap_nuclei',
 )

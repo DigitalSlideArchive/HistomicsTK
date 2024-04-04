@@ -31,44 +31,45 @@ def split(im_label, conn=8):
     histomicstk.segmentation.label.shuffle
 
     """
-    import scipy.ndimage.measurements as ms
+    import scipy.ndimage as ndi
 
     # copy input image
     Split = im_label.copy()
 
     # define kernel for neighborhood
     if conn == 8:
-        Kernel = np.ones((3, 3), dtype=np.bool)
+        Kernel = np.ones((3, 3), dtype=bool)
     elif conn == 4:
-        Kernel = np.zeros((3, 3), dtype=np.bool)
+        Kernel = np.zeros((3, 3), dtype=bool)
         Kernel[1, :] = True
         Kernel[:, 1] = True
     else:
-        raise ValueError("Input 'conn' must be 4 or 8")
+        msg = "Input 'conn' must be 4 or 8"
+        raise ValueError(msg)
 
     # condense label image
-    if np.unique(Split).size-1 != Split.max():
+    if np.unique(Split).size - 1 != Split.max():
         Split = condense(Split)
 
     # get locations of objects in initial image
-    Locations = ms.find_objects(Split)
+    Locations = ndi.find_objects(Split)
 
     # initialize number of labeled objects
     Total = Split.max()
 
     # iterate through objects, replicating where needed
-    for i in np.arange(1, len(Locations)+1):
+    for i in np.arange(1, len(Locations) + 1):
 
         # extract object from label image
-        Template = Split[Locations[i-1]]
+        Template = Split[Locations[i - 1]]
 
         # label mask of object 'i'
-        L, Count = ms.label(Template == i, Kernel)
+        L, Count = ndi.label(Template == i, Kernel)
 
         # relabel if necessary
-        if(Count > 1):
+        if Count > 1:
             Template[L == 1] = i
-            for i in np.arange(2, Count+1):
+            for i in np.arange(2, Count + 1):
                 Template[L == i] = Total + 1
                 Total += 1
 

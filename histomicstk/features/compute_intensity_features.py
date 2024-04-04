@@ -1,4 +1,6 @@
 """Compute intensity features in labeled image."""
+import warnings
+
 import numpy as np
 
 
@@ -108,7 +110,7 @@ def compute_intensity_features(
         feature_list = default_feature_list
     else:
         assert all(j in default_feature_list for j in feature_list), \
-            "Some feature names are not recognized."
+            'Some feature names are not recognized.'
 
     # compute object properties if not provided
     if rprops is None:
@@ -123,16 +125,20 @@ def compute_intensity_features(
     # conditionally execute calculations if x in the features list
     def _conditional_execution(feature, func, *args, **kwargs):
         if feature in feature_list:
-            fdata.at[i, feature] = func(*args, **kwargs)
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                fdata.at[i, feature] = func(*args, **kwargs)
 
     def _return_input(x):
         return x
 
     for i in range(numLabels):
+        if rprops[i] is None:
+            continue
 
         # get intensities of object pixels
         pixelIntensities = np.sort(
-            im_intensity[rprops[i].coords[:, 0], rprops[i].coords[:, 1]]
+            im_intensity[rprops[i].coords[:, 0], rprops[i].coords[:, 1]],
         )
 
         # simple descriptors
@@ -167,7 +173,7 @@ def compute_intensity_features(
 
             # compute intensity histogram
             hist, bins = np.histogram(pixelIntensities, bins=num_hist_bins)
-            prob = hist/np.sum(hist, dtype=np.float32)
+            prob = hist / np.sum(hist, dtype=np.float32)
 
             # entropy and energy
             _conditional_execution(
