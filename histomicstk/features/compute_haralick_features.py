@@ -291,11 +291,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
         minr, minc, maxr, maxc = rprops[i].bbox
 
         # grab nucleus mask
-<<<<<<< HEAD
         subImage = im_intensity[minr:maxr+1, minc:maxc+1]
-=======
-        subImage = im_intensity[minr:maxr + 1, minc:maxc + 1].astype(np.uint8)
->>>>>>> 1fbae0d5 (Add isort and autopep8 to tox format environment. (#968))
 
         # gets GLCM or gray-tone spatial dependence matrix
         arrayGLCM = graycomatrixext(subImage, offsets=offsets,
