@@ -55,6 +55,7 @@ setup(
         # by default.
         'large-image[sources];sys.platform=="linux" or sys.platform=="linux2"',
         'large-image[common];sys.platform!="linux" and sys.platform!="linux2"',
+        'large-image-converter;sys.platform=="linux" or sys.platform=="linux2"',
         'girder-slicer-cli-web',
         # cli
         'ctk-cli',
