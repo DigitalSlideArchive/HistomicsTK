@@ -56,34 +56,36 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
     # create pandas data frame containing the features for each object
     numFeatures = len(feature_list)
     numLabels = len(rprops)
-    fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)),
-                         columns=feature_list)
 
-    # fourier descriptors, spaced evenly over the interval 1:K/2
+    # pre-compute Interval outside the loop
     Interval = np.round(
-        np.power(
-            2, np.linspace(0, np.log2(K) - 1, Fs + 1, endpoint=True),
-        ),
+        np.power(2, np.linspace(0, np.log2(K) - 1, Fs + 1, endpoint=True)),
     ).astype(np.uint8)
+
+    # initialize an empty list to collect data
+    data_list = []
 
     for i in range(numLabels):
         # get bounds of dilated nucleus
-        min_row, max_row, min_col, max_col = \
-            _GetBounds(rprops[i].bbox, Delta, sizex, sizey)
+        min_row, max_row, min_col, max_col = _GetBounds(
+            rprops[i].bbox, Delta, sizex, sizey,
+        )
+
         # grab label mask
-        lmask = (
-            im_label[min_row:max_row, min_col:max_col] == rprops[i].label
-        ).astype(bool)
+        lmask = (im_label[min_row:max_row, min_col:max_col] == rprops[i].label).astype(bool)
         # find boundaries
         Bounds = np.argwhere(
             find_boundaries(lmask, mode='inner').astype(np.uint8) == 1,
         )
         # check length of boundaries
         if len(Bounds) < 2:
-            fdata.iloc[i, :] = 0
+            data_list.append(np.zeros(numFeatures))
         else:
-            # compute fourier descriptors
-            fdata.iloc[i, :] = _FSDs(Bounds[:, 0], Bounds[:, 1], K, Interval)
+            # compute fourier descriptors and collect data
+            data_list.append(_FSDs(Bounds[:, 0], Bounds[:, 1], K, Interval))
+
+    # create DataFrame after the loop
+    fdata = pd.DataFrame(data_list, columns=feature_list)
 
     return fdata
 

@@ -1,5 +1,4 @@
 import warnings
-from collections import OrderedDict
 
 import numpy as np
 
@@ -102,62 +101,68 @@ def compute_morphometry_features(im_label, rprops=None):
         rprops = regionprops(im_label)
     intensity_wtd = rprops[0]._intensity_image is not None
 
-    # List of feature names
-    featname_map = OrderedDict({
-        'Orientation.Orientation': 'orientation',
-        'Size.Area': 'area',
-        'Size.ConvexHullArea': 'convex_area',
-        'Size.MajorAxisLength': 'major_axis_length',
-        'Size.MinorAxisLength': 'minor_axis_length',
-        'Size.Perimeter': 'perimeter',
-        'Shape.Circularity': None,
-        'Shape.Eccentricity': 'eccentricity',
-        'Shape.EquivalentDiameter': 'equivalent_diameter',
-        'Shape.Extent': 'extent',
-        'Shape.FractalDimension': None,
-        'Shape.MinorMajorAxisRatio': None,
-        'Shape.Solidity': 'solidity',
-    })
-    hu_cols = ['Shape.HuMoments%d' % k for k in range(1, 8)]
-    featname_map.update({col: None for col in hu_cols})
+    # Define the feature list as tuples of (feature name, attribute or function)
+    feature_list = [
+        ('Orientation.Orientation', 'orientation'),
+        ('Size.Area', 'area'),
+        ('Size.ConvexHullArea', 'convex_area'),
+        ('Size.MajorAxisLength', 'major_axis_length'),
+        ('Size.MinorAxisLength', 'minor_axis_length'),
+        ('Size.Perimeter', 'perimeter'),
+        (
+            'Shape.Circularity',
+            lambda rp: 4
+            * np.pi
+            * rp.area
+            / (rp.perimeter**2 if rp.perimeter > 0 else 1),
+        ),
+        ('Shape.Eccentricity', 'eccentricity'),
+        ('Shape.EquivalentDiameter', 'equivalent_diameter'),
+        ('Shape.Extent', 'extent'),
+        ('Shape.FractalDimension', lambda rp: _fractal_dimension(rp.image)),
+        (
+            'Shape.MinorMajorAxisRatio',
+            lambda rp: rp.minor_axis_length / rp.major_axis_length
+            if rp.major_axis_length > 0
+            else 1,
+        ),
+        ('Shape.Solidity', 'solidity'),
+    ]
+
+    # Add Hu moments features
+    hu_moments = [
+        ('Shape.HuMoments' + str(k), lambda rp, k=k: rp.moments_hu[k - 1])
+        for k in range(1, 8)
+    ]
+    feature_list.extend(hu_moments)
     if intensity_wtd:
-        wtd_hu_cols = [col.replace('.Hu', '.WeightedHu') for col in hu_cols]
-        featname_map.update({col: None for col in wtd_hu_cols})
-    feature_list = featname_map.keys()
-    mapped_feats = [k for k, v in featname_map.items() if v is not None]
+        wtd_hu_moments = [
+            (
+                'Shape.WeightedHuMoments' + str(k),
+                lambda rp, k=k: rp.weighted_moments_hu[k - 1],
+            )
+            for k in range(1, 8)
+        ]
+        feature_list.extend(wtd_hu_moments)
 
-    # create pandas data frame containing the features for each object
-    numFeatures = len(feature_list)
-    numLabels = len(rprops)
-    fdata = pd.DataFrame(np.zeros((numLabels, numFeatures)),
-                         columns=feature_list)
+    data = []
 
-    for i, nprop in enumerate(rprops):
+    for prop in rprops:
+        row = []
+        for name, attr in feature_list:
+            if callable(attr):
+                value = attr(prop)
+            else:
+                value = getattr(prop, attr, np.nan)
 
-        # assign some features from sklearn as-is
-        for name in mapped_feats:
-            fdata.at[i, name] = nprop[featname_map[name]]
+            # Check if the feature is Area or ConvexHullArea and ensure it is a float
+            if name in ('Size.Area', 'Size.ConvexHullArea'):
+                value = float(value)  # Cast to float here
 
-        # compute Circularity
-        numerator = 4 * np.pi * nprop.area
-        denominator = nprop.perimeter ** 2
-        if denominator > 0:
-            fdata.at[i, 'Shape.Circularity'] = numerator / denominator
+            row.append(value)
+        data.append(row)
 
-        # compute fractal dimension (boundary complexity)
-        fdata.at[i, 'Shape.FractalDimension'] = _fractal_dimension(nprop.image)
-
-        # compute Minor to Major axis ratio
-        if nprop.major_axis_length > 0:
-            fdata.at[i, 'Shape.MinorMajorAxisRatio'] = \
-                nprop.minor_axis_length / nprop.major_axis_length
-        else:
-            fdata.at[i, 'Shape.MinorMajorAxisRatio'] = 1
-
-        # Hu moments, raw and possibly also intensity-weighted
-        fdata.loc[i, hu_cols] = nprop.moments_hu
-        if intensity_wtd:
-            fdata.loc[i, wtd_hu_cols] = nprop.weighted_moments_hu
+    fdata = pd.DataFrame(data, columns=[name for name, _ in feature_list])
 
     return fdata
 
