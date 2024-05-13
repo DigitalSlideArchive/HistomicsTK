@@ -35,8 +35,6 @@ setup(
     include_package_data=True,
     install_requires=[
         'girder-client',
-        # version
-        'importlib-metadata<5 ; python_version < "3.8"',
         # scientific packages
         'nimfa',
         'numpy',
@@ -47,8 +45,7 @@ setup(
         'scikit-learn',
         'imageio',
         'shapely[vectorized]',
-        'sqlalchemy ; python_version >= "3.8"',
-        'sqlalchemy<2 ; python_version < "3.8"',
+        'sqlalchemy',
         'matplotlib',
         'pyvips',
         # dask packages
@@ -58,6 +55,7 @@ setup(
         # by default.
         'large-image[sources];sys.platform=="linux" or sys.platform=="linux2"',
         'large-image[common];sys.platform!="linux" and sys.platform!="linux2"',
+        'large-image-converter;sys.platform=="linux" or sys.platform=="linux2"',
         'girder-slicer-cli-web',
         # cli
         'ctk-cli',

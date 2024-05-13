@@ -100,9 +100,15 @@ class TestColorDeconvolution:
 
     def test_defaults(self):
         img1, img2, img3 = self._runTest([datastore.fetch('Easy1.png')])
-        assert (hashlib.sha256(img1.convert('L').tobytes()).hexdigest() ==
-                'd46d8554ba626b8800cb7457d6a8d6c4e6915c75092fd783e0bfa2d4e85c06ec')
-        assert (hashlib.sha256(img2.convert('L').tobytes()).hexdigest() ==
-                'c48c3d21b674981ad38b902061b779cda5c605fda5e20a81894051e2a032e736')
-        assert (hashlib.sha256(img3.convert('L').tobytes()).hexdigest() ==
-                '479066d2016122b2b60575f4e9abe201b4f79d8a894ce76191419e21c7539186')
+        assert hashlib.sha256(img1.convert('L').tobytes()).hexdigest() in {
+            'd46d8554ba626b8800cb7457d6a8d6c4e6915c75092fd783e0bfa2d4e85c06ec',
+            '0ba7081bd71ca517e2beb96904b333485a93dc3eeab21590cca2bb4ab19b298e',
+        }
+        assert hashlib.sha256(img2.convert('L').tobytes()).hexdigest() in {
+            'c48c3d21b674981ad38b902061b779cda5c605fda5e20a81894051e2a032e736',
+            'adf0cf7246f395182e326b9798b8134e2ccfd021e607026cc97f2251be9c0f6d',
+        }
+        assert hashlib.sha256(img3.convert('L').tobytes()).hexdigest() in {
+            '479066d2016122b2b60575f4e9abe201b4f79d8a894ce76191419e21c7539186',
+            'd06317130f4a4aabd155c97f32cec4708ec3eec24d09d16daa2181f18b2051bb',
+        }

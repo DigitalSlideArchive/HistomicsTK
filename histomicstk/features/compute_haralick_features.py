@@ -25,7 +25,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
         objects.
 
     im_intensity : array_like
-        An ND single channel intensity image
+        An ND single channel intensity image.
 
     offsets : array_like, optional
         A (num_offsets, num_image_dims) array of offset vectors
