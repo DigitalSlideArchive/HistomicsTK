@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="histomicstk.utils" href="histomicstk.utils.html" />
+    <link rel="prev" title="API Documentation" href="api-docs.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">histomicstk</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api-docs.html">API Documentation</a></li>
+      <li class="breadcrumb-item active">histomicstk</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/histomicstk.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="histomicstk">
+<h1>histomicstk<a class="headerlink" href="#histomicstk" title="Link to this heading">¶</a></h1>
+<p>This histomicstk package contains algorithms for fundamental image analysis
+tasks including color normalization, color deconvolution, filtering to
+enhance commonly found objects/structures, cell/nuclei segmentation, feature extraction, and tissue detection. It also contains algorithms and workflows to parse
+annotations polygons into masks for training and validating algorithms
+and vice versa.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.utils.html">utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.compute_tile_foreground_fraction"><code class="docutils literal notranslate"><span class="pre">compute_tile_foreground_fraction()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.convert_image_to_matrix"><code class="docutils literal notranslate"><span class="pre">convert_image_to_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.convert_matrix_to_image"><code class="docutils literal notranslate"><span class="pre">convert_matrix_to_image()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.del2"><code class="docutils literal notranslate"><span class="pre">del2()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.eigen"><code class="docutils literal notranslate"><span class="pre">eigen()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.exclude_nonfinite"><code class="docutils literal notranslate"><span class="pre">exclude_nonfinite()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.fit_poisson_mixture"><code class="docutils literal notranslate"><span class="pre">fit_poisson_mixture()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.gradient_diffusion"><code class="docutils literal notranslate"><span class="pre">gradient_diffusion()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.hessian"><code class="docutils literal notranslate"><span class="pre">hessian()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.merge_colinear"><code class="docutils literal notranslate"><span class="pre">merge_colinear()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.sample_pixels"><code class="docutils literal notranslate"><span class="pre">sample_pixels()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.simple_mask"><code class="docutils literal notranslate"><span class="pre">simple_mask()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.preprocessing.color_conversion.html">color space conversion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.preprocessing.color_deconvolution.html">color deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.preprocessing.color_normalization.html">color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.preprocessing.augmentation.html">data augmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.filters.html">filters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.filters.edge.html">edge/gradient filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.filters.shape.html">shape filters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.embed_boundaries"><code class="docutils literal notranslate"><span class="pre">embed_boundaries()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag"><code class="docutils literal notranslate"><span class="pre">rag()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag_add_layer"><code class="docutils literal notranslate"><span class="pre">rag_add_layer()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag_color"><code class="docutils literal notranslate"><span class="pre">rag_color()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.simple_mask"><code class="docutils literal notranslate"><span class="pre">simple_mask()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.segmentation.label.html">label mask processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.segmentation.level_set.html">level-set segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.segmentation.nuclear.html">nuclei segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.segmentation.positive_pixel_count.html">positive pixel counting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.features.html">features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.features.html#histomicstk.features.compute_fsd_features"><code class="docutils literal notranslate"><span class="pre">compute_fsd_features()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.features.html#histomicstk.features.compute_global_cell_graph_features"><code class="docutils literal notranslate"><span class="pre">compute_global_cell_graph_features()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.features.html#histomicstk.features.compute_gradient_features"><code class="docutils literal notranslate"><span class="pre">compute_gradient_features()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.features.html#histomicstk.features.compute_haralick_features"><code class="docutils literal notranslate"><span class="pre">compute_haralick_features()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.features.html#histomicstk.features.compute_intensity_features"><code class="docutils literal notranslate"><span class="pre">compute_intensity_features()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.features.html#histomicstk.features.compute_morphometry_features"><code class="docutils literal notranslate"><span class="pre">compute_morphometry_features()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.features.html#histomicstk.features.compute_nuclei_features"><code class="docutils literal notranslate"><span class="pre">compute_nuclei_features()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.features.html#histomicstk.features.graycomatrixext"><code class="docutils literal notranslate"><span class="pre">graycomatrixext()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.annotations_and_masks.annotation_database_parser.html">Annotation database backup and sqlite parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.annotations_and_masks.review_gallery.html">Mosaic review gallery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.html">Annotations to semantic segmentation masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.annotations_and_masks.annotations_to_object_segmentation_masks.html">Annotations to object segmentation masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.annotations_and_masks.masks_to_annotations_handler.html">Masks to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.annotations_and_masks.annotation_and_mask_utils.html">Annotation and mask utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.annotations_and_masks.polygon_merger.html">Polygon merger</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.saliency.tissue_detection.html">Tissue detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.saliency.cellularity_detection_thresholding.html">Cellularity detection (using thresholding)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.saliency.cellularity_detection_superpixels.html">Cellularity detection (using superpixels)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="histomicstk.workflows.html">workflows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.workflows.workflow_runner.html">Workflow runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histomicstk.workflows.specific_workflows.html">Specific workflows</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="api-docs.html" class="btn btn-neutral float-left" title="API Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="histomicstk.utils.html" class="btn btn-neutral float-right" title="histomicstk.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

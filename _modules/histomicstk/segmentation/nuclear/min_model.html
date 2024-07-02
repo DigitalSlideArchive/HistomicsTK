@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.nuclear.min_model &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.nuclear.min_model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.segmentation.nuclear.min_model</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">histomicstk.segmentation</span> <span class="kn">import</span> <span class="n">label</span>
+
+
+<div class="viewcode-block" id="min_model">
+<a class="viewcode-back" href="../../../../histomicstk.segmentation.nuclear.html#histomicstk.segmentation.nuclear.min_model">[docs]</a>
+<span class="k">def</span> <span class="nf">min_model</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Delta</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">MaxLength</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">Compaction</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+              <span class="n">MinArea</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">MinWidth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">MinDepth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">MinConcavity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs a nuclear segmentation using a gradient contour tracing and</span>
+<span class="sd">    geometry splitting algorithm. Implemented from the reference below.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    I : array_like</span>
+<span class="sd">        An intensity image used for analyzing local minima/maxima and</span>
+<span class="sd">        gradients. Dimensions M x N.</span>
+<span class="sd">    Delta : float</span>
+<span class="sd">        Fractional difference threshold between minima/maxima pairs to</span>
+<span class="sd">        be included in seed point detection. Fractional difference</span>
+<span class="sd">        ([0, 1]) in total image range e.g. Delta = 0.3 with a uint8</span>
+<span class="sd">        input would translate to 0.3 * 255. Default value = 0.3.</span>
+<span class="sd">    MaxLength : int</span>
+<span class="sd">        Maximum allowable contour length. Default value = 255.</span>
+<span class="sd">    Compaction : int</span>
+<span class="sd">        Factor used in compacting objects to remove thin spurs. Referred to as</span>
+<span class="sd">        &#39;d&#39; in the paper. Default value = 3.</span>
+<span class="sd">    MinArea : int</span>
+<span class="sd">        Minimum area of objects to analyze. Default value = 100.</span>
+<span class="sd">    MinWidth : int</span>
+<span class="sd">        Minimum max-width of objects to analyze. Default value = 5.</span>
+<span class="sd">    MinDepth : float</span>
+<span class="sd">        Minimum depth of concavities to consider during geometric splitting.</span>
+<span class="sd">        Default value = 2.</span>
+<span class="sd">    MinConcavity : float</span>
+<span class="sd">        Minimum concavity score to consider when performing for geometric</span>
+<span class="sd">        splitting. Default value = np.inf.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Objects are assumed to be dark (as nuclei in hematoxylin channel from color</span>
+<span class="sd">    deconvolution). Smoothing improves accuracy and computation time by</span>
+<span class="sd">    eliminating spurious seed points. Specifying a value for &#39;Delta&#39; prevents</span>
+<span class="sd">    shallow transitions from being included, also reducing computation time and</span>
+<span class="sd">    increasing specificity.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    X : array_like</span>
+<span class="sd">        A 1D array of horizontal coordinates of contour seed pixels for</span>
+<span class="sd">        tracing.</span>
+<span class="sd">    Y : array_like</span>
+<span class="sd">        A 1D array of the vertical coordinates of seed pixels for tracing.</span>
+<span class="sd">    Min : array_like</span>
+<span class="sd">        A 1D array of the corresponding minimum values for contour tracing of</span>
+<span class="sd">        seed point X, Y.</span>
+<span class="sd">    Max : array_like</span>
+<span class="sd">        A 1D array of the corresponding maximum values for contour tracing of</span>
+<span class="sd">        seed point X, Y.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    histomicstk.segmentation.label.trace_object_boundaries</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] S. Weinert et al &quot;Detection and Segmentation of Cell Nuclei in</span>
+<span class="sd">       Virtual Microscopy Images: A Minimum-Model Approach&quot; in Nature</span>
+<span class="sd">       Scientific Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># identify contour seed points</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Min</span><span class="p">,</span> <span class="n">Max</span> <span class="o">=</span> <span class="n">seed_contours</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Delta</span><span class="p">)</span>
+
+    <span class="c1"># trace contours from seeds</span>
+    <span class="n">cXs</span><span class="p">,</span> <span class="n">cYs</span> <span class="o">=</span> <span class="n">trace_contours</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Min</span><span class="p">,</span> <span class="n">Max</span><span class="p">,</span> <span class="n">MaxLength</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+
+    <span class="c1"># score successfully traced contours</span>
+    <span class="n">Scores</span> <span class="o">=</span> <span class="n">score_contours</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">cXs</span><span class="p">,</span> <span class="n">cYs</span><span class="p">)</span>
+
+    <span class="c1"># construct label image from scored contours</span>
+    <span class="n">Label</span> <span class="o">=</span> <span class="n">label_contour</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">cXs</span><span class="p">,</span> <span class="n">cYs</span><span class="p">,</span> <span class="n">Scores</span><span class="p">)</span>
+
+    <span class="c1"># compact contours to remove spurs - the paper calls this &quot;optimization&quot;</span>
+    <span class="n">Label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">compact</span><span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">Compaction</span><span class="p">)</span>
+
+    <span class="c1"># cleanup label image</span>
+    <span class="n">Label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">Label</span><span class="p">)</span>
+    <span class="n">Label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">area_open</span><span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">MinArea</span><span class="p">)</span>
+    <span class="n">Label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">width_open</span><span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">MinWidth</span><span class="p">)</span>
+
+    <span class="c1"># split objects with concavities</span>
+    <span class="n">Label</span> <span class="o">=</span> <span class="n">split_concavities</span><span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">MinDepth</span><span class="p">,</span> <span class="n">MinConcavity</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Label</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">seed_contours</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Delta</span><span class="o">=</span><span class="mf">0.3</span><span class="p">):</span>  <span class="c1"># noqa</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detects seed pixels for contour tracing by finding max-gradient points</span>
+<span class="sd">    between local minima and maxima in an intensity image.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    I : array_like</span>
+<span class="sd">        An intensity image used for analyzing local minima/maxima and</span>
+<span class="sd">        gradients. Dimensions M x N.</span>
+<span class="sd">    Delta : float</span>
+<span class="sd">        Fractional difference threshold between minima/maxima pairs to</span>
+<span class="sd">        be included in seed point detection. Fractional difference</span>
+<span class="sd">        ([0, 1]) in total image range e.g. Delta = 0.3 with a uint8</span>
+<span class="sd">        input would translate to 0.3 * 255.  Default value = 0.3.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Objects are assumed to be dark (as nuclei in hematoxylin channel from color</span>
+<span class="sd">    deconvolution). Smoothing improves accuracy and computation time by</span>
+<span class="sd">    eliminating spurious seed points. Specifying a value for &#39;Delta&#39; prevents</span>
+<span class="sd">    shallow transitions from being included, also reducing computation time and</span>
+<span class="sd">    increasing specificity.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    X : array_like</span>
+<span class="sd">        A 1D array of horizontal coordinates of contour seed pixels for</span>
+<span class="sd">        tracing.</span>
+<span class="sd">    Y : array_like</span>
+<span class="sd">        A 1D array of the vertical coordinates of seed pixels for tracing.</span>
+<span class="sd">    Min : array_like</span>
+<span class="sd">        A 1D array of the corresponding minimum values for contour tracing of</span>
+<span class="sd">        seed point X, Y.</span>
+<span class="sd">    Max : array_like</span>
+<span class="sd">        A 1D array of the corresponding maximum values for contour tracing of</span>
+<span class="sd">        seed point X, Y.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    TraceBounds, SeedContours, MinimumModel</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] S. Weinert et al &quot;Detection and Segmentation of Cell Nuclei in</span>
+<span class="sd">    Virtual Microscopy Images: A Minimum-Model Approach&quot; in Nature Scientific</span>
+<span class="sd">    Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># initialize outputs</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">Min</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">Max</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># for each image row</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+
+        <span class="c1"># calculate gradient</span>
+        <span class="n">Gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
+
+        <span class="c1"># identify local maxima and minimia of row &#39;i&#39; of &#39;I&#39;</span>
+        <span class="n">Maxima</span> <span class="o">=</span> <span class="p">((</span><span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span> <span class="o">&amp;</span>
+                  <span class="p">(</span><span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]))</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">Minima</span> <span class="o">=</span> <span class="p">((</span><span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span> <span class="o">&amp;</span>
+                  <span class="p">(</span><span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]))</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># identify transitions - start of intervals of monotonic non-increase</span>
+        <span class="n">dI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">-</span> <span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+        <span class="n">dI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">dI</span><span class="p">,</span> <span class="n">dI</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">Transitions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">dI</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">Transitions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">Transitions</span><span class="p">,</span> <span class="n">I</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># define min/max neighbor pairs</span>
+        <span class="n">MinPair</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">MaxPair</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">Minima</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Maxima</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+
+            <span class="c1"># initialize initial positions of min/max &amp; transition indices</span>
+            <span class="n">MinPos</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">MaxPos</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">TranPos</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># iterate through maxima, identifying relevant minima for each</span>
+            <span class="k">while</span> <span class="n">MaxPos</span> <span class="o">&lt;</span> <span class="n">Maxima</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                <span class="n">Index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">Minima</span> <span class="o">&gt;</span> <span class="n">Maxima</span><span class="p">[</span><span class="n">MaxPos</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">Index</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>  <span class="c1"># minima found beyond current maxima</span>
+
+                    <span class="c1"># get position of next minimum in array &#39;Minima&#39;</span>
+                    <span class="n">MinPos</span> <span class="o">=</span> <span class="n">Index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="c1"># increment transition point to beyond current maxima</span>
+                    <span class="k">while</span> <span class="p">(</span><span class="n">TranPos</span> <span class="o">&lt;</span> <span class="n">Transitions</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">&amp;</span> \
+                            <span class="p">(</span><span class="n">Transitions</span><span class="p">[</span><span class="n">TranPos</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">Maxima</span><span class="p">[</span><span class="n">MaxPos</span><span class="p">]):</span>
+                        <span class="n">TranPos</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                    <span class="c1"># add minima to current maxima until transition is reached</span>
+                    <span class="k">while</span> <span class="n">Minima</span><span class="p">[</span><span class="n">MinPos</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">Transitions</span><span class="p">[</span><span class="n">TranPos</span><span class="p">]:</span>
+                        <span class="n">MinPair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Minima</span><span class="p">[</span><span class="n">MinPos</span><span class="p">])</span>
+                        <span class="n">MaxPair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Maxima</span><span class="p">[</span><span class="n">MaxPos</span><span class="p">])</span>
+                        <span class="n">MinPos</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">MinPos</span> <span class="o">==</span> <span class="n">Minima</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                            <span class="k">break</span>
+
+                    <span class="c1"># increment maxima</span>
+                    <span class="n">MaxPos</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># no minima beyond current maxima - quit</span>
+                    <span class="k">break</span>
+
+            <span class="c1"># convert maxima/minima pairs to numpy arrays</span>
+            <span class="n">Maxima</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">MaxPair</span><span class="p">)</span>
+            <span class="n">Minima</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">MinPair</span><span class="p">)</span>
+
+            <span class="c1"># remove pairs that do not have at least one pixel between them</span>
+            <span class="n">Close</span> <span class="o">=</span> <span class="p">((</span><span class="n">Minima</span> <span class="o">-</span> <span class="n">Maxima</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()</span>
+            <span class="n">Maxima</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">Maxima</span><span class="p">,</span> <span class="n">Close</span><span class="p">)</span>
+            <span class="n">Minima</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">Minima</span><span class="p">,</span> <span class="n">Close</span><span class="p">)</span>
+
+            <span class="c1"># skip to next row if no min/max pairs exist after location filter</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">Minima</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">Maxima</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># remove pairs that do not have sufficient intensity transitions</span>
+            <span class="k">if</span> <span class="n">Delta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+                    <span class="n">Range</span> <span class="o">=</span> <span class="n">Delta</span> <span class="o">*</span> <span class="mf">255.0</span>
+                <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                    <span class="n">Range</span> <span class="o">=</span> <span class="n">Delta</span> <span class="o">*</span> <span class="mf">1.0</span>
+                <span class="n">Shallow</span> <span class="o">=</span> <span class="p">(</span><span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">Maxima</span><span class="p">]</span> <span class="o">-</span> <span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">Minima</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">Range</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()</span>
+                <span class="n">Maxima</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">Maxima</span><span class="p">,</span> <span class="n">Shallow</span><span class="p">)</span>
+                <span class="n">Minima</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">Minima</span><span class="p">,</span> <span class="n">Shallow</span><span class="p">)</span>
+
+            <span class="c1"># skip to next row if no min/max pairs exist after intensity filter</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">Minima</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">Maxima</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># identify max gradient locations within paired maxima/minima</span>
+            <span class="n">MinGrad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Maxima</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Maxima</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+                <span class="n">MinGrad</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">Gradient</span><span class="p">[</span><span class="n">Maxima</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">Minima</span><span class="p">[</span><span class="n">j</span><span class="p">]])</span> <span class="o">+</span> \
+                    <span class="n">Maxima</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="c1"># capture min, max values and add to list with seed coordinates</span>
+            <span class="k">if</span> <span class="n">Maxima</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">X</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">MinGrad</span><span class="p">)</span>
+                <span class="n">Y</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">Maxima</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+                <span class="n">Min</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">Minima</span><span class="p">])</span>
+                <span class="n">Max</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">MinGrad</span><span class="p">])</span>
+
+    <span class="c1"># convert outputs from lists to numpy arrays</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint</span><span class="p">)</span>
+    <span class="n">Min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Min</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">I</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">Max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Max</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">I</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="c1"># return seed pixels positions and intensity range intervals</span>
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Min</span><span class="p">,</span> <span class="n">Max</span>
+
+
+<span class="k">def</span> <span class="nf">trace_contours</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Min</span><span class="p">,</span> <span class="n">Max</span><span class="p">,</span> <span class="n">MaxLength</span><span class="o">=</span><span class="mi">255</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs contour tracing of seed pixels in an intensity image using</span>
+<span class="sd">    gradient information.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    I : array_like</span>
+<span class="sd">        An intensity image used for analyzing local minima/maxima and</span>
+<span class="sd">        gradients. Dimensions M x N.</span>
+<span class="sd">    X : array_like</span>
+<span class="sd">        A 1D array of horizontal coordinates of contour seed pixels for</span>
+<span class="sd">        tracing.</span>
+<span class="sd">    Y : array_like</span>
+<span class="sd">        A 1D array of the vertical coordinates of seed pixels for tracing.</span>
+<span class="sd">    Min : array_like</span>
+<span class="sd">        A 1D array of the corresponding minimum values for contour tracing of</span>
+<span class="sd">        seed point X, Y.</span>
+<span class="sd">    Max : array_like</span>
+<span class="sd">        A 1D array of the corresponding maximum values for contour tracing of</span>
+<span class="sd">        seed point X, Y.</span>
+<span class="sd">    MaxLength : int</span>
+<span class="sd">        Maximum allowable contour length. Default value = 255.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Can be computationally expensive for large numbers of contours. Use</span>
+<span class="sd">    smoothing and delta thresholding when seeding contours to reduce burden.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cXs : list</span>
+<span class="sd">        A list of 1D numpy arrays defining the horizontal coordinates of object</span>
+<span class="sd">        boundaries.</span>
+<span class="sd">    cYs : list</span>
+<span class="sd">        A list of 1D numpy arrays defining the vertical coordinates of object</span>
+<span class="sd">        boundaries.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SeedContours, ScoreContours, MinimumModel</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] S. Weinert et al &quot;Detection and Segmentation of Cell Nuclei in</span>
+<span class="sd">    Virtual Microscopy Images: A Minimum-Model Approach&quot; in Nature Scientific</span>
+<span class="sd">    Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># initialize list of lists containing contours</span>
+    <span class="n">cXs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cYs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># process each seed pixel sequentially</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+
+        <span class="c1"># capture window surrounding (X[i], Y[i])</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">I</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">MaxLength</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)):</span>
+              <span class="nb">min</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">MaxLength</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+              <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">MaxLength</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)):</span>
+              <span class="nb">min</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">MaxLength</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># binary threshold corresponding to seed pixel &#39;i&#39;</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="p">(</span><span class="n">W</span> <span class="o">&lt;=</span> <span class="n">Max</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">W</span> <span class="o">&gt;=</span> <span class="n">Min</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="c1"># embed with center pixel in middle of padded window</span>
+        <span class="n">Embed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">Embed</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">W</span>
+
+        <span class="c1"># calculate location of (X[i], Y[i]) in &#39;Embed&#39;</span>
+        <span class="n">pX</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">MaxLength</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">pY</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">MaxLength</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># trace boundary, check stopping condition, append to list of contours</span>
+        <span class="n">cX</span><span class="p">,</span> <span class="n">cY</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">trace_object_boundaries</span><span class="p">(</span><span class="n">Embed</span><span class="p">,</span> <span class="n">conn</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                               <span class="n">x_start</span><span class="o">=</span><span class="n">pX</span><span class="p">,</span> <span class="n">y_start</span><span class="o">=</span><span class="n">pY</span><span class="p">,</span>
+                                               <span class="n">MaxLength</span><span class="o">=</span><span class="n">MaxLength</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cX</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">cX</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">cY</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">cY</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span>\
+                <span class="nb">len</span><span class="p">(</span><span class="n">cX</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">MaxLength</span><span class="p">:</span>
+
+            <span class="c1"># add window offset to contour coordinates</span>
+            <span class="n">cX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">x</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">MaxLength</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">]</span>
+            <span class="n">cY</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">y</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">MaxLength</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">cY</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">]</span>
+
+            <span class="c1"># append to list of candidate contours</span>
+            <span class="n">cXs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cX</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">))</span>
+            <span class="n">cYs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cY</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">cXs</span><span class="p">,</span> <span class="n">cYs</span>
+
+
+<span class="k">def</span> <span class="nf">score_contours</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">cXs</span><span class="p">,</span> <span class="n">cYs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scores boundary contours using gradient information. Implemented from</span>
+<span class="sd">    the reference below. Each contour is weighted by the average gradient and</span>
+<span class="sd">    number of local gradient maxima along its path.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    I : array_like</span>
+<span class="sd">        An intensity image used for analyzing local minima/maxima and</span>
+<span class="sd">        gradients. Dimensions M x N.</span>
+<span class="sd">    cXs : list</span>
+<span class="sd">        A list of 1D numpy arrays defining the horizontal coordinates of object</span>
+<span class="sd">        boundaries.</span>
+<span class="sd">    cYs : list</span>
+<span class="sd">        A list of 1D numpy arrays defining the vertical coordinates of object</span>
+<span class="sd">        boundaries.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Implemented from the reference below.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Scores : array_like</span>
+<span class="sd">        A 1D array of horizontal coordinates of contour seed pixels for</span>
+<span class="sd">        tracing.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    TraceContours, LabelContour, MinimumModel</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] S. Weinert et al &quot;Detection and Segmentation of Cell Nuclei in</span>
+<span class="sd">    Virtual Microscopy Images: A Minimum-Model Approach&quot; in Nature Scientific</span>
+<span class="sd">    Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">scipy.ndimage</span> <span class="k">as</span> <span class="nn">ndi</span>
+
+    <span class="c1"># initialize output</span>
+    <span class="n">Scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cXs</span><span class="p">))</span>
+
+    <span class="c1"># generate Sobel filter response from input intensity image &#39;I&#39;</span>
+    <span class="n">Gradients</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">sobel</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;mirror&#39;</span><span class="p">)</span>
+
+    <span class="c1"># generate local max in 3 x 3 window of Gradients</span>
+    <span class="n">Maxima</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">maximum_filter</span><span class="p">(</span><span class="n">Gradients</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;mirror&#39;</span><span class="p">)</span>
+
+    <span class="c1"># generate score for each contour</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cXs</span><span class="p">)):</span>
+
+        <span class="c1"># get gradient pixels, local max gradient pixels</span>
+        <span class="n">cG</span> <span class="o">=</span> <span class="n">Gradients</span><span class="p">[</span><span class="n">cYs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">cXs</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="n">cMax</span> <span class="o">=</span> <span class="n">Maxima</span><span class="p">[</span><span class="n">cYs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">cXs</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+
+        <span class="c1"># calculate mean gradient</span>
+        <span class="n">MG</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Gradients</span><span class="p">[</span><span class="n">cYs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">cXs</span><span class="p">[</span><span class="n">i</span><span class="p">]]))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">cXs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="c1"># calculate gradient fit</span>
+        <span class="n">GF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cG</span> <span class="o">==</span> <span class="n">cMax</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">cXs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="c1"># compute score as product of mean gradient and gradient fit</span>
+        <span class="n">Scores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">MG</span> <span class="o">*</span> <span class="n">GF</span>
+
+    <span class="k">return</span> <span class="n">Scores</span>
+
+
+<span class="k">def</span> <span class="nf">label_contour</span><span class="p">(</span><span class="n">Shape</span><span class="p">,</span> <span class="n">cXs</span><span class="p">,</span> <span class="n">cYs</span><span class="p">,</span> <span class="n">Scores</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Constructs a label image from scored contours. Masks for contours with</span>
+<span class="sd">    low priority/score are placed first into the label image and then are</span>
+<span class="sd">    overwritten by higher priority contours.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Shape : tuple</span>
+<span class="sd">        The shape tuple of the desired label image (height, width).</span>
+<span class="sd">    cXs : list</span>
+<span class="sd">        A list of 1D numpy arrays defining the horizontal coordinates of object</span>
+<span class="sd">        boundaries.</span>
+<span class="sd">    cYs : list</span>
+<span class="sd">        A list of 1D numpy arrays defining the vertical coordinates of object</span>
+<span class="sd">        boundaries.</span>
+<span class="sd">    Scores : array_like</span>
+<span class="sd">        A 1D array of horizontal coordinates of contour seed pixels for</span>
+<span class="sd">        tracing.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Can produce a large number of thin &quot;halo&quot; objects surrounding the objects</span>
+<span class="sd">    with higher scores. These can be removed by filtering object width in the</span>
+<span class="sd">    resulting label image.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Label : array_like</span>
+<span class="sd">        A uint32 label image.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    ScoreContours, TraceContours, MinimumModel</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] S. Weinert et al &quot;Detection and Segmentation of Cell Nuclei in</span>
+<span class="sd">    Virtual Microscopy Images: A Minimum-Model Approach&quot; in Nature Scientific</span>
+<span class="sd">    Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">skimage.draw</span> <span class="kn">import</span> <span class="n">polygon</span>
+
+    <span class="c1"># initialize label image</span>
+    <span class="n">Label</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;uint32&#39;</span><span class="p">))</span>
+
+    <span class="c1"># sort contours by scores</span>
+    <span class="n">Order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">Scores</span><span class="p">)</span>
+
+    <span class="c1"># loop over sorted contours, from least to most prominently scores</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cXs</span><span class="p">)):</span>
+
+        <span class="c1"># get limits on contour</span>
+        <span class="n">xMin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cXs</span><span class="p">[</span><span class="n">Order</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="n">xMax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cXs</span><span class="p">[</span><span class="n">Order</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="n">yMin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cYs</span><span class="p">[</span><span class="n">Order</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="n">yMax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cYs</span><span class="p">[</span><span class="n">Order</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+
+        <span class="c1"># extract portion of existing label image</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">Label</span><span class="p">[</span><span class="n">yMin</span><span class="p">:</span><span class="n">yMax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">xMin</span><span class="p">:</span><span class="n">xMax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># generate mask for object &#39;Order[i]&#39; from polygon</span>
+        <span class="n">Mask</span> <span class="o">=</span> <span class="n">polygon</span><span class="p">(</span><span class="n">cYs</span><span class="p">[</span><span class="n">Order</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">-</span> <span class="n">yMin</span><span class="p">,</span> <span class="n">cXs</span><span class="p">[</span><span class="n">Order</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">-</span> <span class="n">xMin</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># replace non-zero areas with value &#39;i&#39;</span>
+        <span class="n">T</span><span class="p">[</span><span class="n">Mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="k">return</span> <span class="n">Label</span>
+
+
+<span class="k">def</span> <span class="nf">split_concavities</span><span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">MinDepth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">MinConcavity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>  <span class="c1"># noqa: C901</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs splitting of objects in a label image using geometric scoring</span>
+<span class="sd">    of concavities. Attempts to perform splits at narrow regions that are</span>
+<span class="sd">    perpendicular to the object&#39;s convex hull boundaries.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Label : array_like</span>
+<span class="sd">        A uint32 label image.</span>
+<span class="sd">    MinDepth : float</span>
+<span class="sd">        Minimum depth of concavities to consider during geometric splitting.</span>
+<span class="sd">        Default value = 2.</span>
+<span class="sd">    MinConcavity : float</span>
+<span class="sd">        Minimum concavity score to consider when performing for geometric</span>
+<span class="sd">        splitting. Default value = np.inf.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Can produce a large number of thin &quot;halo&quot; objects surrounding the objects</span>
+<span class="sd">    with higher scores. These can be removed by filtering object width in the</span>
+<span class="sd">    resulting label image.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Label : array_like</span>
+<span class="sd">        A uint32 label image.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    label_contours, min_model</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] S. Weinert et al &quot;Detection and Segmentation of Cell Nuclei in</span>
+<span class="sd">    Virtual Microscopy Images: A Minimum-Model Approach&quot; in Nature Scientific</span>
+<span class="sd">    Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">scipy</span>
+    <span class="kn">import</span> <span class="nn">scipy.ndimage</span> <span class="k">as</span> <span class="nn">ndi</span>
+    <span class="kn">import</span> <span class="nn">skimage.morphology</span> <span class="k">as</span> <span class="nn">mo</span>
+
+    <span class="c1"># use shape profiles to split objects with concavities</span>
+    <span class="c1"># copy input label image</span>
+    <span class="n">Convex</span> <span class="o">=</span> <span class="n">Label</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># condense label image</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">Convex</span><span class="p">)</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">!=</span> <span class="n">Convex</span><span class="o">.</span><span class="n">max</span><span class="p">():</span>
+        <span class="n">Convex</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">condense</span><span class="p">(</span><span class="n">Convex</span><span class="p">)</span>
+
+    <span class="c1"># get locations of objects in initial image</span>
+    <span class="n">Locations</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">find_objects</span><span class="p">(</span><span class="n">Convex</span><span class="p">)</span>
+
+    <span class="c1"># initialize number of labeled objects and record initial count</span>
+    <span class="n">Total</span> <span class="o">=</span> <span class="n">Label</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="c1"># initialize loop counter</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">Total</span><span class="p">:</span>
+
+        <span class="c1"># get object window from label image</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">Locations</span><span class="p">):</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">Convex</span><span class="p">[</span><span class="n">Locations</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Locations</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">find_objects</span><span class="p">(</span><span class="n">Convex</span><span class="p">)</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">Convex</span><span class="p">[</span><span class="n">Locations</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]]</span>
+
+        <span class="c1"># embed masked object in padded boolean array</span>
+        <span class="n">Mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">Mask</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">W</span> <span class="o">==</span> <span class="n">i</span>
+
+        <span class="c1"># generate convex hull of object</span>
+        <span class="n">Hull</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">convex_hull_image</span><span class="p">(</span><span class="n">Mask</span><span class="p">)</span>
+
+        <span class="c1"># generate boundary coordinates, trim duplicate point</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">trace_object_boundaries</span><span class="p">(</span><span class="n">Mask</span><span class="p">,</span> <span class="n">conn</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+
+        <span class="c1"># calculate distance transform of object boundary pixels to convex hull</span>
+        <span class="n">Distance</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">Hull</span><span class="p">)</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">Distance</span><span class="p">[</span><span class="n">Y</span><span class="p">,</span> <span class="n">X</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="c1"># generate linear index of positions</span>
+        <span class="n">Linear</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="c1"># rotate boundary counter-clockwise until start position is on hull</span>
+        <span class="k">while</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">Linear</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">Linear</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># find runs of concave pixels with length &gt; 1</span>
+        <span class="n">Concave</span> <span class="o">=</span> <span class="p">(</span><span class="n">D</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">Start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">Concave</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">Concave</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">Stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">Concave</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">Concave</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">Stop</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">Start</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">Stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Stop</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># extract depth profiles, indices, distances for each run</span>
+        <span class="n">iX</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">iY</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">Depths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">Length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">MaxDepth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">Start</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">Stop</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+                <span class="n">iX</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">Start</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span><span class="n">Stop</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">iY</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">Start</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span><span class="n">Stop</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">Depths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">D</span><span class="p">[</span><span class="n">Start</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span><span class="n">Stop</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># run terminates at beginning of sequence</span>
+                <span class="n">iX</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">Start</span><span class="p">[</span><span class="n">j</span><span class="p">]:],</span> <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="n">iY</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">Start</span><span class="p">[</span><span class="n">j</span><span class="p">]:],</span> <span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="n">Depths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">D</span><span class="p">[</span><span class="n">Start</span><span class="p">[</span><span class="n">j</span><span class="p">]:],</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">Length</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">iX</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">MaxDepth</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Depths</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+
+        <span class="c1"># filter based on concave contour length and max depth</span>
+        <span class="n">Keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">Length</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">MaxDepth</span> <span class="o">&gt;=</span> <span class="n">MinDepth</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">Start</span> <span class="o">=</span> <span class="n">Start</span><span class="p">[</span><span class="n">Keep</span><span class="p">]</span>
+        <span class="n">Stop</span> <span class="o">=</span> <span class="n">Stop</span><span class="p">[</span><span class="n">Keep</span><span class="p">]</span>
+        <span class="n">iX</span> <span class="o">=</span> <span class="p">[</span><span class="n">iX</span><span class="p">[</span><span class="n">Ind</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">Ind</span> <span class="ow">in</span> <span class="n">Keep</span><span class="p">]</span>
+        <span class="n">iY</span> <span class="o">=</span> <span class="p">[</span><span class="n">iY</span><span class="p">[</span><span class="n">Ind</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">Ind</span> <span class="ow">in</span> <span class="n">Keep</span><span class="p">]</span>
+        <span class="n">Depths</span> <span class="o">=</span> <span class="p">[</span><span class="n">Depths</span><span class="p">[</span><span class="n">Ind</span><span class="p">]</span> <span class="k">for</span> <span class="n">Ind</span> <span class="ow">in</span> <span class="n">Keep</span><span class="p">]</span>
+
+        <span class="c1"># attempt cutting if more than 1 sequence is found</span>
+        <span class="k">if</span> <span class="n">Start</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+            <span class="c1"># initialize containers to hold cut scores, optimal cut locations</span>
+            <span class="n">Scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+            <span class="n">Xcut1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+            <span class="n">Ycut1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+            <span class="n">Xcut2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+            <span class="n">Ycut2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+
+            <span class="c1"># compare candidates pairwise between all runs and score</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+
+                <span class="c1"># get list of &#39;j&#39; candidates that pass depth threshold</span>
+                <span class="n">jCandidates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Depths</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">MinDepth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Start</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+
+                    <span class="c1"># get list of &#39;k&#39; candidates that pass depth threshold</span>
+                    <span class="n">kCandidates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Depths</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">MinDepth</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="c1"># initialize minimum score and cut locations</span>
+                    <span class="n">minScore</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+                    <span class="n">minj</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                    <span class="n">mink</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+                    <span class="c1"># loop over each coordinate pair for concavities j,k</span>
+                    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">jCandidates</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">kCandidates</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+
+                            <span class="c1"># calculate length score</span>
+                            <span class="n">Ls</span> <span class="o">=</span> <span class="n">length_score</span><span class="p">(</span><span class="n">iX</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">jCandidates</span><span class="p">[</span><span class="n">a</span><span class="p">]],</span>
+                                              <span class="n">iY</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">jCandidates</span><span class="p">[</span><span class="n">a</span><span class="p">]],</span>
+                                              <span class="n">iX</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">kCandidates</span><span class="p">[</span><span class="n">b</span><span class="p">]],</span>
+                                              <span class="n">iY</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">kCandidates</span><span class="p">[</span><span class="n">b</span><span class="p">]],</span>
+                                              <span class="n">Depths</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">jCandidates</span><span class="p">[</span><span class="n">a</span><span class="p">]],</span>
+                                              <span class="n">Depths</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">kCandidates</span><span class="p">[</span><span class="n">b</span><span class="p">]])</span>
+
+                            <span class="c1"># calculate angle score</span>
+                            <span class="n">As</span> <span class="o">=</span> <span class="n">angle_score</span><span class="p">(</span><span class="n">iX</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">iY</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                                             <span class="n">iX</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">iY</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                             <span class="n">iX</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">iY</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                                             <span class="n">iX</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">iY</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                             <span class="n">iX</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">jCandidates</span><span class="p">[</span><span class="n">a</span><span class="p">]],</span>
+                                             <span class="n">iY</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">jCandidates</span><span class="p">[</span><span class="n">a</span><span class="p">]],</span>
+                                             <span class="n">iX</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">kCandidates</span><span class="p">[</span><span class="n">b</span><span class="p">]],</span>
+                                             <span class="n">iY</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">kCandidates</span><span class="p">[</span><span class="n">b</span><span class="p">]])</span>
+
+                            <span class="c1"># combine scores</span>
+                            <span class="n">Score</span> <span class="o">=</span> <span class="p">(</span><span class="n">Ls</span> <span class="o">+</span> <span class="n">As</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+                            <span class="c1"># replace if improvement</span>
+                            <span class="k">if</span> <span class="n">Score</span> <span class="o">&lt;</span> <span class="n">minScore</span><span class="p">:</span>
+                                <span class="n">minScore</span> <span class="o">=</span> <span class="n">Score</span>
+                                <span class="n">Scores</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">minScore</span>
+                                <span class="n">minj</span> <span class="o">=</span> <span class="n">jCandidates</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
+                                <span class="n">mink</span> <span class="o">=</span> <span class="n">kCandidates</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
+
+                    <span class="c1"># record best cut location</span>
+                    <span class="n">Xcut1</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">iX</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">minj</span><span class="p">]</span>
+                    <span class="n">Ycut1</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">iY</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">minj</span><span class="p">]</span>
+                    <span class="n">Xcut2</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">iX</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">mink</span><span class="p">]</span>
+                    <span class="n">Ycut2</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">iY</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">mink</span><span class="p">]</span>
+
+            <span class="c1"># pick the best scoring candidates and cut if needed</span>
+            <span class="n">ArgMin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">Scores</span><span class="o">.</span><span class="n">argmin</span><span class="p">(),</span> <span class="n">Scores</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">Scores</span><span class="p">[</span><span class="n">ArgMin</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ArgMin</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">&lt;=</span> <span class="n">MinConcavity</span><span class="p">:</span>
+
+                <span class="c1"># perform cut</span>
+                <span class="n">SplitMask</span> <span class="o">=</span> <span class="n">cut</span><span class="p">(</span><span class="n">Mask</span><span class="p">,</span>
+                                <span class="n">Xcut1</span><span class="p">[</span><span class="n">ArgMin</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ArgMin</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+                                <span class="n">Ycut1</span><span class="p">[</span><span class="n">ArgMin</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ArgMin</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+                                <span class="n">Xcut2</span><span class="p">[</span><span class="n">ArgMin</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ArgMin</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+                                <span class="n">Ycut2</span><span class="p">[</span><span class="n">ArgMin</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ArgMin</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+
+                <span class="c1"># re-label cut image</span>
+                <span class="n">SplitLabel</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">SplitMask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="c1"># increment object count, and label new object at end</span>
+                <span class="n">SplitLabel</span><span class="p">[</span><span class="n">SplitLabel</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Total</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">Total</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="c1"># label object &#39;1&#39; with current object value</span>
+                <span class="n">SplitLabel</span><span class="p">[</span><span class="n">SplitLabel</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+
+                <span class="c1"># trim padding from corrected label image</span>
+                <span class="n">Mask</span> <span class="o">=</span> <span class="n">Mask</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">SplitLabel</span> <span class="o">=</span> <span class="n">SplitLabel</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+                <span class="c1"># update label image</span>
+                <span class="n">W</span><span class="p">[</span><span class="n">Mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">SplitLabel</span><span class="p">[</span><span class="n">Mask</span><span class="p">]</span>
+
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># no cut made, move to next object</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># no cuts to attempt, move to next object</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">Convex</span>
+
+
+<span class="k">def</span> <span class="nf">angle_score</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ay1</span><span class="p">,</span> <span class="n">bx1</span><span class="p">,</span> <span class="n">by1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">,</span> <span class="n">ay2</span><span class="p">,</span> <span class="n">bx2</span><span class="p">,</span> <span class="n">by2</span><span class="p">,</span> <span class="n">cx1</span><span class="p">,</span> <span class="n">cy1</span><span class="p">,</span> <span class="n">cx2</span><span class="p">,</span> <span class="n">cy2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scores the angles produced by cutting line (cx1, cy1)-&gt;(cx2, cy2) given</span>
+<span class="sd">    the convex hull segments (ax1, ay1)-&gt;(bx1, by1) and (ax2, ay2)-&gt;(bx2, by2)</span>
+<span class="sd">    spanning the concavities. See Figure 6 in reference below for a full</span>
+<span class="sd">    illustration.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Score : float</span>
+<span class="sd">        Angle score according to equation (6) from the reference.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SplitConcavities</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] S. Weinert et al &quot;Detection and Segmentation of Cell Nuclei in</span>
+<span class="sd">    Virtual Microscopy Images: A Minimum-Model Approach&quot; in Nature Scientific</span>
+<span class="sd">    Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># calculate angle of hull at first concavity - y is inverted</span>
+    <span class="n">jHullAlpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">ay1</span> <span class="o">-</span> <span class="n">by1</span><span class="p">,</span> <span class="n">bx1</span> <span class="o">-</span> <span class="n">ax1</span><span class="p">)</span>
+
+    <span class="c1"># calculate angle of cut at first concavity - y is inverted</span>
+    <span class="n">jCutAlpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">cy2</span> <span class="o">-</span> <span class="n">cy1</span><span class="p">,</span> <span class="n">cx1</span> <span class="o">-</span> <span class="n">cx2</span><span class="p">)</span>
+
+    <span class="c1"># calculate angle of hull at second concavity - y is inverted</span>
+    <span class="n">kHullAlpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">ay2</span> <span class="o">-</span> <span class="n">by2</span><span class="p">,</span> <span class="n">bx2</span> <span class="o">-</span> <span class="n">ax2</span><span class="p">)</span>
+
+    <span class="c1"># calculate angle of cut at second concavity - y is inverted</span>
+    <span class="n">kCutAlpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">cy1</span> <span class="o">-</span> <span class="n">cy2</span><span class="p">,</span> <span class="n">cx2</span> <span class="o">-</span> <span class="n">cx1</span><span class="p">)</span>
+
+    <span class="c1"># calculate angle score</span>
+    <span class="n">Score</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">jCutAlpha</span> <span class="o">-</span> <span class="n">jHullAlpha</span><span class="p">))</span> <span class="o">+</span>
+             <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">kCutAlpha</span> <span class="o">-</span> <span class="n">kHullAlpha</span><span class="p">)))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="k">return</span> <span class="n">Score</span>
+
+
+<span class="k">def</span> <span class="nf">length_score</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scores the length of the cutting line (x1, y1)-&gt;(x2, y2) made at a</span>
+<span class="sd">    concavity depth of d1 and d2.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Score : float</span>
+<span class="sd">        Angle score according to equation (5) from the reference.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SplitConcavities</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] S. Weinert et al &quot;Detection and Segmentation of Cell Nuclei in</span>
+<span class="sd">    Virtual Microscopy Images: A Minimum-Model Approach&quot; in Nature Scientific</span>
+<span class="sd">    Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># calculate length of cut</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="p">((</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+    <span class="c1"># normalize by total span across convex hull</span>
+    <span class="n">LengthScore</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span> <span class="o">+</span> <span class="n">d1</span> <span class="o">+</span> <span class="n">d2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">LengthScore</span>
+
+
+<span class="k">def</span> <span class="nf">cut</span><span class="p">(</span><span class="n">Mask</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs a cut across a binary mask, zeroing pixels that round to</span>
+<span class="sd">    positions on the line (x1, y1)-&gt;(x2, y2).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Cut : array_like</span>
+<span class="sd">        A version of input Mask modified by cutting the line (x1, y1)-&gt;(x2, y2)</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SplitConcavities</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] S. Weinert et al &quot;Detection and Segmentation of Cell Nuclei in</span>
+<span class="sd">    Virtual Microscopy Images: A Minimum-Model Approach&quot; in Nature Scientific</span>
+<span class="sd">    Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># copy input</span>
+    <span class="n">Cut</span> <span class="o">=</span> <span class="n">Mask</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># calculate angle of line</span>
+    <span class="k">if</span> <span class="n">x1</span> <span class="o">&lt;</span> <span class="n">x2</span><span class="p">:</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y2</span><span class="p">,</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">x2</span><span class="p">)</span>
+
+    <span class="c1"># define line length</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="p">((</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+
+    <span class="c1"># define points along x-axis</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># rotate</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)],</span>
+                  <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)]])</span>
+    <span class="n">rotated</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)))</span>
+
+    <span class="c1"># translate</span>
+    <span class="k">if</span> <span class="n">x1</span> <span class="o">&lt;</span> <span class="n">x2</span><span class="p">:</span>
+        <span class="n">xr</span> <span class="o">=</span> <span class="n">rotated</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">x1</span>
+        <span class="n">yr</span> <span class="o">=</span> <span class="n">rotated</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">y1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xr</span> <span class="o">=</span> <span class="n">rotated</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">x2</span>
+        <span class="n">yr</span> <span class="o">=</span> <span class="n">rotated</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">y2</span>
+
+    <span class="c1"># take floor of coordinates</span>
+    <span class="n">xr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">xr</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+    <span class="n">yr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">yr</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+
+    <span class="c1"># remove any pairs containing negative numbers to avoid access violations</span>
+    <span class="n">negative</span> <span class="o">=</span> <span class="p">(</span><span class="n">xr</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">yr</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">xr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">xr</span><span class="p">,</span> <span class="n">negative</span><span class="p">)</span>
+    <span class="n">yr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">yr</span><span class="p">,</span> <span class="n">negative</span><span class="p">)</span>
+
+    <span class="c1"># zero out these coordinates</span>
+    <span class="n">Cut</span><span class="p">[</span><span class="n">yr</span><span class="p">,</span> <span class="n">xr</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">Cut</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

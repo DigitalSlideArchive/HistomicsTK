@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.saliency.cellularity_detection_thresholding &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.saliency.cellularity_detection_thresholding</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.saliency.cellularity_detection_thresholding</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Tue Oct 22 02:37:52 2019.</span>
+
+<span class="sd">@author: mtageld</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="kn">from</span> <span class="nn">histomicstk.annotations_and_masks.annotation_and_mask_utils</span> <span class="kn">import</span> \
+    <span class="n">get_image_from_htk_response</span>
+<span class="kn">from</span> <span class="nn">histomicstk.annotations_and_masks.masks_to_annotations_handler</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_annotation_documents_from_contours</span><span class="p">,</span> <span class="n">get_contours_from_mask</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">histomicstk.features.compute_intensity_features</span> <span class="kn">import</span> \
+    <span class="n">compute_intensity_features</span>
+<span class="kn">from</span> <span class="nn">histomicstk.preprocessing.color_conversion</span> <span class="kn">import</span> <span class="p">(</span><span class="n">lab_mean_std</span><span class="p">,</span>
+                                                        <span class="n">rgb_to_hsi</span><span class="p">,</span> <span class="n">rgb_to_lab</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">histomicstk.preprocessing.color_deconvolution</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_reorder_stains</span><span class="p">,</span> <span class="n">color_deconvolution_routine</span><span class="p">,</span>
+    <span class="n">rgb_separate_stains_macenko_pca</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">histomicstk.preprocessing.color_normalization</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">deconvolution_based_normalization</span><span class="p">,</span> <span class="n">reinhard</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">histomicstk.saliency.tissue_detection</span> <span class="kn">import</span> <span class="p">(</span><span class="n">_get_largest_regions</span><span class="p">,</span>
+                                                   <span class="n">get_slide_thumbnail</span><span class="p">,</span>
+                                                   <span class="n">get_tissue_mask</span><span class="p">,</span>
+                                                   <span class="n">threshold_multichannel</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">histomicstk.utils.general_utils</span> <span class="kn">import</span> <span class="n">Base_HTK_Class</span>
+
+<span class="n">Image</span><span class="o">.</span><span class="n">MAX_IMAGE_PIXELS</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="CDT_single_tissue_piece">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.CDT_single_tissue_piece">[docs]</a>
+<span class="k">class</span> <span class="nc">CDT_single_tissue_piece</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect various regions in a single tissue piece (internal).&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cdt</span><span class="p">,</span> <span class="n">tissue_mask</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Detect whitespace, saliency, etc in one tissue piece (Internal).</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">        ---------</span>
+<span class="sd">        cdt : object</span>
+<span class="sd">            Cellularity_detector_thresholding instance</span>
+<span class="sd">        tissue_mask : np array</span>
+<span class="sd">            (m x n) mask of the tissue piece at cdt.MAG magnification</span>
+<span class="sd">        monitorPrefix : str</span>
+<span class="sd">            Text to prepend to printed statements</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span> <span class="o">=</span> <span class="n">cdt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tissue_mask</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="n">tissue_mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span> <span class="o">=</span> <span class="n">monitorPrefix</span>
+
+<div class="viewcode-block" id="CDT_single_tissue_piece.run">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.CDT_single_tissue_piece.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get cellularity and optionally visualize on DSA.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restrict_mask_to_single_tissue_piece</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_tissue_rgb()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tissue_rgb</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: initialize_labeled_mask()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize_labeled_mask</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: assign_components_by_thresholding()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assign_components_by_thresholding</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: color_normalize_unspecified_components()&#39;</span>
+            <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_normalize_unspecified_components</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: find_potentially_cellular_regions()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">find_potentially_cellular_regions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: find_top_cellular_regions()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">find_top_cellular_regions</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">visualize</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: visualize_results()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visualize_results</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="CDT_single_tissue_piece.restrict_mask_to_single_tissue_piece">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.CDT_single_tissue_piece.restrict_mask_to_single_tissue_piece">[docs]</a>
+    <span class="k">def</span> <span class="nf">restrict_mask_to_single_tissue_piece</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Only keep relevant part of slide mask.&quot;&quot;&quot;</span>
+        <span class="c1"># find coordinates at scan magnification</span>
+        <span class="n">tloc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_mask</span><span class="p">)</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;F_tissue&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ymin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmin</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">tloc</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">F</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ymax</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmax</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tloc</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">F</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tissue_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tissue_mask</span><span class="p">[</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ymin</span> <span class="o">/</span> <span class="n">F</span><span class="p">):</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ymax</span> <span class="o">/</span> <span class="n">F</span><span class="p">),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span> <span class="o">/</span> <span class="n">F</span><span class="p">):</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xmax</span> <span class="o">/</span> <span class="n">F</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="CDT_single_tissue_piece.set_tissue_rgb">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.CDT_single_tissue_piece.set_tissue_rgb">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_tissue_rgb</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load RGB from server for single tissue piece.&quot;&quot;&quot;</span>
+        <span class="c1"># load RGB for this tissue piece at saliency magnification</span>
+        <span class="n">getStr</span> <span class="o">=</span> <span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">/tiles/region?left=</span><span class="si">%d</span><span class="s1">&amp;right=</span><span class="si">%d</span><span class="s1">&amp;top=</span><span class="si">%d</span><span class="s1">&amp;bottom=</span><span class="si">%d</span><span class="s1">&amp;encoding=PNG&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">slide_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmax</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ymin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ymax</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&amp;magnification=</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">MAG</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">getStr</span><span class="p">,</span> <span class="n">jsonResp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span> <span class="o">=</span> <span class="n">get_image_from_htk_response</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CDT_single_tissue_piece.initialize_labeled_mask">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.CDT_single_tissue_piece.initialize_labeled_mask">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize_labeled_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize labeled components mask.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">skimage.transform</span> <span class="kn">import</span> <span class="n">resize</span>
+
+        <span class="c1"># resize tissue mask to target mag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labeled</span> <span class="o">=</span> <span class="n">resize</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tissue_mask</span><span class="p">,</span> <span class="n">output_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span>
+            <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">preserve_range</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">anti_aliasing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labeled</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">labeled</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="s1">&#39;not_specified&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="CDT_single_tissue_piece.assign_components_by_thresholding">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.CDT_single_tissue_piece.assign_components_by_thresholding">[docs]</a>
+    <span class="k">def</span> <span class="nf">assign_components_by_thresholding</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get components by thresholding in HSI and LAB spaces.&quot;&quot;&quot;</span>
+        <span class="c1"># get HSI and LAB images</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: -- get HSI and LAB images ...&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="n">tissue_hsi</span> <span class="o">=</span> <span class="n">rgb_to_hsi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">)</span>
+        <span class="n">tissue_lab</span> <span class="o">=</span> <span class="n">rgb_to_lab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">)</span>
+
+        <span class="c1"># extract components using HSI/LAB thresholds</span>
+
+        <span class="n">hsi_components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">hsi_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">lab_components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">lab_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">ordered_components</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: -- thresholding </span><span class="si">%s</span><span class="s1"> ...&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">component</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">hsi_components</span><span class="p">:</span>
+                <span class="n">lab</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">threshold_multichannel</span><span class="p">(</span>
+                    <span class="n">tissue_hsi</span><span class="p">,</span>
+                    <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;hue&#39;</span><span class="p">,</span> <span class="s1">&#39;saturation&#39;</span><span class="p">,</span> <span class="s1">&#39;intensity&#39;</span><span class="p">],</span>
+                    <span class="n">thresholds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">hsi_thresholds</span><span class="p">[</span><span class="n">component</span><span class="p">],</span>
+                    <span class="n">just_threshold</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">get_tissue_mask_kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">get_tissue_mask_kwargs2</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">lab_components</span><span class="p">:</span>
+                <span class="n">lab</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">threshold_multichannel</span><span class="p">(</span>
+                    <span class="n">tissue_lab</span><span class="p">,</span>
+                    <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;l&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">],</span>
+                    <span class="n">thresholds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">lab_thresholds</span><span class="p">[</span><span class="n">component</span><span class="p">],</span>
+                    <span class="n">just_threshold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">get_tissue_mask_kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">get_tissue_mask_kwargs2</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Unknown component name.&#39;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="n">lab</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">labeled</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># restrict to tissue mask</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labeled</span><span class="p">[</span><span class="n">lab</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span>
+
+        <span class="c1"># This deals with holes in tissue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labeled</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">labeled</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="s1">&#39;outside_tissue&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="CDT_single_tissue_piece.color_normalize_unspecified_components">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.CDT_single_tissue_piece.color_normalize_unspecified_components">[docs]</a>
+    <span class="k">def</span> <span class="nf">color_normalize_unspecified_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Color normalize &quot;true&quot; tissue components.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">color_normalization_method</span> <span class="o">==</span> <span class="s1">&#39;reinhard&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+                <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: -- reinhard normalization ...&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span> <span class="o">=</span> <span class="n">reinhard</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">,</span>
+                <span class="n">target_mu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">target_stats_reinhard</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">],</span>
+                <span class="n">target_sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">target_stats_reinhard</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">],</span>
+                <span class="n">mask_out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labeled</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">GTcodes</span>
+                <span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;not_specified&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">color_normalization_method</span> <span class="o">==</span> <span class="s1">&#39;macenko_pca&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+                <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: -- macenko normalization ...&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span> <span class="o">=</span> <span class="n">deconvolution_based_normalization</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">,</span> <span class="n">W_target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">target_W_macenko</span><span class="p">,</span>
+                <span class="n">mask_out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labeled</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">GTcodes</span>
+                <span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;not_specified&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">],</span>
+                <span class="n">stain_unmixing_routine_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span>
+                <span class="n">cdt</span><span class="o">.</span><span class="n">stain_unmixing_routine_params</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: -- No normalization!&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CDT_single_tissue_piece.find_potentially_cellular_regions">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.CDT_single_tissue_piece.find_potentially_cellular_regions">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_potentially_cellular_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find regions that are potentially cellular.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
+        <span class="kn">from</span> <span class="nn">skimage.filters</span> <span class="kn">import</span> <span class="n">gaussian</span>
+
+        <span class="n">mask_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labeled</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="s1">&#39;not_specified&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span>
+
+        <span class="c1"># deconvolvve to ge hematoxylin channel (cellular areas)</span>
+        <span class="c1"># hematoxylin channel return shows MINIMA so we invert</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tissue_htx</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">color_deconvolution_routine</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">,</span> <span class="n">mask_out</span><span class="o">=</span><span class="n">mask_out</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">stain_unmixing_routine_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tissue_htx</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tissue_htx</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># get cellular regions by threshold HTX stain channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maybe_cellular</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_tissue_mask</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tissue_htx</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">deconvolve_first</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">n_thresholding_steps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">cellular_step1_sigma</span><span class="p">,</span>
+            <span class="n">min_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">cellular_step1_min_size</span><span class="p">)</span>
+
+        <span class="c1"># Second, low-pass filter to dilate and smooth a bit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maybe_cellular</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span>
+            <span class="mi">0</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maybe_cellular</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">cellular_step2_sigma</span><span class="p">,</span>
+            <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">preserve_range</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># find connected components</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maybe_cellular</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maybe_cellular</span><span class="p">)</span>
+
+        <span class="c1"># restrict cellular regions to not-otherwise-specified</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maybe_cellular</span><span class="p">[</span><span class="n">mask_out</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># assign to mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labeled</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">maybe_cellular</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="s1">&#39;maybe_cellular&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="CDT_single_tissue_piece.find_top_cellular_regions">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.CDT_single_tissue_piece.find_top_cellular_regions">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_top_cellular_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Keep largest and most cellular regions.&quot;&quot;&quot;</span>
+        <span class="c1"># keep only largest n regions regions</span>
+        <span class="n">top_cellular_mask</span> <span class="o">=</span> <span class="n">_get_largest_regions</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maybe_cellular</span><span class="p">,</span> <span class="n">top_n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">cellular_largest_n</span><span class="p">)</span>
+        <span class="n">top_cellular</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maybe_cellular</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">top_cellular</span><span class="p">[</span><span class="n">top_cellular_mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># get intensity features of hematoxylin channel for each region</span>
+        <span class="n">intensity_feats</span> <span class="o">=</span> <span class="n">compute_intensity_features</span><span class="p">(</span>
+            <span class="n">im_label</span><span class="o">=</span><span class="n">top_cellular</span><span class="p">,</span> <span class="n">im_intensity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_htx</span><span class="p">,</span>
+            <span class="n">feature_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Intensity.Mean&#39;</span><span class="p">])</span>
+        <span class="n">unique</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">top_cellular</span><span class="p">[</span><span class="n">top_cellular</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">intensity_feats</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">unique</span>
+
+        <span class="c1"># get top n brightest regions from the largest areas</span>
+        <span class="n">intensity_feats</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;Intensity.Mean&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">discard</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">intensity_feats</span><span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">cellular_top_n</span><span class="p">])</span>
+        <span class="n">discard</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">in1d</span><span class="p">(</span><span class="n">top_cellular</span><span class="p">,</span> <span class="n">discard</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">top_cellular</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">top_cellular</span><span class="p">[</span><span class="n">discard</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># integrate into labeled mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labeled</span><span class="p">[</span><span class="n">top_cellular</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="s1">&#39;top_cellular&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="CDT_single_tissue_piece.visualize_results">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.CDT_single_tissue_piece.visualize_results">[docs]</a>
+    <span class="k">def</span> <span class="nf">visualize_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualize results in DSA.&quot;&quot;&quot;</span>
+        <span class="c1"># get contours</span>
+        <span class="n">contours_df</span> <span class="o">=</span> <span class="n">get_contours_from_mask</span><span class="p">(</span>
+            <span class="n">MASK</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labeled</span><span class="p">,</span> <span class="n">GTCodes_df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="n">groups_to_get</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">groups_to_visualize</span><span class="p">,</span>
+            <span class="n">get_roi_contour</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">get_roi_contour</span><span class="p">,</span> <span class="n">roi_group</span><span class="o">=</span><span class="s1">&#39;roi&#39;</span><span class="p">,</span>
+            <span class="n">background_group</span><span class="o">=</span><span class="s1">&#39;not_specified&#39;</span><span class="p">,</span>
+            <span class="n">discard_nonenclosed_background</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">MIN_SIZE</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">MAX_SIZE</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="n">monitorPrefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span> <span class="o">+</span> <span class="s1">&#39;: -- contours&#39;</span><span class="p">)</span>
+
+        <span class="c1"># get annotation docs</span>
+        <span class="n">annprops</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;magnification&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">MAG</span><span class="p">,</span>
+            <span class="s1">&#39;X_OFFSET&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="p">,</span>
+            <span class="s1">&#39;Y_OFFSET&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ymin</span><span class="p">,</span>
+            <span class="s1">&#39;opacity&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">opacity</span><span class="p">,</span>
+            <span class="s1">&#39;lineWidth&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">lineWidth</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">annotation_docs</span> <span class="o">=</span> <span class="n">get_annotation_documents_from_contours</span><span class="p">(</span>
+            <span class="n">contours_df</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">separate_docs_by_group</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">docnamePrefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">docnameprefix</span><span class="p">,</span>
+            <span class="n">annprops</span><span class="o">=</span><span class="n">annprops</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="n">monitorPrefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span> <span class="o">+</span> <span class="s1">&#39;: -- annotation docs&#39;</span><span class="p">)</span>
+
+        <span class="c1"># post annotations to slide</span>
+        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">annotation_docs</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                <span class="s1">&#39;/annotation?itemId=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdt</span><span class="o">.</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">doc</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Cellularity_detector_thresholding">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.Cellularity_detector_thresholding">[docs]</a>
+<span class="k">class</span> <span class="nc">Cellularity_detector_thresholding</span><span class="p">(</span><span class="n">Base_HTK_Class</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect cellular regions in a slide using thresholding.</span>
+
+<span class="sd">    This uses a thresholding and stain unmixing based pipeline</span>
+<span class="sd">    to detect highly-cellular regions in a slide. The run()</span>
+<span class="sd">    method of the CDT_single_tissue_piece() class has the key</span>
+<span class="sd">    steps of the pipeline. In summary, here are the steps</span>
+<span class="sd">    involved...</span>
+
+<span class="sd">    1. Detect tissue from background using the RGB slide</span>
+<span class="sd">    thumbnail. Each &quot;tissue piece&quot; is analysed independently</span>
+<span class="sd">    from here onwards. The tissue_detection modeule is used</span>
+<span class="sd">    for this step. A high sensitivity, low specificity setting</span>
+<span class="sd">    is used here.</span>
+
+<span class="sd">    2. Fetch the RGB image of tissue at target magnification. A</span>
+<span class="sd">    low magnification (default is 3.0) is used and is sufficient.</span>
+
+<span class="sd">    3. The image is converted to HSI and LAB spaces. Thresholding</span>
+<span class="sd">    is performed to detect various non-salient components that</span>
+<span class="sd">    often throw-off the color normalization and deconvolution</span>
+<span class="sd">    algorithms. Thresholding includes both minimum and maximum</span>
+<span class="sd">    values. The user can set whichever thresholds of components</span>
+<span class="sd">    they would like. The development of this workflow was focused</span>
+<span class="sd">    on breast cancer so the thresholded components by default</span>
+<span class="sd">    are whote space (or adipose tissue), dark blue/green blotches</span>
+<span class="sd">    (sharpie, inking at margin, etc), and blood. Whitespace</span>
+<span class="sd">    is obtained by thresholding the saturation and intensity,</span>
+<span class="sd">    while other components are obtained by thresholding LAB.</span>
+
+<span class="sd">    4. Now that we know where &quot;actual&quot; tissue is, we do a MASKED</span>
+<span class="sd">    color normalization to a prespecified standard. The masking</span>
+<span class="sd">    ensures the normalization routine is not thrown off by non-</span>
+<span class="sd">    tissue components.</span>
+
+<span class="sd">    5. Perform masked stain unmixing/deconvolution to obtain the</span>
+<span class="sd">    hematoxylin stain channel.</span>
+
+<span class="sd">    6. Smooth and threshold the hematoxylin channel. Then</span>
+<span class="sd">    perform connected component analysis to find contiguous</span>
+<span class="sd">    potentially-cellular regions.</span>
+
+<span class="sd">    7. Keep the n largest potentially-cellular regions. Then</span>
+<span class="sd">    from those large regions, keep the m brightest regions</span>
+<span class="sd">    (using hematoxylin channel brightness) as the final</span>
+<span class="sd">    salient/cellular regions.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">GTcodes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init Cellularity_Detector_Superpixels object.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">        ---------</span>
+<span class="sd">        gc : object</span>
+<span class="sd">            girder client object</span>
+
+<span class="sd">        slide_id : str</span>
+<span class="sd">            girder ID of slide</span>
+
+<span class="sd">        GTcodes : pandas Dataframe</span>
+<span class="sd">            the ground truth codes and information dataframe.</span>
+<span class="sd">            WARNING: Modified inside this method so pass a copy.</span>
+<span class="sd">            This is a dataframe that is indexed by the annotation group name</span>
+<span class="sd">            and has the following columns...</span>
+
+<span class="sd">            group: str</span>
+<span class="sd">                group name of annotation, eg. mostly_tumor</span>
+<span class="sd">            overlay_order: int</span>
+<span class="sd">                how early to place the annotation in the</span>
+<span class="sd">                mask. Larger values means this annotation group is overlaid</span>
+<span class="sd">                last and overwrites whatever overlaps it.</span>
+<span class="sd">            GT_code: int</span>
+<span class="sd">                desired ground truth code (in the mask).</span>
+<span class="sd">                Pixels of this value belong to corresponding group (class)</span>
+<span class="sd">            is_roi: bool</span>
+<span class="sd">                whether this group encodes an ROI</span>
+<span class="sd">            is_background_class: bool</span>
+<span class="sd">                whether this group is the default fill value inside the ROI.</span>
+<span class="sd">                For example, you may decide that any pixel inside the ROI</span>
+<span class="sd">                is considered stroma.</span>
+<span class="sd">            color: str</span>
+<span class="sd">                rgb format. eg. rgb(255,0,0)</span>
+
+<span class="sd">            The following indexes must be present...</span>
+<span class="sd">            outside_tissue, not_specified, maybe_cellular, top_cellular</span>
+
+<span class="sd">        verbose : int</span>
+<span class="sd">            0 - Do not print to screen</span>
+<span class="sd">            1 - Print only key messages</span>
+<span class="sd">            2 - Print everything to screen</span>
+<span class="sd">            3 - print everything including from inner functions</span>
+
+<span class="sd">        monitorPrefix : str</span>
+<span class="sd">            text to prepend to printed statements</span>
+
+<span class="sd">        logging_savepath : str or None</span>
+<span class="sd">            where to save run logs</span>
+
+<span class="sd">        suppress_warnings : bool</span>
+<span class="sd">            whether to suppress warnings</span>
+
+<span class="sd">        MAG : float</span>
+<span class="sd">            magnification at which to detect cellularity</span>
+
+<span class="sd">        color_normalization_method : str</span>
+<span class="sd">            Must be in [&#39;reinhard&#39;, &#39;macenko_pca&#39;, &#39;none&#39;]</span>
+
+<span class="sd">        target_W_macenko : np array</span>
+<span class="sd">            3 by 3 stain matrix for macenko normalization</span>
+<span class="sd">            obtained using rgb_separate_stains_macenko_pca()</span>
+<span class="sd">            and reordered such that hematoxylin and eosin are</span>
+<span class="sd">            the first and second channels, respectively.</span>
+
+<span class="sd">        target_stats_reinhard : dict</span>
+<span class="sd">            must contains the keys mu and sigma. Mean and sigma</span>
+<span class="sd">            of target image in LAB space for reinhard normalization.</span>
+
+<span class="sd">        get_tissue_mask_kwargs : dict</span>
+<span class="sd">            kwargs for the get_tissue_mask() method. This is used</span>
+<span class="sd">            to detect tissue from the slide thumbnail.</span>
+
+<span class="sd">        keep_components : list</span>
+<span class="sd">            list of strings. Names of components to exclude by</span>
+<span class="sd">            HSI thresholding. These much be present in the index</span>
+<span class="sd">            of the GTcodes dataframe</span>
+
+<span class="sd">        get_tissue_mask_kwargs2 : dict</span>
+<span class="sd">            kwargs for get_tissue_mask() used for iterative smoothing</span>
+<span class="sd">            and thresholding the component masks after initial</span>
+<span class="sd">            thresholding using the user-defined HSI/LAB thresholds.</span>
+
+<span class="sd">        hsi_thresholds : dict</span>
+<span class="sd">            each entry is a dict containing the keys hue, saturation</span>
+<span class="sd">            and intensity. Each of these is in turn also a dict</span>
+<span class="sd">            containing the keys min and max. See default value below</span>
+<span class="sd">            for an example.</span>
+
+<span class="sd">        lab_thresholds : dict</span>
+<span class="sd">            each entry is a dict containing the keys l, a, and b.</span>
+<span class="sd">            Each of these is in turn also a dict containing the keys</span>
+<span class="sd">            min and max. See default value below for an example.</span>
+
+<span class="sd">        stain_unmixing_routine_params : dict</span>
+<span class="sd">            kwargs passed as the stain_unmixing_routine_params</span>
+<span class="sd">            argument to the deconvolution_based_normalization method</span>
+
+<span class="sd">        cellular_step1_sigma : float</span>
+<span class="sd">            sigma of gaussian smoothing for first cellularity step</span>
+
+<span class="sd">        cellular_step1_min_size : int</span>
+<span class="sd">            minimum contiguous size for first cellularity step</span>
+
+<span class="sd">        cellular_step2_sigma : float</span>
+<span class="sd">            sigma of gaussian smoothing for second cellularity step</span>
+
+<span class="sd">        cellular_largest_n : int</span>
+<span class="sd">            Number of large continugous cellular regions to keep</span>
+
+<span class="sd">        cellular_top_n : int</span>
+<span class="sd">            Number of final &quot;top&quot; cellular regions to keep</span>
+
+<span class="sd">        visualize : bool</span>
+<span class="sd">            whether to visualize results in DSA</span>
+
+<span class="sd">        opacity : float</span>
+<span class="sd">            opacity of superpixel polygons when posted to DSA.</span>
+<span class="sd">            0 (no opacity) is more efficient to render.</span>
+
+<span class="sd">        lineWidth : float</span>
+<span class="sd">            width of line when displaying region boundaries.</span>
+
+<span class="sd">        docnameprefix : str</span>
+<span class="sd">            prefix to add to annotation document name</span>
+
+<span class="sd">        groups_to_visualize : list</span>
+<span class="sd">            which groups to visualize</span>
+
+<span class="sd">        get_roi_contour : bool</span>
+<span class="sd">            whether to get the contour of the roi</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">default_attr</span> <span class="o">=</span> <span class="p">{</span>
+
+            <span class="c1"># The following are already assigned defaults by Base_HTK_Class</span>
+            <span class="c1"># &#39;verbose&#39;: 1,</span>
+            <span class="c1"># &#39;monitorPrefix&#39;: &quot;&quot;,</span>
+            <span class="c1"># &#39;logging_savepath&#39;: None,</span>
+            <span class="c1"># &#39;suppress_warnings&#39;: False,</span>
+
+            <span class="s1">&#39;MAG&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+
+            <span class="c1"># Must be in [&#39;reinhard&#39;, &#39;macenko_pca&#39;, &#39;none&#39;]</span>
+            <span class="s1">&#39;color_normalization_method&#39;</span><span class="p">:</span> <span class="s1">&#39;macenko_pca&#39;</span><span class="p">,</span>
+
+            <span class="c1"># TCGA-A2-A3XS-DX1_xmin21421_ymin37486_.png, Amgad et al, 2019)</span>
+            <span class="c1"># is used as the target image for reinhard &amp; macenko normalization</span>
+
+            <span class="c1"># for macenco (obtained using rgb_separate_stains_macenko_pca()</span>
+            <span class="c1"># and using reordered such that columns are the order:</span>
+            <span class="c1"># Hamtoxylin, Eosin, Null</span>
+            <span class="s1">&#39;target_W_macenko&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="p">[</span><span class="mf">0.5807549</span><span class="p">,</span> <span class="mf">0.08314027</span><span class="p">,</span> <span class="mf">0.08213795</span><span class="p">],</span>
+                <span class="p">[</span><span class="mf">0.71681094</span><span class="p">,</span> <span class="mf">0.90081588</span><span class="p">,</span> <span class="mf">0.41999816</span><span class="p">],</span>
+                <span class="p">[</span><span class="mf">0.38588316</span><span class="p">,</span> <span class="mf">0.42616716</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.90380025</span><span class="p">],</span>
+            <span class="p">]),</span>
+
+            <span class="c1"># TCGA-A2-A3XS-DX1_xmin21421_ymin37486_.png, Amgad et al, 2019)</span>
+            <span class="c1"># Reinhard color norm. standard</span>
+            <span class="s1">&#39;target_stats_reinhard&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">8.74108109</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.12440419</span><span class="p">,</span> <span class="mf">0.0444982</span><span class="p">]),</span>
+                <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.6135447</span><span class="p">,</span> <span class="mf">0.10989545</span><span class="p">,</span> <span class="mf">0.0286032</span><span class="p">]),</span>
+            <span class="p">},</span>
+
+            <span class="c1"># kwargs for getting masks for all tissue pieces (thumbnail)</span>
+            <span class="s1">&#39;get_tissue_mask_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;deconvolve_first&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;n_thresholding_steps&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;min_size&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+            <span class="p">},</span>
+
+            <span class="c1"># components to extract by HSI thresholding</span>
+            <span class="s1">&#39;keep_components&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;blue_sharpie&#39;</span><span class="p">,</span> <span class="s1">&#39;blood&#39;</span><span class="p">,</span> <span class="s1">&#39;whitespace&#39;</span><span class="p">],</span>
+
+            <span class="c1"># kwargs for getting components masks</span>
+            <span class="s1">&#39;get_tissue_mask_kwargs2&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;deconvolve_first&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;n_thresholding_steps&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s1">&#39;min_size&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+            <span class="p">},</span>
+
+            <span class="c1"># min/max thresholds for HSI and LAB</span>
+            <span class="s1">&#39;hsi_thresholds&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;whitespace&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;hue&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+                    <span class="s1">&#39;saturation&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">},</span>
+                    <span class="s1">&#39;intensity&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">220</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mi">255</span><span class="p">},</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;lab_thresholds&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;blue_sharpie&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
+                    <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
+                    <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.02</span><span class="p">},</span>
+                <span class="p">},</span>
+                <span class="s1">&#39;blood&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
+                    <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
+                    <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+
+            <span class="c1"># for stain unmixing to deconvolove and/or color normalize</span>
+            <span class="s1">&#39;stain_unmixing_routine_params&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;stains&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hematoxylin&#39;</span><span class="p">,</span> <span class="s1">&#39;eosin&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;stain_unmixing_method&#39;</span><span class="p">:</span> <span class="s1">&#39;macenko_pca&#39;</span><span class="p">,</span>
+            <span class="p">},</span>
+
+            <span class="c1"># params for getting cellular regions</span>
+            <span class="s1">&#39;cellular_step1_sigma&#39;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+            <span class="s1">&#39;cellular_step1_min_size&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+            <span class="s1">&#39;cellular_step2_sigma&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+            <span class="s1">&#39;cellular_largest_n&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="s1">&#39;cellular_top_n&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+
+            <span class="c1"># visualization params</span>
+            <span class="s1">&#39;visualize&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;opacity&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;lineWidth&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+            <span class="s1">&#39;docnameprefix&#39;</span><span class="p">:</span> <span class="s1">&#39;cdt&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;groups_to_visualize&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># everything</span>
+            <span class="s1">&#39;get_roi_contour&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">default_attr</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">default_attr</span><span class="o">=</span><span class="n">default_attr</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_normalization_method</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">color_normalization_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">color_normalization_method</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;reinhard&#39;</span><span class="p">,</span> <span class="s1">&#39;macenko_pca&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">]</span>
+
+        <span class="c1"># set attribs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gc</span> <span class="o">=</span> <span class="n">gc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slide_id</span> <span class="o">=</span> <span class="n">slide_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GTcodes</span> <span class="o">=</span> <span class="n">GTcodes</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fix_GTcodes</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Cellularity_detector_thresholding.fix_GTcodes">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.Cellularity_detector_thresholding.fix_GTcodes">[docs]</a>
+    <span class="k">def</span> <span class="nf">fix_GTcodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fix self.GTcodes (important!).&quot;&quot;&quot;</span>
+        <span class="c1"># validate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span>
+        <span class="n">necessary_indexes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keep_components</span> <span class="o">+</span> <span class="p">[</span>
+            <span class="s1">&#39;outside_tissue&#39;</span><span class="p">,</span> <span class="s1">&#39;not_specified&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;maybe_cellular&#39;</span><span class="p">,</span> <span class="s1">&#39;top_cellular&#39;</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">j</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">necessary_indexes</span><span class="p">)</span>
+
+        <span class="c1"># Make sure the first things laid out are the &quot;background&quot; components</span>
+        <span class="n">min_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;overlay_order&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;outside_tissue&#39;</span><span class="p">,</span> <span class="s1">&#39;overlay_order&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_val</span> <span class="o">-</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;not_specified&#39;</span><span class="p">,</span> <span class="s1">&#39;overlay_order&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_val</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="c1"># reorder in overlay order (important)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;overlay_order&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ordered_components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GTcodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">])</span>
+
+        <span class="c1"># only keep relevant components (for HSI/LAB thresholding)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordered_components</span><span class="p">[:]:</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keep_components</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ordered_components</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Cellularity_detector_thresholding.run">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.Cellularity_detector_thresholding.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run full pipeline to detect cellular regions.&quot;&quot;&quot;</span>
+        <span class="c1"># get mask, each unique value is a single tissue piece</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_slide_info_and_get_tissue_mask()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="n">labeled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_slide_info_and_get_tissue_mask</span><span class="p">()</span>
+
+        <span class="c1"># Go through tissue pieces and do run sequence</span>
+        <span class="n">unique_tvals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labeled</span><span class="p">))</span> <span class="o">-</span> <span class="p">{</span><span class="mi">0</span><span class="p">})</span>
+        <span class="n">tissue_pieces</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_tvals</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tval</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_tvals</span><span class="p">):</span>
+            <span class="n">monitorPrefix</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: Tissue piece </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_tvals</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span><span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="n">tissue_pieces</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">CDT_single_tissue_piece</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">tissue_mask</span><span class="o">=</span><span class="n">labeled</span> <span class="o">==</span> <span class="n">tval</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="n">tissue_pieces</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="c1"># delete unnecessary attributes</span>
+            <span class="k">del</span> <span class="p">(</span>
+                <span class="n">tissue_pieces</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">,</span>  <span class="c1"># too much space</span>
+                <span class="n">tissue_pieces</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">tissue_mask</span><span class="p">,</span>  <span class="c1"># already part of labeled</span>
+                <span class="n">tissue_pieces</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">maybe_cellular</span><span class="p">,</span>  <span class="c1"># already part of labeled</span>
+                <span class="n">tissue_pieces</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">tissue_htx</span><span class="p">,</span>  <span class="c1"># unnecessary</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tissue_pieces</span></div>
+
+
+<div class="viewcode-block" id="Cellularity_detector_thresholding.set_color_normalization_target">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.Cellularity_detector_thresholding.set_color_normalization_target">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_color_normalization_target</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">ref_image_path</span><span class="p">,</span> <span class="n">color_normalization_method</span><span class="o">=</span><span class="s1">&#39;macenko_pca&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set color normalization values to use from target image.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">        ---------</span>
+<span class="sd">        ref_image_path, str</span>
+<span class="sd">        &gt;    path to target (reference) image</span>
+<span class="sd">        color_normalization_method, str</span>
+<span class="sd">        &gt;    color normalization method to use. Currently, only</span>
+<span class="sd">        &gt;    reinhard and macenko_pca are accepted.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">imageio</span> <span class="kn">import</span> <span class="n">imread</span>
+
+        <span class="c1"># read input image</span>
+        <span class="n">ref_im</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">imread</span><span class="p">(</span><span class="n">ref_image_path</span><span class="p">,</span> <span class="n">pilmode</span><span class="o">=</span><span class="s1">&#39;RGB&#39;</span><span class="p">))</span>
+
+        <span class="c1"># assign target values</span>
+
+        <span class="n">color_normalization_method</span> <span class="o">=</span> <span class="n">color_normalization_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">color_normalization_method</span> <span class="o">==</span> <span class="s1">&#39;reinhard&#39;</span><span class="p">:</span>
+            <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">lab_mean_std</span><span class="p">(</span><span class="n">ref_im</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_stats_reinhard</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_stats_reinhard</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+
+        <span class="k">elif</span> <span class="n">color_normalization_method</span> <span class="o">==</span> <span class="s1">&#39;macenko_pca&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_W_macenko</span> <span class="o">=</span> <span class="n">_reorder_stains</span><span class="p">(</span>
+                <span class="n">rgb_separate_stains_macenko_pca</span><span class="p">(</span><span class="n">ref_im</span><span class="p">,</span> <span class="n">I_0</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
+                <span class="n">stains</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;hematoxylin&#39;</span><span class="p">,</span> <span class="s1">&#39;eosin&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;Unknown color_normalization_method: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                <span class="p">(</span><span class="n">color_normalization_method</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_normalization_method</span> <span class="o">=</span> <span class="n">color_normalization_method</span></div>
+
+
+<div class="viewcode-block" id="Cellularity_detector_thresholding.set_slide_info_and_get_tissue_mask">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_thresholding.html#histomicstk.saliency.cellularity_detection_thresholding.Cellularity_detector_thresholding.set_slide_info_and_get_tissue_mask">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_slide_info_and_get_tissue_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set self.slide_info dict and self.labeled tissue mask.&quot;&quot;&quot;</span>
+        <span class="c1"># This is a persistent dict to store information about slide</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slide_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;item/</span><span class="si">%s</span><span class="s1">/tiles&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">slide_id</span><span class="p">)</span>
+
+        <span class="c1"># get tissue mask</span>
+        <span class="n">thumbnail_rgb</span> <span class="o">=</span> <span class="n">get_slide_thumbnail</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slide_id</span><span class="p">)</span>
+
+        <span class="c1"># get labeled tissue mask -- each unique value is one tissue piece</span>
+        <span class="n">labeled</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_tissue_mask</span><span class="p">(</span>
+            <span class="n">thumbnail_rgb</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">get_tissue_mask_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labeled</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;No tissue detected!&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># Find size relative to WSI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;F_tissue&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slide_info</span><span class="p">[</span>
+            <span class="s1">&#39;sizeX&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">labeled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">labeled</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

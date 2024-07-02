@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.preprocessing.color_normalization.reinhard &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.preprocessing.color_normalization.reinhard</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.preprocessing.color_normalization.reinhard</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Placeholder.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">histomicstk.preprocessing</span> <span class="kn">import</span> <span class="n">color_conversion</span>
+
+
+<div class="viewcode-block" id="reinhard">
+<a class="viewcode-back" href="../../../../histomicstk.preprocessing.color_normalization.html#histomicstk.preprocessing.color_normalization.reinhard">[docs]</a>
+<span class="k">def</span> <span class="nf">reinhard</span><span class="p">(</span>
+        <span class="n">im_src</span><span class="p">,</span> <span class="n">target_mu</span><span class="p">,</span> <span class="n">target_sigma</span><span class="p">,</span> <span class="n">src_mu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">src_sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask_out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform Reinhard color normalization.</span>
+
+<span class="sd">    Transform the color characteristics of an image to a desired standard.</span>
+<span class="sd">    The standard is defined by the mean and standard deviations of the target</span>
+<span class="sd">    image in LAB color space defined by Ruderman. The input image is converted</span>
+<span class="sd">    to Ruderman&#39;s LAB space, the LAB channels are each centered and scaled to</span>
+<span class="sd">    zero-mean unit variance, and then rescaled and shifted to match the target</span>
+<span class="sd">    image statistics. If the LAB statistics for the input image are provided</span>
+<span class="sd">    (`src_mu` and `src_sigma`) then these will be used for normalization,</span>
+<span class="sd">    otherwise they will be derived from the input image `im_src`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_src : array_like</span>
+<span class="sd">        An RGB image</span>
+
+<span class="sd">    target_mu : array_like</span>
+<span class="sd">        A 3-element array containing the means of the target image channels</span>
+<span class="sd">        in LAB color space.</span>
+
+<span class="sd">    target_sigma : array_like</span>
+<span class="sd">        A 3-element array containing the standard deviations of the target</span>
+<span class="sd">        image channels in LAB color space.</span>
+
+<span class="sd">    src_mu : array_like, optional</span>
+<span class="sd">        A 3-element array containing the means of the source image channels in</span>
+<span class="sd">        LAB color space. Used with reinhard_stats for uniform normalization of</span>
+<span class="sd">        tiles from a slide.</span>
+
+<span class="sd">    src_sigma : array, optional</span>
+<span class="sd">        A 3-element array containing the standard deviations of the source</span>
+<span class="sd">        image channels in LAB color space. Used with reinhard_stats for</span>
+<span class="sd">        uniform normalization of tiles tiles from a slide.</span>
+
+<span class="sd">    mask_out : array_like, default is None</span>
+<span class="sd">        if not None, should be (m, n) boolean numpy array.</span>
+<span class="sd">        This method uses numpy masked array functionality to only use</span>
+<span class="sd">        non-masked areas in calculations. This is relevant because elements</span>
+<span class="sd">        like blood, sharpie marker, white space, etc would throw off the</span>
+<span class="sd">        reinhard normalization by affecting the mean and stdev. Ideally, you</span>
+<span class="sd">        want to exclude these elements from both the target image (from which</span>
+<span class="sd">        you calculate target_mu and target_sigma) and from the source image</span>
+<span class="sd">        to be normalized.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    im_normalized : array_like</span>
+<span class="sd">        Color Normalized RGB image</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    histomicstk.preprocessing.color_conversion.rgb_to_lab,</span>
+<span class="sd">    histomicstk.preprocessing.color_conversion.lab_to_rgb</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] E. Reinhard, M. Adhikhmin, B. Gooch, P. Shirley, &quot;Color transfer</span>
+<span class="sd">       between images,&quot; in IEEE Computer Graphics and Applications, vol.21,</span>
+<span class="sd">       no.5,pp.34-41, 2001.</span>
+<span class="sd">    .. [#] D. Ruderman, T. Cronin, and C. Chiao, &quot;Statistics of cone responses</span>
+<span class="sd">       to natural images: implications for visual coding,&quot; J. Opt. Soc. Am. A</span>
+<span class="sd">       vol.15, pp.2036-2045, 1998.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># convert input image to LAB color space</span>
+    <span class="n">im_lab</span> <span class="o">=</span> <span class="n">color_conversion</span><span class="o">.</span><span class="n">rgb_to_lab</span><span class="p">(</span><span class="n">im_src</span><span class="p">)</span>
+
+    <span class="c1"># mask out irrelevant tissue / whitespace / etc</span>
+    <span class="k">if</span> <span class="n">mask_out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask_out</span> <span class="o">=</span> <span class="n">mask_out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">im_lab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span>
+            <span class="n">im_lab</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">mask_out</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+
+    <span class="c1"># calculate src_mu and src_sigma if either is not provided</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">src_mu</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">src_sigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">src_mu</span> <span class="o">=</span> <span class="p">[</span><span class="n">im_lab</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+        <span class="n">src_sigma</span> <span class="o">=</span> <span class="p">[</span><span class="n">im_lab</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+
+    <span class="c1"># scale to unit variance</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">im_lab</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">im_lab</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">src_mu</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">src_sigma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="c1"># rescale and recenter to match target statistics</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">im_lab</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">im_lab</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">target_sigma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">target_mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="c1"># convert back to RGB colorspace</span>
+    <span class="n">im_normalized</span> <span class="o">=</span> <span class="n">color_conversion</span><span class="o">.</span><span class="n">lab_to_rgb</span><span class="p">(</span><span class="n">im_lab</span><span class="p">)</span>
+    <span class="n">im_normalized</span><span class="p">[</span><span class="n">im_normalized</span> <span class="o">&gt;</span> <span class="mi">255</span><span class="p">]</span> <span class="o">=</span> <span class="mi">255</span>
+    <span class="n">im_normalized</span><span class="p">[</span><span class="n">im_normalized</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># return masked values and reconstruct unmasked LAB image</span>
+    <span class="k">if</span> <span class="n">mask_out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">im_normalized</span> <span class="o">=</span> <span class="n">im_normalized</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">original</span> <span class="o">=</span> <span class="n">im_src</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">im_normalized</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">original</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">mask_out</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">],</span> <span class="kc">True</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">new</span><span class="p">[</span><span class="n">mask_out</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">im_normalized</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span> <span class="o">+</span> <span class="n">original</span>
+    <span class="n">im_normalized</span> <span class="o">=</span> <span class="n">im_normalized</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">im_normalized</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

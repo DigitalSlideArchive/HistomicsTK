@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.level_set &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="histomicstk.segmentation.nuclear" href="histomicstk.segmentation.nuclear.html" />
+    <link rel="prev" title="histomicstk.segmentation.label" href="histomicstk.segmentation.label.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.embed_boundaries"><code class="docutils literal notranslate"><span class="pre">embed_boundaries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag"><code class="docutils literal notranslate"><span class="pre">rag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag_add_layer"><code class="docutils literal notranslate"><span class="pre">rag_add_layer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag_color"><code class="docutils literal notranslate"><span class="pre">rag_color()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.simple_mask"><code class="docutils literal notranslate"><span class="pre">simple_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.label.html">label mask processing</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">level-set segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.nuclear.html">nuclei segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.positive_pixel_count.html">positive pixel counting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api-docs.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.html">histomicstk</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.segmentation.html">histomicstk.segmentation</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.level_set</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/histomicstk.segmentation.level_set.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-histomicstk.segmentation.level_set">
+<span id="histomicstk-segmentation-level-set"></span><h1>histomicstk.segmentation.level_set<a class="headerlink" href="#module-histomicstk.segmentation.level_set" title="Link to this heading">¶</a></h1>
+<p>This package contains functions that implement commonly used level-set based
+methods for segmenting objects/regions in images.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.level_set.chan_vese">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.level_set.</span></span><span class="sig-name descname"><span class="pre">chan_vese</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/level_set/chan_vese.html#chan_vese"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.level_set.chan_vese" title="Link to this definition">¶</a></dt>
+<dd><p>Region-based level sets.</p>
+<p>Region-based level set implementation based on the Chan-Vese method.
+Provides cost terms for boundary length, the variance of intensities inside
+the zero level-set, and the variance of external intensities. Robust to
+initialization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_input</strong> (<em>array_like</em>) – A floating-point intensity image.</p></li>
+<li><p><strong>im_mask</strong> (<em>array_like</em>) – A binary mask initializing the level set image. Regions corresponding
+to the interior of the level-set function have value 1, with other
+regions having value 0.</p></li>
+<li><p><strong>sigma</strong> (<em>double</em>) – Standard deviation of smoothing filter for input image im_input.</p></li>
+<li><p><strong>dt</strong> (<em>double</em>) – Time step for evolving the level-set function im_phi. Default value = 1.0.</p></li>
+<li><p><strong>mu</strong> (<em>double</em>) – Boundary length weight for energy function. Default value = 0.2.</p></li>
+<li><p><strong>lambda1</strong> (<em>double</em>) – Internal variance weight for energy function. Default value = 1.</p></li>
+<li><p><strong>lambda2</strong> (<em>double</em>) – External variance weight for energy function. Default value = 1.</p></li>
+<li><p><strong>iter</strong> (<em>double</em>) – Number of iterations to evolve curve level set function over. Default
+value = 100.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_phi</strong> – An intensity image where the zero level set defines object boundaries.
+Can be further processed with fast marching methods or other to obtain
+smooth boundaries, or simply thresholded to define the object mask.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.segmentation.nuclear.html#histomicstk.segmentation.nuclear.gaussian_voting" title="histomicstk.segmentation.nuclear.gaussian_voting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.nuclear.gaussian_voting</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>C. Li, C. Xu, C. Gui, M.D. Fox, “Distance Regularized Level Set
+Evolution and Its Application to Image Segmentation,” in IEEE
+Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.level_set.reg_edge">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.level_set.</span></span><span class="sig-name descname"><span class="pre">reg_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im_phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">well</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'double'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/level_set/reg_edge.html#reg_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.level_set.reg_edge" title="Link to this definition">¶</a></dt>
+<dd><p>Distance-regularized edge-based level sets.</p>
+<p>Distance-regularization is used in this edge-based level set implementation
+to avoid numerical problems requiring costly re-initialization. Provides
+cost terms for boundary length, area, and regularization of the level set
+function. Foreground objects are assumed to have larger intensity values
+than background.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_input</strong> (<em>array_like</em>) – A floating-point intensity image.</p></li>
+<li><p><strong>im_phi</strong> (<em>array_like</em>) – A floating-point initialization of the level-set image. Interior values
+are set to -c0, and exterior values set to c0, where c0 &gt; 0.</p></li>
+<li><p><strong>well</strong> (<em>string</em>) – Choice of well function for regularization. Can be set to either
+‘single’ or ‘double’ for single-well or double-well regularization, or
+any other value for no regularization. Default value = ‘double’.</p></li>
+<li><p><strong>sigma</strong> (<em>double</em>) – Standard deviation of smoothing filter for input image im_input.</p></li>
+<li><p><strong>dt</strong> (<em>double</em>) – Time step for evolving im_phi. Default value = 1.0.</p></li>
+<li><p><strong>mu</strong> (<em>double</em>) – Regularization weight for energy function. Default value = 0.2.</p></li>
+<li><p><strong>lambda</strong> (<em>double</em>) – Boundary length weight for energy function. Default value = 1.0.</p></li>
+<li><p><strong>alpha</strong> (<em>double</em>) – Area weight for energy function. A negative value is used to seed the
+interior of the foreground objects and then evolve the boundary
+outwards. A positive value assumes that the boundary begins outside the
+foreground objects and collapses to their high-gradient edges.
+Default value = -3.</p></li>
+<li><p><strong>epsilon</strong> (<em>double</em>) – Coefficient used to smooth the Dirac and Heaviside functions. Default
+value = 1.5.</p></li>
+<li><p><strong>iter</strong> (<em>double</em>) – Number of iterations to evolve curve level set function over. Default
+value = 100.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_phi</strong> – An intensity image where the zero level set defines object boundaries.
+Can be further processed with fast marching methods or other to obtain
+smooth boundaries, or simply thresholded to define the object mask.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.segmentation.nuclear.html#histomicstk.segmentation.nuclear.gaussian_voting" title="histomicstk.segmentation.nuclear.gaussian_voting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.nuclear.gaussian_voting</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>C. Li, C. Xu, C. Gui, M.D. Fox, “Distance Regularized Level Set
+Evolution and Its Application to Image Segmentation,” in IEEE
+Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.</p>
+</aside>
+</aside>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="histomicstk.segmentation.label.html" class="btn btn-neutral float-left" title="histomicstk.segmentation.label" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="histomicstk.segmentation.nuclear.html" class="btn btn-neutral float-right" title="histomicstk.segmentation.nuclear" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

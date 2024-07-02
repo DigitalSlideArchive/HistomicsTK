@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.preprocessing.color_normalization &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="histomicstk.preprocessing.augmentation" href="histomicstk.preprocessing.augmentation.html" />
+    <link rel="prev" title="histomicstk.preprocessing.color_deconvolution" href="histomicstk.preprocessing.color_deconvolution.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.preprocessing.color_conversion.html">color space conversion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.preprocessing.color_deconvolution.html">color deconvolution</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">color normalization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.preprocessing.augmentation.html">data augmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api-docs.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.html">histomicstk</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.preprocessing.html">histomicstk.preprocessing</a></li>
+      <li class="breadcrumb-item active">histomicstk.preprocessing.color_normalization</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/histomicstk.preprocessing.color_normalization.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-histomicstk.preprocessing.color_normalization">
+<span id="histomicstk-preprocessing-color-normalization"></span><h1>histomicstk.preprocessing.color_normalization<a class="headerlink" href="#module-histomicstk.preprocessing.color_normalization" title="Link to this heading">¶</a></h1>
+<p>Functions to correct non-uniform staining issues.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_normalization.background_intensity">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_normalization.</span></span><span class="sig-name descname"><span class="pre">background_intensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_normalization/background_intensity.html#background_intensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_normalization.background_intensity" title="Link to this definition">¶</a></dt>
+<dd><p>Sample the background of the slide identified by slide_path to
+compute the background intensities in the RGB channels.  Arguments
+are as in histomicstk.utils.sample_pixels, with background forced
+to True.</p>
+<p class="rubric">Notes</p>
+<p>The <cite>magnification</cite> parameter defaults to 1.25x, instead of the
+native scan magnification as in sample_pixels.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_normalization.deconvolution_based_normalization">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_normalization.</span></span><span class="sig-name descname"><span class="pre">deconvolution_based_normalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stains</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stain_unmixing_routine_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_normalization/deconvolution_based_normalization.html#deconvolution_based_normalization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_normalization.deconvolution_based_normalization" title="Link to this definition">¶</a></dt>
+<dd><p>Perform color normalization using color deconvolution to transform the.</p>
+<p>… color characteristics of an image to a desired standard.
+After the image is deconvolved into its component stains (eg, H&amp;E), it is
+convolved with a stain column vectors matrix from the target image from
+which the color characteristics need to be transferred.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_src</strong> (<em>array_like</em>) – An RGB image (m x n x 3) to color normalize</p></li>
+<li><p><strong>W_source</strong> (<em>np array</em><em>, </em><em>default is None</em>) – A 3x3 matrix of source stain column vectors. Only provide this
+if you know the stains matrix in advance (unlikely) and would
+like to perform supervised deconvolution. If this is not provided,
+stain_unmixing_routine() is used to estimate W_source.</p></li>
+<li><p><strong>W_target</strong> (<em>np array</em><em>, </em><em>default is None</em>) – A 3x3 matrix of target stain column vectors. If not provided,
+and im_target is also not provided, the default behavior is to use
+histomicstk.preprocessing.color_deconvolution.stain_color_map
+to provide an idealized target matrix.</p></li>
+<li><p><strong>im_target</strong> (<em>array_like</em><em>, </em><em>default is None</em>) – An RGB image (m x n x 3) that has good color properties that ought to
+be transferred to im_src. If you provide this parameter, im_target
+will be used to extract W_target and the W_target parameter will
+be ignored.</p></li>
+<li><p><strong>stains</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>, </em><em>optional</em>) – List of stain names (order is important). Default is H&amp;E. This is
+particularly relevant in macenco where the order of stains is not
+preserved during stain unmixing, so this method uses
+histomicstk.preprocessing.color_deconvolution.find_stain_index
+to reorder the stains matrix to the order provided by this parameter</p></li>
+<li><p><strong>mask_out</strong> (<em>array_like</em><em>, </em><em>default is None</em>) – if not None, should be (m x n) boolean numpy array.
+This parameter ensures exclusion of non-masked areas from calculations
+and normalization. This is relevant because elements like blood,
+sharpie marker, white space, etc may throw off the normalization.</p></li>
+<li><p><strong>stain_unmixing_routine_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>, </em><em>default is empty dict</em>) – k,v for stain_unmixing_routine().</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Color Normalized RGB image (m x n x 3)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.preprocessing.color_deconvolution.html#histomicstk.preprocessing.color_deconvolution.color_deconvolution_routine" title="histomicstk.preprocessing.color_deconvolution.color_deconvolution_routine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.color_deconvolution_routine</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_convolution.color_convolution</span></code></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Van Eycke, Y. R., Allard, J., Salmon, I., Debeir, O., &amp;
+Decaestecker, C. (2017).  Image processing in digital pathology: an
+opportunity to solve inter-batch variability of immunohistochemical
+staining.  Scientific Reports, 7.</p>
+</aside>
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>Macenko, M., Niethammer, M., Marron, J. S., Borland, D.,
+Woosley, J. T., Guan, X., … &amp; Thomas, N. E. (2009, June).
+A method for normalizing histology slides for quantitative analysis.
+In Biomedical Imaging: From Nano to Macro, 2009.  ISBI’09.
+IEEE International Symposium on (pp. 1107-1110). IEEE.</p>
+</aside>
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<p>Xu, J., Xiang, L., Wang, G., Ganesan, S., Feldman, M., Shih, N. N.,
+…&amp; Madabhushi, A. (2015). Sparse Non-negative Matrix Factorization
+(SNMF) based color unmixing for breast histopathological image
+analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_normalization.reinhard">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_normalization.</span></span><span class="sig-name descname"><span class="pre">reinhard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_normalization/reinhard.html#reinhard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_normalization.reinhard" title="Link to this definition">¶</a></dt>
+<dd><p>Perform Reinhard color normalization.</p>
+<p>Transform the color characteristics of an image to a desired standard.
+The standard is defined by the mean and standard deviations of the target
+image in LAB color space defined by Ruderman. The input image is converted
+to Ruderman’s LAB space, the LAB channels are each centered and scaled to
+zero-mean unit variance, and then rescaled and shifted to match the target
+image statistics. If the LAB statistics for the input image are provided
+(<cite>src_mu</cite> and <cite>src_sigma</cite>) then these will be used for normalization,
+otherwise they will be derived from the input image <cite>im_src</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_src</strong> (<em>array_like</em>) – An RGB image</p></li>
+<li><p><strong>target_mu</strong> (<em>array_like</em>) – A 3-element array containing the means of the target image channels
+in LAB color space.</p></li>
+<li><p><strong>target_sigma</strong> (<em>array_like</em>) – A 3-element array containing the standard deviations of the target
+image channels in LAB color space.</p></li>
+<li><p><strong>src_mu</strong> (<em>array_like</em><em>, </em><em>optional</em>) – A 3-element array containing the means of the source image channels in
+LAB color space. Used with reinhard_stats for uniform normalization of
+tiles from a slide.</p></li>
+<li><p><strong>src_sigma</strong> (<em>array</em><em>, </em><em>optional</em>) – A 3-element array containing the standard deviations of the source
+image channels in LAB color space. Used with reinhard_stats for
+uniform normalization of tiles tiles from a slide.</p></li>
+<li><p><strong>mask_out</strong> (<em>array_like</em><em>, </em><em>default is None</em>) – if not None, should be (m, n) boolean numpy array.
+This method uses numpy masked array functionality to only use
+non-masked areas in calculations. This is relevant because elements
+like blood, sharpie marker, white space, etc would throw off the
+reinhard normalization by affecting the mean and stdev. Ideally, you
+want to exclude these elements from both the target image (from which
+you calculate target_mu and target_sigma) and from the source image
+to be normalized.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_normalized</strong> – Color Normalized RGB image</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.rgb_to_lab" title="histomicstk.preprocessing.color_conversion.rgb_to_lab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.rgb_to_lab</span></code></a>, <a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.lab_to_rgb" title="histomicstk.preprocessing.color_conversion.lab_to_rgb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.lab_to_rgb</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<p>E. Reinhard, M. Adhikhmin, B. Gooch, P. Shirley, “Color transfer
+between images,” in IEEE Computer Graphics and Applications, vol.21,
+no.5,pp.34-41, 2001.</p>
+</aside>
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
+<p>D. Ruderman, T. Cronin, and C. Chiao, “Statistics of cone responses
+to natural images: implications for visual coding,” J. Opt. Soc. Am. A
+vol.15, pp.2036-2045, 1998.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_normalization.reinhard_stats">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_normalization.</span></span><span class="sig-name descname"><span class="pre">reinhard_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slide_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_fraction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magnification</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tissue_seg_mag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_img_inversion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_normalization/reinhard_stats.html#reinhard_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_normalization.reinhard_stats" title="Link to this definition">¶</a></dt>
+<dd><p>Samples a whole-slide-image to determine colorspace statistics (mean,
+variance) needed to perform global Reinhard color normalization.</p>
+<p>Normalizing individual tiles independently creates a significant bias
+in the results of segmentation and feature extraction, as the color
+statistics of each tile in a whole-slide image can vary significantly.
+To remedy this, we sample a subset of pixels from the entire whole-slide
+image in order to estimate the global mean and standard deviation of
+each channel in the Lab color space that are needed for reinhard color
+normalization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slide_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – path and filename of slide.</p></li>
+<li><p><strong>sample_fraction</strong> (<em>double</em>) – Fraction of pixels to sample (range (0, 1]).</p></li>
+<li><p><strong>magnification</strong> (<em>scalar</em>) – Desired magnification for sampling. Defaults to native scan
+magnification.</p></li>
+<li><p><strong>tissue_seg_mag</strong> (<em>double</em><em>, </em><em>optional</em>) – low resolution magnification at which foreground will be segmented.
+Default value = 1.25.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>Mu</strong> (<em>array_like</em>) – A 3-element array containing the means of the target image channels
+in sample_pix_lab color space.</p></li>
+<li><p><strong>Sigma</strong> (<em>array_like</em>) – A 3-element list containing the standard deviations of the target image
+channels in sample_pix_lab color space.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Returns a namedtuple.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.lab_mean_std" title="histomicstk.preprocessing.color_conversion.lab_mean_std"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.lab_mean_std</span></code></a>, <a class="reference internal" href="#histomicstk.preprocessing.color_normalization.reinhard" title="histomicstk.preprocessing.color_normalization.reinhard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_normalization.reinhard</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_normalization.reinhard_stats_rgb">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_normalization.</span></span><span class="sig-name descname"><span class="pre">reinhard_stats_rgb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rgb_image</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_normalization/reinhard_stats.html#reinhard_stats_rgb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_normalization.reinhard_stats_rgb" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="histomicstk.preprocessing.color_deconvolution.html" class="btn btn-neutral float-left" title="histomicstk.preprocessing.color_deconvolution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="histomicstk.preprocessing.augmentation.html" class="btn btn-neutral float-right" title="histomicstk.preprocessing.augmentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.annotations_and_masks.polygon_merger_v2 &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.annotations_and_masks.polygon_merger_v2</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.annotations_and_masks.polygon_merger_v2</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Sat Aug 24 16:01:26 2019.</span>
+
+<span class="sd">@author: tageldim</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry.polygon</span> <span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">from</span> <span class="nn">shapely.ops</span> <span class="kn">import</span> <span class="n">unary_union</span>
+
+<span class="kn">from</span> <span class="nn">histomicstk.annotations_and_masks.masks_to_annotations_handler</span> <span class="kn">import</span> \
+    <span class="n">_parse_annot_coords</span>
+<span class="kn">from</span> <span class="nn">histomicstk.annotations_and_masks.pyrtree.rtree</span> <span class="kn">import</span> <span class="n">Rect</span><span class="p">,</span> <span class="n">RTree</span>
+<span class="kn">from</span> <span class="nn">histomicstk.utils.general_utils</span> <span class="kn">import</span> <span class="n">Base_HTK_Class</span>
+
+
+<div class="viewcode-block" id="Polygon_merger_v2">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger_v2.Polygon_merger_v2">[docs]</a>
+<span class="k">class</span> <span class="nc">Polygon_merger_v2</span><span class="p">(</span><span class="n">Base_HTK_Class</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Methods to merge contiguous polygons from whole-slide image.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contours_df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init Polygon_merger object.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">        ---------</span>
+<span class="sd">        contours_df : pandas DataFrame</span>
+<span class="sd">            The following columns are needed.</span>
+
+<span class="sd">            group : str</span>
+<span class="sd">                annotation group (ground truth label).</span>
+<span class="sd">            ymin : int</span>
+<span class="sd">                minimum y coordinate</span>
+<span class="sd">            ymax : int</span>
+<span class="sd">                maximum y coordinate</span>
+<span class="sd">            xmin : int</span>
+<span class="sd">                minimum x coordinate</span>
+<span class="sd">            xmax : int</span>
+<span class="sd">                maximum x coordinate</span>
+<span class="sd">            coords_x : str</span>
+<span class="sd">                vertex x coordinates comma-separated values</span>
+<span class="sd">            coords_y</span>
+<span class="sd">                vertex y coordinated comma-separated values</span>
+<span class="sd">        merge_thresh : int</span>
+<span class="sd">            how close do the polygons need to be (in pixels) to be merged</span>
+<span class="sd">        verbose : int</span>
+<span class="sd">            0 - Do not print to screen</span>
+<span class="sd">            1 - Print only key messages</span>
+<span class="sd">            2 - Print everything to screen</span>
+<span class="sd">        monitorPrefix : str</span>
+<span class="sd">            text to prepend to printed statements</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+        <span class="c1"># see: https://stackoverflow.com/questions/8187082/how-can-you-set-...</span>
+        <span class="c1"># class-attributes-from-variable-arguments-kwargs-in-python</span>
+        <span class="n">default_attr</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;monitorPrefix&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;merge_thresh&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">default_attr</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">default_attr</span><span class="o">=</span><span class="n">default_attr</span><span class="p">)</span>
+
+        <span class="c1"># This is where contours will be stored</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contours_df</span> <span class="o">=</span> <span class="n">contours_df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contours_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">contours_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+        <span class="c1"># prepwork</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_thresh</span> <span class="o">+</span> <span class="mi">3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unique_groups</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="Polygon_merger_v2.set_contours_slice">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger_v2.Polygon_merger_v2.set_contours_slice">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_contours_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Slice a single group from self.contours_df.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contours_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">group</span><span class="p">,</span> <span class="p">:]</span></div>
+
+
+<div class="viewcode-block" id="Polygon_merger_v2.create_rtree">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger_v2.Polygon_merger_v2.create_rtree">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_rtree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add contour bounding boxes to R-tree.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rtree</span> <span class="o">=</span> <span class="n">RTree</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">cidx</span><span class="p">,</span> <span class="n">cont</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">contours_slice</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rtree</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="s1">&#39;polygon-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">cidx</span><span class="p">,</span> <span class="n">Rect</span><span class="p">(</span>
+                <span class="n">minx</span><span class="o">=</span><span class="n">cont</span><span class="p">[</span><span class="s1">&#39;xmin&#39;</span><span class="p">],</span> <span class="n">miny</span><span class="o">=</span><span class="n">cont</span><span class="p">[</span><span class="s1">&#39;ymin&#39;</span><span class="p">],</span>
+                <span class="n">maxx</span><span class="o">=</span><span class="n">cont</span><span class="p">[</span><span class="s1">&#39;xmax&#39;</span><span class="p">],</span> <span class="n">maxy</span><span class="o">=</span><span class="n">cont</span><span class="p">[</span><span class="s1">&#39;ymax&#39;</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="Polygon_merger_v2.set_tree_dict">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger_v2.Polygon_merger_v2.set_tree_dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_tree_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get tree in convenience dict format (dicts inside dicts).&quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">_traverse</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Recursively traverse tree till you get to leafs.&quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+                <span class="n">node_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+                    <span class="n">node_dict</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">_traverse</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">node_dict</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">index</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tree_dict</span> <span class="o">=</span> <span class="n">_traverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rtree</span><span class="o">.</span><span class="n">cursor</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Polygon_merger_v2.set_hierarchy">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger_v2.Polygon_merger_v2.set_hierarchy">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_hierarchy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get hierarchy of node indices.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hierarchy</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">def</span> <span class="nf">_add_hierarchy_level</span><span class="p">(</span><span class="n">node_dict</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">parent_idx</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Recursively add hierarchy levels.&quot;&quot;&quot;</span>
+            <span class="n">lk</span> <span class="o">=</span> <span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span><span class="p">)</span>
+
+            <span class="n">child_nodes</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;nidx&#39;</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span> <span class="s1">&#39;parent_idx&#39;</span><span class="p">:</span> <span class="n">parent_idx</span><span class="p">,</span>
+                 <span class="s1">&#39;is_leaf&#39;</span><span class="p">:</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)}</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">child_nodes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="c1"># add to current level</span>
+            <span class="k">if</span> <span class="n">lk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hierarchy</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hierarchy</span><span class="p">[</span><span class="n">lk</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">child_nodes</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hierarchy</span><span class="p">[</span><span class="n">lk</span><span class="p">]</span> <span class="o">=</span> <span class="n">child_nodes</span>
+
+            <span class="c1"># add next level</span>
+            <span class="k">for</span> <span class="n">nidx</span><span class="p">,</span> <span class="n">ndict</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ndict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">_add_hierarchy_level</span><span class="p">(</span><span class="n">ndict</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">parent_idx</span><span class="o">=</span><span class="n">nidx</span><span class="p">)</span>
+
+        <span class="n">_add_hierarchy_level</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_dict</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parent_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_merge_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">poly_list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">poly_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer_size</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">poly_list</span><span class="p">]</span>
+            <span class="n">merged_polys</span> <span class="o">=</span> <span class="n">unary_union</span><span class="p">(</span><span class="n">poly_list</span><span class="p">)</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer_size</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">merged_polys</span> <span class="o">=</span> <span class="n">unary_union</span><span class="p">(</span><span class="n">poly_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">merged_polys</span>
+
+    <span class="k">def</span> <span class="nf">_merge_leafs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leafs</span><span class="p">):</span>
+        <span class="n">nest_polygons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">leafs</span><span class="p">:</span>
+            <span class="n">leafidx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;polygon-&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">nest</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contours_slice</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">leafidx</span><span class="p">,</span> <span class="p">:])</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">_parse_annot_coords</span><span class="p">(</span><span class="n">nest</span><span class="p">)</span>
+            <span class="n">nest_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Polygon</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_polygons</span><span class="p">(</span><span class="n">nest_polygons</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_merged_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nidx</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rtree</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">_become</span><span class="p">(</span><span class="n">nidx</span><span class="p">)</span>
+        <span class="n">leafs</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">leaf_obj</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rtree</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">children</span><span class="p">()]</span>
+        <span class="n">merged_polygon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_leafs</span><span class="p">(</span><span class="n">leafs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">merged_polygon</span>
+
+<div class="viewcode-block" id="Polygon_merger_v2.get_merged_multipolygon">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger_v2.Polygon_merger_v2.get_merged_multipolygon">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_merged_multipolygon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get final merged shapely multipolygon by hierarchical merger.&quot;&quot;&quot;</span>
+        <span class="n">merged_polygons_all</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hierarchy</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+
+            <span class="n">merged_polygons</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="c1"># merge polygons from previous level</span>
+            <span class="n">to_merge</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hierarchy</span><span class="p">[</span><span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">level</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;is_leaf&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;parent_idx&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">to_merge</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                        <span class="n">to_merge</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;parent_idx&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">to_merge</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;parent_idx&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">merged_polygons_all</span><span class="p">[</span>
+                        <span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)][</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;nidx&#39;</span><span class="p">]])</span>
+                    <span class="k">del</span> <span class="n">merged_polygons_all</span><span class="p">[</span>
+                        <span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)][</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;nidx&#39;</span><span class="p">]]</span>
+
+            <span class="k">for</span> <span class="n">parent_idx</span><span class="p">,</span> <span class="n">polygon_list</span> <span class="ow">in</span> <span class="n">to_merge</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">merged_polygons</span><span class="p">[</span><span class="n">parent_idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_polygons</span><span class="p">(</span>
+                    <span class="n">polygon_list</span><span class="p">)</span>
+
+            <span class="c1"># merge polygons from this level</span>
+            <span class="n">to_merge</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hierarchy</span><span class="p">[</span><span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">level</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;is_leaf&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;parent_idx&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">to_merge</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                        <span class="n">to_merge</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;parent_idx&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">rtree</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">_become</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;nidx&#39;</span><span class="p">])</span>
+                    <span class="n">to_merge</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;parent_idx&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">rtree</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">leaf_obj</span><span class="p">())</span>
+
+            <span class="k">for</span> <span class="n">parent_idx</span><span class="p">,</span> <span class="n">leafs</span> <span class="ow">in</span> <span class="n">to_merge</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">merged_polygons</span><span class="p">[</span><span class="n">parent_idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_leafs</span><span class="p">(</span><span class="n">leafs</span><span class="p">)</span>
+
+            <span class="c1"># assign to persistent dict</span>
+            <span class="n">merged_polygons_all</span><span class="p">[</span><span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="n">merged_polygons</span>
+
+        <span class="k">return</span> <span class="n">merged_polygons_all</span><span class="p">[</span><span class="s1">&#39;level-0&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_get_coord_str_from_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygon</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse shapely polygon coordinates into string form (Internal).&quot;&quot;&quot;</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">polygon</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">xy</span><span class="p">)</span>
+        <span class="n">coords_x</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]])</span>
+        <span class="n">coords_y</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]])</span>
+        <span class="k">return</span> <span class="n">coords_x</span><span class="p">,</span> <span class="n">coords_y</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">def</span> <span class="nf">_add_single_merged_edge_contour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygon</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add single contour to self.new_contours (Internal).&quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;polyline&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">group</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;has_holes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">polygon</span><span class="o">.</span><span class="n">boundary</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s1">&#39;MultiLineString&#39;</span><span class="p">)</span>
+        <span class="n">coords_x</span><span class="p">,</span> <span class="n">coords_y</span><span class="p">,</span> <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coord_str_from_polygon</span><span class="p">(</span>
+            <span class="n">polygon</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;coords_x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;coords_y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords_y</span>
+        <span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;xmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;ymin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ymin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;xmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;ymax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ymax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;bbox_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">ymin</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">xmax</span> <span class="o">-</span> <span class="n">xmin</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_add_merged_multipolygon_contours</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">merged_multipolygon</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add merged polygons to self.new_contours df (Internal).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">merged_multipolygon</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s1">&#39;Polygon&#39;</span><span class="p">:</span>
+            <span class="n">merged_multipolygon</span> <span class="o">=</span> <span class="p">[</span><span class="n">merged_multipolygon</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">merged_multipolygon</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s1">&#39;MultiPolygon&#39;</span> <span class="ow">and</span>
+                <span class="nb">hasattr</span><span class="p">(</span><span class="n">merged_multipolygon</span><span class="p">,</span> <span class="s1">&#39;geoms&#39;</span><span class="p">)):</span>
+            <span class="n">merged_multipolygon</span> <span class="o">=</span> <span class="n">merged_multipolygon</span><span class="o">.</span><span class="n">geoms</span>
+        <span class="k">for</span> <span class="n">pno</span><span class="p">,</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">merged_multipolygon</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: contour </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">pno</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">merged_multipolygon</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_single_merged_edge_contour</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Polygon_merger_v2.run_for_single_group">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger_v2.Polygon_merger_v2.run_for_single_group">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_for_single_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run sequence for merging polygons &amp; adding contours (one group).&quot;&quot;&quot;</span>
+        <span class="c1"># Prep to get polygons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_contours_slice&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_contours_slice</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: create_rtree&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_rtree</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_tree_dict&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tree_dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_hierarchy&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_hierarchy</span><span class="p">()</span>
+
+        <span class="c1"># get shapely multipolygon object with merged adjacent contours</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: get_merged_multipolygon&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="n">merged_multipolygon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_merged_multipolygon</span><span class="p">()</span>
+
+        <span class="c1"># add contours to new dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: _add_merged_multipolygon_contours&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_merged_multipolygon_contours</span><span class="p">(</span>
+            <span class="n">merged_multipolygon</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Polygon_merger_v2.run">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger_v2.Polygon_merger_v2.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run sequence for merging polygons &amp; adding contours.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_groups</span><span class="p">:</span>
+            <span class="n">monitorPrefix</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_for_single_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="n">monitorPrefix</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

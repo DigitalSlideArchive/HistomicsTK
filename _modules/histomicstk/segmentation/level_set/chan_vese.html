@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.level_set.chan_vese &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.level_set.chan_vese</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.segmentation.level_set.chan_vese</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="chan_vese">
+<a class="viewcode-back" href="../../../../histomicstk.segmentation.level_set.html#histomicstk.segmentation.level_set.chan_vese">[docs]</a>
+<span class="k">def</span> <span class="nf">chan_vese</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">im_mask</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span>
+              <span class="n">dt</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">lambda1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lambda2</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Region-based level sets.</span>
+
+<span class="sd">    Region-based level set implementation based on the Chan-Vese method.</span>
+<span class="sd">    Provides cost terms for boundary length, the variance of intensities inside</span>
+<span class="sd">    the zero level-set, and the variance of external intensities. Robust to</span>
+<span class="sd">    initialization.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_input : array_like</span>
+<span class="sd">        A floating-point intensity image.</span>
+<span class="sd">    im_mask : array_like</span>
+<span class="sd">        A binary mask initializing the level set image. Regions corresponding</span>
+<span class="sd">        to the interior of the level-set function have value 1, with other</span>
+<span class="sd">        regions having value 0.</span>
+<span class="sd">    sigma : double</span>
+<span class="sd">        Standard deviation of smoothing filter for input image im_input.</span>
+<span class="sd">    dt : double</span>
+<span class="sd">        Time step for evolving the level-set function im_phi. Default value = 1.0.</span>
+<span class="sd">    mu : double</span>
+<span class="sd">        Boundary length weight for energy function. Default value = 0.2.</span>
+<span class="sd">    lambda1 : double</span>
+<span class="sd">        Internal variance weight for energy function. Default value = 1.</span>
+<span class="sd">    lambda2 : double</span>
+<span class="sd">        External variance weight for energy function. Default value = 1.</span>
+<span class="sd">    iter : double</span>
+<span class="sd">        Number of iterations to evolve curve level set function over. Default</span>
+<span class="sd">        value = 100.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    im_phi : array_like</span>
+<span class="sd">        An intensity image where the zero level set defines object boundaries.</span>
+<span class="sd">        Can be further processed with fast marching methods or other to obtain</span>
+<span class="sd">        smooth boundaries, or simply thresholded to define the object mask.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    histomicstk.segmentation.nuclear.gaussian_voting</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] C. Li, C. Xu, C. Gui, M.D. Fox, &quot;Distance Regularized Level Set</span>
+<span class="sd">       Evolution and Its Application to Image Segmentation,&quot; in IEEE</span>
+<span class="sd">       Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">scipy.ndimage</span> <span class="k">as</span> <span class="nn">ndi</span>
+
+    <span class="c1"># smoothed gradient of input image</span>
+    <span class="n">im_input</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># generate signed distance map</span>
+    <span class="n">im_phi</span> <span class="o">=</span> <span class="n">mask_to_sdf</span><span class="p">(</span><span class="n">im_mask</span><span class="p">)</span>
+
+    <span class="c1"># evolve level set function</span>
+    <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">iter</span><span class="p">):</span>
+
+        <span class="c1"># calculate interior and exterior averages</span>
+        <span class="n">C1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">im_input</span><span class="p">[</span><span class="n">im_phi</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">im_phi</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span>
+        <span class="n">C2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">im_input</span><span class="p">[</span><span class="n">im_phi</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">im_phi</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span>
+        <span class="n">Force</span> <span class="o">=</span> <span class="n">lambda2</span> <span class="o">*</span> <span class="p">(</span><span class="n">im_input</span> <span class="o">-</span> <span class="n">C2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">lambda1</span> <span class="o">*</span> <span class="p">(</span><span class="n">im_input</span> <span class="o">-</span> <span class="n">C1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="c1"># curvature of image</span>
+        <span class="n">Curvature</span> <span class="o">=</span> <span class="n">kappa</span><span class="p">(</span><span class="n">im_phi</span><span class="p">)</span>
+
+        <span class="c1"># evolve</span>
+        <span class="n">im_phi</span> <span class="o">+=</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">Force</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Force</span><span class="p">))</span> <span class="o">+</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">Curvature</span>
+
+    <span class="k">return</span> <span class="n">im_phi</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">mask_to_sdf</span><span class="p">(</span><span class="n">im_mask</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span> <span class="k">as</span> <span class="n">dtx</span>
+
+    <span class="c1"># convert binary mask to signed distance function</span>
+
+    <span class="n">Phi0</span> <span class="o">=</span> <span class="n">dtx</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">im_mask</span><span class="p">)</span> <span class="o">-</span> <span class="n">dtx</span><span class="p">(</span><span class="n">im_mask</span><span class="p">)</span> <span class="o">+</span> <span class="n">im_mask</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">Phi0</span>
+
+
+<span class="k">def</span> <span class="nf">kappa</span><span class="p">(</span><span class="n">im_phi</span><span class="p">):</span>
+
+    <span class="n">dPhi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">im_phi</span><span class="p">)</span>  <span class="c1"># calculate gradient of level set image</span>
+    <span class="n">xdPhi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">ydPhi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="p">(</span><span class="n">xdPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">dPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">xdPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+         <span class="n">ydPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">dPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="p">((</span><span class="n">dPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">K</span> <span class="o">*=</span> <span class="p">(</span><span class="n">xdPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">ydPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">K</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

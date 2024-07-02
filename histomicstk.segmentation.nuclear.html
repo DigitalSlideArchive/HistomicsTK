@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.nuclear &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="histomicstk.segmentation.positive_pixel_count" href="histomicstk.segmentation.positive_pixel_count.html" />
+    <link rel="prev" title="histomicstk.segmentation.level_set" href="histomicstk.segmentation.level_set.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.embed_boundaries"><code class="docutils literal notranslate"><span class="pre">embed_boundaries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag"><code class="docutils literal notranslate"><span class="pre">rag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag_add_layer"><code class="docutils literal notranslate"><span class="pre">rag_add_layer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag_color"><code class="docutils literal notranslate"><span class="pre">rag_color()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.simple_mask"><code class="docutils literal notranslate"><span class="pre">simple_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.label.html">label mask processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.level_set.html">level-set segmentation</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">nuclei segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.positive_pixel_count.html">positive pixel counting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api-docs.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.html">histomicstk</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.segmentation.html">histomicstk.segmentation</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.nuclear</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/histomicstk.segmentation.nuclear.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-histomicstk.segmentation.nuclear">
+<span id="histomicstk-segmentation-nuclear"></span><h1>histomicstk.segmentation.nuclear<a class="headerlink" href="#module-histomicstk.segmentation.nuclear" title="Link to this heading">¶</a></h1>
+<p>This package contains implementations of state-of-th-art methods for
+segmenting nuclei from histopathology images.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.nuclear.detect_nuclei_kofahi">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.nuclear.</span></span><span class="sig-name descname"><span class="pre">detect_nuclei_kofahi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_nuclei_stain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im_nuclei_fgnd_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_nucleus_area</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_max_search_radius</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/nuclear/detect_nuclei_kofahi.html#detect_nuclei_kofahi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.nuclear.detect_nuclei_kofahi" title="Link to this definition">¶</a></dt>
+<dd><p>Performs a nuclear segmentation using kofahi’s method.</p>
+<p>This method uses scale-adaptive multi-scale Laplacian-of-Gaussian filtering
+for blob enhancement and a local maximum clustering for segmentation. The
+original implementation described by Al-Kofahi et al. uses Laplacian of Gaussian
+but this function replaces it with Difference of Gaussian to improve speed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_nuclei_stain</strong> (<em>array_like</em>) – A hematoxylin intensity image obtained from ColorDeconvolution.</p></li>
+<li><p><strong>im_nuclei_fgnd_mask</strong> (<em>array_like</em>) – A binary mask of the nuclear foreground typically obtained by applying
+a threshold on the hematoxylin/nuclei stain image</p></li>
+<li><p><strong>min_radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Minimum nuclear radius (used to set min sigma of the multiscale LoG filter)</p></li>
+<li><p><strong>max_radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Maximum nuclear radius (used to set max sigma of the multiscale LoG filter)</p></li>
+<li><p><strong>min_nucleus_area</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Minimum area that each nucleus should have</p></li>
+<li><p><strong>local_max_search_radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Local max search radius used for detection seed points in nuclei</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_nuclei_seg_mask</strong> – A 2D array mask of the nuclei segmentation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Y. Al-Kofahi et al “Improved Automatic Detection and Segmentation of
+Cell Nuclei in Histopathology Images” in IEEE Transactions on Biomedical
+Engineering, Volume: 57, Issue: 4, doi: 10.1109/TBME.2009.2035102,
+April 2010.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.nuclear.detect_tile_nuclei">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.nuclear.</span></span><span class="sig-name descname"><span class="pre">detect_tile_nuclei</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tile_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_mu_lab</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_sigma_lab</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_img_inversion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_fdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/nuclear/detect_tile_nuclei.html#detect_tile_nuclei"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.nuclear.detect_tile_nuclei" title="Link to this definition">¶</a></dt>
+<dd><p>Detect nuclei within a tile image and generate annotations.</p>
+<section id="args">
+<h2>Args:<a class="headerlink" href="#args" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>tile_info (dict): Information about the tile image.
+args: Arguments from the cli.
+src_mu_lab: Source mean in LAB color space.
+src_sigma_lab: Source standard deviation in LAB color space.
+invert_image (bool): Invert the image.
+default_img_inversion (bool): Apply default image inversion.
+return_fdata (bool): Return computed features.</p>
+</div></blockquote>
+</section>
+<section id="returns">
+<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>nuclei_annot_list (list): List of nuclei annotations.
+fdata: Computed nuclei features.</p>
+</div></blockquote>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.nuclear.gaussian_voting">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.nuclear.</span></span><span class="sig-name descname"><span class="pre">gaussian_voting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">I</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">35</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sSigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Psi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/nuclear/gaussian_voting.html#gaussian_voting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.nuclear.gaussian_voting" title="Link to this definition">¶</a></dt>
+<dd><p>Performs nuclear detection using Gaussian kernel voting.</p>
+<p>Uses a gaussian kernel to localize the centroids of cell nuclei. Takes
+as input a hematoxylin-deconvolved image and uses the gradient signal to
+cast directed votes towards the center of cell nuclei. These votes are
+blurred by a gaussian kernel, and are spatially clustered using the
+mean-shift algorithm. Convolutions are performed separably to reduce
+compute time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>I</strong> (<em>array_like</em>) – A hematoxylin intensity image obtained from ColorDeconvolution.</p></li>
+<li><p><strong>rmax</strong> (<em>double</em>) – Upper-limit on voting area extent. Default value = 35.</p></li>
+<li><p><strong>rmin</strong> (<em>double</em>) – Lower-limit on voting area extent. Default value = 10.</p></li>
+<li><p><strong>sSigma</strong> (<em>double</em>) – Standard deviation of smoothing kernel used in gradient calculation.
+Default value = 5.</p></li>
+<li><p><strong>Tau</strong> (<em>double</em>) – Lower limit on gradient magnitude for casting a vote. Default
+value = 5.</p></li>
+<li><p><strong>bw</strong> (<em>double</em>) – Bandwidth parameter for mean-shift clustering. Default value = 15.</p></li>
+<li><p><strong>Psi</strong> (<em>double</em>) – Lower limit threshold on votes. Expressed as a fraction of
+the maximum vote, ranges from [0, 1). Default value = 0.3.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>Centroids</strong> (<em>array_like</em>) – An N x 2 array defining the (x,y) coordinates of cell centroids.</p></li>
+<li><p><strong>Votes</strong> (<em>array_like</em>) – An intensity image containing the blurred votes obtained by voting.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Return values are returned as a namedtuple</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.preprocessing.color_deconvolution.html#histomicstk.preprocessing.color_deconvolution.color_deconvolution" title="histomicstk.preprocessing.color_deconvolution.color_deconvolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.color_deconvolution</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>X. Qi, F. Xing, D.J. Foran, L. Yang, “Robust Segmentation of
+Overlapping Cells in Histopathology Specimens Using Parallel
+Seed Detection and Repulsive Level Set,” in IEEE Transactions
+on Biomedical Engineering, vol.59,no.23,pp.754-65, 2011.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.nuclear.gvf_tracking">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.nuclear.</span></span><span class="sig-name descname"><span class="pre">gvf_tracking</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">I</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Diffusions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lambda</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/nuclear/gvf_tracking.html#gvf_tracking"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.nuclear.gvf_tracking" title="Link to this definition">¶</a></dt>
+<dd><p>Performs gradient-field tracking to segment smoothed images of cell nuclei.</p>
+<p>Takes as input a smoothed intensity or Laplacian-of-Gaussian filtered image
+and a foreground mask, and groups pixels by tracking them to mutual
+gradient sinks. Typically requires merging of sinks (seeds) as a post
+processing steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>I</strong> (<em>array_like</em>) – Smoothed intensity or log-filtered response where nuclei regions have
+larger intensity values than background.</p></li>
+<li><p><strong>Mask</strong> (<em>array_like</em>) – Binary mask where foreground objects have value 1, and background
+objects have value 0. Used to restrict influence of background vectors
+on diffusion process and to reduce tracking computations.</p></li>
+<li><p><strong>K</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Number of steps to check for tracking cycle. Default value = 1000.</p></li>
+<li><p><strong>Mu</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Weight parameter from Navier-Stokes diffusion - weights divergence and
+Laplacian terms. Default value = 5.</p></li>
+<li><p><strong>Lambda</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Weight parameter from Navier-Stokes diffusion - used to weight
+divergence. Default value = 5.</p></li>
+<li><p><strong>Iterations</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Number of time-steps to use in Navier-Stokes diffusion. Default value =
+10.</p></li>
+<li><p><strong>dT</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Timestep to be used in Navier-Stokes diffusion. Default value = 0.05.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>Segmentation</strong> (<em>array_like</em>) – Label image where positive values correspond to foreground pixels that
+share mutual sinks.</p></li>
+<li><p><strong>Sinks</strong> (<em>array_like</em>) – N x 2 array containing the (x,y) locations of the tracking sinks. Each
+row is an (x,y) pair - in that order.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.utils.html#histomicstk.utils.gradient_diffusion" title="histomicstk.utils.gradient_diffusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.utils.gradient_diffusion</span></code></a>, <a class="reference internal" href="histomicstk.segmentation.label.html#histomicstk.segmentation.label.shuffle" title="histomicstk.segmentation.label.shuffle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.shuffle</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<p>G. Li et al “3D cell nuclei segmentation based on gradient flow
+tracking” in BMC Cell Biology,vol.40,no.8, 2007.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.nuclear.max_clustering">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.nuclear.</span></span><span class="sig-name descname"><span class="pre">max_clustering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_response</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im_fgnd_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/nuclear/max_clustering.html#max_clustering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.nuclear.max_clustering" title="Link to this definition">¶</a></dt>
+<dd><p>Local max clustering pixel aggregation for nuclear segmentation.
+Takes as input a constrained log or other filtered nuclear image, a binary
+nuclear mask, and a clustering radius. For each pixel in the nuclear mask,
+the local max is identified. A hierarchy of local maxima is defined, and
+the root nodes used to define the label image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_response</strong> (<em>array_like</em>) – A filtered-smoothed image where the maxima correspond to nuclear
+center. Typically obtained by constrained-LoG filtering on a
+hematoxylin intensity image obtained from ColorDeconvolution.</p></li>
+<li><p><strong>im_fgnd_mask</strong> (<em>array_like</em>) – A binary mask of type boolean where nuclei pixels have value
+‘True’, and non-nuclear pixels have value ‘False’.</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – A scalar defining the clustering radius. Default value = 10.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>im_label</strong> (<em>array_like</em>) – im_label image where positive values correspond to foreground pixels that
+share mutual sinks.</p></li>
+<li><p><strong>seeds</strong> (<em>array_like</em>) – An N x 2 array defining the (x,y) coordinates of nuclei seeds.</p></li>
+<li><p><strong>max_response</strong> (<em>array_like</em>) – An N x 1 array containing the maximum response value corresponding to
+‘seeds’.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.filters.shape.html#histomicstk.filters.shape.clog" title="histomicstk.filters.shape.clog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.filters.shape.clog</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<p>XW. Wu et al “The local maximum clustering method and its
+application in microarray gene expression data analysis,”
+EURASIP J. Appl. Signal Processing, volume 2004, no.1, pp.53-63,
+2004.</p>
+</aside>
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
+<p>Y. Al-Kofahi et al “Improved Automatic Detection and Segmentation
+of Cell Nuclei in Histopathology Images” in IEEE Transactions on
+Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.nuclear.min_model">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.nuclear.</span></span><span class="sig-name descname"><span class="pre">min_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">I</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MaxLength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">255</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Compaction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MinArea</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MinWidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MinDepth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MinConcavity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/nuclear/min_model.html#min_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.nuclear.min_model" title="Link to this definition">¶</a></dt>
+<dd><p>Performs a nuclear segmentation using a gradient contour tracing and
+geometry splitting algorithm. Implemented from the reference below.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>I</strong> (<em>array_like</em>) – An intensity image used for analyzing local minima/maxima and
+gradients. Dimensions M x N.</p></li>
+<li><p><strong>Delta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Fractional difference threshold between minima/maxima pairs to
+be included in seed point detection. Fractional difference
+([0, 1]) in total image range e.g. Delta = 0.3 with a uint8
+input would translate to 0.3 * 255. Default value = 0.3.</p></li>
+<li><p><strong>MaxLength</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Maximum allowable contour length. Default value = 255.</p></li>
+<li><p><strong>Compaction</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Factor used in compacting objects to remove thin spurs. Referred to as
+‘d’ in the paper. Default value = 3.</p></li>
+<li><p><strong>MinArea</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Minimum area of objects to analyze. Default value = 100.</p></li>
+<li><p><strong>MinWidth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Minimum max-width of objects to analyze. Default value = 5.</p></li>
+<li><p><strong>MinDepth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Minimum depth of concavities to consider during geometric splitting.
+Default value = 2.</p></li>
+<li><p><strong>MinConcavity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Minimum concavity score to consider when performing for geometric
+splitting. Default value = np.inf.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Objects are assumed to be dark (as nuclei in hematoxylin channel from color
+deconvolution). Smoothing improves accuracy and computation time by
+eliminating spurious seed points. Specifying a value for ‘Delta’ prevents
+shallow transitions from being included, also reducing computation time and
+increasing specificity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>X</strong> (<em>array_like</em>) – A 1D array of horizontal coordinates of contour seed pixels for
+tracing.</p></li>
+<li><p><strong>Y</strong> (<em>array_like</em>) – A 1D array of the vertical coordinates of seed pixels for tracing.</p></li>
+<li><p><strong>Min</strong> (<em>array_like</em>) – A 1D array of the corresponding minimum values for contour tracing of
+seed point X, Y.</p></li>
+<li><p><strong>Max</strong> (<em>array_like</em>) – A 1D array of the corresponding maximum values for contour tracing of
+seed point X, Y.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.segmentation.label.html#histomicstk.segmentation.label.trace_object_boundaries" title="histomicstk.segmentation.label.trace_object_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.trace_object_boundaries</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></span>
+<p>S. Weinert et al “Detection and Segmentation of Cell Nuclei in
+Virtual Microscopy Images: A Minimum-Model Approach” in Nature
+Scientific Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</p>
+</aside>
+</aside>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="histomicstk.segmentation.level_set.html" class="btn btn-neutral float-left" title="histomicstk.segmentation.level_set" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="histomicstk.segmentation.positive_pixel_count.html" class="btn btn-neutral float-right" title="histomicstk.segmentation.positive_pixel_count" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
