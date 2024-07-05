@@ -183,7 +183,7 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
                 'Identifier.Ymin': nprop.bbox[0],
                 'Identifier.Xmax': nprop.bbox[3],
                 'Identifier.Ymax': nprop.bbox[2],
-                'Identifier.Centroid': nprop.centroid[1],
+                'Identifier.CentroidX': nprop.centroid[1],
                 'Identifier.CentroidY': nprop.centroid[0],
             }
             if im_nuclei_bool:
