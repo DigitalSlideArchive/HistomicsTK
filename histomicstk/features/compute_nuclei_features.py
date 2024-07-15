@@ -8,7 +8,7 @@ from .compute_intensity_features import compute_intensity_features
 from .compute_morphometry_features import compute_morphometry_features
 
 
-def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
+def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,  # noqa
                             fsd_bnd_pts=128, fsd_freq_bins=6, cyto_width=8,
                             num_glcm_levels=32,
                             morphometry_features_flag=True,
@@ -238,6 +238,15 @@ def compute_nuclei_features(im_label, im_nuclei=None, im_cytoplasm=None,
         compute_intensity_features,
         [im_label, im_nuclei], {'rprops': nuclei_props}, prefix='Nucleus.',
     ))
+    if (tile_info and tile_info.get('tile') is not None and
+            len(tile_info['tile'].shape) == 3 and tile_info['tile'].shape[-1] > 1):
+        for band in range(tile_info['tile'].shape[-1]):
+            feature_list.append(conditional(
+                intensity_features_flag,
+                compute_intensity_features,
+                [im_label, tile_info['tile'][:, :, band].astype(float)],
+                {'rprops': nuclei_props}, prefix=f'Nucleus.Band{band}.',
+            ))
 
     # compute cytoplasm intensity features
     if im_cytoplasm is not None:

@@ -37,7 +37,7 @@ RUN apt-get update && \
 #     python --version
 
 # copy HistomicsTK files
-ENV htk_path=$PWD/HistomicsTK
+ENV htk_path=/HistomicsTK
 RUN mkdir -p $htk_path
 
 RUN pip install --no-cache-dir --upgrade pip setuptools && \

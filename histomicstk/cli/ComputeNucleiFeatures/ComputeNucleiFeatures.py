@@ -41,7 +41,7 @@ def check_args(args):
         raise ValueError(msg)
 
 
-def main(args):
+def main(args):  # noqa
     import dask
     import pandas as pd
 
@@ -259,6 +259,12 @@ def main(args):
     annot_fname = os.path.splitext(
         os.path.basename(args.outputNucleiAnnotationFile))[0]
 
+    if args.in_annotations:
+        for key in args.in_annotations.split(','):
+            if key in nuclei_fdata:
+                for row, value in zip(nuclei_annot_list, nuclei_fdata[key]):
+                    if value is not None:
+                        row.setdefault('user', {})[key] = value
     annotation = {
         'name': annot_fname + '-nuclei-' + args.nuclei_annotation_format,
         'elements': nuclei_annot_list,

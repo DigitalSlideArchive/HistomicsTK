@@ -87,6 +87,13 @@
       <description>Compute Intensity and Gradient features from the cytoplasm channel</description>
       <default>true</default>
     </boolean>
+    <string>
+      <name>in_annotations</name>
+      <label>Features In Annotations</label>
+      <description>A comma-separated list of column titles to include in the user attributes of output annotation elements.  Blank for none</description>
+      <longflag>inannotations</longflag>
+      <default>Feature.Size.Area,Feature.Size.MajorAxisLength,Feature.Size.MinorAxisLength,Feature.Shape.Circularity,Feature.Shape.Eccentricity,Feature.Nucleus.Intensity.Mean,Feature.Nucleus.Band0.Intensity.Mean,Feature.Nucleus.Band1.Intensity.Mean,Feature.Nucleus.Band2.Intensity.Mean</default>
+    </string>
   </parameters>
   <parameters advanced="true">
     <label>Color Normalization</label>
