@@ -364,7 +364,7 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             IMC1 = (HXY - HXY1) / max(HX, HY)
 
             # computes information measures of correlation
-            IMC2 = np.sqrt(1 - np.exp(-2.0 * (HXY2 - HXY)))
+            IMC2 = np.sqrt(np.maximum(0, 1 - np.exp(-2.0 * (HXY2 - HXY))))
 
             features_per_offset[r] = [
                 ASM,
