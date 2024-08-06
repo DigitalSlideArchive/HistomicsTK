@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.annotations_and_masks.masks_to_annotations_handler &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.annotations_and_masks.masks_to_annotations_handler</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.annotations_and_masks.masks_to_annotations_handler</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Mon Aug 12 18:33:48 2019.</span>
+
+<span class="sd">@author: tageldim</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry.polygon</span> <span class="kn">import</span> <span class="n">Polygon</span>
+
+<span class="kn">from</span> <span class="nn">histomicstk.utils.general_utils</span> <span class="kn">import</span> <span class="n">Print_and_log</span>
+
+
+<div class="viewcode-block" id="get_contours_from_bin_mask">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.masks_to_annotations_handler.html#histomicstk.annotations_and_masks.masks_to_annotations_handler.get_contours_from_bin_mask">[docs]</a>
+<span class="k">def</span> <span class="nf">get_contours_from_bin_mask</span><span class="p">(</span><span class="n">bin_mask</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given a binary mask, get opencv contours.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bin_mask : nd array</span>
+<span class="sd">        ground truth mask (m,n) - int32 with [0, 1] values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        a dictionary with the following keys:</span>
+<span class="sd">        - contour group: the actual contour x,y coordinates.</span>
+<span class="sd">        - hierarchy: contour hierarchy. This contains information about</span>
+<span class="sd">        how contours relate to each other, in the form:</span>
+<span class="sd">        [Next, Previous, First_Child, Parent,</span>
+<span class="sd">        index_relative_to_contour_group]</span>
+<span class="sd">        The last column is added for convenience and is not part of the</span>
+<span class="sd">        original opencv output.</span>
+<span class="sd">        - outer_contours: index of contours that do not have a parent, and</span>
+<span class="sd">        are therefore the outermost most contours. These may have</span>
+<span class="sd">        children (holes), however.</span>
+<span class="sd">        See docs.opencv.org/3.1.0/d9/d8b/tutorial_py_contours_hierarchy.html</span>
+<span class="sd">        for more information.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get contours using openCV. See this for modes:</span>
+    <span class="c1"># https://docs.opencv.org/3.1.0/d9/d8b/tutorial_py_contours_hierarchy.html</span>
+    <span class="c1"># we use the flag RETR_CCOMP so that we get boundary as well as holes</span>
+    <span class="c1"># hierearchy output is: [Next, Previous, First_Child, Parent]</span>
+    <span class="n">ROI_cvuint8</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">convertScaleAbs</span><span class="p">(</span><span class="n">bin_mask</span><span class="p">)</span>
+    <span class="n">cvout</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">findContours</span><span class="p">(</span>
+        <span class="n">ROI_cvuint8</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">RETR_CCOMP</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">CHAIN_APPROX_SIMPLE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cvout</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">contour_group</span><span class="p">,</span> <span class="n">hierarchy</span> <span class="o">=</span> <span class="n">cvout</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cvout</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">contour_group</span><span class="p">,</span> <span class="n">hierarchy</span> <span class="o">=</span> <span class="n">cvout</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cvout</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">hierarchy</span> <span class="o">=</span> <span class="n">hierarchy</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="c1"># outermost contours are those that don&#39;t have a parent</span>
+    <span class="c1"># We&#39;ll append an index column to the rightmost end</span>
+    <span class="c1"># to keep track of things better relative to contour_group, now it is:</span>
+    <span class="c1"># [Next, Previous, First_Child, Parent, index_relative_to_contour_group]</span>
+    <span class="n">hierarchy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">hierarchy</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+        <span class="n">hierarchy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">outer_contours</span> <span class="o">=</span> <span class="n">hierarchy</span><span class="p">[</span><span class="n">hierarchy</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">conts</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;contour_group&#39;</span><span class="p">:</span> <span class="n">contour_group</span><span class="p">,</span>
+        <span class="s1">&#39;hierarchy&#39;</span><span class="p">:</span> <span class="n">hierarchy</span><span class="p">,</span>
+        <span class="s1">&#39;outer_contours&#39;</span><span class="p">:</span> <span class="n">outer_contours</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">conts</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_add_contour_to_df</span><span class="p">(</span>
+        <span class="n">contours_df</span><span class="p">,</span> <span class="n">mask_shape</span><span class="p">,</span> <span class="n">conts</span><span class="p">,</span> <span class="n">cidx</span><span class="p">,</span> <span class="n">nest_info</span><span class="p">,</span>
+        <span class="n">pad_margin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">MIN_SIZE</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">MAX_SIZE</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add single contour to dataframe (Internal).&quot;&quot;&quot;</span>
+    <span class="c1"># get coordinates for this contour. These are in x,y format.</span>
+    <span class="n">outer_cidx</span> <span class="o">=</span> <span class="n">conts</span><span class="p">[</span><span class="s1">&#39;outer_contours&#39;</span><span class="p">][</span><span class="n">cidx</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+    <span class="n">cont_outer</span> <span class="o">=</span> <span class="n">conts</span><span class="p">[</span><span class="s1">&#39;contour_group&#39;</span><span class="p">][</span><span class="n">outer_cidx</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">if</span> <span class="n">cont_outer</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: TOO SIMPLE (</span><span class="si">%d</span><span class="s1"> coordinates) -- IGNORED&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">cont_outer</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+    <span class="c1"># Get index of first child (hole)</span>
+    <span class="n">inner_cidx</span> <span class="o">=</span> <span class="n">conts</span><span class="p">[</span><span class="s1">&#39;outer_contours&#39;</span><span class="p">][</span><span class="n">cidx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">has_holes</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="p">(</span><span class="n">inner_cidx</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># get nest location and size</span>
+    <span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cont_outer</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">nest_width</span><span class="p">,</span> <span class="n">nest_height</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span>
+        <span class="n">cont_outer</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cont_outer</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">ymax</span> <span class="o">=</span> <span class="n">ymin</span> <span class="o">+</span> <span class="n">nest_height</span>
+    <span class="n">xmax</span> <span class="o">=</span> <span class="n">xmin</span> <span class="o">+</span> <span class="n">nest_width</span>
+
+    <span class="c1"># ignore nests that are too small</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">nest_height</span> <span class="o">&lt;</span> <span class="n">MIN_SIZE</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">nest_width</span> <span class="o">&lt;</span> <span class="n">MIN_SIZE</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: TOO SMALL (</span><span class="si">%d</span><span class="s1"> x </span><span class="si">%d</span><span class="s1"> pixels) -- IGNORED&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">nest_height</span><span class="p">,</span> <span class="n">nest_width</span><span class="p">))</span>
+
+    <span class="c1"># ignore extremely large nests -- THESE MAY CAUSE SEGMENTATION FAULTS</span>
+    <span class="k">if</span> <span class="n">MAX_SIZE</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">nest_height</span> <span class="o">&gt;</span> <span class="n">MAX_SIZE</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">nest_width</span> <span class="o">&gt;</span> <span class="n">MAX_SIZE</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: EXTREMELY LARGE NEST (</span><span class="si">%d</span><span class="s1"> x </span><span class="si">%d</span><span class="s1"> pixels) -- IGNORED&#39;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">nest_height</span><span class="p">,</span> <span class="n">nest_width</span><span class="p">))</span>
+
+    <span class="c1"># assign bounding box location</span>
+    <span class="n">ridx</span> <span class="o">=</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nest_info</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">]</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nest_info</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;ymin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ymin</span> <span class="o">-</span> <span class="n">pad_margin</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;ymax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ymax</span> <span class="o">-</span> <span class="n">pad_margin</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;xmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmin</span> <span class="o">-</span> <span class="n">pad_margin</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;xmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmax</span> <span class="o">-</span> <span class="n">pad_margin</span>
+
+    <span class="c1"># add other properties -- maybe useful later</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;has_holes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">has_holes</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;touches_edge-top&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">ymin</span> <span class="o">-</span> <span class="n">pad_margin</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;touches_edge-left&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">xmin</span> <span class="o">-</span> <span class="n">pad_margin</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;touches_edge-bottom&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">ymax</span> <span class="o">+</span> <span class="n">pad_margin</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="n">mask_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;touches_edge-right&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">xmax</span> <span class="o">+</span> <span class="n">pad_margin</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="n">mask_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># get x and y coordinates in HTK friendly format (string)</span>
+    <span class="n">cont_outer</span> <span class="o">=</span> <span class="n">conts</span><span class="p">[</span><span class="s1">&#39;contour_group&#39;</span><span class="p">][</span><span class="n">outer_cidx</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;coords_x&#39;</span><span class="p">]</span> <span class="o">=</span> \
+        <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">pad_margin</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">cont_outer</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])])</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ridx</span><span class="p">,</span> <span class="s1">&#39;coords_y&#39;</span><span class="p">]</span> <span class="o">=</span> \
+        <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">pad_margin</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">cont_outer</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])])</span>
+
+    <span class="k">return</span> <span class="n">contours_df</span>
+
+
+<span class="k">def</span> <span class="nf">_get_contours_df</span><span class="p">(</span>
+        <span class="n">MASK</span><span class="p">,</span> <span class="n">GTCodes_df</span><span class="p">,</span> <span class="n">groups_to_get</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">MIN_SIZE</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">MAX_SIZE</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse ground truth mask and gets contours (Internal).&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="n">cpr</span> <span class="o">=</span> <span class="n">Print_and_log</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">_print</span> <span class="o">=</span> <span class="n">cpr</span><span class="o">.</span><span class="n">_print</span>
+
+    <span class="c1"># pad with zeros to be able to detect edge contours later</span>
+    <span class="n">pad_margin</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">pad_value</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">GT_code</span> <span class="o">==</span> <span class="n">pad_value</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">pad_value</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">MASK</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">MASK</span><span class="p">,</span> <span class="n">pad_margin</span><span class="p">,</span> <span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="n">pad_value</span><span class="p">)</span>
+
+    <span class="c1"># Go through unique groups one by one -- each group (i.e. GTCode)</span>
+    <span class="c1"># is extracted separately by binarizing the multi-class mask</span>
+    <span class="k">if</span> <span class="n">groups_to_get</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">groups_to_get</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">groups_to_get</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">GTCodes_df</span><span class="p">[</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">group</span> <span class="o">==</span> <span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">group</span> <span class="o">==</span> <span class="n">group</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="k">else</span> <span class="n">group</span>
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups_to_get</span><span class="p">]</span>
+    <span class="n">contours_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">nestgroup</span> <span class="ow">in</span> <span class="n">groups_to_get</span><span class="p">:</span>
+
+        <span class="n">bin_mask</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="p">(</span><span class="n">MASK</span> <span class="o">==</span> <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">nestgroup</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">bin_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">MIN_SIZE</span> <span class="o">*</span> <span class="n">MIN_SIZE</span><span class="p">:</span>
+            <span class="n">_print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">: NO OBJECTS!!&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">nestgroup</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="n">_print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">: getting contours&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">nestgroup</span><span class="p">))</span>
+        <span class="n">conts</span> <span class="o">=</span> <span class="n">get_contours_from_bin_mask</span><span class="p">(</span><span class="n">bin_mask</span><span class="o">=</span><span class="n">bin_mask</span><span class="p">)</span>
+        <span class="n">n_tumor_nests</span> <span class="o">=</span> <span class="n">conts</span><span class="p">[</span><span class="s1">&#39;outer_contours&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># add nest contours</span>
+        <span class="n">_print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">: adding contours&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">nestgroup</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">cidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_tumor_nests</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">nestcountStr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: nest </span><span class="si">%s</span><span class="s1"> of </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">cidx</span><span class="p">,</span> <span class="n">n_tumor_nests</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">cidx</span> <span class="o">%</span> <span class="mi">25</span> <span class="o">==</span> <span class="mi">100</span><span class="p">:</span>
+                    <span class="n">_print</span><span class="p">(</span><span class="n">nestcountStr</span><span class="p">)</span>
+
+                <span class="n">contours_df</span> <span class="o">=</span> <span class="n">_add_contour_to_df</span><span class="p">(</span>
+                    <span class="n">contours_df</span><span class="p">,</span> <span class="n">mask_shape</span><span class="o">=</span><span class="n">bin_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                    <span class="n">conts</span><span class="o">=</span><span class="n">conts</span><span class="p">,</span> <span class="n">cidx</span><span class="o">=</span><span class="n">cidx</span><span class="p">,</span>
+                    <span class="n">nest_info</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">nestgroup</span><span class="p">,</span> <span class="p">:]),</span>
+                    <span class="n">pad_margin</span><span class="o">=</span><span class="n">pad_margin</span><span class="p">,</span> <span class="n">MIN_SIZE</span><span class="o">=</span><span class="n">MIN_SIZE</span><span class="p">,</span>
+                    <span class="n">MAX_SIZE</span><span class="o">=</span><span class="n">MAX_SIZE</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="n">nestcountStr</span><span class="p">)</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">_print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+    <span class="k">return</span> <span class="n">contours_df</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_annot_coords</span><span class="p">(</span><span class="n">annot</span><span class="p">,</span> <span class="n">x_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get x-, y- coordinates in a list format (Internal).&quot;&quot;&quot;</span>
+    <span class="n">coords_x</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="n">x_offset</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">annot</span><span class="p">[</span><span class="s1">&#39;coords_x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+    <span class="n">coords_y</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="n">y_offset</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">annot</span><span class="p">[</span><span class="s1">&#39;coords_y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[(</span><span class="n">coords_x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">coords_y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords_x</span><span class="p">))]</span>
+    <span class="k">return</span> <span class="n">coords</span>
+
+
+<span class="k">def</span> <span class="nf">_discard_nonenclosed_background_group</span><span class="p">(</span>
+        <span class="n">contours_df</span><span class="p">,</span> <span class="n">background_group</span><span class="o">=</span><span class="s1">&#39;mostly_stroma&#39;</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;If a background group contour is NOT fully enclosed, discard it.</span>
+
+<span class="sd">    This is a purely aesthetic method, makes sure that the background group</span>
+<span class="sd">    contours (eg stroma) are discarded by default to avoid cluttering the</span>
+<span class="sd">    field when posted to DSA for viewing online. The only exception is</span>
+<span class="sd">    if they are enclosed within something else (eg tumor), in which case they</span>
+<span class="sd">    are kept since they represent holes. This is related to</span>
+<span class="sd">    https://github.com/DigitalSlideArchive/HistomicsTK/issues/675</span>
+<span class="sd">    (Internal).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cpr</span> <span class="o">=</span> <span class="n">Print_and_log</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">_print</span> <span class="o">=</span> <span class="n">cpr</span><span class="o">.</span><span class="n">_print</span>
+
+    <span class="c1"># isolate background contours and non-background contours with holes</span>
+    <span class="n">background</span> <span class="o">=</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">background_group</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">contours_with_holes</span> <span class="o">=</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">background_group</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">contours_with_holes</span> <span class="o">=</span> <span class="n">contours_with_holes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">contours_with_holes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;has_holes&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="k">def</span> <span class="nf">_append_polygon_if_valid</span><span class="p">(</span><span class="n">contDict</span><span class="p">,</span> <span class="n">cid</span><span class="p">,</span> <span class="n">polygon_list</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">polygon</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">_parse_annot_coords</span><span class="p">(</span><span class="n">contDict</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">polygon</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                <span class="n">polygon_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">_print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: contour </span><span class="si">%d</span><span class="s1">: Shapely Error (below) -- IGNORED!&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">cid</span><span class="p">))</span>
+            <span class="n">_print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">polygon_list</span>
+
+    <span class="c1"># to avoid redoing things, keep all non-background with holes in a list</span>
+    <span class="n">contour_polygons</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">cid</span><span class="p">,</span> <span class="n">cont</span> <span class="ow">in</span> <span class="n">contours_with_holes</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">contour_polygons</span> <span class="o">=</span> <span class="n">_append_polygon_if_valid</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">cont</span><span class="p">),</span> <span class="n">cid</span><span class="o">=</span><span class="n">cid</span><span class="p">,</span> <span class="n">polygon_list</span><span class="o">=</span><span class="n">contour_polygons</span><span class="p">)</span>
+
+    <span class="c1"># iterate through stromal polygons and find if enclosed within something</span>
+    <span class="n">discard_cids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">cid</span><span class="p">,</span> <span class="n">cont</span> <span class="ow">in</span> <span class="n">background</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">bck_list</span> <span class="o">=</span> <span class="n">_append_polygon_if_valid</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">cont</span><span class="p">),</span> <span class="n">cid</span><span class="o">=</span><span class="n">cid</span><span class="p">,</span> <span class="n">polygon_list</span><span class="o">=</span><span class="p">[])</span>
+        <span class="c1"># only keep if enclosed with another contour</span>
+        <span class="n">discard</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bck_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">contour_polygon</span> <span class="ow">in</span> <span class="n">contour_polygons</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">contour_polygon</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">bck_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="n">discard</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">discard</span><span class="p">:</span>
+            <span class="n">discard_cids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cid</span><span class="p">)</span>
+
+    <span class="c1"># now drop unnecessary contours</span>
+    <span class="n">_print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: discarded </span><span class="si">%d</span><span class="s1"> contours&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">discard_cids</span><span class="p">)))</span>
+    <span class="n">contours_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">discard_cids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">contours_df</span>
+
+
+<div class="viewcode-block" id="get_contours_from_mask">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.masks_to_annotations_handler.html#histomicstk.annotations_and_masks.masks_to_annotations_handler.get_contours_from_mask">[docs]</a>
+<span class="k">def</span> <span class="nf">get_contours_from_mask</span><span class="p">(</span>
+        <span class="n">MASK</span><span class="p">,</span> <span class="n">GTCodes_df</span><span class="p">,</span> <span class="n">groups_to_get</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">MIN_SIZE</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">MAX_SIZE</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">get_roi_contour</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">roi_group</span><span class="o">=</span><span class="s1">&#39;roi&#39;</span><span class="p">,</span>
+        <span class="n">discard_nonenclosed_background</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">background_group</span><span class="o">=</span><span class="s1">&#39;mostly_stroma&#39;</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse ground truth mask and gets contours for annotations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    MASK : nd array</span>
+<span class="sd">        ground truth mask (m,n) where pixel values encode group membership.</span>
+<span class="sd">    GTCodes_df : pandas Dataframe</span>
+<span class="sd">        the ground truth codes and information dataframe.</span>
+<span class="sd">        This is a dataframe that is indexed by the annotation group name and</span>
+<span class="sd">        has the following columns.</span>
+
+<span class="sd">        group: str</span>
+<span class="sd">            group name of annotation, eg. mostly_tumor.</span>
+<span class="sd">        GT_code: int</span>
+<span class="sd">            desired ground truth code (in the mask). Pixels of this value</span>
+<span class="sd">            belong to corresponding group (class).</span>
+<span class="sd">        color: str</span>
+<span class="sd">            rgb format. eg. rgb(255,0,0).</span>
+<span class="sd">    groups_to_get : None</span>
+<span class="sd">        if None (default) then all groups (ground truth labels) will be</span>
+<span class="sd">        extracted. Otherwise pass a list of strings like [&#39;mostly_tumor&#39;,].</span>
+<span class="sd">    MIN_SIZE : int</span>
+<span class="sd">        minimum bounding box size of contour</span>
+<span class="sd">    MAX_SIZE : None</span>
+<span class="sd">        if not None, int. Maximum bounding box size of contour. Sometimes</span>
+<span class="sd">        very large contours cause segmentation faults that originate from</span>
+<span class="sd">        opencv and are not caught by python, causing the python process</span>
+<span class="sd">        to unexpectedly hault. If you would like to set a maximum size to</span>
+<span class="sd">        defend against this, a suggested maximum would be 15000.</span>
+<span class="sd">    get_roi_contour : bool</span>
+<span class="sd">        whether to get contour for boundary of region of interest (ROI). This</span>
+<span class="sd">        is most relevant when dealing with multiple ROIs per slide and with</span>
+<span class="sd">        rotated rectangular or polygonal ROIs.</span>
+<span class="sd">    roi_group : str</span>
+<span class="sd">        name of roi group in the GT_Codes dataframe (eg roi)</span>
+<span class="sd">    discard_nonenclosed_background : bool</span>
+<span class="sd">        If a background group contour is NOT fully enclosed, discard it.</span>
+<span class="sd">        This is a purely aesthetic method, makes sure that the background group</span>
+<span class="sd">        contours (eg stroma) are discarded by default to avoid cluttering the</span>
+<span class="sd">        field when posted to DSA for viewing online. The only exception is</span>
+<span class="sd">        if they are enclosed within something else (eg tumor), in which case</span>
+<span class="sd">        they are kept since they represent holes. This is related to</span>
+<span class="sd">        https://github.com/DigitalSlideArchive/HistomicsTK/issues/675</span>
+<span class="sd">        WARNING - This is a bit slower since the contours will have to be</span>
+<span class="sd">        converted to shapely polygons. It is not noticeable for hundreds of</span>
+<span class="sd">        contours, but you will notice the speed difference if you are parsing</span>
+<span class="sd">        thousands of contours. Default, for this reason, is False.</span>
+<span class="sd">    background_group : str</span>
+<span class="sd">        name of background group in the GT_codes dataframe (eg mostly_stroma)</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Print progress to screen?</span>
+<span class="sd">    monitorPrefix : str</span>
+<span class="sd">        text to prepend to printed statements</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas DataFrame</span>
+<span class="sd">        contours extracted from input mask. The following columns are output.</span>
+
+<span class="sd">        group : str</span>
+<span class="sd">            annotation group (ground truth label).</span>
+<span class="sd">        color : str</span>
+<span class="sd">            annotation color if it were to be posted to DSA.</span>
+<span class="sd">        is_roi : bool</span>
+<span class="sd">            whether this annotation is a region of interest boundary</span>
+<span class="sd">        ymin : int</span>
+<span class="sd">            minimum y coordinate</span>
+<span class="sd">        ymax : int</span>
+<span class="sd">            maximum y coordinate</span>
+<span class="sd">        xmin : int</span>
+<span class="sd">            minimum x coordinate</span>
+<span class="sd">        xmax : int</span>
+<span class="sd">            maximum x coordinate</span>
+<span class="sd">        has_holes : bool</span>
+<span class="sd">            whether this contour has holes</span>
+<span class="sd">        touches_edge-top : bool</span>
+<span class="sd">            whether this contour touches top mask edge</span>
+<span class="sd">        touches_edge-bottom : bool</span>
+<span class="sd">            whether this contour touches bottom mask edge</span>
+<span class="sd">        touches_edge-left : bool</span>
+<span class="sd">            whether this contour touches left mask edge</span>
+<span class="sd">        touches_edge-right : bool</span>
+<span class="sd">            whether this contour touches right mask edge</span>
+<span class="sd">        coords_x : str</span>
+<span class="sd">            vertex x coordinates comma-separated values</span>
+<span class="sd">        coords_y</span>
+<span class="sd">            vertex y coordinated comma-separated values</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">concat</span>
+
+    <span class="k">if</span> <span class="n">MASK</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Mask is empty!!&#39;</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">cpr</span> <span class="o">=</span> <span class="n">Print_and_log</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">_print</span> <span class="o">=</span> <span class="n">cpr</span><span class="o">.</span><span class="n">_print</span>
+    <span class="k">if</span> <span class="n">groups_to_get</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_print</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;WARNING!! Only specify groups_to_get is you do NOT mind</span>
+<span class="s2">               having NO holes in polygons with holes that are occupied</span>
+<span class="s2">               by a non-specified group. For example, let&#39;s say you</span>
+<span class="s2">               specified that you only want to extract contours for</span>
+<span class="s2">               tumor and stroma. If there is a large tumor polygon with two</span>
+<span class="s2">               holes for stroma and blood vessel, the stroma hole will be</span>
+<span class="s2">               accounted for, but not the blood vessel hole when you</span>
+<span class="s2">               post these contours to DSA for viewing then pull them</span>
+<span class="s2">               to be parse back into mask form. It&#39;s a subtle issue related</span>
+<span class="s2">               to</span>
+<span class="s2">               https://github.com/DigitalSlideArchive/HistomicsTK/issues/675</span>
+<span class="s2">               and will eventually be accounted for once HistomicsTK</span>
+<span class="s2">               has an official format to encode polygons with holes.&quot;&quot;&quot;</span><span class="p">)</span>
+
+    <span class="n">cont_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;GTCodes_df&#39;</span><span class="p">:</span> <span class="n">GTCodes_df</span><span class="p">,</span>
+        <span class="s1">&#39;MIN_SIZE&#39;</span><span class="p">:</span> <span class="n">MIN_SIZE</span><span class="p">,</span>
+        <span class="s1">&#39;MAX_SIZE&#39;</span><span class="p">:</span> <span class="n">MAX_SIZE</span><span class="p">,</span>
+        <span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="n">verbose</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1"># get contours df for non-roi contours</span>
+    <span class="n">contours_df</span> <span class="o">=</span> <span class="n">_get_contours_df</span><span class="p">(</span>
+        <span class="n">MASK</span><span class="o">=</span><span class="n">MASK</span><span class="p">,</span> <span class="n">groups_to_get</span><span class="o">=</span><span class="n">groups_to_get</span><span class="p">,</span>
+        <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="s1">&#39;non-roi&#39;</span><span class="p">),</span>
+        <span class="o">**</span><span class="n">cont_kwargs</span><span class="p">)</span>
+
+    <span class="c1"># discard non-enclosed background (eg stroma) if needed</span>
+    <span class="k">if</span> <span class="n">discard_nonenclosed_background</span><span class="p">:</span>
+        <span class="n">contours_df</span> <span class="o">=</span> <span class="n">_discard_nonenclosed_background_group</span><span class="p">(</span>
+            <span class="n">contours_df</span><span class="p">,</span> <span class="n">background_group</span><span class="o">=</span><span class="n">background_group</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="s1">&#39;discarding backgrnd&#39;</span><span class="p">))</span>
+
+    <span class="c1"># get contours df for roi boundary and concat</span>
+    <span class="k">if</span> <span class="n">get_roi_contour</span><span class="p">:</span>
+        <span class="n">MASK_BIN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">MASK</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="n">MASK_BIN</span><span class="p">[</span><span class="n">MASK</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">roi_group</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span>
+        <span class="n">contours_df_roi</span> <span class="o">=</span> <span class="n">_get_contours_df</span><span class="p">(</span>
+            <span class="n">MASK</span><span class="o">=</span><span class="n">MASK_BIN</span><span class="p">,</span> <span class="n">groups_to_get</span><span class="o">=</span><span class="p">[</span><span class="n">roi_group</span><span class="p">],</span>
+            <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">roi_group</span><span class="p">),</span>
+            <span class="o">**</span><span class="n">cont_kwargs</span><span class="p">)</span>
+        <span class="n">contours_df</span> <span class="o">=</span> <span class="n">concat</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">contours_df_roi</span><span class="p">,</span> <span class="n">contours_df</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">contours_df</span></div>
+
+
+
+<div class="viewcode-block" id="get_single_annotation_document_from_contours">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.masks_to_annotations_handler.html#histomicstk.annotations_and_masks.masks_to_annotations_handler.get_single_annotation_document_from_contours">[docs]</a>
+<span class="k">def</span> <span class="nf">get_single_annotation_document_from_contours</span><span class="p">(</span>
+        <span class="n">contours_df_slice</span><span class="p">,</span> <span class="n">docname</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span>
+        <span class="n">F</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">X_OFFSET</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Y_OFFSET</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">opacity</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+        <span class="n">lineWidth</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given dataframe of contours, get annotation document.</span>
+
+<span class="sd">    This uses the large_image annotation schema to create an annotation</span>
+<span class="sd">    document that maybe posted to DSA for viewing using something like:</span>
+<span class="sd">    resp = gc.post(&quot;/annotation?itemId=&quot; + slide_id, json=annotation_doc)</span>
+<span class="sd">    The annotation schema can be found at:</span>
+<span class="sd">    github.com/girder/large_image/blob/master/docs/annotations.md .</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    contours_df_slice : pandas DataFrame</span>
+<span class="sd">        The following columns are of relevance and must be contained.</span>
+
+<span class="sd">        group : str</span>
+<span class="sd">            annotation group (ground truth label).</span>
+<span class="sd">        color : str</span>
+<span class="sd">            annotation color if it were to be posted to DSA.</span>
+<span class="sd">        coords_x : str</span>
+<span class="sd">            vertex x coordinates comma-separated values</span>
+<span class="sd">        coords_y</span>
+<span class="sd">            vertex y coordinated comma-separated values</span>
+<span class="sd">    docname : str</span>
+<span class="sd">        annotation document name</span>
+<span class="sd">    F : float</span>
+<span class="sd">        how much smaller is the mask where the contours come from is relative</span>
+<span class="sd">        to the slide scan magnification. For example, if the mask is at 10x</span>
+<span class="sd">        whereas the slide scan magnification is 20x, then F would be 2.0.</span>
+<span class="sd">    X_OFFSET : int</span>
+<span class="sd">        x offset to add to contours at BASE (SCAN) magnification</span>
+<span class="sd">    Y_OFFSET : int</span>
+<span class="sd">        y offset to add to contours at BASE (SCAN) magnification</span>
+<span class="sd">    opacity : float</span>
+<span class="sd">        opacity of annotation elements (in the range [0, 1])</span>
+<span class="sd">    lineWidth : float</span>
+<span class="sd">        width of boarders of annotation elements</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Print progress to screen?</span>
+<span class="sd">    monitorPrefix : str</span>
+<span class="sd">        text to prepend to printed statements</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        DSA-style annotation document ready to be post for viewing.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cpr</span> <span class="o">=</span> <span class="n">Print_and_log</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">_print</span> <span class="o">=</span> <span class="n">cpr</span><span class="o">.</span><span class="n">_print</span>
+
+    <span class="k">def</span> <span class="nf">_get_fillColor</span><span class="p">(</span><span class="n">lineColor</span><span class="p">):</span>
+        <span class="n">fillColor</span> <span class="o">=</span> <span class="n">lineColor</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;rgb&#39;</span><span class="p">,</span> <span class="s1">&#39;rgba&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fillColor</span><span class="p">[:</span><span class="n">fillColor</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)]</span> <span class="o">+</span> <span class="s1">&#39;,</span><span class="si">%.1f</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">opacity</span>
+
+    <span class="c1"># Init annotation document in DSA style</span>
+    <span class="n">annotation_doc</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">docname</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;elements&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+
+    <span class="c1"># go through nests</span>
+    <span class="n">nno</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">nnests</span> <span class="o">=</span> <span class="n">contours_df_slice</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">nest</span> <span class="ow">in</span> <span class="n">contours_df_slice</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+
+        <span class="n">nno</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">nestStr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: contour </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">nno</span><span class="p">,</span> <span class="n">nnests</span><span class="p">)</span>
+        <span class="n">_print</span><span class="p">(</span><span class="n">nestStr</span><span class="p">)</span>
+
+        <span class="c1"># Parse coordinates</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">x_coords</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span>
+                <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">nest</span><span class="p">[</span><span class="s1">&#39;coords_x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)])</span> <span class="o">+</span> <span class="n">X_OFFSET</span>
+            <span class="n">y_coords</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span>
+                <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">nest</span><span class="p">[</span><span class="s1">&#39;coords_y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)])</span> <span class="o">+</span> <span class="n">Y_OFFSET</span>
+            <span class="n">zeros</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">x_coords</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">y_coords</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">zeros</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]),</span>
+                <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">_print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: ERROR (below) - moving on!!!&#39;</span> <span class="o">%</span> <span class="n">nestStr</span><span class="p">)</span>
+            <span class="n">_print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># assign to annotation style. See:</span>
+        <span class="c1"># github.com/girder/large_image/blob/master/docs/annotations.md</span>
+        <span class="n">annotation_style</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="n">nest</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;polyline&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;lineColor&#39;</span><span class="p">:</span> <span class="n">nest</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;lineWidth&#39;</span><span class="p">:</span> <span class="n">lineWidth</span><span class="p">,</span>
+            <span class="s1">&#39;closed&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;points&#39;</span><span class="p">:</span> <span class="n">coords</span><span class="p">,</span>
+            <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">nest</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]},</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">opacity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">annotation_style</span><span class="p">[</span><span class="s1">&#39;fillColor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_get_fillColor</span><span class="p">(</span><span class="n">nest</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">])</span>
+
+        <span class="c1"># append to document</span>
+        <span class="n">annotation_doc</span><span class="p">[</span><span class="s1">&#39;elements&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_style</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">annotation_doc</span></div>
+
+
+
+<div class="viewcode-block" id="get_annotation_documents_from_contours">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.masks_to_annotations_handler.html#histomicstk.annotations_and_masks.masks_to_annotations_handler.get_annotation_documents_from_contours">[docs]</a>
+<span class="k">def</span> <span class="nf">get_annotation_documents_from_contours</span><span class="p">(</span>
+        <span class="n">contours_df</span><span class="p">,</span> <span class="n">separate_docs_by_group</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">annots_per_doc</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+        <span class="n">annprops</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">docnamePrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given dataframe of contours, get list of annotation documents.</span>
+
+<span class="sd">    This method parses a dataframe of contours to a list of dictionaries, each</span>
+<span class="sd">    of which represents and large_image style annotation. This is a wrapper</span>
+<span class="sd">    that extends the functionality of the method</span>
+<span class="sd">    get_single_annotation_document_from_contours(), whose docstring should</span>
+<span class="sd">    be referenced for implementation details and further explanation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    contours_df : pandas DataFrame</span>
+<span class="sd">        WARNING - This is modified inside the function, so pass a copy.</span>
+<span class="sd">        This dataframe includes data on contours extracted from input mask</span>
+<span class="sd">        using get_contours_from_mask(). If you have contours using some other</span>
+<span class="sd">        method, just make sure the dataframe follows the same schema as the</span>
+<span class="sd">        output from get_contours_from_mask(). You may find a sample dataframe</span>
+<span class="sd">        in the repo at</span>
+<span class="sd">        ./tests/test_files/annotations_and_masks/sample_contours_df.tsv.</span>
+<span class="sd">        The following columns are relevant for this method.</span>
+
+<span class="sd">        group : str</span>
+<span class="sd">            annotation group (ground truth label).</span>
+<span class="sd">        color : str</span>
+<span class="sd">            annotation color if it were to be posted to DSA.</span>
+<span class="sd">        coords_x : str</span>
+<span class="sd">            vertex x coordinates comma-separated values</span>
+<span class="sd">        coords_y</span>
+<span class="sd">            vertex y coordinated comma-separated values</span>
+<span class="sd">    separate_docs_by_group : bool</span>
+<span class="sd">        if set to True, you get one or more annotation documents (dicts)</span>
+<span class="sd">        for each group (eg tumor) independently.</span>
+<span class="sd">    annots_per_doc : int</span>
+<span class="sd">        maximum number of annotation elements (polygons) per dict. The smaller</span>
+<span class="sd">        this number, the more numerous the annotation documents, but the more</span>
+<span class="sd">        seamless it is to post this data to the DSA server or to view using the</span>
+<span class="sd">        HistomicsTK interface since you will be loading smaller chunks of data</span>
+<span class="sd">        at a time.</span>
+<span class="sd">    annprops : dict</span>
+<span class="sd">        properties of annotation elements. Contains the following keys</span>
+<span class="sd">        F, X_OFFSET, Y_OFFSET, opacity, lineWidth. Refer to</span>
+<span class="sd">        get_single_annotation_document_from_contours() for details.</span>
+<span class="sd">    docnamePrefix : str</span>
+<span class="sd">        test to prepend to annotation document name</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Print progress to screen?</span>
+<span class="sd">    monitorPrefix : str</span>
+<span class="sd">        text to prepend to printed statements</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of dicts</span>
+<span class="sd">        DSA-style annotation document.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">annprops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">annprops</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s1">&#39;X_OFFSET&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;Y_OFFSET&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;opacity&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;lineWidth&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="k">if</span> <span class="n">separate_docs_by_group</span><span class="p">:</span>
+        <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;doc_group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;doc_group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+
+    <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Each style goes to separate document(s) if sepate_docs_by_group</span>
+    <span class="n">annotation_docs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">doc_group</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;doc_group&#39;</span><span class="p">]):</span>
+
+        <span class="c1"># separate annotations with this group</span>
+        <span class="n">contours_df_slice</span> <span class="o">=</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;doc_group&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">doc_group</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="c1"># Add every N annotations to a separate document</span>
+        <span class="k">if</span> <span class="n">contours_df_slice</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">annots_per_doc</span><span class="p">:</span>
+            <span class="n">docbounds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span>
+                <span class="mi">0</span><span class="p">,</span> <span class="n">contours_df_slice</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">annots_per_doc</span><span class="p">))</span>
+            <span class="n">docbounds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">contours_df_slice</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">docbounds</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">contours_df_slice</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+        <span class="k">for</span> <span class="n">docidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">docbounds</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">docStr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">: doc </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">doc_group</span><span class="p">,</span> <span class="n">docidx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">docbounds</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">docbounds</span><span class="p">[</span><span class="n">docidx</span><span class="p">]</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">docbounds</span><span class="p">[</span><span class="n">docidx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">annotation_doc</span> <span class="o">=</span> <span class="n">get_single_annotation_document_from_contours</span><span class="p">(</span>
+                <span class="n">contours_df_slice</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">docname</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">docnamePrefix</span><span class="p">,</span> <span class="n">doc_group</span><span class="p">,</span> <span class="n">docidx</span><span class="p">),</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="n">docStr</span><span class="p">,</span> <span class="o">**</span><span class="n">annprops</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">annotation_doc</span><span class="p">[</span><span class="s1">&#39;elements&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">annotation_docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_doc</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">annotation_docs</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

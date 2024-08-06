@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.saliency.cellularity_detection_superpixels &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.saliency.cellularity_detection_superpixels</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.saliency.cellularity_detection_superpixels</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Mon Sep 23 21:17:43 2019.</span>
+
+<span class="sd">@author: mtageld</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">skimage.color</span> <span class="kn">import</span> <span class="n">rgb2gray</span>
+
+<span class="kn">from</span> <span class="nn">histomicstk.annotations_and_masks.annotation_and_mask_utils</span> <span class="kn">import</span> \
+    <span class="n">get_image_from_htk_response</span>
+<span class="kn">from</span> <span class="nn">histomicstk.annotations_and_masks.masks_to_annotations_handler</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_annotation_documents_from_contours</span><span class="p">,</span> <span class="n">get_contours_from_mask</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">histomicstk.features.compute_haralick_features</span> <span class="kn">import</span> \
+    <span class="n">compute_haralick_features</span>
+<span class="kn">from</span> <span class="nn">histomicstk.features.compute_intensity_features</span> <span class="kn">import</span> \
+    <span class="n">compute_intensity_features</span>
+<span class="kn">from</span> <span class="nn">histomicstk.preprocessing.color_conversion</span> <span class="kn">import</span> <span class="n">lab_mean_std</span>
+<span class="kn">from</span> <span class="nn">histomicstk.preprocessing.color_normalization</span> <span class="kn">import</span> <span class="n">reinhard</span>
+<span class="kn">from</span> <span class="nn">histomicstk.saliency.tissue_detection</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_deconv_color</span><span class="p">,</span> <span class="n">get_slide_thumbnail</span><span class="p">,</span>
+    <span class="n">get_tissue_boundary_annotation_documents</span><span class="p">,</span> <span class="n">get_tissue_mask</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">histomicstk.utils.general_utils</span> <span class="kn">import</span> <span class="n">Base_HTK_Class</span>
+
+<span class="n">Image</span><span class="o">.</span><span class="n">MAX_IMAGE_PIXELS</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="CD_single_tissue_piece">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece">[docs]</a>
+<span class="k">class</span> <span class="nc">CD_single_tissue_piece</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect cellular regions in a single tissue piece (internal).&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cd</span><span class="p">,</span> <span class="n">tissue_mask</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Detect cellularity in one tissue piece (Internal).</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">        ---------</span>
+<span class="sd">        cd : object</span>
+<span class="sd">            Cellularity_detector_superpixels instance</span>
+<span class="sd">        tissue_mask : np array</span>
+<span class="sd">            (mxn) mask of the tissue piece at cd.MAG magnification</span>
+<span class="sd">        monitorPrefix : str</span>
+<span class="sd">            Text to prepend to printed statements</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cd</span> <span class="o">=</span> <span class="n">cd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tissue_mask</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="n">tissue_mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span> <span class="o">=</span> <span class="n">monitorPrefix</span>
+
+<div class="viewcode-block" id="CD_single_tissue_piece.run">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get cellularity and optionally visualize on DSA.&quot;&quot;&quot;</span>
+        <span class="c1"># get cellularity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restrict_mask_to_single_tissue_piece</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_tissue_rgb()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tissue_rgb</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_superpixel_mask()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_superpixel_mask</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_superpixel_features()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_superpixel_features</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_superpixel_assignment()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_superpixel_assignment</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: assign_cellularity_scores()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assign_cellularity_scores</span><span class="p">()</span>
+
+        <span class="c1"># visualize</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">visualize_spixels</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">visualize_contiguous</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assign_colors_to_spixel_clusters</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">visualize_spixels</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+                <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: visualize_individual_superpixels()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visualize_individual_superpixels</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">visualize_contiguous</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+                <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: visualize_contiguous_superpixels()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visualize_contiguous_superpixels</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="CD_single_tissue_piece.restrict_mask_to_single_tissue_piece">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece.restrict_mask_to_single_tissue_piece">[docs]</a>
+    <span class="k">def</span> <span class="nf">restrict_mask_to_single_tissue_piece</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Only keep relevant part of slide mask.&quot;&quot;&quot;</span>
+        <span class="c1"># find coordinates at scan magnification</span>
+        <span class="n">tloc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_mask</span><span class="p">)</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;F_tissue&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ymin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmin</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">tloc</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">F</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ymax</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmax</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tloc</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">F</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tissue_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tissue_mask</span><span class="p">[</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ymin</span> <span class="o">/</span> <span class="n">F</span><span class="p">):</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ymax</span> <span class="o">/</span> <span class="n">F</span><span class="p">),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span> <span class="o">/</span> <span class="n">F</span><span class="p">):</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xmax</span> <span class="o">/</span> <span class="n">F</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="CD_single_tissue_piece.set_tissue_rgb">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece.set_tissue_rgb">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_tissue_rgb</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load RGB from server for single tissue piece.&quot;&quot;&quot;</span>
+        <span class="c1"># load RGB for this tissue piece at saliency magnification</span>
+        <span class="n">getStr</span> <span class="o">=</span> <span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">/tiles/region?left=</span><span class="si">%d</span><span class="s1">&amp;right=</span><span class="si">%d</span><span class="s1">&amp;top=</span><span class="si">%d</span><span class="s1">&amp;bottom=</span><span class="si">%d</span><span class="s1">&amp;encoding=PNG&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">slide_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmax</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ymin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ymax</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&amp;magnification=</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">MAG</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">getStr</span><span class="p">,</span> <span class="n">jsonResp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span> <span class="o">=</span> <span class="n">get_image_from_htk_response</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+
+        <span class="c1"># color normalization if desired</span>
+        <span class="k">if</span> <span class="s1">&#39;main&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">cnorm_params</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">reinhard</span><span class="p">(</span>
+                <span class="n">im_src</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">,</span>
+                <span class="n">target_mu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">cnorm_params</span><span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">][</span><span class="s1">&#39;mu&#39;</span><span class="p">],</span>
+                <span class="n">target_sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">cnorm_params</span><span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="CD_single_tissue_piece.set_superpixel_mask">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece.set_superpixel_mask">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_superpixel_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use Simple Linear Iterative Clustering (SLIC) to get superpixels.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">skimage.segmentation</span> <span class="kn">import</span> <span class="n">slic</span>
+        <span class="kn">from</span> <span class="nn">skimage.transform</span> <span class="kn">import</span> <span class="n">resize</span>
+
+        <span class="c1"># Get superpixel size and number</span>
+        <span class="n">spixel_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">spixel_size_baseMag</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">MAG</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;magnification&#39;</span><span class="p">])</span>
+        <span class="n">n_spixels</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">spixel_size</span><span class="p">)</span>
+
+        <span class="c1"># get superpixel mask</span>
+        <span class="c1"># optionally use grayscale instead of RGB -- seems more robust to</span>
+        <span class="c1"># color variations and sometimes gives better results</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">use_grayscale</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span> <span class="o">=</span> <span class="n">slic</span><span class="p">(</span>
+                    <span class="n">rgb2gray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">),</span> <span class="n">n_segments</span><span class="o">=</span><span class="n">n_spixels</span><span class="p">,</span>
+                    <span class="n">compactness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">compactness</span><span class="p">,</span> <span class="n">channel_axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span> <span class="o">=</span> <span class="n">slic</span><span class="p">(</span>
+                    <span class="n">rgb2gray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">),</span> <span class="n">n_segments</span><span class="o">=</span><span class="n">n_spixels</span><span class="p">,</span>
+                    <span class="n">compactness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">compactness</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span> <span class="o">=</span> <span class="n">slic</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">,</span> <span class="n">n_segments</span><span class="o">=</span><span class="n">n_spixels</span><span class="p">,</span>
+                <span class="n">compactness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">compactness</span><span class="p">)</span>
+
+        <span class="c1"># restrict to tissue mask</span>
+        <span class="n">tmask</span> <span class="o">=</span> <span class="n">resize</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tissue_mask</span><span class="p">,</span> <span class="n">output_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">preserve_range</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">anti_aliasing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span><span class="p">[</span><span class="n">tmask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="CD_single_tissue_piece.set_superpixel_features">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece.set_superpixel_features">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_superpixel_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get superpixel features.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">concat</span>
+        <span class="kn">from</span> <span class="nn">skimage.measure</span> <span class="kn">import</span> <span class="n">regionprops</span>
+
+        <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">use_intensity</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">use_texture</span><span class="p">)</span>
+
+        <span class="c1"># Possibly deconvolvve to get hematoxylin channel (cellular areas)</span>
+        <span class="c1"># hematoxylin channel return shows MINIMA so we invert</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">deconvolve</span><span class="p">:</span>
+            <span class="n">Stains</span><span class="p">,</span> <span class="n">channel</span> <span class="o">=</span> <span class="n">_deconv_color</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">)</span>
+            <span class="n">tissue_htx</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">-</span> <span class="n">Stains</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">channel</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tissue_htx</span> <span class="o">=</span> <span class="n">rgb2gray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="p">)</span>
+
+        <span class="c1"># calculate features from superpixels</span>
+        <span class="n">rprops</span> <span class="o">=</span> <span class="n">regionprops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span><span class="p">)</span>
+        <span class="n">fdata_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">use_intensity</span><span class="p">:</span>
+            <span class="n">fdata_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compute_intensity_features</span><span class="p">(</span>
+                <span class="n">im_label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span><span class="p">,</span> <span class="n">im_intensity</span><span class="o">=</span><span class="n">tissue_htx</span><span class="p">,</span>
+                <span class="n">rprops</span><span class="o">=</span><span class="n">rprops</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">use_texture</span><span class="p">:</span>
+            <span class="n">fdata_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compute_haralick_features</span><span class="p">(</span>
+                <span class="n">im_label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span><span class="p">,</span> <span class="n">im_intensity</span><span class="o">=</span><span class="n">tissue_htx</span><span class="p">,</span>
+                <span class="n">rprops</span><span class="o">=</span><span class="n">rprops</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fdata</span> <span class="o">=</span> <span class="n">concat</span><span class="p">(</span><span class="n">fdata_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">keep_feats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">keep_feats</span><span class="p">]</span>
+
+        <span class="c1"># Index is corresponding pixel value in the superpixel mask</span>
+        <span class="c1"># IMPORTANT: this assumes that regionprops output is sorted by unique</span>
+        <span class="c1"># pixel values in label mask, which it is by default</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fdata</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span><span class="p">))</span> <span class="o">-</span> <span class="p">{</span><span class="mi">0</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="CD_single_tissue_piece.set_superpixel_assignment">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece.set_superpixel_assignment">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_superpixel_assignment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit gaussian mixture model to features and get assignment.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">sklearn.mixture</span> <span class="kn">import</span> <span class="n">GaussianMixture</span>
+
+        <span class="n">mmodel</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">n_gaussian_components</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spixel_labels</span> <span class="o">=</span> <span class="n">mmodel</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fdata</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="CD_single_tissue_piece.assign_cellularity_scores">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece.assign_cellularity_scores">[docs]</a>
+    <span class="k">def</span> <span class="nf">assign_cellularity_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assign cellularity scores to spixel clusters.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">use_intensity</span><span class="p">,</span> <span class="s1">&#39;We need intensity to rank cellularity.&#39;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">deconvolve</span><span class="p">,</span> \
+            <span class="s1">&#39;We must use hematoxyling channel to rank by cellularity.&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_props</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spixel_labels</span>
+        <span class="k">for</span> <span class="n">clid</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spixel_labels</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cluster_props</span><span class="p">[</span><span class="n">clid</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;cellularity&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;cluster&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">clid</span><span class="p">,</span>
+                    <span class="s1">&#39;Intensity.Median&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">255</span> <span class="o">*</span> <span class="mi">100</span><span class="p">),</span>
+            <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="CD_single_tissue_piece.assign_colors_to_spixel_clusters">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece.assign_colors_to_spixel_clusters">[docs]</a>
+    <span class="k">def</span> <span class="nf">assign_colors_to_spixel_clusters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assign RGB color string to cellularity clusters.&quot;&quot;&quot;</span>
+        <span class="c1"># normalize values by given value, else by max for each tissue piece</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">max_cellularity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_cellularity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">max_cellularity</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">max_cellularity</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                <span class="n">j</span><span class="p">[</span><span class="s1">&#39;cellularity&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_props</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Assign rgb string</span>
+        <span class="k">for</span> <span class="n">clid</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spixel_labels</span><span class="p">):</span>
+            <span class="n">cellularity</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cluster_props</span><span class="p">[</span><span class="n">clid</span><span class="p">][</span><span class="s1">&#39;cellularity&#39;</span><span class="p">],</span> <span class="n">max_cellularity</span><span class="p">)</span>
+            <span class="n">rgb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">cMap</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">cellularity</span> <span class="o">/</span> <span class="n">max_cellularity</span> <span class="o">*</span> <span class="mi">255</span><span class="p">))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">rgb</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">rgb</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cluster_props</span><span class="p">[</span><span class="n">clid</span><span class="p">][</span><span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;rgb(</span><span class="si">%d</span><span class="s1">,</span><span class="si">%d</span><span class="s1">,</span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">rgb</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CD_single_tissue_piece.visualize_individual_superpixels">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece.visualize_individual_superpixels">[docs]</a>
+    <span class="k">def</span> <span class="nf">visualize_individual_superpixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualize individual spixels, color-coded by cellularity.&quot;&quot;&quot;</span>
+        <span class="c1"># Define GTCodes dataframe</span>
+        <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+        <span class="n">GTCodes_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">spval</span><span class="p">,</span> <span class="n">sp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fdata</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">spstr</span> <span class="o">=</span> <span class="s1">&#39;spixel-</span><span class="si">%d</span><span class="s1">_cellularity-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">spval</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_props</span><span class="p">[</span><span class="n">sp</span><span class="p">[</span><span class="s1">&#39;cluster&#39;</span><span class="p">]][</span><span class="s1">&#39;cellularity&#39;</span><span class="p">])</span>
+            <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">spstr</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spstr</span>
+            <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">spstr</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spval</span>
+            <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">spstr</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">cluster_props</span><span class="p">[</span><span class="n">sp</span><span class="p">[</span><span class="s1">&#39;cluster&#39;</span><span class="p">]][</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+
+        <span class="c1"># get contours df</span>
+        <span class="n">contours_df</span> <span class="o">=</span> <span class="n">get_contours_from_mask</span><span class="p">(</span>
+            <span class="n">MASK</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span><span class="p">,</span> <span class="n">GTCodes_df</span><span class="o">=</span><span class="n">GTCodes_df</span><span class="p">,</span>
+            <span class="n">get_roi_contour</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">MIN_SIZE</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">MAX_SIZE</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">j</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]]</span>
+
+        <span class="c1"># get annotation docs</span>
+        <span class="n">annprops</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ymax</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">ymin</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;X_OFFSET&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="p">,</span>
+            <span class="s1">&#39;Y_OFFSET&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ymin</span><span class="p">,</span>
+            <span class="s1">&#39;opacity&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">opacity</span><span class="p">,</span>
+            <span class="s1">&#39;lineWidth&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">lineWidth</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">annotation_docs</span> <span class="o">=</span> <span class="n">get_annotation_documents_from_contours</span><span class="p">(</span>
+            <span class="n">contours_df</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">docnamePrefix</span><span class="o">=</span><span class="s1">&#39;spixel&#39;</span><span class="p">,</span> <span class="n">annprops</span><span class="o">=</span><span class="n">annprops</span><span class="p">,</span>
+            <span class="n">annots_per_doc</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">separate_docs_by_group</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">didx</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">annotation_docs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: Posting doc </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">didx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">annotation_docs</span><span class="p">)))</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                <span class="s1">&#39;/annotation?itemId=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">doc</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CD_single_tissue_piece.visualize_contiguous_superpixels">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.CD_single_tissue_piece.visualize_contiguous_superpixels">[docs]</a>
+    <span class="k">def</span> <span class="nf">visualize_contiguous_superpixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualize contiguous spixels, color-coded by cellularity.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+        <span class="c1"># get cellularity cluster membership mask</span>
+        <span class="n">cellularity_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">spval</span><span class="p">,</span> <span class="n">sp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fdata</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">cellularity_mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">spixel_mask</span> <span class="o">==</span> <span class="n">spval</span><span class="p">]</span> <span class="o">=</span> <span class="n">sp</span><span class="p">[</span><span class="s1">&#39;cluster&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Define GTCodes dataframe</span>
+        <span class="n">GTCodes_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">spval</span><span class="p">,</span> <span class="n">cp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_props</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">spstr</span> <span class="o">=</span> <span class="s1">&#39;cellularity-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cp</span><span class="p">[</span><span class="s1">&#39;cellularity&#39;</span><span class="p">])</span>
+            <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">spstr</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spstr</span>
+            <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">spstr</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spval</span>
+            <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">spstr</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cp</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+
+        <span class="c1"># get contours df</span>
+        <span class="n">contours_df</span> <span class="o">=</span> <span class="n">get_contours_from_mask</span><span class="p">(</span>
+            <span class="n">MASK</span><span class="o">=</span><span class="n">cellularity_mask</span><span class="p">,</span> <span class="n">GTCodes_df</span><span class="o">=</span><span class="n">GTCodes_df</span><span class="p">,</span>
+            <span class="n">get_roi_contour</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">MIN_SIZE</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">MAX_SIZE</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+
+        <span class="c1"># get annotation docs</span>
+        <span class="n">annprops</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ymax</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">ymin</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tissue_rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;X_OFFSET&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="p">,</span>
+            <span class="s1">&#39;Y_OFFSET&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ymin</span><span class="p">,</span>
+            <span class="s1">&#39;opacity&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">opacity_contig</span><span class="p">,</span>
+            <span class="s1">&#39;lineWidth&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">lineWidth</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">annotation_docs</span> <span class="o">=</span> <span class="n">get_annotation_documents_from_contours</span><span class="p">(</span>
+            <span class="n">contours_df</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">docnamePrefix</span><span class="o">=</span><span class="s1">&#39;contig&#39;</span><span class="p">,</span> <span class="n">annprops</span><span class="o">=</span><span class="n">annprops</span><span class="p">,</span>
+            <span class="n">annots_per_doc</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">separate_docs_by_group</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">verbose</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">didx</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">annotation_docs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: Posting doc </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">didx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">annotation_docs</span><span class="p">)))</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                <span class="s1">&#39;/annotation?itemId=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">doc</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Cellularity_detector_superpixels">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.Cellularity_detector_superpixels">[docs]</a>
+<span class="k">class</span> <span class="nc">Cellularity_detector_superpixels</span> <span class="p">(</span><span class="n">Base_HTK_Class</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect cellular regions in a slides by classifying superpixels.</span>
+
+<span class="sd">    This uses Simple Linear Iterative Clustering (SLIC) to get superpixels at</span>
+<span class="sd">    a low slide magnification to detect cellular regions. The first step of</span>
+<span class="sd">    this pipeline detects tissue regions (i.e. individual tissue pieces)</span>
+<span class="sd">    using the get_tissue_mask method of the histomicstk.saliency module. Then,</span>
+<span class="sd">    each tissue piece is processed separately for accuracy and disk space</span>
+<span class="sd">    efficiency. It is important to keep in mind that this does NOT rely on a</span>
+<span class="sd">    tile iterator, but loads the entire tissue region (but NOT the whole slide)</span>
+<span class="sd">    in memory and passes it on to skimage.segmentation.slic method.</span>
+
+<span class="sd">    Once superpixels are segmented, the image is deconvolved and features are</span>
+<span class="sd">    extracted from the hematoxylin channel. Features include intensity and</span>
+<span class="sd">    possibly also texture features. Then, a mixed component Gaussian mixture</span>
+<span class="sd">    model is fit to the features, and median intensity is used to rank</span>
+<span class="sd">    superpixel clusters by &#39;cellularity&#39; (since we are working with the</span>
+<span class="sd">    hematoxylin channel).</span>
+
+<span class="sd">    Additional functionality includes contour extraction to get the final</span>
+<span class="sd">    segmentation boundaries of cellular regions and to visualize them in DSA</span>
+<span class="sd">    using one&#39;s preferred colormap.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init Cellularity_Detector_Superpixels object.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">        ---------</span>
+<span class="sd">        gc : object</span>
+<span class="sd">            girder client object</span>
+<span class="sd">        slide_id : str</span>
+<span class="sd">            girder ID of slide</span>
+<span class="sd">        verbose : int</span>
+<span class="sd">            0 - Do not print to screen</span>
+<span class="sd">            1 - Print only key messages</span>
+<span class="sd">            2 - Print everything to screen</span>
+<span class="sd">            3 - print everything including from inner functions</span>
+<span class="sd">        monitorPrefix : str</span>
+<span class="sd">            text to prepend to printed statements</span>
+<span class="sd">        logging_savepath : str or None</span>
+<span class="sd">            where to save run logs</span>
+<span class="sd">        suppress_warnings : bool</span>
+<span class="sd">            whether to suppress warnings</span>
+<span class="sd">        cnorm_params : dict</span>
+<span class="sd">            Reinhard color normalization parameters. Accepted keys: thumbnail</span>
+<span class="sd">            and main (since thumbnail normalization is different from color</span>
+<span class="sd">            normalization of tissue at target magnification. Each entry is a</span>
+<span class="sd">            dict containing values for mu and sigma. This is either given</span>
+<span class="sd">            here or can be set using self.set_color_normalization_values().</span>
+<span class="sd">            May be left unset if you do not want to normalize.</span>
+<span class="sd">        get_tissue_mask_kwargs : dict</span>
+<span class="sd">            kwargs for the get_tissue_mask() method.</span>
+<span class="sd">        MAG : float</span>
+<span class="sd">            magnification at which to detect cellularity</span>
+<span class="sd">        spixel_size_baseMag : int</span>
+<span class="sd">            approximate superpixel size at base (scan) magnification</span>
+<span class="sd">        compactness : float</span>
+<span class="sd">            compactness parameter for the SLIC method. Higher values result</span>
+<span class="sd">            in more regular superpixels while smaller values are more likely</span>
+<span class="sd">            to respect tissue boundaries.</span>
+<span class="sd">        deconvolve : bool</span>
+<span class="sd">            Whether to deconvolve and use hematoxylin channel for feature</span>
+<span class="sd">            extraction. Must be True to ranks spixel clusters by cellularity.</span>
+<span class="sd">        use_grayscale : bool</span>
+<span class="sd">            If True, grayscale image is used with SLIC. May be more robust to</span>
+<span class="sd">            color variations from slide to slide and more efficient.</span>
+<span class="sd">        use_intensity : bool</span>
+<span class="sd">            Whether to extract intensity features from the hematoxylin channel.</span>
+<span class="sd">            This must be True to rank spuerpixel clusters by cellularity.</span>
+<span class="sd">        use_texture : bool</span>
+<span class="sd">            Whether to extract Haralick texture features from Htx channel. May</span>
+<span class="sd">            not necessarily improve results when used in conjunction with</span>
+<span class="sd">            intensity features.</span>
+<span class="sd">        keep_feats : list</span>
+<span class="sd">            Name of intensity features to use. See</span>
+<span class="sd">            histomicstk.features.compute_intensity_features.</span>
+<span class="sd">            Using fewer informative features may result in better</span>
+<span class="sd">            gaussian mixture modeling results.</span>
+<span class="sd">        n_gaussian_components : int</span>
+<span class="sd">            no of gaussian mixture model components</span>
+<span class="sd">        max_cellularity : int</span>
+<span class="sd">            Range [0, 100] or None. If None, normalize visualization RGB values</span>
+<span class="sd">            for each tissue piece separately, else normalize by given number.</span>
+<span class="sd">        opacity : float</span>
+<span class="sd">            opacity of superpixel polygons when posted to DSA.</span>
+<span class="sd">            0 (no opacity) is more efficient to render.</span>
+<span class="sd">        opacity_contig : float</span>
+<span class="sd">            opacity of contiguous region polygons when posted to DSA.</span>
+<span class="sd">            0 (no opacity) is more efficient to render.</span>
+<span class="sd">        lineWidth : float</span>
+<span class="sd">            width of line when displaying superpixel boundaries.</span>
+<span class="sd">        cMap : object</span>
+<span class="sd">            matplotlib color map to use when visualizing cellularity</span>
+<span class="sd">        visualize_tissue_boundary : bool</span>
+<span class="sd">            whether to visualize result from tissue detection component</span>
+<span class="sd">        visualize_spixels : bool</span>
+<span class="sd">            whether to visualize superpixels, color-coded by cellularity</span>
+<span class="sd">        visualize_contiguous : bool</span>
+<span class="sd">            whether to visualize contiguous cellular regions</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">cm</span>
+
+        <span class="n">default_attr</span> <span class="o">=</span> <span class="p">{</span>
+
+            <span class="c1"># The following are already assigned defaults by Base_HTK_Class</span>
+            <span class="c1"># &#39;verbose&#39;: 1,</span>
+            <span class="c1"># &#39;monitorPrefix&#39;: &quot;&quot;,</span>
+            <span class="c1"># &#39;logging_savepath&#39;: None,</span>
+            <span class="c1"># &#39;suppress_warnings&#39;: False,</span>
+
+            <span class="s1">&#39;cnorm_params&#39;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s1">&#39;MAG&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+            <span class="s1">&#39;get_tissue_mask_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;deconvolve_first&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;n_thresholding_steps&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;min_size&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;spixel_size_baseMag&#39;</span><span class="p">:</span> <span class="mi">256</span> <span class="o">*</span> <span class="mi">256</span><span class="p">,</span>
+            <span class="s1">&#39;compactness&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+            <span class="s1">&#39;deconvolve&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;use_grayscale&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;use_intensity&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;use_texture&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="c1"># &#39;keep_feats&#39;: None,  # keep everything</span>
+            <span class="s1">&#39;keep_feats&#39;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s1">&#39;Intensity.Mean&#39;</span><span class="p">,</span> <span class="s1">&#39;Intensity.Median&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Intensity.Std&#39;</span><span class="p">,</span> <span class="s1">&#39;Intensity.IQR&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Intensity.HistEntropy&#39;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s1">&#39;n_gaussian_components&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="s1">&#39;max_cellularity&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s1">&#39;opacity&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;opacity_contig&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+            <span class="s1">&#39;lineWidth&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+            <span class="s1">&#39;cMap&#39;</span><span class="p">:</span> <span class="n">cm</span><span class="o">.</span><span class="n">seismic</span><span class="p">,</span>
+            <span class="s1">&#39;visualize_tissue_boundary&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;visualize_spixels&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;visualize_contiguous&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">default_attr</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">default_attr</span><span class="o">=</span><span class="n">default_attr</span><span class="p">)</span>
+
+        <span class="c1"># set attribs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gc</span> <span class="o">=</span> <span class="n">gc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slide_id</span> <span class="o">=</span> <span class="n">slide_id</span>
+
+<div class="viewcode-block" id="Cellularity_detector_superpixels.run">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.Cellularity_detector_superpixels.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run cellularity detection and optionally visualize result.</span>
+
+<span class="sd">        This runs the cellularity detection +/- visualization pipeline and</span>
+<span class="sd">        returns a list of CD_single_tissue_piece objects. Each object has</span>
+<span class="sd">        the following attributes</span>
+
+<span class="sd">        tissue_mask : np array</span>
+<span class="sd">            mask of where tissue is at target magnification</span>
+<span class="sd">        ymin : int</span>
+<span class="sd">            min y coordinate at base (scan) magnification</span>
+<span class="sd">        xmin : int</span>
+<span class="sd">            min x coordinate at base (scan) magnification</span>
+<span class="sd">        ymax : int</span>
+<span class="sd">            max y coordinate at base (scan) magnification</span>
+<span class="sd">        xmax : int</span>
+<span class="sd">            max x coordinate at base (scan) magnification</span>
+<span class="sd">        spixel_mask : np array</span>
+<span class="sd">            np array where each unique value represents one superpixel</span>
+<span class="sd">        fdata : pandas DataFrame</span>
+<span class="sd">            features extracted for each superpixel. Index corresponds to</span>
+<span class="sd">            values in the spixel_mask. This includes a &#39;cluster&#39; column</span>
+<span class="sd">            indicatign which cluster this superpixel belongs to.</span>
+<span class="sd">        cluster_props : dict</span>
+<span class="sd">            properties of each superpixel cluster, including its assigned</span>
+<span class="sd">            cellularity score.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cnorm_params</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress_warnings</span><span class="p">):</span>
+            <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                </span><span class="si">%s</span><span class="s2">: WARNING!! Consider running set_color_normalization_values()</span>
+<span class="s2">                first, using what=&#39;thumbnail&#39; and/or what=&#39;main&#39; before running</span>
+<span class="s2">                this method. Continue anyway?&quot;&quot;&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+
+        <span class="c1"># get mask, each unique value is a single tissue piece</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_slide_info_and_get_tissue_mask()&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="n">labeled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_slide_info_and_get_tissue_mask</span><span class="p">()</span>
+
+        <span class="c1"># Go through tissue pieces and do run sequence</span>
+        <span class="n">unique_tvals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labeled</span><span class="p">))</span> <span class="o">-</span> <span class="p">{</span><span class="mi">0</span><span class="p">})</span>
+        <span class="n">tissue_pieces</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_tvals</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tval</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_tvals</span><span class="p">):</span>
+            <span class="n">monitorPrefix</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: Tissue piece </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_tvals</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span><span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="n">tissue_pieces</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">CD_single_tissue_piece</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">tissue_mask</span><span class="o">=</span><span class="n">labeled</span> <span class="o">==</span> <span class="n">tval</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="n">tissue_pieces</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="k">del</span> <span class="n">tissue_pieces</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">tissue_rgb</span>  <span class="c1"># too much space</span>
+
+        <span class="k">return</span> <span class="n">tissue_pieces</span></div>
+
+
+<div class="viewcode-block" id="Cellularity_detector_superpixels.set_color_normalization_values">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.Cellularity_detector_superpixels.set_color_normalization_values">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_color_normalization_values</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_image_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set color normalization values for thumbnail or main image.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span><span class="n">j</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span> <span class="ow">or</span> <span class="n">ref_image_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s1">&#39;You must provide mu &amp; sigma values or ref. image to get them.&#39;</span>
+
+        <span class="k">assert</span> <span class="n">what</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;thumbnail&#39;</span><span class="p">,</span> <span class="s1">&#39;main&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ref_image_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">imageio</span> <span class="kn">import</span> <span class="n">imread</span>
+
+            <span class="n">ref_im</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">imread</span><span class="p">(</span><span class="n">ref_image_path</span><span class="p">,</span> <span class="n">pilmode</span><span class="o">=</span><span class="s1">&#39;RGB&#39;</span><span class="p">))</span>
+            <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">lab_mean_std</span><span class="p">(</span><span class="n">ref_im</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnorm_params</span><span class="p">[</span><span class="n">what</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="n">mu</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="n">sigma</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Cellularity_detector_superpixels.set_slide_info_and_get_tissue_mask">
+<a class="viewcode-back" href="../../../histomicstk.saliency.cellularity_detection_superpixels.html#histomicstk.saliency.cellularity_detection_superpixels.Cellularity_detector_superpixels.set_slide_info_and_get_tissue_mask">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_slide_info_and_get_tissue_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set self.slide_info dict and self.labeled tissue mask.&quot;&quot;&quot;</span>
+        <span class="c1"># This is a persistent dict to store information about slide</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slide_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;item/</span><span class="si">%s</span><span class="s1">/tiles&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">slide_id</span><span class="p">)</span>
+
+        <span class="c1"># get tissue mask</span>
+        <span class="n">thumbnail_rgb</span> <span class="o">=</span> <span class="n">get_slide_thumbnail</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slide_id</span><span class="p">)</span>
+
+        <span class="c1"># color normalization if desired</span>
+        <span class="k">if</span> <span class="s1">&#39;thumbnail&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cnorm_params</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">thumbnail_rgb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">reinhard</span><span class="p">(</span>
+                <span class="n">im_src</span><span class="o">=</span><span class="n">thumbnail_rgb</span><span class="p">,</span>
+                <span class="n">target_mu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cnorm_params</span><span class="p">[</span><span class="s1">&#39;thumbnail&#39;</span><span class="p">][</span><span class="s1">&#39;mu&#39;</span><span class="p">],</span>
+                <span class="n">target_sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cnorm_params</span><span class="p">[</span><span class="s1">&#39;thumbnail&#39;</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">]))</span>
+
+        <span class="c1"># get labeled tissue mask -- each unique value is one tissue piece</span>
+        <span class="n">labeled</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_tissue_mask</span><span class="p">(</span>
+            <span class="n">thumbnail_rgb</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">get_tissue_mask_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labeled</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;No tissue detected!&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">visualize_tissue_boundary</span><span class="p">:</span>
+            <span class="n">annotation_docs</span> <span class="o">=</span> <span class="n">get_tissue_boundary_annotation_documents</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">labeled</span><span class="o">=</span><span class="n">labeled</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">annotation_docs</span><span class="p">:</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                    <span class="s1">&#39;/annotation?itemId=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">doc</span><span class="p">)</span>
+
+        <span class="c1"># Find size relative to WSI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;F_tissue&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slide_info</span><span class="p">[</span>
+            <span class="s1">&#39;sizeX&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">labeled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">labeled</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

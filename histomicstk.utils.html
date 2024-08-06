@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.utils &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="histomicstk.preprocessing" href="histomicstk.preprocessing.html" />
+    <link rel="prev" title="histomicstk" href="histomicstk.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.compute_tile_foreground_fraction"><code class="docutils literal notranslate"><span class="pre">compute_tile_foreground_fraction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.convert_image_to_matrix"><code class="docutils literal notranslate"><span class="pre">convert_image_to_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.convert_matrix_to_image"><code class="docutils literal notranslate"><span class="pre">convert_matrix_to_image()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.del2"><code class="docutils literal notranslate"><span class="pre">del2()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.eigen"><code class="docutils literal notranslate"><span class="pre">eigen()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.exclude_nonfinite"><code class="docutils literal notranslate"><span class="pre">exclude_nonfinite()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.fit_poisson_mixture"><code class="docutils literal notranslate"><span class="pre">fit_poisson_mixture()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.gradient_diffusion"><code class="docutils literal notranslate"><span class="pre">gradient_diffusion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.hessian"><code class="docutils literal notranslate"><span class="pre">hessian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.merge_colinear"><code class="docutils literal notranslate"><span class="pre">merge_colinear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.sample_pixels"><code class="docutils literal notranslate"><span class="pre">sample_pixels()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#histomicstk.utils.simple_mask"><code class="docutils literal notranslate"><span class="pre">simple_mask()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api-docs.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.html">histomicstk</a></li>
+      <li class="breadcrumb-item active">histomicstk.utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/histomicstk.utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-histomicstk.utils">
+<span id="histomicstk-utils"></span><h1>histomicstk.utils<a class="headerlink" href="#module-histomicstk.utils" title="Link to this heading">¶</a></h1>
+<p>This package contains utility functions that are widely used by functions in
+all other sub-packages of histomicstk</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.compute_tile_foreground_fraction">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">compute_tile_foreground_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slide_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im_fgnd_mask_lres</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fgnd_seg_scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">it_kwargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/compute_tile_foreground_fraction.html#compute_tile_foreground_fraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.compute_tile_foreground_fraction" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the fraction of foreground of a single tile or
+all tiles in a whole slide image given the binary foreground
+mask computed from a low resolution version of the slide.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slide_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – path to an image or slide</p></li>
+<li><p><strong>im_fgnd_mask_lres</strong> (<em>array_like</em>) – A binary foreground mask computed at a low-resolution</p></li>
+<li><p><strong>fgnd_seg_scale</strong> (<em>double</em>) – The scale/magnification at which the foreground mask <cite>im_fgnd_mask_lres</cite>
+was computed</p></li>
+<li><p><strong>it_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – <dl class="simple">
+<dt>A dictionary of any key:value parameters (e.g. defining the scale,</dt><dd><p>tile_size, region etc) in addition to tile_position that need to be
+passed to <cite>large_image.TileSource.getSingleTile</cite> to get the tile.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>tile_position</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> or </em><em>None</em>) – A linear 0-based index of a tile for which the foreground needs to be
+computed. If set to None, the foreground fraction of all tiles will be
+computed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>tile_fgnd_frac</strong> – A value between 0 and 1 indicating the fraction of foreground pixels
+present in the tile indicated by <cite>tile_position</cite>. If <cite>tile_position</cite>
+is set to None, then a 1D array containing the foreground fraction of
+all tiles will be returned.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>double or array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.convert_image_to_matrix">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">convert_image_to_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/convert_image_to_matrix.html#convert_image_to_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.convert_image_to_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Convert an image (MxNx3 array) to a column matrix of pixels
+(3x(M*N)).  It will pass through a 2D array unchanged.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.convert_matrix_to_image">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">convert_matrix_to_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/convert_matrix_to_image.html#convert_matrix_to_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.convert_matrix_to_image" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a column matrix of pixels to a 3D image given by shape.
+The number of channels is taken from m, not shape.  If shape has
+length 2, the matrix is returned unchanged.  This is the inverse
+of convert_image_to_matrix:</p>
+<p>im == convert_matrix_to_image(convert_image_to_matrix(im),
+im.shape)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.del2">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">del2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/del2.html#del2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.del2" title="Link to this definition">¶</a></dt>
+<dd><p>Discrete Laplacian with edge-value extrapolation.</p>
+<p>Calculates the discrete Laplacian of an input image. Edge values are
+calculated by using linear extrapolation of second differences. This is
+consistent with the way that Matlab calculates the discrete Laplacian.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>im_input</strong> (<em>array_like</em>) – A floating-point intensity image.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_lap</strong> – The discrete Laplacian of im_lap.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.segmentation.level_set.html#histomicstk.segmentation.level_set.reg_edge" title="histomicstk.segmentation.level_set.reg_edge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.level_set.reg_edge</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.eigen">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">eigen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_hess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/eigen.html#eigen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.eigen" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the eigenvectors of the hessian volumes ‘H’
+generated by Hessian.py</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>im_hess</strong> (<em>array_like</em>) – M x N x 4 hessian matrix - H[:,:,0] = dxx,
+H[:,:,1] = H[:,:,2] = dxy, H[:,:,3] = dyy.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>lambda_</strong> (<em>array_like</em>) – M x N x 2 image of eigenvalues.</p></li>
+<li><p><strong>v1</strong> (<em>array_like</em>) – M x N x 2 eigenvector for lambda_(:,:,0)</p></li>
+<li><p><em>v2</em> – M x N x 2 eigenvector for lambda_(:,:,1)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.exclude_nonfinite">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">exclude_nonfinite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/exclude_nonfinite.html#exclude_nonfinite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.exclude_nonfinite" title="Link to this definition">¶</a></dt>
+<dd><p>Exclude columns from m that have infinities or nans.  In the
+context of color deconvolution, these occur in conversion from RGB
+to SDA when the source has 0 in a channel.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.fit_poisson_mixture">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">fit_poisson_mixture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/fit_poisson_mixture.html#fit_poisson_mixture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.fit_poisson_mixture" title="Link to this definition">¶</a></dt>
+<dd><p>Generates a Poisson mixture model to fit pixel intensities for
+foreground/background masking.</p>
+<p>Takes as input an array or intensity image ‘I’ and optimizes a
+two-component poisson model describing foreground and background intensity
+models. This model can be used to describe the probability that a pixel
+comes from foreground versus background. The poisson distribution assumes
+discrete values and so is suitable for integral valued intensity images.
+Assumes that foreground intensities are lower (darker) than background.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_input</strong> (<em>array_like</em>) – A hematoxylin intensity image obtained from ColorDeconvolution.</p></li>
+<li><p><strong>mu</strong> (<em>double</em>) – Optional mean value of signal to optimize. Calculated from input if
+defined as ‘None’. Default value = None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>thresh</strong> (<em>double</em>) – Optimal threshold for distinguishing foreground and background.</p></li>
+<li><p><strong>im_fgnd</strong> (<em>array_like</em>) – An intensity image with values in the range [0, 1] representing
+foreground probabiities for each pixel.</p></li>
+<li><p><strong>im_bgnd</strong> (<em>array_like</em>) – An intensity image with values in the range [0, 1] representing
+background probabiities for each pixel.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Y. Al-Kofahi et al “Improved Automatic Detection and Segmentation
+of Cell Nuclei in Histopathology Images” in IEEE Transactions on
+Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.gradient_diffusion">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">gradient_diffusion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_dx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im_dy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im_fgnd_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/gradient_diffusion.html#gradient_diffusion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.gradient_diffusion" title="Link to this definition">¶</a></dt>
+<dd><p>Diffusion of gradient field using Navier-Stokes equation. Used for
+smoothing/denoising a gradient field.</p>
+<p>Takes as input a gradient field image (dX, dY), and a mask of the
+foreground region, and then iteratively solves the Navier-Stokes equation
+to diffuse the vector field and align noisy gradient vectors with their
+surrounding signals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_dx</strong> (<em>array_like</em>) – Horizontal component of gradient image.</p></li>
+<li><p><strong>im_dy</strong> (<em>array_like</em>) – Vertical component of gradient image.</p></li>
+<li><p><strong>im_fgnd_mask</strong> (<em>array_like</em>) – Binary mask where foreground objects have value 1, and background
+objects have value 0. Used to restrict influence of background vectors
+on diffusion process.</p></li>
+<li><p><strong>mu</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Weight parameter from Navier-Stokes equation - weights divergence and
+Laplacian terms. Default value = 5.</p></li>
+<li><p><strong>lambda</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Weight parameter from Navier-Stokes equation - used to weight
+divergence. Default value = 5.</p></li>
+<li><p><strong>iterations</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Number of time-steps to use in solving Navier-Stokes. Default value =
+10.</p></li>
+<li><p><strong>dt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Timestep to be used in solving Navier-Stokes. Default value = 0.05.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>im_vx</strong> (<em>array_like</em>) – Horizontal component of diffused gradient.</p></li>
+<li><p><strong>im_vy</strong> (<em>array_like</em>) – Vertical component of diffused gradient.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.nuclear.GradientFlow</span></code></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>G. Li et al “3D cell nuclei segmentation based on gradient flow
+tracking” in BMC Cell Biology,vol.40,no.8, 2007.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.hessian">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/hessian.html#hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.hessian" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates hessian of image I convolved with a gaussian kernel with
+covariance C = [Sigma^2 0; 0 Sigma^2].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_input</strong> (<em>array_like</em>) – M x N grayscale image.</p></li>
+<li><p><strong>sigma</strong> (<em>double</em>) – standard deviation of gaussian kernel.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_hess</strong> – M x N x 4 hessian matrix - im_hess[:,:,0] = dxx,
+im_hess[:,:,1] = im_hess[:,:,2] = dxy, im_hess[:,:,3] = dyy.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.merge_colinear">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">merge_colinear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/merge_colinear.html#merge_colinear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.merge_colinear" title="Link to this definition">¶</a></dt>
+<dd><p>Processes boundary coordinates in polyline with vertices X, Y to remove
+redundant colinear points. Polyline is not assumed to be open or closed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array_like</em>) – One dimensional array of horizontal boundary coordinates.</p></li>
+<li><p><strong>y</strong> (<em>array_like</em>) – One dimensional array of vertical boundary coordinates.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>xout</strong> (<em>array_like</em>) – X with colinear boundary points removed.</p></li>
+<li><p><strong>yout</strong> (<em>array_like</em>) – Y with colinear boundary points removed.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.sample_pixels">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">sample_pixels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slide_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magnification</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tissue_seg_mag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_coverage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_approximate_total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_grouping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_img_inversion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/sample_pixels.html#sample_pixels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.sample_pixels" title="Link to this definition">¶</a></dt>
+<dd><p>Generates a sampling of pixels from a whole-slide image.</p>
+<p>Useful for generating statistics or Reinhard color-normalization or
+adaptive deconvolution. Uses mixture modeling approach to focus
+sampling in tissue regions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slide_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – path and filename of slide.</p></li>
+<li><p><strong>sample_fraction</strong> (<em>double</em>) – Fraction of pixels to sample. Must be in the range [0, 1].</p></li>
+<li><p><strong>magnification</strong> (<em>double</em>) – Desired magnification for sampling.
+Default value : None (for native scan magnification).</p></li>
+<li><p><strong>tissue_seg_mag</strong> (<em>double</em><em>, </em><em>optional</em>) – low resolution magnification at which foreground will be segmented.
+Default value = 1.25.</p></li>
+<li><p><strong>min_coverage</strong> (<em>double</em><em>, </em><em>optional</em>) – minimum fraction of tile covered by tissue for it to be included
+in sampling. Ranges between [0,1). Default value = 0.1.</p></li>
+<li><p><strong>background</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – sample the background instead of the foreground if True. min_coverage
+then refers to the amount of background. Default value = False</p></li>
+<li><p><strong>sample_approximate_total</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – use instead of sample_fraction to specify roughly how many pixels to
+sample. The fewer tiles are excluded, the more accurate this will be.</p></li>
+<li><p><strong>tile_grouping</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – Number of tiles to process as part of a single task.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>pixels</strong> – A Nx3 matrix of RGB pixel values sampled from the whole-slide.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If Dask is configured, it is used to distribute the computation.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.preprocessing.color_normalization.html#histomicstk.preprocessing.color_normalization.reinhard" title="histomicstk.preprocessing.color_normalization.reinhard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_normalization.reinhard</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.utils.simple_mask">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.utils.</span></span><span class="sig-name descname"><span class="pre">simple_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_rgb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bgnd_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tissue_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_peak_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_peak_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_tissue_prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/utils/simple_mask.html#simple_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.utils.simple_mask" title="Link to this definition">¶</a></dt>
+<dd><p>Performs segmentation of the foreground (tissue)
+Uses a simple two-component Gaussian mixture model to mask tissue areas
+from background in brightfield H&amp;E images. Kernel-density estimation is
+used to create a smoothed image histogram, and then this histogram is
+analyzed to identify modes corresponding to tissue and background. The
+mode peaks are then analyzed to estimate their width, and a constrained
+optimization is performed to fit gaussians directly to the histogram
+(instead of using expectation-maximization directly on the data which
+is more prone to local minima effects). A maximum-likelihood threshold
+is then derived and used to mask the tissue area in a binarized image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_rgb</strong> (<em>array_like</em>) – An RGB image of type unsigned char.</p></li>
+<li><p><strong>bandwidth</strong> (<em>double</em><em>, </em><em>optional</em>) – Bandwidth for kernel density estimation - used for smoothing the
+grayscale histogram. Default value = 2.</p></li>
+<li><p><strong>bgnd_std</strong> (<em>double</em><em>, </em><em>optional</em>) – Standard deviation of background gaussian to be used if
+estimation fails. Default value = 2.5.</p></li>
+<li><p><strong>tissue_std</strong> (<em>double</em><em>, </em><em>optional</em>) – Standard deviation of tissue gaussian to be used if estimation fails.
+Default value = 30.</p></li>
+<li><p><strong>min_peak_width</strong> (<em>double</em><em>, </em><em>optional</em>) – Minimum peak width for finding peaks in KDE histogram. Used to
+initialize curve fitting process. Default value = 10.</p></li>
+<li><p><strong>max_peak_width</strong> (<em>double</em><em>, </em><em>optional</em>) – Maximum peak width for finding peaks in KDE histogram. Used to
+initialize curve fitting process. Default value = 25.</p></li>
+<li><p><strong>fraction</strong> (<em>double</em><em>, </em><em>optional</em>) – Fraction of pixels to sample for building foreground/background
+model. Default value = 0.10.</p></li>
+<li><p><strong>min_tissue_prob</strong> (<em>double</em><em>, </em><em>optional</em>) – Minimum probability to qualify as tissue pixel. Default value = 0.05.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_mask</strong> – A binarized version of <cite>I</cite> where foreground (tissue) has value ‘1’.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.utils.sample_pixels" title="histomicstk.utils.sample_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.utils.sample_pixels</span></code></a></p>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="histomicstk.html" class="btn btn-neutral float-left" title="histomicstk" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="histomicstk.preprocessing.html" class="btn btn-neutral float-right" title="histomicstk.preprocessing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

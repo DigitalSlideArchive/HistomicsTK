@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.utils.fit_poisson_mixture &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.utils.fit_poisson_mixture</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.utils.fit_poisson_mixture</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="fit_poisson_mixture">
+<a class="viewcode-back" href="../../../histomicstk.utils.html#histomicstk.utils.fit_poisson_mixture">[docs]</a>
+<span class="k">def</span> <span class="nf">fit_poisson_mixture</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a Poisson mixture model to fit pixel intensities for</span>
+<span class="sd">    foreground/background masking.</span>
+
+<span class="sd">    Takes as input an array or intensity image &#39;I&#39; and optimizes a</span>
+<span class="sd">    two-component poisson model describing foreground and background intensity</span>
+<span class="sd">    models. This model can be used to describe the probability that a pixel</span>
+<span class="sd">    comes from foreground versus background. The poisson distribution assumes</span>
+<span class="sd">    discrete values and so is suitable for integral valued intensity images.</span>
+<span class="sd">    Assumes that foreground intensities are lower (darker) than background.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_input : array_like</span>
+<span class="sd">        A hematoxylin intensity image obtained from ColorDeconvolution.</span>
+<span class="sd">    mu : double</span>
+<span class="sd">        Optional mean value of signal to optimize. Calculated from input if</span>
+<span class="sd">        defined as &#39;None&#39;. Default value = None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    thresh : double</span>
+<span class="sd">        Optimal threshold for distinguishing foreground and background.</span>
+<span class="sd">    im_fgnd : array_like</span>
+<span class="sd">        An intensity image with values in the range [0, 1] representing</span>
+<span class="sd">        foreground probabiities for each pixel.</span>
+<span class="sd">    im_bgnd : array_like</span>
+<span class="sd">        An intensity image with values in the range [0, 1] representing</span>
+<span class="sd">        background probabiities for each pixel.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] Y. Al-Kofahi et al &quot;Improved Automatic Detection and Segmentation</span>
+<span class="sd">       of Cell Nuclei in Histopathology Images&quot; in IEEE Transactions on</span>
+<span class="sd">       Biomedical Engineering,vol.57,no.4,pp.847-52, 2010.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+
+    <span class="c1"># check if intensity values in &#39;I&#39; are integer type</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">im_input</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;Inputs for Poisson mixture modeling should be integer&#39;</span>
+            <span class="s1">&#39; type&#39;</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># generate a small number for conditioning calculations</span>
+    <span class="n">Small</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+
+    <span class="c1"># generate histogram of inputs - assume range is 0, 255 (type uint8)</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">im_input</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">256</span><span class="p">))</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">H</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">mu</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">H</span><span class="p">)</span>
+
+    <span class="c1"># calculate cumulative sum along histogram counts</span>
+    <span class="n">Cumulative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">H</span><span class="p">)</span>
+    <span class="n">CumProd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">H</span><span class="p">))</span>
+
+    <span class="c1"># determine cost at each possible threshold</span>
+    <span class="n">P0</span> <span class="o">=</span> <span class="n">Cumulative</span>
+    <span class="n">P0</span><span class="p">[</span><span class="n">P0</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Small</span>
+    <span class="n">P1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">Cumulative</span>
+    <span class="n">P1</span><span class="p">[</span><span class="n">P1</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Small</span>
+    <span class="n">Mu0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">CumProd</span><span class="p">,</span> <span class="n">P0</span><span class="p">)</span> <span class="o">+</span> <span class="n">Small</span>
+    <span class="n">Mu1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">CumProd</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">CumProd</span><span class="p">,</span> <span class="n">P1</span><span class="p">)</span> <span class="o">+</span> <span class="n">Small</span>
+    <span class="n">Cost</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">P0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P0</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">Mu0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Mu0</span><span class="p">)))</span> <span class="o">-</span> \
+        <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">P1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">Mu1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Mu1</span><span class="p">)))</span>
+
+    <span class="c1"># identify minimum cost threshold</span>
+    <span class="n">thresh</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">Cost</span><span class="p">)]</span>
+    <span class="n">Mu0</span> <span class="o">=</span> <span class="n">Mu0</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">Cost</span><span class="p">)]</span>
+    <span class="n">Mu1</span> <span class="o">=</span> <span class="n">Mu1</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">Cost</span><span class="p">)]</span>
+
+    <span class="c1"># build probability distribution of foreground intensity values</span>
+    <span class="n">Poisson</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">Mu0</span><span class="p">)</span>
+    <span class="n">Model</span> <span class="o">=</span> <span class="n">Poisson</span><span class="o">.</span><span class="n">pmf</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">256</span><span class="p">))</span>
+    <span class="n">im_fgnd</span> <span class="o">=</span> <span class="n">Model</span><span class="p">[</span><span class="n">im_input</span><span class="p">]</span>
+    <span class="n">Poisson</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">Mu1</span><span class="p">)</span>
+    <span class="n">Model</span> <span class="o">=</span> <span class="n">Poisson</span><span class="o">.</span><span class="n">pmf</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">256</span><span class="p">))</span>
+    <span class="n">im_bgnd</span> <span class="o">=</span> <span class="n">Model</span><span class="p">[</span><span class="n">im_input</span><span class="p">]</span>
+
+    <span class="c1"># return threshold and foreground probabilities</span>
+    <span class="k">return</span> <span class="n">thresh</span><span class="p">,</span> <span class="n">im_fgnd</span><span class="p">,</span> <span class="n">im_bgnd</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

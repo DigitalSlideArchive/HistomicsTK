@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.features.compute_morphometry_features &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.features.compute_morphometry_features</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.features.compute_morphometry_features</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="compute_morphometry_features">
+<a class="viewcode-back" href="../../../histomicstk.features.html#histomicstk.features.compute_morphometry_features">[docs]</a>
+<span class="k">def</span> <span class="nf">compute_morphometry_features</span><span class="p">(</span><span class="n">im_label</span><span class="p">,</span> <span class="n">rprops</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate morphometry features for each object</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_label : array_like</span>
+<span class="sd">        A labeled mask image wherein intensity of a pixel is the ID of the</span>
+<span class="sd">        object it belongs to. Non-zero values are considered to be foreground</span>
+<span class="sd">        objects.</span>
+
+<span class="sd">    rprops : output of skimage.measure.regionprops, optional</span>
+<span class="sd">        rprops = skimage.measure.regionprops( im_label ). If rprops is not</span>
+<span class="sd">        passed then it will be computed inside which will increase the</span>
+<span class="sd">        computation time.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fdata: pandas.DataFrame</span>
+<span class="sd">        A pandas dataframe containing the morphometry features for each</span>
+<span class="sd">        object/label listed below.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    List of morphometry features computed by this function:</span>
+
+<span class="sd">    Orientation.Orientation :  float</span>
+<span class="sd">        Angle between the horizontal axis and the major axis of the ellipse</span>
+<span class="sd">        that has the same second moments as the region,</span>
+<span class="sd">        ranging from `-pi/2` to `pi/2` counter-clockwise.</span>
+
+<span class="sd">    Size.Area : int</span>
+<span class="sd">        Number of pixels the object occupies.</span>
+
+<span class="sd">    Size.ConvexHullArea :  int</span>
+<span class="sd">        Number of pixels of convex hull image, which is the smallest convex</span>
+<span class="sd">        polygon that encloses the region.</span>
+
+<span class="sd">    Size.MajorAxisLength : float</span>
+<span class="sd">        The length of the major axis of the ellipse that has the same</span>
+<span class="sd">        normalized second central moments as the object.</span>
+
+<span class="sd">    Size.MinorAxisLength : float</span>
+<span class="sd">        The length of the minor axis of the ellipse that has the same</span>
+<span class="sd">        normalized second central moments as the region.</span>
+
+<span class="sd">    Size.Perimeter : float</span>
+<span class="sd">        Perimeter of object which approximates the contour as a line</span>
+<span class="sd">        through the centers of border pixels using a 4-connectivity.</span>
+
+<span class="sd">    Shape.Circularity: float</span>
+<span class="sd">        A measure of how similar the shape of an object is to the circle</span>
+
+<span class="sd">    Shape.Eccentricity : float</span>
+<span class="sd">        A measure of aspect ratio computed to be the eccentricity of the</span>
+<span class="sd">        ellipse that has the same second-moments as the object region.</span>
+<span class="sd">        Eccentricity of an ellipse is the ratio of the focal distance</span>
+<span class="sd">        (distance between focal points) over the major axis length. The value</span>
+<span class="sd">        is in the interval [0, 1). When it is 0, the ellipse becomes a circle.</span>
+
+<span class="sd">    Shape.EquivalentDiameter : float</span>
+<span class="sd">        The diameter of a circle with the same area as the object.</span>
+
+<span class="sd">    Shape.Extent : float</span>
+<span class="sd">        Ratio of area of the object to its axis-aligned bounding box.</span>
+
+<span class="sd">    Shape.FractalDimension : float</span>
+<span class="sd">        Minkowski–Bouligand dimension, aka. the box-counting dimension. It</span>
+<span class="sd">        is a measure of boundary complexity. See</span>
+<span class="sd">        https://en.wikipedia.org/wiki/Minkowski%E2%80%93Bouligand_dimension</span>
+
+<span class="sd">    Shape.MinorMajorAxisRatio : float</span>
+<span class="sd">        A measure of aspect ratio. Ratio of minor to major axis of the ellipse</span>
+<span class="sd">        that has the same second-moments as the object region</span>
+
+<span class="sd">    Shape.Solidity : float</span>
+<span class="sd">        A measure of convexity computed as the ratio of the number of pixels</span>
+<span class="sd">        in the object to that of its convex hull.</span>
+
+<span class="sd">    Shape.HuMoments-k : float</span>
+<span class="sd">        Where k ranges from 1-7 are the 7 Hu moments features. The first six</span>
+<span class="sd">        moments are translation, scale and rotation invariant, while the</span>
+<span class="sd">        seventh moment flips its sign if the shape is a mirror image.</span>
+<span class="sd">        See https://learnopencv.com/shape-matching-using-hu-moments-c-python/</span>
+
+<span class="sd">    Shape.WeightedHuMoments-k : float</span>
+<span class="sd">        Same as Hu moments, but instead of using the binary mask, using the</span>
+<span class="sd">        intensity image.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="kn">from</span> <span class="nn">skimage.measure</span> <span class="kn">import</span> <span class="n">regionprops</span>
+
+    <span class="c1"># compute object properties if not provided</span>
+    <span class="k">if</span> <span class="n">rprops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rprops</span> <span class="o">=</span> <span class="n">regionprops</span><span class="p">(</span><span class="n">im_label</span><span class="p">)</span>
+    <span class="n">intensity_wtd</span> <span class="o">=</span> <span class="n">rprops</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_intensity_image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="c1"># Define the feature list as tuples of (feature name, attribute or function)</span>
+    <span class="n">feature_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;Orientation.Orientation&#39;</span><span class="p">,</span> <span class="s1">&#39;orientation&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Size.Area&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Size.ConvexHullArea&#39;</span><span class="p">,</span> <span class="s1">&#39;convex_area&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Size.MajorAxisLength&#39;</span><span class="p">,</span> <span class="s1">&#39;major_axis_length&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Size.MinorAxisLength&#39;</span><span class="p">,</span> <span class="s1">&#39;minor_axis_length&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Size.Perimeter&#39;</span><span class="p">,</span> <span class="s1">&#39;perimeter&#39;</span><span class="p">),</span>
+        <span class="p">(</span>
+            <span class="s1">&#39;Shape.Circularity&#39;</span><span class="p">,</span>
+            <span class="k">lambda</span> <span class="n">rp</span><span class="p">:</span> <span class="mi">4</span>
+            <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+            <span class="o">*</span> <span class="n">rp</span><span class="o">.</span><span class="n">area</span>
+            <span class="o">/</span> <span class="p">(</span><span class="n">rp</span><span class="o">.</span><span class="n">perimeter</span><span class="o">**</span><span class="mi">2</span> <span class="k">if</span> <span class="n">rp</span><span class="o">.</span><span class="n">perimeter</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Shape.Eccentricity&#39;</span><span class="p">,</span> <span class="s1">&#39;eccentricity&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Shape.EquivalentDiameter&#39;</span><span class="p">,</span> <span class="s1">&#39;equivalent_diameter&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Shape.Extent&#39;</span><span class="p">,</span> <span class="s1">&#39;extent&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Shape.FractalDimension&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">rp</span><span class="p">:</span> <span class="n">_fractal_dimension</span><span class="p">(</span><span class="n">rp</span><span class="o">.</span><span class="n">image</span><span class="p">)),</span>
+        <span class="p">(</span>
+            <span class="s1">&#39;Shape.MinorMajorAxisRatio&#39;</span><span class="p">,</span>
+            <span class="k">lambda</span> <span class="n">rp</span><span class="p">:</span> <span class="n">rp</span><span class="o">.</span><span class="n">minor_axis_length</span> <span class="o">/</span> <span class="n">rp</span><span class="o">.</span><span class="n">major_axis_length</span>
+            <span class="k">if</span> <span class="n">rp</span><span class="o">.</span><span class="n">major_axis_length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Shape.Solidity&#39;</span><span class="p">,</span> <span class="s1">&#39;solidity&#39;</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Add Hu moments features</span>
+    <span class="n">hu_moments</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;Shape.HuMoments&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">rp</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">:</span> <span class="n">rp</span><span class="o">.</span><span class="n">moments_hu</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">feature_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">hu_moments</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">intensity_wtd</span><span class="p">:</span>
+        <span class="n">wtd_hu_moments</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span>
+                <span class="s1">&#39;Shape.WeightedHuMoments&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span>
+                <span class="k">lambda</span> <span class="n">rp</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">:</span> <span class="n">rp</span><span class="o">.</span><span class="n">weighted_moments_hu</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">feature_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">wtd_hu_moments</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">rprops</span><span class="p">:</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">feature_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">attr</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+            <span class="c1"># Check if the feature is Area or ConvexHullArea and ensure it is a float</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Size.Area&#39;</span><span class="p">,</span> <span class="s1">&#39;Size.ConvexHullArea&#39;</span><span class="p">):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>  <span class="c1"># Cast to float here</span>
+
+            <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+    <span class="n">fdata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">feature_list</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">fdata</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_fractal_dimension</span><span class="p">(</span><span class="n">Z</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the fractal dimension of an object (boundary complexity).</span>
+
+<span class="sd">    Source: https://gist.github.com/rougier/e5eafc276a4e54f516ed5559df4242c0</span>
+
+<span class="sd">    From https://en.wikipedia.org/wiki/Minkowski–Bouligand_dimension ...</span>
+<span class="sd">    In fractal geometry, the Minkowski–Bouligand dimension, also known as</span>
+<span class="sd">    Minkowski dimension or box-counting dimension, is a way of determining the</span>
+<span class="sd">    fractal dimension of a set S in a Euclidean space Rn, or more generally in</span>
+<span class="sd">    a metric space (X, d).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Only for 2d binary image</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">Z</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">Z</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="c1"># From https://github.com/rougier/numpy-100 (#87)</span>
+    <span class="k">def</span> <span class="nf">boxcount</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">reduceat</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">reduceat</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">k</span><span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># We count non-empty (0) and non-full boxes (k*k)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">S</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">S</span> <span class="o">&lt;</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># Minimal dimension of image</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Z</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># Greatest power of 2 less than or equal to p</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="c1"># Extract the exponent</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="c1"># Build successive box sizes (from 2**n down to 2**1)</span>
+    <span class="n">sizes</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Actual box counting with decreasing size</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">:</span>
+        <span class="n">counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">boxcount</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+
+    <span class="c1"># Fit the successive log(sizes) with log (counts)</span>
+    <span class="n">coeffs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">RankWarning</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sizes</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">counts</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

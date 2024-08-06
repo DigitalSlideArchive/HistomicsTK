@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.positive_pixel_count &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.positive_pixel_count</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.segmentation.positive_pixel_count</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+
+<span class="kn">import</span> <span class="nn">large_image</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">..preprocessing.color_conversion</span> <span class="kn">import</span> <span class="n">rgb_to_hsi</span>
+
+
+<span class="c1"># This can be an enum in Python &gt;= 3.4</span>
+<span class="k">class</span> <span class="nc">Labels</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Labels for the output image of the positive pixel count routines.&quot;&quot;&quot;</span>
+
+    <span class="n">NEGATIVE</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">WEAK</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">PLAIN</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">STRONG</span> <span class="o">=</span> <span class="mi">3</span>
+
+
+<div class="viewcode-block" id="Parameters">
+<a class="viewcode-back" href="../../../histomicstk.segmentation.positive_pixel_count.html#histomicstk.segmentation.positive_pixel_count.Parameters">[docs]</a>
+<span class="k">class</span> <span class="nc">Parameters</span><span class="p">(</span>
+        <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Parameters&#39;</span><span class="p">,</span> <span class="p">[</span>
+            <span class="s1">&#39;hue_value&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;hue_width&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;saturation_minimum&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;intensity_upper_limit&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;intensity_weak_threshold&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;intensity_strong_threshold&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;intensity_lower_limit&#39;</span><span class="p">,</span>
+        <span class="p">]),</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parameters(hue_value, hue_width, saturation_minimum,</span>
+<span class="sd">    intensity_upper_limit, intensity_weak_threshold,</span>
+<span class="sd">    intensity_strong_threshold, intensity_lower_limit)</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    hue_value:</span>
+<span class="sd">      Center of the hue range in HSI space for the positive color, in</span>
+<span class="sd">      the range [0, 1]</span>
+<span class="sd">    hue_width:</span>
+<span class="sd">      Width of the hue range in HSI space</span>
+<span class="sd">    saturation_minimum:</span>
+<span class="sd">      Minimum saturation of positive pixels in HSI space, in the range</span>
+<span class="sd">      [0, 1]</span>
+<span class="sd">    intensity_upper_limit:</span>
+<span class="sd">      Intensity threshold in HSI space above which a pixel is</span>
+<span class="sd">      considered negative, in the range [0, 1]</span>
+<span class="sd">    intensity_weak_threshold:</span>
+<span class="sd">      Intensity threshold in HSI space that separates weak-positive</span>
+<span class="sd">      pixels (above) from plain positive pixels (below)</span>
+<span class="sd">    intensity_strong_threshold:</span>
+<span class="sd">      Intensity threshold in HSI space that separates plain positive</span>
+<span class="sd">      pixels (above) from strong positive pixels (below)</span>
+<span class="sd">    intensity_lower_limit:</span>
+<span class="sd">      Intensity threshold in HSI space below which a pixel is</span>
+<span class="sd">      considered negative</span>
+
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<span class="n">OutputTotals</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;OutputTotals&#39;</span><span class="p">,</span> <span class="p">[</span>
+    <span class="s1">&#39;NumberWeakPositive&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NumberPositive&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NumberStrongPositive&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NumberTotalPixels&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IntensitySumWeakPositive&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IntensitySumPositive&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IntensitySumStrongPositive&#39;</span><span class="p">,</span>
+<span class="p">])</span>
+
+<span class="n">Output</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Output&#39;</span><span class="p">,</span> <span class="n">OutputTotals</span><span class="o">.</span><span class="n">_fields</span> <span class="o">+</span> <span class="p">(</span>
+    <span class="s1">&#39;IntensityAverage&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;RatioStrongToTotal&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IntensityAverageWeakAndPositive&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;RatioStrongToPixels&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;RatioWeakToPixels&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;RatioTotalToPixels&#39;</span><span class="p">,</span>
+<span class="p">))</span>
+
+
+<div class="viewcode-block" id="count_slide">
+<a class="viewcode-back" href="../../../histomicstk.segmentation.positive_pixel_count.html#histomicstk.segmentation.positive_pixel_count.count_slide">[docs]</a>
+<span class="k">def</span> <span class="nf">count_slide</span><span class="p">(</span><span class="n">slide_path</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">tile_grouping</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">make_label_image</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute a count of positive pixels in the slide at slide_path.</span>
+<span class="sd">    This routine can also create a label image.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    slide_path : string (path)</span>
+<span class="sd">        Path to the slide to analyze.</span>
+<span class="sd">    params : Parameters</span>
+<span class="sd">        An instance of Parameters, which see for further documentation</span>
+<span class="sd">    region : dict, optional</span>
+<span class="sd">        A valid region dict (per a large_image</span>
+<span class="sd">        TileSource.tileIterator&#39;s region argument)</span>
+<span class="sd">    tile_grouping : int</span>
+<span class="sd">        The number of tiles to process as part of a single task</span>
+<span class="sd">    make_label_image : bool, default=False</span>
+<span class="sd">        Whether to make a label image.  See also &quot;Notes&quot;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stats : Output</span>
+<span class="sd">        Various statistics on the input image.  See Output.</span>
+<span class="sd">    label_image : array-like, only if make_label_image is set</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The return value is either a single or a pair -- it is in either</span>
+<span class="sd">    case a tuple.  Dask is used as configured to compute the</span>
+<span class="sd">    statistics, but only if make_label_image is reset.  If</span>
+<span class="sd">    make_label_image is set, everything is computed in a</span>
+<span class="sd">    single-threaded manner.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">dask</span> <span class="kn">import</span> <span class="n">delayed</span>
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">large_image</span><span class="o">.</span><span class="n">getTileSource</span><span class="p">(</span><span class="n">slide_path</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="n">large_image</span><span class="o">.</span><span class="n">tilesource</span><span class="o">.</span><span class="n">TILE_FORMAT_NUMPY</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">region</span>
+    <span class="k">if</span> <span class="n">make_label_image</span><span class="p">:</span>
+        <span class="n">tile</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">getRegion</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">count_image</span><span class="p">(</span><span class="n">tile</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">total_tiles</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">getSingleTile</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="s1">&#39;iterator_range&#39;</span><span class="p">][</span><span class="s1">&#39;position&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_tiles</span><span class="p">,</span> <span class="n">tile_grouping</span><span class="p">):</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">delayed</span><span class="p">(</span><span class="n">_count_tiles</span><span class="p">)(</span>
+                <span class="n">slide_path</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">tile_grouping</span><span class="p">,</span> <span class="n">total_tiles</span> <span class="o">-</span> <span class="n">position</span><span class="p">)))</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">delayed</span><span class="p">(</span><span class="n">_combine</span><span class="p">)(</span><span class="n">results</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">_totals_to_stats</span><span class="p">(</span><span class="n">results</span><span class="p">),)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_combine</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">OutputTotals</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">)</span>
+                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">OutputTotals</span><span class="o">.</span><span class="n">_fields</span><span class="p">)))</span>
+
+
+<span class="k">def</span> <span class="nf">_count_tiles</span><span class="p">(</span><span class="n">slide_path</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">large_image</span><span class="o">.</span><span class="n">getTileSource</span><span class="p">(</span><span class="n">slide_path</span><span class="p">)</span>
+    <span class="n">lpotf</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">OutputTotals</span><span class="o">.</span><span class="n">_fields</span><span class="p">)</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">lpotf</span>
+    <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">position</span> <span class="o">+</span> <span class="n">count</span><span class="p">):</span>
+        <span class="n">tile</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">getSingleTile</span><span class="p">(</span><span class="n">tile_position</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="s1">&#39;tile&#39;</span><span class="p">]</span>
+        <span class="n">subtotal</span> <span class="o">=</span> <span class="n">_count_image</span><span class="p">(</span><span class="n">tile</span><span class="p">,</span> <span class="n">params</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lpotf</span><span class="p">):</span>
+            <span class="n">total</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">subtotal</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">OutputTotals</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="n">total</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="count_image">
+<a class="viewcode-back" href="../../../histomicstk.segmentation.positive_pixel_count.html#histomicstk.segmentation.positive_pixel_count.count_image">[docs]</a>
+<span class="k">def</span> <span class="nf">count_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Count positive pixels, computing a label mask and summary</span>
+<span class="sd">    statistics.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : array-like</span>
+<span class="sd">        NxMx3 array of RGB data</span>
+<span class="sd">    params : Parameters</span>
+<span class="sd">        An instance of Parameters, which see for further documentation</span>
+<span class="sd">    mask: array-like</span>
+<span class="sd">        A boolean mask.  If present, only pixels where the mask is True are</span>
+<span class="sd">        considered.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stats : Output</span>
+<span class="sd">        Various statistics on the input image.  See Output.</span>
+<span class="sd">    label_image : array-like</span>
+<span class="sd">        NxM array of pixel types.  See Labels for the different values.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total</span><span class="p">,</span> <span class="n">masks</span> <span class="o">=</span> <span class="n">_count_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+    <span class="n">mask_all_positive</span><span class="p">,</span> <span class="n">mask_weak</span><span class="p">,</span> <span class="n">mask_pos</span><span class="p">,</span> <span class="n">mask_strong</span> <span class="o">=</span> <span class="n">masks</span>
+    <span class="n">label_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">Labels</span><span class="o">.</span><span class="n">NEGATIVE</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">label_image</span><span class="p">[</span><span class="n">mask_all_positive</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">mask_weak</span> <span class="o">*</span> <span class="n">Labels</span><span class="o">.</span><span class="n">WEAK</span> <span class="o">+</span>
+        <span class="n">mask_pos</span> <span class="o">*</span> <span class="n">Labels</span><span class="o">.</span><span class="n">PLAIN</span> <span class="o">+</span>
+        <span class="n">mask_strong</span> <span class="o">*</span> <span class="n">Labels</span><span class="o">.</span><span class="n">STRONG</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_totals_to_stats</span><span class="p">(</span><span class="n">total</span><span class="p">),</span> <span class="n">label_image</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_count_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A version of count_image that doesn&#39;t compute the label image and</span>
+<span class="sd">    only computes the sums.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">params</span>
+    <span class="n">image_hsi</span> <span class="o">=</span> <span class="n">rgb_to_hsi</span><span class="p">(</span><span class="n">image</span> <span class="o">/</span> <span class="mi">255</span><span class="p">)</span>
+    <span class="n">mask_all_positive</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(((</span><span class="n">image_hsi</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">p</span><span class="o">.</span><span class="n">hue_value</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&lt;=</span>
+         <span class="n">p</span><span class="o">.</span><span class="n">hue_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="n">image_hsi</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">p</span><span class="o">.</span><span class="n">saturation_minimum</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="n">image_hsi</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">p</span><span class="o">.</span><span class="n">intensity_upper_limit</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="n">image_hsi</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">p</span><span class="o">.</span><span class="n">intensity_lower_limit</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask_all_positive</span> <span class="o">&amp;=</span> <span class="n">mask</span>
+    <span class="n">all_positive_i</span> <span class="o">=</span> <span class="n">image_hsi</span><span class="p">[</span><span class="n">mask_all_positive</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">mask_weak</span> <span class="o">=</span> <span class="n">all_positive_i</span> <span class="o">&gt;=</span> <span class="n">p</span><span class="o">.</span><span class="n">intensity_weak_threshold</span>
+    <span class="n">nw</span><span class="p">,</span> <span class="n">iw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">mask_weak</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">all_positive_i</span><span class="p">[</span><span class="n">mask_weak</span><span class="p">])</span>
+    <span class="n">mask_strong</span> <span class="o">=</span> <span class="n">all_positive_i</span> <span class="o">&lt;</span> <span class="n">p</span><span class="o">.</span><span class="n">intensity_strong_threshold</span>
+    <span class="n">ns</span><span class="p">,</span> <span class="n">is_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">mask_strong</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">all_positive_i</span><span class="p">[</span><span class="n">mask_strong</span><span class="p">])</span>
+    <span class="n">mask_pos</span> <span class="o">=</span> <span class="o">~</span><span class="p">(</span><span class="n">mask_weak</span> <span class="o">|</span> <span class="n">mask_strong</span><span class="p">)</span>
+    <span class="n">np_</span><span class="p">,</span> <span class="n">ip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">mask_pos</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">all_positive_i</span><span class="p">[</span><span class="n">mask_pos</span><span class="p">])</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">OutputTotals</span><span class="p">(</span>
+        <span class="n">NumberWeakPositive</span><span class="o">=</span><span class="n">nw</span><span class="p">,</span>
+        <span class="n">NumberPositive</span><span class="o">=</span><span class="n">np_</span><span class="p">,</span>
+        <span class="n">NumberStrongPositive</span><span class="o">=</span><span class="n">ns</span><span class="p">,</span>
+        <span class="n">NumberTotalPixels</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span>
+                           <span class="n">image_hsi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">image_hsi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="n">IntensitySumWeakPositive</span><span class="o">=</span><span class="n">iw</span><span class="p">,</span>
+        <span class="n">IntensitySumPositive</span><span class="o">=</span><span class="n">ip</span><span class="p">,</span>
+        <span class="n">IntensitySumStrongPositive</span><span class="o">=</span><span class="n">is_</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">total</span><span class="p">,</span> <span class="p">(</span><span class="n">mask_all_positive</span><span class="p">,</span> <span class="n">mask_weak</span><span class="p">,</span> <span class="n">mask_pos</span><span class="p">,</span> <span class="n">mask_strong</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_totals_to_stats</span><span class="p">(</span><span class="n">total</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Do the extra computations to convert an OutputTotals to an Output&quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">total</span>
+    <span class="n">all_positive</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">NumberWeakPositive</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">NumberPositive</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">NumberStrongPositive</span>
+    <span class="k">return</span> <span class="n">Output</span><span class="p">(</span>
+        <span class="n">IntensityAverage</span><span class="o">=</span><span class="p">((</span><span class="n">t</span><span class="o">.</span><span class="n">IntensitySumWeakPositive</span> <span class="o">+</span>
+                           <span class="n">t</span><span class="o">.</span><span class="n">IntensitySumPositive</span> <span class="o">+</span>
+                           <span class="n">t</span><span class="o">.</span><span class="n">IntensitySumStrongPositive</span><span class="p">)</span> <span class="o">/</span>
+                          <span class="n">all_positive</span><span class="p">)</span> <span class="k">if</span> <span class="n">all_positive</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">RatioStrongToTotal</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">NumberStrongPositive</span> <span class="o">/</span> <span class="n">all_positive</span> <span class="k">if</span> <span class="n">all_positive</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">IntensityAverageWeakAndPositive</span><span class="o">=</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IntensitySumWeakPositive</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">IntensitySumPositive</span><span class="p">)</span> <span class="o">/</span>
+            <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">NumberWeakPositive</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">NumberPositive</span><span class="p">)</span>
+        <span class="p">)</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">NumberWeakPositive</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">NumberPositive</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">RatioStrongToPixels</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">NumberStrongPositive</span> <span class="o">/</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">NumberTotalPixels</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">RatioWeakToPixels</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">NumberWeakPositive</span> <span class="o">/</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">NumberTotalPixels</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">RatioTotalToPixels</span><span class="o">=</span><span class="n">all_positive</span> <span class="o">/</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">NumberTotalPixels</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="o">**</span><span class="n">t</span><span class="o">.</span><span class="n">_asdict</span><span class="p">(),</span>
+    <span class="p">)</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s1">&#39;Parameters&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Output&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;count_slide&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;count_image&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

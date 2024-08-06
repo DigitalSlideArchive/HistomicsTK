@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.features.compute_intensity_features &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.features.compute_intensity_features</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.features.compute_intensity_features</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Compute intensity features in labeled image.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="compute_intensity_features">
+<a class="viewcode-back" href="../../../histomicstk.features.html#histomicstk.features.compute_intensity_features">[docs]</a>
+<span class="k">def</span> <span class="nf">compute_intensity_features</span><span class="p">(</span>
+        <span class="n">im_label</span><span class="p">,</span> <span class="n">im_intensity</span><span class="p">,</span> <span class="n">num_hist_bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">rprops</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">feature_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate intensity features from an intensity image.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_label : array_like</span>
+<span class="sd">        A labeled mask image wherein intensity of a pixel is the ID of the</span>
+<span class="sd">        object it belongs to. Non-zero values are considered to be foreground</span>
+<span class="sd">        objects.</span>
+
+<span class="sd">    im_intensity : array_like</span>
+<span class="sd">        Intensity image.</span>
+
+<span class="sd">    num_hist_bins: int, optional</span>
+<span class="sd">        Number of bins used to computed the intensity histogram of an object.</span>
+<span class="sd">        Histogram is used to energy and entropy features. Default is 10.</span>
+
+<span class="sd">    rprops : output of skimage.measure.regionprops, optional</span>
+<span class="sd">        rprops = skimage.measure.regionprops( im_label ). If rprops is not</span>
+<span class="sd">        passed then it will be computed inside which will increase the</span>
+<span class="sd">        computation time.</span>
+
+<span class="sd">    feature_list : list, default is None</span>
+<span class="sd">        list of intensity features to return.</span>
+<span class="sd">        If none, all intensity features are returned.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fdata: pandas.DataFrame</span>
+<span class="sd">        A pandas dataframe containing the intensity features listed below for</span>
+<span class="sd">        each object/label.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    List of intensity features computed by this function:</span>
+
+<span class="sd">    Intensity.Min : float</span>
+<span class="sd">        Minimum intensity of object pixels.</span>
+
+<span class="sd">    Intensity.Max : float</span>
+<span class="sd">        Maximum intensity of object pixels.</span>
+
+<span class="sd">    Intensity.Mean : float</span>
+<span class="sd">        Mean intensity of object pixels</span>
+
+<span class="sd">    Intensity.Median : float</span>
+<span class="sd">        Median intensity of object pixels</span>
+
+<span class="sd">    Intensity.MeanMedianDiff : float</span>
+<span class="sd">        Difference between mean and median intensities of object pixels.</span>
+
+<span class="sd">    Intensity.Std : float</span>
+<span class="sd">        Standard deviation of the intensities of object pixels</span>
+
+<span class="sd">    Intensity.IQR: float</span>
+<span class="sd">        Inter-quartile range of the intensities of object pixels</span>
+
+<span class="sd">    Intensity.MAD: float</span>
+<span class="sd">        Median absolute deviation of the intensities of object pixels</span>
+
+<span class="sd">    Intensity.Skewness : float</span>
+<span class="sd">        Skewness of the intensities of object pixels. Value is 0 when all</span>
+<span class="sd">        intensity values are equal.</span>
+
+<span class="sd">    Intensity.Kurtosis : float</span>
+<span class="sd">        Kurtosis of the intensities of object pixels. Value is -3 when all</span>
+<span class="sd">        values are equal.</span>
+
+<span class="sd">    Intensity.HistEnergy : float</span>
+<span class="sd">        Energy of the intensity histogram of object pixels</span>
+
+<span class="sd">    Intensity.HistEntropy : float</span>
+<span class="sd">        Entropy of the intensity histogram of object pixels.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] Daniel Zwillinger and Stephen Kokoska. &quot;CRC standard probability</span>
+<span class="sd">       and statistics tables and formulae,&quot; Crc Press, 1999.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="kn">import</span> <span class="nn">scipy.stats</span>
+    <span class="kn">from</span> <span class="nn">skimage.measure</span> <span class="kn">import</span> <span class="n">regionprops</span>
+
+    <span class="n">default_feature_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;Intensity.Min&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.Max&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.Mean&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.Median&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.MeanMedianDiff&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.Std&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.IQR&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.MAD&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.Skewness&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.Kurtosis&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.HistEnergy&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Intensity.HistEntropy&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1"># List of feature names</span>
+    <span class="k">if</span> <span class="n">feature_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">feature_list</span> <span class="o">=</span> <span class="n">default_feature_list</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">j</span> <span class="ow">in</span> <span class="n">default_feature_list</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">feature_list</span><span class="p">),</span> \
+            <span class="s1">&#39;Some feature names are not recognized.&#39;</span>
+
+    <span class="c1"># compute object properties if not provided</span>
+    <span class="k">if</span> <span class="n">rprops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rprops</span> <span class="o">=</span> <span class="n">regionprops</span><span class="p">(</span><span class="n">im_label</span><span class="p">)</span>
+
+    <span class="c1"># create pandas data frame containing the features for each object</span>
+    <span class="n">numFeatures</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_list</span><span class="p">)</span>
+    <span class="n">numLabels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rprops</span><span class="p">)</span>
+    <span class="n">fdata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">numLabels</span><span class="p">,</span> <span class="n">numFeatures</span><span class="p">)),</span>
+                         <span class="n">columns</span><span class="o">=</span><span class="n">feature_list</span><span class="p">)</span>
+
+    <span class="c1"># conditionally execute calculations if x in the features list</span>
+    <span class="k">def</span> <span class="nf">_conditional_execution</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">feature_list</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+                <span class="n">fdata</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_return_input</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numLabels</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># get intensities of object pixels</span>
+        <span class="n">pixelIntensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+            <span class="n">im_intensity</span><span class="p">[</span><span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">rprops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># simple descriptors</span>
+        <span class="n">meanIntensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pixelIntensities</span><span class="p">)</span>
+        <span class="n">medianIntensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">pixelIntensities</span><span class="p">)</span>
+        <span class="n">_conditional_execution</span><span class="p">(</span><span class="s1">&#39;Intensity.Min&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">pixelIntensities</span><span class="p">)</span>
+        <span class="n">_conditional_execution</span><span class="p">(</span><span class="s1">&#39;Intensity.Max&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">pixelIntensities</span><span class="p">)</span>
+        <span class="n">_conditional_execution</span><span class="p">(</span><span class="s1">&#39;Intensity.Mean&#39;</span><span class="p">,</span> <span class="n">_return_input</span><span class="p">,</span> <span class="n">meanIntensity</span><span class="p">)</span>
+        <span class="n">_conditional_execution</span><span class="p">(</span>
+            <span class="s1">&#39;Intensity.Median&#39;</span><span class="p">,</span> <span class="n">_return_input</span><span class="p">,</span> <span class="n">medianIntensity</span><span class="p">)</span>
+        <span class="n">_conditional_execution</span><span class="p">(</span>
+            <span class="s1">&#39;Intensity.MeanMedianDiff&#39;</span><span class="p">,</span> <span class="n">_return_input</span><span class="p">,</span>
+            <span class="n">meanIntensity</span> <span class="o">-</span> <span class="n">medianIntensity</span><span class="p">)</span>
+        <span class="n">_conditional_execution</span><span class="p">(</span><span class="s1">&#39;Intensity.Std&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">,</span> <span class="n">pixelIntensities</span><span class="p">)</span>
+        <span class="n">_conditional_execution</span><span class="p">(</span>
+            <span class="s1">&#39;Intensity.Skewness&#39;</span><span class="p">,</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">skew</span><span class="p">,</span> <span class="n">pixelIntensities</span><span class="p">)</span>
+        <span class="n">_conditional_execution</span><span class="p">(</span>
+            <span class="s1">&#39;Intensity.Kurtosis&#39;</span><span class="p">,</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">,</span> <span class="n">pixelIntensities</span><span class="p">)</span>
+
+        <span class="c1"># inter-quartile range</span>
+        <span class="n">_conditional_execution</span><span class="p">(</span>
+            <span class="s1">&#39;Intensity.IQR&#39;</span><span class="p">,</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">iqr</span><span class="p">,</span> <span class="n">pixelIntensities</span><span class="p">)</span>
+
+        <span class="c1"># median absolute deviation</span>
+        <span class="n">_conditional_execution</span><span class="p">(</span>
+            <span class="s1">&#39;Intensity.MAD&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pixelIntensities</span> <span class="o">-</span> <span class="n">medianIntensity</span><span class="p">))</span>
+
+        <span class="c1"># histogram-based features</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">j</span> <span class="ow">in</span> <span class="n">feature_list</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="s1">&#39;Intensity.HistEntropy&#39;</span><span class="p">,</span> <span class="s1">&#39;Intensity.HistEnergy&#39;</span><span class="p">]):</span>
+
+            <span class="c1"># compute intensity histogram</span>
+            <span class="n">hist</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">pixelIntensities</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">num_hist_bins</span><span class="p">)</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="n">hist</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+            <span class="c1"># entropy and energy</span>
+            <span class="n">_conditional_execution</span><span class="p">(</span>
+                <span class="s1">&#39;Intensity.HistEntropy&#39;</span><span class="p">,</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">entropy</span><span class="p">,</span> <span class="n">prob</span><span class="p">)</span>
+            <span class="n">_conditional_execution</span><span class="p">(</span><span class="s1">&#39;Intensity.HistEnergy&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span> <span class="n">prob</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fdata</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

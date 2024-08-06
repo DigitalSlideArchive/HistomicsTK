@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introducing the Girder API &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Procedure for managing a typical annotation project" href="procedure_for_typical_annotation_project.html" />
+    <link rel="prev" title="Examples" href="../examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Introducing the Girder API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-girder-database">The girder database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-is-an-annotation">What is an annotation?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-the-girder-api">Using the girder API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Introducing the Girder API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/introducing_the_girder_api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="introducing-the-girder-api">
+<h1>Introducing the Girder API<a class="headerlink" href="#introducing-the-girder-api" title="Link to this heading">¶</a></h1>
+<p>A RESTful API allows developers to programmatically interact with a DSA server
+to manage data, user accounts, annotations, and their permissions. These
+functions are part of what makes DSA a powerful platform for generating
+annotations through distributed multi-user studies. In this example we discuss
+the basic elements of the DSA database, describe the structure of annotations,
+and illustrate a variety of methods for making DSA API calls.</p>
+<section id="the-girder-database">
+<h2>The girder database<a class="headerlink" href="#the-girder-database" title="Link to this heading">¶</a></h2>
+<p>DSA is built using <a class="reference external" href="https://girder.readthedocs.io/en/stable/index.html">girder</a>, an open source web-based data management
+platform developed by <a class="reference external" href="https://www.kitware.com/">Kitware</a>. The DSA server uses a <a class="reference external" href="https://www.mongodb.com/">MongoDB</a> database to
+organize images, image metadata, user accounts, and annotations. The DSA
+user interface allows basic interaction with this data through a web
+browser and can perform administrative tasks. Tasks requiring programmatic
+access can use the <a class="reference external" href="https://girder.readthedocs.io/en/stable/api-docs.html">girder python client</a>, a <a class="reference external" href="https://restfulapi.net/">RESTful API</a> client that provides
+convenient endpoints for interacting with and managing data hosted on a DSA
+instance. The girder database contains the following elements that can be
+manipulated using the API:</p>
+<ul class="simple">
+<li><p>Users and Groups</p></li>
+<li><p>Collections and Folders</p></li>
+<li><p>Items and Files</p></li>
+<li><p>Annotations</p></li>
+<li><p>Assetstores</p></li>
+</ul>
+<p>The <a class="reference external" href="https://girder.readthedocs.io/en/stable/user-guide.html">girder user guide</a> describes these concepts in detail along with API call
+formats. User-level and group-level permissions provide very granular control
+over access to data and annotations as described
+<a class="reference external" href="https://girder.readthedocs.io/en/stable/user-guide.html#permissions">here</a>.
+See <em>“Procedure for managing a typical annotation project”</em> for more details on
+the permissions model and its role in multi-user annotation studies.</p>
+</section>
+<section id="what-is-an-annotation">
+<h2>What is an annotation?<a class="headerlink" href="#what-is-an-annotation" title="Link to this heading">¶</a></h2>
+<p>The annotation schema used by HistomicsUI for image markup is provided by
+the <a class="reference external" href="https://github.com/girder/large_image">large_image</a> library and is <a class="reference external" href="https://github.com/girder/large_image/blob/master/girder_annotation/docs/annotations.md">described here</a>.</p>
+<p>An annotation document, or simply annotation, contains a set of elements (points, rectangles, lines, polygons, etc.) and serves to organize these to simplify analysis or to enhance rendering performance when large numbers of elements are present. When using the API an annotation document is the indivisible unit used for sending and receiving annotation data. Individual elements have style attributes like line and fill color that define their appearance, and these attributes can be uniform or varied within the same document. The way that users experience conceptual grouping of elements is through groups that are each linked to a standard style. Groups can cut across documents and represent concepts like different types of cells or tissue regions. Groups and their styles can be created through the HistomicsUI interface, and a file defining group names and their styles can be downloaded in a JSON format and distributed to users to help standardize naming and appearances in multi-user annotation studies.</p>
+<img alt="https://user-images.githubusercontent.com/22067552/67130235-abd60e00-f1ce-11e9-82c7-50aeeb978c83.png" src="https://user-images.githubusercontent.com/22067552/67130235-abd60e00-f1ce-11e9-82c7-50aeeb978c83.png" />
+<p>The distinction between annotation documents, elements and groups, is a bit confusing from a user standpoint, but is a useful abstraction for efficiency for developers.</p>
+</section>
+<section id="using-the-girder-api">
+<h2>Using the girder API<a class="headerlink" href="#using-the-girder-api" title="Link to this heading">¶</a></h2>
+<p>As a developer, most of your interaction with DSA will occur through the API
+using the <a class="reference external" href="https://girder.readthedocs.io/en/stable/python-client.html#">python client library and/or command-line interface</a>.
+The client simplifies the formulation of API calls and allows you to authenticate using your username and password or an API key. In many situations it is more secure to use API keys because:</p>
+<ul class="simple">
+<li><p>You can create multiple keys with different permissions for different roles. This gives you the flexibility to provide the key to multiple people or to share the key in demonstrations/videos etc.</p></li>
+<li><p>You can disable or delete a key anytime.</p></li>
+<li><p>Some interactive shells do not hide passwords in interactive mode. The password could be visible to others on your screen and could be saved in the shell history.</p></li>
+</ul>
+<p>API keys can be created and managed through the DSA user interface or API. Following authentication you can use the REST methods to query or manipulate data hosted on the DSA instance using:</p>
+<ul class="simple">
+<li><p><strong>GET</strong>: Get (download) resource (item, folder information, slide region, annotation, etc).</p></li>
+<li><p><strong>PUT</strong>: Modify an existing resource.</p></li>
+<li><p><strong>POST</strong>: Post a new resource to the DSA server.</p></li>
+<li><p><strong>DELETE</strong>: Delete a resource from the DSA server.</p></li>
+</ul>
+<p>These commands are used in conjunction with API endpoints that implement common
+tasks. For example, a GET method can be used with the annotation endpoint to
+download the annotation from the server. The full list of endpoints is
+available on the interactive web API docs which are linked on the landing
+page of your DSA server. <a class="reference external" href="https://demo.kitware.com/histomicstk/api/v1">Here is the API documentation</a> from our demo DSA
+instance. There is more than one way to use the API, and there are a number
+of higher level methods we have to make your life easier. Here are some options:</p>
+<ul>
+<li><p>Manually through the web API hosted on your DSA instance</p>
+<blockquote>
+<div><p>The web API hosted on your DSA instance provides a simple interface where you can manually make API calls to perform simple jobs or to test API calls. Note that this is not a sandbox and calls made through the interface have lasting impact.</p>
+</div></blockquote>
+</li>
+<li><p>Programmatically using the girder client with get/put/post/delete methods</p>
+<blockquote>
+<div><p>There are two ways to use the girder client with get/put/post/delete methods.</p>
+<p>The first is to formulate an HTTP request string and pass is to the method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">histomicstk.utils.girder_convenience_utils</span> <span class="kn">import</span> <span class="n">connect_to_api</span>
+
+<span class="n">gc</span> <span class="o">=</span> <span class="n">connect_to_api</span><span class="p">(</span><span class="n">apiurl</span><span class="p">)</span>
+
+<span class="c1"># fetch rgb region</span>
+<span class="n">getStr</span> <span class="o">=</span> \
+    <span class="s2">&quot;/item/</span><span class="si">%s</span><span class="s2">/tiles/region?left=</span><span class="si">%d</span><span class="s2">&amp;right=</span><span class="si">%d</span><span class="s2">&amp;top=</span><span class="si">%d</span><span class="s2">&amp;bottom=</span><span class="si">%d</span><span class="s2">&quot;</span> \
+    <span class="o">%</span> <span class="p">(</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">getStr</span><span class="p">,</span> <span class="n">jsonResp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For sending large amounts of data, it is preferable to use the data parameter to pass parameters as a dictionary</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># update annotation permissions</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+    <span class="s1">&#39;/annotation/</span><span class="si">%s</span><span class="s1">/access&#39;</span> <span class="o">%</span> <span class="n">annotation_id</span><span class="p">,</span>
+    <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;access&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">new_access_permissions_dict</span><span class="p">)},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Programmatically using girder client utility methods</p>
+<blockquote>
+<div><p>The girder client provides built-in methods that automate common tasks
+for dealing with collections, users, items, and annotations.
+These methods avoid the need to formulate complex API call request
+strings. Documentation of these methods is
+<a class="reference external" href="https://girder.readthedocs.io/en/stable/python-client.html#the-python-client-library">available here</a>.</p>
+</div></blockquote>
+</li>
+<li><p>Using HistomicsTK functions with the girder client</p>
+<blockquote>
+<div><p>HistomicsTK contains methods that use the girder client to perform
+operations like <a class="reference internal" href="workflows.html"><span class="doc">applying image analysis functions</span></a> to a set of remotely
+hosted slides, or for <a class="reference internal" href="procedure_for_typical_annotation_project.html"><span class="doc">handling annotations</span></a>.</p>
+</div></blockquote>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="procedure_for_typical_annotation_project.html" class="btn btn-neutral float-right" title="Procedure for managing a typical annotation project" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

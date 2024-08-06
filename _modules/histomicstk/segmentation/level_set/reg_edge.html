@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.level_set.reg_edge &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.level_set.reg_edge</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.segmentation.level_set.reg_edge</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">histomicstk.utils</span> <span class="k">as</span> <span class="nn">htk_utls</span>
+
+
+<div class="viewcode-block" id="reg_edge">
+<a class="viewcode-back" href="../../../../histomicstk.segmentation.level_set.html#histomicstk.segmentation.level_set.reg_edge">[docs]</a>
+<span class="k">def</span> <span class="nf">reg_edge</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">im_phi</span><span class="p">,</span> <span class="n">well</span><span class="o">=</span><span class="s1">&#39;double&#39;</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+             <span class="n">lambda_</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Distance-regularized edge-based level sets.</span>
+
+<span class="sd">    Distance-regularization is used in this edge-based level set implementation</span>
+<span class="sd">    to avoid numerical problems requiring costly re-initialization. Provides</span>
+<span class="sd">    cost terms for boundary length, area, and regularization of the level set</span>
+<span class="sd">    function. Foreground objects are assumed to have larger intensity values</span>
+<span class="sd">    than background.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_input : array_like</span>
+<span class="sd">        A floating-point intensity image.</span>
+<span class="sd">    im_phi : array_like</span>
+<span class="sd">        A floating-point initialization of the level-set image. Interior values</span>
+<span class="sd">        are set to -c0, and exterior values set to c0, where c0 &gt; 0.</span>
+<span class="sd">    well : string</span>
+<span class="sd">        Choice of well function for regularization. Can be set to either</span>
+<span class="sd">        &#39;single&#39; or &#39;double&#39; for single-well or double-well regularization, or</span>
+<span class="sd">        any other value for no regularization. Default value = &#39;double&#39;.</span>
+<span class="sd">    sigma : double</span>
+<span class="sd">        Standard deviation of smoothing filter for input image im_input.</span>
+<span class="sd">    dt : double</span>
+<span class="sd">        Time step for evolving im_phi. Default value = 1.0.</span>
+<span class="sd">    mu : double</span>
+<span class="sd">        Regularization weight for energy function. Default value = 0.2.</span>
+<span class="sd">    lambda_ : double</span>
+<span class="sd">        Boundary length weight for energy function. Default value = 1.0.</span>
+<span class="sd">    alpha : double</span>
+<span class="sd">        Area weight for energy function. A negative value is used to seed the</span>
+<span class="sd">        interior of the foreground objects and then evolve the boundary</span>
+<span class="sd">        outwards. A positive value assumes that the boundary begins outside the</span>
+<span class="sd">        foreground objects and collapses to their high-gradient edges.</span>
+<span class="sd">        Default value = -3.</span>
+<span class="sd">    epsilon: double</span>
+<span class="sd">        Coefficient used to smooth the Dirac and Heaviside functions. Default</span>
+<span class="sd">        value = 1.5.</span>
+<span class="sd">    iter: double</span>
+<span class="sd">        Number of iterations to evolve curve level set function over. Default</span>
+<span class="sd">        value = 100.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    im_phi : array_like</span>
+<span class="sd">        An intensity image where the zero level set defines object boundaries.</span>
+<span class="sd">        Can be further processed with fast marching methods or other to obtain</span>
+<span class="sd">        smooth boundaries, or simply thresholded to define the object mask.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    histomicstk.segmentation.nuclear.gaussian_voting</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] C. Li, C. Xu, C. Gui, M.D. Fox, &quot;Distance Regularized Level Set</span>
+<span class="sd">       Evolution and Its Application to Image Segmentation,&quot; in IEEE</span>
+<span class="sd">       Transactions on Image Processing, vol.19,no.12,pp.3243-54, 2010.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">scipy.ndimage</span> <span class="k">as</span> <span class="nn">ndi</span>
+
+    <span class="c1"># smoothed gradient of input image</span>
+    <span class="n">sI</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">dsI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">sI</span><span class="p">)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">dsI</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dsI</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">dG</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+
+    <span class="c1"># perform regularized level-set evolutions with time step dt</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">iter</span><span class="p">):</span>
+
+        <span class="c1"># fix boundary conditions</span>
+        <span class="n">im_phi</span> <span class="o">=</span> <span class="n">neumann_bounds</span><span class="p">(</span><span class="n">im_phi</span><span class="p">)</span>
+
+        <span class="c1"># calculate gradient of level set image</span>
+        <span class="n">dPhi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">im_phi</span><span class="p">)</span>
+        <span class="n">mPhi</span> <span class="o">=</span> <span class="p">(</span><span class="n">dPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>  <span class="c1"># gradient magnitude</span>
+        <span class="n">Curve</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">mPhi</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> \
+            <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">mPhi</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># divergence</span>
+
+        <span class="c1"># build regularization function</span>
+        <span class="k">if</span> <span class="n">well</span> <span class="o">==</span> <span class="s1">&#39;single&#39;</span><span class="p">:</span>
+            <span class="n">Reg</span> <span class="o">=</span> <span class="n">single_well</span><span class="p">(</span><span class="n">im_phi</span><span class="p">,</span> <span class="n">Curve</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">well</span> <span class="o">==</span> <span class="s1">&#39;double&#39;</span><span class="p">:</span>
+            <span class="n">Reg</span> <span class="o">=</span> <span class="n">double_well</span><span class="p">(</span><span class="n">im_phi</span><span class="p">,</span> <span class="n">dPhi</span><span class="p">,</span> <span class="n">mPhi</span><span class="p">,</span> <span class="n">Curve</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Reg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">im_phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># area and boundary-length energy function terms</span>
+        <span class="n">iPhi</span> <span class="o">=</span> <span class="n">impulse</span><span class="p">(</span><span class="n">im_phi</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="n">Area</span> <span class="o">=</span> <span class="n">iPhi</span> <span class="o">*</span> <span class="n">G</span>
+        <span class="n">Edge</span> <span class="o">=</span> <span class="n">iPhi</span> <span class="o">*</span> <span class="p">(</span><span class="n">dG</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">dPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">mPhi</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">))</span> <span class="o">+</span>
+                       <span class="n">dG</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">dPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">mPhi</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)))</span> <span class="o">+</span> <span class="n">iPhi</span> <span class="o">*</span> <span class="n">G</span> <span class="o">*</span> <span class="n">Curve</span>
+
+        <span class="c1"># evolve level-set function</span>
+        <span class="n">im_phi</span> <span class="o">=</span> <span class="n">im_phi</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">mu</span> <span class="o">*</span> <span class="n">Reg</span> <span class="o">+</span> <span class="n">lambda_</span> <span class="o">*</span> <span class="n">Edge</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">Area</span><span class="p">)</span>
+
+    <span class="c1"># return evolved level-set function following iterations</span>
+    <span class="k">return</span> <span class="n">im_phi</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">Mask</span><span class="p">,</span> <span class="n">c0</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="c1"># initialize scaled binary-step image</span>
+    <span class="n">Phi0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">Phi0</span><span class="p">[</span><span class="n">Mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">c0</span>
+    <span class="n">Phi0</span><span class="p">[</span><span class="n">Mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">c0</span>
+    <span class="k">return</span> <span class="n">Phi0</span>
+
+
+<span class="k">def</span> <span class="nf">single_well</span><span class="p">(</span><span class="n">Phi</span><span class="p">,</span> <span class="n">Curve</span><span class="p">):</span>
+    <span class="c1"># Single-well potential function</span>
+    <span class="k">return</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">htk_utls</span><span class="o">.</span><span class="n">del2</span><span class="p">(</span><span class="n">Phi</span><span class="p">)</span> <span class="o">-</span> <span class="n">Curve</span>
+
+
+<span class="k">def</span> <span class="nf">double_well</span><span class="p">(</span><span class="n">Phi</span><span class="p">,</span> <span class="n">dPhi</span><span class="p">,</span> <span class="n">mPhi</span><span class="p">,</span> <span class="n">Curve</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+    <span class="c1"># Double-well potential function</span>
+    <span class="n">SmallMask</span> <span class="o">=</span> <span class="p">(</span><span class="n">mPhi</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">mPhi</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">LargeMask</span> <span class="o">=</span> <span class="p">(</span><span class="n">mPhi</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">SmallMask</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">mPhi</span><span class="p">)</span> <span class="o">/</span> \
+        <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">+</span> <span class="n">LargeMask</span> <span class="o">*</span> <span class="p">(</span><span class="n">mPhi</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">dP</span> <span class="o">=</span> <span class="p">((</span><span class="n">P</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">P</span> <span class="o">+</span> <span class="p">(</span><span class="n">P</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="p">((</span><span class="n">mPhi</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">mPhi</span> <span class="o">+</span> <span class="p">(</span><span class="n">mPhi</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">Well</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dP</span> <span class="o">*</span> <span class="n">dPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">dPhi</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> \
+        <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">dP</span> <span class="o">*</span> <span class="n">dPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">dPhi</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">htk_utls</span><span class="o">.</span><span class="n">del2</span><span class="p">(</span><span class="n">Phi</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Well</span>
+
+
+<span class="k">def</span> <span class="nf">impulse</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Epsilon</span><span class="p">):</span>
+    <span class="c1"># Smooth dirac delta function.</span>
+
+    <span class="c1"># calculate smoothed impulse everywhere</span>
+    <span class="n">Xout</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">X</span> <span class="o">/</span> <span class="n">Epsilon</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">Epsilon</span><span class="p">)</span>
+
+    <span class="c1"># zero out values |x| &gt; Epsilon</span>
+    <span class="n">Xout</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">Epsilon</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">Xout</span>
+
+
+<span class="k">def</span> <span class="nf">neumann_bounds</span><span class="p">(</span><span class="n">Phi</span><span class="p">):</span>
+    <span class="c1"># Transform input to enforce Neumann boundary conditions.</span>
+
+    <span class="c1"># copy input</span>
+    <span class="n">PhiOut</span> <span class="o">=</span> <span class="n">Phi</span>
+
+    <span class="c1"># capture image size</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># deal with corners</span>
+    <span class="n">PhiOut</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhiOut</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">PhiOut</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhiOut</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">PhiOut</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhiOut</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">PhiOut</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhiOut</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># deal with edges</span>
+    <span class="n">PhiOut</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhiOut</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">PhiOut</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhiOut</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">PhiOut</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhiOut</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">PhiOut</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhiOut</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">3</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">PhiOut</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

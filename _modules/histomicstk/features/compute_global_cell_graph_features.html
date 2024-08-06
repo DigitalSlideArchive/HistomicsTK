@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.features.compute_global_cell_graph_features &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.features.compute_global_cell_graph_features</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.features.compute_global_cell_graph_features</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">linalg</span>
+
+<span class="n">PopStats</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;PopStats&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;stddev&#39;</span><span class="p">,</span> <span class="s1">&#39;min_max_ratio&#39;</span><span class="p">,</span> <span class="s1">&#39;disorder&#39;</span><span class="p">])</span>
+<span class="n">PolyProps</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;PolyProps&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;peri&#39;</span><span class="p">,</span> <span class="s1">&#39;max_dist&#39;</span><span class="p">])</span>
+<span class="n">TriProps</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;TriProps&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;sides&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">])</span>
+<span class="n">DensityProps</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;DensityProps&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;neighbors_in_distance&#39;</span><span class="p">,</span>
+                                           <span class="s1">&#39;distance_for_neighbors&#39;</span><span class="p">])</span>
+<span class="n">Props</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Props&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;voronoi&#39;</span><span class="p">,</span> <span class="s1">&#39;delaunay&#39;</span><span class="p">,</span> <span class="s1">&#39;mst_branches&#39;</span><span class="p">,</span> <span class="s1">&#39;density&#39;</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="compute_global_cell_graph_features">
+<a class="viewcode-back" href="../../../histomicstk.features.html#histomicstk.features.compute_global_cell_graph_features">[docs]</a>
+<span class="k">def</span> <span class="nf">compute_global_cell_graph_features</span><span class="p">(</span>
+        <span class="n">centroids</span><span class="p">,</span>
+        <span class="n">neighbor_distances</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">neighbor_counts</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute global (i.e., not per-nucleus) features of the nuclei with</span>
+<span class="sd">    the given centroids based on the partitioning of the space into</span>
+<span class="sd">    Voronoi cells and on the induced graph structure.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    centroids : array_like</span>
+<span class="sd">        Nx2 numpy array of nuclear centroids</span>
+<span class="sd">    neighbor_distances : array_like</span>
+<span class="sd">        Radii to count neighbors in</span>
+<span class="sd">    neighbor_counts : sequence</span>
+<span class="sd">        Sequence of numbers of neighbors, each of which is used to</span>
+<span class="sd">        compute statistics relating to the distance required to reach</span>
+<span class="sd">        that many neighbors.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    props : pandas.DataFrame</span>
+<span class="sd">        A single-row DataFrame with the following columns:</span>
+
+<span class="sd">        - voronoi\_...: Voronoi diagram features</span>
+
+<span class="sd">          - area\_...: Polygon area features</span>
+<span class="sd">          - peri\_...: Polygon perimeter features</span>
+<span class="sd">          - max_dist\_...: Maximum distance in polygon features</span>
+
+<span class="sd">        - delaunay\_...: Delaunay triangulation features</span>
+
+<span class="sd">          - sides\_...: Triangle side length features</span>
+<span class="sd">          - area\_...: Triangle area features</span>
+
+<span class="sd">        - mst_branches\_...: Minimum spanning tree branch features</span>
+<span class="sd">        - density\_...: Density features</span>
+
+<span class="sd">          - neighbors_in_distance\_...</span>
+
+<span class="sd">            - 0, 1, ..., len(neighbor_distances) - 1: Neighbor count</span>
+<span class="sd">              within given radius features.</span>
+
+<span class="sd">          - distance_for_neighbors\_...</span>
+
+<span class="sd">            - 0, 1, ..., len(neighbor_counts) - 1: Minimum distance to</span>
+<span class="sd">              enclose count neighbors features</span>
+
+<span class="sd">        The &quot;...&quot;s are meant to signify that what precedes is the</span>
+<span class="sd">        start of a column name.  At the end of each column name is one</span>
+<span class="sd">        of &#39;mean&#39;, &#39;stddev&#39;, &#39;min_max_ratio&#39;, and &#39;disorder&#39;.</span>
+<span class="sd">        &#39;min_max_ratio&#39; is the minimum-to-maximum ratio, and disorder</span>
+<span class="sd">        is stddev / (mean + stddev).</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The indices for the density features are with respect to the</span>
+<span class="sd">    *sorted* values of the corresponding argument sequence.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] Doyle, S., Agner, S., Madabhushi, A., Feldman, M., &amp; Tomaszewski, J.</span>
+<span class="sd">       (2008, May).  Automated grading of breast cancer histopathology using</span>
+<span class="sd">       spectral clustering with textural and architectural image features.</span>
+<span class="sd">       In Biomedical Imaging: From Nano to Macro, 2008.  ISBI 2008.</span>
+<span class="sd">       5th IEEE International Symposium on (pp. 496-499).  IEEE.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">neighbor_distances</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">neighbor_distances</span> <span class="o">=</span> <span class="mf">10.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_flatten_to_dataframe</span><span class="p">(</span><span class="n">_compute_global_cell_graph_features</span><span class="p">(</span>
+        <span class="n">centroids</span><span class="p">,</span>
+        <span class="n">neighbor_distances</span><span class="p">,</span>
+        <span class="n">neighbor_counts</span><span class="p">,</span>
+    <span class="p">))</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_compute_global_cell_graph_features</span><span class="p">(</span>
+        <span class="n">centroids</span><span class="p">,</span>
+        <span class="n">neighbor_distances</span><span class="p">,</span>
+        <span class="n">neighbor_counts</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal support for compute_global_cell_graph_features that</span>
+<span class="sd">    returns its result in a nested nametuple structure instead of a</span>
+<span class="sd">    pandas DataFrame.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">sparse</span>
+    <span class="kn">from</span> <span class="nn">scipy.sparse.csgraph</span> <span class="kn">import</span> <span class="n">minimum_spanning_tree</span>
+    <span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">Voronoi</span>
+    <span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">cKDTree</span> <span class="k">as</span> <span class="n">KDTree</span>
+    <span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span>
+
+    <span class="n">vor</span> <span class="o">=</span> <span class="n">Voronoi</span><span class="p">(</span><span class="n">centroids</span><span class="p">)</span>
+    <span class="n">centroids</span> <span class="o">=</span> <span class="n">vor</span><span class="o">.</span><span class="n">points</span>
+    <span class="n">vertices</span> <span class="o">=</span> <span class="n">vor</span><span class="o">.</span><span class="n">vertices</span>
+
+    <span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">vor</span><span class="o">.</span><span class="n">regions</span> <span class="k">if</span> <span class="n">r</span> <span class="ow">and</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">r</span><span class="p">]</span>
+    <span class="n">areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">_poly_area</span><span class="p">(</span><span class="n">vertices</span><span class="p">[</span><span class="n">r</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">])</span>
+    <span class="n">peris</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">_poly_peri</span><span class="p">(</span><span class="n">vertices</span><span class="p">[</span><span class="n">r</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">])</span>
+    <span class="n">max_dists</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">pdist</span><span class="p">(</span><span class="n">vertices</span><span class="p">[</span><span class="n">r</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">])</span>
+    <span class="n">poly_props</span> <span class="o">=</span> <span class="n">PolyProps</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_pop_stats</span><span class="p">,</span> <span class="p">(</span><span class="n">areas</span><span class="p">,</span> <span class="n">peris</span><span class="p">,</span> <span class="n">max_dists</span><span class="p">)))</span>
+
+    <span class="c1"># Assume that each Voronoi vertex is on exactly three ridges.</span>
+    <span class="n">ridge_points</span> <span class="o">=</span> <span class="n">vor</span><span class="o">.</span><span class="n">ridge_points</span>
+    <span class="c1"># This isn&#39;t exactly the collection of sides, since if they should</span>
+    <span class="c1"># be counted per-triangle then we weight border ridges wrong</span>
+    <span class="c1"># relative to ridges that are part of two triangles.</span>
+    <span class="n">ridge_lengths</span> <span class="o">=</span> <span class="n">_dist</span><span class="p">(</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">centroids</span><span class="p">[</span><span class="n">ridge_points</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">sides</span> <span class="o">=</span> <span class="n">ridge_lengths</span>
+    <span class="c1"># Point indices of each triangle</span>
+    <span class="n">tris</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">ri</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vor</span><span class="o">.</span><span class="n">point_region</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">vi</span> <span class="ow">in</span> <span class="n">vor</span><span class="o">.</span><span class="n">regions</span><span class="p">[</span><span class="n">ri</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">vi</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">tris</span><span class="p">[</span><span class="n">vi</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="c1"># This will only fail in particular symmetrical cases where a</span>
+    <span class="c1"># Voronoi vertex is associated with more than three centroids.</span>
+    <span class="c1"># Since this should be unlikely in practice, we don&#39;t handle it</span>
+    <span class="c1"># beyond throwing an AssertionError</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tris</span><span class="p">)</span>
+    <span class="n">tris</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tris</span><span class="p">)</span>
+    <span class="n">areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">_poly_area</span><span class="p">(</span><span class="n">centroids</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tris</span><span class="p">])</span>
+    <span class="n">tri_props</span> <span class="o">=</span> <span class="n">TriProps</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_pop_stats</span><span class="p">,</span> <span class="p">(</span><span class="n">sides</span><span class="p">,</span> <span class="n">areas</span><span class="p">)))</span>
+
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">coo_matrix</span><span class="p">((</span><span class="n">ridge_lengths</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ridge_points</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
+                              <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">centroids</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">centroids</span><span class="p">)))</span>
+    <span class="n">mst</span> <span class="o">=</span> <span class="n">minimum_spanning_tree</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+    <span class="c1"># Without looking into exactly how minimum_spanning_tree</span>
+    <span class="c1"># constructs its output, elimate any explicit zeros to be on the</span>
+    <span class="c1"># safe side.</span>
+    <span class="n">mst_branches</span> <span class="o">=</span> <span class="n">_pop_stats</span><span class="p">(</span><span class="n">mst</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">mst</span><span class="o">.</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">KDTree</span><span class="p">(</span><span class="n">centroids</span><span class="p">)</span>
+    <span class="n">neighbors_in_distance</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="c1"># Yes, we just throw away the actual points</span>
+        <span class="n">r</span><span class="p">:</span> <span class="n">_pop_stats</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">query_ball_tree</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">r</span><span class="p">)))))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">neighbor_distances</span>
+    <span class="p">}</span>
+
+    <span class="n">distance_for_neighbors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span>
+        <span class="n">neighbor_counts</span><span class="p">,</span>
+        <span class="nb">map</span><span class="p">(</span><span class="n">_pop_stats</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">centroids</span><span class="p">,</span> <span class="p">[</span><span class="n">c</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">neighbor_counts</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
+    <span class="p">))</span>
+    <span class="n">density_props</span> <span class="o">=</span> <span class="n">DensityProps</span><span class="p">(</span><span class="n">neighbors_in_distance</span><span class="p">,</span> <span class="n">distance_for_neighbors</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Props</span><span class="p">(</span><span class="n">poly_props</span><span class="p">,</span> <span class="n">tri_props</span><span class="p">,</span> <span class="n">mst_branches</span><span class="p">,</span> <span class="n">density_props</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_poly_area</span><span class="p">(</span><span class="n">vertices</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">_poly_signed_area</span><span class="p">(</span><span class="n">vertices</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_poly_signed_area</span><span class="p">(</span><span class="n">vertices</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">.5</span> <span class="o">*</span> <span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">vertices</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">2</span><span class="p">)),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_poly_peri</span><span class="p">(</span><span class="n">vertices</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_dist</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_dist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the distance between two sets of points.  Has signature</span>
+<span class="sd">    (i),(i)-&gt;().</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">.5</span>
+
+
+<span class="k">def</span> <span class="nf">_pop_stats</span><span class="p">(</span><span class="n">pop</span><span class="p">):</span>
+    <span class="c1"># Filter out outliers (here defined as points more than three</span>
+    <span class="c1"># standard deviations away from the mean)</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">pop</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">stddev</span> <span class="o">=</span> <span class="n">pop</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">pop</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">stddev</span>
+        <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">break</span>
+        <span class="n">pop</span> <span class="o">=</span> <span class="n">pop</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">minmaxr</span> <span class="o">=</span> <span class="n">pop</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">/</span> <span class="n">pop</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">disorder</span> <span class="o">=</span> <span class="n">stddev</span> <span class="o">/</span> <span class="p">(</span><span class="n">mean</span> <span class="o">+</span> <span class="n">stddev</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PopStats</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">stddev</span><span class="p">,</span> <span class="n">minmaxr</span><span class="p">,</span> <span class="n">disorder</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_flatten_to_dataframe</span><span class="p">(</span><span class="n">nt</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flatten the result of _compute_global_cell_graph_features to the</span>
+<span class="sd">    DataFrame returned by compute_global_cell_graph_features.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">_flatten_to_dict</span><span class="p">(</span><span class="n">nt</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">_flatten_to_dict</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">nt</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># nt is a dict</span>
+        <span class="c1"># We only have numeric keys, and they may be non-nice floats,</span>
+        <span class="c1"># so just number them by sort order instead of doing something</span>
+        <span class="c1"># else for names</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="n">kv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">kv</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">nt</span><span class="o">.</span><span class="n">items</span><span class="p">()))}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+            <span class="c1"># Terminate</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_flatten_to_dict</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">k</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">result</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

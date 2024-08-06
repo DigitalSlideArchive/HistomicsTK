@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tips for scaling annotation rendering &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Local backup and SQL querying of annotation data" href="annotation_database_backup_and_sql_parser.html" />
+    <link rel="prev" title="Procedure for managing a typical annotation project" href="procedure_for_typical_annotation_project.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Tips for scaling annotation rendering</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/tips_for_scalable_annotation_rendering.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tips-for-scaling-annotation-rendering">
+<h1>Tips for scaling annotation rendering<a class="headerlink" href="#tips-for-scaling-annotation-rendering" title="Link to this heading">¶</a></h1>
+<p>Image analysis algorithms and humans can generate large numbers of annotations.
+HistomicsUI is implemented for scalable rendering of annotations, and if you
+follow some basic principles you can avoid performance problems in rendering
+large numbers of elements and vertices.</p>
+<p><strong>The maximum number of annotation documents that HistomicsUI can display is 5,000</strong></p>
+<p>HistomicsUK imposes this limit to avoid crashing the browser. If a slide contains more than 5,000 documents then HistomicsUI will sample 5,000 of these to display.</p>
+<p><strong>The maximum number of elements that HistomicsUI can display is 2,000,000.</strong></p>
+<p>This limit applies to the combined elements in all documents in the slide. If more than 2,000,000 elements are present then the smallest elements are displayed as circles (as determined by bounding box diagonal).</p>
+<p><strong>Which element types are more efficient to render?</strong></p>
+<p>The key types of elements include: point, rectangle, polygon, and line. The most efficient elements to render are, in order of increasing render efficiency:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">Filled</span> <span class="pre">polygon</span> <span class="pre">→</span> <span class="pre">Unfilled</span> <span class="pre">polygon</span> <span class="pre">(no</span> <span class="pre">opacity)</span> <span class="pre">→</span> <span class="pre">Rectangle</span> <span class="pre">→</span> <span class="pre">Line</span> <span class="pre">→</span> <span class="pre">Point</span></code></p>
+</div></blockquote>
+<p>Obviously, the more vertices of the polygon the less is the rendering efficiency.</p>
+<p><strong>What end-user operations can lead to performance issues?</strong></p>
+<ul class="simple">
+<li><p>Rendering thousands of filled polygons or complex polygons with many vertices.</p></li>
+<li><p>Using the transparency slider. Each step of the slider causes the polygons to be re-rendered which can be slow when thousands of filled polygons are present.</p></li>
+<li><p>Right click editing of an element when thousands of elements are being rendered. For example, say the slide is associated with 500 annotation documents, each of which contains 2,000 annotation elements. If the user clicks the ‘eye’ icon to render all 500 x 2000 = 100,000 elements, then right clicking on any single element to edit will be very slow. If the user just chooses to render a couple of documents (i.e. only 1,000 elements) at a time, then there is no performance issue.</p></li>
+</ul>
+<p><strong>How can I improve rendering performance with large numbers of elements?</strong></p>
+<ul>
+<li><p><em>Distribute your elements over several annotation documents</em></p>
+<blockquote>
+<div><p>This helps improve server communication in several way</p>
+<ul class="simple">
+<li><p>Reducing likelihood of request timeouts when pushing annotation data using POST or editing data using PUT.</p></li>
+<li><p>Minimizing communication volume when editing annotations via HistomicsUI. Users can right click edit an individual element which triggers a PUT endpoint to send the updated document back to the DSA instance. In the future we will improve how edits are communicated but for now keep this in mind.</p></li>
+<li><p>Allows the user to selectively display groups of elements and maintain rendering performance when the slide contains very large numbers of elements.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p><em>Consider which elements should be grouped into the same documents</em></p>
+<blockquote>
+<div><p>Organizing elements by region can help users control rendering more easily.
+For example, given multiple pieces of tissue in a slide, you could assign a
+document to each tissue piece, allowing users to control the rendering on
+each piece independently. Alternatively, you may assign elements of
+conceptual styles (e.g. tumor) to the same document for simplicity. If you
+elect to do this, you may need multiple documents per group to maintain performance.</p>
+</div></blockquote>
+</li>
+<li><p><em>Minimize the use of polygon fills</em></p>
+<blockquote>
+<div><p>Any polygon fills are rendered on the GPU and is re-rendered with the
+interactive mode, transparency slider, right click, multi-select, lasso select, etc.</p>
+</div></blockquote>
+</li>
+<li><p><em>Minimize vertices per polygon</em></p>
+<blockquote>
+<div><p>If your polygons represent algorithmic outputs then consider how you can
+minimize the number of vertices. If they were originally generated from a
+mask image at high magnification 20x or above, consider resizing the source
+mask to a smaller magnification before extracting . Post processing of
+polygonal coordinates can also be done to remove redundant collinear vertices
+or to simplify vertices.</p>
+</div></blockquote>
+</li>
+<li><p><em>Make your end-users aware of efficiency bottlenecks</em></p>
+<blockquote>
+<div><p>If your end user needs to edit elements in a slide with hundreds of
+thousands of elements, make sure to let them know which things to do and
+not to do. The user should not be viewing all annotations simultaneously
+unless the number is sufficiently small or there’s a specific reason to do
+so. They should be made aware that right clicking and editing annotations
+and using the transparency slider are performance bottlenecks when there are
+thousands of rendered annotations.</p>
+</div></blockquote>
+</li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="procedure_for_typical_annotation_project.html" class="btn btn-neutral float-left" title="Procedure for managing a typical annotation project" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="annotation_database_backup_and_sql_parser.html" class="btn btn-neutral float-right" title="Local backup and SQL querying of annotation data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
