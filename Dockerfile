@@ -20,6 +20,8 @@ RUN apt-get update && \
     build-essential \
     # can speed up large_image caching \
     memcached \
+    # used to reduce docker image size \
+    rdfind \
     && \
     # Clean up to reduce docker size \
     apt-get autoremove && \
@@ -51,7 +53,9 @@ RUN pip install --no-cache-dir --upgrade pip setuptools && \
     # install step \
     pip install --no-cache-dir nimfa numpy scipy Pillow pandas scikit-image scikit-learn imageio 'shapely[vectorized]' opencv-python-headless sqlalchemy matplotlib 'dask[dataframe]' distributed && \
     # clean up \
-    rm -rf /root/.cache/pip/*
+    rm -rf /root/.cache/pip/* && \
+    # Make duplicate files not take extra space in the docker image \
+    rdfind -minsize 32768 -makehardlinks true -makeresultsfile false /usr/local
 
 # Install the latest version of large_image.  This can be disabled if the
 # latest version we need has had an official release
@@ -68,7 +72,9 @@ WORKDIR $htk_path
 # Install HistomicsTK and its dependencies
 RUN pip install --no-cache-dir . --find-links https://girder.github.io/large_image_wheels && \
     pip install --no-cache-dir virtualenv && \
-    rm -rf /root/.cache/pip/*
+    rm -rf /root/.cache/pip/* && \
+    # Make duplicate files not take extra space in the docker image \
+    rdfind -minsize 32768 -makehardlinks true -makeresultsfile false /usr/local
 
 # Show what was installed
 RUN pip freeze
