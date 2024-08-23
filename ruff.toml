@@ -4,7 +4,7 @@ exclude = [
     "*/web_client/*",
     "*/*egg*/*",
 ]
-ignore = [
+lint.ignore = [
     "B017",
     "B026",
     "B904",
@@ -34,7 +34,7 @@ ignore = [
     "PT017",
 ]
 line-length = 100
-select = [
+lint.select = [
     "B",  # bugbear
     "C90",  # mccabe
     "D",  # pydocstyle
@@ -57,8 +57,8 @@ select = [
     "RSE",
 ]
 
-[flake8-quotes]
+[lint.flake8-quotes]
 inline-quotes = "single"
 
-[mccabe]
+[lint.mccabe]
 max-complexity = 14

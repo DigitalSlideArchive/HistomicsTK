@@ -1,7 +1,7 @@
 import os
 
-from slicer_cli_web import ctk_cli_adjustment  # noqa
 import slicer_cli_web.cli_list_entrypoint  # noqa I001
+from slicer_cli_web import ctk_cli_adjustment  # noqa
 
 
 def main():
