@@ -44,7 +44,7 @@ setup(
         'scikit-image',
         'scikit-learn',
         'imageio',
-        'shapely[vectorized]',
+        'shapely',
         'sqlalchemy',
         'matplotlib',
         'pyvips',
