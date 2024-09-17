@@ -54,12 +54,15 @@ def colorDeconvolve(args):
     # Write stain images to output
     print('>> Outputting individual stain images')
 
-    print(args.outputStainImageFile_1)
-    sink0.write(args.outputStainImageFile_1)
-    print(args.outputStainImageFile_2)
-    sink1.write(args.outputStainImageFile_2)
-    print(args.outputStainImageFile_3)
-    sink2.write(args.outputStainImageFile_3)
+    if args.outputStainImageFile_1:
+        print(args.outputStainImageFile_1)
+        sink0.write(args.outputStainImageFile_1)
+    if args.outputStainImageFile_2:
+        print(args.outputStainImageFile_2)
+        sink1.write(args.outputStainImageFile_2)
+    if args.outputStainImageFile_3:
+        print(args.outputStainImageFile_3)
+        sink2.write(args.outputStainImageFile_3)
 
     return region
 
@@ -129,8 +132,9 @@ def main(args):
         if args.stain_2 == 'null':
             annotation[1:2] = []
 
-        with open(args.outputAnnotationFile, 'w') as annotation_file:
-            json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
+        if args.outputAnnotationFile:
+            with open(args.outputAnnotationFile, 'w') as annotation_file:
+                json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
 
 
 if __name__ == '__main__':
