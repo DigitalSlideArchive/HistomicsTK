@@ -42,8 +42,9 @@ commands:
       - run:
           name: Upgrade pyenv
           command: |
-            rm -rf /opt/circleci/.pyenv
-            curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+            sudo rm -rf /opt/circleci/.pyenv
+            sudo bash -c 'curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | PYENV_ROOT=/opt/circleci/.pyenv bash'
+            sudo chmod -R 777 /opt/circleci/.pyenv/
             pyenv install --list list
       - run:
           name: Use pyenv to install python
@@ -66,7 +67,7 @@ jobs:
   py38:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:current
     steps:
       - checkout
       - upgradepython:
@@ -92,7 +93,7 @@ jobs:
   py39:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:current
     steps:
       - checkout
       - upgradepython:
@@ -118,7 +119,7 @@ jobs:
   py310:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:current
     steps:
       - checkout
       - upgradepython:
@@ -144,7 +145,7 @@ jobs:
   py311:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:current
     steps:
       - checkout
       - upgradepython:
@@ -170,7 +171,7 @@ jobs:
   py312:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:current
     steps:
       - checkout
       - upgradepython:
@@ -187,6 +188,32 @@ jobs:
             - tox-externaldata-{{ checksum "tests/datastore.py" }}
       - tox:
           env: py312
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
+      - coverage
+  py313:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2004:current
+    steps:
+      - checkout
+      - upgradepython:
+          version: "3.13"
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.13
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
+      - tox:
+          env: py313
       - save_cache:
           name: Save external data cache
           key: tox-externaldata-{{ checksum "tests/datastore.py" }}
@@ -212,7 +239,7 @@ jobs:
   docker:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:current
     steps:
       - checkout
       - run:
@@ -244,7 +271,7 @@ jobs:
   publish_docker:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:current
     steps:
       - checkout
       - attach_workspace:
@@ -364,6 +391,13 @@ workflows:
             branches:
               ignore:
                 - gh-pages
+      - py313:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
       - lint_and_docs:
           filters:
             tags:
@@ -392,6 +426,7 @@ workflows:
             - py310
             - py311
             - py312
+            - py313
             - lint_and_docs
             - wheels
             - docker
@@ -409,6 +444,7 @@ workflows:
             - py310
             - py311
             - py312
+            - py313
             - lint_and_docs
             - docker
             - wheels
@@ -433,6 +469,7 @@ workflows:
       - py310
       - py311
       - py312
+      - py313
       - lint_and_docs
       - docker
       - wheels
@@ -443,6 +480,7 @@ workflows:
             - py310
             - py311
             - py312
+            - py313
             - lint_and_docs
             - docker
             - wheels
