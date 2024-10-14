@@ -65,7 +65,7 @@
       <label>Output intensity in SDA space</label>
       <description>Output intensity in SDA space (*.anot)</description>
       <channel>output</channel>
-      <index>2</index>
+      <index>1</index>
     </file>
   </parameters>
   <parameters advanced="true">

@@ -17,7 +17,7 @@ repos:
   - id: check-shebang-scripts-are-executable
   # - id: check-symlinks
   # - id: check-toml
-  # - id: check-xml
+  - id: check-xml
   - id: check-yaml
   - id: debug-statements
   - id: destroyed-symlinks
@@ -27,6 +27,7 @@ repos:
   - id: fix-byte-order-marker
   - id: forbid-new-submodules
   - id: mixed-line-ending
+  - id: no-commit-to-branch
   - id: trailing-whitespace
 - repo: https://github.com/pre-commit/pygrep-hooks
   rev: v1.10.0

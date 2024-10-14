@@ -139,8 +139,4 @@
       <default>256</default>
     </integer>
   </parameters>
-  <parameters>
-    <label>IO</label>
-    <description>Input/output parameters.</description>
-  </parameters>
 </executable>
