@@ -213,7 +213,8 @@ def _fractal_dimension(Z):
     # Fit the successive log(sizes) with log (counts)
     coeffs = [0]
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore', np.RankWarning)
+        if hasattr(np, 'RankWarning'):
+            warnings.simplefilter('ignore', np.RankWarning)
         if len(counts):
             try:
                 coeffs = np.polyfit(np.log(sizes), np.log(counts), 1)
