@@ -43,8 +43,6 @@ ENV htk_path=/HistomicsTK
 RUN mkdir -p $htk_path
 
 RUN pip install --no-cache-dir --upgrade pip setuptools && \
-    # Install bokeh to help debug dask \
-    pip install --no-cache-dir 'bokeh>=0.12.14,<3' && \
     # Install large_image memcached and sources extras \
     pip install --no-cache-dir 'large-image[all]' --find-links https://girder.github.io/large_image_wheels && \
     # Install girder-client \
