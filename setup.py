@@ -49,8 +49,7 @@ setup(
         'matplotlib',
         'pyvips',
         # dask packages
-        'dask[dataframe]',
-        'distributed',
+        'dask[distributed,array]',
         # large image; for non-linux systems only install the PIL tile source
         # by default.
         'large-image[sources];sys.platform=="linux" or sys.platform=="linux2"',
@@ -73,11 +72,11 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
@@ -85,5 +84,5 @@ setup(
     entry_points={
         'console_scripts': ['histomicstk = histomicstk.cli.__main__:main'],
     },
-    python_requires='>=3.8',
+    python_requires='>=3.9',
 )

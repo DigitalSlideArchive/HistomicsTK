@@ -49,7 +49,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools && \
     pip install --no-cache-dir girder-client && \
     # Install some other dependencies here to save time in the histomicstk \
     # install step \
-    pip install --no-cache-dir nimfa numpy scipy Pillow pandas scikit-image scikit-learn imageio 'shapely[vectorized]' opencv-python-headless sqlalchemy matplotlib 'dask[dataframe]' distributed && \
+    pip install --no-cache-dir nimfa numpy scipy Pillow pandas scikit-image scikit-learn imageio 'shapely[vectorized]' opencv-python-headless sqlalchemy matplotlib 'dask[array,distributed]' && \
     # clean up \
     rm -rf /root/.cache/pip/* && \
     # Make duplicate files not take extra space in the docker image \
