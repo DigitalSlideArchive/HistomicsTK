@@ -168,6 +168,32 @@ jobs:
           paths:
             - ./.tox/externaldata
       - coverage
+  py313:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - upgradepython:
+          version: "3.13"
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.13
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
+      - tox:
+          env: py313
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
+      - coverage
   lint_and_docs:
     working_directory: ~/project
     docker:
@@ -331,6 +357,13 @@ workflows:
             branches:
               ignore:
                 - gh-pages
+      - py313:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
       - lint_and_docs:
           filters:
             tags:
@@ -358,6 +391,7 @@ workflows:
             - py310
             - py311
             - py312
+            - py313
             - lint_and_docs
             - wheels
             - docker
@@ -374,6 +408,7 @@ workflows:
             - py310
             - py311
             - py312
+            - py313
             - lint_and_docs
             - docker
             - wheels
@@ -397,6 +432,7 @@ workflows:
       - py310
       - py311
       - py312
+      - py313
       - lint_and_docs
       - docker
       - wheels
@@ -406,6 +442,7 @@ workflows:
             - py310
             - py311
             - py312
+            - py313
             - lint_and_docs
             - docker
             - wheels
