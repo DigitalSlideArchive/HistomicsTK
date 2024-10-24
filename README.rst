@@ -6,10 +6,6 @@ HistomicsTK |codecov-io|
     :target: https://codecov.io/github/DigitalSlideArchive/HistomicsTK?branch=master
     :alt: codecov.io
 
-.. |gitter| image:: https://badges.gitter.im/DigitalSlideArchive/HistomicsTK.svg
-   :target: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-   :alt: Join the chat at https://gitter.im/DigitalSlideArchive/HistomicsTK
-
 `HistomicsTK`_ is a Python package for the analysis of digital pathology images. It can function as a stand-alone library, or as a Digital Slide Archive plugin that allows users to invoke image analysis jobs through HistomicsUI. The functionality offered by HistomicsTK can be extended using `slicer cli web <https://github.com/girder/slicer_cli_web>`__ which allows developers to integrate their image analysis algorithms into DSA for dissemination through HistomicsUI.
 
 Whole-slide imaging captures the histologic details of tissues in large multiresolution images. Improvements in imaging technology, decreases in storage costs, and regulatory approval of digital pathology for primary diagnosis have resulted in an explosion of whole-slide imaging data. Digitization enables the application of computational image analysis and machine learning algorithms to characterize the contents of these images, and to understand the relationships between histology, clinical outcomes, and molecular data from genomic platforms. Compared to the related areas of radiology and genomics, open-source tools for the management, visualization, and analysis of digital pathology has lagged. To address this we have developed HistomicsTK in coordination with the `Digital Slide Archive`_ (DSA), a platform for managing and sharing digital pathology images in a centralized web-accessible server, and `HistomicsUI`_, a specialized user interface for annotation and markup of whole-slide images and for running image analysis tools and for scalable visualizing of dense outputs from image analysis algorithms. HistomicsTK aims to serve the needs of both pathologists/biologists interested in using state-of-the-art algorithms to analyze their data, and algorithm researchers interested in developing new/improved algorithms and disseminate them for wider use by the community.
@@ -95,7 +91,7 @@ See Also
 
 **Source repositories:** `Digital Slide Archive`_ | `HistomicsUI`_ | `large_image`_ | `slicer_cli_web`_
 
-**Discussion:** `GitHub Discussion`_ | `Discourse forum`_
+**Discussion:** `GitHub Discussion`_
 
 .. Links for everything above (not rendered):
 .. _HistomicsTK: https://digitalslidearchive.github.io/digital_slide_archive/
@@ -109,5 +105,3 @@ See Also
 .. _Kitware: http://www.kitware.com/
 .. _U24-CA194362-01: http://grantome.com/grant/NIH/U24-CA194362-01
 .. _GitHub Discussion: https://github.com/DigitalSlideArchive/digital_slide_archive/discussions
-.. _Discourse forum: https://discourse.girder.org/c/histomicstk
-.. _Gitter Chatroom: https://gitter.im/DigitalSlideArchive/HistomicsTK?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
