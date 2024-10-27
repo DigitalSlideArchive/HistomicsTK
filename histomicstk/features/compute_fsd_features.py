@@ -39,6 +39,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
     import pandas as pd
     from skimage.measure import regionprops
     from skimage.segmentation import find_boundaries
+    from histomicstk.segmentation.label import trace_object_boundaries
 
     # List of feature names
     feature_list = []
@@ -74,9 +75,14 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
         # grab label mask
         lmask = (im_label[min_row:max_row, min_col:max_col] == rprops[i].label).astype(bool)
         # find boundaries
-        Bounds = np.argwhere(
-            find_boundaries(lmask, mode='inner').astype(np.uint8) == 1,
-        )
+        Bounds = trace_object_boundaries(lmask,
+                              conn=8, trace_all=False,
+                              x_start=None, y_start=None,
+                              max_length=None,
+                              simplify_colinear_spurs=False,
+                              eps_colinear_area=0.01,
+                              region_props=None)
+        Bounds = np.stack([Bounds[0][0][:-1], Bounds[1][0][:-1]], axis=-1)
         # check length of boundaries
         if len(Bounds) < 2:
             data_list.append(np.zeros(numFeatures))
