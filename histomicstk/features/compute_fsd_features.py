@@ -43,7 +43,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
     # List of feature names
     feature_list = []
     for i in range(Fs):
-        feature_list = np.append(feature_list, 'Shape.FSD' + str(i + 1))
+        feature_list = np.append(feature_list, "Shape.FSD" + str(i + 1))
 
     # get Label size x
     sizex = im_label.shape[0]
@@ -68,21 +68,28 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
     for i in range(numLabels):
         # get bounds of dilated nucleus
         min_row, max_row, min_col, max_col = _GetBounds(
-            rprops[i].bbox, Delta, sizex, sizey,
+            rprops[i].bbox,
+            Delta,
+            sizex,
+            sizey,
         )
 
         # grab label mask
-        lmask = (im_label[min_row:max_row, min_col:max_col] == rprops[i].label).astype(bool)
+        lmask = (im_label[min_row:max_row, min_col:max_col] == rprops[i].label).astype(
+            bool
+        )
         # find boundaries
-        Bounds = trace_object_boundaries(lmask,
-                                         conn=8, 
-                                         trace_all=False,
-                                         x_start=None, 
-                                         y_start=None,
-                                         max_length=None,
-                                         simplify_colinear_spurs=False,
-                                         eps_colinear_area=0.01,
-                                         region_props=None)
+        Bounds = trace_object_boundaries(
+            lmask,
+            conn=8,
+            trace_all=False,
+            x_start=None,
+            y_start=None,
+            max_length=None,
+            simplify_colinear_spurs=False,
+            eps_colinear_area=0.01,
+            region_props=None,
+        )
         Bounds = np.stack([Bounds[0][0][:-1], Bounds[1][0][:-1]], axis=-1)
         # check length of boundaries
         if len(Bounds) < 2:
@@ -124,7 +131,7 @@ def _InterpolateArcLength(X, Y, K):
     # generate spaced points 0, 1/k, 1
     interval = np.linspace(0, 1, K + 1)
     # get segment lengths
-    slens = np.sqrt(np.diff(X)**2 + np.diff(Y)**2)
+    slens = np.sqrt(np.diff(X) ** 2 + np.diff(Y) ** 2)
     # normalize to unit length
     slens = np.true_divide(slens, slens.sum())
     # calculate cumulative length along boundary
@@ -172,14 +179,14 @@ def _FSDs(X, Y, K, Intervals):
 
     """
     # check input 'Intervals'
-    if Intervals[0] != 1.:
-        Intervals = np.hstack((1., Intervals))
+    if Intervals[0] != 1.0:
+        Intervals = np.hstack((1.0, Intervals))
     if Intervals[-1] != (K / 2):
         Intervals = np.hstack((Intervals, float(K)))
     # get length of intervals
     L = len(Intervals)
     # initialize F
-    F = np.zeros((L - 1, )).astype(float)
+    F = np.zeros((L - 1,)).astype(float)
     # interpolate boundaries
     iX, iY = _InterpolateArcLength(X, Y, K)
     # check if iXY.iX is not empty
@@ -199,7 +206,8 @@ def _FSDs(X, Y, K, Intervals):
         # calculate 'F' values
         for i in range(L - 1):
             F[i] = np.round(
-                fX[Intervals[i] - 1:Intervals[i + 1]].sum(), L,
+                fX[Intervals[i] - 1 : Intervals[i + 1]].sum(),
+                L,
             ).real.astype(float)
 
     return F
