@@ -38,7 +38,6 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
     """
     import pandas as pd
     from skimage.measure import regionprops
-    from skimage.segmentation import find_boundaries
     from histomicstk.segmentation.label import trace_object_boundaries
 
     # List of feature names
