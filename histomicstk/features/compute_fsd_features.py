@@ -199,7 +199,8 @@ def _FSDs(X, Y, K, Intervals):
         # make curvature cumulative
         Curvature = Curvature - Curvature[0]
         # calculate FFT
-        fX = np.fft.fft(Curvature).T
+        z = 1 * np.cos(Curvature) + 1j * np.sin(Curvature)
+        fX = np.fft.fft(z).T
         # spectral energy
         fX = fX * fX.conj()
         fX = (fX / fX.sum()) if fX.sum() else fX
