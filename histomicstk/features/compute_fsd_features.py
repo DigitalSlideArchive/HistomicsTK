@@ -38,12 +38,13 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
     """
     import pandas as pd
     from skimage.measure import regionprops
+
     from histomicstk.segmentation.label import trace_object_boundaries
 
     # List of feature names
     feature_list = []
     for i in range(Fs):
-        feature_list = np.append(feature_list, "Shape.FSD" + str(i + 1))
+        feature_list = np.append(feature_list, 'Shape.FSD' + str(i + 1))
 
     # get Label size x
     sizex = im_label.shape[0]
@@ -76,7 +77,7 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
 
         # grab label mask
         lmask = (im_label[min_row:max_row, min_col:max_col] == rprops[i].label).astype(
-            bool
+            bool,
         )
         # find boundaries
         Bounds = trace_object_boundaries(
@@ -207,7 +208,7 @@ def _FSDs(X, Y, K, Intervals):
         # calculate 'F' values
         for i in range(L - 1):
             F[i] = np.round(
-                fX[Intervals[i] - 1 : Intervals[i + 1]].sum(),
+                fX[Intervals[i] - 1: Intervals[i + 1]].sum(),
                 L,
             ).real.astype(float)
 
