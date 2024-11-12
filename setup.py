@@ -49,7 +49,7 @@ setup(
         'matplotlib',
         'pyvips',
         # dask packages
-        'dask[dataframe]',
+        'dask[dataframe]<2024.11.0',
         'distributed',
         # large image; for non-linux systems only install the PIL tile source
         # by default.
