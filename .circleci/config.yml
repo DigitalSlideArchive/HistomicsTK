@@ -63,32 +63,6 @@ commands:
           command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; ./codecov --disable search pycov gcov --file .tox/coverage/py_coverage.xml .tox/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
 
 jobs:
-  py38:
-    working_directory: ~/project
-    machine:
-      image: ubuntu-2004:202111-02
-    steps:
-      - checkout
-      - upgradepython:
-          version: "3.8"
-      - run:
-          name: Use pyenv to set python version
-          command: |
-            pyenv versions
-            pyenv global 3.8
-      - docker-compose
-      - restore_cache:
-          name: Restore external data cache
-          keys:
-            - tox-externaldata-{{ checksum "tests/datastore.py" }}
-      - tox:
-          env: py38
-      - save_cache:
-          name: Save external data cache
-          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
-          paths:
-            - ./.tox/externaldata
-      - coverage
   py39:
     working_directory: ~/project
     machine:
@@ -329,13 +303,6 @@ workflows:
   version: 2
   ci:
     jobs:
-      - py38:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore:
-                - gh-pages
       - py39:
           filters:
             tags:
@@ -387,7 +354,6 @@ workflows:
                 - gh-pages
       - docs-deploy:
           requires:
-            - py38
             - py39
             - py310
             - py311
@@ -404,7 +370,6 @@ workflows:
                 - sphinx
       - publish_docker:
           requires:
-            - py38
             - py39
             - py310
             - py311
@@ -428,7 +393,6 @@ workflows:
               only:
                 - master
     jobs:
-      - py38
       - py39
       - py310
       - py311
@@ -438,7 +402,6 @@ workflows:
       - wheels
       - publish_docker:
           requires:
-            - py38
             - py39
             - py310
             - py311

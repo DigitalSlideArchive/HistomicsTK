@@ -1,8 +1,9 @@
 FROM dockcross/manylinux2014-x64
 
-# Don't build python < 3.8
+# Don't build python < 3.9
 RUN rm -rf /opt/python/cp36*
 RUN rm -rf /opt/python/cp37*
+RUN rm -rf /opt/python/cp38*
 RUN rm -rf /opt/python/pp*
 
 RUN for PYBIN in /opt/python/*/bin; do \
