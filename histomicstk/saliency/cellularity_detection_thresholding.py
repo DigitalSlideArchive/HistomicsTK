@@ -194,7 +194,7 @@ class CDT_single_tissue_piece:
         # Second, low-pass filter to dilate and smooth a bit
         self.maybe_cellular = gaussian(
             0 + (self.maybe_cellular > 0), sigma=self.cdt.cellular_step2_sigma,
-            output=None, mode='nearest', preserve_range=True)
+            out=None, mode='nearest', preserve_range=True)
 
         # find connected components
         self.maybe_cellular, _ = ndimage.label(self.maybe_cellular)
@@ -224,7 +224,7 @@ class CDT_single_tissue_piece:
         # get top n brightest regions from the largest areas
         intensity_feats.sort_values('Intensity.Mean', axis=0, inplace=True)
         discard = np.array(intensity_feats.index[:-self.cdt.cellular_top_n])
-        discard = np.in1d(top_cellular, discard).reshape(top_cellular.shape)
+        discard = np.isin(top_cellular, discard).reshape(top_cellular.shape)
         top_cellular[discard] = 0
 
         # integrate into labeled mask
@@ -614,7 +614,7 @@ class Cellularity_detector_thresholding(Base_HTK_Class):
         >    reinhard and macenko_pca are accepted.
 
         """
-        from imageio import imread
+        from imageioi.v2 import imread
 
         # read input image
         ref_im = np.array(imread(ref_image_path, pilmode='RGB'))

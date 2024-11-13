@@ -8,7 +8,7 @@ import sys
 
 import pandas as pd
 import pytest
-from imageio import imread
+from imageio.v2 import imread
 from pandas import read_csv
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \

@@ -88,10 +88,10 @@ class TestDatabaseParser:
         dbcon = sql_engine.connect()
 
         result = pd.read_sql_query(text("""SELECT count(*) FROM 'folders';"""), dbcon)
-        assert int(result.loc[0, :]) == 2
+        assert int(result.iloc[0, 0]) == 2
 
         result = pd.read_sql_query(text("""SELECT count(*) FROM 'items';"""), dbcon)
-        assert int(result.loc[0, :]) == 4
+        assert int(result.iloc[0, 0]) == 4
 
         # cleanup
         shutil.rmtree(savepath)

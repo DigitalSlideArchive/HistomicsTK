@@ -193,8 +193,14 @@ def _pop_stats(pop):
         if mask.all():
             break
         pop = pop[mask]
-    minmaxr = pop.min() / pop.max()
-    disorder = stddev / (mean + stddev)
+    if pop.max():
+        minmaxr = pop.min() / pop.max()
+    else:
+        minmaxr = 0.0
+    if mean + stddev:
+        disorder = stddev / (mean + stddev)
+    else:
+        disorder = 0.0
     return PopStats(mean, stddev, minmaxr, disorder)
 
 
