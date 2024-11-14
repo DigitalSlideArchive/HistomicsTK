@@ -105,7 +105,7 @@ def get_tissue_mask(
         if sigma > 0.0:
             thumbnail = gaussian(
                 thumbnail, sigma=sigma,
-                output=None, mode='nearest', preserve_range=True)
+                out=None, mode='nearest', preserve_range=True)
 
         # get threshold to keep analysis region
         try:
@@ -124,7 +124,7 @@ def get_tissue_mask(
 
     # only keep
     unique, counts = np.unique(labeled[labeled > 0], return_counts=True)
-    discard = np.in1d(labeled, unique[counts < min_size])
+    discard = np.isin(labeled, unique[counts < min_size])
     discard = discard.reshape(labeled.shape)
     labeled[discard] = 0
 
@@ -265,7 +265,7 @@ def _get_largest_regions(labeled, top_n=10):
     keep = unique[np.argsort(counts)[-top_n:]]
 
     mask = np.zeros(labeled_im.shape)
-    keep_pixels = np.in1d(labeled_im, keep)
+    keep_pixels = np.isin(labeled_im, keep)
     keep_pixels = keep_pixels.reshape(labeled_im.shape)
     mask[keep_pixels] = 1
     labeled_im[mask == 0] = 0
