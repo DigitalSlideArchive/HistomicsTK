@@ -42,8 +42,9 @@ commands:
       - run:
           name: Upgrade pyenv
           command: |
-            rm -rf /opt/circleci/.pyenv
-            curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+            sudo rm -rf /opt/circleci/.pyenv
+            sudo bash -c 'curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | PYENV_ROOT=/opt/circleci/.pyenv bash'
+            sudo chmod -R 777 /opt/circleci/.pyenv/
             pyenv install --list list
       - run:
           name: Use pyenv to install python
@@ -66,7 +67,7 @@ jobs:
   py39:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2204:current
     steps:
       - checkout
       - upgradepython:
@@ -92,7 +93,7 @@ jobs:
   py310:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2204:current
     steps:
       - checkout
       - upgradepython:
@@ -118,7 +119,7 @@ jobs:
   py311:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2204:current
     steps:
       - checkout
       - upgradepython:
@@ -144,7 +145,7 @@ jobs:
   py312:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2204:current
     steps:
       - checkout
       - upgradepython:
@@ -186,7 +187,7 @@ jobs:
   docker:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
@@ -218,7 +219,7 @@ jobs:
   publish_docker:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2204:current
     steps:
       - checkout
       - attach_workspace:
@@ -238,12 +239,11 @@ jobs:
               fi
   wheels:
     working_directory: ~/project
-    docker:
-      - image: cimg/python:3.9
-      - image: docker:git
+    machine:
+      image: ubuntu-2204:current
     steps:
       - checkout
-      - setup_remote_docker
+      # - setup_remote_docker
       - run:
           name: Setup virtual environment
           command: |
