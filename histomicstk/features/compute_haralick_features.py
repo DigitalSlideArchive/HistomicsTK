@@ -325,8 +325,10 @@ def compute_haralick_features(im_label, im_intensity, offsets=None,
             meanx = np.dot(n_Minus, px)
             variance = np.dot(px, np.square(n_Minus)) - np.square(meanx)
             nGLCMr = np.ravel(nGLCM)
-            Correlation = (np.dot(np.ravel(xy), nGLCMr) - np.square(meanx)) / variance
-
+            if variance:
+                Correlation = (np.dot(np.ravel(xy), nGLCMr) - np.square(meanx)) / variance
+            else:
+                Correlation = 0.0
             # computes sum of squares : variance
             SumOfSquares = variance
 

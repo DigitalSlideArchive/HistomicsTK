@@ -22,7 +22,7 @@ jobs:
     if: github.repository == 'DigitalSlideArchive/HistomicsTK' && ( startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master' )
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -68,7 +68,7 @@ jobs:
           - [ubuntu-latest, x86_64]
           - [macos-latest, "x86_64 arm64"]
           - [windows-latest, auto64]
-        python: ["cp38", "cp39", "cp310", "cp311", "cp312"]
+        python: ["cp39", "cp310", "cp311", "cp312"]
       fail-fast: false
 
     steps:
@@ -82,7 +82,7 @@ jobs:
           python-version: "3.x"
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.22.0
         env:
           CIBW_BUILD: ${{ matrix.python }}-*
           CIBW_TEST_SKIP: "*-macosx_arm64"

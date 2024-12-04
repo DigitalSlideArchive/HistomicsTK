@@ -7,7 +7,7 @@ Created on Wed Aug 21 16:25:06 2019.
 import os
 
 import numpy as np
-from imageio import imread
+from imageio.v2 import imread
 from PIL import Image
 # import cv2
 from shapely.geometry.polygon import Polygon

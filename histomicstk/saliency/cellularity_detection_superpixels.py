@@ -506,7 +506,7 @@ class Cellularity_detector_superpixels (Base_HTK_Class):
         assert what in ('thumbnail', 'main')
 
         if ref_image_path is not None:
-            from imageio import imread
+            from imageio.v2 import imread
 
             ref_im = np.array(imread(ref_image_path, pilmode='RGB'))
             mu, sigma = lab_mean_std(ref_im)
