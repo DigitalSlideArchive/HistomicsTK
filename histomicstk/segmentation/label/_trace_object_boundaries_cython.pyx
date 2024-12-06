@@ -26,8 +26,8 @@ def _trace_object_boundaries_cython(long[:, :] im_label not None, long connectiv
         # find starting x and y points if not defined
         if (x_start == -1) & (y_start == -1):
 
-          for i in range(nrows):
-            for j in range(ncols):
+          for i in range(1, nrows - 1):
+            for j in range(1, ncols - 1):
 
               if (im_label[i, j] > 0) & (flag == 0):
                 # check if the number of points is one
@@ -41,16 +41,17 @@ def _trace_object_boundaries_cython(long[:, :] im_label not None, long connectiv
 
     bx = []
     by = []
+    if x_start >= 0 and y_start >= 0:
 
-    if connectivity == 4:
-        bx, by = _isbf(
-            im_label, im_label_90, im_label_180, im_label_270,
-            x_start, y_start, max_length);
+        if connectivity == 4:
+            bx, by = _isbf(
+                im_label, im_label_90, im_label_180, im_label_270,
+                x_start, y_start, max_length);
 
-    else:
-        bx, by = _moore(
-            im_label, im_label_90, im_label_180, im_label_270,
-            x_start, y_start, max_length);
+        else:
+            bx, by = _moore(
+                im_label, im_label_90, im_label_180, im_label_270,
+                x_start, y_start, max_length);
 
     return np.asarray(bx), np.asarray(by)
 
