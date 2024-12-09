@@ -107,8 +107,9 @@ class TestAnnotAndMaskUtils:
             [(None, 10.), (0.25, '&magnification=10.00000000')],
             [(None, None), (1.0, '')],
         ]
-        for (MPP, MAG), (sftrue, apstr) in in_out:
-            sf, appendStr = get_scale_factor_and_appendStr(
-                gc=cfg.gc, slide_id=cfg.iteminfo['_id'], MPP=MPP, MAG=MAG)
-            assert sf == sftrue
-            assert appendStr == apstr
+        with pytest.warns(RuntimeWarning):
+            for (MPP, MAG), (sftrue, apstr) in in_out:
+                sf, appendStr = get_scale_factor_and_appendStr(
+                    gc=cfg.gc, slide_id=cfg.iteminfo['_id'], MPP=MPP, MAG=MAG)
+                assert sf == sftrue
+                assert appendStr == apstr
