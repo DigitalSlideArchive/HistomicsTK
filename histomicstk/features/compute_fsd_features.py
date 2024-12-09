@@ -79,6 +79,12 @@ def compute_fsd_features(im_label, K=128, Fs=6, Delta=8, rprops=None):
         lmask = (im_label[min_row:max_row, min_col:max_col] == rprops[i].label).astype(
             bool,
         )
+        # trace_object_boundaries requires that that edge rows and columns be
+        # false as it does no bounds checking
+        if not min_row or not min_col or max_row + 1 == sizex or max_col + 1 == sizey:
+            lmask = np.pad(lmask, (
+                (1 if not min_row else 0, 1 if max_row + 1 == sizex else 0),
+                (1 if not min_col else 0, 1 if max_col + 1 == sizey else 0)))
         # find boundaries
         Bounds = trace_object_boundaries(
             lmask,
