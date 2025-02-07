@@ -22,7 +22,7 @@ jobs:
     if: github.repository == 'DigitalSlideArchive/HistomicsTK' && ( startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master' )
     strategy:
       matrix:
-        python: ["3.9", "3.10", "3.11", "3.12"]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -65,10 +65,10 @@ jobs:
       matrix:
         # See matplotlib for some of the rationale of this
         buildplat:
-          - [ubuntu-latest, x86_64]
+          - [ubuntu-latest, "x86_64 aarch64"]
           - [macos-latest, "x86_64 arm64"]
           - [windows-latest, auto64]
-        python: ["cp39", "cp310", "cp311", "cp312"]
+        python: ["cp39", "cp310", "cp311", "cp312", "cp313"]
       fail-fast: false
 
     steps:
@@ -80,6 +80,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
