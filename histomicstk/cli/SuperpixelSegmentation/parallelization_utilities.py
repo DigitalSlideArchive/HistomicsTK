@@ -235,77 +235,6 @@ class SharedNumpyArray:
                 self.shm.unlink()
 
 
-
-class ProgressHelper:
-    def __init__(self, name, comment='', report=True):
-        """
-        A name is required.  The comment is shown in the popup as commentary
-        on the task.
-        """
-        self._name = name
-        self._comment = comment
-        self._start = time.time()
-        self._last = 0
-        self._report = report
-
-    def __enter__(self):
-        if self._report:
-            print("""<filter-start>
-                <filter-name>%s</filter-name>
-                <filter-comment>%s</filter-comment>
-                </filter-start>""" % (escape(self._name), escape(self._comment)))
-            sys.stdout.flush()
-        self._start = time.time()
-        return self
-
-    def items(self, items):
-        self._items = items
-        self._item_progress = []
-
-    def item_progress(self, item, val):
-        if item not in self._items:
-            return
-        idx = self._items.index(item)
-        if len(self._item_progress) < len(self._items):
-            self._item_progress += [0] * (len(self._items) - len(self._item_progress))
-        self._item_progress[idx] = val
-        total = sum(self._item_progress) / len(self._item_progress)
-        self.progress(total)
-
-    def progress(self, val):
-        if self._report and (val == 0 or val == 1 or time.time() - self._last >= 0.1):
-            print("""<filter-progress>%s</filter-progress>""" % val)
-            sys.stdout.flush()
-            self._last = time.time()
-
-    def message(self, comment):
-        self._comment = comment
-        if self._report:
-            print("""<filter-comment>%s</filter-comment>""" % escape(comment))
-            sys.stdout.flush()
-
-    def name(self, name):
-        # Leave the original name alone
-        if self._report:
-            print("""<filter-name>%s</filter-name>""" % escape(name))
-            sys.stdout.flush()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        end = time.time()
-        duration = end - self._start
-        if self._report:
-            print("""<filter-end>
-                <filter-name>%s</filter-name>
-                <filter-time>%s</filter-time>
-                </filter-end>""" % (escape(self._name), duration))
-            sys.stdout.flush()
-
-
-__all__ = ['ProgressHelper']
-
-
-
-
 def get_region_polygons(region):
     """
     Convert the region into a list of polygons.
@@ -353,8 +282,6 @@ def get_region_polygons(region):
             poly[-1:] = []
     polys = [poly for poly in polys if len(poly) >= 3]
     return polys
-
-
 
 
 def get_region_dict(region, maxRegionSize=None, tilesource=None):
@@ -432,8 +359,6 @@ def get_region_dict(region, maxRegionSize=None, tilesource=None):
                         [int(val) for val in region])))
 
 
-
-
 def first_order(tasks):
     """ task first-order dependents and ancestors """
     
@@ -443,20 +368,6 @@ def first_order(tasks):
     # get range of tasks
     xmax = max([t[0] for t in tasks])
     ymax = max([t[1] for t in tasks])
-    
-    # # four neighborhood dependencies
-    # anc_mapping = {
-    #     (0, 0): [],
-    #     (0, 1): [(0, -1), (0, 1)],
-    #     (1, 0): [(-1, 0), (1, 0)],
-    #     (1, 1): [(-1, 0), (0, -1), (1, 0), (0, 1)],
-    # }
-    # dep_mapping = {
-    #     (0, 0): [(-1, 0), (0, -1), (1, 0), (0, 1)],
-    #     (0, 1): [(1, 0), (-1, 0)],
-    #     (1, 0): [(0, 1), (0, -1)],
-    #     (1, 1): [],
-    # }
 
     # eight neighbourhood dependencies
     anc_mapping = {
@@ -471,7 +382,6 @@ def first_order(tasks):
         (1, 0): [(0, 1), (0, -1)],
         (1, 1): [],
     }
-    
     
     # handle borders - keep dependencies in the range of possible tasks (>=0 and <= max)
     for task in tasks:
@@ -579,11 +489,8 @@ def tile_grid_w_mask(ts, mask, opts, averageSize, overlap, tileSize, tiparams, v
         x0 = tiparams.get('region', {}).get('left', 0)
         y0 = tiparams.get('region', {}).get('top', 0)
 
-
         tx0 = int((tile['gx'] - x0) / scale)
         ty0 = int((tile['gy'] - y0) / scale)
-
-        # print(tile['tile'].shape, (tile['height'], tile['width']))
 
         start_ts = time.time()
         height, width, _ = tile['tile'].shape
@@ -597,7 +504,6 @@ def tile_grid_w_mask(ts, mask, opts, averageSize, overlap, tileSize, tiparams, v
             width=width, height=height
         )
 
-
         alltile_metadata[(tx0, ty0)] = (height, width)
                 
         start_mc = time.time()
@@ -610,15 +516,7 @@ def tile_grid_w_mask(ts, mask, opts, averageSize, overlap, tileSize, tiparams, v
         stop_mc = time.time()
         mask_gen_times.append(stop_mc-start_mc)
 
-        # fig, axes = plt.subplots(1, 2)
-        # print(ii,':',numpy.array(mask_crop).sum())
-        # axes[0].imshow(tile['tile'], cmap='viridis')
-        # axes[1].imshow(mask_crop, cmap='viridis')
-        # plt.show()
-
         all_tile_ids.append((tx0, ty0))
-
-
 
         if masked_fraction > 0.1:
             if verbose:
@@ -657,8 +555,6 @@ def tile_grid_w_mask(ts, mask, opts, averageSize, overlap, tileSize, tiparams, v
             coordy[j] = y
             j+=1
 
-        
-
     return (task_ids, tasks, 
             h, w, 
             [(x, y) for x, y in itertools.product(range(w), range(h)) 
@@ -688,11 +584,9 @@ def get_ancestor_tileids(ancestors, coordx, coordy):
     ancestor_taskids = {}
 
     for k in ancestors.keys():
-        # print(k,':',ancestors[k])
         ancestor_taskids[(coordx[k[0]], coordy[k[1]])] = [(coordx[ids[0]], coordy[ids[1]]) for ids in ancestors[k]]
 
     return ancestor_taskids
-
 
 
 def plot_tasks(tasks, data, arrows=None, coordx=None,coordy=None,zoom=0.01):
@@ -718,7 +612,6 @@ def plot_tasks(tasks, data, arrows=None, coordx=None,coordy=None,zoom=0.01):
     plt.axis('equal')
 
 def np_to_vips(strip):
-        # print(f'converting numpy to pyvips | task id: {(coordx[task_id[0]], coordy[task_id[1]])} | keys: {k}')
     data = strip
     vimg = pyvips.Image.new_from_memory(
     numpy.ascontiguousarray(data).data,
@@ -733,15 +626,11 @@ def np_to_vips(strip):
 
 def compute_mask(task_id, task, overlap, strips_local, trim_dict, coordx, coordy, ancestor_taskids):
 
-    #convert numpy to pyvips
-
     task_id = (coordx[task_id[0]], coordy[task_id[1]])
     (tx0, ty0) = task_id
-    (x0, y0, scale, tile) = task#[task_id]
+    (x0, y0, scale, tile) = task
 
     ancestors = ancestor_taskids[task_id]
-
-    # print('tile:', tx0, ty0, ', ancestors:', ancestors, ', trim_edge:', trims)
 
     img = tile['tile']
     n_pixels = tile['width'] * tile['height']
@@ -754,10 +643,7 @@ def compute_mask(task_id, task, overlap, strips_local, trim_dict, coordx, coordy
 
             y, simg = strips_local[k]
 
-            # print(k)
-
             if (k[0],y) in ancestors:
-
 
                 try:
                     simg = np_to_vips(simg)
@@ -788,8 +674,6 @@ def compute_mask(task_id, task, overlap, strips_local, trim_dict, coordx, coordy
 
                     mask[suby:suby + submask.shape[0], subx:subx + submask.shape[1]] *= submask
 
-                    # print(f'{simg}\n, mask shape:{img.shape}, tile:{tx0},{ty0}, strip(x,y):{(k[0],y)},subx:{subx}-{simg_w} {abs(tx0 - k[0])},suby:{suby}-{simg_h} {abs(ty0 - y)},{crop_width},{crop_height}')
-
                 except Exception as e:
                     print(e)
                     print(f'{simg}\n, mask shape:{img.shape}, tile:{tx0},{ty0}, strip(x,y):{(k[0],y)},subx:{subx}-{simg_w} {abs(tx0 - k[0])},suby:{suby}-{simg_h} {abs(ty0 - y)},{crop_width},{crop_height}')
@@ -800,7 +684,6 @@ def compute_mask(task_id, task, overlap, strips_local, trim_dict, coordx, coordy
 
 
 def compute_mask_novips(task_id, task, overlap, strips_local, coordx, coordy, ancestor_taskids):
-
 
     task_id = (coordx[task_id[0]], coordy[task_id[1]])
     (tx0, ty0) = task_id
@@ -818,7 +701,6 @@ def compute_mask_novips(task_id, task, overlap, strips_local, coordx, coordy, an
     n_pixels = tile['width'] * tile['height']
     mask = None
 
-
     if overlap:
         mask = numpy.ones(img.shape[:2])
 
@@ -829,7 +711,6 @@ def compute_mask_novips(task_id, task, overlap, strips_local, coordx, coordy, an
             y, simg = strips_local[k]
 
             if (k[0],y) in ancestors:
-
 
                 try:
                     subx = max(0, k[0] - tx0)  
@@ -859,7 +740,6 @@ def compute_mask_novips(task_id, task, overlap, strips_local, coordx, coordy, an
                     print(f'{simg}\n, mask shape:{img.shape}, tile:{tx0},{ty0}, strip(x,y):{(k[0],y)},subx:{subx}-{simg_w} {abs(tx0 - k[0])},suby:{suby}-{simg_h} {abs(ty0 - y)},{crop_width},{crop_height}')
                     raise ValueError
 
-
     return mask
 
 
@@ -874,7 +754,6 @@ def process_tiles(task_ids, tasks, grid, coordx, coordy, trim_dict, ancestors, a
     with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as pool:
     
     # submit all tasks with no ancestors 
-
         submitted = {
             pool.submit(tilejob, task, tasks[(coordx[task[0]], coordy[task[1]])], trim_dict, coordx, coordy, 
                         numpy.array(tasks[(coordx[task[0]], coordy[task[1]])][4]), opts): 
@@ -920,24 +799,19 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
     overlap = opts.superpixelSize * 4 * 2 if opts.overlap else 0 
     tileSize = opts.tileSize + overlap
 
-
     found = 0
     bboxes = []
     bboxesUser = []
     
-
     trims = trim_dict[task_id]
 
     task_id = (coordx[task_id[0]], coordy[task_id[1]])
     (tx0, ty0) = task_id
 
-    # print(task_id)
-
     if len(task) == 5:
         (x0, y0, scale, tile, tile_mask) = task
     else:
         (x0, y0, scale, tile) = task
-
 
     img = tile['tile']
     n_pixels = tile['width'] * tile['height']
@@ -945,15 +819,10 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
     if mask is None:
         mask = numpy.ones(img.shape[:2])
 
-
     if overlap:
         n_pixels = numpy.count_nonzero(mask)
 
-
-
     n_segments = math.ceil(n_pixels / averageSize)
-
-    # print(n_segments)
 
     segments = skimage.segmentation.slic(
         img,
@@ -965,16 +834,12 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
         enforce_connectivity=True,
         mask=mask,
     )
-
-    # if numpy.any(segments <= 0):
-    # print('immediate:', segments.min(), segments.max(), numpy.any(segments == 0))
-
+    
     # We now have an array that is the same size as the image
     maxValue = numpy.max(segments) + 1
  
     if overlap:
         # Keep any segment that is at all in the non-overlap region
-
         if 'right' in trims:
             ridx = tile['width'] - tile['tile_overlap']['right']
         else:
@@ -984,20 +849,17 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
             bidx = tile['height'] - tile['tile_overlap']['bottom']
         else:
             bidx = -1
-
         
         if 'left' in trims:    
             lidx = tile['tile_overlap']['left']
         else:
             lidx = 0
 
-
         if 'top' in trims:    
             tidx = tile['tile_overlap']['top']
         else:
             tidx = 0
             
-        
         core = segments[
             tidx:bidx,
             lidx:ridx]
@@ -1005,7 +867,6 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
         coremask = mask[
             tidx:bidx,
             lidx:ridx]
-
 
         core[numpy.where(coremask != 1)] = -1
         usedIndices = numpy.unique(core)
@@ -1015,14 +876,9 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
             if used >= 0:
                 usedLut[used] = idx
         usedLut = numpy.array(usedLut, dtype=int)
-
-     
         maxValue = len(usedIndices)
         segments = usedLut[segments]
         mask *= (segments != -1)
-
-        # if numpy.any(segments < 0):
-        #     print('after core:', segments.min(), segments.max(), numpy.any(segments == 0))
 
     if str(opts.bounding).lower() not in {'', 'none'}:
         regions = skimage.measure.regionprops(1 + segments)
@@ -1053,26 +909,15 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
 
     segments += found
 
-    # if found > 0:
-    #     print('found')
-
-    # if numpy.any(segments < 0):
-    #     print('after bound:', segments.min(), segments.max(), numpy.any(segments == 0))
-
     found += int(maxValue)
     if mask is None:
         data = numpy.dstack((
             (segments).astype(int))).astype('B')
-        #numpy.where(segments >=0, segments+1, segments)*tile_mask
-
     else:
         data = numpy.dstack((
             (segments).astype(int),
             mask * 255)).astype('B')
-        #numpy.where(segments >=0, segments+1, segments)*tile_mask
-
-    # print(data[:,:,0].min(), data[:,:,1].max()) 
-
+        
     x = tx0
     ty = tile['tile_position']['region_y']
 
