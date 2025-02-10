@@ -125,25 +125,14 @@ def createSuperPixelsParallel(opts):
     if hasattr(opts, 'callback'):
         opts.callback('file', 0, 2 if opts.outputAnnotationFile else 1)
 
-    found = 0
-    bboxes = []
-    bboxesUser = []
-    for cx, cy in grid:
-    
-        stripidx = (coordx[cx], cy)
-        found += strips_found[stripidx]
-        bboxes += bboxes_dict[stripidx]
-        bboxesUser += bboxesUser_dict[stripidx]
-
-    print('>> Found %d superpixels' % found)
-    if found > 256 ** 3:
-        print('Too many superpixels')
     img = pyvips.Image.black(
         tiparams.get('region', {}).get('width', meta['sizeX']) / scale,
         tiparams.get('region', {}).get('height', meta['sizeY']) / scale,
         bands=4)
     img = img.copy(interpretation=pyvips.Interpretation.RGB)
 
+
+    found = 0
     for cx, cy in grid:
 
         stripidx = (coordx[cx], cy)
@@ -169,6 +158,7 @@ def createSuperPixelsParallel(opts):
 
         img = img.composite([vimg], pyvips.BlendMode.OVER, x=stripidx[0], y=int(strips[stripidx][0]))
 
+        found += strips_found[stripidx]
 
 
     # Discard alpha band, if any.
@@ -186,6 +176,19 @@ def createSuperPixelsParallel(opts):
         # superpixel, not the faux-color it is mapped to.
         # region_shrink=pyvips.RegionShrink.MAX,
         bigtiff=True, compression='lzw', predictor='horizontal')
+
+    bboxes = []
+    bboxesUser = []
+    for cx, cy in grid:
+    
+        stripidx = (coordx[cx], cy)
+        bboxes += bboxes_dict[stripidx]
+        bboxesUser += bboxesUser_dict[stripidx]
+
+    print('>> Found %d superpixels' % found)
+    if found > 256 ** 3:
+        print('Too many superpixels')
+
 
     if hasattr(opts, 'callback'):
         opts.callback('file', 1, 2 if opts.outputAnnotationFile else 1)
