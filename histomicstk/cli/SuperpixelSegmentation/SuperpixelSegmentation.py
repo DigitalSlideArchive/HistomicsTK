@@ -8,10 +8,251 @@ import numpy
 import pyvips
 import scipy
 import skimage
+import concurrent.futures
+from parallelization_utilities import (compute_mask_novips, 
+                                           first_order, 
+                                           tile_grid_w_mask,
+                                           get_ancestor_tileids, get_trim_dict,
+                                           Mask, tilejob)
 
 import histomicstk
 from histomicstk.cli import utils
 from histomicstk.cli.utils import CLIArgumentParser
+
+
+def createSuperPixelsParallel(opts):
+    """
+    Besides the inputs described by the specification, this also can take
+    opts.callback, which is a function that takes (step_name: str,
+    step_count: int, step_total: int).
+    """
+
+    num_workers = 20
+
+    averageSize = opts.superpixelSize ** 2
+    overlap = opts.superpixelSize * 4 * 2 if opts.overlap else 0
+    tileSize = opts.tileSize + overlap
+
+    print('>> Reading input image')
+    print(opts.inputImageFile)
+
+    ts = large_image.open(opts.inputImageFile)
+    image = opts.inputImageFile.split('/')[-1].split('.')[0]
+    mask_file = os.path.join('path_to_masks',f'{image}.svs_1.25_mask.png')
+
+    tilemask = Mask(mask_file, ts)
+    meta = ts.getMetadata()
+    found = 0
+    strips = []
+    bboxes_dict = {}
+    bboxesUser_dict = {}
+    tiparams = {}
+    tiparams = utils.get_region_dict(opts.roi, None, ts)
+
+    scale = 1
+    if opts.magnification:
+        tiparams['scale'] = {'magnification': opts.magnification}
+
+    # Generate tile grid
+    (
+     task_ids, tasks, h, w, grid, scale, coordx, coordy, alltile_metadata
+     ) = tile_grid_w_mask(
+                          ts, tilemask, opts, averageSize, overlap, tileSize, tiparams,verbose=False
+                            )
+
+    # Determine dependencies
+    ancestors, dependents = first_order(grid)
+
+    # Identify regions to be trimmed
+    trim_dict = get_trim_dict(dependents)
+
+    # Get task_ids (tile location, i.e. top/left pixel coordinate) for ancestors
+    ancestor_taskids = get_ancestor_tileids(ancestors, coordx, coordy)
+
+
+    print('>> Generating superpixels')
+    if opts.slic_zero:
+        print('>> Using SLIC Zero for segmentation')
+
+    results = {}    
+    strips = {}
+    strips_found = {}
+    bboxes_dict = {}
+    bboxesUser_dict = {}
+
+
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as pool:
+        
+        # submit all tasks with no ancestors 
+
+        submitted = {
+            pool.submit(tilejob, task, tasks[(coordx[task[0]], coordy[task[1]])], trim_dict, coordx, coordy, 
+                        numpy.array(tasks[(coordx[task[0]], coordy[task[1]])][4]), opts): 
+                        task for task in [t for t in grid if not len(ancestors[t])]
+        }
+        
+        # as tasks complete, update dependencies and submit new tasks
+        for i in range(len(grid)):
+
+            completed, waiting = concurrent.futures.wait(       
+                submitted, return_when=concurrent.futures.FIRST_COMPLETED
+            )
+
+            for future in completed:
+                results[submitted[future]] = future.result() 
+
+                strips[results[submitted[future]][0]] = results[submitted[future]][1]
+                strips_found[results[submitted[future]][0]] = results[submitted[future]][2]
+                bboxes_dict[results[submitted[future]][0]] = results[submitted[future]][3]
+                bboxesUser_dict[results[submitted[future]][0]] = results[submitted[future]][4]
+
+                for dependent in dependents[submitted[future]]:
+                    try:
+                        ancestors[dependent].remove(submitted[future])
+                    except Exception as e:
+                        print(e)
+                        print(dependent,'\n', submitted[future])
+                        raise Exception
+
+                    if not len(ancestors[dependent]):
+                        mask = compute_mask_novips(dependent, tasks[(coordx[dependent[0]], coordy[dependent[1]])], overlap, strips, coordx, coordy, ancestor_taskids)
+
+                        submitted[pool.submit(tilejob, dependent, tasks[(coordx[dependent[0]], coordy[dependent[1]])], trim_dict, coordx, coordy, mask, opts)] = dependent
+
+                del submitted[future]
+
+
+    if hasattr(opts, 'callback'):
+        opts.callback('file', 0, 2 if opts.outputAnnotationFile else 1)
+
+    found = 0
+    bboxes = []
+    bboxesUser = []
+    for cx, cy in grid:
+    
+        stripidx = (coordx[cx], cy)
+        found += strips_found[stripidx]
+        bboxes += bboxes_dict[stripidx]
+        bboxesUser += bboxesUser_dict[stripidx]
+
+    print('>> Found %d superpixels' % found)
+    if found > 256 ** 3:
+        print('Too many superpixels')
+    img = pyvips.Image.black(
+        tiparams.get('region', {}).get('width', meta['sizeX']) / scale,
+        tiparams.get('region', {}).get('height', meta['sizeY']) / scale,
+        bands=4)
+    img = img.copy(interpretation=pyvips.Interpretation.RGB)
+
+    for cx, cy in grid:
+
+        stripidx = (coordx[cx], cy)
+        data = strips[stripidx][1]
+
+        d1 = numpy.where(data[:,:,0]!=0, data[:,:,0]+found, data[:,:,0])
+
+        data = numpy.dstack((
+            ((d1) % 256).astype(int),
+            ((d1) / 256).astype(int) % 256,
+            ((d1) / 65536).astype(int) % 256,
+            data[:,:,1])).astype('B')
+
+        vimg = pyvips.Image.new_from_memory(
+        numpy.ascontiguousarray(data).data,
+        data.shape[1], data.shape[0], data.shape[2],
+        large_image.constants.dtypeToGValue[data.dtype.char])
+
+        vimg = vimg.copy(interpretation=pyvips.Interpretation.RGB)
+        vimgTemp = pyvips.Image.new_temp_file('%s.v')
+        vimg.write(vimgTemp)
+        vimg = vimgTemp
+
+        img = img.composite([vimg], pyvips.BlendMode.OVER, x=stripidx[0], y=int(strips[stripidx][0]))
+
+
+
+    # Discard alpha band, if any.
+    img = img[:3]
+    # Add program run parameters to the image description and list the
+    # superpixel count
+    img.set_type(
+        pyvips.GValue.gstr_type, 'image-description',
+        json.dumps(dict(
+            {k: v for k, v in vars(opts).items() if k != 'callback'}, indexCount=found)))
+    img.write_to_file(
+        opts.outputImageFile, tile=True, tile_width=256, tile_height=256, pyramid=True,
+        region_shrink=pyvips.RegionShrink.NEAREST,
+        # We'd prefer max, but to do so we need to compute max of the
+        # superpixel, not the faux-color it is mapped to.
+        # region_shrink=pyvips.RegionShrink.MAX,
+        bigtiff=True, compression='lzw', predictor='horizontal')
+
+    if hasattr(opts, 'callback'):
+        opts.callback('file', 1, 2 if opts.outputAnnotationFile else 1)
+    if opts.outputAnnotationFile:
+        print('>> Generating annotation file')
+        categories = [
+            {
+                'label': opts.default_category_label,
+                'fillColor': opts.default_fillColor,
+                'strokeColor': opts.default_strokeColor,
+            },
+        ]
+        annotation_name = os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0]
+        region_dict = utils.get_region_dict(opts.roi, None, ts)
+        annotation = {
+            'name': annotation_name,
+            'elements': [{
+                'type': 'pixelmap',
+                'girderId': 'outputImageFile',
+                'transform': {
+                    'xoffset': region_dict.get('region', {}).get('left', 0) / scale,
+                    'yoffset': region_dict.get('region', {}).get('top', 0) / scale,
+                    'matrix': [[scale, 0], [0, scale]],
+                },
+                'values': [0] * (found // (2 if opts.boundaries else 1)),
+                'categories': categories,
+                'boundaries': opts.boundaries,
+            }],
+            'attributes': {
+                'params': {k: v for k, v in vars(opts).items() if not callable(v)},
+                'cli': Path(__file__).stem,
+                'version': histomicstk.__version__,
+            },
+        }
+        if len(bboxes) and str(opts.bounding).lower() != 'separate':
+            annotation['elements'][0]['user'] = {'bbox': bboxesUser}
+        if len(bboxes) and str(opts.bounding).lower() != 'internal':
+            bboxannotation = {
+                'name': '%s bounding boxes' % os.path.splitext(
+                    os.path.basename(opts.outputAnnotationFile))[0],
+                'elements': [{
+                    'type': 'rectangle',
+                    'center': [bcx, bcy, 0],
+                    'width': bw,
+                    'height': bh,
+                    'rotation': 0,
+                    'label': {'value': 'Region %d' % bidx},
+                    'fillColor': 'rgba(0,0,0,0)',
+                    'lineColor': opts.default_strokeColor,
+                } for bidx, (bcx, bcy, bw, bh) in enumerate(bboxes)],
+                'attributes': {
+                    'params': {k: v for k, v in vars(opts).items() if not callable(v)},
+                    'cli': Path(__file__).stem,
+                    'version': histomicstk.__version__,
+                },
+            }
+            annotation = [annotation, bboxannotation]
+        with open(opts.outputAnnotationFile, 'w') as annotation_file:
+            try:
+                json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
+            except Exception:
+                print('Failed to serialize annotation')
+                print(repr(annotation))
+                raise
+        if hasattr(opts, 'callback'):
+            opts.callback('file', 2, 2)
+
 
 
 def createSuperPixels(opts):  # noqa
@@ -277,4 +518,4 @@ def createSuperPixels(opts):  # noqa
 
 
 if __name__ == '__main__':
-    createSuperPixels(CLIArgumentParser().parse_args())
+    createSuperPixelsParallel(CLIArgumentParser().parse_args())
