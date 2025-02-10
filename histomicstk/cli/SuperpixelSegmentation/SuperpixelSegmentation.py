@@ -13,7 +13,8 @@ from parallelization_utilities import (compute_mask_novips,
                                            first_order, 
                                            tile_grid_w_mask,
                                            get_ancestor_tileids, get_trim_dict,
-                                           Mask, tilejob)
+                                           Mask, tilejob,
+                                           write_to_tiff_vips)
 
 import histomicstk
 from histomicstk.cli import utils
@@ -131,51 +132,7 @@ def createSuperPixelsParallel(opts):
         bands=4)
     img = img.copy(interpretation=pyvips.Interpretation.RGB)
 
-
-    found = 0
-    for cx, cy in grid:
-
-        stripidx = (coordx[cx], cy)
-        data = strips[stripidx][1]
-
-        d1 = numpy.where(data[:,:,0]!=0, data[:,:,0]+found, data[:,:,0])
-
-        data = numpy.dstack((
-            ((d1) % 256).astype(int),
-            ((d1) / 256).astype(int) % 256,
-            ((d1) / 65536).astype(int) % 256,
-            data[:,:,1])).astype('B')
-
-        vimg = pyvips.Image.new_from_memory(
-        numpy.ascontiguousarray(data).data,
-        data.shape[1], data.shape[0], data.shape[2],
-        large_image.constants.dtypeToGValue[data.dtype.char])
-
-        vimg = vimg.copy(interpretation=pyvips.Interpretation.RGB)
-        vimgTemp = pyvips.Image.new_temp_file('%s.v')
-        vimg.write(vimgTemp)
-        vimg = vimgTemp
-
-        img = img.composite([vimg], pyvips.BlendMode.OVER, x=stripidx[0], y=int(strips[stripidx][0]))
-
-        found += strips_found[stripidx]
-
-
-    # Discard alpha band, if any.
-    img = img[:3]
-    # Add program run parameters to the image description and list the
-    # superpixel count
-    img.set_type(
-        pyvips.GValue.gstr_type, 'image-description',
-        json.dumps(dict(
-            {k: v for k, v in vars(opts).items() if k != 'callback'}, indexCount=found)))
-    img.write_to_file(
-        opts.outputImageFile, tile=True, tile_width=256, tile_height=256, pyramid=True,
-        region_shrink=pyvips.RegionShrink.NEAREST,
-        # We'd prefer max, but to do so we need to compute max of the
-        # superpixel, not the faux-color it is mapped to.
-        # region_shrink=pyvips.RegionShrink.MAX,
-        bigtiff=True, compression='lzw', predictor='horizontal')
+    found = write_to_tiff_vips(opts, grid, strips, strips_found, meta, scale, tiparams, coordx)
 
     bboxes = []
     bboxesUser = []
