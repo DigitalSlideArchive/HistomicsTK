@@ -397,6 +397,18 @@ def first_order(tasks):
         ]
     return ancestors, dependents
 
+def get_wsi_size(alltile_metadata):
+    xs = set() 
+    ys = set()
+    for _x,_y in alltile_metadata.keys():
+        xs.add(_x)
+        ys.add(_y)
+    last_x = max(xs)
+    last_y = max(ys)
+
+    wsi_w = last_x + alltile_metadata[(last_x,0)][1]
+    wsi_h = last_y + alltile_metadata[(0,last_y)][0]
+    return wsi_h, wsi_w
 
 def tile_grid(ts, opts, averageSize, overlap, tileSize, tiparams, verbose=False):
     """ returns a dense 2D grid of tasks over (h,w) grid """
@@ -978,5 +990,57 @@ def write_to_tiff_vips(opts, grid, strips, strips_found, meta, scale, tiparams, 
         # superpixel, not the faux-color it is mapped to.
         # region_shrink=pyvips.RegionShrink.MAX,
         bigtiff=True, compression='lzw', predictor='horizontal')
+
+    return found
+
+def write_to_tiff_zarr(opts, grid, strips, strips_found, w, h, alltile_metadata, coordx, coordy, write_all=True):
+
+    source = large_image.new()
+
+
+    if write_all:
+        #write zeros for dropped tiles
+        for cx, cy in [(x, y) for x, y in itertools.product(range(w), range(h)) if (x,y) not in grid]:
+            height, width = alltile_metadata[(coordx[cx],coordy[cy])]
+            data = numpy.zeros([height, width, 3]).astype('B')
+
+            source.addTile(data[:,:,:3],
+                        coordx[cx],
+                        coordy[cy],
+                        mask = numpy.ones(data.shape[:2]).astype('B'))
+    else:
+        wsi_h, wsi_w = get_wsi_size(alltile_metadata)
+        #write 0 at the last pixel to fix wsi height and width
+                ## Non-zero values are written sometimes to remaining array (cause is unknown). So, this is unreliable.
+        data = numpy.zeros([1, 1, 3]).astype('B')
+        source.addTile(data[:,:,:3],
+                    wsi_w-1,
+                    wsi_h-1,
+                    mask = numpy.ones(data.shape[:2]).astype('B')
+                    )
+
+
+    found = 0
+    for cx, cy in grid:
+        stripidx = (coordx[cx], cy)
+        data = strips[stripidx][1]
+
+        d1 = numpy.where(data[:,:,0]!=0, data[:,:,0]+found, data[:,:,0])
+
+        data = numpy.dstack((
+            ((d1) % 256).astype(int),            
+            ((d1)/ 256).astype(int) % 256,
+            ((d1) / 65536).astype(int) % 256,
+            data[:,:,1])).astype('B')
+
+        source.addTile(data[:,:,:3],
+                    coordx[cx],
+                    coordy[cy],
+                    mask = data[:,:,3]
+                )
+
+        found += strips_found[stripidx]
+
+    source.write(opts.outputImageFile, lossy=False)
 
     return found

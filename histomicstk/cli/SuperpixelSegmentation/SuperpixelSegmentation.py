@@ -14,7 +14,7 @@ from parallelization_utilities import (compute_mask_novips,
                                            tile_grid_w_mask,
                                            get_ancestor_tileids, get_trim_dict,
                                            Mask, tilejob,
-                                           write_to_tiff_vips)
+                                           write_to_tiff_vips, write_to_tiff_zarr)
 
 import histomicstk
 from histomicstk.cli import utils
@@ -126,13 +126,8 @@ def createSuperPixelsParallel(opts):
     if hasattr(opts, 'callback'):
         opts.callback('file', 0, 2 if opts.outputAnnotationFile else 1)
 
-    img = pyvips.Image.black(
-        tiparams.get('region', {}).get('width', meta['sizeX']) / scale,
-        tiparams.get('region', {}).get('height', meta['sizeY']) / scale,
-        bands=4)
-    img = img.copy(interpretation=pyvips.Interpretation.RGB)
-
-    found = write_to_tiff_vips(opts, grid, strips, strips_found, meta, scale, tiparams, coordx)
+    found = write_to_tiff_zarr(opts, grid, strips, strips_found, 
+                               w, h, alltile_metadata, coordx, coordy)
 
     bboxes = []
     bboxesUser = []
