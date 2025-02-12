@@ -2,21 +2,25 @@
 HistomicsTK 
 ===========
 
-|codecov-io| |license-badge| |doi-badge| |pypi-badge|
+.. image:: https://raw.githubusercontent.com/DigitalSlideArchive/HistomicsTK/master/docs/histomicstk_mark.svg
+  :target: https://github.com/DigitalSlideArchive/HistomicsTK
+  :width: 100
+  :height: 100
+  :align: left
 
-.. |codecov-io| image:: https://codecov.io/github/DigitalSlideArchive/HistomicsTK/coverage.svg?branch=master
-    :target: https://codecov.io/github/DigitalSlideArchive/HistomicsTK?branch=master
-    :alt: codecov.io
+.. image:: https://codecov.io/github/DigitalSlideArchive/HistomicsTK/coverage.svg?branch=master
+  :target: https://codecov.io/github/DigitalSlideArchive/HistomicsTK?branch=master
+  :alt: codecov.io
 
-.. |license-badge| image:: https://img.shields.io/badge/license-Apache%202-blue.svg
-    :target: https://raw.githubusercontent.com/girder/large_image/master/LICENSE
-    :alt: License
+.. image:: https://img.shields.io/badge/license-Apache%202-blue.svg
+  :target: https://raw.githubusercontent.com/girder/large_image/master/LICENSE
+  :alt: License
 
-.. |doi-badge| image:: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.14833780-blue.svg
-   :target: https://doi.org/10.5281/zenodo.14833780
+.. image:: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.14833780-blue.svg
+  :target: https://doi.org/10.5281/zenodo.14833780
 
-.. |pypi-badge| image:: https://img.shields.io/pypi/v/histomicstk.svg?logo=python&logoColor=white
-   :target: https://pypi.org/project/histomicstk/
+.. image:: https://img.shields.io/pypi/v/histomicstk.svg?logo=python&logoColor=white
+  :target: https://pypi.org/project/histomicstk/
 
 `HistomicsTK`_ is a Python package for the analysis of digital pathology images. It can function as a stand-alone library, or as a Digital Slide Archive plugin that allows users to invoke image analysis jobs through HistomicsUI. The functionality offered by HistomicsTK can be extended using `slicer cli web <https://github.com/girder/slicer_cli_web>`__ which allows developers to integrate their image analysis algorithms into DSA for dissemination through HistomicsUI.
 
