@@ -254,7 +254,7 @@ jobs:
           command: pip install -U pip
       - run:
           name: Install python packages
-          command: pip install setuptools_scm twine
+          command: pip install setuptools_scm
       - run:
           name: Build wheels
           command: ./build_wheels.sh
