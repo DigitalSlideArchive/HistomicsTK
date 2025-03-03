@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.nuclear.gvf_tracking &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.nuclear.gvf_tracking</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.segmentation.nuclear.gvf_tracking</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">gradient_diffusion</span>
+
+
+<div class="viewcode-block" id="gvf_tracking">
+<a class="viewcode-back" href="../../../../histomicstk.segmentation.nuclear.html#histomicstk.segmentation.nuclear.gvf_tracking">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gvf_tracking</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Mask</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">Diffusions</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">Mu</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">Lambda</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">Iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">dT</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs gradient-field tracking to segment smoothed images of cell nuclei.</span>
+
+<span class="sd">    Takes as input a smoothed intensity or Laplacian-of-Gaussian filtered image</span>
+<span class="sd">    and a foreground mask, and groups pixels by tracking them to mutual</span>
+<span class="sd">    gradient sinks. Typically requires merging of sinks (seeds) as a post</span>
+<span class="sd">    processing steps.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    I : array_like</span>
+<span class="sd">        Smoothed intensity or log-filtered response where nuclei regions have</span>
+<span class="sd">        larger intensity values than background.</span>
+<span class="sd">    Mask : array_like</span>
+<span class="sd">        Binary mask where foreground objects have value 1, and background</span>
+<span class="sd">        objects have value 0. Used to restrict influence of background vectors</span>
+<span class="sd">        on diffusion process and to reduce tracking computations.</span>
+<span class="sd">    K : float</span>
+<span class="sd">        Number of steps to check for tracking cycle. Default value = 1000.</span>
+<span class="sd">    Mu : float</span>
+<span class="sd">        Weight parameter from Navier-Stokes diffusion - weights divergence and</span>
+<span class="sd">        Laplacian terms. Default value = 5.</span>
+<span class="sd">    Lambda : float</span>
+<span class="sd">        Weight parameter from Navier-Stokes diffusion - used to weight</span>
+<span class="sd">        divergence. Default value = 5.</span>
+<span class="sd">    Iterations : float</span>
+<span class="sd">        Number of time-steps to use in Navier-Stokes diffusion. Default value =</span>
+<span class="sd">        10.</span>
+<span class="sd">    dT : float</span>
+<span class="sd">        Timestep to be used in Navier-Stokes diffusion. Default value = 0.05.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Segmentation : array_like</span>
+<span class="sd">        Label image where positive values correspond to foreground pixels that</span>
+<span class="sd">        share mutual sinks.</span>
+<span class="sd">    Sinks : array_like</span>
+<span class="sd">        N x 2 array containing the (x,y) locations of the tracking sinks. Each</span>
+<span class="sd">        row is an (x,y) pair - in that order.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    histomicstk.utils.gradient_diffusion,</span>
+<span class="sd">    histomicstk.segmentation.label.shuffle</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] G. Li et al &quot;3D cell nuclei segmentation based on gradient flow</span>
+<span class="sd">       tracking&quot; in BMC Cell Biology,vol.40,no.8, 2007.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get image shape</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">I</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">I</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># calculate gradient</span>
+    <span class="n">dy</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>
+
+    <span class="c1"># diffusion iterations</span>
+    <span class="k">if</span> <span class="n">Diffusions</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">gradient_diffusion</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">Mask</span><span class="p">,</span> <span class="n">Mu</span><span class="p">,</span> <span class="n">Lambda</span><span class="p">,</span> <span class="n">Diffusions</span><span class="p">,</span>
+                                    <span class="n">dT</span><span class="p">)</span>
+
+    <span class="c1"># normalize to unit magnitude</span>
+    <span class="n">Mag</span> <span class="o">=</span> <span class="p">((</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dy</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">dy</span> <span class="o">/</span> <span class="n">Mag</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">/</span> <span class="n">Mag</span>
+
+    <span class="c1"># define mask to track pixels that are mapped to a sink</span>
+    <span class="n">Mapped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># define label image</span>
+    <span class="n">Segmentation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># initialize lists of sinks</span>
+    <span class="n">Sinks</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># define coordinates for foreground pixels (Mask == 1)</span>
+    <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">Mask</span><span class="p">)</span>
+
+    <span class="c1"># track pixels</span>
+    <span class="k">for</span> <span class="n">_index</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)):</span>
+
+        <span class="c1"># initialize angle, trajectory length, novel flag, and allocation count</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">novel</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">alloc</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># initialize trajectory</span>
+        <span class="n">Trajectory</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">K</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">Trajectory</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">Trajectory</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
+
+        <span class="c1"># track while angle defined by successive steps is &lt; np.pi / 2</span>
+        <span class="k">while</span> <span class="n">phi</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">:</span>
+
+            <span class="c1"># calculate step</span>
+            <span class="n">xStep</span> <span class="o">=</span> <span class="n">round_float</span><span class="p">(</span><span class="n">dx</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                                <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+            <span class="n">yStep</span> <span class="o">=</span> <span class="n">round_float</span><span class="p">(</span><span class="n">dy</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                                <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+
+            <span class="c1"># check image edge</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">xStep</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="p">(</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">xStep</span> <span class="o">&gt;</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="p">(</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">yStep</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="p">(</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">yStep</span> <span class="o">&gt;</span> <span class="n">M</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)):</span>
+                <span class="k">break</span>
+
+            <span class="c1"># add new point to trajectory list</span>
+            <span class="k">if</span> <span class="n">points</span> <span class="o">&lt;</span> <span class="n">K</span><span class="p">:</span>  <span class="c1"># buffer is not overrun</span>
+                <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">xStep</span>
+                <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">yStep</span>
+
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># buffer overrun</span>
+
+                <span class="c1"># check for cycle</span>
+                <span class="n">cycle</span> <span class="o">=</span> <span class="n">detect_cycle</span><span class="p">(</span><span class="n">Trajectory</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">cycle</span> <span class="o">==</span> <span class="n">points</span><span class="p">:</span>  <span class="c1"># no cycle, simple overflow. grow buffer.</span>
+
+                    <span class="c1"># copy and reallocate</span>
+                    <span class="n">temp</span> <span class="o">=</span> <span class="n">Trajectory</span>
+                    <span class="n">Trajectory</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">K</span> <span class="o">*</span> <span class="n">alloc</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+                    <span class="n">Trajectory</span><span class="p">[</span><span class="n">K</span> <span class="o">*</span> <span class="p">(</span><span class="n">alloc</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span><span class="n">K</span> <span class="o">*</span> <span class="n">alloc</span><span class="p">,</span> <span class="p">]</span> <span class="o">=</span> <span class="n">temp</span>
+                    <span class="n">alloc</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                    <span class="c1"># add new point</span>
+                    <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">xStep</span>
+                    <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">yStep</span>
+
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># overflow due to cycle, terminate tracking</span>
+                    <span class="n">points</span> <span class="o">=</span> <span class="n">cycle</span>
+
+            <span class="c1"># check mapping</span>
+            <span class="k">if</span> <span class="n">Mapped</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">novel</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+            <span class="k">elif</span> <span class="n">Mask</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">dy</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                                   <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span> <span class="o">*</span>
+                                <span class="n">dy</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                                   <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span> <span class="o">+</span>
+                                <span class="n">dx</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                                   <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span> <span class="o">*</span>
+                                <span class="n">dx</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                                   <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+
+            <span class="c1"># increment trajectory length counter</span>
+            <span class="n">points</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># determine if sink is novel</span>
+        <span class="k">if</span> <span class="n">novel</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+            <span class="c1"># record sinks</span>
+            <span class="n">Sinks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">])</span>
+
+            <span class="c1"># add trajectory to label image with new sink value, add mapping</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+                <span class="n">Segmentation</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Sinks</span><span class="p">)</span>
+                <span class="n">Mapped</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="c1"># add trajectory to label image with sink value of final point</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+                <span class="n">Segmentation</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> \
+                    <span class="n">Segmentation</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                                 <span class="n">Trajectory</span><span class="p">[</span><span class="n">points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+
+    <span class="c1"># convert Sinks to numpy array</span>
+    <span class="n">Sinks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Sinks</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Segmentation</span><span class="p">,</span> <span class="n">Sinks</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">merge_sinks</span><span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="n">Sinks</span><span class="p">,</span> <span class="n">Radius</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Merges attraction basins obtained from gradient flow tracking using</span>
+<span class="sd">    sink locations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Segmentation : array_like</span>
+<span class="sd">        Label image where positive values correspond to foreground pixels that</span>
+<span class="sd">        share mutual sinks.</span>
+<span class="sd">    Sinks : array_like</span>
+<span class="sd">        N x 2 array containing the (x,y) locations of the tracking sinks. Each</span>
+<span class="sd">        row is an (x,y) pair - in that order.</span>
+<span class="sd">    Radius : float</span>
+<span class="sd">        Radius used to merge sinks. Sinks closer than this radius to one</span>
+<span class="sd">        another will have their regions of attraction merged.</span>
+<span class="sd">        Default value = 5.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Merged : array_like</span>
+<span class="sd">        Label image where attraction regions are merged.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">skimage.morphology</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">skimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">measure</span> <span class="k">as</span> <span class="n">ms</span>
+
+    <span class="c1"># build seed image</span>
+    <span class="n">SeedImage</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Label</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Sinks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">SeedImage</span><span class="p">[</span><span class="n">Sinks</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">Sinks</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># dilate sink image</span>
+    <span class="n">Dilated</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">binary_dilation</span><span class="p">(</span><span class="n">SeedImage</span><span class="p">,</span> <span class="n">mp</span><span class="o">.</span><span class="n">disk</span><span class="p">(</span><span class="n">Radius</span><span class="p">))</span>
+
+    <span class="c1"># generate new labels for merged seeds, define memberships</span>
+    <span class="n">Labels</span> <span class="o">=</span> <span class="n">ms</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">Dilated</span><span class="p">)</span>
+    <span class="n">New</span> <span class="o">=</span> <span class="n">Labels</span><span class="p">[</span><span class="n">Sinks</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">Sinks</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)]</span>
+
+    <span class="c1"># get unique list of seed clusters</span>
+    <span class="n">Unique</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">New</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># generate new seed list</span>
+    <span class="n">Merged</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Label</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># get pixel list for each sink object</span>
+    <span class="n">Props</span> <span class="o">=</span> <span class="n">ms</span><span class="o">.</span><span class="n">regionprops</span><span class="p">(</span><span class="n">Label</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+
+    <span class="c1"># fill in new values</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Unique</span><span class="p">:</span>
+        <span class="n">Indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">New</span> <span class="o">==</span> <span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">Indices</span><span class="p">:</span>
+            <span class="n">Coords</span> <span class="o">=</span> <span class="n">Props</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">coords</span>
+            <span class="n">Merged</span><span class="p">[</span><span class="n">Coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">Coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="k">return</span> <span class="n">Merged</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">detect_cycle</span><span class="p">(</span><span class="n">Trajectory</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+
+    <span class="c1"># initialize trajectory length</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># identify trajectory bounding box</span>
+    <span class="n">xMin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">Trajectory</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">xMax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Trajectory</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">xRange</span> <span class="o">=</span> <span class="n">xMax</span> <span class="o">-</span> <span class="n">xMin</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">yMin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">Trajectory</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">yMax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Trajectory</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">yRange</span> <span class="o">=</span> <span class="n">yMax</span> <span class="o">-</span> <span class="n">yMin</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># fill in trajectory map</span>
+    <span class="n">Map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">yRange</span><span class="p">,</span> <span class="n">xRange</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">Map</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">yMin</span><span class="p">,</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">xMin</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Map</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">yMin</span><span class="p">,</span> <span class="n">Trajectory</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">xMin</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">length</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">length</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">round_float</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">-</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">-=</span> <span class="mf">1.0</span>
+        <span class="k">return</span> <span class="n">t</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">+</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">-=</span> <span class="mf">1.0</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">t</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
