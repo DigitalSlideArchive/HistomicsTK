@@ -924,11 +924,11 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
     found += int(maxValue)
     if mask is None:
         data = numpy.dstack((
-            (segments).astype(int))).astype('B')
+            segments)) #.astype(int))).astype('B')
     else:
         data = numpy.dstack((
-            (segments).astype(int),
-            mask * 255)).astype('B')
+            segments, #.astype(int),
+            mask * 255)) #.astype('B')
         
     x = tx0
     ty = tile['tile_position']['region_y']
@@ -953,7 +953,7 @@ def write_to_tiff_vips(opts, grid, strips, strips_found, meta, scale, tiparams, 
         stripidx = (coordx[cx], cy)
         data = strips[stripidx][1]
 
-        d1 = numpy.where(data[:,:,0]!=0, data[:,:,0]+found, data[:,:,0])
+        d1 = numpy.where(data[:,:,0]>0, data[:,:,0]+found, data[:,:,0]).astype(int)
 
         data = numpy.dstack((
             ((d1) % 256).astype(int),
@@ -1025,7 +1025,7 @@ def write_to_tiff_zarr(opts, grid, strips, strips_found, w, h, alltile_metadata,
         stripidx = (coordx[cx], cy)
         data = strips[stripidx][1]
 
-        d1 = numpy.where(data[:,:,0]!=0, data[:,:,0]+found, data[:,:,0])
+        d1 = numpy.where(data[:,:,0]>0, data[:,:,0]+found, data[:,:,0]).astype(int)
 
         data = numpy.dstack((
             ((d1) % 256).astype(int),            
