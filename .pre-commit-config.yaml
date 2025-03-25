@@ -48,10 +48,8 @@ repos:
   rev: v2.3.0
   hooks:
   - id: codespell
-    exclude: (?x)^(.*\.ipynb)$
-    args:
-      - --ignore-words-list
-      - "hist,indext,pixelx,thex,subtile,nd,hsi,bult,vor"
+    additional_dependencies:
+    - tomli  # for python_version < '3.11'
 - repo: https://github.com/syntaqx/git-hooks
   rev: v0.0.18
   hooks:
@@ -78,11 +76,3 @@ repos:
     - id: ruff
       args: [--fix, --exit-non-zero-on-fix]
       types_or: [python, pyi]
-
-- repo: https://github.com/codespell-project/codespell
-  # Configuration for codespell is in pyproject.toml
-  rev: v2.4.1
-  hooks:
-  - id: codespell
-    additional_dependencies:
-    - tomli  # for python_version < '3.11'

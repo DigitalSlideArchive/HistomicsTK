@@ -6,4 +6,4 @@ requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "numpy", "c
 skip = '.git*,*.pdf,*.svg,.pre-commit-config.yaml'
 check-hidden = true
 ignore-regex = '(^\s*"image/\S+": ".*|\b(HSI|Bult)\b)'
-ignore-words-list = 'vor,nd,re-use,re-uses'
+ignore-words-list = 'hist,indext,pixelx,thex,subtile,nd,hsi,bult,vor,re-use,re-uses'
