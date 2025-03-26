@@ -1,5 +1,5 @@
 ===========
-HistomicsTK 
+HistomicsTK
 ===========
 
 .. image:: https://raw.githubusercontent.com/DigitalSlideArchive/HistomicsTK/master/docs/histomicstk_mark.svg
