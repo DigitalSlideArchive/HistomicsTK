@@ -1,0 +1,374 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Deconvolution &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Color normalization" href="color_normalization_and_augmentation.html" />
+    <link rel="prev" title="Local processing of whole-slide images using large_image" href="using_large_image.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Color Deconvolution</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Load-input-image">Load input image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Supervised-color-deconvolution-with-a-known-stain-matrix">Supervised color deconvolution with a known stain matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Unsupervised-color-deconvolution">Unsupervised color deconvolution</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Sparse-non-negative-matrix-factorization">Sparse non-negative matrix factorization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#The-PCA-based-method-of-Macenko-et-al.">The PCA-based method of Macenko et al.</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Color Deconvolution</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/color_deconvolution.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Color-Deconvolution">
+<h1>Color Deconvolution<a class="headerlink" href="#Color-Deconvolution" title="Link to this heading">¶</a></h1>
+<p>Color deconvolution uses color profiles of stains like hematoxylin or diaminobenzidine to digitally separate stains from a color image. This step can help to isolate components like nuclei or positive staining structures which can improve quantitation or other image analysis tasks like segmentation. These examples illustrate how to use HistomicsTK to perform color deconvolution with either known static or adaptive color profiles.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">histomicstk</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">htk</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">skimage.io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">skimage.measure</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">skimage.color</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="c1">#Some nice default configuration for plots</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;image.cmap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;gray&#39;</span>
+<span class="n">titlesize</span> <span class="o">=</span> <span class="mi">24</span>
+</pre></div>
+</div>
+</div>
+<section id="Load-input-image">
+<h2>Load input image<a class="headerlink" href="#Load-input-image" title="Link to this heading">¶</a></h2>
+<p>HistomicsTK’s color deconvolution routines operate on RGB images, represented as either <code class="docutils literal notranslate"><span class="pre">NxMx3</span></code> or <code class="docutils literal notranslate"><span class="pre">3xN</span></code> arrays of Numpy’s <code class="docutils literal notranslate"><span class="pre">ndarray</span></code> type.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">inputImageFile</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;https://data.kitware.com/api/v1/file/&#39;</span>
+                  <span class="s1">&#39;57802ac38d777f12682731a2/download&#39;</span><span class="p">)</span>  <span class="c1"># H&amp;E.png</span>
+
+<span class="n">imInput</span> <span class="o">=</span> <span class="n">skimage</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">inputImageFile</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">imInput</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Input Image&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_deconvolution_4_0.png" src="../_images/examples_color_deconvolution_4_0.png" />
+</div>
+</div>
+</section>
+<section id="Supervised-color-deconvolution-with-a-known-stain-matrix">
+<h2>Supervised color deconvolution with a known stain matrix<a class="headerlink" href="#Supervised-color-deconvolution-with-a-known-stain-matrix" title="Link to this heading">¶</a></h2>
+<p>If you know what the stain matrix to be used for color deconvolution is, computing the deconvolved image is as simple as calling the <code class="docutils literal notranslate"><span class="pre">color_deconvolution</span></code> function in <code class="docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution</span></code>. Its input is an RGB image and the stain matrix, and its output is a <code class="docutils literal notranslate"><span class="pre">namedtuple</span></code> with fields <code class="docutils literal notranslate"><span class="pre">Stains</span></code>, <code class="docutils literal notranslate"><span class="pre">StainsFloat</span></code>, and <code class="docutils literal notranslate"><span class="pre">Wc</span></code>.</p>
+<p>Here, we use the built-in <code class="docutils literal notranslate"><span class="pre">stain_color_map</span></code> dictionary for reference values to fill in the stain matrix. If the image is only two-stain, it makes sense to set the third stain vector perpendicular to the other two, and <code class="docutils literal notranslate"><span class="pre">color_deconvolution</span></code> does this automatically if the third column is all 0.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create stain to color map</span>
+<span class="n">stain_color_map</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="o">.</span><span class="n">stain_color_map</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;stain_color_map:&#39;</span><span class="p">,</span> <span class="n">stain_color_map</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># specify stains of input image</span>
+<span class="n">stains</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hematoxylin&#39;</span><span class="p">,</span>  <span class="c1"># nuclei stain</span>
+          <span class="s1">&#39;eosin&#39;</span><span class="p">,</span>        <span class="c1"># cytoplasm stain</span>
+          <span class="s1">&#39;null&#39;</span><span class="p">]</span>         <span class="c1"># set to null if input contains only two stains</span>
+
+<span class="c1"># create stain matrix</span>
+<span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stain_color_map</span><span class="p">[</span><span class="n">st</span><span class="p">]</span> <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">stains</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+<span class="c1"># perform standard color deconvolution</span>
+<span class="n">imDeconvolved</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="p">(</span><span class="n">imInput</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+
+<span class="c1"># Display results</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">imDeconvolved</span><span class="o">.</span><span class="n">Stains</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">stains</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">titlesize</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+stain_color_map:
+{&#39;eosin&#39;: [0.07, 0.99, 0.11], &#39;null&#39;: [0.0, 0.0, 0.0], &#39;hematoxylin&#39;: [0.65, 0.7, 0.29], &#39;dab&#39;: [0.27, 0.57, 0.78]}
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_deconvolution_6_1.png" src="../_images/examples_color_deconvolution_6_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_deconvolution_6_2.png" src="../_images/examples_color_deconvolution_6_2.png" />
+</div>
+</div>
+</section>
+<section id="Unsupervised-color-deconvolution">
+<h2>Unsupervised color deconvolution<a class="headerlink" href="#Unsupervised-color-deconvolution" title="Link to this heading">¶</a></h2>
+<section id="Sparse-non-negative-matrix-factorization">
+<h3>Sparse non-negative matrix factorization<a class="headerlink" href="#Sparse-non-negative-matrix-factorization" title="Link to this heading">¶</a></h3>
+<p>To determine the stain vectors (somewhat) automatically, HistomicsTK has a couple different methods. The first employs <em>S</em>parse <em>N</em>on-negative <em>M</em>atrix <em>F</em>actorization (SNMF) to estimate the stain vectors based on an initial guess. Using these methods for color deconvolution then requires two steps, one to calculate the stain vectors with one of the <code class="docutils literal notranslate"><span class="pre">(rgb_)separate_stains_*</span></code> functions in <code class="docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution</span></code> and another to apply them to the image with
+<code class="docutils literal notranslate"><span class="pre">color_deconvolution</span></code>.</p>
+<p>This example also makes direct use of one of the non-<code class="docutils literal notranslate"><span class="pre">rgb_</span></code>-prefixed stain-separation functions, which expect an image in the logarithmic SDA space. The conversion to SDA space is done with the <code class="docutils literal notranslate"><span class="pre">rgb_to_sda</span></code> function in <code class="docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion</span></code>. The RGB-to-SDA conversion is parameterized by the background intensity of the image, here called <code class="docutils literal notranslate"><span class="pre">I_0</span></code>, which we set to 255 (full white; as a scalar it is applied across all channels) as there is no background in the image.
+With background available, the function <code class="docutils literal notranslate"><span class="pre">background_intensity</span></code> in <code class="docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_normalization</span></code> can be used to estimate it.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create initial stain matrix</span>
+<span class="n">W_init</span> <span class="o">=</span> <span class="n">W</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+
+<span class="c1"># Compute stain matrix adaptively</span>
+<span class="n">sparsity_factor</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+<span class="n">I_0</span> <span class="o">=</span> <span class="mi">255</span>
+<span class="n">im_sda</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">color_conversion</span><span class="o">.</span><span class="n">rgb_to_sda</span><span class="p">(</span><span class="n">imInput</span><span class="p">,</span> <span class="n">I_0</span><span class="p">)</span>
+<span class="n">W_est</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="o">.</span><span class="n">separate_stains_xu_snmf</span><span class="p">(</span>
+    <span class="n">im_sda</span><span class="p">,</span> <span class="n">W_init</span><span class="p">,</span> <span class="n">sparsity_factor</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># perform sparse color deconvolution</span>
+<span class="n">imDeconvolved</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="p">(</span>
+    <span class="n">imInput</span><span class="p">,</span>
+    <span class="n">htk</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="o">.</span><span class="n">complement_stain_matrix</span><span class="p">(</span><span class="n">W_est</span><span class="p">),</span>
+    <span class="n">I_0</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated stain colors (in rows):&#39;</span><span class="p">,</span> <span class="n">W_est</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Display results</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">imDeconvolved</span><span class="o">.</span><span class="n">Stains</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">])</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">stains</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">titlesize</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Estimated stain colors (in rows):
+[[ 0.48031803  0.78512115  0.39099791]
+ [ 0.18892848  0.81830444  0.54284792]]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_deconvolution_8_1.png" src="../_images/examples_color_deconvolution_8_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_deconvolution_8_2.png" src="../_images/examples_color_deconvolution_8_2.png" />
+</div>
+</div>
+</section>
+<section id="The-PCA-based-method-of-Macenko-et-al.">
+<h3>The PCA-based method of Macenko et al.<a class="headerlink" href="#The-PCA-based-method-of-Macenko-et-al." title="Link to this heading">¶</a></h3>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">rgb_separate_stains_*</span></code> functions is much the same, except the conversion to SDA space is done as part of the call. The PCA-based routine, unlike the SNMF-based one, does not require an initial guess, and instead automatically determines the vectors of a two-stain image. Because this determination is fully automatic, the order of the stain vector columns in the output is arbitrary. In order to determine which is which, a <code class="docutils literal notranslate"><span class="pre">find_stain_index</span></code> function is provided in
+<code class="docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution</span></code> that identifies the column in the color deconvolution matrix closest to a given reference vector.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">w_est</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="o">.</span><span class="n">rgb_separate_stains_macenko_pca</span><span class="p">(</span><span class="n">imInput</span><span class="p">,</span> <span class="n">I_0</span><span class="p">)</span>
+
+<span class="c1"># Perform color deconvolution</span>
+<span class="n">deconv_result</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="p">(</span><span class="n">imInput</span><span class="p">,</span> <span class="n">w_est</span><span class="p">,</span> <span class="n">I_0</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated stain colors (rows):&#39;</span><span class="p">,</span> <span class="n">w_est</span><span class="o">.</span><span class="n">T</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Display results</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="c1"># Unlike SNMF, we&#39;re not guaranteed the order of the different stains.</span>
+    <span class="c1"># find_stain_index guesses which one we want</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="o">.</span><span class="n">find_stain_index</span><span class="p">(</span>
+        <span class="n">stain_color_map</span><span class="p">[</span><span class="n">stains</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">w_est</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">deconv_result</span><span class="o">.</span><span class="n">Stains</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">channel</span><span class="p">])</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">stains</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">titlesize</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Estimated stain colors (rows):
+[[ 0.16235564  0.81736416  0.55277164]
+ [ 0.46329113  0.78963352  0.40229373]]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_deconvolution_10_1.png" src="../_images/examples_color_deconvolution_10_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_deconvolution_10_2.png" src="../_images/examples_color_deconvolution_10_2.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="using_large_image.html" class="btn btn-neutral float-left" title="Local processing of whole-slide images using large_image" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="color_normalization_and_augmentation.html" class="btn btn-neutral float-right" title="Color normalization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
