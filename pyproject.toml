@@ -1,2 +1,9 @@
 [build-system]
 requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "numpy", "cython", "setuptools-scm"]
+
+[tool.codespell]
+# Ref: https://github.com/codespell-project/codespell#using-a-config-file
+skip = '.git*,*.pdf,*.svg,.pre-commit-config.yaml'
+check-hidden = true
+ignore-regex = '(^\s*"image/\S+": ".*)'
+ignore-words-list = 'hist,indext,pixelx,thex,subtile,nd,hsi,bult,vor,re-use,re-uses'
