@@ -1,0 +1,574 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.annotations_and_masks.review_gallery &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.annotations_and_masks.review_gallery</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.annotations_and_masks.review_gallery</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyvips</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">imageio</span><span class="w"> </span><span class="kn">import</span> <span class="n">imwrite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotation_and_mask_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_image_from_htk_response</span><span class="p">,</span> <span class="n">get_scale_factor_and_appendStr</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotations_to_masks_handler</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">_visualize_annotations_on_rgb</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotations_to_object_mask_handler</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">get_all_rois_from_slide_v2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.masks_to_annotations_handler</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">get_annotation_documents_from_contours</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.workflows.workflow_runner</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">Slide_iterator</span><span class="p">,</span>
+                                                   <span class="n">Workflow_runner</span><span class="p">)</span>
+
+<span class="c1"># CONSTANTS</span>
+
+<span class="c1"># source: https://libvips.github.io/libvips/API/current/Examples.md.html</span>
+<span class="c1"># source 2: https://libvips.github.io/libvips/API/current/Examples.md.html</span>
+<span class="c1"># source 3: https://github.com/libvips/pyvips/issues/109</span>
+<span class="c1"># source 4: https://github.com/libvips/libvips/issues/1254</span>
+
+<span class="c1"># map np dtypes to vips</span>
+<span class="n">DTYPE_TO_FORMAT</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;uint8&#39;</span><span class="p">:</span> <span class="s1">&#39;uchar&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;int8&#39;</span><span class="p">:</span> <span class="s1">&#39;char&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;uint16&#39;</span><span class="p">:</span> <span class="s1">&#39;ushort&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;int16&#39;</span><span class="p">:</span> <span class="s1">&#39;short&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;uint32&#39;</span><span class="p">:</span> <span class="s1">&#39;uint&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;int32&#39;</span><span class="p">:</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;float32&#39;</span><span class="p">:</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;float64&#39;</span><span class="p">:</span> <span class="s1">&#39;double&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;complex64&#39;</span><span class="p">:</span> <span class="s1">&#39;complex&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;complex128&#39;</span><span class="p">:</span> <span class="s1">&#39;dpcomplex&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># map vips formats to np dtypes</span>
+<span class="n">FORMAT_TO_DTYPE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;uchar&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+    <span class="s1">&#39;char&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">,</span>
+    <span class="s1">&#39;ushort&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">,</span>
+    <span class="s1">&#39;short&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">,</span>
+    <span class="s1">&#39;uint&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">,</span>
+    <span class="s1">&#39;int&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+    <span class="s1">&#39;float&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+    <span class="s1">&#39;double&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+    <span class="s1">&#39;complex&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">complex64</span><span class="p">,</span>
+    <span class="s1">&#39;dpcomplex&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="get_all_rois_from_folder_v2">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.review_gallery.html#histomicstk.annotations_and_masks.review_gallery.get_all_rois_from_folder_v2">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_all_rois_from_folder_v2</span><span class="p">(</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">folderid</span><span class="p">,</span> <span class="n">get_all_rois_kwargs</span><span class="p">,</span> <span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all rois in a girder folder using get_all_rois_from_slide_v2().</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gc : girder_client.Girder_Client</span>
+<span class="sd">        authenticated girder client</span>
+<span class="sd">    folderid : str</span>
+<span class="sd">        girder id of folder</span>
+<span class="sd">    get_all_rois_kwargs : dict</span>
+<span class="sd">        kwargs to pass to get_all_rois_from_slide_v2()</span>
+<span class="sd">    monitor : str</span>
+<span class="sd">        monitor prefix</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_all_rois</span><span class="p">(</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">sld</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">slide_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sld</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
+            <span class="n">sld</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39;.&#39;</span>
+        <span class="n">sldname</span> <span class="o">=</span> <span class="n">sld</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">][:</span><span class="n">sld</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;_#_&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">get_all_rois_from_slide_v2</span><span class="p">(</span>
+            <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">monitorprefix</span><span class="o">=</span><span class="n">monitorPrefix</span><span class="p">,</span>
+            <span class="c1"># encoding slide id makes things easier later</span>
+            <span class="n">slide_name</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_id-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sldname</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">),</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># update with params</span>
+    <span class="n">get_all_rois_kwargs</span><span class="p">[</span><span class="s1">&#39;gc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gc</span>
+
+    <span class="c1"># pull annotations for each slide in folder</span>
+    <span class="n">workflow_runner</span> <span class="o">=</span> <span class="n">Workflow_runner</span><span class="p">(</span>
+        <span class="n">slide_iterator</span><span class="o">=</span><span class="n">Slide_iterator</span><span class="p">(</span>
+            <span class="n">gc</span><span class="p">,</span> <span class="n">source_folder_id</span><span class="o">=</span><span class="n">folderid</span><span class="p">,</span>
+            <span class="n">keep_slides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">workflow</span><span class="o">=</span><span class="n">_get_all_rois</span><span class="p">,</span>
+        <span class="n">workflow_kwargs</span><span class="o">=</span><span class="n">get_all_rois_kwargs</span><span class="p">,</span>
+        <span class="n">monitorPrefix</span><span class="o">=</span><span class="n">monitor</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">workflow_runner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_visualization_zoomout</span><span class="p">(</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="p">,</span> <span class="n">zoomout</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a zoomed out visualization of ROI RGB and annotation overlay.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gc : girder_client.Girder_Client</span>
+<span class="sd">        authenticated girder client</span>
+<span class="sd">    slide_id : str</span>
+<span class="sd">        girder ID of slide</span>
+<span class="sd">    bounds : dict</span>
+<span class="sd">        bounds of the region of interest. Must contain the keys</span>
+<span class="sd">        XMIN, XMAX, YMIN, YMAX</span>
+<span class="sd">    MPP : float</span>
+<span class="sd">        Microns per pixel.</span>
+<span class="sd">    MAG : float</span>
+<span class="sd">        Magnification. MPP overrides this.</span>
+<span class="sd">    zoomout : float</span>
+<span class="sd">        how much to zoom out</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Zoomed out visualization. Output from _visualize_annotations_on_rgb().</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get append string for server request</span>
+    <span class="k">if</span> <span class="n">MPP</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">getsf_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;MPP&#39;</span><span class="p">:</span> <span class="n">MPP</span> <span class="o">*</span> <span class="p">(</span><span class="n">zoomout</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s1">&#39;MAG&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="k">elif</span> <span class="n">MAG</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">getsf_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;MPP&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s1">&#39;MAG&#39;</span><span class="p">:</span> <span class="n">MAG</span> <span class="o">/</span> <span class="p">(</span><span class="n">zoomout</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">getsf_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;MPP&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s1">&#39;MAG&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="n">sf</span><span class="p">,</span> <span class="n">appendStr</span> <span class="o">=</span> <span class="n">get_scale_factor_and_appendStr</span><span class="p">(</span>
+        <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="o">**</span><span class="n">getsf_kwargs</span><span class="p">)</span>
+
+    <span class="c1"># now get low-magnification surrounding field</span>
+    <span class="n">x_margin</span> <span class="o">=</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="n">zoomout</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">y_margin</span> <span class="o">=</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="n">zoomout</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">getStr</span> <span class="o">=</span> \
+        <span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">/tiles/region?left=</span><span class="si">%d</span><span class="s1">&amp;right=</span><span class="si">%d</span><span class="s1">&amp;top=</span><span class="si">%d</span><span class="s1">&amp;bottom=</span><span class="si">%d</span><span class="s1">&#39;</span> \
+        <span class="o">%</span> <span class="p">(</span><span class="n">slide_id</span><span class="p">,</span>
+           <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_margin</span><span class="p">),</span>
+           <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">x_margin</span><span class="p">,</span>
+           <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">y_margin</span><span class="p">),</span>
+           <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">y_margin</span><span class="p">)</span>
+    <span class="n">getStr</span> <span class="o">+=</span> <span class="n">appendStr</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">getStr</span><span class="p">,</span> <span class="n">jsonResp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">rgb_zoomout</span> <span class="o">=</span> <span class="n">get_image_from_htk_response</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+
+    <span class="c1"># plot a bounding box at the ROI region</span>
+    <span class="n">xmin</span> <span class="o">=</span> <span class="n">x_margin</span> <span class="o">*</span> <span class="n">sf</span>
+    <span class="n">xmax</span> <span class="o">=</span> <span class="n">xmin</span> <span class="o">+</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="n">sf</span>
+    <span class="n">ymin</span> <span class="o">=</span> <span class="n">y_margin</span> <span class="o">*</span> <span class="n">sf</span>
+    <span class="n">ymax</span> <span class="o">=</span> <span class="n">ymin</span> <span class="o">+</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="n">sf</span>
+    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">))</span>
+    <span class="n">contours_list</span> <span class="o">=</span> <span class="p">[{</span>
+        <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;rgb(255,255,0)&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;coords_x&#39;</span><span class="p">:</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmin</span><span class="p">]),</span>
+        <span class="s1">&#39;coords_y&#39;</span><span class="p">:</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">]),</span>
+    <span class="p">}]</span>
+
+    <span class="k">return</span> <span class="n">_visualize_annotations_on_rgb</span><span class="p">(</span><span class="n">rgb_zoomout</span><span class="p">,</span> <span class="n">contours_list</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_review_visualization</span><span class="p">(</span><span class="n">rgb</span><span class="p">,</span> <span class="n">vis</span><span class="p">,</span> <span class="n">vis_zoomout</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a visualization of rgb and annotations for rapid review.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rgb : np.array</span>
+<span class="sd">        mxnx3 rgb image</span>
+<span class="sd">    vis : np.array</span>
+<span class="sd">        visualization of rgb with overlaid annotations</span>
+<span class="sd">    vis_zoomout</span>
+<span class="sd">        same as vis, but at a lower magnififcation.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        visualization to be used for gallery</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+    <span class="n">wmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">vis</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">vis_zoomout</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">hmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">vis</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">vis_zoomout</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span>
+        <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+        <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">wmax</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">hmax</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span>
+        <span class="n">gridspec_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;wspace&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s1">&#39;hspace&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">vis</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">rgb</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">vis_zoomout</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">ax</span><span class="p">:</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="n">buf</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">combined_vis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">buf</span><span class="p">))[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">combined_vis</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plot_rapid_review_vis</span><span class="p">(</span>
+        <span class="n">roi_out</span><span class="p">,</span> <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">slide_name</span><span class="p">,</span> <span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="p">,</span>
+        <span class="n">combinedvis_savepath</span><span class="p">,</span> <span class="n">zoomout</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">monitorprefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot a visualization for rapid review of ROI.</span>
+
+<span class="sd">    This is a callback to be called inside get_all_rois_from_slide_v2().</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    roi_out : dict</span>
+<span class="sd">        output from annotations_to_contours_no_mask()</span>
+<span class="sd">    gc : girder_client.Girder_Client</span>
+<span class="sd">        authenticated girder client</span>
+<span class="sd">    slide_id : str</span>
+<span class="sd">        girder slide id</span>
+<span class="sd">    slide_name : str</span>
+<span class="sd">        name of the slide</span>
+<span class="sd">    MPP : float</span>
+<span class="sd">        microns per pixel</span>
+<span class="sd">    MAG : float</span>
+<span class="sd">        magnification. superseded by MPP.</span>
+<span class="sd">    combinedvis_savepath : str</span>
+<span class="sd">        path to save the combined visualization</span>
+<span class="sd">    zoomout : float</span>
+<span class="sd">        how much to zoom out to get the gallery visualization</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        print statements to screen</span>
+<span class="sd">    monitorprefix : str</span>
+<span class="sd">        text to prepent to printed statements</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        roi_out parameter whether or not it is modified</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get rgb and visualization (fetched mag + lower mag)</span>
+    <span class="n">vis_zoomout</span> <span class="o">=</span> <span class="n">_get_visualization_zoomout</span><span class="p">(</span>
+        <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">],</span>
+        <span class="n">MPP</span><span class="o">=</span><span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="o">=</span><span class="n">MAG</span><span class="p">,</span> <span class="n">zoomout</span><span class="o">=</span><span class="n">zoomout</span><span class="p">)</span>
+
+    <span class="c1"># combined everything in a neat visualization for rapid review</span>
+    <span class="n">ROINAMESTR</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_left-</span><span class="si">%d</span><span class="s1">_top-</span><span class="si">%d</span><span class="s1">_bottom-</span><span class="si">%d</span><span class="s1">_right-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">slide_name</span><span class="p">,</span>
+        <span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">][</span><span class="s1">&#39;XMIN&#39;</span><span class="p">],</span> <span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">][</span><span class="s1">&#39;YMIN&#39;</span><span class="p">],</span>
+        <span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">][</span><span class="s1">&#39;YMAX&#39;</span><span class="p">],</span> <span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">][</span><span class="s1">&#39;XMAX&#39;</span><span class="p">])</span>
+    <span class="n">savename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">combinedvis_savepath</span><span class="p">,</span> <span class="n">ROINAMESTR</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span><span class="p">)</span>
+    <span class="n">rapid_review_vis</span> <span class="o">=</span> <span class="n">_get_review_visualization</span><span class="p">(</span>
+        <span class="n">rgb</span><span class="o">=</span><span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;rgb&#39;</span><span class="p">],</span> <span class="n">vis</span><span class="o">=</span><span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;visualization&#39;</span><span class="p">],</span>
+        <span class="n">vis_zoomout</span><span class="o">=</span><span class="n">vis_zoomout</span><span class="p">)</span>
+
+    <span class="c1"># save visualization for later use</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: Saving </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorprefix</span><span class="p">,</span> <span class="n">savename</span><span class="p">))</span>
+    <span class="n">imwrite</span><span class="p">(</span><span class="n">im</span><span class="o">=</span><span class="n">rapid_review_vis</span><span class="p">,</span> <span class="n">uri</span><span class="o">=</span><span class="n">savename</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">roi_out</span>
+
+
+<div class="viewcode-block" id="create_review_galleries">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.review_gallery.html#histomicstk.annotations_and_masks.review_gallery.create_review_galleries">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_review_galleries</span><span class="p">(</span>
+        <span class="n">tilepath_base</span><span class="p">,</span> <span class="n">upload_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">gallery_savepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gallery_folderid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">tiles_per_row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">tiles_per_column</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">annprops</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nameprefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create and or post review galleries for rapid review.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tilepath_base : str</span>
+<span class="sd">        directory where combined visualization.</span>
+<span class="sd">    upload_results : bool</span>
+<span class="sd">        upload results to DSA?</span>
+<span class="sd">    gc : girder_client.Girder_Client</span>
+<span class="sd">        authenticated girder client. Only needed upload_results.</span>
+<span class="sd">    gallery_savepath : str</span>
+<span class="sd">        directory to save gallery. Only if upload_results.</span>
+<span class="sd">    gallery_folderid : str</span>
+<span class="sd">        girder ID of folder to post galleries. Only if upload_result.</span>
+<span class="sd">    padding : int</span>
+<span class="sd">        padding in pixels between tiles in same gallery.</span>
+<span class="sd">    tiles_per_row : int</span>
+<span class="sd">        how many visualization tiles per row in gallery.</span>
+<span class="sd">    tiles_per_column : int</span>
+<span class="sd">        how many visualization tiles per column in gallery.</span>
+<span class="sd">    annprops : dict</span>
+<span class="sd">        properties of the annotations to be posted to DSA. Passed directly</span>
+<span class="sd">        as annprops to get_annotation_documents_from_contours()</span>
+<span class="sd">    url : str</span>
+<span class="sd">        url of the Digital Slide Archive Instance. For example:</span>
+<span class="sd">        http://candygram.neurology.emory.edu:8080/</span>
+<span class="sd">    nameprefix : str</span>
+<span class="sd">        prefix to prepend to gallery name</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        each entry is a dict representing the response of the server</span>
+<span class="sd">        post request to upload the gallery to DSA.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="k">if</span> <span class="n">upload_results</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;gc&#39;</span><span class="p">,</span> <span class="s1">&#39;gallery_folderid&#39;</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">par</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> cannot be None if upload_results!&#39;</span> <span class="o">%</span> <span class="n">par</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">gallery_savepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gallery_savepath</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;gallery-&#39;</span><span class="p">)</span>
+
+    <span class="n">savepaths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">resps</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">tile_paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tilepath_base</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">tilepath_base</span><span class="p">)</span> <span class="k">if</span> <span class="n">j</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.png&#39;</span><span class="p">)])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_tilepath</span><span class="p">(</span><span class="n">tpath</span><span class="p">):</span>
+        <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">tpath</span><span class="p">)</span>
+        <span class="n">basename</span> <span class="o">=</span> <span class="n">basename</span><span class="p">[:</span><span class="n">basename</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)]</span>
+        <span class="n">tileinfo</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;slide_name&#39;</span><span class="p">:</span> <span class="n">basename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]}</span>
+        <span class="k">for</span> <span class="n">attrib</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
+            <span class="n">tileinfo</span><span class="p">[</span><span class="n">attrib</span><span class="p">]</span> <span class="o">=</span> <span class="n">basename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span>
+                <span class="n">attrib</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># add URL in histomicsTK</span>
+        <span class="n">tileinfo</span><span class="p">[</span><span class="s1">&#39;URL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> \
+            <span class="s1">&#39;histomicstk#?image=</span><span class="si">%s</span><span class="s1">&amp;bounds=</span><span class="si">%s%%</span><span class="s1">2C</span><span class="si">%s%%</span><span class="s1">2C</span><span class="si">%s%%</span><span class="s1">2C</span><span class="si">%s%%</span><span class="s1">2C0&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">tileinfo</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                <span class="n">tileinfo</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">],</span> <span class="n">tileinfo</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">],</span>
+                <span class="n">tileinfo</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">],</span> <span class="n">tileinfo</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">tileinfo</span>
+
+    <span class="n">n_tiles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tile_paths</span><span class="p">)</span>
+    <span class="n">n_galleries</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_tiles</span> <span class="o">/</span> <span class="p">(</span><span class="n">tiles_per_row</span> <span class="o">*</span> <span class="n">tiles_per_column</span><span class="p">)))</span>
+
+    <span class="n">tileidx</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">galno</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_galleries</span><span class="p">):</span>
+
+        <span class="c1"># this makes a 8-bit, mono image (initializes as 1x1x3 matrix)</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">pyvips</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">black</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="c1"># this will store the roi contours</span>
+        <span class="n">contours</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">_row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tiles_per_column</span><span class="p">):</span>
+
+            <span class="n">rowpos</span> <span class="o">=</span> <span class="n">im</span><span class="o">.</span><span class="n">height</span> <span class="o">+</span> <span class="n">padding</span>
+
+            <span class="c1"># initialize &quot;row&quot; strip image</span>
+            <span class="n">row_im</span> <span class="o">=</span> <span class="n">pyvips</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">black</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">_col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tiles_per_row</span><span class="p">):</span>
+
+                <span class="k">if</span> <span class="n">tileidx</span> <span class="o">==</span> <span class="n">n_tiles</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+                <span class="n">tilepath</span> <span class="o">=</span> <span class="n">tile_paths</span><span class="p">[</span><span class="n">tileidx</span><span class="p">]</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Inserting tile </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">tileidx</span><span class="p">,</span> <span class="n">n_tiles</span><span class="p">,</span> <span class="n">tilepath</span><span class="p">))</span>
+                <span class="n">tileidx</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="c1"># # get tile from file</span>
+                <span class="n">tile</span> <span class="o">=</span> <span class="n">pyvips</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">new_from_file</span><span class="p">(</span>
+                    <span class="n">tilepath</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="s1">&#39;sequential&#39;</span><span class="p">)</span>
+
+                <span class="c1"># insert tile into mosaic row</span>
+                <span class="n">colpos</span> <span class="o">=</span> <span class="n">row_im</span><span class="o">.</span><span class="n">width</span> <span class="o">+</span> <span class="n">padding</span>
+                <span class="n">row_im</span> <span class="o">=</span> <span class="n">row_im</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                    <span class="n">tile</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span> <span class="n">colpos</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">upload_results</span><span class="p">:</span>
+
+                    <span class="n">tileinfo</span> <span class="o">=</span> <span class="n">_parse_tilepath</span><span class="p">(</span><span class="n">tilepath</span><span class="p">)</span>
+
+                    <span class="n">xmin</span> <span class="o">=</span> <span class="n">colpos</span>
+                    <span class="n">ymin</span> <span class="o">=</span> <span class="n">rowpos</span>
+                    <span class="n">xmax</span> <span class="o">=</span> <span class="n">xmin</span> <span class="o">+</span> <span class="n">tile</span><span class="o">.</span><span class="n">width</span>
+                    <span class="n">ymax</span> <span class="o">=</span> <span class="n">ymin</span> <span class="o">+</span> <span class="n">tile</span><span class="o">.</span><span class="n">height</span>
+                    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">))</span>
+                    <span class="n">contours</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="n">tileinfo</span><span class="p">[</span><span class="s1">&#39;slide_name&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">tileinfo</span><span class="p">[</span><span class="s1">&#39;URL&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;rgb(0,0,0)&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;coords_x&#39;</span><span class="p">:</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmin</span><span class="p">]),</span>
+                        <span class="s1">&#39;coords_y&#39;</span><span class="p">:</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">]),</span>
+                    <span class="p">})</span>
+
+                    <span class="c1"># Add a small contour so that when the pathologist</span>
+                    <span class="c1"># changes the label to approve or disapprove of the</span>
+                    <span class="c1"># FOV, the URL in THIS contour (a link to the original</span>
+                    <span class="c1"># FOV) can be used. We place it in the top right corner.</span>
+                    <span class="n">boxsize</span> <span class="o">=</span> <span class="mi">25</span>
+                    <span class="n">xmin</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">xmax</span><span class="p">)</span> <span class="o">-</span> <span class="n">boxsize</span><span class="p">)</span>
+                    <span class="n">ymax</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">ymin</span><span class="p">)</span> <span class="o">+</span> <span class="n">boxsize</span><span class="p">)</span>
+                    <span class="n">contours</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="n">tileinfo</span><span class="p">[</span><span class="s1">&#39;slide_name&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">tileinfo</span><span class="p">[</span><span class="s1">&#39;URL&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;rgb(0,0,0)&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;coords_x&#39;</span><span class="p">:</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmin</span><span class="p">]),</span>
+                        <span class="s1">&#39;coords_y&#39;</span><span class="p">:</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">]),</span>
+                    <span class="p">})</span>
+
+            <span class="c1"># insert row into main gallery</span>
+            <span class="n">im</span> <span class="o">=</span> <span class="n">im</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">row_im</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rowpos</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_gallery-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nameprefix</span><span class="p">,</span> <span class="n">galno</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">savepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gallery_savepath</span><span class="p">,</span> <span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;.tiff&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving gallery </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1"> to </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">galno</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_galleries</span><span class="p">,</span> <span class="n">savepath</span><span class="p">))</span>
+
+        <span class="c1"># save temporarily to disk to be uploaded</span>
+        <span class="n">im</span><span class="o">.</span><span class="n">tiffsave</span><span class="p">(</span>
+            <span class="n">savepath</span><span class="p">,</span> <span class="n">tile</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tile_width</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">tile_height</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">pyramid</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">upload_results</span><span class="p">:</span>
+            <span class="c1"># upload the gallery to DSA</span>
+            <span class="n">resps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gc</span><span class="o">.</span><span class="n">uploadFileToFolder</span><span class="p">(</span>
+                <span class="n">folderId</span><span class="o">=</span><span class="n">gallery_folderid</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="n">savepath</span><span class="p">,</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">))</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">savepath</span><span class="p">)</span>
+
+            <span class="c1"># get and post FOV location annotations</span>
+            <span class="n">annotation_docs</span> <span class="o">=</span> <span class="n">get_annotation_documents_from_contours</span><span class="p">(</span>
+                <span class="n">DataFrame</span><span class="p">(</span><span class="n">contours</span><span class="p">),</span> <span class="n">separate_docs_by_group</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">annprops</span><span class="o">=</span><span class="n">annprops</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">annotation_docs</span><span class="p">:</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                    <span class="s1">&#39;/annotation?itemId=&#39;</span> <span class="o">+</span> <span class="n">resps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;itemId&#39;</span><span class="p">],</span> <span class="n">json</span><span class="o">=</span><span class="n">doc</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">savepaths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">savepath</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">resps</span> <span class="k">if</span> <span class="n">upload_results</span> <span class="k">else</span> <span class="n">savepaths</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Procedure for managing a typical annotation project &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tips for scaling annotation rendering" href="tips_for_scalable_annotation_rendering.html" />
+    <link rel="prev" title="Introducing the Girder API" href="introducing_the_girder_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Procedure for managing a typical annotation project</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/procedure_for_typical_annotation_project.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="procedure-for-managing-a-typical-annotation-project">
+<h1>Procedure for managing a typical annotation project<a class="headerlink" href="#procedure-for-managing-a-typical-annotation-project" title="Link to this heading">¶</a></h1>
+<p>Conducting an annotation project requires careful planning and familiarity with
+how to manage users, data, and annotations in DSA. Here we describe considerations
+in planning for a successful annotation project and provide an overview of steps
+to start a project.</p>
+<p>While each annotation project is different, the general procedure is quite
+similar in various projects. Here we provide a broad overview of a typical
+annotation project. This guide is intended for study coordinators and/or
+developers who intend to conduct an annotation project with multiple users
+for pedagogical or research purposes. Some of these steps can be carried
+out completely using HistomicsUI, while others are better handled programmatically
+using the API.</p>
+<p><strong>Define the problem</strong>: The structure of an annotation problem is determined by
+the end goal. If the goal is to generate data for training of validating machine
+learning algorithms then the annotation format will be determined by the
+algorithm requirements. If you want to measure inter-rater variability then
+you need to plan to collect multiple annotations of the same content. Other
+considerations include how to avoid bias in selection of regions for algorithm
+validation, and whether and how annotators will receive feedback or make corrections.</p>
+<p><strong>Create user groups</strong>: User groups enable management access permissions for
+folders and annotations and should be set up at the beginning of the project
+to ensure that permissions can be maintained as people join or leave the project.
+When combined with folder permissions, group permissions enable control over who
+can create and modify annotations. The <a class="reference external" href="https://girder.readthedocs.io/en/stable/user-guide.html#permissions">girder permissions model</a> is set up as follows:</p>
+<ul class="simple">
+<li><p><strong>Folders</strong> inherit permissions from their parent folder by default but their permissions can be altered after creation. If a folder is copied from one parent folder to another, the copy will inherit the permissions of the destination parent folder. If a folder is moved its original permissions will be preserved.</p></li>
+<li><p><strong>Items/slides</strong> do not have their own permissions but inherit the permissions of the folder where they reside.</p></li>
+<li><p><strong>Annotation documents</strong>, by default, inherit permissions from the folder in which their associated item exists. The person who created the annotation document using HistomicsUI or who posted it using the API has owner permissions by default.  These default permissions can be altered after creation. If an item is moved from one folder to another, the annotations will retain their original permissions even while the item permissions will be inherited from the new folder.</p></li>
+</ul>
+<p>In our experience it is helpful to establish three groups to manage permissions for an annotation project: a view group, an edit group, and an owner group. These groups should be created at the beginning of a project before any folders or data are created, ensuring that any folders created, items added, and annotations generated will have these groups available in their permissions structure. For example, if you want to promote a user to owner permissions at the project midpoint, you can simply add them to the owner group and they will have owner access to the entire project. Failure to initially create groups will result in developing code to manually alter the permissions on individual documents via API calls for any changes in permissions.</p>
+<p><strong>Defining groups and styles</strong>: Standardizing group names and their annotation styles are necessary to make review and processing possible. Our <a class="reference external" href="https://www.youtube.com/watch?v=HTvLMyKYyGs">video on using HistomicsUI</a> shows how to create groups and set their styles, and how to export these to a JSON styles file that can be distributed during a study. Users are asked to import the styles JSON file which is stored locally in their browser cookies. This ensures that all users have consistent group naming and that groups are displayed consistently during review (e.g. tumor nuclei annotations are always shown in red). Below is a sample style JSON:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">&quot;lineWidth&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">4</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;lineColor&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rgb(255, 0, 0)&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;fillColor&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rgba(0, 0, 0, 0)&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;id&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;tumor&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;label&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s2">&quot;value&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;tumor&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="s2">&quot;group&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;tumor&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">&quot;lineWidth&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">4</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;lineColor&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rgb(0, 0, 255)&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;fillColor&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rgba(0, 0, 0, 0)&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;id&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;TILs&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;label&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s2">&quot;value&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;TILs&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="s2">&quot;group&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;TILs&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Create an annotation protocol document</strong>: Creating a written protocol instructing users how and what to annotate can improve consistency and reproducibility, and forces participants to consider and discuss project objectives. Here are two sample protocols we have used for our own semantic segmentation and cell detection / classification projects:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://ndownloader.figshare.com/files/22394667">Semantic segmentation + Nucleus centroids</a>: This protocol was developed for an FDA study of tumor-infiltrating lymphocytes in breast cancer.</p></li>
+<li><p><a class="reference external" href="https://ndownloader.figshare.com/files/22394670">Nucleus detection / classification</a>: This protocol describes the process for annotating nuclei in breast cancer.</p></li>
+</ul>
+<p>To provide users with the best experience in your annotation projects we recommend that they:</p>
+<ul>
+<li><p>Use Google Chrome browser.</p></li>
+<li><p>Clear their browser cache if you update the DSA server container.</p></li>
+<li><p>Use standardized styles generated by a study coordinator, and re-import these styles if they clear their browser cache.</p></li>
+<li><p>Clearly understand the type of annotation elements they should generate (points, rectangles, etc.).</p>
+<blockquote>
+<div><p><strong>Note</strong>: If your protocol specifies polygonal annotations make sure to utilize the polygon tool not the line tool in HistomicsML. Generating mask images from line elements can be difficult due to ambiguities in line element coordinates. When using the polygon tool users should still avoid introducing self-crossings as they trace structures since these introduce issues in annotation processing.</p>
+</div></blockquote>
+</li>
+</ul>
+<p><strong>Create folders, permissions, and assign slides</strong>: Folder permissions allow control over which slides and annotations users can see, and when combined with group permissions can help users collaborate, review, and correct each other if desired. Here are a few project scenarios that require different approaches to folder permissions:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Each user has their own independent set of slides to annotate from scratch</dt><dd><p>Create a folder for each user and copy their slides to this folder. Add each user to their folder with edit access to prevent users from seeing each others’ slides or annotations.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Multiple users working collaboratively on the same slides</dt><dd><p>Create a folder for each group of users who will collaborate. Creating user groups for each of these collaborations may be more sustainable than adding each individual user to the folder permissions.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>A study coordinator will be creating regions of interest (ROI) defining regions where users will annotate</dt><dd><p>All project slides are placed in a single folder where the pathologist has edit access to create the ROI annotations. Slides are then moved to the respective user folders. The moved slides will inherit the user folder permissions, while the ROI annotation will retain their original permissions (not editable by the users). Alternatively, you can distribute the slides, draw ROIs within user folders, then programmatically edit the ROI annotation permissions to prevent editing by users.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Multiple users annotating the same ROI to measure inter-observer variability</dt><dd><p>Same procedure as above, except that slides are copied after ROI creation instead of moved, and user folder permissions are set up to blind users from each other.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Backup data regularly</strong>: The topic <a class="reference internal" href="annotation_database_backup_and_sql_parser.html"><span class="doc">“Local backup and SQL querying of annotation data”</span></a> provides details on how to back up the database. Using the SQLite backup option enables you to conveniently query the database and to monitor annotation progress.</p>
+<blockquote>
+<div><p><strong>Note</strong>: Running out of AssetStore space (disk space) will corrupt your annotation database. If your project involves users uploading whole slide images (WSI), make sure to setup user upload quotas. Keep in mind that a typical WSI is often multiple Gigabytes in size. Backup your annotations often.</p>
+</div></blockquote>
+<p><strong>Freeze annotations</strong>: At some point you need to freeze all annotations and create a static version of the database for processing. Freezing annotations can be accomplished by changing group permissions to view.</p>
+<p><strong>Generating galleries for annotation review</strong>: Study coordinators can review and/or correct annotations directly through the HistomicsUI interface. In some studies where annotations are sparsely spread throughout a slide, it may be helpful to create review galleries for quality control and review. More details on this are provided in <a class="reference internal" href="creating_gallery_images_review.html"><span class="doc">“Creating mosaic galleries for rapid annotation review”</span></a>.</p>
+<p><strong>Preparing annotations for analysis including machine learning</strong>: HistomicsTK provides tools for converting annotations into mask and label image formats. See <a class="reference internal" href="annotations_to_semantic_segmentation_masks.html"><span class="doc">“Converting annotations to semantic segmentation mask images”</span></a> and <a class="reference internal" href="annotations_to_object_segmentation_masks.html"><span class="doc">“Converting annotations to object segmentation mask images”</span></a> for more details.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="introducing_the_girder_api.html" class="btn btn-neutral float-left" title="Introducing the Girder API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tips_for_scalable_annotation_rendering.html" class="btn btn-neutral float-right" title="Tips for scaling annotation rendering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

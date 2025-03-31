@@ -1,0 +1,947 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.annotations_and_masks.annotation_and_mask_utils &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.annotations_and_masks.annotation_and_mask_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.annotations_and_masks.annotation_and_mask_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Sun Aug 11 22:30:06 2019.</span>
+
+<span class="sd">@author: tageldim</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry.polygon</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span>
+
+<span class="n">Image</span><span class="o">.</span><span class="n">MAX_IMAGE_PIXELS</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="get_image_from_htk_response">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.get_image_from_htk_response">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_image_from_htk_response</span><span class="p">(</span><span class="n">resp</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given a histomicsTK girder response, get np array image.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    resp : object</span>
+<span class="sd">           response from server request</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Pillow Image object</span>
+<span class="sd">        a pillow Image object of the image</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">image_content</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+    <span class="n">image_content</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_content</span><span class="p">)</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">image</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="scale_slide_annotations">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.scale_slide_annotations">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">scale_slide_annotations</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">,</span> <span class="n">sf</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scales up or down annotations in a slide.</span>
+
+<span class="sd">    Works in place, but returns slide_annotations anyways.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    slide_annotations : list of dicts</span>
+<span class="sd">        response from server request</span>
+
+<span class="sd">    sf : float</span>
+<span class="sd">        scale factor to multiply coordinates</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of dicts</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sf</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">slide_annotations</span>
+
+    <span class="k">for</span> <span class="n">_annidx</span><span class="p">,</span> <span class="n">ann</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ann</span><span class="p">[</span><span class="s1">&#39;annotation&#39;</span><span class="p">][</span><span class="s1">&#39;elements&#39;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="s1">&#39;width&#39;</span><span class="p">]:</span>
+                    <span class="n">element</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">element</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">*</span> <span class="n">sf</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]:</span>
+                    <span class="n">element</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">element</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="o">*</span> <span class="n">sf</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">slide_annotations</span></div>
+
+
+
+<div class="viewcode-block" id="get_scale_factor_and_appendStr">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.get_scale_factor_and_appendStr">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_scale_factor_and_appendStr</span><span class="p">(</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">MPP</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">MAG</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get how much is request region smaller than base.</span>
+
+<span class="sd">    This also gets the string to append to server request for getting rgb.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gc : Girder client instance</span>
+<span class="sd">        gc should be authoenticated.</span>
+<span class="sd">    slide_id : str</span>
+<span class="sd">        girder id of slide</span>
+<span class="sd">    MPP : float or None</span>
+<span class="sd">        Microns-per-pixel -- best use this as it&#39;s more well-defined than</span>
+<span class="sd">        magnification which is more scanner/manufacturer specific.</span>
+<span class="sd">        MPP of 0.25 often roughly translates to 40x</span>
+<span class="sd">    MAG : float or None</span>
+<span class="sd">        If you prefer to use whatever magnification is reported in slide.</span>
+<span class="sd">        If neither MPP or MAG is provided, everything is retrieved without</span>
+<span class="sd">        scaling at base (scan) magnification.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        how much smaller (0.1 means 10x smaller) is requested image</span>
+<span class="sd">        compared to scan magnification (slide coordinates)</span>
+<span class="sd">    str</span>
+<span class="sd">        string to appnd to server request for getting slide region</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">slide_info</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">/tiles&#39;</span> <span class="o">%</span> <span class="n">slide_id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">MPP</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;mm_x&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">mm</span> <span class="o">=</span> <span class="mf">0.001</span> <span class="o">*</span> <span class="n">MPP</span>
+        <span class="n">sf</span> <span class="o">=</span> <span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;mm_x&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">mm</span>
+        <span class="n">appendStr</span> <span class="o">=</span> <span class="s1">&#39;&amp;mm_x=</span><span class="si">%.8f</span><span class="s1">&amp;mm_y=</span><span class="si">%.8f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mm</span><span class="p">,</span> <span class="n">mm</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="p">(</span><span class="n">MAG</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;magnification&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">sf</span> <span class="o">=</span> <span class="n">MAG</span> <span class="o">/</span> <span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;magnification&#39;</span><span class="p">]</span>
+        <span class="n">appendStr</span> <span class="o">=</span> <span class="s1">&#39;&amp;magnification=</span><span class="si">%.8f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">MAG</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s1">&#39;NO SLIDE MAGNIFICATION FOUND; BASE MAGNIFICATION USED!&#39;</span><span class="p">,</span>
+            <span class="ne">RuntimeWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sf</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">appendStr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="k">return</span> <span class="n">sf</span><span class="p">,</span> <span class="n">appendStr</span></div>
+
+
+
+<div class="viewcode-block" id="rotate_point_list">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.rotate_point_list">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">rotate_point_list</span><span class="p">(</span><span class="n">point_list</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rotate a certain point list around a central point. Modified from.</span>
+
+<span class="sd">    javascript version at: https://github.com/girder/large_image/blob/master/</span>
+<span class="sd">    ... web_client/annotations/rotate.js.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    point_list : list of tuples</span>
+<span class="sd">        (x,y) coordinates</span>
+
+<span class="sd">    rotation : float</span>
+<span class="sd">        degrees (in radians)</span>
+
+<span class="sd">    center : tuple of ints</span>
+<span class="sd">        central point coordinates</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of tuples</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">point_list_rotated</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">point_list</span><span class="p">:</span>
+
+        <span class="n">cos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+        <span class="n">sin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">point_list_rotated</span><span class="o">.</span><span class="n">append</span><span class="p">((</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">cos</span> <span class="o">-</span> <span class="n">y</span> <span class="o">*</span> <span class="n">sin</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">sin</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">cos</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+
+    <span class="k">return</span> <span class="n">point_list_rotated</span></div>
+
+
+
+<div class="viewcode-block" id="get_rotated_rectangular_coords">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.get_rotated_rectangular_coords">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rotated_rectangular_coords</span><span class="p">(</span>
+        <span class="n">roi_center</span><span class="p">,</span> <span class="n">roi_width</span><span class="p">,</span> <span class="n">roi_height</span><span class="p">,</span> <span class="n">roi_rotation</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given data on rectangular ROI center/width/height/rotation.</span>
+
+<span class="sd">    Get the unrotated abounding box coordinates around rotated ROI. This</span>
+<span class="sd">    of course is applicable to any rotated rectangular annotation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    roi_center : tuple or list</span>
+<span class="sd">        (x, y) format</span>
+<span class="sd">    roi_width : float</span>
+<span class="sd">    roi_height : float</span>
+<span class="sd">    roi_rotation : float</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        includes roi corners (x, y) and bounds</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get false bounds</span>
+    <span class="n">x_min</span> <span class="o">=</span> <span class="n">roi_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">roi_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">x_max</span> <span class="o">=</span> <span class="n">roi_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">roi_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">y_min</span> <span class="o">=</span> <span class="n">roi_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">roi_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">y_max</span> <span class="o">=</span> <span class="n">roi_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">roi_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Get pseudo-corners of rectangle (before rotation)</span>
+    <span class="n">roi_corners_false</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">),</span> <span class="p">(</span><span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">),</span> <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">)]</span>
+
+    <span class="c1"># Get *true* coordinates of rectangle corners</span>
+    <span class="n">roi_corners</span> <span class="o">=</span> <span class="n">rotate_point_list</span><span class="p">(</span><span class="n">roi_corners_false</span><span class="p">,</span>
+                                    <span class="n">rotation</span><span class="o">=</span><span class="n">roi_rotation</span><span class="p">,</span>
+                                    <span class="n">center</span><span class="o">=</span><span class="n">roi_center</span><span class="p">)</span>
+    <span class="n">roi_corners</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">roi_corners</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+    <span class="c1"># pack into dict</span>
+    <span class="n">roi_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;roi_corners&#39;</span><span class="p">:</span> <span class="n">roi_corners</span><span class="p">,</span>
+        <span class="s1">&#39;x_min&#39;</span><span class="p">:</span> <span class="n">roi_corners</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+        <span class="s1">&#39;x_max&#39;</span><span class="p">:</span> <span class="n">roi_corners</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+        <span class="s1">&#39;y_min&#39;</span><span class="p">:</span> <span class="n">roi_corners</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+        <span class="s1">&#39;y_max&#39;</span><span class="p">:</span> <span class="n">roi_corners</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">roi_info</span></div>
+
+
+
+<div class="viewcode-block" id="get_bboxes_from_slide_annotations">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.get_bboxes_from_slide_annotations">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_bboxes_from_slide_annotations</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given a slide annotation list, gets information on bounding boxes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    slide_annotations : list of dicts</span>
+<span class="sd">        response from server request</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Pandas DataFrame</span>
+<span class="sd">        The columns annidx and elementidx encode the</span>
+<span class="sd">        dict index of annotation document and element, respectively, in the</span>
+<span class="sd">        original slide_annotations list of dictionaries</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="n">element_infos</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span>
+        <span class="s1">&#39;annidx&#39;</span><span class="p">,</span> <span class="s1">&#39;elementidx&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;xmin&#39;</span><span class="p">,</span> <span class="s1">&#39;xmax&#39;</span><span class="p">,</span> <span class="s1">&#39;ymin&#39;</span><span class="p">,</span> <span class="s1">&#39;ymax&#39;</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">annidx</span><span class="p">,</span> <span class="n">ann</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">elementidx</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ann</span><span class="p">[</span><span class="s1">&#39;annotation&#39;</span><span class="p">][</span><span class="s1">&#39;elements&#39;</span><span class="p">]):</span>
+
+            <span class="n">elno</span> <span class="o">=</span> <span class="n">element_infos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;annidx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">annidx</span>
+            <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;elementidx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elementidx</span>
+            <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+
+            <span class="c1"># get bounds</span>
+            <span class="k">if</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;polyline&#39;</span><span class="p">:</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">])[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+                <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+            <span class="k">elif</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;rectangle&#39;</span><span class="p">:</span>
+                <span class="n">roiinfo</span> <span class="o">=</span> <span class="n">get_rotated_rectangular_coords</span><span class="p">(</span>
+                    <span class="n">roi_center</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;center&#39;</span><span class="p">],</span>
+                    <span class="n">roi_width</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">],</span>
+                    <span class="n">roi_height</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">],</span>
+                    <span class="n">roi_rotation</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;rotation&#39;</span><span class="p">])</span>
+                <span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span> <span class="o">=</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">],</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;y_min&#39;</span><span class="p">]</span>
+                <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">],</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;y_max&#39;</span><span class="p">]</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># add group or infer from label</span>
+            <span class="k">if</span> <span class="s1">&#39;group&#39;</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+
+            <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;xmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmin</span>
+            <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;xmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmax</span>
+            <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;ymin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ymin</span>
+            <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;ymax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ymax</span>
+            <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;bbox_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">ymin</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">xmax</span> <span class="o">-</span> <span class="n">xmin</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">element_infos</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_coords_from_element</span><span class="p">(</span><span class="n">element</span><span class="p">):</span>
+
+    <span class="c1"># get bounds</span>
+    <span class="k">if</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;polyline&#39;</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">])[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">elif</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;rectangle&#39;</span><span class="p">:</span>
+        <span class="n">roiinfo</span> <span class="o">=</span> <span class="n">get_rotated_rectangular_coords</span><span class="p">(</span>
+            <span class="n">roi_center</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;center&#39;</span><span class="p">],</span>
+            <span class="n">roi_width</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">],</span>
+            <span class="n">roi_height</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">],</span>
+            <span class="n">roi_rotation</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;rotation&#39;</span><span class="p">])</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;roi_corners&#39;</span><span class="p">]</span>  <span class="c1"># for rotated rectangles</span>
+        <span class="k">if</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;rotation&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">element</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;polyline&#39;</span>
+
+    <span class="k">elif</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;point&#39;</span><span class="p">:</span>
+        <span class="n">xmin</span> <span class="o">=</span> <span class="n">xmax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;center&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">ymin</span> <span class="o">=</span> <span class="n">ymax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;center&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">),</span> <span class="p">(</span><span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">),</span> <span class="p">(</span><span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">),</span>
+             <span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">),</span> <span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Unsupported element type:&#39;</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">coords</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_maybe_crop_polygon</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">bounds_polygon</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Crop bounds to desired area using shapely polygons.&quot;&quot;&quot;</span>
+    <span class="n">all_vertices</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># First, we get the polygon or polygons which result from</span>
+    <span class="c1"># intersection. Keep in mind that a particular annotation may</span>
+    <span class="c1"># &quot;ecit then enter&quot; the cropping ROI, so it may be split into</span>
+    <span class="c1"># two or more polygons by the splitting process. That&#39;s which</span>
+    <span class="c1"># this method&#39;s input is one set of vertices, but after cropping</span>
+    <span class="c1"># it may return one or more sets of vertices</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">elpoly</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">polygon</span> <span class="o">=</span> <span class="n">bounds_polygon</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">elpoly</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">polygon</span><span class="o">.</span><span class="n">geom_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Polygon&#39;</span><span class="p">,</span> <span class="s1">&#39;LineString&#39;</span><span class="p">):</span>
+            <span class="n">polygons_to_add</span> <span class="o">=</span> <span class="p">[</span><span class="n">polygon</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">polygons_to_add</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">polygon</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s1">&#39;Polygon&#39;</span><span class="p">]</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># if weird shapely errors --&gt;</span>
+        <span class="c1"># ignore this polygon collection altogether</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">all_vertices</span>
+
+    <span class="c1"># Second, once we have the shapely polygons, assuming no errors,</span>
+    <span class="c1"># we parse into usable coordinates that we can add to the table</span>
+    <span class="k">for</span> <span class="n">poly</span> <span class="ow">in</span> <span class="n">polygons_to_add</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">polygon</span><span class="o">.</span><span class="n">area</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">all_vertices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="n">poly</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">xy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># weird shapely errors --&gt; ignore this polygon</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">all_vertices</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_coords_to_str</span><span class="p">(</span><span class="n">vertices</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]),</span>
+        <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_add_element_to_final_df</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a single element to the final dataframe.</span>
+
+<span class="sd">    Note that we wrap this into a method so that when (if) we split an</span>
+<span class="sd">    annotation element into multiple polygons, we can add these</span>
+<span class="sd">    separately.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">elno</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Add element information to element dataframe</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;annidx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">annidx</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;annotation_girder_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ann</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">]</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;elementidx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">elementidx</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;element_girder_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;lineColor&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Now we can add offset to ensure coordinates are relative to the</span>
+    <span class="c1"># cropping bounds (i.e. they would correspond to an RGB image</span>
+    <span class="c1"># of the same region and could be used to create a mask or</span>
+    <span class="c1"># to encode object boundaries etc</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">cropping_bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">cropping_polygon_vertices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">vertices</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">vertices</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">cfg</span><span class="o">.</span><span class="n">x_shift</span>
+        <span class="n">vertices</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">vertices</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">cfg</span><span class="o">.</span><span class="n">y_shift</span>
+
+    <span class="c1"># get bounds for this polygon. Remember, these may have been</span>
+    <span class="c1"># changed after it was cropped using shapely</span>
+    <span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># parse to string for inclusion in pd dataframe</span>
+    <span class="n">x_coords</span><span class="p">,</span> <span class="n">y_coords</span> <span class="o">=</span> <span class="n">_parse_coords_to_str</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
+
+    <span class="c1"># add group or infer from label</span>
+    <span class="k">if</span> <span class="s1">&#39;group&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
+
+    <span class="c1"># add label or infer from group</span>
+    <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="s1">&#39;group&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span>
+
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;xmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">xmin</span><span class="p">)</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;xmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">xmax</span><span class="p">)</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;ymin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ymin</span><span class="p">)</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;ymax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ymax</span><span class="p">)</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;bbox_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">ymin</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">xmax</span> <span class="o">-</span> <span class="n">xmin</span><span class="p">))</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;coords_x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_coords</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elno</span><span class="p">,</span> <span class="s1">&#39;coords_y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_coords</span>
+
+
+<div class="viewcode-block" id="parse_slide_annotations_into_tables">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.parse_slide_annotations_into_tables">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_slide_annotations_into_tables</span><span class="p">(</span>
+        <span class="n">slide_annotations</span><span class="p">,</span> <span class="n">cropping_bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cropping_polygon_vertices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_shapely</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given a slide annotation list, parse into convenient tabular format.</span>
+
+<span class="sd">    If the annotation is a point, then it is just treated as if it is a</span>
+<span class="sd">    rectangle with zero area (i.e. xmin=xmax). Rotated rectangles are treated</span>
+<span class="sd">    as polygons for simplicity.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    slide_annotations : list of dicts</span>
+<span class="sd">        response from server request</span>
+
+<span class="sd">    cropping_bounds : dict or None</span>
+<span class="sd">        if given, must have keys XMIN, XMAX, YMIN, YMAX. These are the</span>
+<span class="sd">        bounds to which the polygons may be cropped using shapely,</span>
+<span class="sd">        if the param use_shapely is True. Otherwise, the polygon</span>
+<span class="sd">        coordinates are just shifted relative to these bounds without</span>
+<span class="sd">        actually cropping.</span>
+
+<span class="sd">    cropping_polygon_vertices : nd array or None</span>
+<span class="sd">        if given, is an (m, 2) nd array of vertices to crop bounds.</span>
+<span class="sd">        if the param use_shapely is True. Otherwise, the polygon</span>
+<span class="sd">        coordinates are just shifted relative to these bounds without</span>
+<span class="sd">        actually cropping.</span>
+
+<span class="sd">    use_shapely : bool</span>
+<span class="sd">        see cropping_bounds description.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Pandas DataFrame</span>
+<span class="sd">        Summary of key properties of the annotation documents. It has the</span>
+<span class="sd">        following columns:</span>
+<span class="sd">        - annotation_girder_id</span>
+<span class="sd">        - _modelType</span>
+<span class="sd">        - _version</span>
+<span class="sd">        - itemId</span>
+<span class="sd">        - created</span>
+<span class="sd">        - creatorId</span>
+<span class="sd">        - public</span>
+<span class="sd">        - updated</span>
+<span class="sd">        - updatedId</span>
+<span class="sd">        - groups</span>
+<span class="sd">        - element_count</span>
+<span class="sd">        - element_details</span>
+
+<span class="sd">    Pandas DataFrame</span>
+
+<span class="sd">        The individual annotation elements (polygons, points, rectangles).</span>
+<span class="sd">        The columns annidx and elementidx encode the dict index of annotation</span>
+<span class="sd">        document and element, respectively, in the original slide_annotations</span>
+<span class="sd">        list of dictionaries. It has the following columns:</span>
+
+<span class="sd">        - annidx</span>
+<span class="sd">        - annotation_girder_id</span>
+<span class="sd">        - elementidx</span>
+<span class="sd">        - element_girder_id</span>
+<span class="sd">        - type</span>
+<span class="sd">        - group</span>
+<span class="sd">        - label</span>
+<span class="sd">        - color</span>
+<span class="sd">        - xmin</span>
+<span class="sd">        - xmax</span>
+<span class="sd">        - ymin</span>
+<span class="sd">        - ymax</span>
+<span class="sd">        - bbox_area</span>
+<span class="sd">        - coords_x</span>
+<span class="sd">        - coords_y</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="c1"># we use this object to pass params to split method into sub-methods</span>
+    <span class="c1"># and avoid annoying linting (&quot;method too complex&quot;) issue</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Cfg</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">pass</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">Cfg</span><span class="p">()</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">cropping_bounds</span> <span class="o">=</span> <span class="n">cropping_bounds</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">cropping_polygon_vertices</span> <span class="o">=</span> <span class="n">cropping_polygon_vertices</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">use_shapely</span> <span class="o">=</span> <span class="n">use_shapely</span>
+
+    <span class="n">cfg</span><span class="o">.</span><span class="n">annotation_infos</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span>
+        <span class="s1">&#39;annotation_girder_id&#39;</span><span class="p">,</span> <span class="s1">&#39;_modelType&#39;</span><span class="p">,</span> <span class="s1">&#39;_version&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;itemId&#39;</span><span class="p">,</span> <span class="s1">&#39;created&#39;</span><span class="p">,</span> <span class="s1">&#39;creatorId&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;public&#39;</span><span class="p">,</span> <span class="s1">&#39;updated&#39;</span><span class="p">,</span> <span class="s1">&#39;updatedId&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;groups&#39;</span><span class="p">,</span> <span class="s1">&#39;element_count&#39;</span><span class="p">,</span> <span class="s1">&#39;element_details&#39;</span><span class="p">,</span>
+    <span class="p">])</span>
+
+    <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span>
+        <span class="s1">&#39;annidx&#39;</span><span class="p">,</span> <span class="s1">&#39;annotation_girder_id&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;elementidx&#39;</span><span class="p">,</span> <span class="s1">&#39;element_girder_id&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;xmin&#39;</span><span class="p">,</span> <span class="s1">&#39;xmax&#39;</span><span class="p">,</span> <span class="s1">&#39;ymin&#39;</span><span class="p">,</span> <span class="s1">&#39;ymax&#39;</span><span class="p">,</span> <span class="s1">&#39;bbox_area&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;coords_x&#39;</span><span class="p">,</span> <span class="s1">&#39;coords_y&#39;</span><span class="p">,</span>
+    <span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">cropping_bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">cfg</span><span class="o">.</span><span class="n">cropping_polygon_vertices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> \
+            <span class="s1">&#39;either give cropping bounds or vertices, not both&#39;</span>
+        <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">cropping_bounds</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">],</span> <span class="n">cfg</span><span class="o">.</span><span class="n">cropping_bounds</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">],</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">cropping_bounds</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">],</span> <span class="n">cfg</span><span class="o">.</span><span class="n">cropping_bounds</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">])</span>
+        <span class="n">bounds_polygon</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">),</span> <span class="p">(</span><span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">),</span> <span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">),</span> <span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">),</span>
+        <span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">))</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">x_shift</span> <span class="o">=</span> <span class="n">xmin</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">y_shift</span> <span class="o">=</span> <span class="n">ymin</span>
+
+    <span class="k">elif</span> <span class="n">cfg</span><span class="o">.</span><span class="n">cropping_polygon_vertices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bounds_polygon</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">cropping_polygon_vertices</span><span class="p">))</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">x_shift</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">y_shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">cropping_polygon_vertices</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># go through annotation elements and add as needed</span>
+    <span class="k">for</span> <span class="n">cfg</span><span class="o">.</span><span class="n">annidx</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ann</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">):</span>
+
+        <span class="n">annno</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">annotation_infos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Add annotation document info to annotations dataframe</span>
+
+        <span class="n">cfg</span><span class="o">.</span><span class="n">annotation_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">annno</span><span class="p">,</span> <span class="s1">&#39;annotation_girder_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ann</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="s1">&#39;_modelType&#39;</span><span class="p">,</span> <span class="s1">&#39;_version&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;itemId&#39;</span><span class="p">,</span> <span class="s1">&#39;created&#39;</span><span class="p">,</span> <span class="s1">&#39;creatorId&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;public&#39;</span><span class="p">,</span> <span class="s1">&#39;updated&#39;</span><span class="p">,</span> <span class="s1">&#39;updatedId&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ann</span><span class="p">:</span>
+                <span class="n">cfg</span><span class="o">.</span><span class="n">annotation_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">annno</span><span class="p">,</span> <span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ann</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s1">&#39;groups&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ann</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">annotation_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">annno</span><span class="p">,</span> <span class="s1">&#39;groups&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">ann</span><span class="p">[</span><span class="s1">&#39;groups&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="s1">&#39;_elementQuery&#39;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ann</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">annotation_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">annno</span><span class="p">,</span> <span class="s1">&#39;element_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ann</span><span class="p">[</span>
+                <span class="s1">&#39;_elementQuery&#39;</span><span class="p">][</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">annotation_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">annno</span><span class="p">,</span> <span class="s1">&#39;element_details&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ann</span><span class="p">[</span>
+                <span class="s1">&#39;_elementQuery&#39;</span><span class="p">][</span><span class="s1">&#39;details&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">ann</span><span class="p">[</span><span class="s1">&#39;annotation&#39;</span><span class="p">][</span><span class="s1">&#39;elements&#39;</span><span class="p">]):</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">elementidx</span> <span class="o">=</span> <span class="n">idx</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">element</span> <span class="o">=</span> <span class="n">element</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">_get_coords_from_element</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">element</span><span class="p">))</span>
+
+            <span class="c1"># crop using shapely to desired bounds if needed</span>
+            <span class="c1"># IMPORTANT: everything till this point needs to be</span>
+            <span class="c1"># relative to the whole slide image</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">cfg</span><span class="o">.</span><span class="n">cropping_bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">cropping_polygon_vertices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">))</span> \
+                    <span class="ow">or</span> <span class="p">(</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;point&#39;</span><span class="p">)</span> \
+                    <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">use_shapely</span><span class="p">):</span>
+                <span class="n">all_coords</span> <span class="o">=</span> <span class="p">[</span><span class="n">coords</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">all_coords</span> <span class="o">=</span> <span class="n">_maybe_crop_polygon</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">bounds_polygon</span><span class="p">)</span>
+
+            <span class="c1"># now add polygons one by one</span>
+            <span class="k">for</span> <span class="n">vertices</span> <span class="ow">in</span> <span class="n">all_coords</span><span class="p">:</span>
+                <span class="n">_add_element_to_final_df</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cfg</span><span class="o">.</span><span class="n">annotation_infos</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">element_infos</span></div>
+
+
+
+<div class="viewcode-block" id="np_vec_no_jit_iou">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.np_vec_no_jit_iou">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">np_vec_no_jit_iou</span><span class="p">(</span><span class="n">bboxes1</span><span class="p">,</span> <span class="n">bboxes2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fast, vectorized IoU.</span>
+
+<span class="sd">    Source: https://medium.com/@venuktan/vectorized-intersection-over-union ...</span>
+<span class="sd">            -iou-in-numpy-and-tensor-flow-4fa16231b63d</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bboxes1 : np array</span>
+<span class="sd">        columns encode bounding box corners xmin, ymin, xmax, ymax</span>
+<span class="sd">    bboxes2 : np array</span>
+<span class="sd">        same as bboxes 1</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np array</span>
+<span class="sd">        IoU values for each pair from bboxes1 &amp; bboxes2</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x11</span><span class="p">,</span> <span class="n">y11</span><span class="p">,</span> <span class="n">x12</span><span class="p">,</span> <span class="n">y12</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">bboxes1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">x21</span><span class="p">,</span> <span class="n">y21</span><span class="p">,</span> <span class="n">x22</span><span class="p">,</span> <span class="n">y22</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">bboxes2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">xA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">x11</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x21</span><span class="p">))</span>
+    <span class="n">yA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">y11</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">y21</span><span class="p">))</span>
+    <span class="n">xB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x12</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x22</span><span class="p">))</span>
+    <span class="n">yB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">y12</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">y22</span><span class="p">))</span>
+    <span class="n">interArea</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">((</span><span class="n">xB</span> <span class="o">-</span> <span class="n">xA</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">((</span><span class="n">yB</span> <span class="o">-</span> <span class="n">yA</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">boxAArea</span> <span class="o">=</span> <span class="p">(</span><span class="n">x12</span> <span class="o">-</span> <span class="n">x11</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y12</span> <span class="o">-</span> <span class="n">y11</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">boxBArea</span> <span class="o">=</span> <span class="p">(</span><span class="n">x22</span> <span class="o">-</span> <span class="n">x21</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y22</span> <span class="o">-</span> <span class="n">y21</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">iou</span> <span class="o">=</span> <span class="n">interArea</span> <span class="o">/</span> <span class="p">(</span><span class="n">boxAArea</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">boxBArea</span><span class="p">)</span> <span class="o">-</span> <span class="n">interArea</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">iou</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_idxs_for_all_rois</span><span class="p">(</span><span class="n">GTCodes</span><span class="p">,</span> <span class="n">element_infos</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get indices of ROIs within the element_infos dataframe.</span>
+
+<span class="sd">    (Internal)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">roi_labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;is_roi&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">])</span>
+    <span class="n">idxs_for_all_rois</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">elinfo</span> <span class="ow">in</span> <span class="n">element_infos</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">elinfo</span><span class="o">.</span><span class="n">group</span> <span class="ow">in</span> <span class="n">roi_labels</span><span class="p">:</span>
+            <span class="n">idxs_for_all_rois</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">idxs_for_all_rois</span>
+
+
+<div class="viewcode-block" id="get_idxs_for_annots_overlapping_roi_by_bbox">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.get_idxs_for_annots_overlapping_roi_by_bbox">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_idxs_for_annots_overlapping_roi_by_bbox</span><span class="p">(</span>
+        <span class="n">element_infos</span><span class="p">,</span> <span class="n">idx_for_roi</span><span class="p">,</span> <span class="n">iou_thresh</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find indices of **potentially** included annotations within the ROI.</span>
+
+<span class="sd">    We say &quot;potentially&quot; because this uses the IoU of roi and annotation as a</span>
+<span class="sd">    fast indicator of potential inclusion. This helps dramatically scale down</span>
+<span class="sd">    the number of annotations to look through. Later on, a detailed look at</span>
+<span class="sd">    whether the annotation polygons actually overlap the ROI can be done.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    element_infos : pandas DataFrame</span>
+<span class="sd">        result from running get_bboxes_from_slide_annotations()</span>
+<span class="sd">    idx_for_roi : int</span>
+<span class="sd">        index for roi annotation within the element_infos DF</span>
+<span class="sd">    iou_thresh : float</span>
+<span class="sd">        overlap threshold to be considered within ROI</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        indices relative to element_infos</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bboxes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;xmin&#39;</span><span class="p">,</span> <span class="s1">&#39;ymin&#39;</span><span class="p">,</span> <span class="s1">&#39;xmax&#39;</span><span class="p">,</span> <span class="s1">&#39;ymax&#39;</span><span class="p">]],</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+    <span class="n">iou</span> <span class="o">=</span> <span class="n">np_vec_no_jit_iou</span><span class="p">(</span><span class="n">bboxes</span><span class="p">[</span><span class="n">idx_for_roi</span><span class="p">,</span> <span class="p">:][</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">bboxes2</span><span class="o">=</span><span class="n">bboxes</span><span class="p">)</span>
+    <span class="n">iou</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">iou</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">iou</span><span class="p">))</span>
+    <span class="n">iou</span> <span class="o">=</span> <span class="n">iou</span><span class="p">[:,</span> <span class="n">iou</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">&gt;</span> <span class="n">iou_thresh</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">overlaps</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">iou</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span> <span class="o">-</span> <span class="p">{</span><span class="n">idx_for_roi</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">overlaps</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_mask_from_coords">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.create_mask_from_coords">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_mask_from_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a binary mask from given vertices coordinates.</span>
+
+<span class="sd">    Source: This is modified from code by Juan Carlos from David Gutman Lab.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coords : np array</span>
+<span class="sd">        must be in the form (e.g. ([x1,y1],[x2,y2],[x3,y3],.....,[xn,yn])),</span>
+<span class="sd">        where xn and yn corresponds to the nth vertex coordinate.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np array</span>
+<span class="sd">        binary mask</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">polygon</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># use the smallest bounding region, calculated from vertices</span>
+    <span class="n">min_x</span><span class="p">,</span> <span class="n">min_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">max_x</span><span class="p">,</span> <span class="n">max_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># get the new width and height</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_x</span> <span class="o">-</span> <span class="n">min_x</span><span class="p">)</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_y</span> <span class="o">-</span> <span class="n">min_y</span><span class="p">)</span>
+    <span class="c1"># shift all vertices to account for location of the smallest bounding box</span>
+    <span class="n">polygon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">polygon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">min_x</span>
+    <span class="n">polygon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">polygon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">min_y</span>
+
+    <span class="c1"># convert to tuple form for masking function (nd array does not work)</span>
+    <span class="n">vertices_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="n">polygon</span><span class="p">))</span>
+    <span class="c1"># make the mask</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">img</span><span class="p">)</span><span class="o">.</span><span class="n">polygon</span><span class="p">(</span><span class="n">vertices_tuple</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_element_mask</span><span class="p">(</span><span class="n">elinfo</span><span class="p">,</span> <span class="n">slide_annotations</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get coordinates and mask for annotation element.</span>
+
+<span class="sd">    (Internal)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">element</span> <span class="o">=</span> <span class="n">slide_annotations</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">elinfo</span><span class="p">[</span><span class="s1">&#39;annidx&#39;</span><span class="p">])][</span>
+        <span class="s1">&#39;annotation&#39;</span><span class="p">][</span><span class="s1">&#39;elements&#39;</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">elinfo</span><span class="p">[</span><span class="s1">&#39;elementidx&#39;</span><span class="p">])]</span>
+
+    <span class="k">if</span> <span class="n">elinfo</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;polyline&#39;</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">])[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">elinfo</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;rectangle&#39;</span><span class="p">:</span>
+        <span class="n">infoDict</span> <span class="o">=</span> <span class="n">get_rotated_rectangular_coords</span><span class="p">(</span>
+            <span class="n">roi_center</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;center&#39;</span><span class="p">],</span> <span class="n">roi_width</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">],</span>
+            <span class="n">roi_height</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">],</span> <span class="n">roi_rotation</span><span class="o">=</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;rotation&#39;</span><span class="p">])</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">infoDict</span><span class="p">[</span><span class="s1">&#39;roi_corners&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;cannot create mask from point annotation!&#39;</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask_from_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">coords</span><span class="p">,</span> <span class="n">mask</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_add_element_to_roi</span><span class="p">(</span><span class="n">elinfo</span><span class="p">,</span> <span class="n">ROI</span><span class="p">,</span> <span class="n">GT_code</span><span class="p">,</span> <span class="n">element_mask</span><span class="p">,</span> <span class="n">roiinfo</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add single polygon to ROI given mask (Internal).&quot;&quot;&quot;</span>
+    <span class="n">ymin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elinfo</span><span class="o">.</span><span class="n">ymin</span> <span class="o">-</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">])</span>
+    <span class="n">ymax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elinfo</span><span class="o">.</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">])</span>
+    <span class="n">xmin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elinfo</span><span class="o">.</span><span class="n">xmin</span> <span class="o">-</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">])</span>
+    <span class="n">xmax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elinfo</span><span class="o">.</span><span class="n">xmax</span> <span class="o">-</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">])</span>
+    <span class="n">patch</span> <span class="o">=</span> <span class="n">ROI</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">]</span>
+
+    <span class="c1"># to account for non-integer pixels</span>
+    <span class="k">if</span> <span class="n">element_mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">patch</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="n">element_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">element_mask</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">patch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">element_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">patch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">element_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+
+    <span class="c1"># add to ROI mask</span>
+    <span class="n">patch</span><span class="p">[</span><span class="n">element_mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">GT_code</span>
+    <span class="n">ROI</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">]</span> <span class="o">=</span> <span class="n">patch</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">element</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;mask&#39;</span><span class="p">:</span> <span class="n">element_mask</span><span class="p">,</span>
+        <span class="s1">&#39;xmin&#39;</span><span class="p">:</span> <span class="n">xmin</span><span class="p">,</span> <span class="s1">&#39;xmax&#39;</span><span class="p">:</span> <span class="n">xmax</span><span class="p">,</span>
+        <span class="s1">&#39;ymin&#39;</span><span class="p">:</span> <span class="n">ymin</span><span class="p">,</span> <span class="s1">&#39;ymax&#39;</span><span class="p">:</span> <span class="n">ymax</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">ROI</span><span class="p">,</span> <span class="n">element</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_and_add_element_to_roi</span><span class="p">(</span>
+        <span class="n">elinfo</span><span class="p">,</span> <span class="n">slide_annotations</span><span class="p">,</span> <span class="n">ROI</span><span class="p">,</span> <span class="n">roiinfo</span><span class="p">,</span> <span class="n">roi_polygon</span><span class="p">,</span> <span class="n">GT_code</span><span class="p">,</span>
+        <span class="n">use_shapely</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get element coords and mask and add to ROI (Internal).&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">coords</span><span class="p">,</span> <span class="n">element_mask</span> <span class="o">=</span> <span class="n">_get_element_mask</span><span class="p">(</span>
+            <span class="n">elinfo</span><span class="o">=</span><span class="n">elinfo</span><span class="p">,</span> <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">)</span>
+
+        <span class="n">ADD_TO_ROI</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># ignore if outside ROI (precise)</span>
+        <span class="k">if</span> <span class="n">use_shapely</span><span class="p">:</span>
+            <span class="n">el_polygon</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">el_polygon</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">roi_polygon</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: OUTSIDE ROI.&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+                <span class="n">ADD_TO_ROI</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Add element to ROI mask</span>
+        <span class="k">if</span> <span class="n">ADD_TO_ROI</span><span class="p">:</span>
+            <span class="n">ROI</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_add_element_to_roi</span><span class="p">(</span>
+                <span class="n">elinfo</span><span class="o">=</span><span class="n">elinfo</span><span class="p">,</span> <span class="n">ROI</span><span class="o">=</span><span class="n">ROI</span><span class="p">,</span> <span class="n">GT_code</span><span class="o">=</span><span class="n">GT_code</span><span class="p">,</span>
+                <span class="n">element_mask</span><span class="o">=</span><span class="n">element_mask</span><span class="p">,</span> <span class="n">roiinfo</span><span class="o">=</span><span class="n">roiinfo</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: ERROR! (see below)&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ROI</span>
+
+
+<div class="viewcode-block" id="delete_annotations_in_slide">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_and_mask_utils.html#histomicstk.annotations_and_masks.annotation_and_mask_utils.delete_annotations_in_slide">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">delete_annotations_in_slide</span><span class="p">(</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete all annotations in a slide.&quot;&quot;&quot;</span>
+    <span class="n">existing_annotations</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/annotation/item/&#39;</span> <span class="o">+</span> <span class="n">slide_id</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ann</span> <span class="ow">in</span> <span class="n">existing_annotations</span><span class="p">:</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s1">&#39;/annotation/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">ann</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">])</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_simple_add_element_to_roi</span><span class="p">(</span>
+        <span class="n">elinfo</span><span class="p">,</span> <span class="n">ROI</span><span class="p">,</span> <span class="n">roiinfo</span><span class="p">,</span> <span class="n">GT_code</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get element coords and mask and add to ROI (Internal).&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_coords</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">elinfo</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)])[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">element</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+                <span class="n">_process_coords</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;coords_x&#39;</span><span class="p">,</span> <span class="s1">&#39;coords_y&#39;</span><span class="p">)],</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">element_mask</span> <span class="o">=</span> <span class="n">create_mask_from_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">element_mask</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Add element to ROI mask</span>
+        <span class="n">ROI</span><span class="p">,</span> <span class="n">element</span> <span class="o">=</span> <span class="n">_add_element_to_roi</span><span class="p">(</span>
+            <span class="n">elinfo</span><span class="o">=</span><span class="n">elinfo</span><span class="p">,</span> <span class="n">ROI</span><span class="o">=</span><span class="n">ROI</span><span class="p">,</span> <span class="n">GT_code</span><span class="o">=</span><span class="n">GT_code</span><span class="p">,</span>
+            <span class="n">element_mask</span><span class="o">=</span><span class="n">element_mask</span><span class="p">,</span> <span class="n">roiinfo</span><span class="o">=</span><span class="n">roiinfo</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: ERROR! (see below)&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ROI</span><span class="p">,</span> <span class="n">element</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
