@@ -12,7 +12,9 @@ RUN pip install --find-links https://girder.github.io/large_image_wheels \
     histomicsui[analysis] \
     large-image-source-openslide \
     pooch \
-    pytest
+    pytest \
+    'dogpile.cache<1.4.0' \
+    'girder<5'
 
 COPY . /tests
 
