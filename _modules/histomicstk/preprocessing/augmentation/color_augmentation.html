@@ -1,0 +1,250 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.preprocessing.augmentation.color_augmentation &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.preprocessing.augmentation.color_augmentation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.preprocessing.augmentation.color_augmentation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Sat Oct 19 18:09:17 2019.</span>
+
+<span class="sd">@author: mtageld</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_conversion</span><span class="w"> </span><span class="kn">import</span> <span class="n">rgb_to_sda</span><span class="p">,</span> <span class="n">sda_to_rgb</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_deconvolution</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">color_deconvolution_routine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_image_to_matrix</span><span class="p">,</span> <span class="n">convert_matrix_to_image</span>
+
+
+<div class="viewcode-block" id="perturb_stain_concentration">
+<a class="viewcode-back" href="../../../../histomicstk.preprocessing.augmentation.html#histomicstk.preprocessing.augmentation.perturb_stain_concentration">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">perturb_stain_concentration</span><span class="p">(</span>
+        <span class="n">StainsFloat</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">I_0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask_out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sigma1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">sigma2</span><span class="o">=</span><span class="mf">0.9</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perturb stain concentrations in SDA space and return augmented image.</span>
+
+<span class="sd">    This is an implementation of the method described in Tellez et</span>
+<span class="sd">    al, 2018 (see below). The SDA matrix is perturbed by multiplying each</span>
+<span class="sd">    channel independently by a value chosen from a random uniform distribution</span>
+<span class="sd">    in the range [1 - sigma1, 1 + sigma1], then add a value chosen from another</span>
+<span class="sd">    random uniform distribution in the range [-sigma2, sigma2].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    StainsFloat : array_like</span>
+<span class="sd">        An intensity image (m, n, 3) of deconvolved stains that is unbounded,</span>
+<span class="sd">        suitable for reconstructing color images of deconvolved stains</span>
+<span class="sd">        with color_convolution.</span>
+
+<span class="sd">    W : array_like</span>
+<span class="sd">        A 3x3 complemented stain matrix.</span>
+
+<span class="sd">    I_0 : float or array_like, optional</span>
+<span class="sd">        A float a 3-vector containing background RGB intensities.</span>
+<span class="sd">        If unspecified, use the old OD conversion.</span>
+
+<span class="sd">    mask_out : array_like, default is None</span>
+<span class="sd">        if not None, should be (m x n) boolean numpy array.</span>
+<span class="sd">        This parameter ensures exclusion of non-masked areas from perturbing.</span>
+<span class="sd">        This is relevant because elements like blood, sharpie marker,</span>
+<span class="sd">        white space, etc cannot be simply modeled as a mix of two stains.</span>
+
+<span class="sd">    sigma1 : float</span>
+<span class="sd">        parameter, see beginning of this docstring.</span>
+
+<span class="sd">    sigma2 : float</span>
+<span class="sd">        parameter, see beginning of this docstring.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array_like</span>
+<span class="sd">        Color augmented RGB image (m x n x 3)</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] Tellez, David, Maschenka Balkenhol, Irene Otte-Höller,</span>
+<span class="sd">           Rob van de Loo, Rob Vogels, Peter Bult, Carla Wauters et al.</span>
+<span class="sd">           &quot;Whole-slide mitosis detection in H&amp;E breast histology using PHH3</span>
+<span class="sd">           as a reference to train distilled stain-invariant convolutional</span>
+<span class="sd">           networks.&quot; IEEE transactions on medical imaging 37, no. 9</span>
+<span class="sd">           (2018): 2126-2136.</span>
+<span class="sd">    .. [#] Tellez, David, Geert Litjens, Peter Bandi, Wouter Bulten,</span>
+<span class="sd">           John-Melle Bokhorst, Francesco Ciompi, and Jeroen van der Laak.</span>
+<span class="sd">           &quot;Quantifying the effects of data augmentation and stain color</span>
+<span class="sd">           normalization in convolutional neural networks for computational</span>
+<span class="sd">           pathology.&quot; arXiv preprint arXiv:1902.06543 (2019).</span>
+<span class="sd">    .. [#] Implementation inspired by Peter Byfield StainTools repository. See</span>
+<span class="sd">           https://github.com/Peter554/StainTools/blob/master/LICENSE.txt</span>
+<span class="sd">           for copyright license (MIT license).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># augment everything, otherwise only augment specific pixels</span>
+    <span class="k">if</span> <span class="n">mask_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">keep_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">StainsFloat</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">keep_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">mask_out</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">keep_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">keep_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">keep_mask</span> <span class="o">=</span> <span class="n">convert_image_to_matrix</span><span class="p">(</span><span class="n">keep_mask</span><span class="p">)</span>
+
+    <span class="c1"># transform 3D input stain image to 2D stain matrix format</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">convert_image_to_matrix</span><span class="p">(</span><span class="n">StainsFloat</span><span class="p">)</span>
+
+    <span class="c1"># transform input stains to optical density values</span>
+    <span class="n">sda_fwd</span> <span class="o">=</span> <span class="n">rgb_to_sda</span><span class="p">(</span>
+        <span class="n">m</span><span class="p">,</span> <span class="mi">255</span> <span class="k">if</span> <span class="n">I_0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">allow_negatives</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># perturb concentrations in SDA space</span>
+    <span class="n">augmented_sda</span> <span class="o">=</span> <span class="n">sda_fwd</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">sigma1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">sigma1</span><span class="p">)</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="n">sigma2</span><span class="p">,</span> <span class="n">sigma2</span><span class="p">)</span>
+        <span class="n">augmented_sda</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">keep_mask</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]]</span> <span class="o">*=</span> <span class="n">alpha</span>
+        <span class="n">augmented_sda</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">keep_mask</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]]</span> <span class="o">+=</span> <span class="n">beta</span>
+
+    <span class="c1"># convolve with stains column vectors and convert to RGB</span>
+    <span class="n">sda_conv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">augmented_sda</span><span class="p">)</span>
+    <span class="n">sda_inv</span> <span class="o">=</span> <span class="n">sda_to_rgb</span><span class="p">(</span><span class="n">sda_conv</span><span class="p">,</span> <span class="n">I_0</span><span class="p">)</span>
+
+    <span class="c1"># reshape output, transform type</span>
+    <span class="n">augmented_rgb</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">convert_matrix_to_image</span><span class="p">(</span><span class="n">sda_inv</span><span class="p">,</span> <span class="n">StainsFloat</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">augmented_rgb</span></div>
+
+
+
+<div class="viewcode-block" id="rgb_perturb_stain_concentration">
+<a class="viewcode-back" href="../../../../histomicstk.preprocessing.augmentation.html#histomicstk.preprocessing.augmentation.rgb_perturb_stain_concentration">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">rgb_perturb_stain_concentration</span><span class="p">(</span>
+        <span class="n">im_rgb</span><span class="p">,</span> <span class="n">stain_unmixing_routine_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply wrapper that calls perturb_stain_concentration() on RGB.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_rgb : array_like</span>
+<span class="sd">        An RGB image (m x n x 3) to color normalize</span>
+
+<span class="sd">    stain_unmixing_routine_params : dict</span>
+<span class="sd">        kwargs to pass as-is to the color_deconvolution_routine().</span>
+
+<span class="sd">    kwargs : k,v pairs</span>
+<span class="sd">        Passed as-is to perturb_stain_concentration()</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array_like</span>
+<span class="sd">        Color augmented RGB image (m x n x 3)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stain_unmixing_routine_params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;stains&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hematoxylin&#39;</span><span class="p">,</span> <span class="s1">&#39;eosin&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;stain_unmixing_method&#39;</span><span class="p">:</span> <span class="s1">&#39;macenko_pca&#39;</span><span class="p">,</span>
+    <span class="p">}</span> <span class="k">if</span> <span class="n">stain_unmixing_routine_params</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">stain_unmixing_routine_params</span>
+
+    <span class="n">_</span><span class="p">,</span> <span class="n">StainsFloat</span><span class="p">,</span> <span class="n">W_source</span> <span class="o">=</span> <span class="n">color_deconvolution_routine</span><span class="p">(</span>
+        <span class="n">im_rgb</span><span class="p">,</span> <span class="n">W_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">stain_unmixing_routine_params</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">perturb_stain_concentration</span><span class="p">(</span><span class="n">StainsFloat</span><span class="p">,</span> <span class="n">W_source</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
