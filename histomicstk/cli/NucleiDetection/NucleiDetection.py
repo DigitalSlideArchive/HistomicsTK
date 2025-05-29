@@ -226,11 +226,14 @@ def main(args):  # noqa
     # retrieve frame
     if not args.frame or args.frame.startswith('{#control'):
         args.frame = None
-    elif not args.frame.isdigit():
-        msg = 'The given frame value is not an integer'
-        raise Exception(msg)
     else:
-        it_kwargs['frame'] = int(args.frame)
+        try:
+            frame = int(args.frame)
+            if frame:
+                it_kwargs['frame'] = frame
+        except ValueError:
+            msg = 'The given frame value is not an integer'
+            raise Exception(msg)
 
     #
     # Initiate Dask client
