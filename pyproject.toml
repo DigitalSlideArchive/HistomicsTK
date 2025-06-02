@@ -1,8 +1,71 @@
 [build-system]
-requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "numpy", "cython", "setuptools-scm"]
+requires = ["scikit-build-core>=0.7", "setuptools-scm", "cython>=0.29", "numpy"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "histomicstk"
+description = "A Python toolkit for Histopathology Image Analysis"
+readme = "README.rst"
+authors = [
+    {name = "Kitware, Inc.", email = "developers@digitalslidearchive.net"}
+]
+urls = {Homepage = "https://github.com/DigitalSlideArchive/HistomicsTK"}
+license = {text = "Apache Software License 2.0"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = ["histomicstk"]
+requires-python = ">=3.9"
+dependencies = [
+    "girder-client",
+    "nimfa",
+    "numpy",
+    "scipy",
+    "Pillow",
+    "pandas",
+    "scikit-image",
+    "scikit-learn",
+    "imageio",
+    "shapely",
+    "sqlalchemy",
+    "matplotlib",
+    "pyvips",
+    "dask[dataframe]<2024.11.0",
+    "distributed",
+    "large-image[sources];sys.platform=='linux'",
+    "large-image[common];sys.platform!='linux'",
+    "large-image-converter;sys.platform=='linux'",
+    "girder-slicer-cli-web",
+    "ctk-cli",
+    "opencv-python-headless",
+]
+dynamic = ["version"]
+
+[project.scripts]
+histomicstk = "histomicstk.cli.__main__:main"
+
+[tool.scikit-build]
+wheel.packages = ["histomicstk"]
+sdist.exclude = ["*.git*"]
+cmake.build-type = "Release"
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+fallback_version = "0.0.0"
+
+[tool.setuptools.package-data]
+"*" = ["*.pyx", "*.pxd"]
 
 [tool.codespell]
-# Ref: https://github.com/codespell-project/codespell#using-a-config-file
 skip = '.git*,*.pdf,*.svg,.pre-commit-config.yaml'
 check-hidden = true
 ignore-regex = '(^\s*"image/\S+": ".*)'

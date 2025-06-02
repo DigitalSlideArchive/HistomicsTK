@@ -1,9 +1,8 @@
-cmake_minimum_required(VERSION 3.6.2)
+cmake_minimum_required(VERSION 3.15...3.26)
 
-project(histomicstk)
+project(histomicstk LANGUAGES CXX)
 
-find_package(PythonInterp REQUIRED)
-find_package(PythonExtensions REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
 
 add_subdirectory(histomicstk/features)
 add_subdirectory(histomicstk/segmentation/label)
