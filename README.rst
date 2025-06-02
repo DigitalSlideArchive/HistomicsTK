@@ -34,7 +34,7 @@ HistomicsTK can be used in two ways:
 
   *To install HistomicsTK using PyPI*::
 
-  $ python -m pip install histomicstk --find-links https://girder.github.io/large_image_wheels
+  $ python -m pip install histomicstk[all] --find-links https://girder.github.io/large_image_wheels
 
   *To install HistomicsTK from source*::
 
@@ -43,7 +43,7 @@ HistomicsTK can be used in two ways:
   $ python -m pip install setuptools-scm "Cython>=0.25.2" "scikit-build>=0.8.1" "cmake>=0.6.0" "numpy>=1.12.1"
   $ python -m pip install -e .
 
-  HistomicsTK uses the `large_image`_ library to read content from whole-slide and microscopy image formats. Depending on your exact system, installing the necessary libraries to support these formats can be complex.  There are some non-official prebuilt libraries available for Linux that can be included as part of the installation by specifying ``pip install histomicstk --find-links https://girder.github.io/large_image_wheels``. Note that if you previously installed HistomicsTK or large_image without these, you may need to add ``--force-reinstall --no-cache-dir`` to the ``pip install`` command to force it to use the find-links option.
+  HistomicsTK uses the `large_image`_ library to read content from whole-slide and microscopy image formats. Depending on your exact system, installing the necessary libraries to support these formats can be complex.  There are some non-official prebuilt libraries available for Linux that can be included as part of the installation by specifying ``pip install histomicstk[all] --find-links https://girder.github.io/large_image_wheels``. Note that if you previously installed HistomicsTK or large_image without these, you may need to add ``--force-reinstall --no-cache-dir`` to the ``pip install`` command to force it to use the find-links option.
 
   The system version of various libraries are used if the ``--find-links`` option is not specified.  You will need to use your package manager to install appropriate libraries (on Ubuntu, for instance, you'll need ``libopenslide-dev`` and ``libtiff-dev``).
 
@@ -79,7 +79,7 @@ HistomicsTK can be used in two ways:
 
   Run::
 
-  $ python -m pip install histomicstk large-image-source-tiff large-image-source-openslide
+  $ python -m pip install histomicstk[all] large-image-source-tiff large-image-source-openslide
 
 
 - **As a image-processing task library for HistomicsUI and the Digital Slide Archive**: This allows end users to apply containerized analysis modules/pipelines over the web. See the `Digital Slide Archive`_ for installation instructions.

@@ -297,7 +297,7 @@ jobs:
           command: |
             python3 -m pip install --upgrade pip
             cd ..
-            python3 -m pip install histomicstk --pre --find-links project/wheels --find-links https://girder.github.io/large_image_wheels
+            python3 -m pip install histomicstk[all] --pre --find-links project/wheels --find-links https://girder.github.io/large_image_wheels
             python3 -c "import histomicstk"
   docs-deploy:
     working_directory: ~/project

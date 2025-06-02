@@ -68,7 +68,7 @@ COPY histomicstk/cli/dask_config.yaml /root/.config/dask/dask_config.yaml
 WORKDIR $htk_path
 
 # Install HistomicsTK and its dependencies
-RUN pip install --no-cache-dir . --find-links https://girder.github.io/large_image_wheels && \
+RUN pip install --no-cache-dir .[all] --find-links https://girder.github.io/large_image_wheels && \
     pip install --no-cache-dir virtualenv && \
     rm -rf /root/.cache/pip/* && \
     # Make duplicate files not take extra space in the docker image \

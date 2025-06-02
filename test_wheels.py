@@ -8,7 +8,7 @@ python --version && \\
 pip install --upgrade pip && \\
 pip install 'large_image[tiff,openslide,pil]' \\
   -f https://girder.github.io/large_image_wheels && \\
-pip install histomicstk -f /wheels && \\
+pip install histomicstk[all] -f /wheels && \\
 echo 'Test basic import of histomicstk' && \\
 python -c 'import histomicstk' && \\
 curl https://data.kitware.com/api/v1/file/5899dd6d8d777f07219fcb23/download -LJ -o tcga.svs && \\

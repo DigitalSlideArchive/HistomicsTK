@@ -26,7 +26,6 @@ classifiers = [
 keywords = ["histomicstk"]
 requires-python = ">=3.9"
 dependencies = [
-    "girder-client",
     "nimfa",
     "numpy",
     "scipy",
@@ -36,19 +35,37 @@ dependencies = [
     "scikit-learn",
     "imageio",
     "shapely",
-    "sqlalchemy",
     "matplotlib",
-    "pyvips",
     "dask[dataframe]<2024.11.0",
     "distributed",
-    "large-image[sources];sys.platform=='linux'",
-    "large-image[common];sys.platform!='linux'",
-    "large-image-converter;sys.platform=='linux'",
-    "girder-slicer-cli-web",
-    "ctk-cli",
+    "large-image[common]",
     "opencv-python-headless",
 ]
 dynamic = ["version"]
+
+[project.optional-dependencies]
+girder = [
+    "girder-client",
+    "sqlalchemy",
+]
+superpixels = [
+    "pyvips",
+    "large-image-converter;sys.platform=='linux'",
+]
+cli = [
+    "girder-slicer-cli-web",
+    "ctk-cli",
+]
+all = [
+    "girder-client",
+    "sqlalchemy",
+    "pyvips",
+    "girder-slicer-cli-web",
+    "ctk-cli",
+    "large-image[sources];sys.platform=='linux'",
+    "large-image[common];sys.platform!='linux'",
+    "large-image-converter;sys.platform=='linux'",
+]
 
 [project.scripts]
 histomicstk = "histomicstk.cli.__main__:main"
