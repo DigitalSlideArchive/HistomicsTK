@@ -5,7 +5,6 @@ from pathlib import Path
 
 import large_image
 import numpy
-import pyvips
 import scipy
 import skimage
 
@@ -20,6 +19,8 @@ def createSuperPixels(opts):  # noqa
     opts.callback, which is a function that takes (step_name: str,
     step_count: int, step_total: int).
     """
+    import pyvips
+
     averageSize = opts.superpixelSize ** 2
     overlap = opts.superpixelSize * 4 * 2 if opts.overlap else 0
     tileSize = opts.tileSize + overlap
