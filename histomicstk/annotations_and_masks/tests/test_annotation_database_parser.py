@@ -5,8 +5,6 @@ import tempfile
 
 import pandas as pd
 import pytest
-import sqlalchemy as db
-from sqlalchemy import text
 
 from histomicstk.annotations_and_masks.annotation_database_parser import (
     dump_annotations_locally, parse_annotations_to_local_tables)
@@ -67,6 +65,9 @@ class TestDatabaseParser:
 
     def test_dump_annotations_locally_1(self):
         """Test dump annotations locally."""
+        import sqlalchemy as db
+        from sqlalchemy import text
+
         savepath = tempfile.mkdtemp()
 
         # recursively save annotations -- JSONs + sqlite for folders/items
@@ -98,6 +99,9 @@ class TestDatabaseParser:
 
     def test_dump_annotations_locally_2(self):
         """Test dump annotations locally."""
+        import sqlalchemy as db
+        from sqlalchemy import text
+
         savepath = tempfile.mkdtemp()
 
         # recursively save annotations -- parse to csv + sqlite

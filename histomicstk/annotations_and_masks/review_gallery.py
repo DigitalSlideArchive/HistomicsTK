@@ -3,7 +3,6 @@ import os
 import tempfile
 
 import numpy as np
-import pyvips
 from imageio import imwrite
 from PIL import Image
 
@@ -322,6 +321,7 @@ def create_review_galleries(
         post request to upload the gallery to DSA.
 
     """
+    import pyvips
     from pandas import DataFrame
 
     if upload_results:
