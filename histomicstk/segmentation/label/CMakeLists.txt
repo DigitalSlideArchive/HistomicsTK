@@ -1,10 +1,18 @@
-find_package(Cython REQUIRED)
-find_package(NumPy REQUIRED)
+find_package(Python COMPONENTS Interpreter Development.Module NumPy REQUIRED)
 
-add_cython_target(_trace_object_boundaries_cython CXX)
-add_library(_trace_object_boundaries_cython MODULE ${_trace_object_boundaries_cython})
-python_extension_module(_trace_object_boundaries_cython)
-message("NUMPY_INCLUDE_DIRS:${NumPy_INCLUDE_DIR}")
-target_include_directories(_trace_object_boundaries_cython PRIVATE ${NumPy_INCLUDE_DIR})
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_trace_object_boundaries_cython.cpp
+  COMMENT
+    "Making ${CMAKE_CURRENT_BINARY_DIR}/_trace_object_boundaries_cython.cpp from ${CMAKE_CURRENT_SOURCE_DIR}/_trace_object_boundaries_cython.pyx"
+  COMMAND Python::Interpreter -m cython --cplus -o "${CMAKE_CURRENT_BINARY_DIR}/_trace_object_boundaries_cython.cpp"
+          "${CMAKE_CURRENT_SOURCE_DIR}/_trace_object_boundaries_cython.pyx"
+  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/_trace_object_boundaries_cython.pyx"
+  VERBATIM)
 
-install(TARGETS _trace_object_boundaries_cython LIBRARY DESTINATION histomicstk/segmentation/label)
+python_add_library(_trace_object_boundaries_cython MODULE
+                   "${CMAKE_CURRENT_BINARY_DIR}/_trace_object_boundaries_cython.cpp"
+                   WITH_SOABI)
+
+target_link_libraries(_trace_object_boundaries_cython PRIVATE Python::Module Python::NumPy)
+
+install(TARGETS _trace_object_boundaries_cython DESTINATION histomicstk/segmentation/label)
