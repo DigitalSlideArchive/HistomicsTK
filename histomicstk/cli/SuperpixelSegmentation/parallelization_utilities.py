@@ -814,7 +814,7 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
     found = 0
     bboxes = []
     bboxesUser = []
-    
+
     trims = trim_dict[task_id]
 
     task_id = (coordx[task_id[0]], coordy[task_id[1]])
@@ -825,16 +825,22 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
     else:
         (x0, y0, scale, tile) = task
 
+
     img = tile['tile']
     n_pixels = tile['width'] * tile['height']
 
     if mask is None:
         mask = numpy.ones(img.shape[:2])
 
+
     if overlap:
         n_pixels = numpy.count_nonzero(mask)
 
+
+
     n_segments = math.ceil(n_pixels / averageSize)
+
+    # print(n_segments)
 
     segments = skimage.segmentation.slic(
         img,
@@ -846,12 +852,13 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
         enforce_connectivity=True,
         mask=mask,
     )
-    
+
     # We now have an array that is the same size as the image
     maxValue = numpy.max(segments) + 1
  
     if overlap:
         # Keep any segment that is at all in the non-overlap region
+
         if 'right' in trims:
             ridx = tile['width'] - tile['tile_overlap']['right']
         else:
@@ -870,8 +877,8 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
         if 'top' in trims:    
             tidx = tile['tile_overlap']['top']
         else:
-            tidx = 0
-            
+            tidx = 0            
+        
         core = segments[
             tidx:bidx,
             lidx:ridx]
@@ -888,6 +895,8 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
             if used >= 0:
                 usedLut[used] = idx
         usedLut = numpy.array(usedLut, dtype=int)
+
+
         maxValue = len(usedIndices)
         segments = usedLut[segments]
         mask *= (segments != -1)
@@ -918,17 +927,19 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
         edges[:, 0] = True
         edges[:, -1] = True
         segments += edges
-
-    segments += found
+    
+    segments = numpy.where(segments>=0, segments+2, segments)
 
     found += int(maxValue)
+
     if mask is None:
         data = numpy.dstack((
-            segments)) #.astype(int))).astype('B')
+            (segments),#.astype(int)
+            ))#.astype('B')
     else:
         data = numpy.dstack((
-            segments, #.astype(int),
-            mask * 255)) #.astype('B')
+            (segments),#.astype(int),
+            mask * 255))#.astype('B')
         
     x = tx0
     ty = tile['tile_position']['region_y']
@@ -939,6 +950,7 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
                         tile['iterator_range']['position'])
     
     return (x,ty), [ty0, data], found, bboxes, bboxesUser
+
 
 def write_to_tiff_vips(opts, grid, strips, strips_found, meta, scale, tiparams, coordx):
 
