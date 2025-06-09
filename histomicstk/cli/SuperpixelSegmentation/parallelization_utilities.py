@@ -959,13 +959,16 @@ def write_to_tiff_vips(opts, grid, strips, strips_found, meta, scale, tiparams, 
         tiparams.get('region', {}).get('height', meta['sizeY']) / scale,
         bands=4)
     img = img.copy(interpretation=pyvips.Interpretation.RGB)
-
+    prev = []
     found = 0
     for cx, cy in grid:
         stripidx = (coordx[cx], cy)
         data = strips[stripidx][1]
 
-        d1 = numpy.where(data[:,:,0]>0, data[:,:,0]+found, data[:,:,0]).astype(int)
+        d1 = numpy.where(data[:,:,0]>=0, data[:,:,0]+found, data[:,:,0]).astype(int)
+        
+        except Exception as e:
+            print('exception:', e, '\n', len(numpy.unique(d1)))
 
         data = numpy.dstack((
             ((d1) % 256).astype(int),
