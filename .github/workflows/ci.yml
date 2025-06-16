@@ -114,6 +114,22 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        fetch-tags: true
+    - run: git status && git tag --list && pwd
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+    - run: python -m pip install setuptools_scm
+    - run: python -c "from setuptools_scm import get_version; print(get_version()); open('histomicstk/_version.py', 'w').write(f'__version__ = {str(get_version()).split('+')[0]!r}\n')"
+    - run: cat histomicstk/_version.py
+    - shell: bash
+      run: |
+        sed -i.bak -E \
+          -e '/^dynamic = \["version"\]/d' \
+          -e '/^\[project\]/a\
+        version = "'"$(sed -nE "s/__version__ = ['\"](.*)['\"]/\\1/p" histomicstk/_version.py)"'"' \
+          pyproject.toml
+    - run: cat pyproject.toml
     - name: Build SDist
       run: pipx run build --sdist
     - uses: actions/upload-artifact@v4
