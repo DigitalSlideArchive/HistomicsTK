@@ -8,10 +8,13 @@ from . import (annotations_and_masks, features, filters, preprocessing,
                saliency, workflows)
 
 try:
-    __version__ = _importlib_version(__name__)
-except PackageNotFoundError:
-    # package is not installed
-    pass
+    from ._version import __version__
+except ImportError:
+    try:
+        __version__ = _importlib_version(__name__)
+    except PackageNotFoundError:
+        # package is not installed
+        pass
 
 
 # list out things that are available for public use
