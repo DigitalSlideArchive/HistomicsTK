@@ -979,9 +979,6 @@ def write_to_tiff_vips(opts, grid, strips, strips_found, meta, scale, tiparams, 
         data = strips[stripidx][1]
 
         d1 = numpy.where(data[:,:,0]>=0, data[:,:,0]+found, data[:,:,0]).astype(int)
-        
-        except Exception as e:
-            print('exception:', e, '\n', len(numpy.unique(d1)))
 
         data = numpy.dstack((
             ((d1) % 256).astype(int),
