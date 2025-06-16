@@ -811,14 +811,18 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
     overlap = opts.superpixelSize * 4 * 2 if opts.overlap else 0 
     tileSize = opts.tileSize + overlap
 
+
     found = 0
     bboxes = []
     bboxesUser = []
+    
 
     trims = trim_dict[task_id]
 
     task_id = (coordx[task_id[0]], coordy[task_id[1]])
     (tx0, ty0) = task_id
+
+    # print(task_id)
 
     if len(task) == 5:
         (x0, y0, scale, tile, tile_mask) = task
@@ -853,31 +857,38 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
         mask=mask,
     )
 
+
+    computed_mask = mask
+
     # We now have an array that is the same size as the image
     maxValue = numpy.max(segments) + 1
- 
+
     if overlap:
         # Keep any segment that is at all in the non-overlap region
 
         if 'right' in trims:
             ridx = tile['width'] - tile['tile_overlap']['right']
         else:
-            ridx = -1
+            ridx = None
             
         if 'bottom' in trims:
             bidx = tile['height'] - tile['tile_overlap']['bottom']
         else:
-            bidx = -1
+            bidx = None
+
         
         if 'left' in trims:    
             lidx = tile['tile_overlap']['left']
         else:
             lidx = 0
 
+
         if 'top' in trims:    
             tidx = tile['tile_overlap']['top']
         else:
-            tidx = 0            
+            tidx = 0
+            
+
         
         core = segments[
             tidx:bidx,
@@ -888,15 +899,16 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
             lidx:ridx]
 
         core[numpy.where(coremask != 1)] = -1
+
         usedIndices = numpy.unique(core)
         usedIndices = numpy.delete(usedIndices, numpy.where(usedIndices < 0))
-        usedLut = [-1] * maxValue
+
+        usedLut = [-1] * (maxValue+1) # Last element should always be -1 so that -1 in segments never gets mapped to maximum superpixel value.
         for idx, used in enumerate(usedIndices):
             if used >= 0:
                 usedLut[used] = idx
         usedLut = numpy.array(usedLut, dtype=int)
-
-
+     
         maxValue = len(usedIndices)
         segments = usedLut[segments]
         mask *= (segments != -1)
@@ -927,7 +939,7 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
         edges[:, 0] = True
         edges[:, -1] = True
         segments += edges
-    
+
     segments = numpy.where(segments>=0, segments+2, segments)
 
     found += int(maxValue)
@@ -936,11 +948,12 @@ def tilejob(task_id, task, trim_dict, coordx, coordy, mask, opts):
         data = numpy.dstack((
             (segments),#.astype(int)
             ))#.astype('B')
+
     else:
         data = numpy.dstack((
             (segments),#.astype(int),
-            mask * 255))#.astype('B')
-        
+            mask * 255))
+
     x = tx0
     ty = tile['tile_position']['region_y']
 
