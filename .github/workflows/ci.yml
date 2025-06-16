@@ -80,7 +80,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-
+      - run: python -m pip install setuptools_scm
+      - run: python -c "from setuptools_scm import get_version; print(get_version()); open('histomicstk/_version.py', 'w').write(f'__version__ = {get_version()!r}\n')"
+      - run: cat histomicstk/_version.py
+      - shell: bash
+        run: |
+          sed -i.bak -E \
+            -e '/^dynamic = \["version"\]/d' \
+            -e '/^\[project\]/a\
+          version = "'"$(sed -nE "s/__version__ = ['\"](.*)['\"]/\\1/p" histomicstk/_version.py)"'"' \
+            pyproject.toml
+      - run: cat pyproject.toml
       - name: Set up QEMU
         if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v3
@@ -91,7 +101,7 @@ jobs:
           CIBW_BUILD: ${{ matrix.python }}-*
           CIBW_TEST_SKIP: "*-macosx_arm64"
           CIBW_ARCHS: ${{ matrix.buildplat[1] }}
-          MACOSX_DEPLOYMENT_TARGET: "10.12"
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
 
       - uses: actions/upload-artifact@v4
         with:

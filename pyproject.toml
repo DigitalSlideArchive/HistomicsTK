@@ -57,6 +57,7 @@ histomicstk = "histomicstk.cli.__main__:main"
 wheel.packages = ["histomicstk"]
 sdist.exclude = ["*.git*"]
 cmake.build-type = "Release"
+sdist.include = ["histomicstk/_version.py"]
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
