@@ -1,0 +1,695 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color thresholding semantic segmentation &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Finding cellular regions with superpixel analysis" href="semantic_segmentation_superpixel_approach.html" />
+    <link rel="prev" title="Tissue Detection" href="simple_tissue_detection.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Color thresholding semantic segmentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Prepwork">Prepwork</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Let's-explore-the-GTcodes-dataframe">Let’s explore the GTcodes dataframe</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Initialize-the-cellularity-detector">Initialize the cellularity detector</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Explore-the-docs">Explore the docs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Set-the-color-normalization-values-(optional)">Set the color normalization values (optional)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Run-the-detector">Run the detector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Check-the-results">Check the results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Check-the-visualization-on-HistomicsUI">Check the visualization on HistomicsUI</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Color thresholding semantic segmentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/semantic_segmentation_color_thresholding_approach.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Color-thresholding-semantic-segmentation">
+<h1>Color thresholding semantic segmentation<a class="headerlink" href="#Color-thresholding-semantic-segmentation" title="Link to this heading">¶</a></h1>
+<p>Whole-slide images often contain artifacts like marker or acellular regions that need to be avoided during analysis. In this example we show how HistomicsTK can be used to develop saliency detection algorithms that segment the slide at low magnification to generate a map to guide higher magnification analyses. Here we show how how colorspace analysis can detect various elements such as inking or blood, as well as dense cellular regions, to improve the quality of subsequent image analysis tasks.</p>
+<p>This uses a thresholding and stain unmixing based pipeline to detect highly-cellular regions in a slide. The <code class="docutils literal notranslate"><span class="pre">run()</span></code> method of the <code class="docutils literal notranslate"><span class="pre">CDT_single_tissue_piece()</span></code> class has the key steps of the pipeline.</p>
+<p>Additional functionality includes contour extraction to get the final segmentation boundaries and to visualize them in DSA using one’s preferred styles.</p>
+<p><strong>Here are some sample results:</strong></p>
+<p><img alt="saliency_results" src="https://user-images.githubusercontent.com/22067552/80079317-1bcaa580-851e-11ea-9353-a435a2afc6eb.jpg" /></p>
+<p><strong>Where to look?</strong></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>|_ histomicstk/
+  |_saliency/
+     |_cellularity_detection_thresholding.py
+     |_tests/
+        |_test_saliency.py
+</pre></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">girder_client</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_csv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotation_and_mask_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">delete_annotations_in_slide</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.saliency.cellularity_detection_thresholding</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Cellularity_detector_thresholding</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ListedColormap</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<section id="Prepwork">
+<h2>Prepwork<a class="headerlink" href="#Prepwork" title="Link to this heading">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">APIURL</span> <span class="o">=</span> <span class="s1">&#39;http://candygram.neurology.emory.edu:8080/api/v1/&#39;</span>
+<span class="n">SAMPLE_SLIDE_ID</span> <span class="o">=</span> <span class="s1">&#39;5d8c296cbd4404c6b1fa5572&#39;</span>
+
+<span class="n">gc</span> <span class="o">=</span> <span class="n">girder_client</span><span class="o">.</span><span class="n">GirderClient</span><span class="p">(</span><span class="n">apiUrl</span><span class="o">=</span><span class="n">APIURL</span><span class="p">)</span>
+<span class="n">gc</span><span class="o">.</span><span class="n">authenticate</span><span class="p">(</span><span class="n">apiKey</span><span class="o">=</span><span class="s1">&#39;kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb&#39;</span><span class="p">)</span>
+
+<span class="c1"># This is where the run logs will be saved</span>
+<span class="n">logging_savepath</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+
+<span class="c1"># read GT codes dataframe</span>
+<span class="n">GTcodes</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../../histomicstk/saliency/tests/saliency_GTcodes.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># deleting existing annotations in target slide (if any)</span>
+<span class="n">delete_annotations_in_slide</span><span class="p">(</span><span class="n">gc</span><span class="p">,</span> <span class="n">SAMPLE_SLIDE_ID</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="Let's-explore-the-GTcodes-dataframe">
+<h3>Let’s explore the GTcodes dataframe<a class="headerlink" href="#Let's-explore-the-GTcodes-dataframe" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">GTcodes</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>group</th>
+      <th>overlay_order</th>
+      <th>GT_code</th>
+      <th>is_roi</th>
+      <th>is_background_class</th>
+      <th>color</th>
+      <th>comments</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>outside_tissue</td>
+      <td>-1</td>
+      <td>255</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(40,40,40)</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>roi</td>
+      <td>0</td>
+      <td>254</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,0)</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>not_specified</td>
+      <td>0</td>
+      <td>253</td>
+      <td>0</td>
+      <td>1</td>
+      <td>rgb(255,50,255)</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>blue_sharpie</td>
+      <td>1</td>
+      <td>6</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,224,255)</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>blood</td>
+      <td>2</td>
+      <td>7</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(255,255,0)</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>whitespace</td>
+      <td>3</td>
+      <td>8</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(70,70,70)</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>maybe_cellular</td>
+      <td>4</td>
+      <td>9</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(145,109,189)</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>top_cellular</td>
+      <td>5</td>
+      <td>10</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(50,250,20)</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+</section>
+<section id="Initialize-the-cellularity-detector">
+<h2>Initialize the cellularity detector<a class="headerlink" href="#Initialize-the-cellularity-detector" title="Link to this heading">¶</a></h2>
+<section id="Explore-the-docs">
+<h3>Explore the docs<a class="headerlink" href="#Explore-the-docs" title="Link to this heading">¶</a></h3>
+<p>Get some idea about the implementation details and default behavior.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">Cellularity_detector_thresholding</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Detect cellular regions in a slide using thresholding.
+
+    This uses a thresholding and stain unmixing based pipeline
+    to detect highly-cellular regions in a slide. The run()
+    method of the CDT_single_tissue_piece() class has the key
+    steps of the pipeline. In summary, here are the steps
+    involved...
+
+    1. Detect tissue from background using the RGB slide
+    thumbnail. Each &#34;tissue piece&#34; is analysed independently
+    from here onwards. The tissue_detection modeule is used
+    for this step. A high sensitivity, low specificity setting
+    is used here.
+
+    2. Fetch the RGB image of tissue at target magnification. A
+    low magnification (default is 3.0) is used and is sufficient.
+
+    3. The image is converted to HSI and LAB spaces. Thresholding
+    is performed to detect various non-salient components that
+    often throw-off the color normalization and deconvolution
+    algorithms. Thresholding includes both minimum and maximum
+    values. The user can set whichever thresholds of components
+    they would like. The development of this workflow was focused
+    on breast cancer so the thresholded components by default
+    are whote space (or adipose tissue), dark blue/green blotches
+    (sharpie, inking at margin, etc), and blood. Whitespace
+    is obtained by thresholding the saturation and intensity,
+    while other components are obtained by thresholding LAB.
+
+    4. Now that we know where &#34;actual&#34; tissue is, we do a MASKED
+    color normalization to a prespecified standard. The masking
+    ensures the normalization routine is not thrown off by non-
+    tissue components.
+
+    5. Perform masked stain unmixing/deconvolution to obtain the
+    hematoxylin stain channel.
+
+    6. Smooth and threshold the hematoxylin channel. Then
+    perform connected component analysis to find contiguous
+    potentially-cellular regions.
+
+    7. Keep the n largest potentially-cellular regions. Then
+    from those large regions, keep the m brightest regions
+    (using hematoxylin channel brightness) as the final
+    salient/cellular regions.
+
+
+</pre></div></div>
+</div>
+<p>The only required arguments to initialize are <code class="docutils literal notranslate"><span class="pre">gc</span></code>, <code class="docutils literal notranslate"><span class="pre">slide_id</span></code>, and <code class="docutils literal notranslate"><span class="pre">GTcodes</span></code>. Everything else is optional and assigned defaults, but you may want to read up on what each argument does to adjust to your specific needs. The default behavior is defined at the beginning of the <code class="docutils literal notranslate"><span class="pre">__init__()</span></code> method.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">Cellularity_detector_thresholding</span><span class="o">.</span><span class="fm">__init__</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Init Cellularity_Detector_Superpixels object.
+
+        Arguments:
+        -----------
+        gc : object
+            girder client object
+
+        slide_id : str
+            girder ID of slide
+
+        GTcodes : pandas Dataframe
+            the ground truth codes and information dataframe.
+            WARNING: Modified inside this method so pass a copy.
+            This is a dataframe that is indexed by the annotation group name
+            and has the following columns...
+
+            group: str
+                group name of annotation, eg. mostly_tumor
+            overlay_order: int
+                how early to place the annotation in the
+                mask. Larger values means this annotation group is overlaid
+                last and overwrites whatever overlaps it.
+            GT_code: int
+                desired ground truth code (in the mask).
+                Pixels of this value belong to corresponding group (class)
+            is_roi: bool
+                whether this group encodes an ROI
+            is_background_class: bool
+                whether this group is the default fill value inside the ROI.
+                For example, you may decide that any pixel inside the ROI
+                is considered stroma.
+            color: str
+                rgb format. eg. rgb(255,0,0)
+
+            The following indexes must be present...
+            outside_tissue, not_specified, maybe_cellular, top_cellular
+
+        verbose : int
+            0 - Do not print to screen
+            1 - Print only key messages
+            2 - Print everything to screen
+            3 - print everything including from inner functions
+
+        monitorPrefix : str
+            text to prepend to printed statements
+
+        logging_savepath : str or None
+            where to save run logs
+
+        suppress_warnings : bool
+            whether to suppress warnings
+
+        MAG : float
+            magnification at which to detect cellularity
+
+        color_normalization_method : str
+            Must be in [&#39;reinhard&#39;, &#39;macenko_pca&#39;, &#39;none&#39;]
+
+        target_W_macenko : np array
+            3 by 3 stain matrix for macenko normalization
+            obtained using rgb_separate_stains_macenko_pca()
+            and reordered such that hematoxylin and eosin are
+            the first and second channels, respectively.
+
+        target_stats_reinhard : dict
+            must contains the keys mu and sigma. Mean and sigma
+            of target image in LAB space for reinhard normalization.
+
+        get_tissue_mask_kwargs : dict
+            kwargs for the get_tissue_mask() method. This is used
+            to detect tissue from the slide thumbnail.
+
+        keep_components : list
+            list of strings. Names of components to exclude by
+            HSI thresholding. These much be present in the index
+            of the GTcodes dataframe
+
+        get_tissue_mask_kwargs2 : dict
+            kwargs for get_tissue_mask() used for iterative smoothing
+            and thresholding the component masks after initial
+            thresholding using the user-defined HSI/LAB thresholds.
+
+        hsi_thresholds : dict
+            each entry is a dict containing the keys hue, saturation
+            and intensity. Each of these is in turn also a dict
+            containing the keys min and max. See default value below
+            for an example.
+
+        lab_thresholds : dict
+            each entry is a dict containing the keys l, a, and b.
+            Each of these is in turn also a dict containing the keys
+            min and max. See default value below for an example.
+
+        stain_unmixing_routine_params : dict
+            kwargs passed as the stain_unmixing_routine_params
+            argument to the deconvolution_based_normalization method
+
+        cellular_step1_sigma : float
+            sigma of gaussian smoothing for first cellularity step
+
+        cellular_step1_min_size : int
+            minimum contiguous size for first cellularity step
+
+        cellular_step2_sigma : float
+            sigma of gaussian smoothing for second cellularity step
+
+        cellular_largest_n : int
+            Number of large contiguous cellular regions to keep
+
+        cellular_top_n : int
+            Number of final &#34;top&#34; cellular regions to keep
+
+        visualize : bool
+            whether to visualize results in DSA
+
+        opacity : float
+            opacity of superpixel polygons when posted to DSA.
+            0 (no opacity) is more efficient to render.
+
+        lineWidth : float
+            width of line when displaying region boundaries.
+
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># init cellularity detector</span>
+<span class="n">cdt</span> <span class="o">=</span> <span class="n">Cellularity_detector_thresholding</span><span class="p">(</span>
+    <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">SAMPLE_SLIDE_ID</span><span class="p">,</span> <span class="n">GTcodes</span><span class="o">=</span><span class="n">GTcodes</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span>
+    <span class="n">logging_savepath</span><span class="o">=</span><span class="n">logging_savepath</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Saving logs to: /tmp/tmpclyolr1y/2019-10-27_17-51.log
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Set-the-color-normalization-values-(optional)">
+<h2>Set the color normalization values (optional)<a class="headerlink" href="#Set-the-color-normalization-values-(optional)" title="Link to this heading">¶</a></h2>
+<p>By default, color normalization is performed using the macenko method and standardizing to a hematoxylin and eosin standard from the target image TCGA-A2-A3XS-DX1_xmin21421_ymin37486 from Amgad et al, 2019.</p>
+<p>If you don’t like this behavior, and would prefer to use your own target image or a different color normalization method, use the set_color_normalization_method() below.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">cdt</span><span class="o">.</span><span class="n">set_color_normalization_target</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Set color normalization values to use from target image.
+
+        Arguments:
+        -----------
+        ref_image_path : str
+            path to target (reference) image
+
+        color_normalization_method : str
+            color normalization method to use. Currently, only
+            &#39;reinhard&#39; and &#39;macenko_pca&#39; are accepted.
+
+
+</pre></div></div>
+</div>
+</section>
+<section id="Run-the-detector">
+<h2>Run the detector<a class="headerlink" href="#Run-the-detector" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tissue_pieces</span> <span class="o">=</span> <span class="n">cdt</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+test: set_slide_info_and_get_tissue_mask()
+test: Tissue piece 1 of 1
+test: Tissue piece 1 of 1: set_tissue_rgb()
+test: Tissue piece 1 of 1: initialize_labeled_mask()
+test: Tissue piece 1 of 1: assign_components_by_thresholding()
+test: Tissue piece 1 of 1: -- get HSI and LAB images ...
+test: Tissue piece 1 of 1: -- thresholding blue_sharpie ...
+test: Tissue piece 1 of 1: -- thresholding blood ...
+test: Tissue piece 1 of 1: -- thresholding whitespace ...
+test: Tissue piece 1 of 1: color_normalize_unspecified_components()
+test: Tissue piece 1 of 1: -- macenko normalization ...
+test: Tissue piece 1 of 1: find_potentially_cellular_regions()
+test: Tissue piece 1 of 1: find_top_cellular_regions()
+test: Tissue piece 1 of 1: visualize_results()
+</pre></div></div>
+</div>
+</section>
+<section id="Check-the-results">
+<h2>Check the results<a class="headerlink" href="#Check-the-results" title="Link to this heading">¶</a></h2>
+<p>The resultant list of objects correspond to the results for each “tissue piece” detected in the slide. You may explore various attributes like the offset coordinates and labeled mask.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span>
+    <span class="s1">&#39;Tissue piece 0: &#39;</span><span class="p">,</span>
+    <span class="s1">&#39;xmin&#39;</span><span class="p">,</span> <span class="n">tissue_pieces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">xmin</span><span class="p">,</span>
+    <span class="s1">&#39;xmax&#39;</span><span class="p">,</span> <span class="n">tissue_pieces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">xmax</span><span class="p">,</span>
+    <span class="s1">&#39;ymin&#39;</span><span class="p">,</span> <span class="n">tissue_pieces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ymin</span><span class="p">,</span>
+    <span class="s1">&#39;ymax&#39;</span><span class="p">,</span> <span class="n">tissue_pieces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ymax</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Tissue piece 0:  xmin 30455 xmax 113472 ymin 5403 ymax 67297
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># color map</span>
+<span class="n">tmp</span> <span class="o">=</span> <span class="n">tissue_pieces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">labeled</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">256</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span>
+<span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;black&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">256</span>
+<span class="n">vals</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;cyan&#39;</span>  <span class="c1"># sharpie / ink</span>
+<span class="n">vals</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;yellow&#39;</span>  <span class="c1"># blood</span>
+<span class="n">vals</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;grey&#39;</span>  <span class="c1"># whitespace</span>
+<span class="n">vals</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;indigo&#39;</span>  <span class="c1"># maybe cellular</span>
+<span class="n">vals</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;green&#39;</span>  <span class="c1"># salient / top cellular</span>
+<span class="n">cMap</span> <span class="o">=</span> <span class="n">ListedColormap</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cMap</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_semantic_segmentation_color_thresholding_approach_19_0.png" src="../_images/examples_semantic_segmentation_color_thresholding_approach_19_0.png" />
+</div>
+</div>
+</section>
+<section id="Check-the-visualization-on-HistomicsUI">
+<h2>Check the visualization on HistomicsUI<a class="headerlink" href="#Check-the-visualization-on-HistomicsUI" title="Link to this heading">¶</a></h2>
+<p>Now you may go to the slide on Digital Slide Archive and check the posted annotations.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="simple_tissue_detection.html" class="btn btn-neutral float-left" title="Tissue Detection" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="semantic_segmentation_superpixel_approach.html" class="btn btn-neutral float-right" title="Finding cellular regions with superpixel analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

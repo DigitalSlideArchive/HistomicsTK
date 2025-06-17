@@ -1,0 +1,225 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.preprocessing.augmentation &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="histomicstk.filters" href="histomicstk.filters.html" />
+    <link rel="prev" title="histomicstk.preprocessing.color_normalization" href="histomicstk.preprocessing.color_normalization.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.preprocessing.color_conversion.html">color space conversion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.preprocessing.color_deconvolution.html">color deconvolution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.preprocessing.color_normalization.html">color normalization</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">data augmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api-docs.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.html">histomicstk</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.preprocessing.html">histomicstk.preprocessing</a></li>
+      <li class="breadcrumb-item active">histomicstk.preprocessing.augmentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/histomicstk.preprocessing.augmentation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-histomicstk.preprocessing.augmentation">
+<span id="histomicstk-preprocessing-augmentation"></span><h1>histomicstk.preprocessing.augmentation<a class="headerlink" href="#module-histomicstk.preprocessing.augmentation" title="Link to this heading">¶</a></h1>
+<p>This package contains utility functions to augment images.</p>
+<p>This is relevant in training convolutional neural network models. Refer to this study …</p>
+<p>Tellez, David, Geert Litjens, Peter Bandi, Wouter Bulten, John-Melle Bokhorst,
+Francesco Ciompi, and Jeroen van der Laak. “Quantifying the effects of data
+augmentation and stain color normalization in convolutional neural networks
+for computational pathology.” arXiv preprint arXiv:1902.06543 (2019).</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.augmentation.perturb_stain_concentration">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.augmentation.</span></span><span class="sig-name descname"><span class="pre">perturb_stain_concentration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">StainsFloat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/augmentation/color_augmentation.html#perturb_stain_concentration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.augmentation.perturb_stain_concentration" title="Link to this definition">¶</a></dt>
+<dd><p>Perturb stain concentrations in SDA space and return augmented image.</p>
+<p>This is an implementation of the method described in Tellez et
+al, 2018 (see below). The SDA matrix is perturbed by multiplying each
+channel independently by a value chosen from a random uniform distribution
+in the range [1 - sigma1, 1 + sigma1], then add a value chosen from another
+random uniform distribution in the range [-sigma2, sigma2].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>StainsFloat</strong> (<em>array_like</em>) – An intensity image (m, n, 3) of deconvolved stains that is unbounded,
+suitable for reconstructing color images of deconvolved stains
+with color_convolution.</p></li>
+<li><p><strong>W</strong> (<em>array_like</em>) – A 3x3 complemented stain matrix.</p></li>
+<li><p><strong>I_0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>array_like</em><em>, </em><em>optional</em>) – A float a 3-vector containing background RGB intensities.
+If unspecified, use the old OD conversion.</p></li>
+<li><p><strong>mask_out</strong> (<em>array_like</em><em>, </em><em>default is None</em>) – if not None, should be (m x n) boolean numpy array.
+This parameter ensures exclusion of non-masked areas from perturbing.
+This is relevant because elements like blood, sharpie marker,
+white space, etc cannot be simply modeled as a mix of two stains.</p></li>
+<li><p><strong>sigma1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – parameter, see beginning of this docstring.</p></li>
+<li><p><strong>sigma2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – parameter, see beginning of this docstring.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Color augmented RGB image (m x n x 3)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Tellez, David, Maschenka Balkenhol, Irene Otte-Höller,
+Rob van de Loo, Rob Vogels, Peter Bult, Carla Wauters et al.
+“Whole-slide mitosis detection in H&amp;E breast histology using PHH3
+as a reference to train distilled stain-invariant convolutional
+networks.” IEEE transactions on medical imaging 37, no. 9
+(2018): 2126-2136.</p>
+</aside>
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>Tellez, David, Geert Litjens, Peter Bandi, Wouter Bulten,
+John-Melle Bokhorst, Francesco Ciompi, and Jeroen van der Laak.
+“Quantifying the effects of data augmentation and stain color
+normalization in convolutional neural networks for computational
+pathology.” arXiv preprint arXiv:1902.06543 (2019).</p>
+</aside>
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<p>Implementation inspired by Peter Byfield StainTools repository. See
+<a class="reference external" href="https://github.com/Peter554/StainTools/blob/master/LICENSE.txt">https://github.com/Peter554/StainTools/blob/master/LICENSE.txt</a>
+for copyright license (MIT license).</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.augmentation.rgb_perturb_stain_concentration">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.augmentation.</span></span><span class="sig-name descname"><span class="pre">rgb_perturb_stain_concentration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_rgb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stain_unmixing_routine_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/augmentation/color_augmentation.html#rgb_perturb_stain_concentration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.augmentation.rgb_perturb_stain_concentration" title="Link to this definition">¶</a></dt>
+<dd><p>Apply wrapper that calls perturb_stain_concentration() on RGB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_rgb</strong> (<em>array_like</em>) – An RGB image (m x n x 3) to color normalize</p></li>
+<li><p><strong>stain_unmixing_routine_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – kwargs to pass as-is to the color_deconvolution_routine().</p></li>
+<li><p><strong>kwargs</strong> (<em>k</em><em>,</em><em>v pairs</em>) – Passed as-is to perturb_stain_concentration()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Color augmented RGB image (m x n x 3)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="histomicstk.preprocessing.color_normalization.html" class="btn btn-neutral float-left" title="histomicstk.preprocessing.color_normalization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="histomicstk.filters.html" class="btn btn-neutral float-right" title="histomicstk.filters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

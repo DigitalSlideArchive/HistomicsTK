@@ -1,0 +1,778 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.annotations_and_masks.polygon_merger &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.annotations_and_masks.polygon_merger</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.annotations_and_masks.polygon_merger</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Wed Aug 21 16:25:06 2019.</span>
+
+<span class="sd">@author: tageldim</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">imageio.v2</span><span class="w"> </span><span class="kn">import</span> <span class="n">imread</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="c1"># import cv2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry.polygon</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">unary_union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.masks_to_annotations_handler</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_discard_nonenclosed_background_group</span><span class="p">,</span> <span class="n">_parse_annot_coords</span><span class="p">,</span>
+    <span class="n">get_contours_from_mask</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.utils.general_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Base_HTK_Class</span>
+
+
+<div class="viewcode-block" id="Polygon_merger">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger.Polygon_merger">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Polygon_merger</span><span class="p">(</span><span class="n">Base_HTK_Class</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Methods to merge polygons in tiled masks.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maskpaths</span><span class="p">,</span> <span class="n">GTCodes_df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init Polygon_merger object.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">        ---------</span>
+<span class="sd">        maskpaths : list</span>
+<span class="sd">            list of strings representing pathos to masks</span>
+<span class="sd">        GTCodes_df : pandas DataFrame</span>
+<span class="sd">            the ground truth codes and information dataframe.</span>
+<span class="sd">            This is a dataframe that MUST BE indexed by annotation group name</span>
+<span class="sd">            and has the following columns.</span>
+
+<span class="sd">            group: str</span>
+<span class="sd">                group name of annotation, eg. mostly_tumor.</span>
+<span class="sd">            GT_code: int</span>
+<span class="sd">                desired ground truth code (in the mask). Pixels of this value</span>
+<span class="sd">                belong to corresponding group (class).</span>
+<span class="sd">            color: str</span>
+<span class="sd">                rgb format. eg. rgb(255,0,0).</span>
+<span class="sd">        imreader : function</span>
+<span class="sd">            function that takes a maskpath and returns mask. Default is</span>
+<span class="sd">            imageio.imread</span>
+<span class="sd">        imreader_kws : dict</span>
+<span class="sd">            kwargs for mask reader</span>
+<span class="sd">        merge_thresh : int</span>
+<span class="sd">            how close do the polygons need to be (in pixels) to be merged</span>
+<span class="sd">        contkwargs : dict</span>
+<span class="sd">            dictionary of kwargs to pass to get_contours_from_mask()</span>
+<span class="sd">        discard_nonenclosed_background : bool</span>
+<span class="sd">            If a background group contour is NOT fully enclosed, discard it.</span>
+<span class="sd">            This is a purely aesthetic method, makes sure that the background</span>
+<span class="sd">            contours (eg stroma) are discarded by default to avoid cluttering</span>
+<span class="sd">            the field when posted to DSA for viewing online. The only exception</span>
+<span class="sd">            is if they are enclosed within something else (eg tumor), in which</span>
+<span class="sd">            case they are kept since they represent holes. This is related to</span>
+<span class="sd">            https://github.com/DigitalSlideArchive/HistomicsTK/issues/675</span>
+<span class="sd">            WARNING - This is a bit slower since the contours will have to be</span>
+<span class="sd">            converted to shapely polygons. It is not noticeable for hundreds of</span>
+<span class="sd">            contours, but you will notice the speed difference if you are</span>
+<span class="sd">            parsing thousands of contours. Default, for this reason, is False.</span>
+<span class="sd">        background_group : str</span>
+<span class="sd">            name of bckgrd group in the GT_codes dataframe (eg mostly_stroma)</span>
+<span class="sd">        roi_group : str</span>
+<span class="sd">            name of roi group in the GT_Codes dataframe (eg roi)</span>
+<span class="sd">        verbose : int</span>
+<span class="sd">            0 - Do not print to screen</span>
+<span class="sd">            1 - Print only key messages</span>
+<span class="sd">            2 - Print everything to screen</span>
+<span class="sd">        monitorPrefix : str</span>
+<span class="sd">            text to prepend to printed statements</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maskpaths</span> <span class="o">=</span> <span class="n">maskpaths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GTCodes_df</span> <span class="o">=</span> <span class="n">GTCodes_df</span>
+
+        <span class="c1"># must have an roi group color for merged polygon bbox</span>
+        <span class="k">if</span> <span class="s1">&#39;roi&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;roi&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;rgb(0,0,0)&#39;</span>
+
+        <span class="c1"># see: https://stackoverflow.com/questions/8187082/how-can-you-set-...</span>
+        <span class="c1"># class-attributes-from-variable-arguments-kwargs-in-python</span>
+
+        <span class="n">contkwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;GTCodes_df&#39;</span><span class="p">:</span> <span class="n">GTCodes_df</span><span class="p">,</span>
+            <span class="s1">&#39;get_roi_contour&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># important</span>
+            <span class="s1">&#39;discard_nonenclosed_background&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># important</span>
+            <span class="s1">&#39;MIN_SIZE&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s1">&#39;MAX_SIZE&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="s1">&#39;contkwargs&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">contkwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;contkwargs&#39;</span><span class="p">])</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;contkwargs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contkwargs</span>
+
+        <span class="n">default_attr</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;monitorPrefix&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;imreader&#39;</span><span class="p">:</span> <span class="n">imread</span><span class="p">,</span>
+            <span class="s1">&#39;imreader_kws&#39;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s1">&#39;merge_thresh&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s1">&#39;discard_nonenclosed_background&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;background_group&#39;</span><span class="p">:</span> <span class="s1">&#39;mostly_stroma&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;roi_group&#39;</span><span class="p">:</span> <span class="s1">&#39;roi&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">default_attr</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">default_attr</span><span class="o">=</span><span class="n">default_attr</span><span class="p">)</span>
+
+        <span class="c1"># some sanity checks</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contkwargs</span><span class="p">[</span><span class="s1">&#39;get_roi_contour&#39;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contkwargs</span><span class="p">[</span><span class="s1">&#39;discard_nonenclosed_background&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contkwargs</span><span class="p">[</span><span class="s1">&#39;verbose&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="Polygon_merger.set_contours_from_all_masks">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger.Polygon_merger.set_contours_from_all_masks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_contours_from_all_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get contours_df from all masks.</span>
+
+<span class="sd">        This is a wrapper around get_contours_from_mask(), with the added</span>
+<span class="sd">        functionality of separating out contorus at roi edge from those that</span>
+<span class="sd">        are not.</span>
+
+<span class="sd">        Sets:</span>
+<span class="sd">        - self.ordinary_contours: dict: indexed by maskname, each entry</span>
+<span class="sd">        is a contours dataframe</span>
+<span class="sd">        - self.edge_contours: dict: indexed by maskname, each entry is</span>
+<span class="sd">        a contours dataframe</span>
+<span class="sd">        - self.merged_contours: pandas DataFrame: single dataframe to</span>
+<span class="sd">        save all merged contours</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+        <span class="n">ordinary_contours</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">edge_contours</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">to_remove</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">midx</span><span class="p">,</span> <span class="n">maskpath</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maskpaths</span><span class="p">):</span>
+
+            <span class="c1"># read mask</span>
+            <span class="n">MASK</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imreader</span><span class="p">(</span><span class="n">maskpath</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">imreader_kws</span><span class="p">)</span>
+
+            <span class="c1"># mask is empty!</span>
+            <span class="k">if</span> <span class="n">MASK</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">maskpath</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># extract contours</span>
+            <span class="n">contours_df</span> <span class="o">=</span> <span class="n">get_contours_from_mask</span><span class="p">(</span>
+                <span class="n">MASK</span><span class="o">=</span><span class="n">MASK</span><span class="p">,</span>
+                <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: mask </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">midx</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maskpaths</span><span class="p">)),</span>
+                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">contkwargs</span><span class="p">)</span>
+
+            <span class="c1"># no contours!</span>
+            <span class="k">if</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">maskpath</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># separate edge from non-edge contours</span>
+            <span class="n">edgeids</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
+                <span class="n">edgeids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                    <span class="p">:,</span> <span class="s1">&#39;touches_edge-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">edge</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+            <span class="n">edgeids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">edgeids</span><span class="p">))</span>
+            <span class="n">roiname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">maskpath</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">edge_contours</span><span class="p">[</span><span class="n">roiname</span><span class="p">]</span> <span class="o">=</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">edgeids</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">ordinary_contours</span><span class="p">[</span><span class="n">roiname</span><span class="p">]</span> <span class="o">=</span> <span class="n">contours_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">edgeids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">maskpaths</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maskpaths</span> <span class="k">if</span> <span class="n">j</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">to_remove</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ordinary_contours</span> <span class="o">=</span> <span class="n">ordinary_contours</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edge_contours</span> <span class="o">=</span> <span class="n">edge_contours</span>
+        <span class="c1"># init dataframe to save merged contours</span>
+        <span class="n">colnames</span> <span class="o">=</span> <span class="n">edge_contours</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">edge_contours</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">merged_contours</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">colnames</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_mask_offsets_from_masknames</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dictionary of mask offsets (top and left) (Internal).</span>
+
+<span class="sd">        The pattern _left-123_ and _top-123_ is assumed to</span>
+<span class="sd">        encode the x and y offset of the mask at base magnification.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        - dict: indexed by maskname, each entry is a dict with keys</span>
+<span class="sd">        top and left.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">roi_offsets</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">maskpath</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maskpaths</span><span class="p">:</span>
+            <span class="n">maskname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">maskpath</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">roi_offsets</span><span class="p">[</span><span class="n">maskname</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">maskname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_left-&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="s1">&#39;top&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">maskname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_top-&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="p">}</span>
+        <span class="k">return</span> <span class="n">roi_offsets</span>
+
+<div class="viewcode-block" id="Polygon_merger.set_roi_bboxes">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger.Polygon_merger.set_roi_bboxes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_roi_bboxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">roi_offsets</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dictionary of roi bounding boxes.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">        ---------</span>
+<span class="sd">        - roi_offsets: dict (default, None): dict indexed by maskname,</span>
+<span class="sd">        each entry is a dict with keys top and left each is an integer.</span>
+<span class="sd">        If None, then the x and y offset is inferred from mask name.</span>
+
+<span class="sd">        Sets:</span>
+<span class="sd">        - self.roiinfos: dict: dict indexed by maskname, each entry is a</span>
+<span class="sd">        dict with keys top, left, bottom, right, all of which are integers.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">roi_offsets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">roiinfos</span> <span class="o">=</span> <span class="n">roi_offsets</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># get offset for all rois. This result is a dict that is indexed</span>
+            <span class="c1"># by maskname, each entry is a dict with keys &#39;top&#39; and &#39;left&#39;.</span>
+            <span class="n">roiinfos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_mask_offsets_from_masknames</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">maskpath</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maskpaths</span><span class="p">:</span>
+            <span class="c1"># Note: the following method does NOT actually load the mask</span>
+            <span class="c1"># but just uses pillow to get its metadata. See:</span>
+            <span class="c1"># https://stackoverflow.com/questions/15800704/ ...</span>
+            <span class="c1"># ... get-image-size-without-loading-image-into-memory</span>
+            <span class="k">with</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">maskpath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mask_obj</span><span class="p">:</span>
+                <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">mask_obj</span><span class="o">.</span><span class="n">size</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">maskname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">maskpath</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">roiinfos</span><span class="p">[</span><span class="n">maskname</span><span class="p">][</span><span class="s1">&#39;right&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">roiinfos</span><span class="p">[</span>
+                    <span class="n">maskname</span><span class="p">][</span><span class="s1">&#39;left&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">width</span>
+                <span class="n">roiinfos</span><span class="p">[</span><span class="n">maskname</span><span class="p">][</span><span class="s1">&#39;bottom&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">roiinfos</span><span class="p">[</span>
+                    <span class="n">maskname</span><span class="p">][</span><span class="s1">&#39;top&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">height</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span> <span class="o">=</span> <span class="n">roiinfos</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_roi_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get unique roi pairs (Internal).&quot;&quot;&quot;</span>
+        <span class="n">ut</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">triu_indices</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roinames</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">roi_pairs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pairidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ut</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+            <span class="n">roi_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ut</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">pairidx</span><span class="p">],</span> <span class="n">ut</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">pairidx</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">roi_pairs</span>
+
+<div class="viewcode-block" id="Polygon_merger.set_shared_roi_edges">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger.Polygon_merger.set_shared_roi_edges">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_shared_roi_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get shared edges between rois in same slide (Internal).&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">roinames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">edgepairs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="s1">&#39;bottom&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="s1">&#39;top&#39;</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="n">roi_pairs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_roi_pairs</span><span class="p">()</span>
+
+        <span class="c1"># init shared edges</span>
+        <span class="n">shared_edges</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span>
+            <span class="s1">&#39;roi1-name&#39;</span><span class="p">,</span> <span class="s1">&#39;roi1-edge&#39;</span><span class="p">,</span> <span class="s1">&#39;roi2-name&#39;</span><span class="p">,</span> <span class="s1">&#39;roi2-edge&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">roi_pair</span> <span class="ow">in</span> <span class="n">roi_pairs</span><span class="p">:</span>
+            <span class="n">roi1name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">roinames</span><span class="p">[</span><span class="n">roi_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">roi2name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">roinames</span><span class="p">[</span><span class="n">roi_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">shared_edges</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">edgepair</span> <span class="ow">in</span> <span class="n">edgepairs</span><span class="p">:</span>
+                <span class="c1"># check if they share bounds for one edge</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roi1name</span><span class="p">][</span><span class="n">edgepair</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                        <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roi2name</span><span class="p">][</span><span class="n">edgepair</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="c1"># ensure they overlap in location along other axis</span>
+                    <span class="k">if</span> <span class="s1">&#39;left&#39;</span> <span class="ow">in</span> <span class="n">edgepair</span><span class="p">:</span>
+                        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="s1">&#39;bottom&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">)</span>
+                    <span class="n">realStart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roi1name</span><span class="p">][</span><span class="n">start</span><span class="p">],</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roi2name</span><span class="p">][</span><span class="n">start</span><span class="p">]))</span>
+                    <span class="n">realEnd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roi1name</span><span class="p">][</span><span class="n">end</span><span class="p">],</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roi2name</span><span class="p">][</span><span class="n">end</span><span class="p">]))</span>
+                    <span class="n">length</span> <span class="o">=</span> <span class="n">realEnd</span> <span class="o">-</span> <span class="n">realStart</span>
+                    <span class="n">nonoverlap_length</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roi1name</span><span class="p">][</span><span class="n">end</span><span class="p">]</span>
+                        <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roi1name</span><span class="p">][</span><span class="n">start</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roi2name</span><span class="p">][</span><span class="n">end</span><span class="p">]</span>
+                        <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roi2name</span><span class="p">][</span><span class="n">start</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">length</span> <span class="o">&lt;</span> <span class="n">nonoverlap_length</span><span class="p">:</span>
+                        <span class="n">shared_edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;roi1-name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">roi1name</span>
+                        <span class="n">shared_edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;roi1-edge&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">edgepair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">shared_edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;roi2-name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">roi2name</span>
+                        <span class="n">shared_edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;roi2-edge&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">edgepair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared_edges</span> <span class="o">=</span> <span class="n">shared_edges</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_merge_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edgepair</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get nest dfs and indices of which ones to merge (Internal).&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_get_nests_slice</span><span class="p">(</span><span class="n">ridx</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">Nests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_contours</span><span class="p">[</span><span class="n">edgepair</span><span class="p">[</span><span class="s1">&#39;roi</span><span class="si">%d</span><span class="s1">-name&#39;</span> <span class="o">%</span> <span class="n">ridx</span><span class="p">]]</span>
+            <span class="n">edgevar</span> <span class="o">=</span> <span class="s1">&#39;touches_edge-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">edgepair</span><span class="p">[</span><span class="s1">&#39;roi</span><span class="si">%d</span><span class="s1">-edge&#39;</span> <span class="o">%</span> <span class="n">ridx</span><span class="p">])</span>
+            <span class="n">Nests</span> <span class="o">=</span> <span class="n">Nests</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Nests</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">edgevar</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">Nests</span> <span class="o">=</span> <span class="n">Nests</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Nests</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">group</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">return</span> <span class="n">Nests</span>
+
+        <span class="c1"># Nests of the same label. The nest IDs are using the index of the</span>
+        <span class="c1"># roi dataframe from the edge_nests dictionary</span>
+        <span class="n">Nests1</span> <span class="o">=</span> <span class="n">_get_nests_slice</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Nests2</span> <span class="o">=</span> <span class="n">_get_nests_slice</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># to avoid redoing things, keep all polygons in a list</span>
+        <span class="n">polygons1</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">nno1</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">nno1Max</span> <span class="o">=</span> <span class="n">Nests1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">nid1</span><span class="p">,</span> <span class="n">nest1</span> <span class="ow">in</span> <span class="n">Nests1</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">nno1</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: edge1-nest </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">nno1</span><span class="p">,</span> <span class="n">nno1Max</span><span class="p">))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_parse_annot_coords</span><span class="p">(</span><span class="n">nest1</span><span class="p">))</span>
+                <span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span>
+                    <span class="n">edgepair</span><span class="p">[</span><span class="s1">&#39;roi1-name&#39;</span><span class="p">]][</span><span class="s1">&#39;left&#39;</span><span class="p">]</span>
+                <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span>
+                    <span class="n">edgepair</span><span class="p">[</span><span class="s1">&#39;roi1-name&#39;</span><span class="p">]][</span><span class="s1">&#39;top&#39;</span><span class="p">]</span>
+                <span class="n">polygons1</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nid1</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">coords</span><span class="p">)))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+                    <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: edge1-nest </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">: Shapely Error (below)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">nno1</span><span class="p">,</span> <span class="n">nno1Max</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="c1"># go through the &quot;other&quot; polygons to get merge list</span>
+        <span class="n">to_merge</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span>
+            <span class="s1">&#39;nest1-roiname&#39;</span><span class="p">,</span> <span class="s1">&#39;nest1-nid&#39;</span><span class="p">,</span> <span class="s1">&#39;nest2-roiname&#39;</span><span class="p">,</span> <span class="s1">&#39;nest2-nid&#39;</span><span class="p">])</span>
+        <span class="n">nno2</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">nno2Max</span> <span class="o">=</span> <span class="n">Nests2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">nid2</span><span class="p">,</span> <span class="n">nest2</span> <span class="ow">in</span> <span class="n">Nests2</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">nno2</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_parse_annot_coords</span><span class="p">(</span><span class="n">nest2</span><span class="p">))</span>
+                <span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span>
+                    <span class="n">edgepair</span><span class="p">[</span><span class="s1">&#39;roi2-name&#39;</span><span class="p">]][</span><span class="s1">&#39;left&#39;</span><span class="p">]</span>
+                <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span>
+                    <span class="n">edgepair</span><span class="p">[</span><span class="s1">&#39;roi2-name&#39;</span><span class="p">]][</span><span class="s1">&#39;top&#39;</span><span class="p">]</span>
+                <span class="n">polygon2</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+                    <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: edge2-nest </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">: Shapely Error (below)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">nno2</span><span class="p">,</span> <span class="n">nno2Max</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">nno1Max</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">polygons1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">nno1</span><span class="p">,</span> <span class="n">poly1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">polygons1</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+                    <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: edge2-nest </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">: vs. edge1-nest </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">nno2</span><span class="p">,</span> <span class="n">nno2Max</span><span class="p">,</span> <span class="n">nno1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nno1Max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">nid1</span><span class="p">,</span> <span class="n">polygon1</span> <span class="o">=</span> <span class="n">poly1</span>
+                <span class="k">if</span> <span class="n">polygon1</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">polygon2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_thresh</span><span class="p">:</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">to_merge</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">to_merge</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;nest1-roiname&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">edgepair</span><span class="p">[</span><span class="s1">&#39;roi1-name&#39;</span><span class="p">]</span>
+                    <span class="n">to_merge</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;nest1-nid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nid1</span>
+                    <span class="n">to_merge</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;nest2-roiname&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">edgepair</span><span class="p">[</span><span class="s1">&#39;roi2-name&#39;</span><span class="p">]</span>
+                    <span class="n">to_merge</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;nest2-nid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nid2</span>
+
+        <span class="k">return</span> <span class="n">to_merge</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_merge_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get merge dataframe (pairs along shared edges) (Internal).&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">concat</span>
+
+        <span class="n">merge_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">rpno</span><span class="p">,</span> <span class="n">edgepair</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_edges</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">edgepair</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">edgepair</span><span class="p">)</span>
+            <span class="n">to_merge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_merge_pairs</span><span class="p">(</span>
+                <span class="n">edgepair</span><span class="o">=</span><span class="n">edgepair</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span>
+                <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: pair </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">rpno</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_edges</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">merge_df</span> <span class="o">=</span> <span class="n">concat</span><span class="p">((</span><span class="n">merge_df</span><span class="p">,</span> <span class="n">to_merge</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">merge_df</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_merge_clusters_from_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merge_df</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assign each nest to one cluster (Internal).</span>
+
+<span class="sd">        That is, such that all nests that are connected to each other are</span>
+<span class="sd">        in the same cluster. Uses hierarchical-like clustering to do this.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">checksum_ref</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># initi merge groups with clusters of size 2</span>
+        <span class="n">merge_groups</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;level-0&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">merge</span> <span class="ow">in</span> <span class="n">merge_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">nname1</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_nid-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">merge</span><span class="p">[</span><span class="s1">&#39;nest1-roiname&#39;</span><span class="p">],</span> <span class="n">merge</span><span class="p">[</span><span class="s1">&#39;nest1-nid&#39;</span><span class="p">])</span>
+            <span class="n">nname2</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_nid-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">merge</span><span class="p">[</span><span class="s1">&#39;nest2-roiname&#39;</span><span class="p">],</span> <span class="n">merge</span><span class="p">[</span><span class="s1">&#39;nest2-nid&#39;</span><span class="p">])</span>
+            <span class="n">merge_groups</span><span class="p">[</span><span class="s1">&#39;level-0&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">nname1</span><span class="p">,</span> <span class="n">nname2</span><span class="p">])</span>
+            <span class="n">checksum_ref</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">nname1</span><span class="p">,</span> <span class="n">nname2</span><span class="p">])</span>
+        <span class="n">checksum_ref</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">checksum_ref</span><span class="p">)))</span>
+
+        <span class="c1"># go through levels</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">keep_going</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">while</span> <span class="n">keep_going</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: level </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">level</span><span class="p">))</span>
+            <span class="n">merge_groups</span><span class="p">[</span><span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">reference</span> <span class="o">=</span> <span class="n">merge_groups</span><span class="p">[</span><span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span><span class="p">)][:]</span>
+            <span class="c1"># compare each cluster to the others in current level</span>
+            <span class="k">for</span> <span class="n">gid</span><span class="p">,</span> <span class="n">mgroup</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">merge_groups</span><span class="p">[</span><span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span><span class="p">)]):</span>
+                <span class="k">for</span> <span class="n">gid2</span><span class="p">,</span> <span class="n">mgroup2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">reference</span><span class="p">):</span>
+                    <span class="n">mgroupSet</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">mgroup</span><span class="p">)</span>
+                    <span class="n">mgroup2Set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">mgroup2</span><span class="p">)</span>
+                    <span class="c1"># if there&#39;s anything in common between the two clusters</span>
+                    <span class="c1"># (assuming they&#39;re not the same cluster of course)</span>
+                    <span class="c1"># then merge them and move them to the next level in the</span>
+                    <span class="c1"># hierarchy and remove them both from this level</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">gid</span> <span class="o">!=</span> <span class="n">gid2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                            <span class="nb">len</span><span class="p">(</span><span class="n">mgroupSet</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">mgroup2Set</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                        <span class="n">merge_groups</span><span class="p">[</span><span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="nb">list</span><span class="p">(</span><span class="n">mgroupSet</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">mgroup2Set</span><span class="p">))))</span>
+                        <span class="n">reference</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">reference</span><span class="p">[</span><span class="n">gid2</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># cleanup</span>
+            <span class="n">merge_groups</span><span class="p">[</span><span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">j</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">reference</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">merge_groups</span><span class="p">[</span><span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">merge_groups</span><span class="p">[</span><span class="s1">&#39;level-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+                <span class="n">keep_going</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">level</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># now just concatenate all hierarchical levels together</span>
+        <span class="n">merge_clusters</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">mg</span> <span class="ow">in</span> <span class="n">merge_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">merge_clusters</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">mg</span><span class="p">)</span>
+
+        <span class="c1"># sanity check</span>
+        <span class="n">checksum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">merge_clusters</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">checksum</span> <span class="o">==</span> <span class="n">checksum_ref</span><span class="p">,</span> \
+            <span class="s1">&#39;checksum fail! not every value is assigned exactly one cluster.&#39;</span>
+
+        <span class="c1"># restructure into dicts with roi name, nest id keys for convenience</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_parse_to_dict</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_nid-&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;roiname&#39;</span><span class="p">:</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;nid&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])}</span>
+        <span class="n">merge_clusters</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="n">_parse_to_dict</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">cl</span><span class="p">]</span> <span class="k">for</span> <span class="n">cl</span> <span class="ow">in</span> <span class="n">merge_clusters</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">merge_clusters</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_merged_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge polygons using shapely (Internal).</span>
+
+<span class="sd">        Given a single cluster from _get_merge_clusters_from_df(), This creates</span>
+<span class="sd">        and merges polygons into a single cascaded union. It first dilates the</span>
+<span class="sd">        polygons by buffer_size pixels to make them overlap, merges them,</span>
+<span class="sd">        then erodes back by buffer_size to get the merged polygon.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">buffer_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_thresh</span> <span class="o">+</span> <span class="mi">3</span>
+        <span class="n">nest_polygons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">nestinfo</span> <span class="ow">in</span> <span class="n">cluster</span><span class="p">:</span>
+            <span class="n">nest</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_contours</span><span class="p">[</span><span class="n">nestinfo</span><span class="p">[</span><span class="s1">&#39;roiname&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="n">nestinfo</span><span class="p">[</span><span class="s1">&#39;nid&#39;</span><span class="p">],</span> <span class="p">:])</span>
+            <span class="n">roitop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">nestinfo</span><span class="p">[</span><span class="s1">&#39;roiname&#39;</span><span class="p">]][</span><span class="s1">&#39;top&#39;</span><span class="p">]</span>
+            <span class="n">roileft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">nestinfo</span><span class="p">[</span><span class="s1">&#39;roiname&#39;</span><span class="p">]][</span><span class="s1">&#39;left&#39;</span><span class="p">]</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">_parse_annot_coords</span><span class="p">(</span>
+                <span class="n">nest</span><span class="p">,</span> <span class="n">x_offset</span><span class="o">=</span><span class="n">roileft</span><span class="p">,</span> <span class="n">y_offset</span><span class="o">=</span><span class="n">roitop</span><span class="p">)</span>
+            <span class="n">nest_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Polygon</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">buffer_size</span><span class="p">))</span>
+        <span class="n">merged_polygon</span> <span class="o">=</span> <span class="n">unary_union</span><span class="p">(</span><span class="n">nest_polygons</span><span class="p">)</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="o">-</span><span class="n">buffer_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">merged_polygon</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_all_merged_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merge_clusters</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge polygons using shapely (Internal).</span>
+
+<span class="sd">        Given a a list of clusters from _get_merge_clusters_from_df(). Creates</span>
+<span class="sd">        and merges polygons into a single cascaded union. It first dilates the</span>
+<span class="sd">        polygons by buffer_size pixels to make them overlap, merges them,</span>
+<span class="sd">        then erodes back by buffer_size to get the merged polygon.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">merged_polygons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cid</span><span class="p">,</span> <span class="n">cl</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">merge_clusters</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: cluster </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">cid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">merge_clusters</span><span class="p">)))</span>
+            <span class="n">merged_polygon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_merged_polygon</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="n">cl</span><span class="p">)</span>
+            <span class="n">merged_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">merged_polygon</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">merged_polygons</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_coord_str_from_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygon</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse shapely polygon coordinates into string form (Internal).&quot;&quot;&quot;</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">polygon</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">xy</span><span class="p">)</span>
+        <span class="n">coords_x</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]])</span>
+        <span class="n">coords_y</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]])</span>
+        <span class="k">return</span> <span class="n">coords_x</span><span class="p">,</span> <span class="n">coords_y</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_single_merged_edge_contour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygon</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add single contour to self.merged_contours (Internal).&quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merged_contours</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">merged_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">group</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">merged_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="n">group</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">merged_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;has_holes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">polygon</span><span class="o">.</span><span class="n">boundary</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s1">&#39;MultiLineString&#39;</span><span class="p">)</span>
+        <span class="n">coords_x</span><span class="p">,</span> <span class="n">coords_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coord_str_from_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">merged_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;coords_x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">merged_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;coords_y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords_y</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_merged_edge_contours</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">merged_polygons</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add merged polygons to self.merged_contours df (Internal).&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">pno</span><span class="p">,</span> <span class="n">geometry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">merged_polygons</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: contour </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">pno</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">merged_polygons</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="n">geometry</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s1">&#39;MultiPolygon&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="n">geometry</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_add_single_merged_edge_contour</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_single_merged_edge_contour</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_drop_merged_edge_contours</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merge_df</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Drop edge contours that have already been merged (Internal).&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">roiname</span><span class="p">,</span> <span class="n">_edge_df</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_contours</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">nids</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">rid</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]:</span>
+                <span class="n">neststr</span> <span class="o">=</span> <span class="s1">&#39;nest</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">rid</span>
+                <span class="n">nids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">merge_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">merge_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                    <span class="p">:,</span> <span class="n">neststr</span> <span class="o">+</span> <span class="s1">&#39;-roiname&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">roiname</span><span class="p">,</span> <span class="n">neststr</span> <span class="o">+</span> <span class="s1">&#39;-nid&#39;</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">edge_contours</span><span class="p">[</span><span class="n">roiname</span><span class="p">]</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">nids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_roi_offset_to_contours</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">roi_df</span><span class="p">,</span> <span class="n">roiname</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add roi offset to coordinates of polygons (Internal).&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">annot</span> <span class="ow">in</span> <span class="n">roi_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">_parse_annot_coords</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">annot</span><span class="p">)))</span>
+            <span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roiname</span><span class="p">][</span><span class="s1">&#39;left&#39;</span><span class="p">]</span>
+            <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="p">[</span><span class="n">roiname</span><span class="p">][</span><span class="s1">&#39;top&#39;</span><span class="p">]</span>
+            <span class="n">roi_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;coords_x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]])</span>
+            <span class="n">roi_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;coords_y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">roi_df</span>
+
+<div class="viewcode-block" id="Polygon_merger.set_merged_contours">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger.Polygon_merger.set_merged_contours">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_merged_contours</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Go through each group and merge contours.</span>
+
+<span class="sd">        Sets:</span>
+<span class="sd">        - self.merged_contours: pandas DataFrame: has the same structure</span>
+<span class="sd">        as output from get_contours_from_mask().</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+
+            <span class="n">monitorPrefix</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+
+            <span class="c1"># get pairs of contours to merge</span>
+            <span class="n">merge_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_merge_df</span><span class="p">(</span>
+                <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: _get_merge_df&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+
+            <span class="c1"># get clusters of polygons to merge</span>
+            <span class="n">merge_clusters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_merge_clusters_from_df</span><span class="p">(</span>
+                <span class="n">merge_df</span><span class="o">=</span><span class="n">merge_df</span><span class="p">,</span>
+                <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: _get_merge_clusters_from_df&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">monitorPrefix</span><span class="p">))</span>
+
+            <span class="c1"># fetch merged polygons</span>
+            <span class="n">merged_polygons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_all_merged_polygons</span><span class="p">(</span>
+                <span class="n">merge_clusters</span><span class="o">=</span><span class="n">merge_clusters</span><span class="p">,</span>
+                <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: _get_all_merged_polygons&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+
+            <span class="c1"># add medged contours to dataframe</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_merged_edge_contours</span><span class="p">(</span>
+                <span class="n">merged_polygons</span><span class="o">=</span><span class="n">merged_polygons</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span>
+                <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: _add_merged_edge_contours&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+
+            <span class="c1"># drop merged edge contours from edge dataframes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: _drop_merged_edge_contours&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_drop_merged_edge_contours</span><span class="p">(</span><span class="n">merge_df</span><span class="o">=</span><span class="n">merge_df</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Polygon_merger.get_concatenated_contours">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger.Polygon_merger.get_concatenated_contours">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_concatenated_contours</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get concatenated contours and overall bounding box.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        - pandas DataFrame: has the same structure as output from</span>
+<span class="sd">        get_contours_from_mask().</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">concat</span>
+
+        <span class="c1"># concatenate all contours</span>
+        <span class="n">all_contours</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merged_contours</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">contours_dict</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_contours</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordinary_contours</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">roiname</span><span class="p">,</span> <span class="n">roi_df</span> <span class="ow">in</span> <span class="n">contours_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">roi_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_roi_offset_to_contours</span><span class="p">(</span>
+                    <span class="n">roi_df</span><span class="o">=</span><span class="n">roi_df</span><span class="p">,</span> <span class="n">roiname</span><span class="o">=</span><span class="n">roiname</span><span class="p">)</span>
+                <span class="n">all_contours</span> <span class="o">=</span> <span class="n">concat</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">all_contours</span><span class="p">,</span> <span class="n">roi_df</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># add overall bounding box contour</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">all_contours</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="o">.</span><span class="n">items</span><span class="p">()])))</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="o">.</span><span class="n">items</span><span class="p">()])))</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="o">.</span><span class="n">items</span><span class="p">()])))</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">roiinfos</span><span class="o">.</span><span class="n">items</span><span class="p">()])))</span>
+        <span class="n">all_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">roi_group</span>
+        <span class="n">all_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;roi&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">]</span>
+        <span class="n">all_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;coords_x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">left</span><span class="p">])</span>
+        <span class="n">all_contours</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;coords_y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">top</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">top</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">all_contours</span></div>
+
+
+<div class="viewcode-block" id="Polygon_merger.run">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.polygon_merger.html#histomicstk.annotations_and_masks.polygon_merger.Polygon_merger.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run full pipeline to get merged contours.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        - pandas DataFrame: has the same structure as output from</span>
+<span class="sd">        get_contours_from_mask().</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="s1">: Set contours from all masks&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_contours_from_all_masks</span><span class="p">(</span>
+            <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_contours_from_all_masks&#39;</span> <span class="o">%</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="s1">: Set ROI bounding boxes&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_roi_bboxes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="s1">: Set shard ROI edges&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_shared_roi_edges</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="s1">: Set merged contours&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_merged_contours</span><span class="p">(</span>
+            <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: set_merged_contours&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print1</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="s1">: Get concatenated contours&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="n">all_contours</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_concatenated_contours</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">discard_nonenclosed_background</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_print2</span><span class="p">(</span>
+                <span class="s1">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="s1">: Discard nonenclosed background&#39;</span> <span class="o">%</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="n">all_contours</span> <span class="o">=</span> <span class="n">_discard_nonenclosed_background_group</span><span class="p">(</span>
+                <span class="n">all_contours</span><span class="p">,</span> <span class="n">background_group</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">background_group</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+                <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: _discard_nonenclosed_background_group&#39;</span> <span class="o">%</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_contours</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
