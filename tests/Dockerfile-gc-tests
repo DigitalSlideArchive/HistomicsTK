@@ -5,7 +5,7 @@ LABEL HISTOMICSTK_GC_TEST=TRUE
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
-RUN pip install --no-cache-dir -U pip
+RUN pip install --no-cache-dir -U pip 'setuptools<79'
 
 # Only sources needed in the test are added.
 RUN pip install --find-links https://girder.github.io/large_image_wheels \
