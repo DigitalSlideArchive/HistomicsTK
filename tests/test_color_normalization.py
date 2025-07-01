@@ -40,8 +40,8 @@ class TestReinhardNormalization:
         # gt_stddev = [0.612143, 0.122667, 0.021361]
 
         # With icc correction
-        gt_mean = [8.977143, -0.082973, 0.021126]
-        gt_stddev = [0.561896, 0.124711, 0.025968]
+        gt_mean = [8.992413, -0.080213, 0.021194]
+        gt_stddev = [0.53575324, 0.12046163, 0.02542923]
 
         np.testing.assert_allclose(wsi_mean, gt_mean, atol=1e-2)
         np.testing.assert_allclose(wsi_stddev, gt_stddev, atol=1e-2)

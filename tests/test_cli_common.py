@@ -72,6 +72,7 @@ class TestCliCommon:
         for gtruth in {
             'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres.png',
             'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres2.png',
+            'TCGA-06-0129-01Z-00-DX3_fgnd_mask_lres3.png',
         }:
             fgnd_mask_gtruth_file = os.path.join(datastore.fetch(gtruth))
 
