@@ -1,0 +1,537 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.preprocessing.color_deconvolution &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="histomicstk.preprocessing.color_normalization" href="histomicstk.preprocessing.color_normalization.html" />
+    <link rel="prev" title="histomicstk.preprocessing.color_conversion" href="histomicstk.preprocessing.color_conversion.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.preprocessing.color_conversion.html">color space conversion</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">color deconvolution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.preprocessing.color_normalization.html">color normalization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.preprocessing.augmentation.html">data augmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api-docs.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.html">histomicstk</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.preprocessing.html">histomicstk.preprocessing</a></li>
+      <li class="breadcrumb-item active">histomicstk.preprocessing.color_deconvolution</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/histomicstk.preprocessing.color_deconvolution.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-histomicstk.preprocessing.color_deconvolution">
+<span id="histomicstk-preprocessing-color-deconvolution"></span><h1>histomicstk.preprocessing.color_deconvolution<a class="headerlink" href="#module-histomicstk.preprocessing.color_deconvolution" title="Link to this heading">¶</a></h1>
+<p>This package contains implementation of methods to deconvolve or separate.</p>
+<p>… the stains of histopathology images.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.color_convolution">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">color_convolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_stains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_deconvolution/color_convolution.html#color_convolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.color_convolution" title="Link to this definition">¶</a></dt>
+<dd><p>Perform Color Convolution.</p>
+<p>Reconstructs a color image from the stain matrix <cite>w</cite> and
+the individual images stored as channels in <cite>im_stains</cite> and generated
+by ColorDeconvolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_stains</strong> (<em>array_like</em>) – An RGB image where in each channel contains image of one stain</p></li>
+<li><p><strong>w</strong> (<em>array_like</em>) – A 3x3 matrix containing the stain colors in its columns.
+In the case of two stains, the third column is zero and will be
+complemented using cross-product. The matrix should contain a
+minimum two nonzero columns.</p></li>
+<li><p><strong>I_0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>array_like</em><em>, </em><em>optional</em>) – A float a 3-vector containing background RGB intensities.
+If unspecified, use the old OD conversion.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_rgb</strong> – Reconstructed RGB image with intensity values ranging from [0, 255],
+suitable for display.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.complement_stain_matrix" title="histomicstk.preprocessing.color_deconvolution.complement_stain_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.complement_stain_matrix</span></code></a>, <a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.color_deconvolution" title="histomicstk.preprocessing.color_deconvolution.color_deconvolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.color_deconvolution</span></code></a>, <a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.rgb_to_od" title="histomicstk.preprocessing.color_conversion.rgb_to_od"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.rgb_to_od</span></code></a>, <a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.od_to_rgb" title="histomicstk.preprocessing.color_conversion.od_to_rgb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.od_to_rgb</span></code></a>, <a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.rgb_to_sda" title="histomicstk.preprocessing.color_conversion.rgb_to_sda"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.rgb_to_sda</span></code></a>, <a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.sda_to_rgb" title="histomicstk.preprocessing.color_conversion.sda_to_rgb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.sda_to_rgb</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.color_deconvolution">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">color_deconvolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_rgb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_deconvolution/color_deconvolution.html#color_deconvolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.color_deconvolution" title="Link to this definition">¶</a></dt>
+<dd><p>Perform color deconvolution.</p>
+<p>The given RGB Image <cite>I</cite> is first first transformed into optical density
+space, and then projected onto the stain vectors in the columns of the
+3x3 stain matrix <cite>W</cite>.</p>
+<p>For deconvolving H&amp;E stained image use:</p>
+<p><cite>w</cite> = array([[0.650, 0.072, 0], [0.704, 0.990, 0], [0.286, 0.105, 0]])</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_rgb</strong> (<em>array_like</em>) – Input RGB Image that needs to be deconvolved.</p></li>
+<li><p><strong>w</strong> (<em>array_like</em>) – A 3x3 matrix containing the color vectors in columns.
+For two stain images the third column is zero and will be
+complemented using cross-product. At least two of the three
+columns must be non-zero.</p></li>
+<li><p><strong>I_0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>array_like</em><em>, </em><em>optional</em>) – A float a 3-vector containing background RGB intensities.
+If unspecified, use the old OD conversion.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>Stains</strong> (<em>array_like</em>) – An rgb image where in each channel contains the image of the
+stain of the corresponding column in the stain matrix <cite>W</cite>.
+The intensity range of each channel is [0, 255] suitable for
+displaying.</p></li>
+<li><p><strong>StainsFloat</strong> (<em>array_like</em>) – An intensity image of deconvolved stains that is unbounded,
+suitable for reconstructing color images of deconvolved stains
+with color_convolution.</p></li>
+<li><p><strong>Wc</strong> (<em>array_like</em>) – A 3x3 complemented stain matrix. Useful for color image
+reconstruction with color_convolution.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.complement_stain_matrix" title="histomicstk.preprocessing.color_deconvolution.complement_stain_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.complement_stain_matrix</span></code></a>, <a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.color_convolution" title="histomicstk.preprocessing.color_deconvolution.color_convolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.color_convolution</span></code></a>, <a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.rgb_to_od" title="histomicstk.preprocessing.color_conversion.rgb_to_od"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.rgb_to_od</span></code></a>, <a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.od_to_rgb" title="histomicstk.preprocessing.color_conversion.od_to_rgb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.od_to_rgb</span></code></a>, <a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.rgb_to_sda" title="histomicstk.preprocessing.color_conversion.rgb_to_sda"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.rgb_to_sda</span></code></a>, <a class="reference internal" href="histomicstk.preprocessing.color_conversion.html#histomicstk.preprocessing.color_conversion.sda_to_rgb" title="histomicstk.preprocessing.color_conversion.sda_to_rgb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_conversion.sda_to_rgb</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.color_deconvolution_routine">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">color_deconvolution_routine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_rgb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_deconvolution/color_deconvolution.html#color_deconvolution_routine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.color_deconvolution_routine" title="Link to this definition">¶</a></dt>
+<dd><p>Unmix stains mixing followed by deconvolution (wrapper).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_rgb</strong> (<em>array_like</em>) – An RGB image (m x n x 3) to color normalize</p></li>
+<li><p><strong>W_source</strong> (<em>np array</em><em>, </em><em>default is None</em>) – A 3x3 matrix of source stain column vectors. Only provide this
+if you know the stains matrix in advance (unlikely) and would
+like to perform supervised deconvolution. If this is not provided,
+stain_unmixing_routine() is used to estimate W_source.</p></li>
+<li><p><strong>mask_out</strong> (<em>array_like</em><em>, </em><em>default is None</em>) – if not None, should be (m x n) boolean numpy array.
+This parameter ensures exclusion of non-masked areas from calculations
+and stain matrix. This is relevant because elements like blood,
+sharpie marker, white space, cannot be modeled as a mix of two stains.</p></li>
+<li><p><strong>kwargs</strong> (<em>k</em><em>,</em><em>v pairs</em>) – Passed as-is to stain_unmixing_routine() if W_source is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output from color_deconvolution()</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.stain_unmixing_routine" title="histomicstk.preprocessing.color_deconvolution.stain_unmixing_routine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.stain_unmixing_routine</span></code></a>, <a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.color_deconvolution" title="histomicstk.preprocessing.color_deconvolution.color_deconvolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.color_deconvolution</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.complement_stain_matrix">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">complement_stain_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_deconvolution/complement_stain_matrix.html#complement_stain_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.complement_stain_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Generates a complemented stain matrix
+Used to fill out empty columns of a stain matrix for use with
+color_deconvolution. Replaces right-most column with normalized
+cross-product of first two columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>w</strong> (<em>array_like</em>) – A 3x3 stain calibration matrix with stain color vectors in columns.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>w_comp</strong> – A 3x3 complemented stain calibration matrix with a third
+orthogonal column.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.color_deconvolution" title="histomicstk.preprocessing.color_deconvolution.color_deconvolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.color_deconvolution</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.find_stain_index">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">find_stain_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_deconvolution/find_stain_index.html#find_stain_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.find_stain_index" title="Link to this definition">¶</a></dt>
+<dd><p>Identify the stain vector in w that best aligns with the reference vector.</p>
+<p>This is used with adaptive deconvolution routines where the order of returned stain
+vectors is not guaranteed. This function identifies the stain vector of w that most
+closely aligns with the provided reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference</strong> (<em>array_like</em>) – 1D array representing the stain vector query.</p></li>
+<li><p><strong>w</strong> (<em>array_like</em>) – 3xN array of where columns represent stain vectors to search.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>i</strong> – Column index of stain vector with best alignment to reference.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Vectors are normalized to unit-norm prior to comparison using dot product. Alignment
+is determined by vector angles and not distances.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca" title="histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca</span></code></a>, <a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.color_deconvolution" title="histomicstk.preprocessing.color_deconvolution.color_deconvolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.color_deconvolution</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.rgb_separate_stains_macenko_pca">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">rgb_separate_stains_macenko_pca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_rgb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_deconvolution/rgb_separate_stains_macenko_pca.html#rgb_separate_stains_macenko_pca"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.rgb_separate_stains_macenko_pca" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the stain matrix for color deconvolution with the “Macenko”
+method from an RGB image or matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_rgb</strong> (<em>array_like</em>) – Image (MxNx3) or matrix (3xN) in RGB space for which to compute the
+stain matrix.</p></li>
+<li><p><strong>I_0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>array_like</em>) – Per-channel background intensities, or one intensity to use for all
+channels if a float.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>w</strong> – A 3x3 matrix of stain column vectors, in SDA space</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For additional input arguments and documentation, please see
+histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca.
+im_sda is computed and passed as part of this routine.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca" title="histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.rgb_separate_stains_xu_snmf">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">rgb_separate_stains_xu_snmf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_rgb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I_0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_deconvolution/rgb_separate_stains_xu_snmf.html#rgb_separate_stains_xu_snmf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.rgb_separate_stains_xu_snmf" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the stain matrix for color deconvolution with SNMF from an
+RGB image or matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_rgb</strong> (<em>array_like</em>) – Image (MxNx3) or matrix (3xN) in RGB space for which to compute the
+stain matrix.</p></li>
+<li><p><strong>I_0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>array_like</em>) – Per-channel background intensities, or one intensity to use for all
+channels if a float.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>w</strong> – A 3x3 matrix of stain column vectors, in SDA space</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is a thin wrapper around separate_stains_xu_snmf and as such
+the w_init parameter must be manually passed.</p>
+<p>For additional input arguments and documentation, please see
+histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf.
+im_sda is computed and passed as part of this routine.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf" title="histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">separate_stains_macenko_pca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_sda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum_magnitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_angle_percentile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_angle_percentile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.99</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_deconvolution/separate_stains_macenko_pca.html#separate_stains_macenko_pca"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the stain matrix for color deconvolution with the Macenko method.</p>
+<p>For a two-stain image or matrix in SDA space, this method works by
+computing a best-fit plane with PCA, wherein it selects the stain
+vectors as percentiles in the “angle distribution” in that plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_sda</strong> (<em>array_like</em>) – Image (MxNx3) or matrix (3xN) in SDA space for which to compute the
+stain matrix.</p></li>
+<li><p><strong>minimum_magnitude</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – <p>The magnitude below which vectors will be excluded from the computation
+of the angle distribution.</p>
+<p>The default is based on the paper value of 0.15, adjusted for our
+method of calculating SDA, thus 0.15 * 255 * log(10)/log(255)</p>
+</p></li>
+<li><p><strong>min_angle_percentile</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The smaller percentile of one of the vectors to pick from the angle
+distribution</p></li>
+<li><p><strong>max_angle_percentile</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The larger percentile of one of the vectors to pick from the angle
+distribution</p></li>
+<li><p><strong>mask_out</strong> (<em>array_like</em>) – if not None, should be (m, n) boolean numpy array.
+This parameter ensures exclusion of non-masked areas from calculations.
+This is relevant because elements like blood, sharpie marker,
+white space, etc may throw off the normalization somewhat.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>w</strong> – A 3x3 matrix of stain column vectors</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All input pixels not otherwise excluded are used in the computation of the
+principal plane and the angle distribution.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.color_deconvolution" title="histomicstk.preprocessing.color_deconvolution.color_deconvolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.color_deconvolution</span></code></a>, <a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf" title="histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Van Eycke, Y. R., Allard, J., Salmon, I., Debeir, O., &amp;
+Decaestecker, C. (2017).  Image processing in digital pathology: an
+opportunity to solve inter-batch variability of immunohistochemical
+staining.  Scientific Reports, 7.</p>
+</aside>
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>Macenko, M., Niethammer, M., Marron, J. S., Borland, D.,
+Woosley, J. T., Guan, X., … &amp; Thomas, N. E. (2009, June).
+A method for normalizing histology slides for quantitative analysis.
+In Biomedical Imaging: From Nano to Macro, 2009.  ISBI’09.
+IEEE International Symposium on (pp. 1107-1110). IEEE.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">separate_stains_xu_snmf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_sda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_deconvolution/separate_stains_xu_snmf.html#separate_stains_xu_snmf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the stain matrix for color deconvolution with SNMF.</p>
+<p>… (sparse non-negative matrix factorization).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_sda</strong> (<em>array_like</em>) – Image (MxNx3) or matrix (3xN) in SDA space for which to compute the
+stain matrix.</p></li>
+<li><p><strong>w_init</strong> (<em>array_like</em><em>, </em><em>default is None</em>) – Initial value for the stain matrix.  if not provided, default
+initialization is used.</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Regularization factor for the sparsity of the deconvolved pixels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>w</strong> – A 3x3 matrix of stain column vectors</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All input pixels are used in the factorization.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.color_deconvolution" title="histomicstk.preprocessing.color_deconvolution.color_deconvolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.color_deconvolution</span></code></a>, <a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca" title="histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<p>Van Eycke, Y. R., Allard, J., Salmon, I., Debeir, O., &amp;
+Decaestecker, C. (2017).  Image processing in digital pathology: an
+opportunity to solve inter-batch variability of immunohistochemical
+staining.  Scientific Reports, 7.</p>
+</aside>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<p>Xu, J., Xiang, L., Wang, G., Ganesan, S., Feldman, M., Shih, N. N.,
+… &amp; Madabhushi, A. (2015). Sparse Non-negative Matrix Factorization
+(SNMF) based color unmixing for breast histopathological image
+analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.stain_color_map">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">stain_color_map</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'dab':</span> <span class="pre">[0.27,</span> <span class="pre">0.57,</span> <span class="pre">0.78],</span> <span class="pre">'eosin':</span> <span class="pre">[0.07,</span> <span class="pre">0.99,</span> <span class="pre">0.11],</span> <span class="pre">'hematoxylin':</span> <span class="pre">[0.65,</span> <span class="pre">0.7,</span> <span class="pre">0.29],</span> <span class="pre">'null':</span> <span class="pre">[0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0]}</span></em><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.stain_color_map" title="Link to this definition">¶</a></dt>
+<dd><p>A dictionary of names for reference stain vectors</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.preprocessing.color_deconvolution.stain_unmixing_routine">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.preprocessing.color_deconvolution.</span></span><span class="sig-name descname"><span class="pre">stain_unmixing_routine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_rgb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stains</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stain_unmixing_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'macenko_pca'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stain_unmixing_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/preprocessing/color_deconvolution/color_deconvolution.html#stain_unmixing_routine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.preprocessing.color_deconvolution.stain_unmixing_routine" title="Link to this definition">¶</a></dt>
+<dd><p>Perform stain unmixing using the method of choice (wrapper).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_rgb</strong> (<em>array_like</em>) – An RGB image (m x n x 3) to unmix.</p></li>
+<li><p><strong>stains</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>, </em><em>optional</em>) – List of stain names (order is important). Default is H&amp;E. This is
+particularly relevant in macenco where the order of stains is not
+preserved during stain unmixing, so this method uses
+histomicstk.preprocessing.color_deconvolution.find_stain_index
+to reorder the stains matrix to the order provided by this parameter</p></li>
+<li><p><strong>stain_unmixing_method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default is 'macenko_pca'</em>) – stain unmixing method to use. It should be one of the following
+‘macenko_pca’, or ‘xu_snmf’.</p></li>
+<li><p><strong>stain_unmixing_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>default is an empty dict</em>) – kwargs to pass as-is to the stain unmixing method.</p></li>
+<li><p><strong>mask_out</strong> (<em>array_like</em><em>, </em><em>default is None</em>) – if not None, should be (m x n) boolean numpy array.
+This parameter ensures exclusion of non-masked areas from calculations
+and normalization. This is relevant because elements like blood,
+sharpie marker, white space, etc may throw off the normalization.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Wc</strong> – A 3x3 complemented stain matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca" title="histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca</span></code></a>, <a class="reference internal" href="#histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf" title="histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
+<p>Macenko, M., Niethammer, M., Marron, J. S., Borland, D.,
+Woosley, J. T., Guan, X., … &amp; Thomas, N. E. (2009, June).
+A method for normalizing histology slides for quantitative analysis.
+In Biomedical Imaging: From Nano to Macro, 2009.  ISBI’09.
+IEEE International Symposium on (pp. 1107-1110). IEEE.</p>
+</aside>
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></span>
+<p>Xu, J., Xiang, L., Wang, G., Ganesan, S., Feldman, M., Shih, N. N.,
+…&amp; Madabhushi, A. (2015). Sparse Non-negative Matrix Factorization
+(SNMF) based color unmixing for breast histopathological image
+analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.</p>
+</aside>
+</aside>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="histomicstk.preprocessing.color_conversion.html" class="btn btn-neutral float-left" title="histomicstk.preprocessing.color_conversion" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="histomicstk.preprocessing.color_normalization.html" class="btn btn-neutral float-right" title="histomicstk.preprocessing.color_normalization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
