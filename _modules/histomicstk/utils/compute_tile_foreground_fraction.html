@@ -1,0 +1,236 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.utils.compute_tile_foreground_fraction &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.utils.compute_tile_foreground_fraction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.utils.compute_tile_foreground_fraction</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">large_image</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<div class="viewcode-block" id="compute_tile_foreground_fraction">
+<a class="viewcode-back" href="../../../histomicstk.utils.html#histomicstk.utils.compute_tile_foreground_fraction">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_tile_foreground_fraction</span><span class="p">(</span><span class="n">slide_path</span><span class="p">,</span> <span class="n">im_fgnd_mask_lres</span><span class="p">,</span>
+                                     <span class="n">fgnd_seg_scale</span><span class="p">,</span> <span class="n">it_kwargs</span><span class="p">,</span>
+                                     <span class="n">tile_position</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the fraction of foreground of a single tile or</span>
+<span class="sd">    all tiles in a whole slide image given the binary foreground</span>
+<span class="sd">    mask computed from a low resolution version of the slide.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    slide_path : str</span>
+<span class="sd">        path to an image or slide</span>
+<span class="sd">    im_fgnd_mask_lres : array_like</span>
+<span class="sd">        A binary foreground mask computed at a low-resolution</span>
+<span class="sd">    fgnd_seg_scale : double</span>
+<span class="sd">        The scale/magnification at which the foreground mask `im_fgnd_mask_lres`</span>
+<span class="sd">        was computed</span>
+<span class="sd">    it_kwargs : dict</span>
+<span class="sd">        A dictionary of any key:value parameters (e.g. defining the scale,</span>
+<span class="sd">         tile_size, region etc) in addition to tile_position that need to be</span>
+<span class="sd">         passed to `large_image.TileSource.getSingleTile` to get the tile.</span>
+<span class="sd">    tile_position : int or None</span>
+<span class="sd">        A linear 0-based index of a tile for which the foreground needs to be</span>
+<span class="sd">        computed. If set to None, the foreground fraction of all tiles will be</span>
+<span class="sd">        computed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tile_fgnd_frac : double or array_like</span>
+<span class="sd">        A value between 0 and 1 indicating the fraction of foreground pixels</span>
+<span class="sd">        present in the tile indicated by `tile_position`. If `tile_position`</span>
+<span class="sd">        is set to None, then a 1D array containing the foreground fraction of</span>
+<span class="sd">        all tiles will be returned.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">dask</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">dask.distributed</span>
+
+    <span class="k">if</span> <span class="n">tile_position</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># get slide tile source</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">large_image</span><span class="o">.</span><span class="n">getTileSource</span><span class="p">(</span><span class="n">slide_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+
+        <span class="n">num_tiles</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">getSingleTile</span><span class="p">(</span><span class="o">**</span><span class="n">it_kwargs</span><span class="p">)[</span><span class="s1">&#39;iterator_range&#39;</span><span class="p">][</span><span class="s1">&#39;position&#39;</span><span class="p">]</span>
+
+        <span class="c1"># broadcasting fgnd mask to all dask workers</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_client</span><span class="p">()</span>
+
+            <span class="p">[</span><span class="n">im_fgnd_mask_lres</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="n">im_fgnd_mask_lres</span><span class="p">],</span>
+                                            <span class="n">broadcast</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="c1"># compute tile foreground fraction in parallel</span>
+        <span class="n">tile_fgnd_frac</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">tile_position</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_tiles</span><span class="p">):</span>
+
+            <span class="n">tile_fgnd_frac</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">_compute_tile_foreground_fraction_single</span><span class="p">)(</span>
+                    <span class="n">slide_path</span><span class="p">,</span> <span class="n">im_fgnd_mask_lres</span><span class="p">,</span> <span class="n">fgnd_seg_scale</span><span class="p">,</span>
+                    <span class="n">it_kwargs</span><span class="p">,</span> <span class="n">tile_position</span><span class="p">,</span>
+                <span class="p">))</span>
+
+        <span class="n">tile_fgnd_frac</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">tile_fgnd_frac</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+
+        <span class="n">tile_fgnd_frac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tile_fgnd_frac</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">tile_position</span><span class="p">):</span>
+
+        <span class="n">tile_fgnd_frac</span> <span class="o">=</span> <span class="n">_compute_tile_foreground_fraction_single</span><span class="p">(</span>
+            <span class="n">slide_path</span><span class="p">,</span> <span class="n">im_fgnd_mask_lres</span><span class="p">,</span> <span class="n">fgnd_seg_scale</span><span class="p">,</span>
+            <span class="n">it_kwargs</span><span class="p">,</span> <span class="n">tile_position</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Invalid value for tile_position. Must be None or int&#39;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tile_fgnd_frac</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_tile_foreground_fraction_single</span><span class="p">(</span><span class="n">slide_path</span><span class="p">,</span> <span class="n">im_fgnd_mask_lres</span><span class="p">,</span>
+                                             <span class="n">fgnd_seg_scale</span><span class="p">,</span> <span class="n">it_kwargs</span><span class="p">,</span>
+                                             <span class="n">tile_position</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="c1"># get slide tile source</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">large_image</span><span class="o">.</span><span class="n">getTileSource</span><span class="p">(</span><span class="n">slide_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+
+    <span class="c1"># get requested tile</span>
+    <span class="n">tile</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">getSingleTile</span><span class="p">(</span><span class="n">tile_position</span><span class="o">=</span><span class="n">tile_position</span><span class="p">,</span>
+                            <span class="nb">format</span><span class="o">=</span><span class="n">large_image</span><span class="o">.</span><span class="n">tilesource</span><span class="o">.</span><span class="n">TILE_FORMAT_NUMPY</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">it_kwargs</span><span class="p">)</span>
+
+    <span class="c1"># get current region in base_pixels</span>
+    <span class="n">rgn_hres</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="n">tile</span><span class="p">[</span><span class="s1">&#39;gx&#39;</span><span class="p">],</span> <span class="s1">&#39;top&#39;</span><span class="p">:</span> <span class="n">tile</span><span class="p">[</span><span class="s1">&#39;gy&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;right&#39;</span><span class="p">:</span> <span class="n">tile</span><span class="p">[</span><span class="s1">&#39;gx&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">tile</span><span class="p">[</span><span class="s1">&#39;gwidth&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;bottom&#39;</span><span class="p">:</span> <span class="n">tile</span><span class="p">[</span><span class="s1">&#39;gy&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">tile</span><span class="p">[</span><span class="s1">&#39;gheight&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;base_pixels&#39;</span><span class="p">}</span>
+
+    <span class="c1"># get foreground mask for current tile at low resolution</span>
+    <span class="n">rgn_lres</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">convertRegionScale</span><span class="p">(</span><span class="n">rgn_hres</span><span class="p">,</span>
+                                     <span class="n">targetScale</span><span class="o">=</span><span class="n">fgnd_seg_scale</span><span class="p">,</span>
+                                     <span class="n">targetUnits</span><span class="o">=</span><span class="s1">&#39;mag_pixels&#39;</span><span class="p">)</span>
+
+    <span class="n">top</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rgn_lres</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">])</span>
+    <span class="n">bottom</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rgn_lres</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">])</span>
+    <span class="n">left</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rgn_lres</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">])</span>
+    <span class="n">right</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rgn_lres</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">])</span>
+
+    <span class="n">im_tile_fgnd_mask_lres</span> <span class="o">=</span> <span class="n">im_fgnd_mask_lres</span><span class="p">[</span><span class="n">top</span><span class="p">:</span><span class="n">bottom</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span><span class="n">right</span><span class="p">]</span>
+
+    <span class="c1"># compute foreground fraction</span>
+    <span class="n">tile_fgnd_frac</span> <span class="o">=</span> <span class="n">im_tile_fgnd_mask_lres</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">tile_fgnd_frac</span><span class="p">):</span>
+        <span class="n">tile_fgnd_frac</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">tile_fgnd_frac</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

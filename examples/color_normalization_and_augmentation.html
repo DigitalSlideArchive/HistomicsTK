@@ -1,0 +1,921 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color normalization &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Nuclei Segmentation" href="nuclei_segmentation.html" />
+    <link rel="prev" title="Color Deconvolution" href="color_deconvolution.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Color normalization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Start-girder-client-and-set-analysis-parameters">Start girder client and set analysis parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Get-images-and-tissue-mask">Get images and tissue mask</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Let's-visualize-the-data">Let’s visualize the data</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Reinhard-normalization">Reinhard normalization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Reinhard-normalization---without-masking">Reinhard normalization - without masking</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Reinhard-normalization---with-masking">Reinhard normalization - with masking</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Deconvolution-based-normalization">Deconvolution-based normalization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Macenko-normalization---without-masking">Macenko normalization - without masking</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Macenko-normalization---with-masking">Macenko normalization - with masking</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#%22Smart%22-color-augmentation">“Smart” color augmentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Let's-perturb-the-H&amp;E-concentrations-a-bit">Let’s perturb the H&amp;E concentrations a bit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Try-a-few-more-times">Try a few more times</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Color normalization</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/color_normalization_and_augmentation.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Color-normalization">
+<h1>Color normalization<a class="headerlink" href="#Color-normalization" title="Link to this heading">¶</a></h1>
+<p>The first step in analyzing digital pathology images is often preprocessing the color image to correct staining or imaging variations. These examples illustrate how to use HistomicsTK to normalize color profiles and to generate augmented color images for machine learning.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">girder_client</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">skimage.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">resize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pylab</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ListedColormap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_normalization</span><span class="w"> </span><span class="kn">import</span> <span class="n">reinhard</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.saliency.tissue_detection</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_slide_thumbnail</span><span class="p">,</span> <span class="n">get_tissue_mask</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotation_and_mask_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_image_from_htk_response</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_normalization.</span>\
+    <span class="n">deconvolution_based_normalization</span> <span class="kn">import</span><span class="w"> </span><span class="nn">deconvolution_based_normalization</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_deconvolution.</span>\
+    <span class="n">color_deconvolution</span> <span class="kn">import</span><span class="w"> </span><span class="nn">color_deconvolution_routine</span><span class="o">,</span><span class="w"> </span><span class="nn">stain_unmixing_routine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.augmentation.</span>\
+    <span class="n">color_augmentation</span> <span class="kn">import</span><span class="w"> </span><span class="nn">rgb_perturb_stain_concentration</span><span class="o">,</span><span class="w"> </span><span class="nn">perturb_stain_concentration</span>
+</pre></div>
+</div>
+</div>
+<section id="Start-girder-client-and-set-analysis-parameters">
+<h2>Start girder client and set analysis parameters<a class="headerlink" href="#Start-girder-client-and-set-analysis-parameters" title="Link to this heading">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">APIURL</span> <span class="o">=</span> <span class="s1">&#39;http://candygram.neurology.emory.edu:8080/api/v1/&#39;</span>
+<span class="n">SAMPLE_SLIDE_ID</span> <span class="o">=</span> <span class="s1">&#39;5d817f5abd4404c6b1f744bb&#39;</span>
+
+<span class="n">gc</span> <span class="o">=</span> <span class="n">girder_client</span><span class="o">.</span><span class="n">GirderClient</span><span class="p">(</span><span class="n">apiUrl</span><span class="o">=</span><span class="n">APIURL</span><span class="p">)</span>
+<span class="c1"># gc.authenticate(interactive=True)</span>
+<span class="n">gc</span><span class="o">.</span><span class="n">authenticate</span><span class="p">(</span><span class="n">apiKey</span><span class="o">=</span><span class="s1">&#39;kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb&#39;</span><span class="p">)</span>
+
+<span class="n">MAG</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="c1"># color norm. standard (from TCGA-A2-A3XS-DX1, Amgad et al, 2019)</span>
+<span class="n">cnorm</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">8.74108109</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.12440419</span><span class="p">,</span>  <span class="mf">0.0444982</span><span class="p">]),</span>
+    <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.6135447</span><span class="p">,</span> <span class="mf">0.10989545</span><span class="p">,</span> <span class="mf">0.0286032</span><span class="p">]),</span>
+<span class="p">}</span>
+
+<span class="c1"># TCGA-A2-A3XS-DX1_xmin21421_ymin37486_.png, Amgad et al, 2019)</span>
+<span class="c1"># for macenco (obtained using rgb_separate_stains_macenko_pca()</span>
+<span class="c1"># and reordered such that columns are the order:</span>
+<span class="c1"># Hamtoxylin, Eosin, Null</span>
+<span class="n">W_target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="mf">0.5807549</span><span class="p">,</span>  <span class="mf">0.08314027</span><span class="p">,</span>  <span class="mf">0.08213795</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.71681094</span><span class="p">,</span>  <span class="mf">0.90081588</span><span class="p">,</span>  <span class="mf">0.41999816</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.38588316</span><span class="p">,</span>  <span class="mf">0.42616716</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.90380025</span><span class="p">],</span>
+<span class="p">])</span>
+
+<span class="c1"># visualization color map</span>
+<span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]</span>
+<span class="n">cMap</span> <span class="o">=</span> <span class="n">ListedColormap</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">vals</span><span class="p">)</span>
+
+<span class="c1"># for visualization</span>
+<span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">,</span> <span class="mi">3000</span>
+
+<span class="c1"># for reproducibility</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Get-images-and-tissue-mask">
+<h2>Get images and tissue mask<a class="headerlink" href="#Get-images-and-tissue-mask" title="Link to this heading">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get RGB image at a small magnification</span>
+<span class="n">slide_info</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;item/</span><span class="si">%s</span><span class="s1">/tiles&#39;</span> <span class="o">%</span> <span class="n">SAMPLE_SLIDE_ID</span><span class="p">)</span>
+<span class="n">getStr</span> <span class="o">=</span> <span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">/tiles/region?left=</span><span class="si">%d</span><span class="s1">&amp;right=</span><span class="si">%d</span><span class="s1">&amp;top=</span><span class="si">%d</span><span class="s1">&amp;bottom=</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+    <span class="n">SAMPLE_SLIDE_ID</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;sizeX&#39;</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;sizeY&#39;</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&amp;magnification=</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">MAG</span>
+<span class="n">tissue_rgb</span> <span class="o">=</span> <span class="n">get_image_from_htk_response</span><span class="p">(</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">getStr</span><span class="p">,</span> <span class="n">jsonResp</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+<span class="c1"># get mask of things to ignore</span>
+<span class="n">thumbnail_rgb</span> <span class="o">=</span> <span class="n">get_slide_thumbnail</span><span class="p">(</span><span class="n">gc</span><span class="p">,</span> <span class="n">SAMPLE_SLIDE_ID</span><span class="p">)</span>
+<span class="n">mask_out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_tissue_mask</span><span class="p">(</span>
+    <span class="n">thumbnail_rgb</span><span class="p">,</span> <span class="n">deconvolve_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">n_thresholding_steps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">mask_out</span> <span class="o">=</span> <span class="n">resize</span><span class="p">(</span>
+    <span class="n">mask_out</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">output_shape</span><span class="o">=</span><span class="n">tissue_rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span>
+    <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">preserve_range</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<section id="Let's-visualize-the-data">
+<h3>Let’s visualize the data<a class="headerlink" href="#Let's-visualize-the-data" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tissue_rgb</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">mask_out</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cMap</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tissue_rgb</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">,</span> <span class="p">:])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">mask_out</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">],</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cMap</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_8_0.png" src="../_images/examples_color_normalization_and_augmentation_8_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_8_1.png" src="../_images/examples_color_normalization_and_augmentation_8_1.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Reinhard-normalization">
+<h2>Reinhard normalization<a class="headerlink" href="#Reinhard-normalization" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">reinhard</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Perform Reinhard color normalization.
+
+    Transform the color characteristics of an image to a desired standard.
+    The standard is defined by the mean and standard deviations of the target
+    image in LAB color space defined by Ruderman. The input image is converted
+    to Ruderman&#39;s LAB space, the LAB channels are each centered and scaled to
+    zero-mean unit variance, and then rescaled and shifted to match the target
+    image statistics. If the LAB statistics for the input image are provided
+    (`src_mu` and `src_sigma`) then these will be used for normalization,
+    otherwise they will be derived from the input image `im_src`.
+
+    Parameters
+    ----------
+    im_src : array_like
+        An RGB image
+
+    target_mu : array_like
+        A 3-element array containing the means of the target image channels
+        in LAB color space.
+
+    target_sigma : array_like
+        A 3-element array containing the standard deviations of the target
+        image channels in LAB color space.
+
+    src_mu : array_like, optional
+        A 3-element array containing the means of the source image channels in
+        LAB color space. Used with reinhard_stats for uniform normalization of
+        tiles from a slide.
+
+    src_sigma : array, optional
+        A 3-element array containing the standard deviations of the source
+        image channels in LAB color space. Used with reinhard_stats for
+        uniform normalization of tiles tiles from a slide.
+
+    mask_out : array_like, default is None
+        if not None, should be (m, n) boolean numpy array.
+        This method uses numpy masked array functionality to only use
+        non-masked areas in calculations. This is relevant because elements
+        like blood, sharpie marker, white space, etc would throw off the
+        reinhard normalization by affecting the mean and stdev. Ideally, you
+        want to exclude these elements from both the target image (from which
+        you calculate target_mu and target_sigma) and from the source image
+        to be normalized.
+
+    Returns
+    -------
+    im_normalized : array_like
+        Color Normalized RGB image
+
+    See Also
+    --------
+    histomicstk.preprocessing.color_conversion.rgb_to_lab,
+    histomicstk.preprocessing.color_conversion.lab_to_rgb
+
+    References
+    ----------
+    .. [#] E. Reinhard, M. Adhikhmin, B. Gooch, P. Shirley, &#34;Color transfer
+       between images,&#34; in IEEE Computer Graphics and Applications, vol.21,
+       no.5,pp.34-41, 2001.
+    .. [#] D. Ruderman, T. Cronin, and C. Chiao, &#34;Statistics of cone responses
+       to natural images: implications for visual coding,&#34; J. Opt. Soc. Am. A
+       vol.15, pp.2036-2045, 1998.
+
+
+</pre></div></div>
+</div>
+<section id="Reinhard-normalization---without-masking">
+<h3>Reinhard normalization - without masking<a class="headerlink" href="#Reinhard-normalization---without-masking" title="Link to this heading">¶</a></h3>
+<p>Notice how non-tissue elements throw off the normalization algorithm.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tissue_rgb_normalized</span> <span class="o">=</span> <span class="n">reinhard</span><span class="p">(</span>
+    <span class="n">tissue_rgb</span><span class="p">,</span> <span class="n">target_mu</span><span class="o">=</span><span class="n">cnorm</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">],</span> <span class="n">target_sigma</span><span class="o">=</span><span class="n">cnorm</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">vis_result</span><span class="p">():</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tissue_rgb</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tissue_rgb_normalized</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tissue_rgb</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tissue_rgb_normalized</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">vis_result</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_13_0.png" src="../_images/examples_color_normalization_and_augmentation_13_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_13_1.png" src="../_images/examples_color_normalization_and_augmentation_13_1.png" />
+</div>
+</div>
+</section>
+<section id="Reinhard-normalization---with-masking">
+<h3>Reinhard normalization - with masking<a class="headerlink" href="#Reinhard-normalization---with-masking" title="Link to this heading">¶</a></h3>
+<p>Now we mask out irrelevant areas when calculating the statistics. Notice how the result is much better.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tissue_rgb_normalized</span> <span class="o">=</span> <span class="n">reinhard</span><span class="p">(</span>
+    <span class="n">tissue_rgb</span><span class="p">,</span> <span class="n">target_mu</span><span class="o">=</span><span class="n">cnorm</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">],</span> <span class="n">target_sigma</span><span class="o">=</span><span class="n">cnorm</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">],</span>
+    <span class="n">mask_out</span><span class="o">=</span><span class="n">mask_out</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vis_result</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_16_0.png" src="../_images/examples_color_normalization_and_augmentation_16_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_16_1.png" src="../_images/examples_color_normalization_and_augmentation_16_1.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Deconvolution-based-normalization">
+<h2>Deconvolution-based normalization<a class="headerlink" href="#Deconvolution-based-normalization" title="Link to this heading">¶</a></h2>
+<p>Unlike reinhard, which simply matched the mean and standard deviation of the image to a prespecified target, these methods are “smarter”, in the sense that they first unmix the stains and then convolve with a desired stain standard.</p>
+<p>Macenko stain unmixing is used by default, but the method is general and may be used with other stain unmixing methods in this repository such as the SNMF method of Xu et al.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">deconvolution_based_normalization</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Perform color normalization using color deconvolution to transform the.
+
+    ... color characteristics of an image to a desired standard.
+    After the image is deconvolved into its component stains (eg, H&amp;E), it is
+    convolved with a stain column vectors matrix from the target image from
+    which the color characteristics need to be transferred.
+
+    Parameters
+    ------------
+    im_src : array_like
+        An RGB image (m x n x 3) to color normalize
+
+    W_source : np array, default is None
+        A 3x3 matrix of source stain column vectors. Only provide this
+        if you know the stains matrix in advance (unlikely) and would
+        like to perform supervised deconvolution. If this is not provided,
+        stain_unmixing_routine() is used to estimate W_source.
+
+    W_target : np array, default is None
+        A 3x3 matrix of target stain column vectors. If not provided,
+        and im_target is also not provided, the default behavior is to use
+        histomicstk.preprocessing.color_deconvolution.stain_color_map
+        to provide an idealized target matrix.
+
+    im_target : array_like, default is None
+        An RGB image (m x n x 3) that has good color properties that ought to
+        be transferred to im_src. If you provide this parameter, im_target
+        will be used to extract W_target and the W_target parameter will
+        be ignored.
+
+    stains : list, optional
+        List of stain names (order is important). Default is H&amp;E. This is
+        particularly relevant in macenco where the order of stains is not
+        preserved during stain unmixing, so this method uses
+        histomicstk.preprocessing.color_deconvolution.find_stain_index
+        to reorder the stains matrix to the order provided by this parameter
+
+    mask_out : array_like, default is None
+        if not None, should be (m x n) boolean numpy array.
+        This parameter ensures exclusion of non-masked areas from calculations
+        and normalization. This is relevant because elements like blood,
+        sharpie marker, white space, etc may throw off the normalization.
+
+    stain_unmixing_routine_params : dict, default is empty dict
+        k,v for stain_unmixing_routine().
+
+    Returns
+    --------
+    array_like
+        Color Normalized RGB image (m x n x 3)
+
+
+    See Also
+    --------
+    histomicstk.preprocessing.color_deconvolution.color_deconvolution_routine
+    histomicstk.preprocessing.color_convolution.color_convolution
+
+    References
+    ----------
+    .. [#] Van Eycke, Y. R., Allard, J., Salmon, I., Debeir, O., &amp;
+           Decaestecker, C. (2017).  Image processing in digital pathology: an
+           opportunity to solve inter-batch variability of immunohistochemical
+           staining.  Scientific Reports, 7.
+    .. [#] Macenko, M., Niethammer, M., Marron, J. S., Borland, D.,
+           Woosley, J. T., Guan, X., ... &amp; Thomas, N. E. (2009, June).
+           A method for normalizing histology slides for quantitative analysis.
+           In Biomedical Imaging: From Nano to Macro, 2009.  ISBI&#39;09.
+           IEEE International Symposium on (pp. 1107-1110). IEEE.
+    .. [#] Xu, J., Xiang, L., Wang, G., Ganesan, S., Feldman, M., Shih, N. N.,
+           ...&amp; Madabhushi, A. (2015). Sparse Non-negative Matrix Factorization
+           (SNMF) based color unmixing for breast histopathological image
+           analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.
+
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">color_deconvolution_routine</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Unmix stains mixing followed by deconvolution (wrapper).
+
+    Parameters
+    ------------
+    im_rgb : array_like
+        An RGB image (m x n x 3) to colro normalize
+
+    W_source : np array, default is None
+        A 3x3 matrix of source stain column vectors. Only provide this
+        if you know the stains matrix in advance (unlikely) and would
+        like to perform supervised deconvolution. If this is not provided,
+        stain_unmixing_routine() is used to estimate W_source.
+
+    kwargs : k,v pairs
+        Passed as-is to stain_unmixing_routine() if W_source is None.
+
+    Returns
+    --------
+    Output from color_deconvolution()
+
+    See Also
+    --------
+    histomicstk.preprocessing.color_deconvolution.stain_unmixing_routine
+    histomicstk.preprocessing.color_deconvolution.color_deconvolution
+
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">stain_unmixing_routine</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Perform stain unmixing using the method of choice (wrapper).
+
+    Parameters
+    ------------
+    im_rgb : array_like
+        An RGB image (m x n x 3) to unmix.
+
+    stains : list, optional
+        List of stain names (order is important). Default is H&amp;E. This is
+        particularly relevant in macenco where the order of stains is not
+        preserved during stain unmixing, so this method uses
+        histomicstk.preprocessing.color_deconvolution.find_stain_index
+        to reorder the stains matrix to the order provided by this parameter
+
+    stain_unmixing_method : str, default is &#39;macenko_pca&#39;
+        stain unmixing method to use. It should be one of the following
+        &#39;macenko_pca&#39;, or &#39;xu_snmf&#39;.
+
+    stain_unmixing_params : dict, default is an empty dict
+        kwargs to pass as-is to the stain unmixing method.
+
+    mask_out : array_like, default is None
+        if not None, should be (m x n) boolean numpy array.
+        This parameter ensures exclusion of non-masked areas from calculations
+        and normalization. This is relevant because elements like blood,
+        sharpie marker, white space, etc may throw off the normalization.
+
+    Returns
+    --------
+    Wc : array_like
+        A 3x3 complemented stain matrix.
+
+    See Also
+    --------
+    histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca
+    histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf
+
+    References
+    ----------
+    .. [#] Macenko, M., Niethammer, M., Marron, J. S., Borland, D.,
+           Woosley, J. T., Guan, X., ... &amp; Thomas, N. E. (2009, June).
+           A method for normalizing histology slides for quantitative analysis.
+           In Biomedical Imaging: From Nano to Macro, 2009.  ISBI&#39;09.
+           IEEE International Symposium on (pp. 1107-1110). IEEE.
+    .. [#] Xu, J., Xiang, L., Wang, G., Ganesan, S., Feldman, M., Shih, N. N.,
+           ...&amp; Madabhushi, A. (2015). Sparse Non-negative Matrix Factorization
+           (SNMF) based color unmixing for breast histopathological image
+           analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.
+
+
+</pre></div></div>
+</div>
+<section id="Macenko-normalization---without-masking">
+<h3>Macenko normalization - without masking<a class="headerlink" href="#Macenko-normalization---without-masking" title="Link to this heading">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stain_unmixing_routine_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;stains&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hematoxylin&#39;</span><span class="p">,</span> <span class="s1">&#39;eosin&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;stain_unmixing_method&#39;</span><span class="p">:</span> <span class="s1">&#39;macenko_pca&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">tissue_rgb_normalized</span> <span class="o">=</span> <span class="n">deconvolution_based_normalization</span><span class="p">(</span>
+            <span class="n">tissue_rgb</span><span class="p">,</span> <span class="n">W_target</span><span class="o">=</span><span class="n">W_target</span><span class="p">,</span>
+            <span class="n">stain_unmixing_routine_params</span><span class="o">=</span><span class="n">stain_unmixing_routine_params</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vis_result</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_23_0.png" src="../_images/examples_color_normalization_and_augmentation_23_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_23_1.png" src="../_images/examples_color_normalization_and_augmentation_23_1.png" />
+</div>
+</div>
+</section>
+<section id="Macenko-normalization---with-masking">
+<h3>Macenko normalization - with masking<a class="headerlink" href="#Macenko-normalization---with-masking" title="Link to this heading">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tissue_rgb_normalized</span> <span class="o">=</span> <span class="n">deconvolution_based_normalization</span><span class="p">(</span>
+        <span class="n">tissue_rgb</span><span class="p">,</span>  <span class="n">W_target</span><span class="o">=</span><span class="n">W_target</span><span class="p">,</span>
+        <span class="n">stain_unmixing_routine_params</span><span class="o">=</span><span class="n">stain_unmixing_routine_params</span><span class="p">,</span>
+        <span class="n">mask_out</span><span class="o">=</span><span class="n">mask_out</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vis_result</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_26_0.png" src="../_images/examples_color_normalization_and_augmentation_26_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_26_1.png" src="../_images/examples_color_normalization_and_augmentation_26_1.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="%22Smart%22-color-augmentation">
+<h1>“Smart” color augmentation<a class="headerlink" href="#%22Smart%22-color-augmentation" title="Link to this heading">¶</a></h1>
+<p>This is an implementation of the paper by Tellez et al, 2018 (see docstring below), whereby the stain concentrations are perturbed so that a more realistic model of stiaining variability in histology is modeled.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">perturb_stain_concentration</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Perturb stain concentrations in SDA space and return augmented image.
+
+    This is an implementation of the method described in Tellez et
+    al, 2018 (see below). The SDA matrix is perturbed by multiplying each
+    channel independently by a value chosen from a random uniform distribution
+    in the range [1 - sigma1, 1 + sigma1], then add a value chose from another
+    random uniform distribution in the range [-sigma2, sigma2].
+
+    Parameters
+    ------------
+    StainsFloat : array_like
+        An intensity image (m, n, 3) of deconvolved stains that is unbounded,
+        suitable for reconstructing color images of deconvolved stains
+        with color_convolution.
+
+    W : array_like
+        A 3x3 complemented stain matrix.
+
+    I_0 : float or array_like, optional
+        A float a 3-vector containing background RGB intensities.
+        If unspecified, use the old OD conversion.
+
+    mask_out : array_like, default is None
+        if not None, should be (m x n) boolean numpy array.
+        This parameter ensures exclusion of non-masked areas from perturbing.
+        This is relevant because elements like blood, sharpie marker,
+        white space, etc cannot be simply modeled as a mix of two stains.
+
+    sigma1 : float
+        parameter, see beginning of this docstring.
+
+    sigma2 : float
+        parameter, see beginning of this docstring.
+
+    Returns
+    --------
+    array_like
+        Color augmented RGB image (m x n x 3)
+
+    References
+    ----------
+    .. [#] Tellez, David, Maschenka Balkenhol, Irene Otte-Höller,
+           Rob van de Loo, Rob Vogels, Peter Bult, Carla Wauters et al.
+           &#34;Whole-slide mitosis detection in H&amp;E breast histology using PHH3
+           as a reference to train distilled stain-invariant convolutional
+           networks.&#34; IEEE transactions on medical imaging 37, no. 9
+           (2018): 2126-2136.
+    .. [#] Tellez, David, Geert Litjens, Peter Bandi, Wouter Bulten,
+           John-Melle Bokhorst, Francesco Ciompi, and Jeroen van der Laak.
+           &#34;Quantifying the effects of data augmentation and stain color
+           normalization in convolutional neural networks for computational
+           pathology.&#34; arXiv preprint arXiv:1902.06543 (2019).
+    .. [#] Implementation inspired by Peter Byfield StainTools repository. See
+           https://github.com/Peter554/StainTools/blob/master/LICENSE.txt
+           for copyright license (MIT license).
+
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">rgb_perturb_stain_concentration</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Apply wrapper that calls perturb_stain_concentration() on RGB.
+
+    Parameters
+    ------------
+    im_rgb : array_like
+        An RGB image (m x n x 3) to colro normalize
+
+    stain_unmixing_routine_params : dict
+        kwargs to pass as-is to the color_deconvolution_routine().
+
+    kwargs : k,v pairs
+        Passed as-is to perturb_stain_concentration()
+
+    Returns
+    --------
+    array_like
+        Color augmented RGB image (m x n x 3)
+
+
+</pre></div></div>
+</div>
+<section id="Let's-perturb-the-H&amp;E-concentrations-a-bit">
+<h2>Let’s perturb the H&amp;E concentrations a bit<a class="headerlink" href="#Let's-perturb-the-H&E-concentrations-a-bit" title="Link to this heading">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rgb</span> <span class="o">=</span> <span class="n">tissue_rgb</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">,</span> <span class="p">:]</span>
+<span class="n">exclude</span> <span class="o">=</span> <span class="n">mask_out</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">]</span>
+<span class="n">augmented_rgb</span> <span class="o">=</span> <span class="n">rgb_perturb_stain_concentration</span><span class="p">(</span><span class="n">rgb</span><span class="p">,</span> <span class="n">mask_out</span><span class="o">=</span><span class="n">exclude</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">vis_augmentation</span><span class="p">():</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">rgb</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">augmented_rgb</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">vis_augmentation</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_32_0.png" src="../_images/examples_color_normalization_and_augmentation_32_0.png" />
+</div>
+</div>
+</section>
+<section id="Try-a-few-more-times">
+<h2>Try a few more times<a class="headerlink" href="#Try-a-few-more-times" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">augmented_rgb</span> <span class="o">=</span> <span class="n">rgb_perturb_stain_concentration</span><span class="p">(</span><span class="n">rgb</span><span class="p">,</span> <span class="n">mask_out</span><span class="o">=</span><span class="n">exclude</span><span class="p">)</span>
+    <span class="n">vis_augmentation</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_34_0.png" src="../_images/examples_color_normalization_and_augmentation_34_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_34_1.png" src="../_images/examples_color_normalization_and_augmentation_34_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_34_2.png" src="../_images/examples_color_normalization_and_augmentation_34_2.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_34_3.png" src="../_images/examples_color_normalization_and_augmentation_34_3.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_color_normalization_and_augmentation_34_4.png" src="../_images/examples_color_normalization_and_augmentation_34_4.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="color_deconvolution.html" class="btn btn-neutral float-left" title="Color Deconvolution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="nuclei_segmentation.html" class="btn btn-neutral float-right" title="Nuclei Segmentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

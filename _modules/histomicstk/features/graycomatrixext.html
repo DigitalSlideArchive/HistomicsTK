@@ -1,0 +1,391 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.features.graycomatrixext &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.features.graycomatrixext</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.features.graycomatrixext</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<div class="viewcode-block" id="graycomatrixext">
+<a class="viewcode-back" href="../../../histomicstk.features.html#histomicstk.features.graycomatrixext">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">graycomatrixext</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">im_roi_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">offsets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gray_limits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">symmetric</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">exclude_boundary</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes gray-level co-occurence matrix (GLCM) within a region of</span>
+<span class="sd">    interest (ROI) of an image. GLCM is a 2D histogram/matrix containing the</span>
+<span class="sd">    counts/probabilities of co-occuring intensity values at a given offset</span>
+<span class="sd">    within an ROI of an image.</span>
+
+<span class="sd">    Read the documentation to know the default values used for each of the</span>
+<span class="sd">    optional parameter in different scenarios.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_input : array_like</span>
+<span class="sd">        Input single channel intensity image</span>
+
+<span class="sd">    im_roi_mask : array_like, optional</span>
+<span class="sd">        A binary mask specifying the region of interest within which</span>
+<span class="sd">        to compute the GLCM. If not specified GLCM is computed for the</span>
+<span class="sd">        the entire image.</span>
+
+<span class="sd">        Default: None</span>
+
+<span class="sd">    offsets : array_like, optional</span>
+<span class="sd">        A (num_offsets, num_image_dims) array of offset vectors</span>
+<span class="sd">        specifying the distance between the pixel-of-interest and</span>
+<span class="sd">        its neighbor. Note that the first dimension corresponds to</span>
+<span class="sd">        the rows.</span>
+
+<span class="sd">        Because this offset is often expressed as an angle, the</span>
+<span class="sd">        following table lists the offset values that specify common</span>
+<span class="sd">        angles for a 2D image, given the pixel distance D.</span>
+
+<span class="sd">        ===========  =============</span>
+<span class="sd">        Angle (deg)  offset [y, x]</span>
+<span class="sd">        ===========  =============</span>
+<span class="sd">        0            [0 D]</span>
+<span class="sd">        45           [-D D]</span>
+<span class="sd">        90           [-D 0]</span>
+<span class="sd">        135          [-D -D]</span>
+<span class="sd">        ===========  =============</span>
+
+<span class="sd">        Default</span>
+<span class="sd">        - 1D: np.array([1])</span>
+<span class="sd">        - 2D : numpy.array([ [1, 0], [0, 1], [1, 1], [1, -1] ])</span>
+<span class="sd">        - 3D and higher: numpy.identity(num_image_dims)</span>
+
+<span class="sd">    num_levels : unsigned int, optional</span>
+<span class="sd">        An integer specifying the number of gray levels For example, if</span>
+<span class="sd">        `NumLevels` is 8,  the intensity values of the input image are</span>
+<span class="sd">        scaled so they are integers between 1 and 8.  The number of gray</span>
+<span class="sd">        levels determines the size of the gray-level co-occurrence matrix.</span>
+
+<span class="sd">        Default: 2 for binary/logical image, 32 for numeric image</span>
+
+<span class="sd">    gray_limits : array_like, optional</span>
+<span class="sd">        A two-element array specifying the desired input intensity range.</span>
+<span class="sd">        Intensity values in the input image will be clipped into this range.</span>
+
+<span class="sd">        Default: [0, 1] for boolean-valued image, [0, 255] for integer-valued</span>
+<span class="sd">        image, and [0.0, 1.0] for-real valued image</span>
+
+<span class="sd">    symmetric : bool, optional</span>
+<span class="sd">        A boolean value that specifies whether or not the ordering of values</span>
+<span class="sd">        in pixel pairs is considered while creating the GLCM matrix.</span>
+
+<span class="sd">        For example, if `Symmetric` is True, then while calculating the</span>
+<span class="sd">        number of times the value 1 is adjacent to the value 2, both</span>
+<span class="sd">        1,2 and 2,1 pairings are counted. GLCM created in this way is</span>
+<span class="sd">        symmetric across its diagonal.</span>
+
+<span class="sd">        Default: False</span>
+
+<span class="sd">    normed : bool, optional</span>
+<span class="sd">        A boolean value specifying whether or not to normalize glcm.</span>
+
+<span class="sd">        Default: False</span>
+
+<span class="sd">    exclude_boundary : bool, optional</span>
+<span class="sd">        Specifies whether or not to exclude a pixel-pair if the</span>
+<span class="sd">        neighboring pixel in the pair is outside `im_roi_mask`.</span>
+<span class="sd">        Has an effect only when `im_roi_mask` is specified.</span>
+
+<span class="sd">        Default: False</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    glcm : array_like</span>
+<span class="sd">        num_levels x num_levels x num_offsets array containing the GLCM</span>
+<span class="sd">        for each offset.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] Haralick, R.M., K. Shanmugan, and I. Dinstein, &quot;Textural Features</span>
+<span class="sd">       for Image Classification&quot;, IEEE Transactions on Systems, Man, and</span>
+<span class="sd">       Cybernetics, Vol. SMC-3, 1973, pp. 610-621.</span>
+
+<span class="sd">    .. [#] Haralick, R.M., and L.G. Shapiro. Computer and Robot Vision:</span>
+<span class="sd">       Vol. 1, Addison-Wesley, 1992, p. 459.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_dims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">im_input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># roi mask</span>
+    <span class="k">if</span> <span class="n">im_roi_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># compute glcm for whole input image</span>
+        <span class="n">im_roi_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">im_input</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">im_roi_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;size mismatch between input image and roi mask&#39;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># gray_limits</span>
+    <span class="k">if</span> <span class="n">gray_limits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">gray_limits</span> <span class="o">=</span> <span class="n">_default_gray_limits</span><span class="p">(</span><span class="n">im_input</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">gray_limits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="n">gray_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">gray_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># num_levels</span>
+    <span class="k">if</span> <span class="n">num_levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">num_levels</span> <span class="o">=</span> <span class="n">_default_num_levels</span><span class="p">(</span><span class="n">im_input</span><span class="p">)</span>
+
+    <span class="c1"># offsets</span>
+    <span class="k">if</span> <span class="n">offsets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># set default offset value</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">_default_offsets</span><span class="p">(</span><span class="n">im_input</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="c1"># check sanity</span>
+        <span class="k">if</span> <span class="n">offsets</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">num_dims</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Dimension mismatch between input image and offsets&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="n">msg</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="n">num_offsets</span> <span class="o">=</span> <span class="n">offsets</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># scale input intensity image</span>
+    <span class="n">im_input</span> <span class="o">=</span> <span class="n">im_input</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+    <span class="n">im_input</span> <span class="o">-=</span> <span class="n">gray_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">im_input</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">gray_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">gray_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">im_input</span> <span class="o">*=</span> <span class="p">(</span><span class="n">num_levels</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">im_input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">im_input</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+
+    <span class="c1"># compute glcm for each offset</span>
+    <span class="n">glcm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_levels</span><span class="p">,</span> <span class="n">num_levels</span><span class="p">,</span> <span class="n">num_offsets</span><span class="p">))</span>
+
+    <span class="n">im_input_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">im_input</span><span class="p">)</span>
+
+    <span class="n">im_roi_mask_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">im_roi_mask</span><span class="p">)</span>
+
+    <span class="n">roi_coord_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">im_roi_mask</span><span class="p">)</span>
+
+    <span class="n">roi_lin_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel_multi_index</span><span class="p">(</span><span class="n">roi_coord_ind</span><span class="p">,</span> <span class="n">im_roi_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_offsets</span><span class="p">):</span>
+
+        <span class="c1"># compute indices of neighboring pixels by applying the offset</span>
+        <span class="n">neigh_coord_ind</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">roi_coord_ind</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_dims</span><span class="p">):</span>
+            <span class="n">neigh_coord_ind</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">roi_coord_ind</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">offsets</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+
+        <span class="c1"># throw out pixels with invalid neighbors</span>
+        <span class="n">neigh_valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">neigh_coord_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_dims</span><span class="p">):</span>
+
+            <span class="n">neigh_valid</span><span class="p">[</span><span class="n">neigh_coord_ind</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">neigh_valid</span><span class="p">[</span><span class="n">neigh_coord_ind</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">im_roi_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_dims</span><span class="p">):</span>
+            <span class="n">neigh_coord_ind</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">neigh_valid</span><span class="p">,</span> <span class="n">neigh_coord_ind</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                                             <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="n">neigh_lin_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel_multi_index</span><span class="p">(</span><span class="n">neigh_coord_ind</span><span class="p">,</span>
+                                             <span class="n">im_roi_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">exclude_boundary</span><span class="p">:</span>
+            <span class="n">neigh_valid</span><span class="p">[</span><span class="n">im_roi_mask_flat</span><span class="p">[</span><span class="n">neigh_lin_ind</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">neigh_lin_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">neigh_valid</span><span class="p">,</span> <span class="n">neigh_lin_ind</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">valid_roi_lin_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">neigh_valid</span><span class="p">,</span> <span class="n">roi_lin_ind</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># get intensities of pixel pairs which become coord indices in glcm</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">im_input_flat</span><span class="p">,</span> <span class="n">valid_roi_lin_ind</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">p2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">im_input_flat</span><span class="p">,</span> <span class="n">neigh_lin_ind</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># convert pixel-pair values to linear indices in glcm</span>
+        <span class="n">pind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel_multi_index</span><span class="p">((</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">),</span> <span class="n">glcm</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="c1"># find unique linear indices and their counts</span>
+        <span class="n">pind</span><span class="p">,</span> <span class="n">pcount</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">pind</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># put count of each linear index in glcm</span>
+        <span class="n">cur_glcm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_levels</span><span class="p">,</span> <span class="n">num_levels</span><span class="p">))</span>
+        <span class="n">cur_glcm_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">cur_glcm</span><span class="p">)</span>
+        <span class="n">cur_glcm_flat</span><span class="p">[</span><span class="n">pind</span><span class="p">]</span> <span class="o">=</span> <span class="n">pcount</span>
+
+        <span class="c1"># symmetricize if asked for</span>
+        <span class="k">if</span> <span class="n">symmetric</span><span class="p">:</span>
+            <span class="n">cur_glcm</span> <span class="o">+=</span> <span class="n">cur_glcm</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="c1"># normalize if asked</span>
+        <span class="k">if</span> <span class="n">normed</span> <span class="ow">and</span> <span class="n">cur_glcm</span><span class="o">.</span><span class="n">sum</span><span class="p">():</span>
+            <span class="n">cur_glcm</span> <span class="o">/=</span> <span class="n">cur_glcm</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="n">glcm</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur_glcm</span>
+
+    <span class="k">return</span> <span class="n">glcm</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_gray_limits</span><span class="p">(</span><span class="n">im_input</span><span class="p">):</span>
+
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">im_input</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">):</span>
+
+        <span class="n">gray_limits</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">im_input</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+
+        <span class="n">gray_limits</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">]</span>
+
+    <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">im_input</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
+
+        <span class="n">gray_limits</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;The type of the argument im_input is invalid&#39;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">gray_limits</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_num_levels</span><span class="p">(</span><span class="n">im_input</span><span class="p">):</span>
+
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">im_input</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">):</span>
+
+        <span class="n">num_levels</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">im_input</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">):</span>
+
+        <span class="n">num_levels</span> <span class="o">=</span> <span class="mi">32</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;The type of the argument im_input is invalid&#39;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">num_levels</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_offsets</span><span class="p">(</span><span class="n">im_input</span><span class="p">):</span>
+
+    <span class="n">num_dims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">im_input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">num_dims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">])</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="c1"># TODO: need to come up with a better strategy for 3D and higher</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">num_dims</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">offsets</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

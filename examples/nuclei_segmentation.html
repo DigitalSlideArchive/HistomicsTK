@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nuclei Segmentation &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Positive pixel count and parallel processing with Dask" href="positive_pixel_count.html" />
+    <link rel="prev" title="Color normalization" href="color_normalization_and_augmentation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Nuclei Segmentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Load-input-image">Load input image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Perform-color-normalization">Perform color normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Perform-color-deconvolution">Perform color deconvolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Segment-Nuclei">Segment Nuclei</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Nuclei Segmentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/nuclei_segmentation.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Nuclei-Segmentation">
+<h1>Nuclei Segmentation<a class="headerlink" href="#Nuclei-Segmentation" title="Link to this heading">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span>import histomicstk as htk
+
+import numpy as np
+import scipy as sp
+
+import skimage.io
+import skimage.measure
+import skimage.color
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+%matplotlib inline
+
+#Some nice default configuration for plots
+plt.rcParams[&#39;figure.figsize&#39;] = 10, 10
+plt.rcParams[&#39;image.cmap&#39;] = &#39;gray&#39;
+titlesize = 24
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:root:Created LRU Cache for &#39;tilesource&#39; with 4011 maximum size
+INFO:root:Notice: Could not import MapnikTileSource
+</pre></div></div>
+</div>
+<section id="Load-input-image">
+<h2>Load input image<a class="headerlink" href="#Load-input-image" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span>input_image_file = (&#39;https://data.kitware.com/api/v1/file/&#39;
+                    &#39;576ad39b8d777f1ecd6702f2/download&#39;)  # Easy1.png
+
+im_input = skimage.io.imread(input_image_file)[:, :, :3]
+
+plt.imshow(im_input)
+_ = plt.title(&#39;Input Image&#39;, fontsize=16)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_nuclei_segmentation_3_0.png" src="../_images/examples_nuclei_segmentation_3_0.png" />
+</div>
+</div>
+</section>
+<section id="Perform-color-normalization">
+<h2>Perform color normalization<a class="headerlink" href="#Perform-color-normalization" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span># Load reference image for normalization
+ref_image_file = (&#39;https://data.kitware.com/api/v1/file/&#39;
+                  &#39;57718cc28d777f1ecd8a883c/download&#39;)  # L1.png
+
+im_reference = skimage.io.imread(ref_image_file)[:, :, :3]
+
+# get mean and stddev of reference image in lab space
+mean_ref, std_ref = htk.preprocessing.color_conversion.lab_mean_std(im_reference)
+
+# perform reinhard color normalization
+im_nmzd = htk.preprocessing.color_normalization.reinhard(im_input, mean_ref, std_ref)
+
+# Display results
+plt.figure(figsize=(20, 10))
+
+plt.subplot(1, 2, 1)
+plt.imshow(im_reference)
+_ = plt.title(&#39;Reference Image&#39;, fontsize=titlesize)
+
+plt.subplot(1, 2, 2)
+plt.imshow(im_nmzd)
+_ = plt.title(&#39;Normalized Input Image&#39;, fontsize=titlesize)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_nuclei_segmentation_5_0.png" src="../_images/examples_nuclei_segmentation_5_0.png" />
+</div>
+</div>
+</section>
+<section id="Perform-color-deconvolution">
+<h2>Perform color deconvolution<a class="headerlink" href="#Perform-color-deconvolution" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span># create stain to color map
+stainColorMap = {
+    &#39;hematoxylin&#39;: [0.65, 0.70, 0.29],
+    &#39;eosin&#39;:       [0.07, 0.99, 0.11],
+    &#39;dab&#39;:         [0.27, 0.57, 0.78],
+    &#39;null&#39;:        [0.0, 0.0, 0.0],
+}
+
+# specify stains of input image
+stain_1 = &#39;hematoxylin&#39;   # nuclei stain
+stain_2 = &#39;eosin&#39;         # cytoplasm stain
+stain_3 = &#39;null&#39;          # set to null of input contains only two stains
+
+# create stain matrix
+W = np.array([stainColorMap[stain_1],
+              stainColorMap[stain_2],
+              stainColorMap[stain_3]]).T
+
+# perform standard color deconvolution
+im_stains = htk.preprocessing.color_deconvolution.color_deconvolution(im_nmzd, W).Stains
+
+# Display results
+plt.figure(figsize=(20, 10))
+
+plt.subplot(1, 2, 1)
+plt.imshow(im_stains[:, :, 0])
+plt.title(stain_1, fontsize=titlesize)
+
+plt.subplot(1, 2, 2)
+plt.imshow(im_stains[:, :, 1])
+_ = plt.title(stain_2, fontsize=titlesize)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_nuclei_segmentation_7_0.png" src="../_images/examples_nuclei_segmentation_7_0.png" />
+</div>
+</div>
+</section>
+<section id="Segment-Nuclei">
+<h2>Segment Nuclei<a class="headerlink" href="#Segment-Nuclei" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span># get nuclei/hematoxylin channel
+im_nuclei_stain = im_stains[:, :, 0]
+
+# segment foreground
+foreground_threshold = 60
+
+im_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
+    im_nuclei_stain &lt; foreground_threshold)
+
+# run adaptive multi-scale LoG filter
+min_radius = 10
+max_radius = 15
+
+im_log_max, im_sigma_max = htk.filters.shape.cdog(
+    im_nuclei_stain, im_fgnd_mask,
+    sigma_min=min_radius * np.sqrt(2),
+    sigma_max=max_radius * np.sqrt(2),
+)
+
+# detect and segment nuclei using local maximum clustering
+local_max_search_radius = 10
+
+im_nuclei_seg_mask, seeds, maxima = htk.segmentation.nuclear.max_clustering(
+    im_log_max, im_fgnd_mask, local_max_search_radius)
+
+# filter out small objects
+min_nucleus_area = 80
+
+im_nuclei_seg_mask = htk.segmentation.label.area_open(
+    im_nuclei_seg_mask, min_nucleus_area).astype(np.int)
+
+# compute nuclei properties
+objProps = skimage.measure.regionprops(im_nuclei_seg_mask)
+
+print &#39;Number of nuclei = &#39;, len(objProps)
+
+# Display results
+plt.figure(figsize=(20, 10))
+
+plt.subplot(1, 2, 1)
+plt.imshow(skimage.color.label2rgb(im_nuclei_seg_mask, im_input, bg_label=0), origin=&#39;lower&#39;)
+plt.title(&#39;Nuclei segmentation mask overlay&#39;, fontsize=titlesize)
+
+plt.subplot(1, 2, 2)
+plt.imshow( im_input )
+plt.xlim([0, im_input.shape[1]])
+plt.ylim([0, im_input.shape[0]])
+plt.title(&#39;Nuclei bounding boxes&#39;, fontsize=titlesize)
+
+for i in range(len(objProps)):
+
+    c = [objProps[i].centroid[1], objProps[i].centroid[0], 0]
+    width = objProps[i].bbox[3] - objProps[i].bbox[1] + 1
+    height = objProps[i].bbox[2] - objProps[i].bbox[0] + 1
+
+    cur_bbox = {
+        &#39;type&#39;:        &#39;rectangle&#39;,
+        &#39;center&#39;:      c,
+        &#39;width&#39;:       width,
+        &#39;height&#39;:      height,
+    }
+
+    plt.plot(c[0], c[1], &#39;g+&#39;)
+    mrect = mpatches.Rectangle([c[0] - 0.5 * width, c[1] - 0.5 * height] ,
+                               width, height, fill=False, ec=&#39;g&#39;, linewidth=2)
+    plt.gca().add_patch(mrect)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Number of nuclei =  65
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_nuclei_segmentation_9_1.png" src="../_images/examples_nuclei_segmentation_9_1.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="color_normalization_and_augmentation.html" class="btn btn-neutral float-left" title="Color normalization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="positive_pixel_count.html" class="btn btn-neutral float-right" title="Positive pixel count and parallel processing with Dask" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,498 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.annotations_and_masks.annotation_database_parser &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.annotations_and_masks.annotation_database_parser</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.annotations_and_masks.annotation_database_parser</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Thu Dec 12 13:19:18 2019</span>
+
+<span class="sd">@author: tageldim</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_engine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Boolean</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotation_and_mask_utils</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">parse_slide_annotations_into_tables</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.utils.girder_convenience_utils</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">get_absolute_girder_folderpath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.workflows.workflow_runner</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">Slide_iterator</span><span class="p">,</span>
+                                                   <span class="n">Workflow_runner</span><span class="p">)</span>
+
+<span class="c1"># Helper functions</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_add_item_to_sqlite</span><span class="p">(</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="c1"># modify item info to prep for appending to sqlite table</span>
+    <span class="n">item_info</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="n">item_info</span><span class="p">[</span><span class="s1">&#39;largeImage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">item_info</span><span class="p">[</span><span class="s1">&#39;largeImage&#39;</span><span class="p">])</span>
+
+    <span class="n">item_info_dtypes</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;_id&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;_modelType&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;baseParentId&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;baseParentType&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;copyOfItem&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;creatorId&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;folderId&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;largeImage&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(),</span>
+        <span class="s1">&#39;updated&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># in case anything is not in the schema, drop it</span>
+    <span class="n">item_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">item_info</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">item_info_dtypes</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+
+    <span class="c1"># convert to df and add to items table</span>
+    <span class="n">item_info_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">item_info</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">item_info_df</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;items&#39;</span><span class="p">,</span> <span class="n">con</span><span class="o">=</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s1">&#39;append&#39;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">item_info_dtypes</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_add_folder_to_sqlite</span><span class="p">(</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">folder_info</span><span class="p">):</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="c1"># modify folder info to prep for appending to sqlite table</span>
+    <span class="n">folder_info_dtypes</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;_accessLevel&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(),</span>
+        <span class="s1">&#39;_id&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;_modelType&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;baseParentId&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;baseParentType&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;creatorId&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;parentCollection&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;parentId&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;public&#39;</span><span class="p">:</span> <span class="n">Boolean</span><span class="p">(),</span>
+        <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(),</span>
+        <span class="s1">&#39;updated&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+        <span class="s1">&#39;folder_path&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># in case anything is not in the schema, drop it</span>
+    <span class="n">folder_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">folder_info</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">folder_info_dtypes</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+
+    <span class="c1"># convert to df and add to items table</span>
+    <span class="n">folder_info_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">folder_info</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">folder_info_df</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;folders&#39;</span><span class="p">,</span> <span class="n">con</span><span class="o">=</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s1">&#39;append&#39;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">folder_info_dtypes</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_add_annotation_docs_to_sqlite</span><span class="p">(</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">annotation_docs</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+    <span class="c1"># add full item path for convenience</span>
+    <span class="n">annotation_docs</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;item_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
+    <span class="c1"># save tables to sqlite</span>
+    <span class="n">annotation_docs</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;annotation_docs&#39;</span><span class="p">,</span> <span class="n">con</span><span class="o">=</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s1">&#39;append&#39;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;annotation_girder_id&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;_modelType&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;_version&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(),</span>
+            <span class="s1">&#39;itemId&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;item_name&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;creatorId&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;public&#39;</span><span class="p">:</span> <span class="n">Boolean</span><span class="p">(),</span>
+            <span class="s1">&#39;updated&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;updatedId&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;groups&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;element_count&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(),</span>
+            <span class="s1">&#39;element_details&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">()},</span>
+        <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_add_annotation_elements_to_sqlite</span><span class="p">(</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">annotation_elements</span><span class="p">):</span>
+    <span class="c1"># drop index relative to JSON since its pretty arbitrary and would</span>
+    <span class="c1"># change if the same girder client was used to get annotations twice</span>
+    <span class="c1"># the actual girder ID string is what really matters and should be used</span>
+    <span class="n">annotation_elements</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+        <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;annidx&#39;</span><span class="p">,</span> <span class="s1">&#39;elementidx&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">annotation_elements</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;annotation_elements&#39;</span><span class="p">,</span> <span class="n">con</span><span class="o">=</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s1">&#39;append&#39;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;annotation_girder_id&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;element_girder_id&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;xmin&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(),</span>
+            <span class="s1">&#39;xmax&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(),</span>
+            <span class="s1">&#39;ymin&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(),</span>
+            <span class="s1">&#39;ymax&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(),</span>
+            <span class="s1">&#39;bbox_area&#39;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(),</span>
+            <span class="s1">&#39;coords_x&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
+            <span class="s1">&#39;coords_y&#39;</span><span class="p">:</span> <span class="n">String</span><span class="p">()},</span>
+        <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="parse_annotations_to_local_tables">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_database_parser.html#histomicstk.annotations_and_masks.annotation_database_parser.parse_annotations_to_local_tables">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_annotations_to_local_tables</span><span class="p">(</span>
+        <span class="n">item</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">local</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">save_csv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_sqlite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dbcon</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse loaded annotations for slide into tables.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    item : dict</span>
+<span class="sd">        girder response with item information</span>
+
+<span class="sd">    annotations : dict</span>
+<span class="sd">        loaded annotations</span>
+
+<span class="sd">    local : str</span>
+<span class="sd">        local directory</span>
+
+<span class="sd">    save_csv : bool</span>
+<span class="sd">        whether to use histomicstk.annotations_and_masks.annotation_and_mask.</span>
+<span class="sd">        parse_slide_annotations_into_tables() to get a tabular representation</span>
+<span class="sd">        (including some simple calculations like bounding box) and save</span>
+<span class="sd">        the output as two csv files, one representing the annotation documents</span>
+<span class="sd">        and the other representing the actual annotation elements (polygons).</span>
+
+<span class="sd">    save_sqlite : bool</span>
+<span class="sd">        whether to save the backup into an sqlite database</span>
+
+<span class="sd">    dbcon : sqlalchemy.create_engine.connect() object</span>
+<span class="sd">        IGNORE THIS PARAMETER!! This is used internally.</span>
+
+<span class="sd">    monitorPrefix : str</span>
+<span class="sd">        text to prepend to printed statements</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: parse to tables&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+    <span class="n">savepath_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+    <span class="n">annotation_docs</span><span class="p">,</span> <span class="n">annotation_elements</span> <span class="o">=</span> \
+        <span class="n">parse_slide_annotations_into_tables</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">save_csv</span><span class="p">:</span>
+        <span class="n">annotation_docs</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">savepath_base</span> <span class="o">+</span> <span class="s1">&#39;_docs.csv&#39;</span><span class="p">)</span>
+        <span class="n">annotation_elements</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">savepath_base</span> <span class="o">+</span> <span class="s1">&#39;_elements.csv&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">save_sqlite</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">dbcon</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;You must connect to database first!&#39;</span>
+        <span class="n">_add_annotation_docs_to_sqlite</span><span class="p">(</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">annotation_docs</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="n">_add_annotation_elements_to_sqlite</span><span class="p">(</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">annotation_elements</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Workflow at a single slide level</span>
+
+
+<div class="viewcode-block" id="dump_annotations_workflow">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_database_parser.html#histomicstk.annotations_and_masks.annotation_database_parser.dump_annotations_workflow">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dump_annotations_workflow</span><span class="p">(</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">local</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">save_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_sqlite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dbcon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dump annotations for single slide into the local folder.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gc : girder_client.GirderClient</span>
+<span class="sd">        authenticated girder client instance</span>
+
+<span class="sd">    slide_id : str</span>
+<span class="sd">        girder id of item (slide)</span>
+
+<span class="sd">    monitorPrefix : str</span>
+<span class="sd">        prefix to monitor string</span>
+
+<span class="sd">    local : str</span>
+<span class="sd">        local path to dump annotations</span>
+
+<span class="sd">    save_json : bool</span>
+<span class="sd">        whether to dump annotations as json file</span>
+
+<span class="sd">    save_sqlite : bool</span>
+<span class="sd">        whether to save the backup into an sqlite database</span>
+
+<span class="sd">    dbcon : sqlalchemy.create_engine.connect() object</span>
+<span class="sd">        IGNORE THIS PARAMETER!! This is used internally.</span>
+
+<span class="sd">    callback : function</span>
+<span class="sd">        function to call that takes in AT LEAST the following params</span>
+<span class="sd">        - item: girder response with item information</span>
+<span class="sd">        - annotations: loaded annotations</span>
+<span class="sd">        - local: local directory</span>
+<span class="sd">        - monitorPrefix: string</span>
+
+<span class="sd">    callback_kwargs : dict</span>
+<span class="sd">        kwargs to pass along to callback</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">callback_kwargs</span> <span class="o">=</span> <span class="n">callback_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">slide_id</span><span class="p">)</span>
+
+        <span class="n">savepath_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+        <span class="c1"># dump item information json</span>
+        <span class="k">if</span> <span class="n">save_json</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: save item info&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">savepath_base</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">fout</span><span class="p">)</span>
+
+        <span class="c1"># save folder info to sqlite</span>
+        <span class="k">if</span> <span class="n">save_sqlite</span><span class="p">:</span>
+            <span class="n">_add_item_to_sqlite</span><span class="p">(</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+        <span class="c1"># pull annotation</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: load annotations&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+        <span class="n">annotations</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/annotation/item/&#39;</span> <span class="o">+</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">annotations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="c1"># dump annotations to JSON in local folder</span>
+            <span class="k">if</span> <span class="n">save_json</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: save annotations&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">savepath_base</span> <span class="o">+</span> <span class="s1">&#39;_annotations.json&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">fout</span><span class="p">)</span>
+
+            <span class="c1"># run callback</span>
+            <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: run callback&#39;</span> <span class="o">%</span> <span class="n">monitorPrefix</span><span class="p">)</span>
+                <span class="n">callback</span><span class="p">(</span>
+                    <span class="n">item</span><span class="o">=</span><span class="n">item</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="n">local</span><span class="p">,</span>
+                    <span class="n">dbcon</span><span class="o">=</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="n">monitorPrefix</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">callback_kwargs</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># Main method</span>
+
+
+<div class="viewcode-block" id="dump_annotations_locally">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotation_database_parser.html#histomicstk.annotations_and_masks.annotation_database_parser.dump_annotations_locally">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dump_annotations_locally</span><span class="p">(</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">folderid</span><span class="p">,</span> <span class="n">local</span><span class="p">,</span> <span class="n">save_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">save_sqlite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dbcon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dump annotations of folder and subfolders locally recursively.</span>
+
+<span class="sd">    This reproduces this tiered structure locally and (possibly) dumps</span>
+<span class="sd">    annotations there. Adapted from Lee A.D. Cooper</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gc : girder_client.GirderClient</span>
+<span class="sd">        authenticated girder client instance</span>
+
+<span class="sd">    folderid : str</span>
+<span class="sd">        girder id of source (base) folder</span>
+
+<span class="sd">    local : str</span>
+<span class="sd">        local path to dump annotations</span>
+
+<span class="sd">    save_json : bool</span>
+<span class="sd">        whether to dump annotations as json file</span>
+
+<span class="sd">    save_sqlite : bool</span>
+<span class="sd">        whether to save the backup into an sqlite database</span>
+
+<span class="sd">    dbcon : sqlalchemy.create_engine.connect() object</span>
+<span class="sd">        IGNORE THIS PARAMETER!! This is used internally.</span>
+
+<span class="sd">    callback : function</span>
+<span class="sd">        function to call that CAN accept AT LEAST the following params</span>
+<span class="sd">        - item: girder response with item information</span>
+<span class="sd">        - annotations: loaded annotations</span>
+<span class="sd">        - local: local directory</span>
+<span class="sd">        - monitorPrefix: string</span>
+<span class="sd">        - dbcon: sqlalchemy.create_engine.connect() object</span>
+<span class="sd">        You can just add kwargs at the end of your callback definition</span>
+<span class="sd">        for simplicity.</span>
+
+<span class="sd">    callback_kwargs : dict</span>
+<span class="sd">        kwargs to pass along to callback. DO NOT pass any of the parameters</span>
+<span class="sd">        item, annotations, local, monitorPrefix, or dbcon as these will be</span>
+<span class="sd">        internally passed. Just include any specific parameters for the</span>
+<span class="sd">        callback. See parse_annotations_to_local_tables() above for</span>
+<span class="sd">        an example of a callback and the unir test of this function.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">callback_kwargs</span> <span class="o">=</span> <span class="n">callback_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="k">assert</span> <span class="n">save_json</span> <span class="ow">or</span> <span class="n">save_sqlite</span><span class="p">,</span> <span class="s1">&#39;must save results somehow!&#39;</span>
+    <span class="n">monitor</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">local</span><span class="p">)</span>
+
+    <span class="c1"># get folder info</span>
+    <span class="n">folder_info</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;folder/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">folderid</span><span class="p">)</span>
+    <span class="n">folder_info</span><span class="p">[</span><span class="s1">&#39;folder_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_absolute_girder_folderpath</span><span class="p">(</span>
+        <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">folder_info</span><span class="o">=</span><span class="n">folder_info</span><span class="p">)</span>
+
+    <span class="c1"># connect to sqlite database -- only first stack does this</span>
+    <span class="k">if</span> <span class="n">save_sqlite</span> <span class="ow">and</span> <span class="p">(</span><span class="n">dbcon</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">db_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="n">folder_info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.sqlite&#39;</span><span class="p">)</span>
+        <span class="n">sql_engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s1">&#39;sqlite:///&#39;</span> <span class="o">+</span> <span class="n">db_path</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">dbcon</span> <span class="o">=</span> <span class="n">sql_engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+
+    <span class="c1"># save folder information json</span>
+    <span class="k">if</span> <span class="n">save_json</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: save folder info&#39;</span> <span class="o">%</span> <span class="n">monitor</span><span class="p">)</span>
+        <span class="n">savepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="n">folder_info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">folder_info</span><span class="p">,</span> <span class="n">fout</span><span class="p">)</span>
+
+    <span class="c1"># save folder info to sqlite</span>
+    <span class="k">if</span> <span class="n">save_sqlite</span><span class="p">:</span>
+        <span class="n">_add_folder_to_sqlite</span><span class="p">(</span><span class="n">dbcon</span><span class="p">,</span> <span class="n">folder_info</span><span class="p">)</span>
+
+    <span class="c1"># pull annotations for each slide in folder</span>
+    <span class="n">workflow_runner</span> <span class="o">=</span> <span class="n">Workflow_runner</span><span class="p">(</span>
+        <span class="n">slide_iterator</span><span class="o">=</span><span class="n">Slide_iterator</span><span class="p">(</span>
+            <span class="n">gc</span><span class="p">,</span> <span class="n">source_folder_id</span><span class="o">=</span><span class="n">folderid</span><span class="p">,</span>
+            <span class="n">keep_slides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">workflow</span><span class="o">=</span><span class="n">dump_annotations_workflow</span><span class="p">,</span>
+        <span class="n">workflow_kwargs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;gc&#39;</span><span class="p">:</span> <span class="n">gc</span><span class="p">,</span>
+            <span class="s1">&#39;local&#39;</span><span class="p">:</span> <span class="n">local</span><span class="p">,</span>
+            <span class="s1">&#39;save_json&#39;</span><span class="p">:</span> <span class="n">save_json</span><span class="p">,</span>
+            <span class="s1">&#39;save_sqlite&#39;</span><span class="p">:</span> <span class="n">save_sqlite</span><span class="p">,</span>
+            <span class="s1">&#39;dbcon&#39;</span><span class="p">:</span> <span class="n">dbcon</span><span class="p">,</span>
+            <span class="s1">&#39;callback&#39;</span><span class="p">:</span> <span class="n">callback</span><span class="p">,</span>
+            <span class="s1">&#39;callback_kwargs&#39;</span><span class="p">:</span> <span class="n">callback_kwargs</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">monitorPrefix</span><span class="o">=</span><span class="n">monitor</span><span class="p">)</span>
+
+    <span class="n">workflow_runner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+    <span class="c1"># for each subfolder, create a new folder locally and call self</span>
+    <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">gc</span><span class="o">.</span><span class="n">listFolder</span><span class="p">(</span><span class="n">parentId</span><span class="o">=</span><span class="n">folderid</span><span class="p">):</span>
+
+        <span class="c1"># create folder in local</span>
+        <span class="n">new_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="n">folder</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">new_folder</span><span class="p">)</span>
+
+        <span class="c1"># call self with same parameters</span>
+        <span class="n">dump_annotations_locally</span><span class="p">(</span>
+            <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">folderid</span><span class="o">=</span><span class="n">folder</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">],</span> <span class="n">local</span><span class="o">=</span><span class="n">new_folder</span><span class="p">,</span>
+            <span class="n">save_json</span><span class="o">=</span><span class="n">save_json</span><span class="p">,</span> <span class="n">save_sqlite</span><span class="o">=</span><span class="n">save_sqlite</span><span class="p">,</span> <span class="n">dbcon</span><span class="o">=</span><span class="n">dbcon</span><span class="p">,</span>
+            <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="n">callback_kwargs</span><span class="o">=</span><span class="n">callback_kwargs</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
