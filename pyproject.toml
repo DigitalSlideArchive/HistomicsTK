@@ -46,7 +46,8 @@ dependencies = [
     "large-image-converter;sys.platform=='linux'",
     "girder-slicer-cli-web",
     "ctk-cli",
-    "opencv-python-headless",
+    "opencv-python-headless<4.12; python_version < '3.10'",
+    "opencv-python-headless; python_version >= '3.10'",
 ]
 dynamic = ["version"]
 
