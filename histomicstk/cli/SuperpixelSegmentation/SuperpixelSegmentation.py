@@ -199,7 +199,7 @@ def createSuperPixelsParallel(opts):
             }
             annotation = [annotation, bboxannotation]
 
-            opts.outputAnnotationFile = opts.outputAnnotationFile.split('.')[0]+'vips.'+opts.outputAnnotationFile.split('.')[1]
+            #opts.outputAnnotationFile = opts.outputAnnotationFile.split('.')[0]+'vips.'+opts.outputAnnotationFile.split('.')[1]
           
         with open(opts.outputAnnotationFile, 'w') as annotation_file:
             try:
