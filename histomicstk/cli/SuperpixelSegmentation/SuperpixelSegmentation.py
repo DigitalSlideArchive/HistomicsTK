@@ -153,8 +153,8 @@ def createSuperPixelsParallel(opts):
                 'strokeColor': opts.default_strokeColor,
             },
         ]
-        annotation_name = os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0]
-        region_dict = utils.get_region_dict(opts.roi, None, ts)
+        annotation_name = 'Superpixel Epoch 0' #os.path.splitext(os.path.basename(opts.outputAnnotationFile))[0]
+        region_dict = get_region_dict(opts.roi, None, ts)
         annotation = {
             'name': annotation_name,
             'elements': [{
@@ -171,8 +171,8 @@ def createSuperPixelsParallel(opts):
             }],
             'attributes': {
                 'params': {k: v for k, v in vars(opts).items() if not callable(v)},
-                'cli': Path(__file__).stem,
-                'version': histomicstk.__version__,
+                'cli': None,#Path(__file__).stem,
+                'version': None,#histomicstk.__version__,
             },
         }
         if len(bboxes) and str(opts.bounding).lower() != 'separate':
@@ -193,11 +193,14 @@ def createSuperPixelsParallel(opts):
                 } for bidx, (bcx, bcy, bw, bh) in enumerate(bboxes)],
                 'attributes': {
                     'params': {k: v for k, v in vars(opts).items() if not callable(v)},
-                    'cli': Path(__file__).stem,
-                    'version': histomicstk.__version__,
+                    'cli': None,#Path(__file__).stem,
+                    'version': None,#histomicstk.__version__,
                 },
             }
             annotation = [annotation, bboxannotation]
+
+            opts.outputAnnotationFile = opts.outputAnnotationFile.split('.')[0]+'vips.'+opts.outputAnnotationFile.split('.')[1]
+          
         with open(opts.outputAnnotationFile, 'w') as annotation_file:
             try:
                 json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
