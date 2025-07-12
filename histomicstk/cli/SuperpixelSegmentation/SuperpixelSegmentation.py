@@ -30,6 +30,13 @@ def createSuperPixelsParallel(opts):
 
     num_workers = 20
 
+    #Set Opts for parallelization explicitly for now. For final version need to be specified in superpixelclassification. 
+    image = opts.inputImageFile.split('/')[-1].split('.')[0]
+    opts.inputMaskFile = os.path.join('path_to_masks',f'{image}.svs_1.25_mask.png')
+    opts.tileSize = 1000
+    opts.superpixelSize = 100
+    opts.magnification = 5
+  
     print(opts.inputImageFile, '\n',
                 opts.outputImageFile, '\n', 
                 opts.outputAnnotationFile, '\n', 
@@ -41,8 +48,7 @@ def createSuperPixelsParallel(opts):
     print(opts.inputImageFile)
 
     ts = large_image.open(opts.inputImageFile)
-    image = opts.inputImageFile.split('/')[-1].split('.')[0]
-    mask_file = os.path.join('path_to_masks',f'{image}.svs_1.25_mask.png')
+    mask_file = opts.inputMaskFile
 
   
     averageSize = opts.superpixelSize ** 2
