@@ -9,13 +9,13 @@ import pyvips
 import scipy
 import skimage
 import concurrent.futures
-from parallelization_utilities import (compute_mask_novips, 
-                                           first_order, 
-                                           tile_grid_w_mask,
-                                           get_ancestor_tileids, get_trim_dict,
-                                           Mask, tilejob,
-                                           write_to_tiff_vips, write_to_tiff_zarr)
-
+from parallelization_utilities import (ProgressHelper, compute_mask, compute_mask_novips, 
+                                           get_region_polygons, get_region_dict, first_order, 
+                                           tile_grid, tile_grid_w_mask,
+                                           get_ancestor_tileids, get_trim_dict, plot_tasks,
+                                           process_tiles,
+                                           Mask,tilejob)
+from parallelization_utilities import write_to_tiff_vips, write_to_tiff_zarr
 import histomicstk
 from histomicstk.cli import utils
 from histomicstk.cli.utils import CLIArgumentParser
@@ -30,10 +30,13 @@ def createSuperPixelsParallel(opts):
 
     num_workers = 20
 
-    averageSize = opts.superpixelSize ** 2
-    overlap = opts.superpixelSize * 4 * 2 if opts.overlap else 0
-    tileSize = opts.tileSize + overlap
+    print(opts.inputImageFile, '\n',
+                opts.outputImageFile, '\n', 
+                opts.outputAnnotationFile, '\n', 
+                opts.inputMaskFile)
 
+    print(os.getcwd())
+    print("Input image path exists:", os.path.exists(opts.inputImageFile))
     print('>> Reading input image')
     print(opts.inputImageFile)
 
@@ -41,26 +44,39 @@ def createSuperPixelsParallel(opts):
     image = opts.inputImageFile.split('/')[-1].split('.')[0]
     mask_file = os.path.join('path_to_masks',f'{image}.svs_1.25_mask.png')
 
-    tilemask = Mask(mask_file, ts)
+  
+    averageSize = opts.superpixelSize ** 2
+    overlap = opts.superpixelSize * 4 * 2 if opts.overlap else 0
+    tileSize = opts.tileSize + overlap
+
+  
     meta = ts.getMetadata()
     found = 0
-    strips = []
-    bboxes_dict = {}
-    bboxesUser_dict = {}
+    bboxes = []
+    bboxesUser = []
+    # strips = []
+    # bboxes_dict = {}
+    # bboxesUser_dict = {}
     tiparams = {}
     tiparams = utils.get_region_dict(opts.roi, None, ts)
 
-    scale = 1
+    mask = Mask(mask_file, ts)
+
+  
+    # scale = 8 # (40//5) Need to be explicitly specified??? This parameter should be set by tile_grid_w_mask function below
     if opts.magnification:
         tiparams['scale'] = {'magnification': opts.magnification}
 
+    # (
+    #  task_ids, tasks, h, w, grid, scale, coordx, coordy, alltile_metadata
+    #  ) = tile_grid_w_mask(
+    #                       ts, tilemask, opts, averageSize, overlap, tileSize, tiparams,verbose=False
+    #                         )
+    
     # Generate tile grid
-    (
-     task_ids, tasks, h, w, grid, scale, coordx, coordy, alltile_metadata
-     ) = tile_grid_w_mask(
-                          ts, tilemask, opts, averageSize, overlap, tileSize, tiparams,verbose=False
-                            )
+    task_ids, tasks, h, w, grid, scale, coordx, coordy, alltile_metadata = tile_grid_w_mask(ts, mask, opts, averageSize, overlap, tileSize, tiparams,verbose=False)
 
+  
     # Determine dependencies
     ancestors, dependents = first_order(grid)
 
@@ -70,7 +86,8 @@ def createSuperPixelsParallel(opts):
     # Get task_ids (tile location, i.e. top/left pixel coordinate) for ancestors
     ancestor_taskids = get_ancestor_tileids(ancestors, coordx, coordy)
 
-
+    tile_mask = mask
+  
     print('>> Generating superpixels')
     if opts.slic_zero:
         print('>> Using SLIC Zero for segmentation')
@@ -123,20 +140,20 @@ def createSuperPixelsParallel(opts):
                 del submitted[future]
 
 
-    if hasattr(opts, 'callback'):
-        opts.callback('file', 0, 2 if opts.outputAnnotationFile else 1)
-
-    found = write_to_tiff_vips(opts, grid, strips, strips_found, meta, scale, tiparams, coordx)
-    print(found)
 
     bboxes = []
     bboxesUser = []
     for cx, cy in grid:
-    
         stripidx = (coordx[cx], cy)
         bboxes += bboxes_dict[stripidx]
         bboxesUser += bboxesUser_dict[stripidx]
+  
+    found = write_to_tiff_vips(opts, grid, strips, strips_found, meta, scale, tiparams, coordx)
+    print(found)
 
+    if hasattr(opts, 'callback'):
+        opts.callback('file', 0, 2 if opts.outputAnnotationFile else 1)
+  
     print('>> Found %d superpixels' % found)
     if found > 256 ** 3:
         print('Too many superpixels')
