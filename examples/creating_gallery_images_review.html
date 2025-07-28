@@ -1,0 +1,760 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creating gallery images for annotation review &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Local processing of whole-slide images using large_image" href="using_large_image.html" />
+    <link rel="prev" title="Local backup and SQL querying of annotation data" href="annotation_database_backup_and_sql_parser.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Creating gallery images for annotation review</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Connect-girder-client-and-set-parameters">Connect girder client and set parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Retrieve-ROIs-from-server-and-generate-visualizations">Retrieve ROIs from server and generate visualizations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Explore-the-methods">Explore the methods</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Generate-and-examine-the-visualizations">Generate and examine the visualizations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Assemble-visualizations-into-gallery-image-and-post-to-server">Assemble visualizations into gallery image and post to server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Cleanup">Cleanup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Creating gallery images for annotation review</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/creating_gallery_images_review.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Creating-gallery-images-for-annotation-review">
+<h1>Creating gallery images for annotation review<a class="headerlink" href="#Creating-gallery-images-for-annotation-review" title="Link to this heading">¶</a></h1>
+<p><strong>Overview:</strong></p>
+<p><img alt="revgallery" src="https://user-images.githubusercontent.com/22067552/80076177-c9878580-8519-11ea-8e50-9e27990f5fa6.png" /></p>
+<p>Annotation studies often focus on small <em>regions of interest</em> (ROIs) that are orders of magnitude smaller than whole slide images and sparsely distributed over many slides. Reviewing these annotations involves significant time spent navigating from one ROI to another within and across slides. To aid in review we developed tools to generate mosaic gallery images that condense these ROIs into a dense multiresolution images that can be viewed in HistomicsUI. These gallery images speed up the review
+process by minimizing navigation and the need for toggling annotations.</p>
+<p>In this minimal example, we show how 29 ROIs from two slides are parsed into three gallery images for pathologist review (a typical project may contain 100s of ROIs). This <a class="reference external" href="https://youtube/Plh39obBg_0">video</a> demonstrates the gallery image functionality, and the code below which shows the gallery image creation process.</p>
+<p><strong>Where to look:</strong></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>|_histomicstk/
+   |_annotations_and_masks/
+      |_review_gallery.py
+      |_tests/
+         |_test_review_gallery.py
+</pre></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">imageio</span><span class="w"> </span><span class="kn">import</span> <span class="n">imread</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">girder_client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.review_gallery</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">get_all_rois_from_folder_v2</span><span class="p">,</span> <span class="n">get_all_rois_from_slide_v2</span><span class="p">,</span> \
+    <span class="n">_plot_rapid_review_vis</span><span class="p">,</span> <span class="n">create_review_galleries</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/mtageld/anaconda3/envs/wsi/lib/python3.6/site-packages/sklearn/utils/deprecation.py:144: FutureWarning: The sklearn.neighbors.kde module is  deprecated in version 0.22 and will be removed in version 0.24. The corresponding classes / functions should instead be imported from sklearn.neighbors. Anything that cannot be imported from sklearn.neighbors is now part of the private API.
+  warnings.warn(message, FutureWarning)
+</pre></div></div>
+</div>
+<section id="Connect-girder-client-and-set-parameters">
+<h2>Connect girder client and set parameters<a class="headerlink" href="#Connect-girder-client-and-set-parameters" title="Link to this heading">¶</a></h2>
+<p>A csv file like the one in <code class="docutils literal notranslate"><span class="pre">histomicstk/annotations_and_masks/tests/test_files/sample_GTcodes_v2.csv</span></code> is needed to define what group each pixel value corresponds to in the mask image, to define the overlay order of various annotation groups, and which groups are considered to be ROIs. Note that the term “group” here comes from the annotation model where each group represents a class like “tumor” or “necrosis” and is associated with a an annotation style. Please refer to <em>“Converting
+annotations to semantic segmentation mask images”</em> for more details.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">URL</span> <span class="o">=</span> <span class="s1">&#39;http://candygram.neurology.emory.edu:8080/&#39;</span>
+<span class="n">APIURL</span> <span class="o">=</span> <span class="n">URL</span> <span class="o">+</span> <span class="s1">&#39;api/v1/&#39;</span>
+
+<span class="c1"># source folder containing slides with annotated ROIs</span>
+<span class="n">SAMPLE_FOLDER_ID</span> <span class="o">=</span> <span class="s1">&#39;5e2a2da8ddda5f83986d18a2&#39;</span>
+
+<span class="c1"># This is the girder folder where galleries will be visualized</span>
+<span class="n">POST_FOLDERID</span> <span class="o">=</span> <span class="s1">&#39;5e3ce440ddda5f839875b33e&#39;</span>
+
+<span class="c1"># Connect to an authenticated girder API. You</span>
+<span class="n">gc</span> <span class="o">=</span> <span class="n">girder_client</span><span class="o">.</span><span class="n">GirderClient</span><span class="p">(</span><span class="n">apiUrl</span><span class="o">=</span><span class="n">APIURL</span><span class="p">)</span>
+<span class="n">gc</span><span class="o">.</span><span class="n">authenticate</span><span class="p">(</span><span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># need this to post!</span>
+<span class="c1"># gc.authenticate(apiKey=&#39;kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb&#39;)</span>
+
+<span class="c1"># GT codes dict for parsing into label mask</span>
+<span class="n">GTCODE_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="s1">&#39;/home/mtageld/Desktop/HistomicsTK/histomicstk/annotations_and_masks/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;tests/test_files&#39;</span><span class="p">,</span> <span class="s1">&#39;sample_GTcodes_v2.csv&#39;</span><span class="p">)</span>
+<span class="n">GTCodes_dict</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="n">GTCODE_PATH</span><span class="p">)</span>
+<span class="n">GTCodes_dict</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">GTCodes_dict</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span>
+<span class="n">GTCodes_dict</span> <span class="o">=</span> <span class="n">GTCodes_dict</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+
+<span class="c1"># just a temp directory to save masks</span>
+<span class="n">BASE_SAVEPATH</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+<span class="n">SAVEPATHS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;contours&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_SAVEPATH</span><span class="p">,</span> <span class="s1">&#39;contours&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;rgb&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_SAVEPATH</span><span class="p">,</span> <span class="s1">&#39;rgbs&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;visualization&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_SAVEPATH</span><span class="p">,</span> <span class="s1">&#39;vis&#39;</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">savepath</span> <span class="ow">in</span> <span class="n">SAVEPATHS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">savepath</span><span class="p">)</span>
+
+<span class="c1"># where to save gallery</span>
+<span class="n">combinedvis_savepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_SAVEPATH</span><span class="p">,</span> <span class="s1">&#39;combinedvis&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">combinedvis_savepath</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Let’s take a look at some of the inputs</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">GTCodes_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">GTCodes_dict</span><span class="p">[</span><span class="s1">&#39;tumor&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;fov_preapproved&#39;, &#39;fov_for_programmatic_edit&#39;, &#39;fov_basic&#39;, &#39;fov_representative&#39;, &#39;fov_problematic&#39;, &#39;fov_discordant&#39;, &#39;tumor&#39;, &#39;fibroblast&#39;, &#39;lymphocyte&#39;, &#39;plasma_cell&#39;, &#39;macrophage&#39;, &#39;mitotic_figure&#39;, &#39;vascular_endothelium&#39;, &#39;myoepithelium&#39;, &#39;apoptotic_body&#39;, &#39;neutrophil&#39;, &#39;ductal_epithelium&#39;, &#39;eosinophil&#39;, &#39;unlabeled&#39;]
+{&#39;group&#39;: &#39;tumor&#39;, &#39;overlay_order&#39;: 1, &#39;GT_code&#39;: 1, &#39;is_roi&#39;: 0, &#39;is_background_class&#39;: 0, &#39;color&#39;: &#39;rgb(255,0,0)&#39;, &#39;comments&#39;: nan}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">SAVEPATHS</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;combinedvis_savepath:&#39;</span><span class="p">,</span> <span class="n">combinedvis_savepath</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;contours&#39;: &#39;/tmp/tmpnwf5oe7l/contours&#39;, &#39;rgb&#39;: &#39;/tmp/tmpnwf5oe7l/rgbs&#39;, &#39;visualization&#39;: &#39;/tmp/tmpnwf5oe7l/vis&#39;}
+combinedvis_savepath: /tmp/tmpnwf5oe7l/combinedvis
+</pre></div></div>
+</div>
+</section>
+<section id="Retrieve-ROIs-from-server-and-generate-visualizations">
+<h2>Retrieve ROIs from server and generate visualizations<a class="headerlink" href="#Retrieve-ROIs-from-server-and-generate-visualizations" title="Link to this heading">¶</a></h2>
+<p>The first step is to retrieve annotations and images of the ROIs from the server and store these locally in the temporary directory we created. The ROI images and annotations will be combined to form new images that embed the annotations and generate visualizations. Later, another method will be used to combine these ROIs into a gallery image and to post it to DSA.</p>
+<section id="Explore-the-methods">
+<h3>Explore the methods<a class="headerlink" href="#Explore-the-methods" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">get_all_rois_from_folder_v2</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Get all rois in a girder folder using get_all_rois_from_slide_v2().
+
+    Parameters
+    ----------
+    gc : girder_client.Girder_Client
+        authenticated girder client
+    folderid : str
+        girder id of folder
+    get_all_rois_kwargs : dict
+        kwargs to pass to get_all_rois_from_slide_v2()
+    monitor : str
+        monitor prefix
+
+    Returns
+    -------
+    None
+
+
+</pre></div></div>
+</div>
+<p>This calls the method <code class="docutils literal notranslate"><span class="pre">get_all_rois_from_slide_v2()</span></code> to get the rois for each individual slide. We don’t need the masks here, only the contours and visualization.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">get_all_rois_from_slide_v2</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Get all ROIs for a slide without an intermediate mask form.
+
+    This mainly relies on contours_to_labeled_object_mask(), which should
+    be referred to for extra documentation.
+
+    This can be run in either the &#34;object&#34; mode, whereby the saved masks
+    are a three-channel png where first channel encodes class label (i.e.
+    same as semantic segmentation) and the product of the values in the
+    second and third channel encodes the object ID. Otherwise, the user
+    may decide to run in the &#34;semantic&#34; mode and the resultant mask would
+    consist of only one channel (semantic segmentation with no object
+    differentiation).
+
+    The difference between this and version 1, found at
+    histomicstk.annotations_and_masks.annotations_to_masks_handler.
+    get_all_rois_from_slide()
+    is that this (version 2) gets the contours first, including cropping
+    to wanted ROI boundaries and other processing using shapely, and THEN
+    parses these into masks. This enables us to differentiate various objects
+    to use the data for object localization or classification or segmentation
+    tasks. If you would like to get semantic segmentation masks, i.e. you do
+    not really care about individual objects, you can use either version 1
+    or this method. They re-use much of the same code-base, but some edge
+    cases maybe better handled by version 1. For example, since
+    this version uses shapely first to crop, some objects may be incorrectly
+    parsed by shapely. Version 1, using PIL.ImageDraw may not have these
+    problems.
+
+    Bottom line is: if you need semantic segmentation masks, it is probably
+    safer to use version 1, whereas if you need object segmentation masks,
+    this method should be used.
+
+    Parameters
+    ----------
+    gc : object
+        girder client object to make requests, for example:
+        gc = girder_client.GirderClient(apiUrl = APIURL)
+        gc.authenticate(interactive=True)
+
+    slide_id : str
+        girder id for item (slide)
+
+    GTCodes_dict : dict
+        the ground truth codes and information dict.
+        This is a dict that is indexed by the annotation group name and
+        each entry is in turn a dict with the following keys:
+        - group: group name of annotation (string), eg. mostly_tumor
+        - overlay_order: int, how early to place the annotation in the
+        mask. Larger values means this annotation group is overlaid
+        last and overwrites whatever overlaps it.
+        - GT_code: int, desired ground truth code (in the mask)
+        Pixels of this value belong to corresponding group (class)
+        - is_roi: Flag for whether this group encodes an ROI
+        - is_background_class: Flag, whether this group is the default
+        fill value inside the ROI. For example, you may decide that
+        any pixel inside the ROI is considered stroma.
+
+    save_directories : dict
+        paths to directories to save data. Each entry is a string, and the
+        following keys are allowed
+        - ROI: path to save masks (labeled images)
+        - rgb: path to save rgb images
+        - contours: path to save annotation contours
+        - visualization: path to save rgb visualization overlays
+
+    mode : str
+        run mode for getting masks. Must me in
+        - object: get 3-channel mask where first channel encodes label
+        (tumor, stroma, etc) while product of second and third
+        channel encodes the object ID (i.e. individual contours)
+        This is useful for object localization and segmentation tasks.
+        - semantic: get a 1-channel mask corresponding to the first channel
+        of the object mode.
+
+    get_mask : bool
+        While the main purpose of this method IS to get object segmentation
+        masks, it is conceivable that some users might just want to get
+        the RGB and contours. Default is True.
+
+    annotations_to_contours_kwargs : dict
+        kwargs to pass to annotations_to_contours_no_mask()
+        default values are assigned if specific parameters are not given.
+
+    slide_name : str or None
+        If not given, its inferred using a server request using girder client.
+
+    verbose : bool
+        Print progress to screen?
+
+    monitorprefix : str
+        text to prepend to printed statements
+
+    callback : function
+        a callback function to run on the roi dictionary output. This is
+        internal, but if you really want to use this, make sure the callback
+        can accept the following keys and that you do NOT assign them yourself
+        gc, slide_id, slide_name, MPP, MAG, verbose, monitorprefix
+
+    callback_kwargs : dict
+        kwargs to pass to callback, not including the mandatory kwargs
+        that will be passed internally (mentioned earlier here).
+
+    Returns
+    --------
+    list of dicts
+        each entry contains the following keys
+        mask - path to saved mask
+        rgb - path to saved rgb image
+        contours - path to saved annotation contours
+        visualization - path to saved rgb visualization overlay
+
+
+</pre></div></div>
+</div>
+<p>We will be <code class="docutils literal notranslate"><span class="pre">get_all_rois_from_folder_v2()</span></code> will the callback function <code class="docutils literal notranslate"><span class="pre">_plot_rapid_review_vis()</span></code> to create a “combined” side-by-side visualization of the annotations and the RGB image, along with a lower magnification RGB image that provides context for the ROI.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">_plot_rapid_review_vis</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Plot a visualization for rapid review of ROI.
+
+    This is a callback to be called inside get_all_rois_from_slide_v2().
+
+    Parameters
+    ----------
+    roi_out : dict
+        output from annotations_to_contours_no_mask()
+    gc : girder_client.Girder_Client
+        authenticated girder client
+    slide_id : str
+        girder slide id
+    slide_name : str
+        name of the slide
+    MPP : float
+        microns per pixel
+    MAG : float
+        magnification. superseded by MPP.
+    combinedvis_savepath : str
+        path to save the combined visualization
+    zoomout : float
+        how much to zoom out to get the gallery visualization
+    verbose : bool
+        print statements to screen
+    monitorprefix : str
+        text to prepent to printed statements
+
+    Returns
+    -------
+    None
+
+
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># params for getting all rois for slide</span>
+<span class="n">get_all_rois_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;GTCodes_dict&#39;</span><span class="p">:</span> <span class="n">GTCodes_dict</span><span class="p">,</span>
+    <span class="s1">&#39;save_directories&#39;</span><span class="p">:</span> <span class="n">SAVEPATHS</span><span class="p">,</span>
+    <span class="s1">&#39;annotations_to_contours_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;MPP&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="s1">&#39;linewidth&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="s1">&#39;get_rgb&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s1">&#39;get_visualization&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;get_mask&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="c1"># we use this callback so that we have results compatible</span>
+    <span class="c1"># of being used as input for create_review_galleries()</span>
+    <span class="s1">&#39;callback&#39;</span><span class="p">:</span> <span class="n">_plot_rapid_review_vis</span><span class="p">,</span>
+    <span class="s1">&#39;callback_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;combinedvis_savepath&#39;</span><span class="p">:</span> <span class="n">combinedvis_savepath</span><span class="p">,</span>
+        <span class="s1">&#39;zoomout&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+
+    <span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Generate-and-examine-the-visualizations">
+<h3>Generate and examine the visualizations<a class="headerlink" href="#Generate-and-examine-the-visualizations" title="Link to this heading">¶</a></h3>
+<p>Execute this function using the girder client and folder id.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get al rois to prep for gallery</span>
+<span class="n">get_all_rois_from_folder_v2</span><span class="p">(</span>
+    <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">folderid</span><span class="o">=</span><span class="n">SAMPLE_FOLDER_ID</span><span class="p">,</span>
+    <span class="n">get_all_rois_kwargs</span><span class="o">=</span><span class="n">get_all_rois_kwargs</span><span class="p">,</span> <span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_fovs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">combinedvis_savepath</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">cvis</span> <span class="o">=</span> <span class="n">imread</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">combinedvis_savepath</span><span class="p">,</span> <span class="n">all_fovs</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cvis</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">all_fovs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_creating_gallery_images_review_20_0.png" src="../_images/examples_creating_gallery_images_review_20_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_creating_gallery_images_review_20_1.png" src="../_images/examples_creating_gallery_images_review_20_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_creating_gallery_images_review_20_2.png" src="../_images/examples_creating_gallery_images_review_20_2.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Assemble-visualizations-into-gallery-image-and-post-to-server">
+<h2>Assemble visualizations into gallery image and post to server<a class="headerlink" href="#Assemble-visualizations-into-gallery-image-and-post-to-server" title="Link to this heading">¶</a></h2>
+<p>After the visualizations are created we need to assemble them into larger gallery images for review and post these back to the server.</p>
+<p>This is the method we will be using:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">create_review_galleries</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Create and or post review galleries for rapid review.
+
+    Parameters
+    ----------
+    tilepath_base : str
+        directory where combined visualization.
+    upload_results : bool
+        upload results to DSA?
+    gc : girder_client.Girder_Client
+        authenticated girder client. Only needed upload_results.
+    gallery_savepath : str
+        directory to save gallery. Only if upload_results.
+    gallery_folderid : str
+        girder ID of folder to post galleries. Only if upload_result.
+    padding : int
+        padding in pixels between tiles in same gallery.
+    tiles_per_row : int
+        how many visualization tiles per row in gallery.
+    tiles_per_column : int
+        how many visualization tiles per column in gallery.
+    annprops : dict
+        properties of the annotations to be posted to DSA. Passed directly
+        as annprops to get_annotation_documents_from_contours()
+    url : str
+        url of the Digital Slide Archive Instance. For example:
+        http://candygram.neurology.emory.edu:8080/
+
+    Returns
+    -------
+    list
+        each entry is a dict representing the response of the server
+        post request to upload the gallery to DSA.
+
+
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">create_review_galleries_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;tilepath_base&#39;</span><span class="p">:</span> <span class="n">combinedvis_savepath</span><span class="p">,</span>
+    <span class="s1">&#39;upload_results&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;gc&#39;</span><span class="p">:</span> <span class="n">gc</span><span class="p">,</span>
+    <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">URL</span><span class="p">,</span>
+    <span class="s1">&#39;gallery_folderid&#39;</span><span class="p">:</span> <span class="n">POST_FOLDERID</span><span class="p">,</span>
+    <span class="s1">&#39;gallery_savepath&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+    <span class="s1">&#39;tiles_per_row&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s1">&#39;tiles_per_column&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create (+/- post) review gallery</span>
+<span class="n">resps</span> <span class="o">=</span> <span class="n">create_review_galleries</span><span class="p">(</span><span class="o">**</span><span class="n">create_review_galleries_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Inserting tile 0 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-10124_top-56533_bottom-56789_right-10380.png
+Inserting tile 1 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-7308_top-55253_bottom-55509_right-7564.png
+Inserting tile 2 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-8076_top-55509_bottom-55765_right-8332.png
+Inserting tile 3 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-8076_top-56021_bottom-56277_right-8332.png
+Inserting tile 4 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-8076_top-57045_bottom-57301_right-8332.png
+Inserting tile 5 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-8332_top-54485_bottom-54741_right-8588.png
+Inserting tile 6 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-8332_top-57045_bottom-57301_right-8588.png
+Inserting tile 7 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-8844_top-57301_bottom-57557_right-9100.png
+Inserting tile 8 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-9100_top-55765_bottom-56021_right-9356.png
+Inserting tile 9 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-9356_top-53973_bottom-54229_right-9612.png
+Saving gallery 1 of 3 to /tmp/gallery-dx0yl5o1/gallery-1.tiff
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 1 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 2 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 3 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 4 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 5 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 6 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 7 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 8 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 9 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 10 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 11 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 12 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 13 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 14 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 15 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 16 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 17 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 18 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 19 of 20
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 20 of 20
+Inserting tile 10 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A1-A0SP-01Z-00-DX1_id-5e2a2d77ddda5f83986d135b_left-9356_top-55765_bottom-56021_right-9612.png
+Inserting tile 11 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-44241_top-19965_bottom-20221_right-44497.png
+Inserting tile 12 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-44241_top-25853_bottom-26109_right-44497.png
+Inserting tile 13 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-44497_top-19197_bottom-19453_right-44753.png
+Inserting tile 14 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-44497_top-19453_bottom-19709_right-44753.png
+Inserting tile 15 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-44497_top-23549_bottom-23805_right-44753.png
+Inserting tile 16 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-44497_top-25085_bottom-25341_right-44753.png
+Inserting tile 17 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-45265_top-22525_bottom-22781_right-45521.png
+Inserting tile 18 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-45777_top-22269_bottom-22525_right-46033.png
+Inserting tile 19 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-45777_top-22781_bottom-23037_right-46033.png
+Saving gallery 2 of 3 to /tmp/gallery-dx0yl5o1/gallery-2.tiff
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 1 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 2 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 3 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 4 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 5 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 6 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 7 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 8 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 9 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 10 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 11 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 12 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 13 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 14 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 15 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 16 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 17 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 18 of 18
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 1 of 2
+: TCGA-A1-A0SP-01Z-00-DX1: doc 1 of 1: contour 2 of 2
+Inserting tile 20 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-46545_top-26365_bottom-26621_right-46801.png
+Inserting tile 21 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-46801_top-21245_bottom-21501_right-47057.png
+Inserting tile 22 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-47313_top-21501_bottom-21757_right-47569.png
+Inserting tile 23 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-47313_top-24573_bottom-24829_right-47569.png
+Inserting tile 24 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-47313_top-24829_bottom-25085_right-47569.png
+Inserting tile 25 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-47825_top-20989_bottom-21245_right-48081.png
+Inserting tile 26 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-48081_top-20221_bottom-20477_right-48337.png
+Inserting tile 27 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-48337_top-20989_bottom-21245_right-48593.png
+Inserting tile 28 of 29: /tmp/tmpnwf5oe7l/combinedvis/TCGA-A7-A0DA-01Z-00-DX1_id-5e2a2d78ddda5f83986d14b6_left-48849_top-20989_bottom-21245_right-49105.png
+Saving gallery 3 of 3 to /tmp/gallery-dx0yl5o1/gallery-3.tiff
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 1 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 2 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 3 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 4 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 5 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 6 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 7 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 8 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 9 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 10 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 11 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 12 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 13 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 14 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 15 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 16 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 17 of 18
+: TCGA-A7-A0DA-01Z-00-DX1: doc 1 of 1: contour 18 of 18
+</pre></div></div>
+</div>
+<p>Now you can go to the girder folder where galleries will be visualized on HistomicsUI.</p>
+</section>
+<section id="Cleanup">
+<h2>Cleanup<a class="headerlink" href="#Cleanup" title="Link to this heading">¶</a></h2>
+<p>The contents of the temporary directory are no longer needed after posting to the server.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">BASE_SAVEPATH</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="annotation_database_backup_and_sql_parser.html" class="btn btn-neutral float-left" title="Local backup and SQL querying of annotation data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="using_large_image.html" class="btn btn-neutral float-right" title="Local processing of whole-slide images using large_image" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
