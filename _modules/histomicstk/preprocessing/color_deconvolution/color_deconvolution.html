@@ -1,0 +1,398 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.preprocessing.color_deconvolution.color_deconvolution &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.preprocessing.color_deconvolution.color_deconvolution</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.preprocessing.color_deconvolution.color_deconvolution</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Placeholder.&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">histomicstk.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">color_conversion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_deconvolution.find_stain_index</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">find_stain_index</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_deconvolution.rgb_separate_stains_macenko_pca</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">rgb_separate_stains_macenko_pca</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_deconvolution.rgb_separate_stains_xu_snmf</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">rgb_separate_stains_xu_snmf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_deconvolution.stain_color_map</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">stain_color_map</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.complement_stain_matrix</span><span class="w"> </span><span class="kn">import</span> <span class="n">complement_stain_matrix</span>
+
+
+<div class="viewcode-block" id="color_deconvolution">
+<a class="viewcode-back" href="../../../../histomicstk.preprocessing.color_deconvolution.html#histomicstk.preprocessing.color_deconvolution.color_deconvolution">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">color_deconvolution</span><span class="p">(</span><span class="n">im_rgb</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">I_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform color deconvolution.</span>
+
+<span class="sd">    The given RGB Image `I` is first first transformed into optical density</span>
+<span class="sd">    space, and then projected onto the stain vectors in the columns of the</span>
+<span class="sd">    3x3 stain matrix `W`.</span>
+
+<span class="sd">    For deconvolving H&amp;E stained image use:</span>
+
+<span class="sd">    `w` = array([[0.650, 0.072, 0], [0.704, 0.990, 0], [0.286, 0.105, 0]])</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_rgb : array_like</span>
+<span class="sd">        Input RGB Image that needs to be deconvolved.</span>
+<span class="sd">    w : array_like</span>
+<span class="sd">        A 3x3 matrix containing the color vectors in columns.</span>
+<span class="sd">        For two stain images the third column is zero and will be</span>
+<span class="sd">        complemented using cross-product. At least two of the three</span>
+<span class="sd">        columns must be non-zero.</span>
+<span class="sd">    I_0 : float or array_like, optional</span>
+<span class="sd">        A float a 3-vector containing background RGB intensities.</span>
+<span class="sd">        If unspecified, use the old OD conversion.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Stains : array_like</span>
+<span class="sd">        An rgb image where in each channel contains the image of the</span>
+<span class="sd">        stain of the corresponding column in the stain matrix `W`.</span>
+<span class="sd">        The intensity range of each channel is [0, 255] suitable for</span>
+<span class="sd">        displaying.</span>
+<span class="sd">    StainsFloat : array_like</span>
+<span class="sd">        An intensity image of deconvolved stains that is unbounded,</span>
+<span class="sd">        suitable for reconstructing color images of deconvolved stains</span>
+<span class="sd">        with color_convolution.</span>
+<span class="sd">    Wc : array_like</span>
+<span class="sd">        A 3x3 complemented stain matrix. Useful for color image</span>
+<span class="sd">        reconstruction with color_convolution.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    histomicstk.preprocessing.color_deconvolution.complement_stain_matrix,</span>
+<span class="sd">    histomicstk.preprocessing.color_deconvolution.color_convolution</span>
+<span class="sd">    histomicstk.preprocessing.color_conversion.rgb_to_od</span>
+<span class="sd">    histomicstk.preprocessing.color_conversion.od_to_rgb</span>
+<span class="sd">    histomicstk.preprocessing.color_conversion.rgb_to_sda</span>
+<span class="sd">    histomicstk.preprocessing.color_conversion.sda_to_rgb</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># complement stain matrix if needed</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">wc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">wc</span><span class="p">[:,</span> <span class="p">:</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">w</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">wc</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">w</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="mf">1e-16</span><span class="p">:</span>
+        <span class="n">wc</span> <span class="o">=</span> <span class="n">complement_stain_matrix</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">wc</span> <span class="o">=</span> <span class="n">w</span>
+
+    <span class="c1"># normalize stains to unit-norm</span>
+    <span class="n">wc</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">wc</span><span class="p">)</span>
+
+    <span class="c1"># invert stain matrix</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">wc</span><span class="p">)</span>
+
+    <span class="c1"># transform 3D input image to 2D RGB matrix format</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">convert_image_to_matrix</span><span class="p">(</span><span class="n">im_rgb</span><span class="p">)[:</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># transform input RGB to optical density values and deconvolve,</span>
+    <span class="c1"># tfm back to RGB</span>
+    <span class="n">sda_fwd</span> <span class="o">=</span> <span class="n">color_conversion</span><span class="o">.</span><span class="n">rgb_to_sda</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">I_0</span><span class="p">)</span>
+    <span class="n">sda_deconv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">sda_fwd</span><span class="p">)</span>
+    <span class="n">sda_inv</span> <span class="o">=</span> <span class="n">color_conversion</span><span class="o">.</span><span class="n">sda_to_rgb</span><span class="p">(</span><span class="n">sda_deconv</span><span class="p">,</span>
+                                          <span class="mi">255</span> <span class="k">if</span> <span class="n">I_0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># reshape output</span>
+    <span class="n">StainsFloat</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">convert_matrix_to_image</span><span class="p">(</span><span class="n">sda_inv</span><span class="p">,</span> <span class="n">im_rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># transform type</span>
+    <span class="n">Stains</span> <span class="o">=</span> <span class="n">StainsFloat</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+    <span class="c1"># return</span>
+    <span class="n">Unmixed</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Unmixed&#39;</span><span class="p">,</span>
+                                     <span class="p">[</span><span class="s1">&#39;Stains&#39;</span><span class="p">,</span> <span class="s1">&#39;StainsFloat&#39;</span><span class="p">,</span> <span class="s1">&#39;Wc&#39;</span><span class="p">])</span>
+    <span class="n">Output</span> <span class="o">=</span> <span class="n">Unmixed</span><span class="p">(</span><span class="n">Stains</span><span class="p">,</span> <span class="n">StainsFloat</span><span class="p">,</span> <span class="n">wc</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Output</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reorder_stains</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">stains</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reorder stains in a stain matrix to a specific order.</span>
+
+<span class="sd">    This is particularly relevant in macenco where the order of stains is not</span>
+<span class="sd">    preserved during stain unmixing, so this method uses</span>
+<span class="sd">    histomicstk.preprocessing.color_deconvolution.find_stain_index</span>
+<span class="sd">    to reorder the stains matrix to the order provided by this parameter</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    W : np array</span>
+<span class="sd">        A 3x3 matrix of stain column vectors.</span>
+<span class="sd">    stains : list, optional</span>
+<span class="sd">        List of stain names (order is important). Default is H&amp;E.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np array</span>
+<span class="sd">        A re-ordered 3x3 matrix of stain column vectors.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stains</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hematoxylin&#39;</span><span class="p">,</span> <span class="s1">&#39;eosin&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">stains</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">stains</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">stains</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Only two-stain matrices are supported for now.&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_channel_order</span><span class="p">(</span><span class="n">W</span><span class="p">):</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="n">find_stain_index</span><span class="p">(</span><span class="n">stain_color_map</span><span class="p">[</span><span class="n">stains</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">W</span><span class="p">)</span>
+        <span class="n">second</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">first</span>
+        <span class="c1"># If 2 stains, third &quot;stain&quot; is cross product of 1st 2 channels</span>
+        <span class="c1"># calculated using complement_stain_matrix()</span>
+        <span class="n">third</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">third</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ordered_stack</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">mat</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">order</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_ordered_stack</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">_get_channel_order</span><span class="p">(</span><span class="n">W</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="stain_unmixing_routine">
+<a class="viewcode-back" href="../../../../histomicstk.preprocessing.color_deconvolution.html#histomicstk.preprocessing.color_deconvolution.stain_unmixing_routine">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">stain_unmixing_routine</span><span class="p">(</span>
+        <span class="n">im_rgb</span><span class="p">,</span> <span class="n">stains</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stain_unmixing_method</span><span class="o">=</span><span class="s1">&#39;macenko_pca&#39;</span><span class="p">,</span>
+        <span class="n">stain_unmixing_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask_out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform stain unmixing using the method of choice (wrapper).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_rgb : array_like</span>
+<span class="sd">        An RGB image (m x n x 3) to unmix.</span>
+
+<span class="sd">    stains : list, optional</span>
+<span class="sd">        List of stain names (order is important). Default is H&amp;E. This is</span>
+<span class="sd">        particularly relevant in macenco where the order of stains is not</span>
+<span class="sd">        preserved during stain unmixing, so this method uses</span>
+<span class="sd">        histomicstk.preprocessing.color_deconvolution.find_stain_index</span>
+<span class="sd">        to reorder the stains matrix to the order provided by this parameter</span>
+
+<span class="sd">    stain_unmixing_method : str, default is &#39;macenko_pca&#39;</span>
+<span class="sd">        stain unmixing method to use. It should be one of the following</span>
+<span class="sd">        &#39;macenko_pca&#39;, or &#39;xu_snmf&#39;.</span>
+
+<span class="sd">    stain_unmixing_params : dict, default is an empty dict</span>
+<span class="sd">        kwargs to pass as-is to the stain unmixing method.</span>
+
+<span class="sd">    mask_out : array_like, default is None</span>
+<span class="sd">        if not None, should be (m x n) boolean numpy array.</span>
+<span class="sd">        This parameter ensures exclusion of non-masked areas from calculations</span>
+<span class="sd">        and normalization. This is relevant because elements like blood,</span>
+<span class="sd">        sharpie marker, white space, etc may throw off the normalization.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Wc : array_like</span>
+<span class="sd">        A 3x3 complemented stain matrix.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    histomicstk.preprocessing.color_deconvolution.separate_stains_macenko_pca</span>
+<span class="sd">    histomicstk.preprocessing.color_deconvolution.separate_stains_xu_snmf</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] Macenko, M., Niethammer, M., Marron, J. S., Borland, D.,</span>
+<span class="sd">           Woosley, J. T., Guan, X., ... &amp; Thomas, N. E. (2009, June).</span>
+<span class="sd">           A method for normalizing histology slides for quantitative analysis.</span>
+<span class="sd">           In Biomedical Imaging: From Nano to Macro, 2009.  ISBI&#39;09.</span>
+<span class="sd">           IEEE International Symposium on (pp. 1107-1110). IEEE.</span>
+<span class="sd">    .. [#] Xu, J., Xiang, L., Wang, G., Ganesan, S., Feldman, M., Shih, N. N.,</span>
+<span class="sd">           ...&amp; Madabhushi, A. (2015). Sparse Non-negative Matrix Factorization</span>
+<span class="sd">           (SNMF) based color unmixing for breast histopathological image</span>
+<span class="sd">           analysis.  Computerized Medical Imaging and Graphics, 46, 20-29.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stains</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hematoxylin&#39;</span><span class="p">,</span> <span class="s1">&#39;eosin&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">stains</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">stains</span>
+    <span class="n">stain_unmixing_params</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">stain_unmixing_params</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">stain_unmixing_params</span>
+
+    <span class="n">stain_unmixing_method</span> <span class="o">=</span> <span class="n">stain_unmixing_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">stain_unmixing_method</span> <span class="o">==</span> <span class="s1">&#39;macenko_pca&#39;</span><span class="p">:</span>
+        <span class="n">stain_deconvolution</span> <span class="o">=</span> <span class="n">rgb_separate_stains_macenko_pca</span>
+        <span class="n">stain_unmixing_params</span><span class="p">[</span><span class="s1">&#39;I_0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">stain_unmixing_params</span><span class="p">[</span><span class="s1">&#39;mask_out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask_out</span>
+
+    <span class="k">elif</span> <span class="n">stain_unmixing_method</span> <span class="o">==</span> <span class="s1">&#39;xu_snmf&#39;</span><span class="p">:</span>
+        <span class="n">stain_deconvolution</span> <span class="o">=</span> <span class="n">rgb_separate_stains_xu_snmf</span>
+        <span class="n">stain_unmixing_params</span><span class="p">[</span><span class="s1">&#39;I_0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="n">mask_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;Masking is not yet implemented in xu_snmf.&#39;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Unknown/Unimplemented deconvolution method.&#39;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># get W_source</span>
+    <span class="n">W_source</span> <span class="o">=</span> <span class="n">stain_deconvolution</span><span class="p">(</span><span class="n">im_rgb</span><span class="p">,</span> <span class="o">**</span><span class="n">stain_unmixing_params</span><span class="p">)</span>
+
+    <span class="c1"># If Macenco method, reorder channels in W_target and W_source as desired.</span>
+    <span class="c1"># This is actually a necessary step in macenko&#39;s method since we&#39;re</span>
+    <span class="c1"># not guaranteed the order of the different stains.</span>
+    <span class="k">if</span> <span class="n">stain_unmixing_method</span> <span class="o">==</span> <span class="s1">&#39;macenko_pca&#39;</span><span class="p">:</span>
+        <span class="n">W_source</span> <span class="o">=</span> <span class="n">_reorder_stains</span><span class="p">(</span><span class="n">W_source</span><span class="p">,</span> <span class="n">stains</span><span class="o">=</span><span class="n">stains</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">W_source</span></div>
+
+
+
+<div class="viewcode-block" id="color_deconvolution_routine">
+<a class="viewcode-back" href="../../../../histomicstk.preprocessing.color_deconvolution.html#histomicstk.preprocessing.color_deconvolution.color_deconvolution_routine">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">color_deconvolution_routine</span><span class="p">(</span>
+        <span class="n">im_rgb</span><span class="p">,</span> <span class="n">W_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask_out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unmix stains mixing followed by deconvolution (wrapper).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_rgb : array_like</span>
+<span class="sd">        An RGB image (m x n x 3) to color normalize</span>
+
+<span class="sd">    W_source : np array, default is None</span>
+<span class="sd">        A 3x3 matrix of source stain column vectors. Only provide this</span>
+<span class="sd">        if you know the stains matrix in advance (unlikely) and would</span>
+<span class="sd">        like to perform supervised deconvolution. If this is not provided,</span>
+<span class="sd">        stain_unmixing_routine() is used to estimate W_source.</span>
+
+<span class="sd">    mask_out : array_like, default is None</span>
+<span class="sd">        if not None, should be (m x n) boolean numpy array.</span>
+<span class="sd">        This parameter ensures exclusion of non-masked areas from calculations</span>
+<span class="sd">        and stain matrix. This is relevant because elements like blood,</span>
+<span class="sd">        sharpie marker, white space, cannot be modeled as a mix of two stains.</span>
+
+<span class="sd">    kwargs : k,v pairs</span>
+<span class="sd">        Passed as-is to stain_unmixing_routine() if W_source is None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Output from color_deconvolution()</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    histomicstk.preprocessing.color_deconvolution.stain_unmixing_routine</span>
+<span class="sd">    histomicstk.preprocessing.color_deconvolution.color_deconvolution</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get W_source if not provided</span>
+    <span class="k">if</span> <span class="n">W_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">W_source</span> <span class="o">=</span> <span class="n">stain_unmixing_routine</span><span class="p">(</span><span class="n">im_rgb</span><span class="p">,</span> <span class="n">mask_out</span><span class="o">=</span><span class="n">mask_out</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># deconvolve</span>
+    <span class="n">Stains</span><span class="p">,</span> <span class="n">StainsFloat</span><span class="p">,</span> <span class="n">wc</span> <span class="o">=</span> <span class="n">color_deconvolution</span><span class="p">(</span><span class="n">im_rgb</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">W_source</span><span class="p">,</span> <span class="n">I_0</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># mask out (keep in mind, image is inverted)</span>
+    <span class="k">if</span> <span class="n">mask_out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">Stains</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">][</span><span class="n">mask_out</span><span class="p">]</span> <span class="o">=</span> <span class="mi">255</span>
+            <span class="n">StainsFloat</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">][</span><span class="n">mask_out</span><span class="p">]</span> <span class="o">=</span> <span class="mf">255.</span>
+
+    <span class="k">return</span> <span class="n">Stains</span><span class="p">,</span> <span class="n">StainsFloat</span><span class="p">,</span> <span class="n">wc</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

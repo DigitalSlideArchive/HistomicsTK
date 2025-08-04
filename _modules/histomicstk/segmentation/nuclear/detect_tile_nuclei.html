@@ -1,0 +1,244 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.nuclear.detect_tile_nuclei &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.nuclear.detect_tile_nuclei</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.segmentation.nuclear.detect_tile_nuclei</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">histomicstk.features</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">htk_features</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_deconvolution</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">htk_cdeconv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_normalization</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">htk_cnorm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">histomicstk.segmentation.label</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">htk_seg_label</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">histomicstk.segmentation.nuclear</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">htk_nuclear</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">cli_utils</span>
+
+
+<div class="viewcode-block" id="detect_tile_nuclei">
+<a class="viewcode-back" href="../../../../histomicstk.segmentation.nuclear.html#histomicstk.segmentation.nuclear.detect_tile_nuclei">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">detect_tile_nuclei</span><span class="p">(</span><span class="n">tile_info</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">src_mu_lab</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">src_sigma_lab</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invert_image</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">default_img_inversion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_fdata</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Detect nuclei within a tile image and generate annotations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">    ----</span>
+<span class="sd">        tile_info (dict): Information about the tile image.</span>
+<span class="sd">        args: Arguments from the cli.</span>
+<span class="sd">        src_mu_lab: Source mean in LAB color space.</span>
+<span class="sd">        src_sigma_lab: Source standard deviation in LAB color space.</span>
+<span class="sd">        invert_image (bool): Invert the image.</span>
+<span class="sd">        default_img_inversion (bool): Apply default image inversion.</span>
+<span class="sd">        return_fdata (bool): Return computed features.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    -------</span>
+<span class="sd">        nuclei_annot_list (list): List of nuclei annotations.</span>
+<span class="sd">        fdata: Computed nuclei features.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Flags</span>
+    <span class="n">single_channel</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># get tile image &amp; check number of channels</span>
+    <span class="n">single_channel</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;tile&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;tile&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">single_channel</span><span class="p">:</span>
+        <span class="n">im_tile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;tile&#39;</span><span class="p">],</span> <span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;tile&#39;</span><span class="p">],</span> <span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;tile&#39;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">default_img_inversion</span><span class="p">:</span>
+            <span class="n">invert_image</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">im_tile</span> <span class="o">=</span> <span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;tile&#39;</span><span class="p">][:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># perform image inversion</span>
+    <span class="k">if</span> <span class="n">invert_image</span><span class="p">:</span>
+        <span class="n">im_tile</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">im_tile</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
+                   <span class="k">if</span> <span class="n">im_tile</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;u&#39;</span>
+                   <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">im_tile</span><span class="p">))</span> <span class="o">-</span> <span class="n">im_tile</span>
+
+    <span class="c1"># perform color normalization</span>
+    <span class="n">im_nmzd</span> <span class="o">=</span> <span class="n">htk_cnorm</span><span class="o">.</span><span class="n">reinhard</span><span class="p">(</span><span class="n">im_tile</span><span class="p">,</span>
+                                 <span class="n">args</span><span class="o">.</span><span class="n">reference_mu_lab</span><span class="p">,</span>
+                                 <span class="n">args</span><span class="o">.</span><span class="n">reference_std_lab</span><span class="p">,</span>
+                                 <span class="n">src_mu</span><span class="o">=</span><span class="n">src_mu_lab</span><span class="p">,</span>
+                                 <span class="n">src_sigma</span><span class="o">=</span><span class="n">src_sigma_lab</span><span class="p">)</span>
+
+    <span class="c1"># perform color decovolution</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">cli_utils</span><span class="o">.</span><span class="n">get_stain_matrix</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="c1"># perform deconvolution</span>
+    <span class="n">im_stains</span> <span class="o">=</span> <span class="n">htk_cdeconv</span><span class="o">.</span><span class="n">color_deconvolution</span><span class="p">(</span><span class="n">im_nmzd</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">Stains</span>
+    <span class="n">im_nuclei_stain</span> <span class="o">=</span> <span class="n">im_stains</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="c1"># segment nuclear foreground</span>
+    <span class="n">im_nuclei_fgnd_mask</span> <span class="o">=</span> <span class="n">im_nuclei_stain</span> <span class="o">&lt;</span> <span class="n">args</span><span class="o">.</span><span class="n">foreground_threshold</span>
+
+    <span class="c1"># segment nuclei</span>
+    <span class="n">im_nuclei_seg_mask</span> <span class="o">=</span> <span class="n">htk_nuclear</span><span class="o">.</span><span class="n">detect_nuclei_kofahi</span><span class="p">(</span>
+        <span class="n">im_nuclei_stain</span><span class="p">,</span>
+        <span class="n">im_nuclei_fgnd_mask</span><span class="p">,</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">min_radius</span><span class="p">,</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">max_radius</span><span class="p">,</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">min_nucleus_area</span><span class="p">,</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">local_max_search_radius</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Delete border nuclei</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">ignore_border_nuclei</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+
+        <span class="n">im_nuclei_seg_mask</span> <span class="o">=</span> <span class="n">htk_seg_label</span><span class="o">.</span><span class="n">delete_border</span><span class="p">(</span><span class="n">im_nuclei_seg_mask</span><span class="p">)</span>
+
+    <span class="c1"># Delete overlapping border nuclei</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;tile_overlap&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+        <span class="n">im_nuclei_seg_mask</span> <span class="o">=</span> <span class="n">htk_seg_label</span><span class="o">.</span><span class="n">delete_overlap</span><span class="p">(</span>
+            <span class="n">im_nuclei_seg_mask</span><span class="p">,</span> <span class="n">overlap_info</span><span class="o">=</span><span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;tile_overlap&#39;</span><span class="p">])</span>
+
+    <span class="c1"># generate nuclei annotations</span>
+    <span class="n">nuclei_annot_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">flag_nuclei_found</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">im_nuclei_seg_mask</span><span class="p">)</span>
+
+    <span class="c1"># compute nuclei features and nuclei_annot_list</span>
+    <span class="n">fdata</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">flag_nuclei_found</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">nuclei_annotation_format</span><span class="p">:</span>
+            <span class="nb">format</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">nuclei_annotation_format</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">nuclei_annotation_format</span> <span class="o">==</span> <span class="s1">&#39;bbox&#39;</span> <span class="ow">and</span> <span class="o">-</span> \
+                    <span class="n">args</span><span class="o">.</span><span class="n">remove_overlapping_nuclei_segmentation</span><span class="p">:</span>
+                <span class="nb">format</span> <span class="o">=</span> <span class="s1">&#39;boundary&#39;</span>
+
+        <span class="k">if</span> <span class="n">return_fdata</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">cytoplasm_features</span><span class="p">:</span>
+                <span class="n">im_cytoplasm_stain</span> <span class="o">=</span> <span class="n">im_stains</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">im_cytoplasm_stain</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="c1"># Generate features and nuclei annotation simultaneously</span>
+            <span class="n">fdata</span><span class="p">,</span> <span class="n">nuclei_annot_list</span> <span class="o">=</span> <span class="n">htk_features</span><span class="o">.</span><span class="n">compute_nuclei_features</span><span class="p">(</span>
+                <span class="n">im_nuclei_seg_mask</span><span class="p">,</span>
+                <span class="n">im_nuclei_stain</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span> <span class="n">im_cytoplasm_stain</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span>
+                <span class="n">fsd_bnd_pts</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fsd_bnd_pts</span><span class="p">,</span>
+                <span class="n">fsd_freq_bins</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fsd_freq_bins</span><span class="p">,</span>
+                <span class="n">cyto_width</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cyto_width</span><span class="p">,</span>
+                <span class="n">num_glcm_levels</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">num_glcm_levels</span><span class="p">,</span>
+                <span class="n">morphometry_features_flag</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">morphometry_features</span><span class="p">,</span>
+                <span class="n">fsd_features_flag</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fsd_features</span><span class="p">,</span>
+                <span class="n">intensity_features_flag</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">intensity_features</span><span class="p">,</span>
+                <span class="n">gradient_features_flag</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">gradient_features</span><span class="p">,</span>
+                <span class="n">tile_info</span><span class="o">=</span><span class="n">tile_info</span><span class="p">,</span>
+                <span class="n">im_nuclei_seg_mask</span><span class="o">=</span><span class="n">im_nuclei_seg_mask</span><span class="p">,</span>
+                <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">,</span>
+                <span class="n">return_nuclei_annotation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">fdata</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Feature.&#39;</span> <span class="o">+</span> <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">fdata</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nuclei_annot_list</span> <span class="o">=</span> <span class="n">cli_utils</span><span class="o">.</span><span class="n">create_tile_nuclei_annotations</span><span class="p">(</span>
+                <span class="n">im_nuclei_seg_mask</span><span class="p">,</span> <span class="n">tile_info</span><span class="p">,</span> <span class="nb">format</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_fdata</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">nuclei_annot_list</span><span class="p">,</span> <span class="n">fdata</span>
+
+    <span class="k">return</span> <span class="n">nuclei_annot_list</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
