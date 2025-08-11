@@ -3,9 +3,8 @@
 import numpy
 
 import histomicstk.utils as utils
-from histomicstk._rust import (  # pylint: disable=no-name-in-module
-    py_separate_stains_macenko_pca,
-)
+from histomicstk._rust import \
+    py_separate_stains_macenko_pca  # pylint: disable=no-name-in-module
 
 from . import _linalg as linalg
 from .complement_stain_matrix import complement_stain_matrix

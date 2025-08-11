@@ -1,7 +1,8 @@
 import numpy as np
-from histomicstk._rust import (  # pylint: disable=no-name-in-module
-    py_rgb_separate_stains_macenko_pca,
-)
+
+from histomicstk._rust import \
+    py_rgb_separate_stains_macenko_pca  # pylint: disable=no-name-in-module
+
 from ..color_conversion import rgb_to_sda
 from .separate_stains_macenko_pca import separate_stains_macenko_pca
 
