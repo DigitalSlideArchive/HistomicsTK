@@ -1,15 +1,42 @@
 """Placeholder."""
+
 import numpy
 
 import histomicstk.utils as utils
+from histomicstk._rust import (  # pylint: disable=no-name-in-module
+    py_separate_stains_macenko_pca,
+)
 
 from . import _linalg as linalg
 from .complement_stain_matrix import complement_stain_matrix
 
 
+def separate_stains_macenko_pca_rs(
+    im_sda,
+    minimum_magnitude=16,
+    min_angle_percentile=0.01,
+    max_angle_percentile=0.99,
+    mask_out=None,
+):
+    """
+    Rust-accelerated version of separate_stains_macenko_pca.
+    """
+    im = numpy.asarray(im_sda, dtype=numpy.float64, order="C")
+    mask = None
+    if mask_out is not None:
+        mask = numpy.ascontiguousarray(mask_out, dtype=bool)
+    return py_separate_stains_macenko_pca(
+        im, minimum_magnitude, min_angle_percentile, max_angle_percentile, mask
+    )
+
+
 def separate_stains_macenko_pca(
-        im_sda, minimum_magnitude=16, min_angle_percentile=0.01,
-        max_angle_percentile=0.99, mask_out=None):
+    im_sda,
+    minimum_magnitude=16,
+    min_angle_percentile=0.01,
+    max_angle_percentile=0.99,
+    mask_out=None,
+):
     """Compute the stain matrix for color deconvolution with the Macenko method.
 
     For a two-stain image or matrix in SDA space, this method works by
@@ -98,8 +125,7 @@ def separate_stains_macenko_pca(
     max_v = get_percentile_vector(max_angle_percentile)
 
     # The stain matrix
-    w = complement_stain_matrix(linalg.normalize(
-        numpy.array([min_v, max_v]).T))
+    w = complement_stain_matrix(linalg.normalize(numpy.array([min_v, max_v]).T))
     return w
 
 
