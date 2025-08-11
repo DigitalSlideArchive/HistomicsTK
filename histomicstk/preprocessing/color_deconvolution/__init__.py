@@ -18,7 +18,10 @@ from .color_deconvolution import (
 )
 from .complement_stain_matrix import complement_stain_matrix
 from .find_stain_index import find_stain_index
-from .rgb_separate_stains_macenko_pca import rgb_separate_stains_macenko_pca
+from .rgb_separate_stains_macenko_pca import (
+    rgb_separate_stains_macenko_pca,
+    rgb_separate_stains_macenko_pca_rs,
+)
 from .rgb_separate_stains_xu_snmf import rgb_separate_stains_xu_snmf
 from .separate_stains_macenko_pca import (
     separate_stains_macenko_pca,
@@ -42,6 +45,7 @@ __all__ = (
     "separate_stains_macenko_pca_rs",
     "separate_stains_xu_snmf",
     "rgb_separate_stains_macenko_pca",
+    "rgb_separate_stains_macenko_pca_rs",
     "rgb_separate_stains_xu_snmf",
     "stain_color_map",
     "_reorder_stains",
