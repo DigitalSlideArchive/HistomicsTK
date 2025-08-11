@@ -7,23 +7,29 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
 add_subdirectory(histomicstk/features)
 add_subdirectory(histomicstk/segmentation/label)
 add_subdirectory(histomicstk/segmentation/nuclear)
-
 # --- Build Rust extension ---
 message(STATUS "Building Rust extension with Cargo")
 set(ENV{PYTHON_SYS_EXECUTABLE} ${Python3_EXECUTABLE})
 set(ENV{PYO3_PYTHON}         ${Python3_EXECUTABLE})
-# on macOS tell Rust to leave Python symbols undefined so they're
-# picked up at runtime by the Python interpreter
-set(ENV{RUSTFLAGS}          "-C link-arg=-undefined -C link-arg=dynamic_lookup")
+
+if(APPLE)
+    # on macOS tell Rust to leave Python symbols undefined so they're
+    # picked up at runtime by the Python interpreter
+    set(ENV{RUSTFLAGS}          "-C link-arg=-undefined -C link-arg=dynamic_lookup")
+endif()
+
 execute_process(
     COMMAND cargo build --release
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     RESULT_VARIABLE cargo_result
 )
+
 # clean up
 unset(ENV{PYTHON_SYS_EXECUTABLE})
 unset(ENV{PYO3_PYTHON})
-unset(ENV{RUSTFLAGS})
+if(APPLE)
+    unset(ENV{RUSTFLAGS})
+endif()
 if(NOT cargo_result EQUAL 0)
     message(FATAL_ERROR "Cargo build failed ${Python3_EXECUTABLE}")
 endif()
