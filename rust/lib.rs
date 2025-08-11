@@ -1,4 +1,6 @@
-use numpy::{IntoPyArray, PyArray2, PyReadonlyArray2, PyReadonlyArray3}; // <-- add IntoPyArray here
+use numpy::{
+    IntoPyArray, PyArray2, PyArrayDyn, PyReadonlyArray2, PyReadonlyArray3, PyReadonlyArrayDyn,
+};
 use pyo3::PyResult;
 use pyo3::Python;
 use pyo3::prelude::*;
@@ -40,8 +42,23 @@ fn py_rgb_separate_stains_macenko_pca<'py>(
     Ok(result.into_pyarray(py))
 }
 
+#[pyfunction]
+fn py_rgb_to_sda<'py>(
+    py: Python<'py>,
+    im_rgb: PyReadonlyArrayDyn<'py, f64>,
+    bg_int: Option<Vec<f64>>,
+    allow_negative: Option<bool>,
+) -> PyResult<pyo3::Bound<'py, PyArrayDyn<f64>>> {
+    let arr = im_rgb.as_array();
+    let bg_ref = bg_int.as_ref().map(|v| v.as_slice());
+    let result = color_conversion::rgb_to_sda(arr, bg_ref, allow_negative)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{:?}", e)))?;
+    Ok(result.into_pyarray(py))
+}
+
 #[pymodule]
 fn _rust(_py: Python, m: pyo3::Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_rgb_separate_stains_macenko_pca, &m)?)?;
+    m.add_function(wrap_pyfunction!(py_rgb_to_sda, &m)?)?;
     Ok(())
 }
