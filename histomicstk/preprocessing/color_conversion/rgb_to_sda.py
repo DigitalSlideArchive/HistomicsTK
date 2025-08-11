@@ -59,7 +59,7 @@ def rgb_to_sda_rs(im_rgb, I_0, allow_negatives=False):
     Mirrors the compatibility behavior of rgb_to_sda:
     - If I_0 is None, adds 1.0 to the input and uses 256 as the background.
     """
-    im = np.asarray(im_rgb, dtype=np.float64, order="C")
+    im = np.asarray(im_rgb, dtype=np.float64, order='C')
 
     # Emulate rgb_to_od compatibility when I_0 is None
     if I_0 is None:
