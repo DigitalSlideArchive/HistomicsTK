@@ -1,5 +1,5 @@
 [package]
-name = "pca_deconv"
+name = "histomicstk_rs"
 version = "0.1.0"
 edition = "2024"
 
@@ -14,10 +14,14 @@ pdqselect = "0.1.1"
 num-traits = "0.2"
 
 [lib]
-name = "pca_deconv"
-#crate-type = ["rlib"]
-crate-type = ["cdylib", "rlib"]
+name = "_lib"
+path = "rust/lib.rs"
+crate-type = ["cdylib"]
 
 [profile.release]
 lto = true
 opt-level = 3
+
+[features]
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]

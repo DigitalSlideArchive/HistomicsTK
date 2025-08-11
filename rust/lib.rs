@@ -41,7 +41,7 @@ fn py_rgb_separate_stains_macenko_pca<'py>(
 }
 
 #[pymodule]
-fn pca_deconv(_py: Python, m: pyo3::Bound<'_, PyModule>) -> PyResult<()> {
+fn _rust(_py: Python, m: pyo3::Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_rgb_separate_stains_macenko_pca, &m)?)?;
     Ok(())
 }
