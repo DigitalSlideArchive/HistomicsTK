@@ -51,7 +51,7 @@ fn py_separate_stains_macenko_pca<'py>(
     max_angle_percentile: Option<f64>,
     mask_out: Option<PyReadonlyArray2<'py, bool>>,
 ) -> PyResult<pyo3::Bound<'py, PyArray2<f64>>> {
-    use ndarray::{Array3, ArrayView2, Ix3};
+    use ndarray::Ix3;
     let arr = im_sda.as_array();
     let arr3 = if arr.ndim() == 3 {
         arr.into_dimensionality::<Ix3>().unwrap()
