@@ -19,13 +19,13 @@ from .sda_to_rgb import sda_to_rgb
 # list out things that are available for public use
 __all__ = (
     # functions and classes of this package
-    "lab_mean_std",
-    "lab_to_rgb",
-    "od_to_rgb",
-    "sda_to_rgb",
-    "rgb_to_hsi",
-    "rgb_to_lab",
-    "rgb_to_od",
-    "rgb_to_sda",
-    "rgb_to_sda_rs",  # Rust-accelerated version
+    'lab_mean_std',
+    'lab_to_rgb',
+    'od_to_rgb',
+    'sda_to_rgb',
+    'rgb_to_hsi',
+    'rgb_to_lab',
+    'rgb_to_od',
+    'rgb_to_sda',
+    'rgb_to_sda_rs',  # Rust-accelerated version
 )

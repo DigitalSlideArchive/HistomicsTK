@@ -21,12 +21,12 @@ def separate_stains_macenko_pca_rs(
     """
     Rust-accelerated version of separate_stains_macenko_pca.
     """
-    im = numpy.asarray(im_sda, dtype=numpy.float64, order="C")
+    im = numpy.asarray(im_sda, dtype=numpy.float64, order='C')
     mask = None
     if mask_out is not None:
         mask = numpy.ascontiguousarray(mask_out, dtype=bool)
     return py_separate_stains_macenko_pca(
-        im, minimum_magnitude, min_angle_percentile, max_angle_percentile, mask
+        im, minimum_magnitude, min_angle_percentile, max_angle_percentile, mask,
     )
 
 

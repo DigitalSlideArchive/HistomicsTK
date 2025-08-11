@@ -17,7 +17,7 @@ def rgb_separate_stains_macenko_pca_rs(
     """
     Rust-accelerated version of rgb_separate_stains_macenko_pca.
     """
-    im = np.asarray(im_rgb, dtype=np.float64, order="C")
+    im = np.asarray(im_rgb, dtype=np.float64, order='C')
     mask = None
     if mask_out is not None:
         mask = np.ascontiguousarray(mask_out, dtype=bool)
@@ -30,7 +30,7 @@ def rgb_separate_stains_macenko_pca_rs(
     else:
         bg = np.asarray(I_0, dtype=np.float64).ravel().tolist()
     return py_rgb_separate_stains_macenko_pca(
-        im, bg, minimum_magnitude, min_angle_percentile, max_angle_percentile, mask
+        im, bg, minimum_magnitude, min_angle_percentile, max_angle_percentile, mask,
     )
 
 
