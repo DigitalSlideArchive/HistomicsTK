@@ -12,11 +12,6 @@ where
         .reversed_axes()
 }
 
-// ...existing code...
-/// Exclude columns from m that have infinities or nans.
-/// This function takes ownership of `m` and returns a new `Array2`
-/// containing only the columns from `m` where all elements are finite.
-/// It avoids cloning the array if no columns are removed.
 pub fn exclude_nonfinite<F: Float>(m: Array2<F>) -> Array2<F> {
     let valid_indices: Vec<usize> = m
         .columns()
@@ -35,6 +30,5 @@ pub fn exclude_nonfinite<F: Float>(m: Array2<F>) -> Array2<F> {
     if valid_indices.len() == m.ncols() {
         return m;
     }
-
     m.select(Axis(1), &valid_indices)
 }
