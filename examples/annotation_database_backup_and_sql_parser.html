@@ -1,0 +1,936 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local backup and SQL querying of annotation data &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Creating gallery images for annotation review" href="creating_gallery_images_review.html" />
+    <link rel="prev" title="Tips for scaling annotation rendering" href="tips_for_scalable_annotation_rendering.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Local backup and SQL querying of annotation data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Connect-and-set-parameters">Connect and set parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Examine-functions-for-pulling-annotation-data">Examine functions for pulling annotation data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Case-1:-Simple-backup">Case 1: Simple backup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Here-is-the-syntax:">Here is the syntax:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Check-the-results">Check the results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Query-the-database">Query the database</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Case-2:-Parse-annotations-to-tables">Case 2: Parse annotations to tables</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Here's-the-syntax:">Here’s the syntax:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Check-the-result">Check the result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Query the database</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Sample-screenshots">Sample screenshots</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Local backup and SQL querying of annotation data</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/annotation_database_backup_and_sql_parser.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Local-backup-and-SQL-querying-of-annotation-data">
+<h1>Local backup and SQL querying of annotation data<a class="headerlink" href="#Local-backup-and-SQL-querying-of-annotation-data" title="Link to this heading">¶</a></h1>
+<p><strong>Overview:</strong></p>
+<p><img alt="sqlite" src="https://user-images.githubusercontent.com/22067552/80071301-5e868080-8512-11ea-8115-47fcefdb568a.png" /></p>
+<p>Annotations represent a significant time investment for the users who generate them and they should be backed up frequently. The simplest way to backup the annotations in a DSA database is to perform a <a class="reference external" href="https://docs.mongodb.com/manual/reference/program/mongodump/">mongodump</a> operation. While frequent <code class="docutils literal notranslate"><span class="pre">mongodump</span></code> operations are always important to guard against failures they have the following disadvantages:</p>
+<ul class="simple">
+<li><p>You need to have access on the server where the annotations are hosted.</p></li>
+<li><p>The entire Mongo database is backed up, not just the folder you care about.</p></li>
+<li><p>You cannot query the database using SQL queries. HistomicsTK has utility functions that allow the recursive backup of a girder database locally as a combination of <code class="docutils literal notranslate"><span class="pre">.json</span></code> files (most similar to the raw format), tabular files (<code class="docutils literal notranslate"><span class="pre">.csv</span></code>), and/or an SQLite database.</p></li>
+</ul>
+<p>The SQLite database can easily be viewed using, for example, an <a class="reference external" href="https://sqlitebrowser.org/dl/">offline</a> sqlite viewer or even an <a class="reference external" href="https://sqliteonline.com/">online</a> sqlite viewer.</p>
+<p><strong>Where to look:</strong></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>|_histomicstk/
+   |_annotations_and_masks/
+      |_annotation_database_parser.py
+      |_annotation_and_mask_utils.py -&gt; parse_slide_annotations_into_tables()
+      |_tests/
+         |_test_annotation_database_parser.py
+         |_test_annotation_and_mask_utils.py -&gt; test_parse_slide_annotations_into_table()
+</pre></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">db</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.utils.girder_convenience_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">connect_to_api</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotation_database_parser</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">dump_annotations_locally</span><span class="p">,</span> <span class="n">parse_annotations_to_local_tables</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="Connect-and-set-parameters">
+<h2>Connect and set parameters<a class="headerlink" href="#Connect-and-set-parameters" title="Link to this heading">¶</a></h2>
+<p>We use an api key to connect to the remote server, set the girder ID of the folder we want to backup, and set the local path where the backup will be stored.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gc</span> <span class="o">=</span> <span class="n">connect_to_api</span><span class="p">(</span>
+    <span class="n">apiurl</span><span class="o">=</span><span class="s1">&#39;http://candygram.neurology.emory.edu:8080/api/v1/&#39;</span><span class="p">,</span>
+    <span class="n">apikey</span><span class="o">=</span><span class="s1">&#39;kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb&#39;</span><span class="p">)</span>
+
+<span class="c1"># This is the girder ID of the folder we would like to backup and parse locally</span>
+<span class="n">SAMPLE_FOLDER_ID</span> <span class="o">=</span> <span class="s1">&#39;5e24c20dddda5f8398695671&#39;</span>
+
+<span class="c1"># This is where the annotations and sqlite database will be dumped locally</span>
+<span class="n">savepath</span> <span class="o">=</span> <span class="s1">&#39;/home/mtageld/Desktop/tmp/concordance/&#39;</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Examine-functions-for-pulling-annotation-data">
+<h2>Examine functions for pulling annotation data<a class="headerlink" href="#Examine-functions-for-pulling-annotation-data" title="Link to this heading">¶</a></h2>
+<p>This is the main function you will be using to walk the folder and pull the annotations from the remote server</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">dump_annotations_locally</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Dump annotations of folder and subfolders locally recursively.
+
+    This reproduces this tiered structure locally and (possibly) dumps
+    annotations there. Adapted from Lee A.D. Cooper
+
+    Parameters
+    -----------
+    gc : girder_client.GirderClient
+        authenticated girder client instance
+
+    folderid : str
+        girder id of source (base) folder
+
+    local : str
+        local path to dump annotations
+
+    save_json : bool
+        whether to dump annotations as json file
+
+    save_sqlite : bool
+        whether to save the backup into an sqlite database
+
+    dbcon : sqlalchemy.create_engine.connect() object
+        IGNORE THIS PARAMETER!! This is used internally.
+
+    callback : function
+        function to call that CAN accept AT LEAST the following params
+        - item: girder response with item information
+        - annotations: loaded annotations
+        - local: local directory
+        - monitorPrefix: string
+        - dbcon: sqlalchemy.create_engine.connect() object
+        You can just add kwargs at the end of your callback definition
+        for simplicity.
+
+    callback_kwargs : dict
+        kwargs to pass along to callback. DO NOT pass any of the parameters
+        item, annotations, local, monitorPrefix, or dbcon as these will be
+        internally passed. Just include any specific parameters for the
+        callback. See parse_annotations_to_local_tables() above for
+        an example of a callback and the unir test of this function.
+
+
+</pre></div></div>
+</div>
+<p>This optionally calls the following function to parse annotations into tables that are added to an sqlite database.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">parse_annotations_to_local_tables</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Parse loaded annotations for slide into tables.
+
+    Parameters
+    ----------
+    item : dict
+        girder response with item information
+
+    annotations : dict
+        loaded annotations
+
+    local : str
+        local directory
+
+    save_csv : bool
+        whether to use histomicstk.annotations_and_masks.annotation_and_mask.
+        parse_slide_annotations_into_tables() to get a tabular representation
+        (including some simple calculations like bounding box) and save
+        the output as two csv files, one representing the annotation documents
+        and the other representing the actual annotation elements (polygons).
+
+    save_sqlite : bool
+        whether to save the backup into an sqlite database
+
+    dbcon : sqlalchemy.create_engine.connect() object
+        IGNORE THIS PARAMETER!! This is used internally.
+
+    monitorPrefix : str
+        text to prepend to printed statements
+
+
+</pre></div></div>
+</div>
+</section>
+<section id="Case-1:-Simple-backup">
+<h2>Case 1: Simple backup<a class="headerlink" href="#Case-1:-Simple-backup" title="Link to this heading">¶</a></h2>
+<p>The simplest case is to backup the information about the girder folders, items, and annotations as <code class="docutils literal notranslate"><span class="pre">.json</span></code> files, with a folder structure replicated locally as it is in the girder database. The user may also elect to save the folder and item/slide information (but not the annotations) as the following tables in a SQLite database:</p>
+<ul class="simple">
+<li><p><strong>folders</strong>: all girder folders contained within the folder that the user wants to backup. This includes an ‘absolute girder path’ convenience column. The column ‘_id’ is the unique girder ID.</p></li>
+<li><p><strong>items</strong>: all items (slide). The column ‘_id’ is the unique girder ID, and is linked to the folders table by the ‘folderId’ column.</p></li>
+</ul>
+<section id="Here-is-the-syntax:">
+<h3>Here is the syntax:<a class="headerlink" href="#Here-is-the-syntax:" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># recursively save annotations -- JSONs + sqlite for folders/items</span>
+<span class="n">dump_annotations_locally</span><span class="p">(</span>
+    <span class="n">gc</span><span class="p">,</span> <span class="n">folderid</span><span class="o">=</span><span class="n">SAMPLE_FOLDER_ID</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="n">savepath</span><span class="p">,</span>
+    <span class="n">save_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_sqlite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+: save folder info
+Participant_1: save folder info
+Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): save item info
+Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): load annotations
+Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): save annotations
+Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): save item info
+Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): load annotations
+Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): save annotations
+Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): save item info
+Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): load annotations
+Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): save annotations
+Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): save item info
+Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): load annotations
+Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): save annotations
+Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): save item info
+Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): load annotations
+Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): save annotations
+Participant_2: save folder info
+Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): save item info
+Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): load annotations
+Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): save annotations
+Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): save item info
+Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): load annotations
+Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): save annotations
+Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): save item info
+Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): load annotations
+Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): save annotations
+Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): save item info
+Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): load annotations
+Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): save annotations
+Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): save item info
+Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): load annotations
+Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): save annotations
+</pre></div></div>
+</div>
+</section>
+<section id="Check-the-results">
+<h3>Check the results<a class="headerlink" href="#Check-the-results" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>tree<span class="w"> </span><span class="s1">&#39;/home/mtageld/Desktop/tmp/concordance/&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/home/mtageld/Desktop/tmp/concordance/
+├── Concordance.json
+├── Concordance.sqlite
+├── Participant_1
+│   ├── Participant_1.json
+│   ├── TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs_annotations.json
+│   ├── TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs.json
+│   ├── TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs_annotations.json
+│   ├── TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs.json
+│   ├── TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs_annotations.json
+│   ├── TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs.json
+│   ├── TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs_annotations.json
+│   ├── TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs.json
+│   ├── TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs_annotations.json
+│   └── TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs.json
+└── Participant_2
+    ├── Participant_2.json
+    ├── TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs_annotations.json
+    ├── TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs.json
+    ├── TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs_annotations.json
+    ├── TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs.json
+    ├── TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs_annotations.json
+    ├── TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs.json
+    ├── TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs_annotations.json
+    ├── TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs.json
+    ├── TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs_annotations.json
+    └── TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs.json
+
+2 directories, 24 files
+</pre></div></div>
+</div>
+</section>
+<section id="Query-the-database">
+<h3>Query the database<a class="headerlink" href="#Query-the-database" title="Link to this heading">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Connect to the database</span>
+<span class="n">sql_engine</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">create_engine</span><span class="p">(</span>
+    <span class="s1">&#39;sqlite:///</span><span class="si">%s</span><span class="s1">/Concordance.sqlite&#39;</span> <span class="o">%</span> <span class="n">savepath</span><span class="p">)</span>
+<span class="n">dbcon</span> <span class="o">=</span> <span class="n">sql_engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># folders table</span>
+<span class="n">folders_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql_query</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    SELECT &quot;_id&quot;, &quot;name&quot;, &quot;folder_path&quot;</span>
+<span class="sd">    FROM &quot;folders&quot;</span>
+<span class="sd">    ;&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">dbcon</span><span class="p">)</span>
+
+<span class="n">folders_df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_id</th>
+      <th>name</th>
+      <th>folder_path</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5e24c20dddda5f8398695671</td>
+      <td>Concordance</td>
+      <td>UncrossPolygonTest/Concordance/</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5e24c0dfddda5f839869556c</td>
+      <td>Participant_1</td>
+      <td>UncrossPolygonTest/Concordance/Participant_1/</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>5e24c0d3ddda5f8398694f06</td>
+      <td>Participant_2</td>
+      <td>UncrossPolygonTest/Concordance/Participant_2/</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># items table</span>
+<span class="n">items_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql_query</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    SELECT &quot;_id&quot;, &quot;name&quot;, &quot;folderid&quot;</span>
+<span class="sd">    FROM &quot;items&quot;</span>
+<span class="sd">    ;&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">dbcon</span><span class="p">)</span>
+
+<span class="n">items_df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_id</th>
+      <th>name</th>
+      <th>folderId</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5e24c0dfddda5f8398695571</td>
+      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>
+      <td>5e24c0dfddda5f839869556c</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5e24c0dfddda5f8398695586</td>
+      <td>TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B...</td>
+      <td>5e24c0dfddda5f839869556c</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>5e24c0dfddda5f83986955b1</td>
+      <td>TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA2...</td>
+      <td>5e24c0dfddda5f839869556c</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>5e24c0dfddda5f83986955c1</td>
+      <td>TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E4...</td>
+      <td>5e24c0dfddda5f839869556c</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5e24c0e0ddda5f83986955d8</td>
+      <td>TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F7...</td>
+      <td>5e24c0dfddda5f839869556c</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>5e24c0dbddda5f839869531a</td>
+      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>
+      <td>5e24c0d3ddda5f8398694f06</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>5e24c0dbddda5f8398695342</td>
+      <td>TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B...</td>
+      <td>5e24c0d3ddda5f8398694f06</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>5e24c0dbddda5f8398695372</td>
+      <td>TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA2...</td>
+      <td>5e24c0d3ddda5f8398694f06</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>5e24c0dcddda5f8398695387</td>
+      <td>TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E4...</td>
+      <td>5e24c0d3ddda5f8398694f06</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>5e24c0dcddda5f83986953aa</td>
+      <td>TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F7...</td>
+      <td>5e24c0d3ddda5f8398694f06</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># cleanup</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">))</span>
+<span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">savepath</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Case-2:-Parse-annotations-to-tables">
+<h2>Case 2: Parse annotations to tables<a class="headerlink" href="#Case-2:-Parse-annotations-to-tables" title="Link to this heading">¶</a></h2>
+<p>Besides everything outlined above, we could also parse the annotations into tables in the SQLite database and not just save the raw JSON files. This is a little slower because loops through each annotation element. Beside the tables above, the following extra tables are saved into the SQLite database:</p>
+<ul class="simple">
+<li><p><strong>annotation_docs</strong>: Information about all the annotation documents (one document is a collection of elements like polygons, rectangles etc). The column ‘annotation_girder_id’ is the unique girder ID, and is linked to the ‘items’ table by the ‘itemid’ column.</p></li>
+<li><p><strong>annotation_elements</strong>: Information about the annotation elements (polygons, rectangles, points, etc). The column ‘element_girder_id’ is the unique girder ID, and is linked to the ‘annotation_docs’ table by the ‘annotation_girder_id’ column.</p></li>
+</ul>
+<section id="Here's-the-syntax:">
+<h3>Here’s the syntax:<a class="headerlink" href="#Here's-the-syntax:" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># recursively save annotations -- parse sqlite</span>
+<span class="n">dump_annotations_locally</span><span class="p">(</span>
+    <span class="n">gc</span><span class="p">,</span> <span class="n">folderid</span><span class="o">=</span><span class="n">SAMPLE_FOLDER_ID</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="n">savepath</span><span class="p">,</span>
+    <span class="n">save_json</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save_sqlite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">callback</span><span class="o">=</span><span class="n">parse_annotations_to_local_tables</span><span class="p">,</span>
+    <span class="n">callback_kwargs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;save_csv&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s1">&#39;save_sqlite&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): load annotations
+Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): run callback
+Participant_1: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): parse to tables
+Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): load annotations
+Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): run callback
+Participant_1: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): parse to tables
+Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): load annotations
+Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): run callback
+Participant_1: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): parse to tables
+Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): load annotations
+Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): run callback
+Participant_1: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): parse to tables
+Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): load annotations
+Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): run callback
+Participant_1: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): parse to tables
+Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): load annotations
+Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): run callback
+Participant_2: slide 1 of 5 (TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD7-A61535786297.svs): parse to tables
+Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): load annotations
+Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): run callback
+Participant_2: slide 2 of 5 (TCGA-A2-A0YM-01Z-00-DX1.A48B4C96-2CC5-464C-98B7-F0F92AE56533.svs): parse to tables
+Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): load annotations
+Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): run callback
+Participant_2: slide 3 of 5 (TCGA-A7-A0DA-01Z-00-DX1.5F087009-16E9-4A07-BA24-62340E108B17.svs): parse to tables
+Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): load annotations
+Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): run callback
+Participant_2: slide 4 of 5 (TCGA-AR-A1AY-01Z-00-DX1.6AC0BE3B-FFC5-4EDA-9E40-B18CAAC52B81.svs): parse to tables
+Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): load annotations
+Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): run callback
+Participant_2: slide 5 of 5 (TCGA-BH-A0BG-01Z-00-DX1.0838FB7F-8C85-4687-9F70-D136A1063383.svs): parse to tables
+</pre></div></div>
+</div>
+</section>
+<section id="Check-the-result">
+<h3>Check the result<a class="headerlink" href="#Check-the-result" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>tree<span class="w"> </span><span class="s1">&#39;/home/mtageld/Desktop/tmp/concordance/&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/home/mtageld/Desktop/tmp/concordance/
+├── Concordance.sqlite
+├── Participant_1
+└── Participant_2
+
+2 directories, 1 file
+</pre></div></div>
+</div>
+</section>
+<section id="id1">
+<h3>Query the database<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Connect to the database</span>
+<span class="n">sql_engine</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">create_engine</span><span class="p">(</span>
+    <span class="s1">&#39;sqlite:///</span><span class="si">%s</span><span class="s1">/Concordance.sqlite&#39;</span> <span class="o">%</span> <span class="n">savepath</span><span class="p">)</span>
+<span class="n">dbcon</span> <span class="o">=</span> <span class="n">sql_engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># annotation documents</span>
+<span class="n">docs_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql_query</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    SELECT &quot;annotation_girder_id&quot;, &quot;itemId&quot;, &quot;item_name&quot;, &quot;element_count&quot;</span>
+<span class="sd">    FROM &#39;annotation_docs&#39;</span>
+<span class="sd">    ;&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">dbcon</span><span class="p">)</span>
+<span class="n">docs_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>annotation_girder_id</th>
+      <th>itemId</th>
+      <th>item_name</th>
+      <th>element_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5e24c0dfddda5f8398695573</td>
+      <td>5e24c0dfddda5f8398695571</td>
+      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5e24c0dfddda5f8398695575</td>
+      <td>5e24c0dfddda5f8398695571</td>
+      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>5e24c0dfddda5f839869557a</td>
+      <td>5e24c0dfddda5f8398695571</td>
+      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>5e24c0dfddda5f8398695580</td>
+      <td>5e24c0dfddda5f8398695571</td>
+      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5e24c0dfddda5f8398695582</td>
+      <td>5e24c0dfddda5f8398695571</td>
+      <td>TCGA-A1-A0SK-01Z-00-DX1.A44D70FA-4D96-43F4-9DD...</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># annotation elements</span>
+<span class="n">elements_summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql_query</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    SELECT &quot;group&quot;, count(*)</span>
+<span class="sd">    FROM &#39;annotation_elements&#39;</span>
+<span class="sd">    GROUP BY &quot;group&quot;</span>
+<span class="sd">    ;&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">dbcon</span><span class="p">)</span>
+<span class="n">elements_summary</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>group</th>
+      <th>count(*)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Necrosis_or_Debris</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Mostly_Blood</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Mostly_Tumor</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Arteriole_or_Veinule</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Evaluation</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Exclude</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Exclude</td>
+      <td>23</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Mostly_Blood</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Mostly_Fat</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Mostly_Lymph</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Mostly_Lymphocytic_Infiltrate</td>
+      <td>36</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Mostly_PlasmaCells</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Mostly_Tumor</td>
+      <td>83</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Necrosis_or_Debris</td>
+      <td>10</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+</section>
+<section id="Sample-screenshots">
+<h2>Sample screenshots<a class="headerlink" href="#Sample-screenshots" title="Link to this heading">¶</a></h2>
+<p><img alt="image1" src="https://user-images.githubusercontent.com/22067552/72703220-09a62900-3b23-11ea-8968-709f938b1eb9.png" /></p>
+<p><img alt="image2" src="https://user-images.githubusercontent.com/22067552/72703277-29d5e800-3b23-11ea-80fe-86d82a4e86b3.png" /></p>
+<p><img alt="image3" src="https://user-images.githubusercontent.com/22067552/72703918-001dc080-3b25-11ea-8ca2-6aa5454536db.png" /></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tips_for_scalable_annotation_rendering.html" class="btn btn-neutral float-left" title="Tips for scaling annotation rendering" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="creating_gallery_images_review.html" class="btn btn-neutral float-right" title="Creating gallery images for annotation review" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

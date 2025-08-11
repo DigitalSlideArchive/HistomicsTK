@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.nuclear.detect_nuclei_kofahi &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.nuclear.detect_nuclei_kofahi</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.segmentation.nuclear.detect_nuclei_kofahi</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">histomicstk</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">htk</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">histomicstk.filters.shape</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">htk_shape_filters</span>
+
+
+<div class="viewcode-block" id="detect_nuclei_kofahi">
+<a class="viewcode-back" href="../../../../histomicstk.segmentation.nuclear.html#histomicstk.segmentation.nuclear.detect_nuclei_kofahi">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">detect_nuclei_kofahi</span><span class="p">(</span><span class="n">im_nuclei_stain</span><span class="p">,</span> <span class="n">im_nuclei_fgnd_mask</span><span class="p">,</span> <span class="n">min_radius</span><span class="p">,</span>
+                         <span class="n">max_radius</span><span class="p">,</span> <span class="n">min_nucleus_area</span><span class="p">,</span> <span class="n">local_max_search_radius</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs a nuclear segmentation using kofahi&#39;s method.</span>
+
+<span class="sd">    This method uses scale-adaptive multi-scale Laplacian-of-Gaussian filtering</span>
+<span class="sd">    for blob enhancement and a local maximum clustering for segmentation. The</span>
+<span class="sd">    original implementation described by Al-Kofahi et al. uses Laplacian of Gaussian</span>
+<span class="sd">    but this function replaces it with Difference of Gaussian to improve speed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im_nuclei_stain : array_like</span>
+<span class="sd">        A hematoxylin intensity image obtained from ColorDeconvolution.</span>
+<span class="sd">    im_nuclei_fgnd_mask: array_like</span>
+<span class="sd">        A binary mask of the nuclear foreground typically obtained by applying</span>
+<span class="sd">        a threshold on the hematoxylin/nuclei stain image</span>
+<span class="sd">    min_radius : float</span>
+<span class="sd">        Minimum nuclear radius (used to set min sigma of the multiscale LoG filter)</span>
+<span class="sd">    max_radius : float</span>
+<span class="sd">        Maximum nuclear radius (used to set max sigma of the multiscale LoG filter)</span>
+<span class="sd">    min_nucleus_area : int</span>
+<span class="sd">        Minimum area that each nucleus should have</span>
+<span class="sd">    local_max_search_radius : float</span>
+<span class="sd">        Local max search radius used for detection seed points in nuclei</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    im_nuclei_seg_mask : array_like</span>
+<span class="sd">        A 2D array mask of the nuclei segmentation.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] Y. Al-Kofahi et al &quot;Improved Automatic Detection and Segmentation of</span>
+<span class="sd">       Cell Nuclei in Histopathology Images&quot; in IEEE Transactions on Biomedical</span>
+<span class="sd">       Engineering, Volume: 57, Issue: 4, doi: 10.1109/TBME.2009.2035102,</span>
+<span class="sd">       April 2010.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">skimage.morphology</span>
+
+    <span class="c1"># smooth foreground mask with closing and opening</span>
+    <span class="n">im_nuclei_fgnd_mask</span> <span class="o">=</span> <span class="n">skimage</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">closing</span><span class="p">(</span>
+        <span class="n">im_nuclei_fgnd_mask</span><span class="p">,</span> <span class="n">skimage</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">disk</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+    <span class="n">im_nuclei_fgnd_mask</span> <span class="o">=</span> <span class="n">skimage</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">opening</span><span class="p">(</span>
+        <span class="n">im_nuclei_fgnd_mask</span><span class="p">,</span> <span class="n">skimage</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">disk</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+    <span class="n">im_nuclei_fgnd_mask</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">binary_fill_holes</span><span class="p">(</span>
+        <span class="n">im_nuclei_fgnd_mask</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">im_nuclei_fgnd_mask</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">im_nuclei_fgnd_mask</span>
+
+    <span class="c1"># run adaptive multi-scale LoG filter</span>
+    <span class="n">im_log_max</span><span class="p">,</span> <span class="n">im_sigma_max</span> <span class="o">=</span> <span class="n">htk_shape_filters</span><span class="o">.</span><span class="n">cdog</span><span class="p">(</span>
+        <span class="n">im_nuclei_stain</span><span class="p">,</span> <span class="n">im_nuclei_fgnd_mask</span><span class="p">,</span>
+        <span class="n">sigma_min</span><span class="o">=</span><span class="n">min_radius</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">sigma_max</span><span class="o">=</span><span class="n">max_radius</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="c1"># apply local maximum clustering</span>
+    <span class="n">im_nuclei_seg_mask</span><span class="p">,</span> <span class="n">seeds</span><span class="p">,</span> <span class="n">maxima</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">nuclear</span><span class="o">.</span><span class="n">max_clustering</span><span class="p">(</span>
+        <span class="n">im_log_max</span><span class="p">,</span> <span class="n">im_nuclei_fgnd_mask</span><span class="p">,</span> <span class="n">local_max_search_radius</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">seeds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">im_nuclei_seg_mask</span>
+
+    <span class="c1"># split any objects with disconnected fragments</span>
+    <span class="n">im_nuclei_seg_mask</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">im_nuclei_seg_mask</span><span class="p">,</span>
+                                                      <span class="n">conn</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="c1"># filter out small objects</span>
+    <span class="n">im_nuclei_seg_mask</span> <span class="o">=</span> <span class="n">htk</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">area_open</span><span class="p">(</span>
+        <span class="n">im_nuclei_seg_mask</span><span class="p">,</span> <span class="n">min_nucleus_area</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">im_nuclei_seg_mask</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
