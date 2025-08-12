@@ -22,10 +22,16 @@ RUN apt-get update && \
     memcached \
     # used to reduce docker image size \
     rdfind \
+    # Rust compilation dependencies \
+    libssl-dev \
+    libopenblas-dev \
     && \
     # Clean up to reduce docker size \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install Rust for compiling bindings
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 
 # Make a specific version of python the default and install pip
 # RUN rm -f /usr/bin/python && \
@@ -76,6 +82,10 @@ RUN pip install --no-cache-dir . --find-links https://girder.github.io/large_ima
 
 # Show what was installed
 RUN pip freeze
+
+# clean up rust installation to save space
+RUN rm -rf /root/.cargo && \
+    rm -rf /root/.rustup
 
 # pregenerate font cache
 RUN python -c "from matplotlib import pylab"
