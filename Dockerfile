@@ -32,6 +32,7 @@ RUN apt-get update && \
 
 # Install Rust for compiling bindings
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Make a specific version of python the default and install pip
 # RUN rm -f /usr/bin/python && \
