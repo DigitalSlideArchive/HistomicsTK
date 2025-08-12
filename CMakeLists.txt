@@ -51,3 +51,5 @@ elseif(WIN32)
     file(COPY ${RUST_LIB} DESTINATION ${PYTHON_LIB})
     file(RENAME "${CMAKE_SOURCE_DIR}/histomicstk/_lib.dll" ${PYTHON_LIB})
 endif()
+
+install(FILES ${PYTHON_LIB} DESTINATION histomicstk)
