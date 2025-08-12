@@ -23,6 +23,7 @@ RUN apt-get update && \
     # used to reduce docker image size \
     rdfind \
     # Rust compilation dependencies \
+    pkg-config \
     libssl-dev \
     libopenblas-dev \
     && \
