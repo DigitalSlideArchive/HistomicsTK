@@ -67,7 +67,9 @@ commands:
     steps:
       - run:
           name: Install rust
-          command: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          command: |
+            curl -sSf https://sh.rustup.rs | sh -s -- -y
+            echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> $BASH_ENV
   lib:
     description: "Install system libraries"
     steps:
