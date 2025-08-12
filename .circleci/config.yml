@@ -62,6 +62,20 @@ commands:
           name: Upload coverage
           # Retry as codecov can be flaky
           command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; ./codecov --disable search pycov gcov --file .tox/coverage/py_coverage.xml .tox/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
+  rust:
+    description: "Install rust"
+    steps:
+      - run:
+          name: Install rust
+          command: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  lib:
+    description: "Install system libraries"
+    steps:
+      - run:
+          name: Install system libraries
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libssl-dev libopenblas-dev
 
 jobs:
   py39:
@@ -78,6 +92,8 @@ jobs:
             pyenv versions
             pyenv global 3.9
       - docker-compose
+      - rust
+      - lib
       - restore_cache:
           name: Restore external data cache
           keys:
@@ -104,6 +120,8 @@ jobs:
             pyenv versions
             pyenv global 3.10
       - docker-compose
+      - rust
+      - lib
       - restore_cache:
           name: Restore external data cache
           keys:
@@ -130,6 +148,8 @@ jobs:
             pyenv versions
             pyenv global 3.11
       - docker-compose
+      - rust
+      - lib
       - restore_cache:
           name: Restore external data cache
           keys:
@@ -156,6 +176,8 @@ jobs:
             pyenv versions
             pyenv global 3.12
       - docker-compose
+      - rust
+      - lib
       - restore_cache:
           name: Restore external data cache
           keys:
@@ -182,6 +204,8 @@ jobs:
             pyenv versions
             pyenv global 3.13
       - docker-compose
+      - rust
+      - lib
       - restore_cache:
           name: Restore external data cache
           keys:
@@ -203,6 +227,8 @@ jobs:
       - run:
           name: Install dependencies
           command: sudo apt-get update -yq && sudo apt install -yq pandoc
+      - rust
+      - lib
       - tox:
           env: docs,lint
       - store_artifacts:
