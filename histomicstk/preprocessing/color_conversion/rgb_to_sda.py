@@ -1,5 +1,8 @@
 import numpy as np
 
+from histomicstk._rust import \
+    py_rgb_to_sda  # pylint: disable=no-name-in-module
+
 
 def rgb_to_sda(im_rgb, I_0, allow_negatives=False):
     """Transform input RGB image or matrix `im_rgb` into SDA (stain
@@ -44,7 +47,29 @@ def rgb_to_sda(im_rgb, I_0, allow_negatives=False):
 
     im_rgb = np.maximum(im_rgb, 1e-10)
 
-    im_sda = -np.log(im_rgb / (1. * I_0)) * 255 / np.log(I_0)
+    im_sda = -np.log(im_rgb / (1.0 * I_0)) * 255 / np.log(I_0)
     if not allow_negatives:
         im_sda = np.maximum(im_sda, 0)
     return im_sda.T if is_matrix else im_sda
+
+
+def rgb_to_sda_rs(im_rgb, I_0, allow_negatives=False):
+    """Rust-accelerated version of rgb_to_sda.
+
+    Mirrors the compatibility behavior of rgb_to_sda:
+    - If I_0 is None, adds 1.0 to the input and uses 256 as the background.
+    """
+    im = np.asarray(im_rgb, dtype=np.float64, order='C')
+
+    # Emulate rgb_to_od compatibility when I_0 is None
+    if I_0 is None:
+        im = im + 1.0
+        bg = None  # Rust defaults to 256 when bg is None
+    else:
+        if np.isscalar(I_0):
+            bg = [float(I_0)]
+        else:
+            bg_arr = np.asarray(I_0, dtype=np.float64).ravel()
+            bg = bg_arr.tolist()
+
+    return py_rgb_to_sda(im, bg, allow_negatives)
