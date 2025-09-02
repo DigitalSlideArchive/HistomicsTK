@@ -1,0 +1,339 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.positive_pixel_count &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="histomicstk.features" href="histomicstk.features.html" />
+    <link rel="prev" title="histomicstk.segmentation.nuclear" href="histomicstk.segmentation.nuclear.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.embed_boundaries"><code class="docutils literal notranslate"><span class="pre">embed_boundaries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag"><code class="docutils literal notranslate"><span class="pre">rag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag_add_layer"><code class="docutils literal notranslate"><span class="pre">rag_add_layer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag_color"><code class="docutils literal notranslate"><span class="pre">rag_color()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.simple_mask"><code class="docutils literal notranslate"><span class="pre">simple_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.label.html">label mask processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.level_set.html">level-set segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.nuclear.html">nuclei segmentation</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">positive pixel counting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api-docs.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.html">histomicstk</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.segmentation.html">histomicstk.segmentation</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.positive_pixel_count</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/histomicstk.segmentation.positive_pixel_count.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-histomicstk.segmentation.positive_pixel_count">
+<span id="histomicstk-segmentation-positive-pixel-count"></span><h1>histomicstk.segmentation.positive_pixel_count<a class="headerlink" href="#module-histomicstk.segmentation.positive_pixel_count" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.positive_pixel_count.</span></span><span class="sig-name descname"><span class="pre">Output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">NumberWeakPositive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NumberPositive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NumberStrongPositive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NumberTotalPixels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IntensitySumWeakPositive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IntensitySumPositive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IntensitySumStrongPositive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IntensityAverage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RatioStrongToTotal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IntensityAverageWeakAndPositive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RatioStrongToPixels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RatioWeakToPixels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RatioTotalToPixels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.IntensityAverage">
+<span class="sig-name descname"><span class="pre">IntensityAverage</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.IntensityAverage" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 7</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.IntensityAverageWeakAndPositive">
+<span class="sig-name descname"><span class="pre">IntensityAverageWeakAndPositive</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.IntensityAverageWeakAndPositive" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 9</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.IntensitySumPositive">
+<span class="sig-name descname"><span class="pre">IntensitySumPositive</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.IntensitySumPositive" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 5</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.IntensitySumStrongPositive">
+<span class="sig-name descname"><span class="pre">IntensitySumStrongPositive</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.IntensitySumStrongPositive" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 6</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.IntensitySumWeakPositive">
+<span class="sig-name descname"><span class="pre">IntensitySumWeakPositive</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.IntensitySumWeakPositive" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.NumberPositive">
+<span class="sig-name descname"><span class="pre">NumberPositive</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.NumberPositive" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.NumberStrongPositive">
+<span class="sig-name descname"><span class="pre">NumberStrongPositive</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.NumberStrongPositive" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.NumberTotalPixels">
+<span class="sig-name descname"><span class="pre">NumberTotalPixels</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.NumberTotalPixels" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.NumberWeakPositive">
+<span class="sig-name descname"><span class="pre">NumberWeakPositive</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.NumberWeakPositive" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.RatioStrongToPixels">
+<span class="sig-name descname"><span class="pre">RatioStrongToPixels</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.RatioStrongToPixels" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 10</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.RatioStrongToTotal">
+<span class="sig-name descname"><span class="pre">RatioStrongToTotal</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.RatioStrongToTotal" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 8</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.RatioTotalToPixels">
+<span class="sig-name descname"><span class="pre">RatioTotalToPixels</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.RatioTotalToPixels" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 12</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Output.RatioWeakToPixels">
+<span class="sig-name descname"><span class="pre">RatioWeakToPixels</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Output.RatioWeakToPixels" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 11</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Parameters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.positive_pixel_count.</span></span><span class="sig-name descname"><span class="pre">Parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hue_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saturation_minimum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensity_upper_limit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensity_weak_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensity_strong_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensity_lower_limit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/positive_pixel_count.html#Parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#histomicstk.segmentation.positive_pixel_count.Parameters" title="histomicstk.segmentation.positive_pixel_count.Parameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parameters</span></code></a></p>
+<p>Parameters(hue_value, hue_width, saturation_minimum,
+intensity_upper_limit, intensity_weak_threshold,
+intensity_strong_threshold, intensity_lower_limit)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Parameters.hue_value">
+<span class="sig-name descname"><span class="pre">hue_value</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Parameters.hue_value" title="Link to this definition">¶</a></dt>
+<dd><p>Center of the hue range in HSI space for the positive color, in
+the range [0, 1]</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Parameters.hue_width">
+<span class="sig-name descname"><span class="pre">hue_width</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Parameters.hue_width" title="Link to this definition">¶</a></dt>
+<dd><p>Width of the hue range in HSI space</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Parameters.saturation_minimum">
+<span class="sig-name descname"><span class="pre">saturation_minimum</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Parameters.saturation_minimum" title="Link to this definition">¶</a></dt>
+<dd><p>Minimum saturation of positive pixels in HSI space, in the range
+[0, 1]</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Parameters.intensity_upper_limit">
+<span class="sig-name descname"><span class="pre">intensity_upper_limit</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Parameters.intensity_upper_limit" title="Link to this definition">¶</a></dt>
+<dd><p>Intensity threshold in HSI space above which a pixel is
+considered negative, in the range [0, 1]</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Parameters.intensity_weak_threshold">
+<span class="sig-name descname"><span class="pre">intensity_weak_threshold</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Parameters.intensity_weak_threshold" title="Link to this definition">¶</a></dt>
+<dd><p>Intensity threshold in HSI space that separates weak-positive
+pixels (above) from plain positive pixels (below)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Parameters.intensity_strong_threshold">
+<span class="sig-name descname"><span class="pre">intensity_strong_threshold</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Parameters.intensity_strong_threshold" title="Link to this definition">¶</a></dt>
+<dd><p>Intensity threshold in HSI space that separates plain positive
+pixels (above) from strong positive pixels (below)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.Parameters.intensity_lower_limit">
+<span class="sig-name descname"><span class="pre">intensity_lower_limit</span></span><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.Parameters.intensity_lower_limit" title="Link to this definition">¶</a></dt>
+<dd><p>Intensity threshold in HSI space below which a pixel is
+considered negative</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.count_image">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.positive_pixel_count.</span></span><span class="sig-name descname"><span class="pre">count_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/positive_pixel_count.html#count_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.count_image" title="Link to this definition">¶</a></dt>
+<dd><p>Count positive pixels, computing a label mask and summary
+statistics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>array-like</em>) – NxMx3 array of RGB data</p></li>
+<li><p><strong>params</strong> (<a class="reference internal" href="#histomicstk.segmentation.positive_pixel_count.Parameters" title="histomicstk.segmentation.positive_pixel_count.Parameters"><em>Parameters</em></a>) – An instance of Parameters, which see for further documentation</p></li>
+<li><p><strong>mask</strong> (<em>array-like</em>) – A boolean mask.  If present, only pixels where the mask is True are
+considered.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>stats</strong> (<em>Output</em>) – Various statistics on the input image.  See Output.</p></li>
+<li><p><strong>label_image</strong> (<em>array-like</em>) – NxM array of pixel types.  See Labels for the different values.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.positive_pixel_count.count_slide">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.positive_pixel_count.</span></span><span class="sig-name descname"><span class="pre">count_slide</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slide_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_grouping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_label_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/positive_pixel_count.html#count_slide"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.positive_pixel_count.count_slide" title="Link to this definition">¶</a></dt>
+<dd><p>Compute a count of positive pixels in the slide at slide_path.
+This routine can also create a label image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slide_path</strong> (<em>string</em><em> (</em><em>path</em><em>)</em>) – Path to the slide to analyze.</p></li>
+<li><p><strong>params</strong> (<a class="reference internal" href="#histomicstk.segmentation.positive_pixel_count.Parameters" title="histomicstk.segmentation.positive_pixel_count.Parameters"><em>Parameters</em></a>) – An instance of Parameters, which see for further documentation</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – A valid region dict (per a large_image
+TileSource.tileIterator’s region argument)</p></li>
+<li><p><strong>tile_grouping</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of tiles to process as part of a single task</p></li>
+<li><p><strong>make_label_image</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether to make a label image.  See also “Notes”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>stats</strong> (<em>Output</em>) – Various statistics on the input image.  See Output.</p></li>
+<li><p><strong>label_image</strong> (<em>array-like, only if make_label_image is set</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The return value is either a single or a pair – it is in either
+case a tuple.  Dask is used as configured to compute the
+statistics, but only if make_label_image is reset.  If
+make_label_image is set, everything is computed in a
+single-threaded manner.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="histomicstk.segmentation.nuclear.html" class="btn btn-neutral float-left" title="histomicstk.segmentation.nuclear" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="histomicstk.features.html" class="btn btn-neutral float-right" title="histomicstk.features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

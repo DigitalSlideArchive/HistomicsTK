@@ -1,0 +1,392 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.saliency.tissue_detection &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.saliency.tissue_detection</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.saliency.tissue_detection</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Wed Sep 18 03:29:24 2019.</span>
+
+<span class="sd">@author: mtageld</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotation_and_mask_utils</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">get_image_from_htk_response</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.masks_to_annotations_handler</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_annotation_documents_from_contours</span><span class="p">,</span> <span class="n">get_contours_from_mask</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.preprocessing.color_deconvolution.color_deconvolution</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">color_deconvolution_routine</span>
+
+<span class="n">Image</span><span class="o">.</span><span class="n">MAX_IMAGE_PIXELS</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="get_slide_thumbnail">
+<a class="viewcode-back" href="../../../histomicstk.saliency.tissue_detection.html#histomicstk.saliency.tissue_detection.get_slide_thumbnail">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_slide_thumbnail</span><span class="p">(</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get slide thumbnail using girder client.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gc : object</span>
+<span class="sd">        girder client to use</span>
+<span class="sd">    slide_id : str</span>
+<span class="sd">        girder ID of slide</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np array</span>
+<span class="sd">        RGB slide thumbnail at lowest level</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">getStr</span> <span class="o">=</span> <span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">/tiles/thumbnail&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">slide_id</span><span class="p">)</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">getStr</span><span class="p">,</span> <span class="n">jsonResp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">get_image_from_htk_response</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_deconv_color</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap around color_deconvolution_routine (compatibility).&quot;&quot;&quot;</span>
+    <span class="n">Stains</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">color_deconvolution_routine</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Stains</span><span class="p">,</span> <span class="mi">0</span>
+
+
+<div class="viewcode-block" id="get_tissue_mask">
+<a class="viewcode-back" href="../../../histomicstk.saliency.tissue_detection.html#histomicstk.saliency.tissue_detection.get_tissue_mask">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_tissue_mask</span><span class="p">(</span>
+        <span class="n">thumbnail_im</span><span class="p">,</span>
+        <span class="n">deconvolve_first</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">stain_unmixing_routine_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_thresholding_steps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get binary tissue mask from slide thumbnail.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    thumbnail_im : np array</span>
+<span class="sd">        (m, n, 3) nd array of thumbnail RGB image</span>
+<span class="sd">        or (m, n) nd array of thumbnail grayscale image</span>
+<span class="sd">    deconvolve_first : bool</span>
+<span class="sd">        use hematoxylin channel to find cellular areas?</span>
+<span class="sd">        This will make things ever-so-slightly slower but is better in</span>
+<span class="sd">        getting rid of sharpie marker (if it&#39;s green, for example).</span>
+<span class="sd">        Sometimes things work better without it, though.</span>
+<span class="sd">    stain_matrix_method : str</span>
+<span class="sd">        see deconv_color method in seed_utils</span>
+<span class="sd">    n_thresholding_steps : int</span>
+<span class="sd">        number of gaussian smoothing steps</span>
+<span class="sd">    sigma : float</span>
+<span class="sd">        sigma of gaussian filter</span>
+<span class="sd">    min_size : int</span>
+<span class="sd">        minimum size (in pixels) of contiguous tissue regions to keep</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np int32 array</span>
+<span class="sd">        each unique value represents a unique tissue region</span>
+<span class="sd">    np bool array</span>
+<span class="sd">        largest contiguous tissue region.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">ndimage</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">skimage.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">gaussian</span><span class="p">,</span> <span class="n">threshold_otsu</span>
+
+    <span class="n">stain_unmixing_routine_kwargs</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">{}</span> <span class="k">if</span> <span class="n">stain_unmixing_routine_kwargs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">stain_unmixing_routine_kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">deconvolve_first</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">thumbnail_im</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="c1"># deconvolvve to ge hematoxylin channel (cellular areas)</span>
+        <span class="c1"># hematoxylin channel return shows MINIMA so we invert</span>
+        <span class="n">stain_unmixing_routine_kwargs</span><span class="p">[</span><span class="s1">&#39;stains&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hematoxylin&#39;</span><span class="p">,</span> <span class="s1">&#39;eosin&#39;</span><span class="p">]</span>
+        <span class="n">Stains</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">color_deconvolution_routine</span><span class="p">(</span>
+            <span class="n">thumbnail_im</span><span class="p">,</span> <span class="o">**</span><span class="n">stain_unmixing_routine_kwargs</span><span class="p">)</span>
+        <span class="n">thumbnail</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">-</span> <span class="n">Stains</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">thumbnail_im</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="c1"># grayscale thumbnail (inverted)</span>
+        <span class="n">thumbnail</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">-</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">thumbnail_im</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2GRAY</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">thumbnail</span> <span class="o">=</span> <span class="n">thumbnail_im</span>
+
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_thresholding_steps</span><span class="p">):</span>
+
+        <span class="c1"># gaussian smoothing of grayscale thumbnail</span>
+        <span class="k">if</span> <span class="n">sigma</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">thumbnail</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span>
+                <span class="n">thumbnail</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span>
+                <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">preserve_range</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># get threshold to keep analysis region</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">thresh</span> <span class="o">=</span> <span class="n">threshold_otsu</span><span class="p">(</span><span class="n">thumbnail</span><span class="p">[</span><span class="n">thumbnail</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># all values are zero</span>
+            <span class="n">thresh</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># replace pixels outside analysis region with upper quantile pixels</span>
+        <span class="n">thumbnail</span><span class="p">[</span><span class="n">thumbnail</span> <span class="o">&lt;</span> <span class="n">thresh</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># convert to binary</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="p">(</span><span class="n">thumbnail</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># find connected components</span>
+    <span class="n">labeled</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+
+    <span class="c1"># only keep</span>
+    <span class="n">unique</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labeled</span><span class="p">[</span><span class="n">labeled</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">],</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">discard</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">labeled</span><span class="p">,</span> <span class="n">unique</span><span class="p">[</span><span class="n">counts</span> <span class="o">&lt;</span> <span class="n">min_size</span><span class="p">])</span>
+    <span class="n">discard</span> <span class="o">=</span> <span class="n">discard</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">labeled</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">labeled</span><span class="p">[</span><span class="n">discard</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># largest tissue region</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">labeled</span> <span class="o">==</span> <span class="n">unique</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">counts</span><span class="p">)]</span>
+
+    <span class="k">return</span> <span class="n">labeled</span><span class="p">,</span> <span class="n">mask</span></div>
+
+
+
+<div class="viewcode-block" id="get_tissue_boundary_annotation_documents">
+<a class="viewcode-back" href="../../../histomicstk.saliency.tissue_detection.html#histomicstk.saliency.tissue_detection.get_tissue_boundary_annotation_documents">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_tissue_boundary_annotation_documents</span><span class="p">(</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">labeled</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s1">&#39;rgb(0,0,0)&#39;</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s1">&#39;tissue&#39;</span><span class="p">,</span> <span class="n">annprops</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get annotation documents of tissue boundaries to visualize on DSA.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gc : object</span>
+<span class="sd">        girder client to use</span>
+<span class="sd">    slide_id : str</span>
+<span class="sd">        girder ID of slide</span>
+<span class="sd">    labeled : np array</span>
+<span class="sd">        mask of tissue regions using slide thumbnail. This could either be</span>
+<span class="sd">        a binary mask or a mask where each unique value corresponds to one</span>
+<span class="sd">        tissue region. It will be binalized anyways. This can be obtained</span>
+<span class="sd">        using get_tissue_mask().</span>
+<span class="sd">    color : str</span>
+<span class="sd">        color to assign to boundaries. format like rgb(0,0,0)</span>
+<span class="sd">    group : str</span>
+<span class="sd">        label for annotations</span>
+<span class="sd">    annpops : dict</span>
+<span class="sd">        properties of annotation elements. Contains the following keys</span>
+<span class="sd">        F, X_OFFSET, Y_OFFSET, opacity, lineWidth. Refer to</span>
+<span class="sd">        get_single_annotation_document_from_contours() for details.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of dicts</span>
+<span class="sd">        each dict is an annotation document that you can post to DSA</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="c1"># Get annotations properties</span>
+    <span class="k">if</span> <span class="n">annprops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">slide_info</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;item/</span><span class="si">%s</span><span class="s1">/tiles&#39;</span> <span class="o">%</span> <span class="n">slide_id</span><span class="p">)</span>
+        <span class="n">annprops</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;sizeX&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">labeled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>  <span class="c1"># relative to base</span>
+            <span class="s1">&#39;X_OFFSET&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;Y_OFFSET&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;opacity&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;lineWidth&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="c1"># Define GTCodes dataframe</span>
+    <span class="n">GTCodes_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">])</span>
+    <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;tissue&#39;</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">group</span>
+    <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;tissue&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;tissue&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+
+    <span class="c1"># get annotation docs</span>
+    <span class="n">contours_tissue</span> <span class="o">=</span> <span class="n">get_contours_from_mask</span><span class="p">(</span>
+        <span class="n">MASK</span><span class="o">=</span><span class="mi">0</span> <span class="o">+</span> <span class="p">(</span><span class="n">labeled</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="n">GTCodes_df</span><span class="o">=</span><span class="n">GTCodes_df</span><span class="p">,</span>
+        <span class="n">get_roi_contour</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">MIN_SIZE</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">MAX_SIZE</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;tissue: getting contours&#39;</span><span class="p">)</span>
+    <span class="n">annotation_docs</span> <span class="o">=</span> <span class="n">get_annotation_documents_from_contours</span><span class="p">(</span>
+        <span class="n">contours_tissue</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">docnamePrefix</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">annprops</span><span class="o">=</span><span class="n">annprops</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;tissue : annotation docs&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">annotation_docs</span></div>
+
+
+
+<div class="viewcode-block" id="threshold_multichannel">
+<a class="viewcode-back" href="../../../histomicstk.saliency.tissue_detection.html#histomicstk.saliency.tissue_detection.threshold_multichannel">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">threshold_multichannel</span><span class="p">(</span>
+        <span class="n">im</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">just_threshold</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_tissue_mask_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Threshold a multi-channel image (eg. HSI image) to get tissue.</span>
+
+<span class="sd">    The relies on the fact that oftentimes some slide elements (eg blood</span>
+<span class="sd">    or whitespace) have a characteristic hue/saturation/intensity. This</span>
+<span class="sd">    thresholds along each HSI channel, then optionally uses the</span>
+<span class="sd">    get_tissue_mask() method (gaussian smoothing, otsu thresholding,</span>
+<span class="sd">    connected components) to get each contiguous tissue piece.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im : np array</span>
+<span class="sd">        (m, n, 3) array of Hue, Saturation, Intensity (in this order)</span>
+<span class="sd">    thresholds : dict</span>
+<span class="sd">        Each entry is a dict containing the keys min and max</span>
+<span class="sd">    channels : list</span>
+<span class="sd">        names of channels, in order (eg. hue, saturation, intensity)</span>
+<span class="sd">    just_threshold : bool</span>
+<span class="sd">        if False, get_tissue_mask() is used to smooth result and get regions.</span>
+<span class="sd">    get_tissue_mask_kwargs : dict</span>
+<span class="sd">        key-value pairs of parameters to pass to get_tissue_mask()</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np int32 array</span>
+<span class="sd">        if not just_threshold, unique values represent unique tissue regions</span>
+<span class="sd">    np bool array</span>
+<span class="sd">        if not just_threshold, largest contiguous tissue region.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hue&#39;</span><span class="p">,</span> <span class="s1">&#39;saturation&#39;</span><span class="p">,</span> <span class="s1">&#39;intensity&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">channels</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">channels</span>
+
+    <span class="k">if</span> <span class="n">get_tissue_mask_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">get_tissue_mask_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;n_thresholding_steps&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+            <span class="s1">&#39;min_size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="c1"># threshold each channel</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">im</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">ch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">channels</span><span class="p">):</span>
+
+        <span class="n">channel</span> <span class="o">=</span> <span class="n">im</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">ax</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">mask</span><span class="p">[</span><span class="n">channel</span> <span class="o">&lt;</span> <span class="n">thresholds</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="s1">&#39;min&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">channel</span> <span class="o">&gt;=</span> <span class="n">thresholds</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="s1">&#39;max&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># smoothing, otsu thresholding then connected components</span>
+    <span class="k">if</span> <span class="n">just_threshold</span> <span class="ow">or</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">labeled</span> <span class="o">=</span> <span class="n">mask</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">get_tissue_mask_kwargs</span><span class="p">[</span><span class="s1">&#39;deconvolve_first&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">labeled</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">get_tissue_mask</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="o">**</span><span class="n">get_tissue_mask_kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">labeled</span><span class="p">,</span> <span class="n">mask</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_largest_regions</span><span class="p">(</span><span class="n">labeled</span><span class="p">,</span> <span class="n">top_n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+
+    <span class="n">labeled_im</span> <span class="o">=</span> <span class="n">labeled</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">unique</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labeled_im</span><span class="p">[</span><span class="n">labeled_im</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">],</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">unique</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">counts</span><span class="p">)[</span><span class="o">-</span><span class="n">top_n</span><span class="p">:]]</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">labeled_im</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">keep_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">labeled_im</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span>
+    <span class="n">keep_pixels</span> <span class="o">=</span> <span class="n">keep_pixels</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">labeled_im</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">mask</span><span class="p">[</span><span class="n">keep_pixels</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">labeled_im</span><span class="p">[</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">labeled_im</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

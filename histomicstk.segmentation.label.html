@@ -1,0 +1,532 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.segmentation.label &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="histomicstk.segmentation.level_set" href="histomicstk.segmentation.level_set.html" />
+    <link rel="prev" title="histomicstk.segmentation" href="histomicstk.segmentation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api-docs.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="histomicstk.html">histomicstk</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.utils.html">utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.preprocessing.html">preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.filters.html">filters</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="histomicstk.segmentation.html">segmentation</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.embed_boundaries"><code class="docutils literal notranslate"><span class="pre">embed_boundaries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag"><code class="docutils literal notranslate"><span class="pre">rag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag_add_layer"><code class="docutils literal notranslate"><span class="pre">rag_add_layer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.rag_color"><code class="docutils literal notranslate"><span class="pre">rag_color()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.simple_mask"><code class="docutils literal notranslate"><span class="pre">simple_mask()</span></code></a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">label mask processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.level_set.html">level-set segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.nuclear.html">nuclei segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="histomicstk.segmentation.positive_pixel_count.html">positive pixel counting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.features.html">features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.annotations_and_masks.html">annotations and masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.saliency.html">saliency (tissue/cellularity detection)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="histomicstk.workflows.html">workflows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api-docs.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.html">histomicstk</a></li>
+          <li class="breadcrumb-item"><a href="histomicstk.segmentation.html">histomicstk.segmentation</a></li>
+      <li class="breadcrumb-item active">histomicstk.segmentation.label</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/histomicstk.segmentation.label.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-histomicstk.segmentation.label">
+<span id="histomicstk-segmentation-label"></span><h1>histomicstk.segmentation.label<a class="headerlink" href="#module-histomicstk.segmentation.label" title="Link to this heading">¶</a></h1>
+<p>This package contains functions for post-processing labeled segmentation
+masks produced by segmentation algorithms.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.area_open">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">area_open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_area</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/area_open.html#area_open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.area_open" title="Link to this definition">¶</a></dt>
+<dd><p>Removes small objects from label image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_label</strong> (<em>array_like</em>) – A uint32 type label image generated by segmentation methods.</p></li>
+<li><p><strong>min_area</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – minimum area threshold for objects. Objects with fewer than ‘min_area’
+pixels will be zeroed to merge with background.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_open</strong> – A uint32 label where objects with pixels &lt; min_area are removed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Objects are assumed to have positive nonzero values. im_label image will be
+condensed during processing.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.segmentation.label.condense" title="histomicstk.segmentation.label.condense"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.condense</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.shuffle" title="histomicstk.segmentation.label.shuffle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.shuffle</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.split" title="histomicstk.segmentation.label.split"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.split</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.width_open" title="histomicstk.segmentation.label.width_open"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.width_open</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.compact">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">compact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compaction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/compact.html#compact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.compact" title="Link to this definition">¶</a></dt>
+<dd><p>Performs a thinning operation on a label image to remove thin
+protrusions from objects that are in contact with the background. Applies a
+distance transform and sequentially removes pixels with small distances to
+background that are not connected to higher distance pixels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_label</strong> (<em>array_like</em>) – A labeled segmentation mask</p></li>
+<li><p><strong>compaction</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Factor used in compacting objects to remove thin protrusions. Referred
+to as d in the reference below. Default value = 3.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Implemented from the reference below.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>im_compact</strong> – A labeled segmentation mask with thin protrusions removed.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.segmentation.label.area_open" title="histomicstk.segmentation.label.area_open"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.area_open</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.condense" title="histomicstk.segmentation.label.condense"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.condense</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.shuffle" title="histomicstk.segmentation.label.shuffle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.shuffle</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.split" title="histomicstk.segmentation.label.split"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.split</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.width_open" title="histomicstk.segmentation.label.width_open"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.width_open</span></code></a></p>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>S. Weinert et al “Detection and Segmentation of Cell Nuclei in
+Virtual Microscopy Images: A Minimum-Model Approach” in Nature
+Scientific Reports,vol.2,no.503, doi:10.1038/srep00503, 2012.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.condense">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">condense</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/condense.html#condense"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.condense" title="Link to this definition">¶</a></dt>
+<dd><p>Shifts labels in a label image to fill in gaps corresponding to missing
+values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>im_label</strong> (<em>array_like</em>) – A label image generated by segmentation methods.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Condensed</strong> – A label image where all values &gt; 0 are shifted down to fill gaps.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.segmentation.label.shuffle" title="histomicstk.segmentation.label.shuffle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.shuffle</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.delete">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/delete.html#delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.delete" title="Link to this definition">¶</a></dt>
+<dd><p>Deletes objects with values in ‘indices’ from label image, writing them over
+with zeros to assimilate with background.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_label</strong> (<em>array_like</em>) – A label image generated by segmentation methods.</p></li>
+<li><p><strong>indices</strong> (<em>array_like</em>) – An n-length array of strictly positive integer values to delete from
+‘im_label’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Deleted</strong> – A label image where all values in ‘indices’ are set to zero.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>A call to CondenseLabel can squeeze label image values to fill in gaps from
+deleted values.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.segmentation.label.condense" title="histomicstk.segmentation.label.condense"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.condense</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.delete_border">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">delete_border</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/delete_border.html#delete_border"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.delete_border" title="Link to this definition">¶</a></dt>
+<dd><p>Deletes objects touching the border of the image and relabel</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>im_label</strong> (<em>array_like</em>) – A label mask generated by segmentation methods.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_label_del</strong> – A label mask where in all the objects touching the image border have
+been deleted</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.segmentation.label.delete" title="histomicstk.segmentation.label.delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.delete</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.delete_overlap">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">delete_overlap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap_info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/delete_overlap.html#delete_overlap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.delete_overlap" title="Link to this definition">¶</a></dt>
+<dd><p>Deletes overlapping regions from an image label based on overlap information and tile size.</p>
+<section id="args">
+<h2>Args:<a class="headerlink" href="#args" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>im_label (ndarray): Image label represented as a NumPy array.
+overlap_info (dict): Dictionary containing overlap information.</p>
+<blockquote>
+<div><p>It should have the following keys:
+‘left’, ‘right’, ‘top’, and ‘bottom’,
+each specifying the overlap amount in pixels.</p>
+</div></blockquote>
+</div></blockquote>
+</section>
+<section id="returns">
+<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>ndarray: Image label with overlapping regions deleted.</p>
+</div></blockquote>
+</section>
+<section id="note">
+<h2>Note:<a class="headerlink" href="#note" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>This function assumes the necessary imports, such as <cite>np</cite>, are already present.</p>
+</div></blockquote>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.dilate_xor">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">dilate_xor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neigh_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/dilate_xor.html#dilate_xor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.dilate_xor" title="Link to this definition">¶</a></dt>
+<dd><p>Computes a label mask highlighting a ring-like neighborhood of each
+object or region in a given label mask</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_label</strong> (<em>array_like</em>) – A labeled mask image wherein intensity of a pixel is the ID of the
+object it belongs to. Non-zero values are considered to be foreground
+objects.</p></li>
+<li><p><strong>neigh_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – The width of the ring-like neighborhood around each object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>im_neigh_label</strong> – A labeled mask image highlighting pixels in a ring-like neighborhood of
+width upto <cite>neigh_width</cite> around each object in the given label mask.
+The intensity of each pixel in the ring-like neighborhood is set
+equal to the label of the closest object in the given label mask.
+other pixels (including the ones inside objects) are set to zero.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.perimeter">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">perimeter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/perimeter.html#perimeter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.perimeter" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a label or binary mask image to a binary perimeter image.</p>
+<p>Uses 4-neighbor or 8-neighbor shifts to detect pixels whose values do
+not agree with their neighbors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_label</strong> (<em>array_like</em>) – A label or binary mask image.</p></li>
+<li><p><strong>conn</strong> (<em>double</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Neighborhood connectivity to evaluate. Valid values are 4 or 8.
+Default value = 4.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Mask</strong> – A binary image where object perimeter pixels have value 1, and
+non-perimeter pixels have value 0.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="histomicstk.segmentation.html#histomicstk.segmentation.embed_boundaries" title="histomicstk.segmentation.embed_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.embed_boundaries</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.remove_overlap_nuclei">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">remove_overlap_nuclei</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nuclei_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuclei_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_selected_nuclei</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/remove_overlap_nuclei.html#remove_overlap_nuclei"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.remove_overlap_nuclei" title="Link to this definition">¶</a></dt>
+<dd><p>Remove overlapping nuclei using spatial indexing and parallel processing.</p>
+<p>This function removes overlapping nuclei polygons from input using an STRtree index.</p>
+<section id="id2">
+<h2>Args:<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>nuclei_list (list): List of dictionaries with ‘points’ for polygons.
+nuclei_format (str, optional): Output format (‘polygon’ or ‘bbox’).
+return_selected (bool, optional): Return indices of selected nuclei (default: False).</p>
+</div></blockquote>
+</section>
+<section id="id3">
+<h2>Returns:<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>output_list (list): New list with overlapping nuclei removed.
+selected_nuclei (list, optional): Indices of selected nuclei.</p>
+</div></blockquote>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.shuffle">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">shuffle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/shuffle.html#shuffle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.shuffle" title="Link to this definition">¶</a></dt>
+<dd><p>Shuffles labels in a label image to improve visualization and enhance
+object boundaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>im_label</strong> (<em>array_like</em>) – A label image generated by segmentation methods.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Shuffled</strong> – A label image where all values &gt; 0 are randomly shuffled.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.CondenseLabel</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.split">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/split.html#split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.split" title="Link to this definition">¶</a></dt>
+<dd><p>Re-labels objects that have multiple non-contiguous portions to create
+a new label image where each object is contiguous.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_label</strong> (<em>array_like</em>) – A uint32 type label image generated by segmentation methods.</p></li>
+<li><p><strong>conn</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Neighborhood connectivity to define contiguity. Valid values are 4 or
+8. Default value = 4.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Objects are assumed to have positive nonzero values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Split</strong> – A uint32 label where discontiguous objects are split and relabeled.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.segmentation.label.area_open" title="histomicstk.segmentation.label.area_open"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.area_open</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.condense" title="histomicstk.segmentation.label.condense"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.condense</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.shuffle" title="histomicstk.segmentation.label.shuffle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.shuffle</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.trace_object_boundaries">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">trace_object_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simplify_colinear_spurs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_colinear_area</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/trace_object_boundaries.html#trace_object_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.trace_object_boundaries" title="Link to this definition">¶</a></dt>
+<dd><p>Performs exterior boundary tracing of one or more objects in a label
+mask. If a starting point is not provided then a raster scan will be performed
+to identify the starting pixel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_label</strong> (<em>array_like</em>) – A binary mask image.</p></li>
+<li><p><strong>conn</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Neighborhood connectivity to evaluate. Valid values are 4 or 8.
+Default value = 4.</p></li>
+<li><p><strong>trace_all</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Specify True if you want to trace boundaries of all objects.
+Default = False</p></li>
+<li><p><strong>x_start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Starting horizontal coordinate to begin tracing. Default value = None.</p></li>
+<li><p><strong>y_start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Starting vertical coordinate to begin tracing. Default value = None.</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Maximum boundary length to trace before terminating. Default value =
+None.</p></li>
+<li><p><strong>simplify_colinear_spurs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True colinear streaks/spurs in the object boundary will be
+simplified/removed. Note that if the object boundary is entirely
+colinear then the object itself will be removed. Default = True</p></li>
+<li><p><strong>eps_colinear_area</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Minimum area of triangle formed by three consecutive points on the
+contour for them to be considered as non-colinear. Default value =
+0.01.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The Improved Simple Boundary Follower (ISBF) from the reference below is
+used for 4-connected tracing. This algorithm provides accurate tracing with
+competitive execution times. 8-connected tracing is implemented using the
+Moore tracing algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>X</strong> (<em>array_like</em>) – A set of 1D array of horizontal coordinates of contour seed pixels for
+tracing.</p></li>
+<li><p><strong>Y</strong> (<em>array_like</em>) – A set of 1D array of the vertical coordinates of seed pixels for
+tracing.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>J. Seo et al “Fast Contour-Tracing Algorithm Based on a Pixel-
+Following Method for Image Sensors” in Sensors,vol.16,no.353,
+doi:10.3390/s16030353, 2016.</p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="histomicstk.segmentation.label.width_open">
+<span class="sig-prename descclassname"><span class="pre">histomicstk.segmentation.label.</span></span><span class="sig-name descname"><span class="pre">width_open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/histomicstk/segmentation/label/width_open.html#width_open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#histomicstk.segmentation.label.width_open" title="Link to this definition">¶</a></dt>
+<dd><p>Removes thin objects from label image using maximum of distance
+transform values within each object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im_label</strong> (<em>array_like</em>) – A uint32 type label image generated by segmentation methods.</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – width threshold for objects. Objects with fewer than ‘Area’ pixels will
+be zeroed to merge with background.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Objects are assumed to have positive nonzero values. A binary mask is
+generated for each object setting all other objects to the background value
+(0). The maximum chamfered distance transform value of this mask is used
+to represent the object width.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>im_thinned</strong> – A uint32 label where objects with pixels &lt; Area are removed.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array_like</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#histomicstk.segmentation.label.condense" title="histomicstk.segmentation.label.condense"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.condense</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.shuffle" title="histomicstk.segmentation.label.shuffle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.shuffle</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.split" title="histomicstk.segmentation.label.split"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.split</span></code></a>, <a class="reference internal" href="#histomicstk.segmentation.label.area_open" title="histomicstk.segmentation.label.area_open"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histomicstk.segmentation.label.area_open</span></code></a></p>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="histomicstk.segmentation.html" class="btn btn-neutral float-left" title="histomicstk.segmentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="histomicstk.segmentation.level_set.html" class="btn btn-neutral float-right" title="histomicstk.segmentation.level_set" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

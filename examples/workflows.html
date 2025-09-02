@@ -1,0 +1,447 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analyzing remotely hosted images with the girder client &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Contributing" href="../contributing.html" />
+    <link rel="prev" title="Finding cellular regions with superpixel analysis" href="semantic_segmentation_superpixel_approach.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Analyzing remotely hosted images with the girder client</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Connect-girder-client-and-set-analysis-parameters">Connect girder client and set analysis parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Explore-the-docs">Explore the docs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Workflow_runner">Workflow_runner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Slide_iterator">Slide_iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Specific-workflow-to-run">Specific workflow to run</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Initialize-the-workflow-runner">Initialize the workflow runner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Run-the-detector">Run the detector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Check-the-DSA/HistomicsTK-visualization">Check the DSA/HistomicsTK visualization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Analyzing remotely hosted images with the girder client</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/workflows.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Analyzing-remotely-hosted-images-with-the-girder-client">
+<h1>Analyzing remotely hosted images with the girder client<a class="headerlink" href="#Analyzing-remotely-hosted-images-with-the-girder-client" title="Link to this heading">¶</a></h1>
+<p>This example describes how to run image analysis tasks in a workflow process on collections of slides hosted on a DSA server. The API is used to retrieve pixel data from the server and the analysis is performed locally, with results pushed back to the server as annotations for visualization. Note that this is not the same approach as using girder tasks to run jobs remotely as a user through HistomicsUI. This is a utility intended for use by developers of image analysis and machine learning
+algorithms.</p>
+<p>In this example, we will be running a cellularity detection workflow on all slides in the following <a class="reference external" href="http://candygram.neurology.emory.edu:8080/#collection/59a5c4e692ca9a00174d77d6/folder/5d5c28c6bd4404c6b1f3d598">source girder directory</a> and the results are posted to the following <a class="reference external" href="http://candygram.neurology.emory.edu:8080/#collection/59a5c4e692ca9a00174d77d6/folder/5d9246f6bd4404c6b1faaa89">results girder directory</a>.</p>
+<p><strong>Where to look?</strong></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>|_ histomicstk/
+   |_workflows/
+      |_workflow_runner.py
+      |_specific_workflows.py
+      |_tests/
+         |_test_workflow_runner.py
+</pre></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">girder_client</span>
+<span class="c1"># import numpy as np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_csv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.workflows.workflow_runner</span><span class="w"> </span><span class="kn">import</span> <span class="n">Slide_iterator</span>
+<span class="c1"># from histomicstk.saliency.cellularity_detection import (</span>
+<span class="c1">#     Cellularity_detector_superpixels)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.saliency.cellularity_detection_thresholding</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Cellularity_detector_thresholding</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.workflows.workflow_runner</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Workflow_runner</span><span class="p">,</span> <span class="n">Slide_iterator</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.workflows.specific_workflows</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">cellularity_detection_workflow</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="Connect-girder-client-and-set-analysis-parameters">
+<h2>Connect girder client and set analysis parameters<a class="headerlink" href="#Connect-girder-client-and-set-analysis-parameters" title="Link to this heading">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">APIURL</span> <span class="o">=</span> <span class="s1">&#39;http://candygram.neurology.emory.edu:8080/api/v1/&#39;</span>
+<span class="n">SAMPLE_SOURCE_FOLDER_ID</span> <span class="o">=</span> <span class="s1">&#39;5d5c28c6bd4404c6b1f3d598&#39;</span>
+<span class="n">SAMPLE_DESTINATION_FOLDER_ID</span> <span class="o">=</span> <span class="s1">&#39;5d9246f6bd4404c6b1faaa89&#39;</span>
+
+<span class="c1"># girder client</span>
+<span class="n">gc</span> <span class="o">=</span> <span class="n">girder_client</span><span class="o">.</span><span class="n">GirderClient</span><span class="p">(</span><span class="n">apiUrl</span><span class="o">=</span><span class="n">APIURL</span><span class="p">)</span>
+<span class="c1"># gc.authenticate(interactive=True)</span>
+<span class="n">gc</span><span class="o">.</span><span class="n">authenticate</span><span class="p">(</span><span class="n">apiKey</span><span class="o">=</span><span class="s1">&#39;kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb&#39;</span><span class="p">)</span>
+
+<span class="c1"># This is where the run logs will be saved</span>
+<span class="n">logging_savepath</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+
+<span class="c1"># params for cellularity thresholding</span>
+<span class="n">cdt_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;gc&#39;</span><span class="p">:</span> <span class="n">gc</span><span class="p">,</span>
+    <span class="s1">&#39;slide_id&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>  <span class="c1"># this will be handled by the slide iterator</span>
+    <span class="s1">&#39;GTcodes&#39;</span><span class="p">:</span> <span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../../histomicstk/saliency/tests/saliency_GTcodes.csv&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;MAG&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s1">&#39;visualize&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s1">&#39;logging_savepath&#39;</span><span class="p">:</span> <span class="n">logging_savepath</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Explore-the-docs">
+<h2>Explore the docs<a class="headerlink" href="#Explore-the-docs" title="Link to this heading">¶</a></h2>
+<section id="Workflow_runner">
+<h3>Workflow_runner<a class="headerlink" href="#Workflow_runner" title="Link to this heading">¶</a></h3>
+<p>You will need to use the <code class="docutils literal notranslate"><span class="pre">Workflow_runner()</span></code> object.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">Workflow_runner</span><span class="o">.</span><span class="fm">__init__</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Init Workflow_runner object.
+
+        Arguments
+        -----------
+        slide_iterator : object
+            Slide_iterator object
+        workflow : method
+            method whose parameters include slide_id and monitorPrefix,
+            which is called for each slide
+        workflow_kwargs : dict
+            keyword arguments for the workflow method
+        kwargs : key-value pairs
+            The following are already assigned defaults by Base_HTK_Class
+            but can be passed here to override defaults
+            [verbose, monitorPrefix, logging_savepath, suppress_warnings]
+
+
+</pre></div></div>
+</div>
+<p>Note how this requires:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Slide_iterator</span></code> instance - which yields information about the slides you want to the run the workflow on.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">workflow</span></code> - a method that you define, which runs on a single slide.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">workflow_kwargs</span></code> - parameters for your defined method.</p></li>
+</ul>
+<p>In this example, we will be using cellularity_detection_workflow() as our workflow to run, which is defined in the <code class="docutils literal notranslate"><span class="pre">histomicstk.workflows.specific_workflows</span></code> module.</p>
+</section>
+<section id="Slide_iterator">
+<h3>Slide_iterator<a class="headerlink" href="#Slide_iterator" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">Slide_iterator</span><span class="o">.</span><span class="fm">__init__</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Init Slide_iterator object.
+
+        Arguments
+        -----------
+        gc : object
+            girder client object
+        source_folder_id : str
+            girder ID of folder in which slides are located
+        keep_slides : list
+            List of slide names to keep. If None, all are kept.
+        discard_slides : list
+            List of slide names to discard.
+        kwargs : key-value pairs
+            The following are already assigned defaults by Base_HTK_Class
+            but can be passed here to override defaults
+            [verbose, monitorPrefix, logger, logging_savepath,
+            suppress_warnings]
+
+
+</pre></div></div>
+</div>
+</section>
+<section id="Specific-workflow-to-run">
+<h3>Specific workflow to run<a class="headerlink" href="#Specific-workflow-to-run" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">cellularity_detection_workflow</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Run cellularity detection for single slide.
+
+    The cellularity detection algorithm can either be
+    Cellularity_detector_superpixels or Cellularity_detector_thresholding.
+
+    Arguments
+    -----------
+    gc : object
+        girder client object
+    cdo : object
+        Cellularity_detector object instance. Can either be
+        Cellularity_detector_superpixels() or
+        Cellularity_detector_thresholding(). The thresholding-based workflow
+        seems to be more robust, despite being simpler.
+    slide_id : str
+        girder id of slide on which workflow is done
+    monitoPrefix : str
+        this will set the cds monitorPrefix attribute
+    destination_folder_id : str or None
+        if not None, copy slide to this girder folder and post results
+        there instead of original slide.
+    keep_existing_annotations : bool
+        keep existing annotations in slide when posting results?
+
+
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Initialize-the-workflow-runner">
+<h2>Initialize the workflow runner<a class="headerlink" href="#Initialize-the-workflow-runner" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Init specific workflow (Cellularity_detector_thresholding)</span>
+<span class="n">cdt</span> <span class="o">=</span> <span class="n">Cellularity_detector_thresholding</span><span class="p">(</span><span class="o">**</span><span class="n">cdt_params</span><span class="p">)</span>
+
+<span class="c1"># Init workflow runner</span>
+<span class="n">workflow_runner</span> <span class="o">=</span> <span class="n">Workflow_runner</span><span class="p">(</span>
+    <span class="n">slide_iterator</span><span class="o">=</span><span class="n">Slide_iterator</span><span class="p">(</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">source_folder_id</span><span class="o">=</span><span class="n">SAMPLE_SOURCE_FOLDER_ID</span><span class="p">,</span>
+        <span class="c1"># keep_slides=None),  # run all slides in girder directory</span>
+        <span class="n">keep_slides</span><span class="o">=</span><span class="p">[</span>  <span class="c1"># run specific slides only</span>
+            <span class="s1">&#39;TCGA-A1-A0SK-01Z-00-DX1_POST.svs&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;TCGA-A2-A04Q-01Z-00-DX1_POST.svs&#39;</span><span class="p">,</span>
+        <span class="p">]),</span>
+    <span class="n">workflow</span><span class="o">=</span><span class="n">cellularity_detection_workflow</span><span class="p">,</span>
+    <span class="n">workflow_kwargs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;gc&#39;</span><span class="p">:</span> <span class="n">gc</span><span class="p">,</span>
+        <span class="s1">&#39;cdo&#39;</span><span class="p">:</span> <span class="n">cdt</span><span class="p">,</span>
+        <span class="s1">&#39;destination_folder_id&#39;</span><span class="p">:</span> <span class="n">SAMPLE_DESTINATION_FOLDER_ID</span><span class="p">,</span>
+        <span class="s1">&#39;keep_existing_annotations&#39;</span><span class="p">:</span> <span class="kc">False</span> <span class="p">},</span>
+    <span class="n">logging_savepath</span><span class="o">=</span><span class="n">cdt</span><span class="o">.</span><span class="n">logging_savepath</span><span class="p">,</span>
+    <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Saving logs to: /tmp/tmpz7t9bo3m/2019-10-27_18-53.log
+Saving logs to: /tmp/tmpz7t9bo3m/2019-10-27_18-53.log
+</pre></div></div>
+</div>
+</section>
+<section id="Run-the-detector">
+<h2>Run the detector<a class="headerlink" href="#Run-the-detector" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow_runner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): copying slide to destination folder
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): set_slide_info_and_get_tissue_mask()
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: set_tissue_rgb()
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: initialize_labeled_mask()
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: assign_components_by_thresholding()
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: -- get HSI and LAB images ...
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: -- thresholding blue_sharpie ...
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: -- thresholding blood ...
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: -- thresholding whitespace ...
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: color_normalize_unspecified_components()
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: -- macenko normalization ...
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: find_potentially_cellular_regions()
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: find_top_cellular_regions()
+test: slide 1 of 2 (TCGA-A1-A0SK-01Z-00-DX1_POST.svs): Tissue piece 1 of 1: visualize_results()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): copying slide to destination folder
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): set_slide_info_and_get_tissue_mask()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: set_tissue_rgb()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: initialize_labeled_mask()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: assign_components_by_thresholding()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: -- get HSI and LAB images ...
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: -- thresholding blue_sharpie ...
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: -- thresholding blood ...
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: -- thresholding whitespace ...
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: color_normalize_unspecified_components()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: -- macenko normalization ...
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: find_potentially_cellular_regions()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: find_top_cellular_regions()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 1 of 2: visualize_results()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: set_tissue_rgb()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: initialize_labeled_mask()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: assign_components_by_thresholding()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: -- get HSI and LAB images ...
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: -- thresholding blue_sharpie ...
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: -- thresholding blood ...
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: -- thresholding whitespace ...
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: color_normalize_unspecified_components()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: -- macenko normalization ...
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: find_potentially_cellular_regions()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: find_top_cellular_regions()
+test: slide 2 of 2 (TCGA-A2-A04Q-01Z-00-DX1_POST.svs): Tissue piece 2 of 2: visualize_results()
+</pre></div></div>
+</div>
+</section>
+<section id="Check-the-DSA/HistomicsTK-visualization">
+<h2>Check the DSA/HistomicsTK visualization<a class="headerlink" href="#Check-the-DSA/HistomicsTK-visualization" title="Link to this heading">¶</a></h2>
+<p>Now you may go to the Digital Slide Archive and check the posted results at the <a class="reference external" href="http://candygram.neurology.emory.edu:8080/#collection/59a5c4e692ca9a00174d77d6/folder/5d9246f6bd4404c6b1faaa89">results girder directory</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="semantic_segmentation_superpixel_approach.html" class="btn btn-neutral float-left" title="Finding cellular regions with superpixel analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../contributing.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
