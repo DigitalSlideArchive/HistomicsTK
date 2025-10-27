@@ -1,0 +1,27 @@
+[package]
+name = "histomicstk_rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ndarray = { version = "0.16", features = ["rayon"] }
+ndarray-linalg = { version = "0.17", features = ["openblas-system"] }
+pyo3 = { version = "0.25", features = ["extension-module"] }
+numpy = "0.25"
+ndarray-npy = "0.9"
+rayon = "1.10"
+pdqselect = "0.1.1"
+num-traits = "0.2"
+
+[lib]
+name = "_lib"
+path = "rust/lib.rs"
+crate-type = ["cdylib"]
+
+[profile.release]
+lto = true
+opt-level = 3
+
+[features]
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]
