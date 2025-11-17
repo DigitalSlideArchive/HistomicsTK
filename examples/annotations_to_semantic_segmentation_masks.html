@@ -1,0 +1,1326 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Converting annotations to semantic segmentation mask images &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Converting annotations to object segmentation mask images" href="annotations_to_object_segmentation_masks.html" />
+    <link rel="prev" title="Positive pixel count and parallel processing with Dask" href="positive_pixel_count.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Converting annotations to semantic segmentation mask images</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Connect-girder-client-and-set-analysis-parameters">Connect girder client and set analysis parameters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Let's-inspect-the-ground-truth-codes-file">Let’s inspect the ground truth codes file</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Generate-mask-image-from-user-defined-coordinates">Generate mask image from user-defined coordinates</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#More-input-parameters">More input parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#1.-manual_bounds-mode">1. manual_bounds mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#2.-min_bounding_box-mode">2. min_bounding_box mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#3.-wsi-mode">3. wsi mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Generate-masks-for-ROIs">Generate masks for ROIs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#This-is-the-core-method-you'll-want-to-use">This is the core method you’ll want to use</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Let's-visualize-the-ROIs-created">Let’s visualize the ROIs created</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Converting annotations to semantic segmentation mask images</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/annotations_to_semantic_segmentation_masks.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Converting-annotations-to-semantic-segmentation-mask-images">
+<h1>Converting annotations to semantic segmentation mask images<a class="headerlink" href="#Converting-annotations-to-semantic-segmentation-mask-images" title="Link to this heading">¶</a></h1>
+<p><strong>Overview:</strong></p>
+<p><img alt="annotations_to_masks" src="https://user-images.githubusercontent.com/22067552/80074017-9394d200-8516-11ea-9c54-870cf8646977.png" /></p>
+<p>The DSA database stores annotations in an (x,y) coordinate list format. For many tasks that process annotation data like training machine learning algorithms or measuring interobserver agreement a mask image representation where pixel values encode ground truth information is more useful.</p>
+<p>This notebook demonstrates tools to convert annotations into semantic segmentation mask images. There are two approaches for generating these images:</p>
+<ul class="simple">
+<li><p>Generate a mask image from a region defined by user-specified coordinates.</p></li>
+<li><p>Generate mask images from annotations contained within <em>region-of-interest</em> (ROI) annotations. This involves mapping annotations to these ROIs and creating one image per ROI.</p></li>
+</ul>
+<p>The examples below extend approaches described in Amgad et al, 2019:</p>
+<p><em>Mohamed Amgad, Habiba Elfandy, Hagar Hussein, …, Jonathan Beezley, Deepak R Chittajallu, David Manthey, David A Gutman, Lee A D Cooper, Structured crowdsourcing enables convolutional segmentation of histology images, Bioinformatics, , btz083, https://doi.org/10.1093/bioinformatics/btz083</em></p>
+<p>A csv file like the one in <code class="docutils literal notranslate"><span class="pre">histomicstk/annotations_and_masks/tests/test_files/sample_GTcodes.csv</span></code> is needed to define what group each pixel value corresponds to in the mask image, to define the overlay order of various annotation groups, and to define which groups represent ROIs. Note that the term “group” here comes from the annotation model where each group represents a class like “tumor” or “necrosis” and is associated with an annotation style.</p>
+<p>The code demonstrated in this notebook extends functionality of the current API endpoints that get annotations as a list of dictionaries, including handing the following complex situations:</p>
+<ul class="simple">
+<li><p>Getting RGB and mask images at the same magnification/resolution</p></li>
+<li><p>User-defined regions to query, including cropping of annotations to defined region</p></li>
+<li><p>Retrieving annotations from ROIs, including rotated rectangles and polygons</p></li>
+<li><p>Overlapping annotations</p></li>
+<li><p>“Background” class (eg. anything not-otherwise-specified is stroma)</p></li>
+<li><p>Getting contours (coordinate lists in ROI frame) and bounding boxes relative to images at the same resolution, to be used to trainign object localization models like Faster-RCNN.</p></li>
+</ul>
+<p><strong>There are four run modes:</strong></p>
+<ul class="simple">
+<li><p><strong>wsi</strong>: get scaled up/down version of mask of whole slide</p></li>
+<li><p><strong>min_bounding_box</strong>: get minimum box for all annotations in slide</p></li>
+<li><p><strong>manual_bounds</strong>: use given xy coordinate bounds provided by the ‘bounds’ param</p></li>
+<li><p><strong>polygonal_bounds</strong>: use manually-drawn polygonal (or rectangular) ROI boundaries</p></li>
+</ul>
+<p><strong>Here is a sample result:</strong></p>
+<p><strong>Source annotations</strong></p>
+<p><img alt="before" src="https://user-images.githubusercontent.com/22067552/63966887-46855c80-ca6a-11e9-8431-932fda6cffc1.png" /></p>
+<p><strong>Corresponding masks</strong></p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">polygonal_bounds</span></code> mode is used though its wrapper function (see jupyter), the result is saved mask files named something like: <code class="docutils literal notranslate"><span class="pre">TCGA-A2-A0YE_left-59201_top-33493_bottom-63742_right-38093.png</span></code></p>
+<p><strong>Where to look?</strong></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>|_ histomicstk/
+  |_annotations_and_masks/
+  |  |_annotation_and_mask_utils.py
+  |  |_annotations_to_masks_handler.py
+  |_tests/
+      |_ test_annotation_and_mask_utils.py
+      |_ test_annotations_to_masks_handler.py
+</pre></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">girder_client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">read_csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">imageio</span><span class="w"> </span><span class="kn">import</span> <span class="n">imread</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotation_and_mask_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_bboxes_from_slide_annotations</span><span class="p">,</span>
+    <span class="n">scale_slide_annotations</span><span class="p">,</span> <span class="n">get_scale_factor_and_appendStr</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotations_to_masks_handler</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_image_and_mask_from_slide</span><span class="p">,</span> <span class="n">get_all_rois_from_slide</span><span class="p">)</span>
+
+<span class="c1">#Some nice default configuration for plots</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span>
+<span class="n">titlesize</span> <span class="o">=</span> <span class="mi">16</span>
+</pre></div>
+</div>
+</div>
+<section id="Connect-girder-client-and-set-analysis-parameters">
+<h2>Connect girder client and set analysis parameters<a class="headerlink" href="#Connect-girder-client-and-set-analysis-parameters" title="Link to this heading">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CWD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+
+<span class="n">APIURL</span> <span class="o">=</span> <span class="s1">&#39;http://candygram.neurology.emory.edu:8080/api/v1/&#39;</span>
+<span class="n">SAMPLE_SLIDE_ID</span> <span class="o">=</span> <span class="s1">&#39;5d586d57bd4404c6b1f28640&#39;</span>
+<span class="n">GTCODE_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="n">CWD</span><span class="p">,</span> <span class="s1">&#39;../../tests/test_files/sample_GTcodes.csv&#39;</span><span class="p">)</span>
+
+<span class="c1"># connect to girder client</span>
+<span class="n">gc</span> <span class="o">=</span> <span class="n">girder_client</span><span class="o">.</span><span class="n">GirderClient</span><span class="p">(</span><span class="n">apiUrl</span><span class="o">=</span><span class="n">APIURL</span><span class="p">)</span>
+<span class="c1"># gc.authenticate(interactive=True)</span>
+<span class="n">gc</span><span class="o">.</span><span class="n">authenticate</span><span class="p">(</span><span class="n">apiKey</span><span class="o">=</span><span class="s1">&#39;kri19nTIGOkWH01TbzRqfohaaDWb6kPecRqGmemb&#39;</span><span class="p">)</span>
+
+<span class="c1"># just a temp directory to save masks for now</span>
+<span class="n">BASE_SAVEPATH</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+<span class="n">SAVEPATHS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;ROI&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_SAVEPATH</span><span class="p">,</span> <span class="s1">&#39;masks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;rgb&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_SAVEPATH</span><span class="p">,</span> <span class="s1">&#39;rgbs&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;contours&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_SAVEPATH</span><span class="p">,</span> <span class="s1">&#39;contours&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;visualization&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_SAVEPATH</span><span class="p">,</span> <span class="s1">&#39;vis&#39;</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">savepath</span> <span class="ow">in</span> <span class="n">SAVEPATHS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">savepath</span><span class="p">)</span>
+
+<span class="c1"># What resolution do we want to get the images at?</span>
+<span class="c1"># Microns-per-pixel / Magnification (either or)</span>
+<span class="n">MPP</span> <span class="o">=</span> <span class="mf">2.5</span>  <span class="c1"># &lt;- this roughly translates to 4x magnification</span>
+<span class="n">MAG</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+</div>
+<section id="Let's-inspect-the-ground-truth-codes-file">
+<h3>Let’s inspect the ground truth codes file<a class="headerlink" href="#Let's-inspect-the-ground-truth-codes-file" title="Link to this heading">¶</a></h3>
+<p>This contains the ground truth codes and information dataframe. This is a dataframe that is indexed by the annotation group name and has the following columns:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">group</span></code>: group name of annotation (string), eg. “mostly_tumor”</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">overlay_order</span></code>: int, how early to place the annotation in the mask. Larger values means this annotation group is overlaid last and overwrites whatever overlaps it.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GT_code</span></code>: int, desired ground truth code (in the semantic segmentation mask) Pixels of this value belong to corresponding group (class)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_roi</span></code>: Flag for whether this group marks ‘special’ annotations that encode the ROI boundary</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_background_class</span></code>: Flag, whether this group is the default fill value inside the ROI. For example, you may decide that any pixel inside the ROI is considered stroma.</p></li>
+</ul>
+<p><strong>NOTE:</strong></p>
+<p>Zero pixels have special meaning and do NOT encode specific ground truth class. Instead, they simply mean ‘Outside ROI’ and should be IGNORED during model training or evaluation.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># read GTCodes file</span>
+<span class="n">GTCodes</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="n">GTCODE_PATH</span><span class="p">)</span>
+<span class="n">GTCodes</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">GTCodes</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>group</th>
+      <th>overlay_order</th>
+      <th>GT_code</th>
+      <th>is_roi</th>
+      <th>is_background_class</th>
+      <th>color</th>
+      <th>comments</th>
+    </tr>
+    <tr>
+      <th>group</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>roi</th>
+      <td>roi</td>
+      <td>0</td>
+      <td>254</td>
+      <td>1</td>
+      <td>0</td>
+      <td>rgb(200,0,150)</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>evaluation_roi</th>
+      <td>evaluation_roi</td>
+      <td>0</td>
+      <td>253</td>
+      <td>1</td>
+      <td>0</td>
+      <td>rgb(255,0,0)</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>mostly_tumor</th>
+      <td>mostly_tumor</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(255,0,0)</td>
+      <td>core class</td>
+    </tr>
+    <tr>
+      <th>mostly_stroma</th>
+      <td>mostly_stroma</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>rgb(255,125,0)</td>
+      <td>core class</td>
+    </tr>
+    <tr>
+      <th>mostly_lymphocytic_infiltrate</th>
+      <td>mostly_lymphocytic_infiltrate</td>
+      <td>1</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,255)</td>
+      <td>core class</td>
+    </tr>
+    <tr>
+      <th>necrosis_or_debris</th>
+      <td>necrosis_or_debris</td>
+      <td>1</td>
+      <td>4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(255,255,0)</td>
+      <td>core class</td>
+    </tr>
+    <tr>
+      <th>glandular_secretions</th>
+      <td>glandular_secretions</td>
+      <td>1</td>
+      <td>5</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,255,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>mostly_blood</th>
+      <td>mostly_blood</td>
+      <td>1</td>
+      <td>6</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(128,0,128)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>exclude</th>
+      <td>exclude</td>
+      <td>3</td>
+      <td>7</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>metaplasia_NOS</th>
+      <td>metaplasia_NOS</td>
+      <td>1</td>
+      <td>8</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(255,0,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>mostly_fat</th>
+      <td>mostly_fat</td>
+      <td>1</td>
+      <td>9</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>mostly_plasma_cells</th>
+      <td>mostly_plasma_cells</td>
+      <td>1</td>
+      <td>10</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,255)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>other_immune_infiltrate</th>
+      <td>other_immune_infiltrate</td>
+      <td>1</td>
+      <td>11</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,255)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>mostly_mucoid_material</th>
+      <td>mostly_mucoid_material</td>
+      <td>1</td>
+      <td>12</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,255,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>normal_acinus_or_duct</th>
+      <td>normal_acinus_or_duct</td>
+      <td>1</td>
+      <td>13</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,255,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>lymphatics</th>
+      <td>lymphatics</td>
+      <td>1</td>
+      <td>14</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,255,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>undetermined</th>
+      <td>undetermined</td>
+      <td>1</td>
+      <td>15</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>nerve</th>
+      <td>nerve</td>
+      <td>1</td>
+      <td>16</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>skin_adnexia</th>
+      <td>skin_adnexia</td>
+      <td>1</td>
+      <td>17</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>blood_vessel</th>
+      <td>blood_vessel</td>
+      <td>1</td>
+      <td>18</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(128,0,128)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>angioinvasion</th>
+      <td>angioinvasion</td>
+      <td>1</td>
+      <td>19</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(128,0,128)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>mostly_dcis</th>
+      <td>mostly_dcis</td>
+      <td>1</td>
+      <td>20</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,0)</td>
+      <td>secondary class</td>
+    </tr>
+    <tr>
+      <th>other</th>
+      <td>other</td>
+      <td>1</td>
+      <td>21</td>
+      <td>0</td>
+      <td>0</td>
+      <td>rgb(0,0,0)</td>
+      <td>secondary class</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+</section>
+<section id="Generate-mask-image-from-user-defined-coordinates">
+<h2>Generate mask image from user-defined coordinates<a class="headerlink" href="#Generate-mask-image-from-user-defined-coordinates" title="Link to this heading">¶</a></h2>
+<p>This section generates a mask provided coordinates of a region in a whole-slide image. Depending on the run mode used, these bounds could be determined automatically (eg enclosing all manually drawn annotations) or defined using the function parameters. The method output includes the RGB image of the defined region, the corresponding semantic segmentation mask, xy coordinates of annotations relative to the mask, and a visualization overlay of the annotations on the RGB image that mimics the
+HistomicsUI visualization of the region.</p>
+<p>The function <code class="docutils literal notranslate"><span class="pre">get_image_and_mask_from_slide()</span></code> implements mask generation.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">get_image_and_mask_from_slide</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Parse region from the slide and get its corresponding labeled mask.
+
+    This is a wrapper around get_roi_mask() which should be referred to for
+    implementation details.
+
+    Parameters
+    -----------
+    gc : object
+        girder client object to make requests, for example:
+        gc = girder_client.GirderClient(apiUrl = APIURL)
+        gc.authenticate(interactive=True)
+
+    slide_id : str
+        girder id for item (slide)
+
+    GTCodes_dict : dict
+        the ground truth codes and information dict.
+        This is a dict that is indexed by the annotation group name and
+        each entry is in turn a dict with the following keys:
+        - group: group name of annotation (string), eg. mostly_tumor
+        - overlay_order: int, how early to place the annotation in the
+        mask. Larger values means this annotation group is overlaid
+        last and overwrites whatever overlaps it.
+        - GT_code: int, desired ground truth code (in the mask)
+        Pixels of this value belong to corresponding group (class)
+        - is_roi: Flag for whether this group encodes an ROI
+        - is_background_class: Flag, whether this group is the default
+        fill value inside the ROI. For example, you may decide that
+        any pixel inside the ROI is considered stroma.
+
+    MPP : float or None
+        Microns-per-pixel -- best use this as it&#39;s more well-defined than
+        magnification which is more scanner/manufacturer specific.
+        MPP of 0.25 often roughly translates to 40x
+
+    MAG : float or None
+        If you prefer to use whatever magnification is reported in slide.
+        If neither MPP or MAG is provided, everything is retrieved without
+        scaling at base (scan) magnification.
+
+    mode : str
+        This specifies which part of the slide to get the mask from. Allowed
+        modes include the following
+        - wsi: get scaled up/down version of mask of whole slide
+        - min_bounding_box: get minimum box for all annotations in slide
+        - manual_bounds: use given ROI bounds provided by the &#39;bounds&#39; param
+        - polygonal_bounds: use the idx_for_roi param to get coordinates
+
+    bounds : dict or None
+        if not None, has keys &#39;XMIN&#39;, &#39;XMAX&#39;, &#39;YMIN&#39;, &#39;YMAX&#39; for slide
+        region coordinates (AT BASE MAGNIFICATION) to get labeled image
+        (mask) for. Use this with the &#39;manual_bounds&#39; run mode.
+
+    idx_for_roi : int
+        index of ROI within the element_infos dataframe.
+        Use this with the &#39;polygonal_bounds&#39; run mode.
+
+    slide_annotations : list or None
+        Give this parameter to avoid re-getting slide annotations. If you do
+        provide the annotations, though, make sure you have used
+        scale_slide_annotations() to scale them up/down by sf BEFOREHAND.
+
+    element_infos : pandas DataFrame.
+        The columns annidx and elementidx
+        encode the dict index of annotation document and element,
+        respectively, in the original slide_annotations list of dictionaries.
+        This can be obained by get_bboxes_from_slide_annotations() method.
+        Make sure you have used scale_slide_annotations().
+
+    get_roi_mask_kwargs : dict
+        extra kwargs for get_roi_mask()
+
+    get_contours_kwargs : dict
+        extra kwargs for get_contours_from_mask()
+
+    linewidth : float
+        visualization line width
+
+    get_rgb: bool
+        get rgb image?
+
+    get_contours : bool
+        get annotation contours? (relative to final mask)
+
+    get_visualization : bool
+        get overlaid annotation bounds over RGB for visualization
+
+    tau : int
+        maximum difference (in pixels) between fetched image and mask allowed.
+        Above this threshold, an error is raised indicating you may have some
+        problem in your parameters or elsewhere. If the difference is less then
+        tau, the rgb image and mask are resized to match each other before
+        being returned
+
+    Returns
+    --------
+    dict
+        Results dict containing one or more of the following keys
+        bounds: dict of bounds at scan magnification
+        ROI - (mxn) labeled image (mask)
+        rgb - (mxnx3 np array) corresponding rgb image
+        contours - list, each entry is a dict version of a row from the output
+        of masks_to_annotations_handler.get_contours_from_mask()
+        visualization - (mxnx3 np array) visualization overlay
+
+
+</pre></div></div>
+</div>
+<section id="More-input-parameters">
+<h3>More input parameters<a class="headerlink" href="#More-input-parameters" title="Link to this heading">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># other params</span>
+<span class="n">get_roi_mask_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;iou_thresh&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s1">&#39;crop_to_roi&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;use_shapely&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">get_contours_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;groups_to_get&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;roi_group&#39;</span><span class="p">:</span> <span class="s1">&#39;roi&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;get_roi_contour&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;discard_nonenclosed_background&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;background_group&#39;</span><span class="p">:</span> <span class="s1">&#39;mostly_stroma&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;MIN_SIZE&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;MAX_SIZE&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;monitorPrefix&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># params for get_image_and_mask_from_slide()</span>
+<span class="n">get_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;gc&#39;</span><span class="p">:</span> <span class="n">gc</span><span class="p">,</span> <span class="s1">&#39;slide_id&#39;</span><span class="p">:</span> <span class="n">SAMPLE_SLIDE_ID</span><span class="p">,</span>
+    <span class="s1">&#39;GTCodes_dict&#39;</span><span class="p">:</span> <span class="n">GTCodes</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+    <span class="s1">&#39;MPP&#39;</span><span class="p">:</span> <span class="n">MPP</span><span class="p">,</span>
+    <span class="s1">&#39;MAG&#39;</span><span class="p">:</span> <span class="n">MAG</span><span class="p">,</span>
+    <span class="s1">&#39;get_roi_mask_kwargs&#39;</span><span class="p">:</span> <span class="n">get_roi_mask_kwargs</span><span class="p">,</span>
+    <span class="s1">&#39;get_contours_kwargs&#39;</span><span class="p">:</span> <span class="n">get_contours_kwargs</span><span class="p">,</span>
+    <span class="s1">&#39;get_rgb&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;get_contours&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;get_visualization&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="1.-manual_bounds-mode">
+<h3>1. manual_bounds mode<a class="headerlink" href="#1.-manual_bounds-mode" title="Link to this heading">¶</a></h3>
+<p>As you’ve seen in documentation, this method has four run modes, which determines where to get semantic segmentation masks and other behaviors. Here we test the basic <code class="docutils literal notranslate"><span class="pre">manual_bounds</span></code> mode, where you just give the boundaries (at base/scan magnification) of the annotations you want. Of course everything will be scaled to the desired resolution.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">get_kwargs</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;XMIN&#39;</span><span class="p">:</span> <span class="mi">58000</span><span class="p">,</span> <span class="s1">&#39;XMAX&#39;</span><span class="p">:</span> <span class="mi">63000</span><span class="p">,</span>
+    <span class="s1">&#39;YMIN&#39;</span><span class="p">:</span> <span class="mi">35000</span><span class="p">,</span> <span class="s1">&#39;YMAX&#39;</span><span class="p">:</span> <span class="mi">39000</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get specified region, let the method get and scale annotations</span>
+<span class="n">roi_out</span> <span class="o">=</span> <span class="n">get_image_and_mask_from_slide</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;manual_bounds&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">get_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/mtageld/Desktop/HistomicsTK/histomicstk/annotations_and_masks/annotation_and_mask_utils.py:668: RuntimeWarning: invalid value encountered in greater
+  iou = iou[:, iou[1, :] &gt; iou_thresh].astype(int)
+</pre></div></div>
+</div>
+<p>The result is a a dictionary describing the region location in the slide, a semantic segmentation mask image, an RGB image of the region, contours (lists of annotation coordinates relative to region frame) and a visualization:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">roi_out</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+dict_keys([&#39;bounds&#39;, &#39;rgb&#39;, &#39;ROI&#39;, &#39;contours&#39;, &#39;visualization&#39;])
+</pre></div></div>
+</div>
+<p>The dictionary <code class="docutils literal notranslate"><span class="pre">roi_out['bounds']</span></code> can be used to convert the coordinates in <code class="docutils literal notranslate"><span class="pre">contours</span></code> from the region frame back to the slide frame</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;XMIN&#39;: 58000, &#39;XMAX&#39;: 63000, &#39;YMIN&#39;: 35000, &#39;YMAX&#39;: 39000}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">imstr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;rgb&#39;</span><span class="p">,</span> <span class="s1">&#39;ROI&#39;</span><span class="p">,</span> <span class="s1">&#39;visualization&#39;</span><span class="p">]:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">roi_out</span><span class="p">[</span><span class="n">imstr</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">imstr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_annotations_to_semantic_segmentation_masks_18_0.png" src="../_images/examples_annotations_to_semantic_segmentation_masks_18_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_annotations_to_semantic_segmentation_masks_18_1.png" src="../_images/examples_annotations_to_semantic_segmentation_masks_18_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_annotations_to_semantic_segmentation_masks_18_2.png" src="../_images/examples_annotations_to_semantic_segmentation_masks_18_2.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">DataFrame</span><span class="p">(</span><span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;contours&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>group</th>
+      <th>color</th>
+      <th>ymin</th>
+      <th>ymax</th>
+      <th>xmin</th>
+      <th>xmax</th>
+      <th>has_holes</th>
+      <th>touches_edge-top</th>
+      <th>touches_edge-left</th>
+      <th>touches_edge-bottom</th>
+      <th>touches_edge-right</th>
+      <th>coords_x</th>
+      <th>coords_y</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>roi</td>
+      <td>rgb(200,0,150)</td>
+      <td>292.0</td>
+      <td>398.0</td>
+      <td>29.0</td>
+      <td>243.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>214,212,212,211,211,210,210,211,211,212,212,21...</td>
+      <td>292,294,295,296,299,300,310,311,312,313,314,31...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>roi</td>
+      <td>rgb(200,0,150)</td>
+      <td>57.0</td>
+      <td>319.0</td>
+      <td>0.0</td>
+      <td>153.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>31,30,29,27,27,28,29,30,31,31,29,22,21,16,15,1...</td>
+      <td>57,58,58,60,64,65,64,64,65,66,68,68,69,69,70,7...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>roi</td>
+      <td>rgb(200,0,150)</td>
+      <td>0.0</td>
+      <td>309.0</td>
+      <td>120.0</td>
+      <td>498.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>143,142,141,140,139,138,137,135,134,133,132,13...</td>
+      <td>0,1,1,2,2,3,3,5,5,6,6,7,7,9,9,10,10,11,11,13,1...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>mostly_tumor</td>
+      <td>rgb(255,0,0)</td>
+      <td>331.0</td>
+      <td>393.0</td>
+      <td>177.0</td>
+      <td>228.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>185,184,180,180,181,181,182,182,181,181,180,18...</td>
+      <td>331,332,332,333,334,336,337,342,343,344,345,34...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>mostly_tumor</td>
+      <td>rgb(255,0,0)</td>
+      <td>324.0</td>
+      <td>398.0</td>
+      <td>29.0</td>
+      <td>182.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>123,122,120,119,112,111,108,107,94,93,74,73,63...</td>
+      <td>324,325,325,326,326,327,327,328,328,329,329,33...</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Note that if we were to use the above function call repeatedly for the same slide (eg to get tiles or multiple regions of interest), this would repeatedly use a get request to obtain the annotations from the server, which is inefficient. Instead, if we know we’ll be using this repeatedly for the same slide, we manually get annotations and scale them down/up to desired resolution, and pass them to <code class="docutils literal notranslate"><span class="pre">get_image_and_mask_from_slide()</span></code> method. Here’s how this could be done.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get annotations for slide</span>
+<span class="n">slide_annotations</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/annotation/item/&#39;</span> <span class="o">+</span> <span class="n">SAMPLE_SLIDE_ID</span><span class="p">)</span>
+
+<span class="c1"># scale up/down annotations by a factor</span>
+<span class="n">sf</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_scale_factor_and_appendStr</span><span class="p">(</span>
+    <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">SAMPLE_SLIDE_ID</span><span class="p">,</span> <span class="n">MPP</span><span class="o">=</span><span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="o">=</span><span class="n">MAG</span><span class="p">)</span>
+<span class="n">slide_annotations</span> <span class="o">=</span> <span class="n">scale_slide_annotations</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">,</span> <span class="n">sf</span><span class="o">=</span><span class="n">sf</span><span class="p">)</span>
+
+<span class="c1"># get bounding box information for all annotations</span>
+<span class="n">element_infos</span> <span class="o">=</span> <span class="n">get_bboxes_from_slide_annotations</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get specified region -- manually providing scaled annotations</span>
+<span class="n">roi_out</span> <span class="o">=</span> <span class="n">get_image_and_mask_from_slide</span><span class="p">(</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;manual_bounds&#39;</span><span class="p">,</span> <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">,</span>
+    <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">,</span> <span class="o">**</span><span class="n">get_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/mtageld/Desktop/HistomicsTK/histomicstk/annotations_and_masks/annotation_and_mask_utils.py:668: RuntimeWarning: invalid value encountered in greater
+  iou = iou[:, iou[1, :] &gt; iou_thresh].astype(int)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;XMIN&#39;: 58000, &#39;XMAX&#39;: 63000, &#39;YMIN&#39;: 35000, &#39;YMAX&#39;: 39000}
+</pre></div></div>
+</div>
+</section>
+<section id="2.-min_bounding_box-mode">
+<h3>2. min_bounding_box mode<a class="headerlink" href="#2.-min_bounding_box-mode" title="Link to this heading">¶</a></h3>
+<p>If you don’t care about any “special” ROI annotations and would just like to parse everything in the slide into a ‘super’ minimum-bounding-box semantic segmentation mask, use the <code class="docutils literal notranslate"><span class="pre">min_bounding_box</span></code> mode as follows.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get ROI bounding everything</span>
+<span class="n">minbbox_out</span> <span class="o">=</span> <span class="n">get_image_and_mask_from_slide</span><span class="p">(</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;min_bounding_box&#39;</span><span class="p">,</span> <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">,</span>
+    <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">,</span> <span class="o">**</span><span class="n">get_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">minbbox_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;XMIN&#39;: 56736, &#39;YMIN&#39;: 33493, &#39;XMAX&#39;: 63742, &#39;YMAX&#39;: 39900}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">minbbox_out</span><span class="p">[</span><span class="s1">&#39;visualization&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.image.AxesImage at 0x7fece09599e8&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_annotations_to_semantic_segmentation_masks_28_1.png" src="../_images/examples_annotations_to_semantic_segmentation_masks_28_1.png" />
+</div>
+</div>
+</section>
+<section id="3.-wsi-mode">
+<h3>3. wsi mode<a class="headerlink" href="#3.-wsi-mode" title="Link to this heading">¶</a></h3>
+<p>If you just want a miniature version of the slide and all its annotations, usine this mode.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get entire wsi region</span>
+<span class="n">get_kwargs</span><span class="p">[</span><span class="s1">&#39;MPP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># otherwise it&#39;s too large!</span>
+<span class="n">wsi_out</span> <span class="o">=</span> <span class="n">get_image_and_mask_from_slide</span><span class="p">(</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wsi&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">get_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">wsi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;XMIN&#39;: 0, &#39;XMAX&#39;: 131536, &#39;YMIN&#39;: 0, &#39;YMAX&#39;: 80453}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">wsi_out</span><span class="p">[</span><span class="s1">&#39;visualization&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_annotations_to_semantic_segmentation_masks_32_0.png" src="../_images/examples_annotations_to_semantic_segmentation_masks_32_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">wsi_out</span><span class="p">[</span><span class="s1">&#39;visualization&#39;</span><span class="p">][</span><span class="mi">1650</span><span class="p">:</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2800</span><span class="p">:</span><span class="mi">3300</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_annotations_to_semantic_segmentation_masks_33_0.png" src="../_images/examples_annotations_to_semantic_segmentation_masks_33_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Generate-masks-for-ROIs">
+<h2>Generate masks for ROIs<a class="headerlink" href="#Generate-masks-for-ROIs" title="Link to this heading">¶</a></h2>
+<p>This method generates masks for regions defined by ROI annotations (defined groups in the ground truth codes). Annotated structures are mapped to these ROIs, and then each ROI is converted into a single semantic segmentation mask image.</p>
+<section id="This-is-the-core-method-you'll-want-to-use">
+<h3>This is the core method you’ll want to use<a class="headerlink" href="#This-is-the-core-method-you'll-want-to-use" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">get_all_rois_from_slide</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Parse annotations and saves ground truth masks for ALL ROIs.
+
+    Get all ROIs in a single slide. This is mainly uses
+    get_image_and_mask_from_slide(), which should be referred to
+    for implementation details.
+
+    Parameters
+    -----------
+    gc : object
+        girder client object to make requests, for example:
+        gc = girder_client.GirderClient(apiUrl = APIURL)
+        gc.authenticate(interactive=True)
+
+    slide_id : str
+        girder id for item (slide)
+
+    GTCodes_dict : dict
+        the ground truth codes and information dict.
+        This is a dict that is indexed by the annotation group name and
+        each entry is in turn a dict with the following keys:
+        - group: group name of annotation (string), eg. mostly_tumor
+        - overlay_order: int, how early to place the annotation in the
+        mask. Larger values means this annotation group is overlaid
+        last and overwrites whatever overlaps it.
+        - GT_code: int, desired ground truth code (in the mask)
+        Pixels of this value belong to corresponding group (class)
+        - is_roi: Flag for whether this group encodes an ROI
+        - is_background_class: Flag, whether this group is the default
+        fill value inside the ROI. For example, you may decide that
+        any pixel inside the ROI is considered stroma.
+
+    save_directories : dict
+        paths to directories to save data. Each entry is a string, and the
+        following keys are allowed
+        - ROI: path to save masks (labeled images)
+        - rgb: path to save rgb images
+        - contours: path to save annotation contours
+        - visualization: path to save rgb visualization overlays
+
+    get_image_and_mask_from_slide_kwargs : dict
+        kwargs to pass to get_image_and_mask_from_slide()
+        default values are assigned if speceific parameters are not given.
+
+    max_roiside : int or None
+        If int, this is the maximum allowed side for a downloaded region. If
+        a region-of-interest is larger than this size, then it is tiled into
+        non-overlapping regions who maximal side is max_roiside and downloaded.
+        If None, the ROI is downloaded as-is, even if it was extremely large.
+        If you know your slides have very large ROI annotations, the safer
+        option is to set a max_roiside. A good value may be 5000-8000 pixels.
+
+    slide_name : str or None
+        If not given, it&#39;s inferred using a server request using girder client.
+
+    verbose : bool
+        Print progress to screen?
+
+    monitorPrefix : str
+        text to prepend to printed statements
+
+    Returns
+    --------
+    list of dicts
+        each entry contains the following keys
+        - ROI: path to saved mask (labeled image)
+        - rgb: path to saved rgb image
+        - contours: path to saved annotation contours
+        - visualization: path to saved rgb visualization overlay
+
+
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detailed_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;MPP&#39;</span><span class="p">:</span> <span class="n">MPP</span><span class="p">,</span>
+    <span class="s1">&#39;MAG&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;get_roi_mask_kwargs&#39;</span><span class="p">:</span> <span class="n">get_roi_mask_kwargs</span><span class="p">,</span>
+    <span class="s1">&#39;get_contours_kwargs&#39;</span><span class="p">:</span> <span class="n">get_contours_kwargs</span><span class="p">,</span>
+    <span class="s1">&#39;get_rgb&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;get_contours&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;get_visualization&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>The parameter <code class="docutils literal notranslate"><span class="pre">get_roi_mask_kwargs</span></code> (which is one of the keys of the parameter <code class="docutils literal notranslate"><span class="pre">get_image_and_mask_from_slide_kwargs</span></code>) is a dictionary of <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> that is eventually passed on to <code class="docutils literal notranslate"><span class="pre">get_roi_mask()</span></code>. Watch out for the following parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">crop_to_roi</span></code> - flag of whether to crop polygons to roi (prevent ‘overflow’ beyond roi edge)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">use_shapely</span></code> - flag of whether to precisely determine whether an element belongs to an ROI using shapely polygons. Ever-so-slightly slower. If set to False, overlapping bounding box is used as a cheap but less precise indicator of inclusion.</p></li>
+</ul>
+<p>Also note that, as the docstring explains, you can set <code class="docutils literal notranslate"><span class="pre">max_roiside</span></code> to some integer value so that large ROIs would be tiled to prevent memory errors.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">savenames</span> <span class="o">=</span> <span class="n">get_all_rois_from_slide</span><span class="p">(</span>
+    <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">SAMPLE_SLIDE_ID</span><span class="p">,</span> <span class="n">GTCodes_dict</span><span class="o">=</span><span class="n">GTCodes</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+    <span class="n">save_directories</span><span class="o">=</span><span class="n">SAVEPATHS</span><span class="p">,</span>
+    <span class="n">get_image_and_mask_from_slide_kwargs</span><span class="o">=</span><span class="n">detailed_kwargs</span><span class="p">,</span>
+    <span class="n">max_roiside</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">slide_name</span><span class="o">=</span><span class="s1">&#39;TCGA-A2-A0YE&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">savenames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;ROI&#39;: &#39;/tmp/tmpf7ch4pl6/masks/TCGA-A2-A0YE_left-59201_top-33493_bottom-38093_right-63742.png&#39;,
+ &#39;rgb&#39;: &#39;/tmp/tmpf7ch4pl6/rgbs/TCGA-A2-A0YE_left-59201_top-33493_bottom-38093_right-63742.png&#39;,
+ &#39;visualization&#39;: &#39;/tmp/tmpf7ch4pl6/vis/TCGA-A2-A0YE_left-59201_top-33493_bottom-38093_right-63742.png&#39;,
+ &#39;contours&#39;: &#39;/tmp/tmpf7ch4pl6/contours/TCGA-A2-A0YE_left-59201_top-33493_bottom-38093_right-63742.csv&#39;}
+</pre></div></div>
+</div>
+</section>
+<section id="Let's-visualize-the-ROIs-created">
+<h3>Let’s visualize the ROIs created<a class="headerlink" href="#Let's-visualize-the-ROIs-created" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">savename</span> <span class="ow">in</span> <span class="n">savenames</span><span class="p">:</span>
+    <span class="n">vis</span> <span class="o">=</span> <span class="n">imread</span><span class="p">(</span><span class="n">savename</span><span class="p">[</span><span class="s1">&#39;ROI&#39;</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">vis</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">savename</span><span class="p">[</span><span class="s1">&#39;ROI&#39;</span><span class="p">]))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_annotations_to_semantic_segmentation_masks_42_0.png" src="../_images/examples_annotations_to_semantic_segmentation_masks_42_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_annotations_to_semantic_segmentation_masks_42_1.png" src="../_images/examples_annotations_to_semantic_segmentation_masks_42_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_annotations_to_semantic_segmentation_masks_42_2.png" src="../_images/examples_annotations_to_semantic_segmentation_masks_42_2.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="positive_pixel_count.html" class="btn btn-neutral float-left" title="Positive pixel count and parallel processing with Dask" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="annotations_to_object_segmentation_masks.html" class="btn btn-neutral float-right" title="Converting annotations to object segmentation mask images" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

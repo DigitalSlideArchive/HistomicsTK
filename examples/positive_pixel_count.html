@@ -1,0 +1,891 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Positive pixel count and parallel processing with Dask &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Converting annotations to semantic segmentation mask images" href="annotations_to_semantic_segmentation_masks.html" />
+    <link rel="prev" title="Nuclei Segmentation" href="nuclei_segmentation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_large_image.html">Local processing of whole-slide images using large_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Positive pixel count and parallel processing with Dask</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Analyzing-a-small-image-with-count_image">Analyzing a small image with <code class="docutils literal notranslate"><span class="pre">count_image</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Analyzing-a-large-image-with-count_slide">Analyzing a large image with <code class="docutils literal notranslate"><span class="pre">count_slide</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Additional-setup">Additional setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#count_slide-on-a-small-region"><code class="docutils literal notranslate"><span class="pre">count_slide</span></code> on a small region</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#count_slide-on-a-large-region"><code class="docutils literal notranslate"><span class="pre">count_slide</span></code> on a large region</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Positive pixel count and parallel processing with Dask</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/positive_pixel_count.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Positive-pixel-count-and-parallel-processing-with-Dask">
+<h1>Positive pixel count and parallel processing with Dask<a class="headerlink" href="#Positive-pixel-count-and-parallel-processing-with-Dask" title="Link to this heading">¶</a></h1>
+<section id="Overview">
+<h2>Overview<a class="headerlink" href="#Overview" title="Link to this heading">¶</a></h2>
+<p>Positive pixel count is a routine that classifies pixels by their position in <a class="reference external" href="https://en.wikipedia.org/wiki/HSL_and_HSV#Hue_and_chroma">HSI Color Space</a> and computes statistics based on this classification.</p>
+<p>HistomicsTK has two main functions for positive pixel counting, <code class="docutils literal notranslate"><span class="pre">count_slide</span></code> and <code class="docutils literal notranslate"><span class="pre">count_image</span></code>, both of which live in the <code class="docutils literal notranslate"><span class="pre">histomicstk.segmentation.positive_pixel_count</span></code> module (imported in this notebook as simply <code class="docutils literal notranslate"><span class="pre">ppc</span></code>). <code class="docutils literal notranslate"><span class="pre">count_image</span></code> operates on an in-memory image in a format compatible with NumPy’s <code class="docutils literal notranslate"><span class="pre">ndarray</span></code> type, and returns both the classification statistics and a label image that may be useful for visualization or further analysis.</p>
+<p><code class="docutils literal notranslate"><span class="pre">count_slide</span></code> accepts a path to an image instead, and while it can also carry out exactly the same computation as <code class="docutils literal notranslate"><span class="pre">count_image</span></code>, its advantage lies in its ability to distribute its computation using <a class="reference external" href="http://dask.pydata.org/en/latest/index.html">Dask</a> and to operate on images too large to fit in memory. This ability comes at a cost – to enable it, the generation of the label image must be disabled. (For the curious, the necessary underlying support for writing large images a tile at a time
+is lacking.) The HistomicsTK CLI <code class="docutils literal notranslate"><span class="pre">PositivePixelCount</span></code> is a wrapper around this function.</p>
+<p>The rest of this example is subdivided, in order, into <code class="docutils literal notranslate"><span class="pre">count_image</span></code> and <code class="docutils literal notranslate"><span class="pre">count_slide</span></code> examples, followed by a CLI example.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Configuration and imports of other libraries</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">large_image</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">skimage.io</span>
+
+<span class="c1">#Some nice default configuration for plots</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;image.cmap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;gray&#39;</span>
+
+<span class="c1"># Import and alias positive_pixel_count</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">histomicstk.segmentation.positive_pixel_count</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ppc</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Analyzing-a-small-image-with-count_image">
+<h2>Analyzing a small image with <code class="docutils literal notranslate"><span class="pre">count_image</span></code><a class="headerlink" href="#Analyzing-a-small-image-with-count_image" title="Link to this heading">¶</a></h2>
+<p>We start with <code class="docutils literal notranslate"><span class="pre">count_image</span></code>. The image we will look at is small and can be analyzed quickly.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_url</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;https://data.kitware.com/api/v1/file/&#39;</span>
+             <span class="s1">&#39;598b71ee8d777f7d33e9c1d4/download&#39;</span><span class="p">)</span>  <span class="c1"># DAB.png</span>
+
+<span class="n">im_input</span> <span class="o">=</span> <span class="n">skimage</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image_url</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Input image&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">im_input</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Input image
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_positive_pixel_count_4_1.png" src="../_images/examples_positive_pixel_count_4_1.png" />
+</div>
+</div>
+<p>With a helper function, it becomes reasonable to use <code class="docutils literal notranslate"><span class="pre">count_image</span></code> interactively to explore parameter values. A more advanced analysis might also look at the HSI values directly.</p>
+<p>Here, we show briefly how one can use the helper function <code class="docutils literal notranslate"><span class="pre">count_and_label</span></code> defined below.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">count_and_label</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="s2">&quot;Compute the label image with count_image, and then display it&quot;</span>
+    <span class="n">label_image</span> <span class="o">=</span> <span class="n">ppc</span><span class="o">.</span><span class="n">count_image</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">params</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">label_image</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>To start out, we’ll pick a set of parameters. The HSI color space used by the routines is defined to use values in the range [0,1].</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">widgets</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">interactive</span>
+
+<span class="n">params</span><span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;hue_value&#39;</span><span class="p">:</span> <span class="n">widgets</span><span class="o">.</span><span class="n">FloatSlider</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="mf">0.004</span><span class="p">,</span><span class="n">style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;description_width&#39;</span><span class="p">:</span> <span class="s1">&#39;initial&#39;</span><span class="p">},</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.05</span><span class="p">),</span>
+    <span class="s1">&#39;hue_width&#39;</span><span class="p">:</span><span class="n">widgets</span><span class="o">.</span><span class="n">FloatSlider</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;description_width&#39;</span><span class="p">:</span> <span class="s1">&#39;initial&#39;</span><span class="p">},</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.15</span><span class="p">),</span>
+    <span class="s1">&#39;saturation_minimum&#39;</span><span class="p">:</span> <span class="n">widgets</span><span class="o">.</span><span class="n">FloatSlider</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;description_width&#39;</span><span class="p">:</span> <span class="s1">&#39;initial&#39;</span><span class="p">},</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.05</span><span class="p">),</span>
+    <span class="s1">&#39;intensity_upper_limit&#39;</span><span class="p">:</span> <span class="n">widgets</span><span class="o">.</span><span class="n">FloatSlider</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;description_width&#39;</span><span class="p">:</span> <span class="s1">&#39;initial&#39;</span><span class="p">},</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.95</span><span class="p">),</span>
+    <span class="s1">&#39;intensity_weak_threshold&#39;</span><span class="p">:</span> <span class="n">widgets</span><span class="o">.</span><span class="n">FloatSlider</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;description_width&#39;</span><span class="p">:</span> <span class="s1">&#39;initial&#39;</span><span class="p">},</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.65</span><span class="p">),</span>
+    <span class="s1">&#39;intensity_strong_threshold&#39;</span><span class="p">:</span><span class="n">widgets</span><span class="o">.</span><span class="n">FloatSlider</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;description_width&#39;</span><span class="p">:</span> <span class="s1">&#39;initial&#39;</span><span class="p">},</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.35</span><span class="p">),</span>
+    <span class="s1">&#39;intensity_lower_limit&#39;</span><span class="p">:</span><span class="n">widgets</span><span class="o">.</span><span class="n">FloatSlider</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;description_width&#39;</span><span class="p">:</span> <span class="s1">&#39;initial&#39;</span><span class="p">},</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.05</span><span class="p">),</span>
+        <span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">g</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">):</span>
+    <span class="n">count_and_label</span><span class="p">(</span><span class="n">ppc</span><span class="o">.</span><span class="n">Parameters</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">))</span>
+
+<span class="n">w</span> <span class="o">=</span> <span class="n">interactive</span><span class="p">(</span><span class="n">g</span><span class="p">,</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+
+<span class="n">template_params</span> <span class="o">=</span> <span class="n">ppc</span><span class="o">.</span><span class="n">Parameters</span><span class="p">(</span><span class="o">**</span><span class="n">w</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "b6b9c8f0ab5e4a3b9f16bf6346f73870", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<p>Internally, the label values are conveniently increasing, regularly spaced integers. Black is therefore background / negative, dark gray is weak positive, light gray is positive, and white is strong positive. To use the label values programmatically, use of the static attributes of <code class="docutils literal notranslate"><span class="pre">ppc.Labels</span></code> – <code class="docutils literal notranslate"><span class="pre">.NEGATIVE</span></code>, <code class="docutils literal notranslate"><span class="pre">.WEAK</span></code>, <code class="docutils literal notranslate"><span class="pre">.PLAIN</span></code>, and <code class="docutils literal notranslate"><span class="pre">.STRONG</span></code> – is recommended.</p>
+<p>This does a reasonably good job already, but let’s see what happens if we shift the hue center a bit. Since <code class="docutils literal notranslate"><span class="pre">Parameters</span></code> is a <code class="docutils literal notranslate"><span class="pre">collections.namedtuple</span></code>, we can use its <code class="docutils literal notranslate"><span class="pre">._replace</span></code> method to substitute a value.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">count_and_label</span><span class="p">(</span><span class="n">template_params</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">hue_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_positive_pixel_count_10_0.png" src="../_images/examples_positive_pixel_count_10_0.png" />
+</div>
+</div>
+<p>Here, we see that a number of pixels previously considered positive are now considered negative, creating holes in visible nuclei. This indicates that we’ve moved the hue range too far.</p>
+<p>In any case, we can also view the statistics. Here we use the original parameter values.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span><span class="p">,</span> <span class="n">label_image</span> <span class="o">=</span> <span class="n">ppc</span><span class="o">.</span><span class="n">count_image</span><span class="p">(</span><span class="n">im_input</span><span class="p">,</span> <span class="n">template_params</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">pp_namedtuple</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="s2">&quot;Pretty-print a namedtuple by printing each field on its own line and left-aligning all values&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="n">maxlen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">_fields</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">_fields</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">),</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">maxlen</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">pp_namedtuple</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Output
+NumberWeakPositive:                     62163
+NumberPositive:                         24459
+NumberStrongPositive:                   4948
+NumberTotalPixels:                      1440000
+IntensitySumWeakPositive:               49554.65359477124
+IntensitySumPositive:                   12907.145098039215
+IntensitySumStrongPositive:             1423.4183006535948
+IntensityAverage:                       0.6976653597626302
+RatioStrongToTotal:                     0.054035164355138145
+IntensityAverageWeakAndPositive:        0.7210846977997558
+RatioStrongToPixels:                    0.003436111111111111
+RatioWeakToPixels:                      0.04316875
+RatioTotalToPixels:                     0.06359027777777777
+</pre></div></div>
+</div>
+</section>
+<section id="Analyzing-a-large-image-with-count_slide">
+<h2>Analyzing a large image with <code class="docutils literal notranslate"><span class="pre">count_slide</span></code><a class="headerlink" href="#Analyzing-a-large-image-with-count_slide" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">count_slide</span></code> has several more parameters than <code class="docutils literal notranslate"><span class="pre">count_image</span></code>. Besides <code class="docutils literal notranslate"><span class="pre">make_label_image</span></code>, which controls the creation of the label image as mentioned, there is also <code class="docutils literal notranslate"><span class="pre">region</span></code>, which instructs <code class="docutils literal notranslate"><span class="pre">count_slide</span></code> to operate on only the specified region of the image.</p>
+<p>We will visualize its operation on a small region, and then run it on a larger region.</p>
+<section id="Additional-setup">
+<h3>Additional setup<a class="headerlink" href="#Additional-setup" title="Link to this heading">¶</a></h3>
+<p>First, however, we’ll need to download an image and set up Dask. (The image is 1.630 GiB, so the download takes a while.)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Comment this out (or just don&#39;t run it) once you have the file</span>
+<span class="o">!</span>curl<span class="w"> </span>-OJ<span class="w"> </span><span class="s1">&#39;https://data.kitware.com/api/v1/file/598b5ee88d777f7d33e9c1d1/download&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 1668M  100 1668M    0     0  1955k      0  0:14:33  0:14:33 --:--:-- 1665k0  0:14:48  0:00:20  0:14:28 1975k  0  0:14:34  0:03:30  0:11:04 2128k     0  0:14:04  0:06:59  0:07:05 2154k18  0:00:14 1926k
+curl: Saved to filename &#39;TCGA-DX-A6BG-01Z-00-DX2.34763958-0613-4069-9ACC-13D6633FE415.svs&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set up a basic configuration.  Change as needed.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask.distributed</span>
+
+<span class="n">dask</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+    <div style="width: 24px; height: 24px; background-color: #e1e1e1; border: 3px solid #9D9D9D; border-radius: 5px; position: absolute;"> </div>
+    <div style="margin-left: 48px;">
+        <h3 style="margin-bottom: 0px;">Client</h3>
+        <p style="color: #9D9D9D; margin-bottom: 0px;">Client-80fcf7a4-e10a-11ec-ac62-3529764f914a</p>
+        <table style="width: 100%; text-align: left;">
+
+        <tr>
+
+            <td style="text-align: left;"><strong>Connection method:</strong> Cluster object</td>
+            <td style="text-align: left;"><strong>Cluster type:</strong> distributed.LocalCluster</td>
+
+        </tr>
+
+
+            <tr>
+                <td style="text-align: left;">
+                    <strong>Dashboard: </strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
+                </td>
+                <td style="text-align: left;"></td>
+            </tr>
+
+
+        </table>
+
+
+            <details>
+            <summary style="margin-bottom: 20px;"><h3 style="display: inline;">Cluster Info</h3></summary>
+            <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-mod-trusted jp-OutputArea-output">
+    <div style="width: 24px; height: 24px; background-color: #e1e1e1; border: 3px solid #9D9D9D; border-radius: 5px; position: absolute;">
+    </div>
+    <div style="margin-left: 48px;">
+        <h3 style="margin-bottom: 0px; margin-top: 0px;">LocalCluster</h3>
+        <p style="color: #9D9D9D; margin-bottom: 0px;">dac1cd10</p>
+        <table style="width: 100%; text-align: left;">
+            <tr>
+                <td style="text-align: left;">
+                    <strong>Dashboard:</strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
+                </td>
+                <td style="text-align: left;">
+                    <strong>Workers:</strong> 4
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <strong>Total threads:</strong> 16
+                </td>
+                <td style="text-align: left;">
+                    <strong>Total memory:</strong> 62.54 GiB
+                </td>
+            </tr>
+
+            <tr>
+    <td style="text-align: left;"><strong>Status:</strong> running</td>
+    <td style="text-align: left;"><strong>Using processes:</strong> True</td>
+</tr>
+
+
+        </table>
+
+        <details>
+            <summary style="margin-bottom: 20px;">
+                <h3 style="display: inline;">Scheduler Info</h3>
+            </summary>
+
+            <div style="">
+    <div>
+        <div style="width: 24px; height: 24px; background-color: #FFF7E5; border: 3px solid #FF6132; border-radius: 5px; position: absolute;"> </div>
+        <div style="margin-left: 48px;">
+            <h3 style="margin-bottom: 0px;">Scheduler</h3>
+            <p style="color: #9D9D9D; margin-bottom: 0px;">Scheduler-a8376504-33ed-495c-ab64-c0f97dceadb6</p>
+            <table style="width: 100%; text-align: left;">
+                <tr>
+                    <td style="text-align: left;">
+                        <strong>Comm:</strong> tcp://127.0.0.1:39261
+                    </td>
+                    <td style="text-align: left;">
+                        <strong>Workers:</strong> 4
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">
+                        <strong>Dashboard:</strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
+                    </td>
+                    <td style="text-align: left;">
+                        <strong>Total threads:</strong> 16
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">
+                        <strong>Started:</strong> Just now
+                    </td>
+                    <td style="text-align: left;">
+                        <strong>Total memory:</strong> 62.54 GiB
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <details style="margin-left: 48px;">
+        <summary style="margin-bottom: 20px;">
+            <h3 style="display: inline;">Workers</h3>
+        </summary>
+
+
+        <div style="margin-bottom: 20px;">
+            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
+            <div style="margin-left: 48px;">
+            <details>
+                <summary>
+                    <h4 style="margin-bottom: 0px; display: inline;">Worker: 0</h4>
+                </summary>
+                <table style="width: 100%; text-align: left;">
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Comm: </strong> tcp://127.0.0.1:39463
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Total threads: </strong> 4
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:37567/status" target="_blank">http://127.0.0.1:37567/status</a>
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Memory: </strong> 15.63 GiB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Nanny: </strong> tcp://127.0.0.1:34409
+                        </td>
+                        <td style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left;">
+                            <strong>Local directory: </strong> /home/local/KHQ/mary.salvi/projects/HistomicsTK/docs/examples/dask-worker-space/worker-gx6r831t
+                        </td>
+                    </tr>
+
+
+
+
+
+                </table>
+            </details>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
+            <div style="margin-left: 48px;">
+            <details>
+                <summary>
+                    <h4 style="margin-bottom: 0px; display: inline;">Worker: 1</h4>
+                </summary>
+                <table style="width: 100%; text-align: left;">
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Comm: </strong> tcp://127.0.0.1:45111
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Total threads: </strong> 4
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:33357/status" target="_blank">http://127.0.0.1:33357/status</a>
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Memory: </strong> 15.63 GiB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Nanny: </strong> tcp://127.0.0.1:39303
+                        </td>
+                        <td style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left;">
+                            <strong>Local directory: </strong> /home/local/KHQ/mary.salvi/projects/HistomicsTK/docs/examples/dask-worker-space/worker-rz2sm3be
+                        </td>
+                    </tr>
+
+
+
+
+
+                </table>
+            </details>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
+            <div style="margin-left: 48px;">
+            <details>
+                <summary>
+                    <h4 style="margin-bottom: 0px; display: inline;">Worker: 2</h4>
+                </summary>
+                <table style="width: 100%; text-align: left;">
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Comm: </strong> tcp://127.0.0.1:46301
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Total threads: </strong> 4
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:36999/status" target="_blank">http://127.0.0.1:36999/status</a>
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Memory: </strong> 15.63 GiB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Nanny: </strong> tcp://127.0.0.1:44531
+                        </td>
+                        <td style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left;">
+                            <strong>Local directory: </strong> /home/local/KHQ/mary.salvi/projects/HistomicsTK/docs/examples/dask-worker-space/worker-g_4eo0ci
+                        </td>
+                    </tr>
+
+
+
+
+
+                </table>
+            </details>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
+            <div style="margin-left: 48px;">
+            <details>
+                <summary>
+                    <h4 style="margin-bottom: 0px; display: inline;">Worker: 3</h4>
+                </summary>
+                <table style="width: 100%; text-align: left;">
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Comm: </strong> tcp://127.0.0.1:42875
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Total threads: </strong> 4
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:38343/status" target="_blank">http://127.0.0.1:38343/status</a>
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Memory: </strong> 15.63 GiB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Nanny: </strong> tcp://127.0.0.1:44007
+                        </td>
+                        <td style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left;">
+                            <strong>Local directory: </strong> /home/local/KHQ/mary.salvi/projects/HistomicsTK/docs/examples/dask-worker-space/worker-sr7795gj
+                        </td>
+                    </tr>
+
+
+
+
+
+                </table>
+            </details>
+            </div>
+        </div>
+
+
+    </details>
+</div>
+
+        </details>
+    </div>
+</div>
+            </details>
+
+
+    </div>
+</div></div>
+</div>
+</section>
+<section id="count_slide-on-a-small-region">
+<h3><code class="docutils literal notranslate"><span class="pre">count_slide</span></code> on a small region<a class="headerlink" href="#count_slide-on-a-small-region" title="Link to this heading">¶</a></h3>
+<p>Now we can inspect the image. We’ll first run the calculation to produce a label image, and then run it again without, allowing parallelization.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">slide_path</span> <span class="o">=</span> <span class="s1">&#39;TCGA-DX-A6BG-01Z-00-DX2.34763958-0613-4069-9ACC-13D6633FE415.svs&#39;</span>
+<span class="n">region</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">left</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">35000</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">1600</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ts</span> <span class="o">=</span> <span class="n">large_image</span><span class="o">.</span><span class="n">getTileSource</span><span class="p">(</span><span class="n">slide_path</span><span class="p">)</span>
+<span class="n">im_region</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">getRegion</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">large_image</span><span class="o">.</span><span class="n">tilesource</span><span class="o">.</span><span class="n">TILE_FORMAT_NUMPY</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The region&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">im_region</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The region
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_positive_pixel_count_18_1.png" src="../_images/examples_positive_pixel_count_18_1.png" />
+</div>
+</div>
+<p>We’ll reuse the parameters from before.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span><span class="p">,</span> <span class="n">label_image</span> <span class="o">=</span> <span class="n">ppc</span><span class="o">.</span><span class="n">count_slide</span><span class="p">(</span><span class="n">slide_path</span><span class="p">,</span> <span class="n">template_params</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">make_label_image</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">pp_namedtuple</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">label_image</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Output
+NumberWeakPositive:                     31591
+NumberPositive:                         26850
+NumberStrongPositive:                   5582
+NumberTotalPixels:                      1440000
+IntensitySumWeakPositive:               24633.738562091505
+IntensitySumPositive:                   13946.745098039215
+IntensitySumStrongPositive:             1549.1424836601307
+IntensityAverage:                       0.626800152192038
+RatioStrongToTotal:                     0.08718741702200772
+IntensityAverageWeakAndPositive:        0.6601612508364114
+RatioStrongToPixels:                    0.003876388888888889
+RatioWeakToPixels:                      0.021938194444444444
+RatioTotalToPixels:                     0.04446041666666667
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_positive_pixel_count_20_1.png" src="../_images/examples_positive_pixel_count_20_1.png" />
+</div>
+</div>
+<p>The output is about the same quality as before. As the small region used in the previous section is in fact extracted from another part of this slide, this is not too surprising.</p>
+<p>We’ll now rerun for only the stats, which will make use of Dask. <code class="docutils literal notranslate"><span class="pre">make_label_image</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>, so we simply omit it here. For the purposes of illustration, we force <code class="docutils literal notranslate"><span class="pre">tile_grouping</span></code> to 1 to process each tile in its own task. A larger value, 256, is used as the default value to reduce the overhead associated with Dask tasks.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note that we still return a tuple, though it now has length 1.</span>
+<span class="n">stats_dask</span><span class="p">,</span> <span class="o">=</span> <span class="n">ppc</span><span class="o">.</span><span class="n">count_slide</span><span class="p">(</span><span class="n">slide_path</span><span class="p">,</span> <span class="n">template_params</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">tile_grouping</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">pp_namedtuple</span><span class="p">(</span><span class="n">stats_dask</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Output
+NumberWeakPositive:                     31591
+NumberPositive:                         26850
+NumberStrongPositive:                   5582
+NumberTotalPixels:                      1440000
+IntensitySumWeakPositive:               24633.73856209151
+IntensitySumPositive:                   13946.745098039215
+IntensitySumStrongPositive:             1549.142483660131
+IntensityAverage:                       0.6268001521920381
+RatioStrongToTotal:                     0.08718741702200772
+IntensityAverageWeakAndPositive:        0.6601612508364115
+RatioStrongToPixels:                    0.003876388888888889
+RatioWeakToPixels:                      0.021938194444444444
+RatioTotalToPixels:                     0.04446041666666667
+</pre></div></div>
+</div>
+<p>The results are identical up to a tiny amount of floating point error, as can be seen below:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;stats_dask - stats:&#39;</span><span class="p">)</span>
+<span class="n">pp_namedtuple</span><span class="p">(</span><span class="n">ppc</span><span class="o">.</span><span class="n">Output</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stats_dask</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="o">-</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">ppc</span><span class="o">.</span><span class="n">Output</span><span class="o">.</span><span class="n">_fields</span><span class="p">}))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+stats_dask - stats:
+Output
+NumberWeakPositive:                     0
+NumberPositive:                         0
+NumberStrongPositive:                   0
+NumberTotalPixels:                      0
+IntensitySumWeakPositive:               3.637978807091713e-12
+IntensitySumPositive:                   0.0
+IntensitySumStrongPositive:             2.2737367544323206e-13
+IntensityAverage:                       1.1102230246251565e-16
+RatioStrongToTotal:                     0.0
+IntensityAverageWeakAndPositive:        1.1102230246251565e-16
+RatioStrongToPixels:                    0.0
+RatioWeakToPixels:                      0.0
+RatioTotalToPixels:                     0.0
+</pre></div></div>
+</div>
+</section>
+<section id="count_slide-on-a-large-region">
+<h3><code class="docutils literal notranslate"><span class="pre">count_slide</span></code> on a large region<a class="headerlink" href="#count_slide-on-a-large-region" title="Link to this heading">¶</a></h3>
+<p>As a better exhibition of <code class="docutils literal notranslate"><span class="pre">count_slide</span></code>’s use of parallelism in computing statistics, we run it here on a much larger region, 30Kx30K pixels.</p>
+<p>(By leaving out the <code class="docutils literal notranslate"><span class="pre">region</span></code> parameter, <code class="docutils literal notranslate"><span class="pre">count_slide</span></code> will look at the entire image. At 146Kx79K pixels, this image will cause <code class="docutils literal notranslate"><span class="pre">count_slide</span></code> to use a lot of memory, potentially enough to require swap space, without additional configuration of <code class="docutils literal notranslate"><span class="pre">large_image</span></code>’s caching behavior.)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">large_region</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">left</span><span class="o">=</span><span class="mf">60e3</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">30e3</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mf">30e3</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">30e3</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">stats</span><span class="p">,</span> <span class="o">=</span> <span class="o">%</span><span class="k">time</span> ppc.count_slide(slide_path, template_params, large_region)
+
+<span class="n">pp_namedtuple</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 992 ms, sys: 87 ms, total: 1.08 s
+Wall time: 16.1 s
+Output
+NumberWeakPositive:                     8017246
+NumberPositive:                         4348294
+NumberStrongPositive:                   599706
+NumberTotalPixels:                      900000000
+IntensitySumWeakPositive:               6295544.718954247
+IntensitySumPositive:                   2316964.7856209157
+IntensitySumStrongPositive:             174806.2339869282
+IntensityAverage:                       0.6777592757254349
+RatioStrongToTotal:                     0.04625488787486177
+IntensityAverageWeakAndPositive:        0.6964927940530833
+RatioStrongToPixels:                    0.00066634
+RatioWeakToPixels:                      0.008908051111111112
+RatioTotalToPixels:                     0.014405828888888889
+</pre></div></div>
+</div>
+<!-- ## The CLI
+Finally, we briefly demonstrate the use of the CLI.  It takes arguments the same as or equivalent to those
+of `count_slide`, as well as a `--scheduler` argument that is used to connect to an already running
+Dask distributed scheduler if provided. --><div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># pp_namedtuple(template_params)</span>
+<span class="c1"># print(&#39;\nRegion:&#39;, region)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %%script sh</span>
+<span class="c1"># # Stats and label image output must be specified via file arguments to</span>
+<span class="c1"># # --returnparameterfile and --outputLabelImage, respectively.</span>
+<span class="c1"># python ../../server/PositivePixelCount/PositivePixelCount.py \</span>
+<span class="c1">#     &#39;TCGA-DX-A6BG-01Z-00-DX2.34763958-0613-4069-9ACC-13D6633FE415.svs&#39; \</span>
+<span class="c1">#     0.05 0.15 0.05 0.95 0.65 0.35 0.05 --region 50000,35000,1600,900 \</span>
+<span class="c1">#     --returnparameterfile stats.txt --outputLabelImage labelImage.png 2&gt;/dev/null</span>
+</pre></div>
+</div>
+</div>
+<!-- Here are the results.  Note that, if a label image is output, it's colorized according to colors from
+the [coolwarm](https://www.ncl.ucar.edu/Document/Graphics/ColorTables/MPL_coolwarm.shtml) color map.
+White is negative, blue is weak positive, gray is positive, and red is strong positive. --><div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># print(&quot;stats.txt:&quot;)</span>
+<span class="c1"># for l in open(&#39;stats.txt&#39;):</span>
+<span class="c1">#     print(l.rstrip())</span>
+
+<span class="c1"># print(&quot;\nlabelImage.png:&quot;)</span>
+<span class="c1"># plt.imshow(skimage.io.imread(&#39;labelImage.png&#39;))</span>
+<span class="c1"># plt.show()</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="nuclei_segmentation.html" class="btn btn-neutral float-left" title="Nuclei Segmentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="annotations_to_semantic_segmentation_masks.html" class="btn btn-neutral float-right" title="Converting annotations to semantic segmentation mask images" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
