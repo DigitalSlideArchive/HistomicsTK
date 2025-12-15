@@ -1,0 +1,691 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local processing of whole-slide images using large_image &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Color Deconvolution" href="color_deconvolution.html" />
+    <link rel="prev" title="Creating gallery images for annotation review" href="creating_gallery_images_review.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introducing_the_girder_api.html">Introducing the Girder API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedure_for_typical_annotation_project.html">Procedure for managing a typical annotation project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips_for_scalable_annotation_rendering.html">Tips for scaling annotation rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotation_database_backup_and_sql_parser.html">Local backup and SQL querying of annotation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="creating_gallery_images_review.html">Creating gallery images for annotation review</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Local processing of whole-slide images using large_image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Download-a-sample-whole-slide-image">Download a sample whole-slide image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Loading-a-whole-slide-image">Loading a whole-slide image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getMetadata()">getMetadata()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getNativeMagnification()">getNativeMagnification()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getMagnificationForLevel()">getMagnificationForLevel()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getLevelForMagnification()">getLevelForMagnification()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tileIterator()">tileIterator()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getSingleTile()">getSingleTile()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getRegion()">getRegion()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#convertRegionScale()">convertRegionScale()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getRegionAtAnotherScale()">getRegionAtAnotherScale()</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="color_deconvolution.html">Color Deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html">Color normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="color_normalization_and_augmentation.html#%22Smart%22-color-augmentation">“Smart” color augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nuclei_segmentation.html">Nuclei Segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="positive_pixel_count.html">Positive pixel count and parallel processing with Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_semantic_segmentation_masks.html">Converting annotations to semantic segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="annotations_to_object_segmentation_masks.html">Converting annotations to object segmentation mask images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="segmentation_masks_to_annotations.html">Converting masks back to annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_from_tiled_masks.html">Merging annotations from tiled arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polygon_merger_using_rtree.html">Merging polygons (general purpose)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_tissue_detection.html">Tissue Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_color_thresholding_approach.html">Color thresholding semantic segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semantic_segmentation_superpixel_approach.html">Finding cellular regions with superpixel analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflows.html">Analyzing remotely hosted images with the girder client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Local processing of whole-slide images using large_image</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/using_large_image.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Local-processing-of-whole-slide-images-using-large_image">
+<h1>Local processing of whole-slide images using large_image<a class="headerlink" href="#Local-processing-of-whole-slide-images-using-large_image" title="Link to this heading">¶</a></h1>
+<p>This notebook demonstrates how to use <a class="reference external" href="https://github.com/girder/large_image">large-image</a> to extract pixel data and image metadata from multiresolution whole-slide image files. It is designed to work with a variety of tile sources including OpenSlide, and provides functions for extraction regions, for translating regions across magnifications, and for iterating through a tiled representation of a whole-slide image.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">large_image</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:girder:Created LRU Cache for &#39;tilesource&#39; with 167 maximum size
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="c1">#Some nice default configuration for plots</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;image.cmap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;gray&#39;</span>
+</pre></div>
+</div>
+</div>
+<section id="Download-a-sample-whole-slide-image">
+<h2>Download a sample whole-slide image<a class="headerlink" href="#Download-a-sample-whole-slide-image" title="Link to this heading">¶</a></h2>
+<p>The following code downloads a sample slide from data.kitware.com</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">wsi_url</span> <span class="o">=</span> <span class="s1">&#39;https://data.kitware.com/api/v1/file/5899dd6d8d777f07219fcb23/download&#39;</span>
+
+<span class="n">wsi_path</span> <span class="o">=</span> <span class="s1">&#39;TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs&#39;</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">wsi_path</span><span class="p">):</span>
+    <span class="o">!</span>curl<span class="w"> </span>-OJ<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$wsi_url</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  643M  100  643M    0     0  16.6M      0  0:00:38  0:00:38 --:--:-- 16.5M
+curl: Saved to filename &#39;TCGA-02-0010-01Z-00-DX4.07de2e55-a8fe-40ee-9e98-bcb78050b9f7.svs&#39;
+</pre></div></div>
+</div>
+</section>
+<section id="Loading-a-whole-slide-image">
+<h2>Loading a whole-slide image<a class="headerlink" href="#Loading-a-whole-slide-image" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ts</span> <span class="o">=</span> <span class="n">large_image</span><span class="o">.</span><span class="n">getTileSource</span><span class="p">(</span><span class="n">wsi_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:girder:Using memcached for large_image caching
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-magenta-fg">Using memcached for large_image caching</span>
+</pre></div></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">getTileSource()</span></code> function can read a variety of image file formats. It detects the format automatically and abstracts the differences between them. Some formats require installing optional dependencies. For instance, large_image needs to have been installed with extras, such as <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">.[openslide]</span></code>, and your system needs to have the necessary core packages installed. The available sources are:</p>
+<ul class="simple">
+<li><p>Pyramidal TIFF (.tif, .ptif) - TIFF files that have tiled images stored at different power-of-two resolutions.</p></li>
+<li><p>OpenSlide (.svs, .ndpi, .tif, .mrxs) - Any file that can be read by the <a class="reference external" href="https://openslide.org/">OpenSlide library</a> that has multiple resolutions.</p></li>
+<li><p>PIL (.jpg, .png, many others) - Any file that can be read by the <a class="reference external" href="https://pillow.readthedocs.io/en/latest/handbook/image-file-formats.html">Pillow Python Imaging Library</a>. These files are expected to fit entirely within the available memory as they are not necessarily tiled or multiple resolutions.</p></li>
+<li><p>Mapnik/GDAL (.tif, .vrt, others) - Geospatial raster images that can be read via <a class="reference external" href="https://www.gdal.org/">GDAL</a> and <a class="reference external" href="https://mapnik.org/">Mapnik</a>.</p></li>
+</ul>
+<p>Other tile sources can be added by extending the <code class="docutils literal notranslate"><span class="pre">FileTileSource</span></code> base class, provided that they implement the <code class="docutils literal notranslate"><span class="pre">getTile</span></code> method.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">getTileSource()</span></code> function returns an object of the TileSource class that contains the following utility functions for reading different kinds of information from whole-slide images:</p>
+<ul class="simple">
+<li><p>getMetadata() - Gets basic slide metadata</p></li>
+<li><p>getNativeMagnication() - Gets the magnification at which the slide was scanned</p></li>
+<li><p>getMagnicationForLevel() - Gets the magnification of the specified level in the image pyramid</p></li>
+<li><p>getLevelForMagnification() - Gets the level of the image pyramid closest to a specified magnification</p></li>
+<li><p>tileIterator() - Gets an iterator for sequentially iterating through the slide in a tiled fashion at any scale/magnification</p></li>
+<li><p>getSingleTile() - Gets the tile at a specified linear position of the tileIterator.</p></li>
+<li><p>getRegion() - Gets a region of interest (ROI) within the slide at a specified scale.</p></li>
+<li><p>convertRegionScale() - Converts a region from one scale to another.</p></li>
+<li><p>getRegionAtAnotherScale() - Gets an image of a region at another scale.</p></li>
+</ul>
+<p>The purpose and typical usage of each of these utility functions is presented in detail below.</p>
+</section>
+<section id="getMetadata()">
+<h2>getMetadata()<a class="headerlink" href="#getMetadata()" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">getMetadata()</span></code> function of the TileSource class returns a python dict containing basic metadata of a slide:</p>
+<ul class="simple">
+<li><p><em>levels</em> - number of levels in the image pyramid</p></li>
+<li><p><em>magnification</em> - native magnification or the magnification associated with the base or highest resolution level at which the slide was scanned.</p></li>
+<li><p><em>mm_x, mm_y</em> - width and height of a pixel in millimeters at the base resolution.</p></li>
+<li><p><em>sizeX, sizeY</em> - width and height of the slide in pixels at the base resolution.</p></li>
+<li><p><em>tileWidth, tileHeight</em> - width and height of a tile in pixels at base resolution in the slide.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;levels&#39;: 9,
+ &#39;magnification&#39;: 20.0,
+ &#39;mm_x&#39;: 0.0005015,
+ &#39;mm_y&#39;: 0.0005015,
+ &#39;sizeX&#39;: 32001,
+ &#39;sizeY&#39;: 38474,
+ &#39;tileHeight&#39;: 240,
+ &#39;tileWidth&#39;: 240}
+</pre></div></div>
+</div>
+</section>
+<section id="getNativeMagnification()">
+<h2>getNativeMagnification()<a class="headerlink" href="#getNativeMagnification()" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">getNativeMagnification()</span></code> function of the TileSource class returns a python dict containing the magnification and physical size of a pixel in millimeters at the base or highest resolution level at which the slide was scanned</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">.</span><span class="n">getNativeMagnification</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;magnification&#39;: 20.0, &#39;mm_x&#39;: 0.0005015, &#39;mm_y&#39;: 0.0005015}
+</pre></div></div>
+</div>
+</section>
+<section id="getMagnificationForLevel()">
+<h2>getMagnificationForLevel()<a class="headerlink" href="#getMagnificationForLevel()" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">getMagnificationForLevel()</span></code> function of the TileSource class returns a python dict containing the magnification and physical size of a pixel for a specified level in the image pyramid.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the magnification associated with Level 0</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">getMagnificationForLevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;level&#39;: 0,
+ &#39;magnification&#39;: 0.078125,
+ &#39;mm_x&#39;: 0.128384,
+ &#39;mm_y&#39;: 0.128384,
+ &#39;scale&#39;: 256.0}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the magnification associated with all levels of the image pyramid</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">levels</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Level-</span><span class="si">{}</span><span class="s1"> : </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">getMagnificationForLevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">i</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Level-0 : {&#39;magnification&#39;: 0.078125, &#39;scale&#39;: 256.0, &#39;level&#39;: 0, &#39;mm_y&#39;: 0.128384, &#39;mm_x&#39;: 0.128384}
+Level-1 : {&#39;magnification&#39;: 0.15625, &#39;scale&#39;: 128.0, &#39;level&#39;: 1, &#39;mm_y&#39;: 0.064192, &#39;mm_x&#39;: 0.064192}
+Level-2 : {&#39;magnification&#39;: 0.3125, &#39;scale&#39;: 64.0, &#39;level&#39;: 2, &#39;mm_y&#39;: 0.032096, &#39;mm_x&#39;: 0.032096}
+Level-3 : {&#39;magnification&#39;: 0.625, &#39;scale&#39;: 32.0, &#39;level&#39;: 3, &#39;mm_y&#39;: 0.016048, &#39;mm_x&#39;: 0.016048}
+Level-4 : {&#39;magnification&#39;: 1.25, &#39;scale&#39;: 16.0, &#39;level&#39;: 4, &#39;mm_y&#39;: 0.008024, &#39;mm_x&#39;: 0.008024}
+Level-5 : {&#39;magnification&#39;: 2.5, &#39;scale&#39;: 8.0, &#39;level&#39;: 5, &#39;mm_y&#39;: 0.004012, &#39;mm_x&#39;: 0.004012}
+Level-6 : {&#39;magnification&#39;: 5.0, &#39;scale&#39;: 4.0, &#39;level&#39;: 6, &#39;mm_y&#39;: 0.002006, &#39;mm_x&#39;: 0.002006}
+Level-7 : {&#39;magnification&#39;: 10.0, &#39;scale&#39;: 2.0, &#39;level&#39;: 7, &#39;mm_y&#39;: 0.001003, &#39;mm_x&#39;: 0.001003}
+Level-8 : {&#39;magnification&#39;: 20.0, &#39;level&#39;: 8, &#39;scale&#39;: 1.0, &#39;mm_y&#39;: 0.0005015, &#39;mm_x&#39;: 0.0005015}
+</pre></div></div>
+</div>
+</section>
+<section id="getLevelForMagnification()">
+<h2>getLevelForMagnification()<a class="headerlink" href="#getLevelForMagnification()" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">getLevelForMagnification()</span></code> function of the TileSource class returns the level of the image pyramid associated with a specific magnification or pixel size in millimeters.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get level whose magnification is closest to 10x</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Level with magnification closest to 10x = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">getLevelForMagnification</span><span class="p">(</span><span class="mi">10</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Level with magnification closest to 10x = 7
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get level whose pixel width is closest to 0.0005 mm</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Level with pixel width closest to 0.0005mm = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">getLevelForMagnification</span><span class="p">(</span><span class="n">mm_x</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Level with pixel width closest to 0.0005mm = 8
+</pre></div></div>
+</div>
+</section>
+<section id="tileIterator()">
+<h2>tileIterator()<a class="headerlink" href="#tileIterator()" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">tileIterator()</span></code> function provides a iterator for sequentially iterating through the entire slide or a region of interest (ROI) within the slide at any desired resolution in a tile-wise fashion.</p>
+<p>Among others, below are the main optional parameters of tileIterator that cover most of the tile-wise iteration use-cases for image analysis:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">region</span></code> - allows you to specify an ROI within the slide.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scale</span></code> - allows you to specify the desired magnification/resolution.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_size</span></code> - allows you to specify the size of the tile.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_overlap</span></code> - allows you to specify the amount of overlap between adjacent tiles.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">format</span></code> - allows you to specify the format of the tile image (numpy array or PIL image).</p></li>
+</ul>
+<p>At each iteration the tileIterator outputs a dictionary that includes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tile</span></code> - cropped tile image that is lazy loaded or computed only when this element of the dictionary is explicitly accessed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">format</span></code> - format of the tile.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x,</span> <span class="pre">y</span></code> - (left, top) coordinates in current magnification pixels.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">width,</span> <span class="pre">height</span></code> - size of current tile in current magnification pixels.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">level</span></code> - level of the current tile.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">magnification</span></code> - magnification of the current tile.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mm_x,</span> <span class="pre">mm_y</span></code> - size of the current tile pixel in millimeters.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gx,</span> <span class="pre">gy</span></code> - (left, top) coordinate in base/maximum resolution pixels.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gwidth,</span> <span class="pre">gheight</span></code> - size of of the current tile in base/maximum resolution pixels.</p></li>
+</ul>
+<p>The lazy loading of the tile image allows us to quickly iterate through the tiles and selectively process tiles of interest based on the tile metadata.</p>
+<p>The code below shows how to iterate through an ROI within a slide with a specific tile size and at a specific resolution</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">num_tiles</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">tile_means</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">tile_areas</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">tile_info</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">tileIterator</span><span class="p">(</span>
+    <span class="n">region</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">20000</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">20000</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;base_pixels&#39;</span><span class="p">),</span>
+    <span class="n">scale</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">magnification</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">tile_size</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">1000</span><span class="p">),</span>
+    <span class="n">tile_overlap</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
+    <span class="nb">format</span><span class="o">=</span><span class="n">large_image</span><span class="o">.</span><span class="n">tilesource</span><span class="o">.</span><span class="n">TILE_FORMAT_PIL</span><span class="p">,</span>
+<span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">num_tiles</span> <span class="o">==</span> <span class="mi">100</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Tile-</span><span class="si">{}</span><span class="s1"> = &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_tiles</span><span class="p">))</span>
+        <span class="n">display</span><span class="p">(</span><span class="n">tile_info</span><span class="p">)</span>
+
+    <span class="n">im_tile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;tile&#39;</span><span class="p">])</span>
+    <span class="n">tile_mean_rgb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">im_tile</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">tile_means</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">tile_mean_rgb</span> <span class="p">)</span>
+    <span class="n">tile_areas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">]</span> <span class="p">)</span>
+
+    <span class="n">num_tiles</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">slide_mean_rgb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">tile_means</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">tile_areas</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of tiles = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_tiles</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Slide mean color = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">slide_mean_rgb</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Tile-100 =
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;format&#39;: &#39;PIL&#39;,
+ &#39;gheight&#39;: 1000.0,
+ &#39;gwidth&#39;: 1000.0,
+ &#39;gx&#39;: 16150.0,
+ &#39;gy&#39;: 8550.0,
+ &#39;height&#39;: 1000,
+ &#39;iterator_range&#39;: {&#39;level_x_max&#39;: 27,
+  &#39;level_x_min&#39;: 5,
+  &#39;level_y_max&#39;: 27,
+  &#39;level_y_min&#39;: 5,
+  &#39;position&#39;: 484,
+  &#39;region_x_max&#39;: 22,
+  &#39;region_y_max&#39;: 22},
+ &#39;level&#39;: 8,
+ &#39;level_x&#39;: 17,
+ &#39;level_y&#39;: 9,
+ &#39;magnification&#39;: 20.0,
+ &#39;mm_x&#39;: 0.0005015,
+ &#39;mm_y&#39;: 0.0005015,
+ &#39;tile&#39;: &lt;PIL.Image.Image image mode=RGBA size=1000x1000 at 0x7FAB5BF2DA50&gt;,
+ &#39;tile_overlap&#39;: {&#39;bottom&#39;: 25, &#39;left&#39;: 25, &#39;right&#39;: 25, &#39;top&#39;: 25},
+ &#39;tile_position&#39;: {&#39;level_x&#39;: 17,
+  &#39;level_y&#39;: 9,
+  &#39;position&#39;: 100,
+  &#39;region_x&#39;: 12,
+  &#39;region_y&#39;: 4},
+ &#39;width&#39;: 1000,
+ &#39;x&#39;: 16150,
+ &#39;y&#39;: 8550}
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Number of tiles = 484
+Slide mean color = [214.70349159 142.16679253 172.30744139]
+</pre></div></div>
+</div>
+</section>
+<section id="getSingleTile()">
+<h2>getSingleTile()<a class="headerlink" href="#getSingleTile()" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">getSingleTile()</span></code> function can be used to directly get the tile at a specific position of the tile iterator. In addition to the aforementioned parameters of the <code class="docutils literal notranslate"><span class="pre">tileIterator</span></code>, it takes a tile_position parameter that can be used to specify the linear position of the tile of interest.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pos</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="n">tile_info</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">getSingleTile</span><span class="p">(</span>
+    <span class="n">tile_size</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">1000</span><span class="p">),</span>
+    <span class="n">scale</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">magnification</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">tile_position</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tile_info</span><span class="p">[</span><span class="s1">&#39;tile&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.image.AxesImage at 0x7fab5b695250&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_using_large_image_36_1.png" src="../_images/examples_using_large_image_36_1.png" />
+</div>
+</div>
+</section>
+<section id="getRegion()">
+<h2>getRegion()<a class="headerlink" href="#getRegion()" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">getRegion()</span></code> function can be used to get a rectangular region of interest (ROI) within the slide at any scale/magnification via the following two parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">region</span></code> - a dictionary containing the (left, top, width, height, units) of the ROI</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scale</span></code> - a dictionary containing the magnification or the physical size of a pixel (mm_x, mm_y)</p></li>
+</ul>
+<p>The following code shows how to read an ROI</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">im_roi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">getRegion</span><span class="p">(</span>
+    <span class="n">region</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;base_pixels&#39;</span><span class="p">),</span>
+    <span class="nb">format</span><span class="o">=</span><span class="n">large_image</span><span class="o">.</span><span class="n">tilesource</span><span class="o">.</span><span class="n">TILE_FORMAT_NUMPY</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">im_roi</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.image.AxesImage at 0x7fab596398d0&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_using_large_image_41_1.png" src="../_images/examples_using_large_image_41_1.png" />
+</div>
+</div>
+<p>The following code reads the entire slide at a low magnification</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">im_low_res</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">getRegion</span><span class="p">(</span>
+    <span class="n">scale</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">magnification</span><span class="o">=</span><span class="mf">1.25</span><span class="p">),</span>
+    <span class="nb">format</span><span class="o">=</span><span class="n">large_image</span><span class="o">.</span><span class="n">tilesource</span><span class="o">.</span><span class="n">TILE_FORMAT_NUMPY</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">im_low_res</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.image.AxesImage at 0x7fab585b5190&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_using_large_image_43_1.png" src="../_images/examples_using_large_image_43_1.png" />
+</div>
+</div>
+</section>
+<section id="convertRegionScale()">
+<h2>convertRegionScale()<a class="headerlink" href="#convertRegionScale()" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">convertRegionScale()</span></code> function can be used to convert a region from one scale/magnification to another as illustrated in the following example</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tr</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">convertRegionScale</span><span class="p">(</span>
+    <span class="n">sourceRegion</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                      <span class="n">units</span><span class="o">=</span><span class="s1">&#39;mag_pixels&#39;</span><span class="p">),</span>
+    <span class="n">sourceScale</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">magnification</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">targetScale</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">magnification</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+    <span class="n">targetUnits</span><span class="o">=</span><span class="s1">&#39;mag_pixels&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;height&#39;: 500.0,
+ &#39;left&#39;: 2500.0,
+ &#39;top&#39;: 2500.0,
+ &#39;units&#39;: &#39;mag_pixels&#39;,
+ &#39;width&#39;: 500.0}
+</pre></div></div>
+</div>
+</section>
+<section id="getRegionAtAnotherScale()">
+<h2>getRegionAtAnotherScale()<a class="headerlink" href="#getRegionAtAnotherScale()" title="Link to this heading">¶</a></h2>
+<p>The getRegionAtAnotherScale() function can be used to get an image of a region at another scale.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get a large region defined at base resolution at a much lower scale</span>
+<span class="n">im_roi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">getRegionAtAnotherScale</span><span class="p">(</span>
+    <span class="n">sourceRegion</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+                      <span class="n">units</span><span class="o">=</span><span class="s1">&#39;base_pixels&#39;</span><span class="p">),</span>
+    <span class="n">targetScale</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">magnification</span><span class="o">=</span><span class="mf">1.25</span><span class="p">),</span>
+    <span class="nb">format</span><span class="o">=</span><span class="n">large_image</span><span class="o">.</span><span class="n">tilesource</span><span class="o">.</span><span class="n">TILE_FORMAT_NUMPY</span><span class="p">)</span>
+
+<span class="nb">print</span> <span class="n">im_roi</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(625, 625, 4)
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="creating_gallery_images_review.html" class="btn btn-neutral float-left" title="Creating gallery images for annotation review" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="color_deconvolution.html" class="btn btn-neutral float-right" title="Color Deconvolution" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

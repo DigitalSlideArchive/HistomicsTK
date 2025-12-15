@@ -1,0 +1,1115 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>histomicstk.annotations_and_masks.annotations_to_masks_handler &mdash; HistomicsTK  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            HistomicsTK
+              <img src="../../../_static/histomicstk_mark.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-docs.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">HistomicsTK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">histomicstk.annotations_and_masks.annotations_to_masks_handler</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for histomicstk.annotations_and_masks.annotations_to_masks_handler</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Mon Aug 12 18:33:48 2019.</span>
+
+<span class="sd">@author: tageldim</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">imageio</span><span class="w"> </span><span class="kn">import</span> <span class="n">imwrite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span> <span class="k">as</span> <span class="n">mpPolygon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry.polygon</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.annotation_and_mask_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_get_and_add_element_to_roi</span><span class="p">,</span> <span class="n">_get_element_mask</span><span class="p">,</span> <span class="n">_get_idxs_for_all_rois</span><span class="p">,</span>
+    <span class="n">get_bboxes_from_slide_annotations</span><span class="p">,</span>
+    <span class="n">get_idxs_for_annots_overlapping_roi_by_bbox</span><span class="p">,</span> <span class="n">get_image_from_htk_response</span><span class="p">,</span>
+    <span class="n">get_scale_factor_and_appendStr</span><span class="p">,</span> <span class="n">scale_slide_annotations</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">histomicstk.annotations_and_masks.masks_to_annotations_handler</span><span class="w"> </span><span class="kn">import</span> \
+    <span class="n">get_contours_from_mask</span>
+
+
+<div class="viewcode-block" id="get_roi_mask">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.html#histomicstk.annotations_and_masks.annotations_to_masks_handler.get_roi_mask">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_roi_mask</span><span class="p">(</span>
+        <span class="n">slide_annotations</span><span class="p">,</span> <span class="n">element_infos</span><span class="p">,</span> <span class="n">GTCodes_df</span><span class="p">,</span>
+        <span class="n">idx_for_roi</span><span class="p">,</span> <span class="n">iou_thresh</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">roiinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">crop_to_roi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_shapely</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse annotations and gets a ground truth mask for a single ROI.</span>
+
+<span class="sd">    This will look at all slide annotations and get ones that</span>
+<span class="sd">    overlap with the region of interest (ROI) and assigns them to mask.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    slide_annotations : list of dicts</span>
+<span class="sd">        response from server request</span>
+<span class="sd">    element_infos : pandas DataFrame.</span>
+<span class="sd">        The columns annidx and elementidx</span>
+<span class="sd">        encode the dict index of annotation document and element,</span>
+<span class="sd">        respectively, in the original slide_annotations list of dictionaries.</span>
+<span class="sd">        This can be obain by get_bboxes_from_slide_annotations() method</span>
+<span class="sd">    GTCodes_df : pandas Dataframe</span>
+<span class="sd">        the ground truth codes and information dataframe.</span>
+<span class="sd">        WARNING: Modified inside this method so pass a copy.</span>
+<span class="sd">        This is a dataframe that is indexed by the annotation group name and</span>
+<span class="sd">        has the following columns:</span>
+<span class="sd">        - group: group name of annotation (string), eg. mostly_tumor</span>
+<span class="sd">        - overlay_order: int, how early to place the annotation in the</span>
+<span class="sd">        mask. Larger values means this annotation group is overlaid</span>
+<span class="sd">        last and overwrites whatever overlaps it.</span>
+<span class="sd">        - GT_code: int, desired ground truth code (in the mask)</span>
+<span class="sd">        Pixels of this value belong to corresponding group (class)</span>
+<span class="sd">        - is_roi: Flag for whether this group encodes an ROI</span>
+<span class="sd">        - is_background_class: Flag, whether this group is the default</span>
+<span class="sd">        fill value inside the ROI. For example, you may decide that</span>
+<span class="sd">        any pixel inside the ROI is considered stroma.</span>
+<span class="sd">    idx_for_roi : int</span>
+<span class="sd">        index of ROI within the element_infos dataframe.</span>
+<span class="sd">    iou_thresh : float</span>
+<span class="sd">        how much bounding box overlap is enough to</span>
+<span class="sd">        consider an annotation to belong to the region of interest</span>
+<span class="sd">    roiinfo : pandas series or dict</span>
+<span class="sd">        contains information about the roi. Keys will be added to this</span>
+<span class="sd">        index containing info about the roi like bounding box</span>
+<span class="sd">        location and size.</span>
+<span class="sd">    crop_to_roi : bool</span>
+<span class="sd">        flag of whether to crop polygons to roi</span>
+<span class="sd">        (prevent overflow beyond roi edge)</span>
+<span class="sd">    use_shapely : bool</span>
+<span class="sd">        flag of whether to precisely determine whether an element</span>
+<span class="sd">        belongs to an ROI using shapely polygons. Slightly slower. If</span>
+<span class="sd">        set to False, overlapping bounding box is used as a cheap but</span>
+<span class="sd">        less precise indicator of inclusion.</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Print progress to screen?</span>
+<span class="sd">    monitorPrefix : str</span>
+<span class="sd">        text to prepend to printed statements</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Np array</span>
+<span class="sd">        (N x 2), where pixel values encode class membership.</span>
+<span class="sd">        IMPORTANT NOTE: Zero pixels have special meaning and do NOT</span>
+<span class="sd">        encode specific ground truth class. Instead, they simply</span>
+<span class="sd">        mean Outside ROI and should be IGNORED during model training</span>
+<span class="sd">        or evaluation.</span>
+<span class="sd">    Dict</span>
+<span class="sd">        information about ROI</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># This stores information about the ROI like bounds, slide_name, etc</span>
+    <span class="c1"># Allows passing many parameters and good forward/backward compatibility</span>
+    <span class="k">if</span> <span class="n">roiinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">roiinfo</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># isolate annotations that potentially overlap (belong to) mask (incl. ROI)</span>
+    <span class="n">overlaps</span> <span class="o">=</span> <span class="n">get_idxs_for_annots_overlapping_roi_by_bbox</span><span class="p">(</span>
+        <span class="n">element_infos</span><span class="p">,</span> <span class="n">idx_for_roi</span><span class="o">=</span><span class="n">idx_for_roi</span><span class="p">,</span> <span class="n">iou_thresh</span><span class="o">=</span><span class="n">iou_thresh</span><span class="p">)</span>
+    <span class="n">idxs_for_all_rois</span> <span class="o">=</span> <span class="n">_get_idxs_for_all_rois</span><span class="p">(</span>
+        <span class="n">GTCodes</span><span class="o">=</span><span class="n">GTCodes_df</span><span class="p">,</span> <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">)</span>
+    <span class="n">overlaps</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">overlaps</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">idxs_for_all_rois</span><span class="p">))</span>
+    <span class="n">elinfos_roi</span> <span class="o">=</span> <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="n">idx_for_roi</span><span class="p">]</span> <span class="o">+</span> <span class="n">overlaps</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="c1"># Add roiinfo</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">elinfos_roi</span><span class="o">.</span><span class="n">xmin</span><span class="p">))</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">elinfos_roi</span><span class="o">.</span><span class="n">ymin</span><span class="p">))</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">elinfos_roi</span><span class="o">.</span><span class="n">xmax</span><span class="p">))</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">elinfos_roi</span><span class="o">.</span><span class="n">ymax</span><span class="p">))</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;BBOX_WIDTH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">]</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;BBOX_HEIGHT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">]</span>
+
+    <span class="c1"># get roi polygon</span>
+    <span class="k">if</span> <span class="n">use_shapely</span><span class="p">:</span>
+        <span class="n">coords</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_get_element_mask</span><span class="p">(</span>
+            <span class="n">elinfo</span><span class="o">=</span><span class="n">elinfos_roi</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx_for_roi</span><span class="p">],</span>
+            <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">)</span>
+        <span class="n">roi_polygon</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+    <span class="c1"># Init mask</span>
+    <span class="n">ROI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;BBOX_HEIGHT&#39;</span><span class="p">],</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;BBOX_WIDTH&#39;</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+    <span class="c1"># only parse if roi is polygonal or rectangular</span>
+    <span class="k">if</span> <span class="n">elinfos_roi</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx_for_roi</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;point&#39;</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;roi cannot be a point!&#39;</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># make sure ROI is overlaid first &amp; assigned background class if relevant</span>
+    <span class="n">roi_group</span> <span class="o">=</span> <span class="n">elinfos_roi</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx_for_roi</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span>
+    <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">roi_group</span><span class="p">,</span> <span class="s1">&#39;overlay_order&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span>
+        <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;overlay_order&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">bck_classes</span> <span class="o">=</span> <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;is_background_class&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">if</span> <span class="n">bck_classes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="n">roi_group</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bck_classes</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:][</span><span class="s1">&#39;GT_code&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Add annotations in overlay order</span>
+    <span class="n">overlay_orders</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;overlay_order&#39;</span><span class="p">]))</span>
+    <span class="n">N_elements</span> <span class="o">=</span> <span class="n">elinfos_roi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">elNo</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">overlay_level</span> <span class="ow">in</span> <span class="n">overlay_orders</span><span class="p">:</span>
+
+        <span class="c1"># get indices of relevant groups</span>
+        <span class="n">relevant_groups</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;overlay_order&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">overlay_level</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">])</span>
+        <span class="n">relIdxs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">group_name</span> <span class="ow">in</span> <span class="n">relevant_groups</span><span class="p">:</span>
+            <span class="n">relIdxs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">elinfos_roi</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="n">elinfos_roi</span><span class="o">.</span><span class="n">group</span> <span class="o">==</span> <span class="n">group_name</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+
+        <span class="c1"># get relevnt infos and sort from largest to smallest (by bbox area)</span>
+        <span class="c1"># so that the smaller elements are layered last. This helps partially</span>
+        <span class="c1"># address issues describe in:</span>
+        <span class="c1"># https://github.com/DigitalSlideArchive/HistomicsTK/issues/675</span>
+        <span class="n">elinfos_relevant</span> <span class="o">=</span> <span class="n">elinfos_roi</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">relIdxs</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">elinfos_relevant</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+            <span class="s1">&#39;bbox_area&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Go through elements and add to ROI mask</span>
+        <span class="k">for</span> <span class="n">_elId</span><span class="p">,</span> <span class="n">elinfo</span> <span class="ow">in</span> <span class="n">elinfos_relevant</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+
+            <span class="n">elNo</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">elcountStr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: Overlay level </span><span class="si">%d</span><span class="s1">: Element </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">overlay_level</span><span class="p">,</span> <span class="n">elNo</span><span class="p">,</span> <span class="n">N_elements</span><span class="p">,</span>
+                <span class="n">elinfo</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">elcountStr</span><span class="p">)</span>
+
+            <span class="c1"># now add element to ROI</span>
+            <span class="n">ROI</span> <span class="o">=</span> <span class="n">_get_and_add_element_to_roi</span><span class="p">(</span>
+                <span class="n">elinfo</span><span class="o">=</span><span class="n">elinfo</span><span class="p">,</span> <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">,</span> <span class="n">ROI</span><span class="o">=</span><span class="n">ROI</span><span class="p">,</span>
+                <span class="n">roiinfo</span><span class="o">=</span><span class="n">roiinfo</span><span class="p">,</span> <span class="n">roi_polygon</span><span class="o">=</span><span class="n">roi_polygon</span><span class="p">,</span>
+                <span class="n">GT_code</span><span class="o">=</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">elinfo</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">],</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">],</span>
+                <span class="n">use_shapely</span><span class="o">=</span><span class="n">use_shapely</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                <span class="n">monitorPrefix</span><span class="o">=</span><span class="n">elcountStr</span><span class="p">)</span>
+
+            <span class="c1"># save a copy of ROI-only mask to crop to it later if needed</span>
+            <span class="k">if</span> <span class="n">crop_to_roi</span> <span class="ow">and</span> <span class="p">(</span><span class="n">overlay_level</span> <span class="o">==</span> <span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                    <span class="n">roi_group</span><span class="p">,</span> <span class="s1">&#39;overlay_order&#39;</span><span class="p">]):</span>
+                <span class="n">roi_only_mask</span> <span class="o">=</span> <span class="n">ROI</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Crop polygons to roi if needed (prevent &#39;overflow&#39; beyond roi edge)</span>
+    <span class="k">if</span> <span class="n">crop_to_roi</span><span class="p">:</span>
+        <span class="n">ROI</span><span class="p">[</span><span class="n">roi_only_mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># tighten boundary --remember, so far we&#39;ve use element bboxes to</span>
+    <span class="c1"># make an over-estimated margin around ROI boundary.</span>
+    <span class="n">nz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">ROI</span><span class="p">)</span>
+    <span class="n">ymin</span><span class="p">,</span> <span class="n">xmin</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">nz</span><span class="p">)</span>
+    <span class="n">ymax</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">nz</span><span class="p">)</span>
+    <span class="n">ROI</span> <span class="o">=</span> <span class="n">ROI</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">]</span>
+
+    <span class="c1"># update roi offset</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">xmin</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">ymin</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">xmin</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">ymin</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;BBOX_WIDTH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">]</span>
+    <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;BBOX_HEIGHT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">ROI</span><span class="p">,</span> <span class="n">roiinfo</span></div>
+
+
+
+<div class="viewcode-block" id="get_mask_from_slide">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.html#histomicstk.annotations_and_masks.annotations_to_masks_handler.get_mask_from_slide">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_mask_from_slide</span><span class="p">(</span>
+        <span class="n">GTCodes_dict</span><span class="p">,</span> <span class="n">roiinfo</span><span class="p">,</span> <span class="n">slide_annotations</span><span class="p">,</span>
+        <span class="n">element_infos</span><span class="p">,</span> <span class="n">sf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">get_roi_mask_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse region from the slide and get its corresponding labeled mask.</span>
+
+<span class="sd">    This is a wrapper around get_roi_mask() which should be referred to for</span>
+<span class="sd">    implementation details. If roiinfo is None, all annotations in the slide</span>
+<span class="sd">    are parsed into labeled image (mask) form. Otherwise, the bounding box</span>
+<span class="sd">    coordinates in roiinfo are used.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    GTCodes_dict : dict</span>
+<span class="sd">        the ground truth codes and information dict.</span>
+<span class="sd">        This is a dict that is indexed by the annotation group name and</span>
+<span class="sd">        each entry is in turn a dict with the following keys:</span>
+<span class="sd">        - group: group name of annotation (string), eg. mostly_tumor</span>
+<span class="sd">        - overlay_order: int, how early to place the annotation in the</span>
+<span class="sd">        mask. Larger values means this annotation group is overlaid</span>
+<span class="sd">        last and overwrites whatever overlaps it.</span>
+<span class="sd">        - GT_code: int, desired ground truth code (in the mask)</span>
+<span class="sd">        Pixels of this value belong to corresponding group (class)</span>
+<span class="sd">        - is_roi: Flag for whether this group encodes an ROI</span>
+<span class="sd">        - is_background_class: Flag, whether this group is the default</span>
+<span class="sd">        fill value inside the ROI. For example, you may decide that</span>
+<span class="sd">        any pixel inside the ROI is considered stroma.</span>
+
+<span class="sd">    roiinfo : dict or None</span>
+<span class="sd">        if not None, has keys &#39;XMIN&#39;, &#39;XMAX&#39;, &#39;YMIN&#39;, &#39;YMAX&#39; for slide</span>
+<span class="sd">        region coordinates (AT BASE MAGNIFICATION) to get labeled image</span>
+<span class="sd">        (mask) for.</span>
+
+<span class="sd">    sf : float</span>
+<span class="sd">        scale factor to multiple coordinates (eg 0.5 would halve size)</span>
+
+<span class="sd">    slide_annotations : list</span>
+<span class="sd">        Make sure you have used</span>
+<span class="sd">        scale_slide_annotations() to scale them up/down by sf BEFOREHAND.</span>
+
+<span class="sd">    element_infos : pandas DataFrame.</span>
+<span class="sd">        The columns annidx and elementidx</span>
+<span class="sd">        encode the dict index of annotation document and element,</span>
+<span class="sd">        respectively, in the original slide_annotations list of dictionaries.</span>
+<span class="sd">        This can be obained by get_bboxes_from_slide_annotations() method.</span>
+<span class="sd">        Make sure you have used scale_slide_annotations().</span>
+
+<span class="sd">    get_roi_mask_kwargs : dict</span>
+<span class="sd">        extra kwargs for get_roi_mask()</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Np array</span>
+<span class="sd">        (N x 2), where pixel values encode class membership.</span>
+<span class="sd">        IMPORTANT NOTE: Zero pixels have special meaning and do NOT</span>
+<span class="sd">        encode specific ground truth class. Instead, they simply</span>
+<span class="sd">        mean Outside mask and should be IGNORED during model training</span>
+<span class="sd">        or evaluation.</span>
+
+<span class="sd">    Dict</span>
+<span class="sd">        information about mask</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="c1"># convert from dict to required dataframe</span>
+    <span class="k">if</span> <span class="n">get_roi_mask_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">get_roi_mask_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">GTCodes</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">GTCodes_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+
+    <span class="c1"># some sanity checks</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">j</span> <span class="ow">in</span> <span class="n">GTCodes</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;overlay_order&#39;</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">,</span> <span class="s1">&#39;is_roi&#39;</span><span class="p">,</span> <span class="s1">&#39;is_background_class&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;color&#39;</span><span class="p">]),</span> <span class="s1">&#39;GTCodes_dict does not follow schema&#39;</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s1">&#39;All GT_code must be &gt; 0&#39;</span>
+    <span class="k">assert</span> <span class="n">sf</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;sf must be positive.&#39;</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">])</span>
+
+    <span class="c1"># use given ROI bounds, after scaling</span>
+    <span class="n">XMIN</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">sf</span><span class="p">)</span>
+    <span class="n">YMIN</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">sf</span><span class="p">)</span>
+    <span class="n">XMAX</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">sf</span><span class="p">)</span>
+    <span class="n">YMAX</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">roiinfo</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">sf</span><span class="p">)</span>
+    <span class="n">WIDTH</span> <span class="o">=</span> <span class="n">XMAX</span> <span class="o">-</span> <span class="n">XMIN</span>
+    <span class="n">HEIGHT</span> <span class="o">=</span> <span class="n">YMAX</span> <span class="o">-</span> <span class="n">YMIN</span>
+
+    <span class="c1"># add to slide annotations list</span>
+    <span class="n">slide_annotations</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;annotation&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;elements&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;center&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">XMIN</span> <span class="o">+</span> <span class="n">WIDTH</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">YMIN</span> <span class="o">+</span> <span class="n">HEIGHT</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+             <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="n">WIDTH</span><span class="p">,</span>
+             <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="n">HEIGHT</span><span class="p">,</span>
+             <span class="s1">&#39;normal&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+             <span class="s1">&#39;rotation&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+             <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;super_roi&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;super_roi&#39;</span><span class="p">},</span>
+             <span class="s1">&#39;lineColor&#39;</span><span class="p">:</span> <span class="s1">&#39;rgb(0, 0, 0)&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;fillColor&#39;</span><span class="p">:</span> <span class="s1">&#39;rgba(0, 0, 0, 0)&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;lineWidth&#39;</span><span class="p">:</span> <span class="mf">4.6</span><span class="p">,</span>
+             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;rectangle&#39;</span><span class="p">},</span>
+        <span class="p">],</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;superROI&#39;</span><span class="p">},</span>
+    <span class="p">})</span>
+
+    <span class="c1"># add to bounding boxes dataframe</span>
+    <span class="n">element_infos</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">element_infos</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span>
+        <span class="s1">&#39;annidx&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;elementidx&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;rectangle&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;super_roi&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;xmin&#39;</span><span class="p">:</span> <span class="n">XMIN</span><span class="p">,</span>
+        <span class="s1">&#39;xmax&#39;</span><span class="p">:</span> <span class="n">XMAX</span><span class="p">,</span>
+        <span class="s1">&#39;ymin&#39;</span><span class="p">:</span> <span class="n">YMIN</span><span class="p">,</span>
+        <span class="s1">&#39;ymax&#39;</span><span class="p">:</span> <span class="n">YMAX</span><span class="p">,</span>
+        <span class="s1">&#39;bbox_area&#39;</span><span class="p">:</span> <span class="n">WIDTH</span> <span class="o">*</span> <span class="n">HEIGHT</span><span class="p">,</span>
+    <span class="p">}])],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># find roi and background codes to use later</span>
+    <span class="n">roi_codes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;is_roi&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">])</span>
+    <span class="n">bck_code</span> <span class="o">=</span> <span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;is_background_class&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">bck_code</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">bck_code</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bck_code</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">bck_code</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># add to gtcodes dataframe</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">255</span>
+    <span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;is_roi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># treat other ROIs as ordinary annotations</span>
+    <span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;is_background_class&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># we&#39;ll adjust later</span>
+    <span class="n">GTCodes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">GTCodes</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span>
+        <span class="s1">&#39;GT_code&#39;</span><span class="p">:</span> <span class="mi">255</span><span class="p">,</span>
+        <span class="s1">&#39;overlay_order&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;rgb(0,0,0)&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;super_roi&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;is_background_class&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s1">&#39;is_roi&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">}])],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">GTCodes</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">GTCodes</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span>
+
+    <span class="c1"># now get mask</span>
+    <span class="n">ROI</span><span class="p">,</span> <span class="n">roiinfo</span> <span class="o">=</span> <span class="n">get_roi_mask</span><span class="p">(</span>
+        <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">,</span> <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">,</span>
+        <span class="n">GTCodes_df</span><span class="o">=</span><span class="n">GTCodes</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+        <span class="n">idx_for_roi</span><span class="o">=</span><span class="n">element_infos</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>  <span class="c1"># &lt;- bounding roi</span>
+        <span class="o">**</span><span class="n">get_roi_mask_kwargs</span><span class="p">)</span>
+    <span class="n">ROI</span><span class="p">[</span><span class="n">ROI</span> <span class="o">==</span> <span class="mi">255</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># replace roi codes with background code</span>
+    <span class="k">for</span> <span class="n">roi_code</span> <span class="ow">in</span> <span class="n">roi_codes</span><span class="p">:</span>
+        <span class="n">ROI</span><span class="p">[</span><span class="n">ROI</span> <span class="o">==</span> <span class="n">roi_code</span><span class="p">]</span> <span class="o">=</span> <span class="n">bck_code</span>
+
+    <span class="c1"># scale back coords</span>
+    <span class="n">roiinfo</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span> <span class="o">/</span> <span class="n">sf</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">roiinfo</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="k">return</span> <span class="n">ROI</span><span class="p">,</span> <span class="n">roiinfo</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_visualize_annotations_on_rgb</span><span class="p">(</span>
+        <span class="n">rgb</span><span class="p">,</span> <span class="n">contours_list</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">x_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">text</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+    <span class="c1"># later on flipped by matplotlib for weird reason</span>
+    <span class="n">rgb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">rgb</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span>
+        <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">rgb</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">_idx</span><span class="p">,</span> <span class="n">ann</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">contours_list</span><span class="p">):</span>
+        <span class="n">xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">ann</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;coords_x&#39;</span><span class="p">,</span> <span class="s1">&#39;coords_y&#39;</span><span class="p">)])</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_offset</span>
+        <span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y_offset</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">polygon</span> <span class="o">=</span> <span class="n">mpPolygon</span><span class="p">(</span>
+            <span class="n">xy</span><span class="o">=</span><span class="n">xy</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">/</span> <span class="mi">255</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">ann</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span>
+                <span class="s1">&#39;rgb(&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)],</span>
+            <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+
+        <span class="c1"># add label text</span>
+        <span class="k">if</span> <span class="n">text</span><span class="p">:</span>
+            <span class="n">txtshift</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="mf">1e-4</span> <span class="o">*</span> <span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])),</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span> <span class="o">-</span> <span class="n">txtshift</span><span class="p">,</span>
+                <span class="n">ann</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">][:</span><span class="mi">5</span><span class="p">],</span>
+                <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">backgroundcolor</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="n">buf</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">rgb_vis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">buf</span><span class="p">))[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">rgb_vis</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sanity_checks</span><span class="p">(</span>
+        <span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">idx_for_roi</span><span class="p">,</span> <span class="n">get_roi_mask_kwargs</span><span class="p">,</span>
+        <span class="n">get_rgb</span><span class="p">,</span> <span class="n">get_contours</span><span class="p">,</span> <span class="n">get_visualization</span><span class="p">):</span>
+
+    <span class="c1"># MPP precedes MAG</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">j</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="p">)):</span>
+        <span class="n">MAG</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># some sanity checks</span>
+
+    <span class="k">for</span> <span class="n">mf</span> <span class="ow">in</span> <span class="p">(</span><span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">mf</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;MPP or MAG must be positive.&#39;</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;wsi&#39;</span><span class="p">,</span> <span class="s1">&#39;min_bounding_box&#39;</span><span class="p">]:</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">idx_for_roi</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">idx_for_roi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;polygonal_bounds&#39;</span>
+    <span class="k">elif</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;manual_bounds&#39;</span>
+
+    <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="s1">&#39;wsi&#39;</span><span class="p">,</span> <span class="s1">&#39;min_bounding_box&#39;</span><span class="p">,</span> <span class="s1">&#39;manual_bounds&#39;</span><span class="p">,</span> <span class="s1">&#39;polygonal_bounds&#39;</span><span class="p">],</span> \
+        <span class="s1">&#39;mode </span><span class="si">%s</span><span class="s1"> not recognized&#39;</span> <span class="o">%</span> <span class="n">mode</span>
+
+    <span class="k">if</span> <span class="n">get_visualization</span><span class="p">:</span>
+        <span class="n">get_contours</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">assert</span> <span class="n">get_rgb</span><span class="p">,</span> <span class="s1">&#39;cannot get visualization without rgb.&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">get_roi_mask_kwargs</span><span class="p">[</span><span class="s1">&#39;crop_to_roi&#39;</span><span class="p">]:</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">get_rgb</span><span class="p">,</span> \
+            <span class="s1">&#39;Handling overflowing annotations while also getting RGB is not currently supported.&#39;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">get_visualization</span><span class="p">,</span> \
+            <span class="s1">&#39;Handling overflowing annotations while also getting RGB is not currently supported.&#39;</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">idx_for_roi</span><span class="p">,</span> <span class="n">get_roi_mask_kwargs</span><span class="p">,</span>
+        <span class="n">get_rgb</span><span class="p">,</span> <span class="n">get_contours</span><span class="p">,</span> <span class="n">get_visualization</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_roi_bounds_by_run_mode</span><span class="p">(</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">element_infos</span><span class="p">,</span> <span class="n">idx_for_roi</span><span class="p">,</span> <span class="n">sf</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;polygonal_bounds&#39;</span><span class="p">:</span>
+        <span class="c1"># get bounds based on specified polygonal/rotated roi</span>
+        <span class="n">elinfo</span> <span class="o">=</span> <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx_for_roi</span><span class="p">]</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;XMIN&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">elinfo</span><span class="p">[</span><span class="s1">&#39;xmin&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">sf</span><span class="p">),</span>
+            <span class="s1">&#39;XMAX&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">elinfo</span><span class="p">[</span><span class="s1">&#39;xmax&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">sf</span><span class="p">),</span>
+            <span class="s1">&#39;YMIN&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">elinfo</span><span class="p">[</span><span class="s1">&#39;ymin&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">sf</span><span class="p">),</span>
+            <span class="s1">&#39;YMAX&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">elinfo</span><span class="p">[</span><span class="s1">&#39;ymax&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">sf</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;manual_bounds&#39;</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">])</span>
+
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;min_bounding_box&#39;</span><span class="p">:</span>
+        <span class="c1"># get minimum box for all annotations in slide</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;XMIN&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">element_infos</span><span class="o">.</span><span class="n">xmin</span><span class="p">)</span> <span class="o">/</span> <span class="n">sf</span><span class="p">),</span>
+            <span class="s1">&#39;YMIN&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">element_infos</span><span class="o">.</span><span class="n">ymin</span><span class="p">)</span> <span class="o">/</span> <span class="n">sf</span><span class="p">),</span>
+            <span class="s1">&#39;XMAX&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">element_infos</span><span class="o">.</span><span class="n">xmax</span><span class="p">)</span> <span class="o">/</span> <span class="n">sf</span><span class="p">),</span>
+            <span class="s1">&#39;YMAX&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">element_infos</span><span class="o">.</span><span class="n">ymax</span><span class="p">)</span> <span class="o">/</span> <span class="n">sf</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># get scaled up/down version of mask of whole slide</span>
+        <span class="n">slide_info</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">/tiles&#39;</span> <span class="o">%</span> <span class="n">slide_id</span><span class="p">)</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;XMIN&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;XMAX&#39;</span><span class="p">:</span> <span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;sizeX&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;YMIN&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;YMAX&#39;</span><span class="p">:</span> <span class="n">slide_info</span><span class="p">[</span><span class="s1">&#39;sizeY&#39;</span><span class="p">],</span>
+        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">bounds</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_rgb_and_pad_roi</span><span class="p">(</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">appendStr</span><span class="p">,</span> <span class="n">ROI</span><span class="p">,</span> <span class="n">tau</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+
+    <span class="n">getStr</span> <span class="o">=</span> \
+        <span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">/tiles/region?left=</span><span class="si">%d</span><span class="s1">&amp;right=</span><span class="si">%d</span><span class="s1">&amp;top=</span><span class="si">%d</span><span class="s1">&amp;bottom=</span><span class="si">%d</span><span class="s1">&amp;encoding=PNG&#39;</span> \
+        <span class="o">%</span> <span class="p">(</span><span class="n">slide_id</span><span class="p">,</span>
+           <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;XMIN&#39;</span><span class="p">],</span> <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;XMAX&#39;</span><span class="p">],</span>
+           <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;YMIN&#39;</span><span class="p">],</span> <span class="n">bounds</span><span class="p">[</span><span class="s1">&#39;YMAX&#39;</span><span class="p">])</span>
+    <span class="n">getStr</span> <span class="o">+=</span> <span class="n">appendStr</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">getStr</span><span class="p">,</span> <span class="n">jsonResp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">rgb</span> <span class="o">=</span> <span class="n">get_image_from_htk_response</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+
+    <span class="c1"># sometimes there&#39;s a couple of pixel difference d.t. rounding, so pad</span>
+    <span class="n">pad_y</span> <span class="o">=</span> <span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ROI</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">pad_x</span> <span class="o">=</span> <span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ROI</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tau</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="n">pad_y</span><span class="p">,</span> <span class="n">pad_x</span><span class="p">)),</span> \
+        <span class="s1">&#39;too much difference in size between image and mask.  Something is wrong!&#39;</span>
+
+    <span class="k">if</span> <span class="n">pad_y</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ROI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">ROI</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_y</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">pad_y</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ROI</span> <span class="o">=</span> <span class="n">ROI</span><span class="p">[:</span><span class="n">pad_y</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="k">if</span> <span class="n">pad_x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ROI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">ROI</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_x</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">pad_x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ROI</span> <span class="o">=</span> <span class="n">ROI</span><span class="p">[:,</span> <span class="p">:</span><span class="n">pad_x</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">rgb</span><span class="p">,</span> <span class="n">ROI</span>
+
+
+<div class="viewcode-block" id="get_image_and_mask_from_slide">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.html#histomicstk.annotations_and_masks.annotations_to_masks_handler.get_image_and_mask_from_slide">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_image_and_mask_from_slide</span><span class="p">(</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">GTCodes_dict</span><span class="p">,</span>
+        <span class="n">MPP</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">MAG</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;min_bounding_box&#39;</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx_for_roi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">slide_annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">element_infos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">get_roi_mask_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">get_contours_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">get_rgb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_contours</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_visualization</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tau</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse region from the slide and get its corresponding labeled mask.</span>
+
+<span class="sd">    This is a wrapper around get_roi_mask() which should be referred to for</span>
+<span class="sd">    implementation details.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gc : object</span>
+<span class="sd">        girder client object to make requests, for example:</span>
+<span class="sd">        gc = girder_client.GirderClient(apiUrl = APIURL)</span>
+<span class="sd">        gc.authenticate(interactive=True)</span>
+
+<span class="sd">    slide_id : str</span>
+<span class="sd">        girder id for item (slide)</span>
+
+<span class="sd">    GTCodes_dict : dict</span>
+<span class="sd">        the ground truth codes and information dict.</span>
+<span class="sd">        This is a dict that is indexed by the annotation group name and</span>
+<span class="sd">        each entry is in turn a dict with the following keys:</span>
+<span class="sd">        - group: group name of annotation (string), eg. mostly_tumor</span>
+<span class="sd">        - overlay_order: int, how early to place the annotation in the</span>
+<span class="sd">        mask. Larger values means this annotation group is overlaid</span>
+<span class="sd">        last and overwrites whatever overlaps it.</span>
+<span class="sd">        - GT_code: int, desired ground truth code (in the mask)</span>
+<span class="sd">        Pixels of this value belong to corresponding group (class)</span>
+<span class="sd">        - is_roi: Flag for whether this group encodes an ROI</span>
+<span class="sd">        - is_background_class: Flag, whether this group is the default</span>
+<span class="sd">        fill value inside the ROI. For example, you may decide that</span>
+<span class="sd">        any pixel inside the ROI is considered stroma.</span>
+
+<span class="sd">    MPP : float or None</span>
+<span class="sd">        Microns-per-pixel -- best use this as it&#39;s more well-defined than</span>
+<span class="sd">        magnification which is more scanner/manufacturer specific.</span>
+<span class="sd">        MPP of 0.25 often roughly translates to 40x</span>
+
+<span class="sd">    MAG : float or None</span>
+<span class="sd">        If you prefer to use whatever magnification is reported in slide.</span>
+<span class="sd">        If neither MPP or MAG is provided, everything is retrieved without</span>
+<span class="sd">        scaling at base (scan) magnification.</span>
+
+<span class="sd">    mode : str</span>
+<span class="sd">        This specifies which part of the slide to get the mask from. Allowed</span>
+<span class="sd">        modes include the following</span>
+<span class="sd">        - wsi: get scaled up/down version of mask of whole slide</span>
+<span class="sd">        - min_bounding_box: get minimum box for all annotations in slide</span>
+<span class="sd">        - manual_bounds: use given ROI bounds provided by the &#39;bounds&#39; param</span>
+<span class="sd">        - polygonal_bounds: use the idx_for_roi param to get coordinates</span>
+
+<span class="sd">    bounds : dict or None</span>
+<span class="sd">        if not None, has keys &#39;XMIN&#39;, &#39;XMAX&#39;, &#39;YMIN&#39;, &#39;YMAX&#39; for slide</span>
+<span class="sd">        region coordinates (AT BASE MAGNIFICATION) to get labeled image</span>
+<span class="sd">        (mask) for. Use this with the &#39;manual_bounds&#39; run mode.</span>
+
+<span class="sd">    idx_for_roi : int</span>
+<span class="sd">        index of ROI within the element_infos dataframe.</span>
+<span class="sd">        Use this with the &#39;polygonal_bounds&#39; run mode.</span>
+
+<span class="sd">    slide_annotations : list or None</span>
+<span class="sd">        Give this parameter to avoid re-getting slide annotations. If you do</span>
+<span class="sd">        provide the annotations, though, make sure you have used</span>
+<span class="sd">        scale_slide_annotations() to scale them up/down by sf BEFOREHAND.</span>
+
+<span class="sd">    element_infos : pandas DataFrame.</span>
+<span class="sd">        The columns annidx and elementidx</span>
+<span class="sd">        encode the dict index of annotation document and element,</span>
+<span class="sd">        respectively, in the original slide_annotations list of dictionaries.</span>
+<span class="sd">        This can be obained by get_bboxes_from_slide_annotations() method.</span>
+<span class="sd">        Make sure you have used scale_slide_annotations().</span>
+
+<span class="sd">    get_roi_mask_kwargs : dict</span>
+<span class="sd">        extra kwargs for get_roi_mask()</span>
+
+<span class="sd">    get_contours_kwargs : dict</span>
+<span class="sd">        extra kwargs for get_contours_from_mask()</span>
+
+<span class="sd">    linewidth : float</span>
+<span class="sd">        visualization line width</span>
+
+<span class="sd">    get_rgb: bool</span>
+<span class="sd">        get rgb image?</span>
+
+<span class="sd">    get_contours : bool</span>
+<span class="sd">        get annotation contours? (relative to final mask)</span>
+
+<span class="sd">    get_visualization : bool</span>
+<span class="sd">        get overlaid annotation bounds over RGB for visualization</span>
+
+<span class="sd">    tau : int</span>
+<span class="sd">        maximum difference (in pixels) between fetched image and mask allowed.</span>
+<span class="sd">        Above this threshold, an error is raised indicating you may have some</span>
+<span class="sd">        problem in your parameters or elsewhere. If the difference is less then</span>
+<span class="sd">        tau, the rgb image and mask are resized to match each other before</span>
+<span class="sd">        being returned</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Results dict containing one or more of the following keys</span>
+<span class="sd">        bounds: dict of bounds at scan magnification</span>
+<span class="sd">        ROI - (mxn) labeled image (mask)</span>
+<span class="sd">        rgb - (mxnx3 np array) corresponding rgb image</span>
+<span class="sd">        contours - list, each entry is a dict version of a row from the output</span>
+<span class="sd">        of masks_to_annotations_handler.get_contours_from_mask()</span>
+<span class="sd">        visualization - (mxnx3 np array) visualization overlay</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="n">get_roi_mask_kwargs</span> <span class="o">=</span> <span class="n">get_roi_mask_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">get_contours_kwargs</span> <span class="o">=</span> <span class="n">get_contours_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="c1"># important sanity checks</span>
+    <span class="p">(</span><span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">idx_for_roi</span><span class="p">,</span> <span class="n">get_roi_mask_kwargs</span><span class="p">,</span>
+     <span class="n">get_rgb</span><span class="p">,</span> <span class="n">get_contours</span><span class="p">,</span> <span class="n">get_visualization</span><span class="p">)</span> <span class="o">=</span> <span class="n">_sanity_checks</span><span class="p">(</span>
+        <span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">idx_for_roi</span><span class="p">,</span> <span class="n">get_roi_mask_kwargs</span><span class="p">,</span>
+        <span class="n">get_rgb</span><span class="p">,</span> <span class="n">get_contours</span><span class="p">,</span> <span class="n">get_visualization</span><span class="p">)</span>
+
+    <span class="c1"># calculate the scale factor</span>
+    <span class="n">sf</span><span class="p">,</span> <span class="n">appendStr</span> <span class="o">=</span> <span class="n">get_scale_factor_and_appendStr</span><span class="p">(</span>
+        <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">MPP</span><span class="o">=</span><span class="n">MPP</span><span class="p">,</span> <span class="n">MAG</span><span class="o">=</span><span class="n">MAG</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">slide_annotations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">element_infos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;must also provide element_infos&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># get annotations for slide</span>
+        <span class="n">slide_annotations</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/annotation/item/&#39;</span> <span class="o">+</span> <span class="n">slide_id</span><span class="p">)</span>
+
+        <span class="c1"># scale up/down annotations by a factor</span>
+        <span class="n">slide_annotations</span> <span class="o">=</span> <span class="n">scale_slide_annotations</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">,</span> <span class="n">sf</span><span class="o">=</span><span class="n">sf</span><span class="p">)</span>
+
+        <span class="c1"># get bounding box information for all annotations -&gt; scaled by sf</span>
+        <span class="n">element_infos</span> <span class="o">=</span> <span class="n">get_bboxes_from_slide_annotations</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">)</span>
+
+    <span class="c1"># Determine get region based on run mode, keeping in mind that it</span>
+    <span class="c1"># must be at BASE MAGNIFICATION coordinates before it is passed</span>
+    <span class="c1"># on to get_mask_from_slide()</span>
+    <span class="n">bounds</span> <span class="o">=</span> <span class="n">_get_roi_bounds_by_run_mode</span><span class="p">(</span>
+        <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+        <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">,</span> <span class="n">idx_for_roi</span><span class="o">=</span><span class="n">idx_for_roi</span><span class="p">,</span> <span class="n">sf</span><span class="o">=</span><span class="n">sf</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bounds&#39;</span><span class="p">:</span> <span class="n">bounds</span><span class="p">}</span>
+
+    <span class="c1"># get mask for specified area</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;polygonal_bounds&#39;</span><span class="p">:</span>
+        <span class="c1"># get roi mask and info</span>
+        <span class="n">ROI</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_roi_mask</span><span class="p">(</span>
+            <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">,</span> <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">,</span>
+            <span class="n">GTCodes_df</span><span class="o">=</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">GTCodes_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">),</span>
+            <span class="n">idx_for_roi</span><span class="o">=</span><span class="n">idx_for_roi</span><span class="p">,</span> <span class="o">**</span><span class="n">get_roi_mask_kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ROI</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_mask_from_slide</span><span class="p">(</span>
+            <span class="n">GTCodes_dict</span><span class="o">=</span><span class="n">GTCodes_dict</span><span class="p">,</span> <span class="n">roiinfo</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">bounds</span><span class="p">),</span>
+            <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">,</span> <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">,</span>
+            <span class="n">sf</span><span class="o">=</span><span class="n">sf</span><span class="p">,</span> <span class="n">get_roi_mask_kwargs</span><span class="o">=</span><span class="n">get_roi_mask_kwargs</span><span class="p">)</span>
+
+    <span class="c1"># get RGB</span>
+    <span class="k">if</span> <span class="n">get_rgb</span><span class="p">:</span>
+        <span class="n">rgb</span><span class="p">,</span> <span class="n">ROI</span> <span class="o">=</span> <span class="n">_get_rgb_and_pad_roi</span><span class="p">(</span>
+            <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+            <span class="n">appendStr</span><span class="o">=</span><span class="n">appendStr</span><span class="p">,</span> <span class="n">ROI</span><span class="o">=</span><span class="n">ROI</span><span class="p">,</span> <span class="n">tau</span><span class="o">=</span><span class="n">tau</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;rgb&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rgb</span>
+
+    <span class="c1"># pack result (we have to do it here in case of padding)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;ROI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ROI</span>
+
+    <span class="c1"># get contours</span>
+    <span class="k">if</span> <span class="n">get_contours</span><span class="p">:</span>
+        <span class="n">contours_list</span> <span class="o">=</span> <span class="n">get_contours_from_mask</span><span class="p">(</span>
+            <span class="n">MASK</span><span class="o">=</span><span class="n">ROI</span><span class="p">,</span>
+            <span class="n">GTCodes_df</span><span class="o">=</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">GTCodes_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">),</span>
+            <span class="o">**</span><span class="n">get_contours_kwargs</span><span class="p">)</span>
+        <span class="n">contours_list</span> <span class="o">=</span> <span class="n">contours_list</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;contours&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contours_list</span>
+
+    <span class="c1"># get visualization of annotations on RGB</span>
+    <span class="k">if</span> <span class="n">get_visualization</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;visualization&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_visualize_annotations_on_rgb</span><span class="p">(</span>
+            <span class="n">rgb</span><span class="o">=</span><span class="n">rgb</span><span class="p">,</span> <span class="n">contours_list</span><span class="o">=</span><span class="n">contours_list</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_roi_getter_asis</span><span class="p">(</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">GTCodes_dict</span><span class="p">,</span> <span class="n">slide_annotations</span><span class="p">,</span> <span class="n">element_infos</span><span class="p">,</span>
+        <span class="n">get_kwargs</span><span class="p">,</span> <span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Download special ROI regions as-is, even if they are very large.&quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="c1"># get idx of all &#39;special&#39; roi annotations</span>
+    <span class="n">GTCodes_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">GTCodes_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+    <span class="n">idxs_for_all_rois</span> <span class="o">=</span> <span class="n">_get_idxs_for_all_rois</span><span class="p">(</span>
+        <span class="n">GTCodes</span><span class="o">=</span><span class="n">GTCodes_df</span><span class="p">,</span> <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">)</span>
+
+    <span class="c1"># go through rois and download as-is</span>
+    <span class="k">for</span> <span class="n">roino</span><span class="p">,</span> <span class="n">idx_for_roi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idxs_for_all_rois</span><span class="p">):</span>
+
+        <span class="n">roistr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: roi </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">monitor</span><span class="p">,</span> <span class="n">roino</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">idxs_for_all_rois</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">roistr</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">roi_out</span> <span class="o">=</span> <span class="n">get_image_and_mask_from_slide</span><span class="p">(</span>
+                <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">GTCodes_dict</span><span class="o">=</span><span class="n">GTCodes_dict</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;polygonal_bounds&#39;</span><span class="p">,</span> <span class="n">idx_for_roi</span><span class="o">=</span><span class="n">idx_for_roi</span><span class="p">,</span>
+                <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">,</span>
+                <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">,</span> <span class="o">**</span><span class="n">get_kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">problem</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">   &#39;</span>
+            <span class="n">problem</span> <span class="o">+=</span> <span class="n">e</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+            <span class="n">problem</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">warn</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>  <span class="c1"># noqa B028</span>
+            <span class="n">roi_out</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">yield</span> <span class="n">roi_out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_roi_getter_tiled</span><span class="p">(</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">GTCodes_dict</span><span class="p">,</span> <span class="n">slide_annotations</span><span class="p">,</span> <span class="n">element_infos</span><span class="p">,</span>
+        <span class="n">sf</span><span class="p">,</span> <span class="n">max_roiside</span><span class="p">,</span>
+        <span class="n">get_kwargs</span><span class="p">,</span> <span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Download special ROI regions in a tiled fashion.&quot;&quot;&quot;</span>
+    <span class="c1"># isolate rois</span>
+    <span class="n">rois</span> <span class="o">=</span> <span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">element_infos</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;roi&#39;</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># split ROIs into max_roiside tiled regions</span>
+    <span class="k">for</span> <span class="n">roidx</span><span class="p">,</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">rois</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+
+        <span class="c1"># bounds for tiled sub-rois</span>
+        <span class="n">xbounds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">roi</span><span class="p">[</span><span class="s1">&#39;xmin&#39;</span><span class="p">],</span> <span class="n">roi</span><span class="p">[</span><span class="s1">&#39;xmax&#39;</span><span class="p">],</span> <span class="n">max_roiside</span><span class="p">))</span>
+        <span class="n">xbounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">roi</span><span class="p">[</span><span class="s1">&#39;xmax&#39;</span><span class="p">])</span>
+        <span class="n">ybounds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">roi</span><span class="p">[</span><span class="s1">&#39;ymin&#39;</span><span class="p">],</span> <span class="n">roi</span><span class="p">[</span><span class="s1">&#39;ymax&#39;</span><span class="p">],</span> <span class="n">max_roiside</span><span class="p">))</span>
+        <span class="n">ybounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">roi</span><span class="p">[</span><span class="s1">&#39;ymax&#39;</span><span class="p">])</span>
+
+        <span class="n">roidx</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">roistr</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">monitor</span><span class="si">}</span><span class="s1">: roi </span><span class="si">{</span><span class="n">roidx</span><span class="si">}</span><span class="s1"> of </span><span class="si">{</span><span class="n">rois</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">roistr</span><span class="p">)</span>
+
+        <span class="n">subroidx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">nsubrois</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xbounds</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ybounds</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># go through tiled sub-rois</span>
+        <span class="k">for</span> <span class="n">xi</span><span class="p">,</span> <span class="n">xmin</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xbounds</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">xmax</span> <span class="o">=</span> <span class="n">xbounds</span><span class="p">[</span><span class="n">xi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">yi</span><span class="p">,</span> <span class="n">ymin</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ybounds</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">ymax</span> <span class="o">=</span> <span class="n">ybounds</span><span class="p">[</span><span class="n">yi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+                <span class="n">subroidx</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">subroistr</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">roistr</span><span class="si">}</span><span class="s1">: sub-roi </span><span class="si">{</span><span class="n">subroidx</span><span class="si">}</span><span class="s1"> of </span><span class="si">{</span><span class="n">nsubrois</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">subroistr</span><span class="p">)</span>
+
+                <span class="c1"># get specified region</span>
+                <span class="n">get_kwargs</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;XMIN&#39;</span><span class="p">:</span> <span class="n">xmin</span> <span class="o">/</span> <span class="n">sf</span><span class="p">,</span>
+                    <span class="s1">&#39;XMAX&#39;</span><span class="p">:</span> <span class="n">xmax</span> <span class="o">/</span> <span class="n">sf</span><span class="p">,</span>
+                    <span class="s1">&#39;YMIN&#39;</span><span class="p">:</span> <span class="n">ymin</span> <span class="o">/</span> <span class="n">sf</span><span class="p">,</span>
+                    <span class="s1">&#39;YMAX&#39;</span><span class="p">:</span> <span class="n">ymax</span> <span class="o">/</span> <span class="n">sf</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">roi_out</span> <span class="o">=</span> <span class="n">get_image_and_mask_from_slide</span><span class="p">(</span>
+                        <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">GTCodes_dict</span><span class="o">=</span><span class="n">GTCodes_dict</span><span class="p">,</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;manual_bounds&#39;</span><span class="p">,</span>
+                        <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">,</span>
+                        <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">get_kwargs</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">problem</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="n">problem</span> <span class="o">+=</span> <span class="n">e</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+                    <span class="n">problem</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>  <span class="c1"># noqa B028</span>
+                    <span class="n">roi_out</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="k">yield</span> <span class="n">roi_out</span>
+
+
+<div class="viewcode-block" id="get_all_rois_from_slide">
+<a class="viewcode-back" href="../../../histomicstk.annotations_and_masks.annotations_to_semantic_segmentation_masks.html#histomicstk.annotations_and_masks.annotations_to_masks_handler.get_all_rois_from_slide">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_all_rois_from_slide</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+        <span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="p">,</span> <span class="n">GTCodes_dict</span><span class="p">,</span> <span class="n">save_directories</span><span class="p">,</span>
+        <span class="n">get_image_and_mask_from_slide_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_roiside</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">slide_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">monitorPrefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse annotations and saves ground truth masks for ALL ROIs.</span>
+
+<span class="sd">    Get all ROIs in a single slide. This is mainly uses</span>
+<span class="sd">    get_image_and_mask_from_slide(), which should be referred to</span>
+<span class="sd">    for implementation details.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gc : object</span>
+<span class="sd">        girder client object to make requests, for example:</span>
+<span class="sd">        gc = girder_client.GirderClient(apiUrl = APIURL)</span>
+<span class="sd">        gc.authenticate(interactive=True)</span>
+
+<span class="sd">    slide_id : str</span>
+<span class="sd">        girder id for item (slide)</span>
+
+<span class="sd">    GTCodes_dict : dict</span>
+<span class="sd">        the ground truth codes and information dict.</span>
+<span class="sd">        This is a dict that is indexed by the annotation group name and</span>
+<span class="sd">        each entry is in turn a dict with the following keys:</span>
+<span class="sd">        - group: group name of annotation (string), eg. mostly_tumor</span>
+<span class="sd">        - overlay_order: int, how early to place the annotation in the</span>
+<span class="sd">        mask. Larger values means this annotation group is overlaid</span>
+<span class="sd">        last and overwrites whatever overlaps it.</span>
+<span class="sd">        - GT_code: int, desired ground truth code (in the mask)</span>
+<span class="sd">        Pixels of this value belong to corresponding group (class)</span>
+<span class="sd">        - is_roi: Flag for whether this group encodes an ROI</span>
+<span class="sd">        - is_background_class: Flag, whether this group is the default</span>
+<span class="sd">        fill value inside the ROI. For example, you may decide that</span>
+<span class="sd">        any pixel inside the ROI is considered stroma.</span>
+
+<span class="sd">    save_directories : dict</span>
+<span class="sd">        paths to directories to save data. Each entry is a string, and the</span>
+<span class="sd">        following keys are allowed</span>
+<span class="sd">        - ROI: path to save masks (labeled images)</span>
+<span class="sd">        - rgb: path to save rgb images</span>
+<span class="sd">        - contours: path to save annotation contours</span>
+<span class="sd">        - visualization: path to save rgb visualization overlays</span>
+
+<span class="sd">    get_image_and_mask_from_slide_kwargs : dict</span>
+<span class="sd">        kwargs to pass to get_image_and_mask_from_slide()</span>
+<span class="sd">        default values are assigned if speceific parameters are not given.</span>
+
+<span class="sd">    max_roiside : int or None</span>
+<span class="sd">        If int, this is the maximum allowed side for a downloaded region. If</span>
+<span class="sd">        a region-of-interest is larger than this size, then it is tiled into</span>
+<span class="sd">        non-overlapping regions whose maximal side is max_roiside.</span>
+<span class="sd">        If None, the ROI is downloaded as-is, even if it was extremely large.</span>
+<span class="sd">        If you know your slides have very large ROI annotations, the safer</span>
+<span class="sd">        option is to set a max_roiside. A good value may be 5000-8000 pixels.</span>
+
+<span class="sd">    slide_name : str or None</span>
+<span class="sd">        If not given, it&#39;s inferred using a server request using girder client.</span>
+
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Print progress to screen?</span>
+
+<span class="sd">    monitorPrefix : str</span>
+<span class="sd">        text to prepend to printed statements</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of dicts</span>
+<span class="sd">        each entry contains the following keys</span>
+<span class="sd">        - ROI: path to saved mask (labeled image)</span>
+<span class="sd">        - rgb: path to saved rgb image</span>
+<span class="sd">        - contours: path to saved annotation contours</span>
+<span class="sd">        - visualization: path to saved rgb visualization overlay</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+
+    <span class="c1"># assign defaults if nothing given</span>
+    <span class="n">default_keyvalues</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;MPP&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+        <span class="s1">&#39;MAG&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s1">&#39;get_roi_mask_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;iou_thresh&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;crop_to_roi&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;use_shapely&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+        <span class="s1">&#39;get_contours_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;groups_to_get&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s1">&#39;roi_group&#39;</span><span class="p">:</span> <span class="s1">&#39;roi&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;get_roi_contour&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;discard_nonenclosed_background&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;background_group&#39;</span><span class="p">:</span> <span class="s1">&#39;mostly_stroma&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;MIN_SIZE&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;MAX_SIZE&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;monitorPrefix&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;get_rgb&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s1">&#39;get_contours&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s1">&#39;get_visualization&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">kvp</span> <span class="o">=</span> <span class="n">get_image_and_mask_from_slide_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>  <span class="c1"># for easy referencing</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">default_keyvalues</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kvp</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">kvp</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="c1"># convert to df and sanity check</span>
+    <span class="n">GTCodes_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">GTCodes_dict</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">GTCodes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;GT_code&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;All GT_code must be &gt; 0&#39;</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># if not given, assign name of first file associated with girder item</span>
+    <span class="k">if</span> <span class="n">slide_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/item/</span><span class="si">%s</span><span class="s1">/files&#39;</span> <span class="o">%</span> <span class="n">slide_id</span><span class="p">)</span>
+        <span class="n">slide_name</span> <span class="o">=</span> <span class="n">resp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">slide_name</span> <span class="o">=</span> <span class="n">slide_name</span><span class="p">[:</span><span class="n">slide_name</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)]</span>
+
+    <span class="c1"># get annotations for slide</span>
+    <span class="n">slide_annotations</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/annotation/item/&#39;</span> <span class="o">+</span> <span class="n">slide_id</span><span class="p">)</span>
+
+    <span class="c1"># scale up/down annotations by a factor</span>
+    <span class="n">sf</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_scale_factor_and_appendStr</span><span class="p">(</span>
+        <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">MPP</span><span class="o">=</span><span class="n">kvp</span><span class="p">[</span><span class="s1">&#39;MPP&#39;</span><span class="p">],</span> <span class="n">MAG</span><span class="o">=</span><span class="n">kvp</span><span class="p">[</span><span class="s1">&#39;MAG&#39;</span><span class="p">])</span>
+    <span class="n">slide_annotations</span> <span class="o">=</span> <span class="n">scale_slide_annotations</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">,</span> <span class="n">sf</span><span class="o">=</span><span class="n">sf</span><span class="p">)</span>
+
+    <span class="c1"># get bounding box information for all annotations</span>
+    <span class="n">element_infos</span> <span class="o">=</span> <span class="n">get_bboxes_from_slide_annotations</span><span class="p">(</span><span class="n">slide_annotations</span><span class="p">)</span>
+
+    <span class="c1"># define roi_getter, which yields one roi at a time</span>
+    <span class="k">if</span> <span class="n">max_roiside</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">roig</span> <span class="o">=</span> <span class="n">_roi_getter_asis</span><span class="p">(</span>
+            <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">GTCodes_dict</span><span class="o">=</span><span class="n">GTCodes_dict</span><span class="p">,</span>
+            <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">,</span> <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">,</span>
+            <span class="n">get_kwargs</span><span class="o">=</span><span class="n">kvp</span><span class="p">,</span> <span class="n">monitor</span><span class="o">=</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">roig</span> <span class="o">=</span> <span class="n">_roi_getter_tiled</span><span class="p">(</span>
+            <span class="n">gc</span><span class="o">=</span><span class="n">gc</span><span class="p">,</span> <span class="n">slide_id</span><span class="o">=</span><span class="n">slide_id</span><span class="p">,</span> <span class="n">GTCodes_dict</span><span class="o">=</span><span class="n">GTCodes_dict</span><span class="p">,</span>
+            <span class="n">slide_annotations</span><span class="o">=</span><span class="n">slide_annotations</span><span class="p">,</span> <span class="n">element_infos</span><span class="o">=</span><span class="n">element_infos</span><span class="p">,</span>
+            <span class="n">sf</span><span class="o">=</span><span class="n">sf</span><span class="p">,</span> <span class="n">max_roiside</span><span class="o">=</span><span class="n">max_roiside</span><span class="p">,</span>
+            <span class="n">get_kwargs</span><span class="o">=</span><span class="n">kvp</span><span class="p">,</span> <span class="n">monitor</span><span class="o">=</span><span class="n">monitorPrefix</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">savenames</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">roi_out</span> <span class="ow">in</span> <span class="n">roig</span><span class="p">:</span>
+
+        <span class="c1"># if something went wrong, just move on</span>
+        <span class="k">if</span> <span class="n">roi_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># now save roi (mask, rgb, contours, vis)</span>
+
+        <span class="n">this_roi_savenames</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">ROINAMESTR</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_left-</span><span class="si">%d</span><span class="s1">_top-</span><span class="si">%d</span><span class="s1">_bottom-</span><span class="si">%d</span><span class="s1">_right-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">slide_name</span><span class="p">,</span>
+            <span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">][</span><span class="s1">&#39;XMIN&#39;</span><span class="p">],</span> <span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">][</span><span class="s1">&#39;YMIN&#39;</span><span class="p">],</span>
+            <span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">][</span><span class="s1">&#39;YMAX&#39;</span><span class="p">],</span> <span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;bounds&#39;</span><span class="p">][</span><span class="s1">&#39;XMAX&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">imtype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;ROI&#39;</span><span class="p">,</span> <span class="s1">&#39;rgb&#39;</span><span class="p">,</span> <span class="s1">&#39;visualization&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">imtype</span> <span class="ow">in</span> <span class="n">roi_out</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">savename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="n">save_directories</span><span class="p">[</span><span class="n">imtype</span><span class="p">],</span> <span class="n">ROINAMESTR</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   Saving </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">savename</span><span class="p">)</span>
+                <span class="n">imwrite</span><span class="p">(</span><span class="n">im</span><span class="o">=</span><span class="n">roi_out</span><span class="p">[</span><span class="n">imtype</span><span class="p">],</span> <span class="n">uri</span><span class="o">=</span><span class="n">savename</span><span class="p">)</span>
+                <span class="n">this_roi_savenames</span><span class="p">[</span><span class="n">imtype</span><span class="p">]</span> <span class="o">=</span> <span class="n">savename</span>
+
+        <span class="k">if</span> <span class="s1">&#39;contours&#39;</span> <span class="ow">in</span> <span class="n">roi_out</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">savename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">save_directories</span><span class="p">[</span><span class="s1">&#39;contours&#39;</span><span class="p">],</span> <span class="n">ROINAMESTR</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   Saving </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">savename</span><span class="p">)</span>
+            <span class="n">contours_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">roi_out</span><span class="p">[</span><span class="s1">&#39;contours&#39;</span><span class="p">])</span>
+            <span class="n">contours_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">savename</span><span class="p">)</span>
+            <span class="n">this_roi_savenames</span><span class="p">[</span><span class="s1">&#39;contours&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">savename</span>
+
+        <span class="n">savenames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_roi_savenames</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">savenames</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kitware, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
