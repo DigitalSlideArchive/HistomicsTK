@@ -1,0 +1,585 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Building a Nuclei Classifier Model from Extracted Feature Data\n",
+    "\n",
+    "In this comprehensive tutorial, we will guide you through the process of constructing a nuclei classifier using the powerful *Random Forest* algorithm. Our approach involves extracting features from image data using DSA and assigning classes to the data instances using K-Means method. A foundational grasp of Python and familiarity with utilizing iPython notebooks are prerequisites for comprehending the content presented in this tutorial.\n",
+    "\n",
+    "**Included Resources**\n",
+    "- [Input Image](https://data.kitware.com/api/v1/file/hashsum/sha512/1ff135eb0ff8864a876a19ae3dec579f27f1718726a68643f6a40a244fdfa08e81f63f1413c198b38384cb34e8705bc60a6c69ef2b706cb0419f6ec091b2b621/download)\n",
+    "- [Extracted Features file (Optional)](https://data.kitware.com/api/v1/file/hashsum/sha512/e8c829b60d316ff84d2ffafb5accd605eb8dcd02dec709105ec9127aa2d7969e2feca74f66394b26f0e90375cd0d1cda3d1831023449f66cf50a637906444578/download)\n",
+    "\n",
+    "*This tutorial is created by Subin Erattakulangara (Kitware)*"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 1 (Extract nuclei features)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Open the Nuclei Feature extraction panel in DSA and upload the image data into *Input Image* area shown below. Provide the location for both feature file and annotation files to be saved. Then press submit to start the process.The cli will generate the feature file required for the classifier. Annotation file is not required for creating the classifier.\n",
+    "\n",
+    "![DSA panel.png](https://data.kitware.com/api/v1/file/hashsum/sha512/10f88a5400e7fa46605e3f75530ae8703a429fbbf1185444a14fa40beec251434d19760de90bdaae25b5ece3557b502b59e40fab377b3df5978088b14c3a14e2/download)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 2 (Generate training labels)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Once the CLI generates the feature file, download it. Create a new folder and put the downloaded feature file in there. Then, run the provided Python code within the same folder. This code enhances the feature file with classes. This simple flow ensures you manage, organize, and improve your feature file effortlessly.<br><br>\n",
+    "You can also use the `.csv` file provided above to create the classifier."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##### Read the csv file"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Ensure you import all the necessary libraries.\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "from sklearn.preprocessing import LabelEncoder, StandardScaler\n",
+    "from sklearn.metrics import accuracy_score\n",
+    "from sklearn.cluster import KMeans\n",
+    "import pandas as pd\n",
+    "import pickle"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Feature.Label</th>\n",
+       "      <th>Feature.Identifier.Xmin</th>\n",
+       "      <th>Feature.Identifier.Ymin</th>\n",
+       "      <th>Feature.Identifier.Xmax</th>\n",
+       "      <th>Feature.Identifier.Ymax</th>\n",
+       "      <th>Feature.Identifier.CentroidX</th>\n",
+       "      <th>Feature.Identifier.CentroidY</th>\n",
+       "      <th>Feature.Identifier.WeightedCentroidX</th>\n",
+       "      <th>Feature.Identifier.WeightedCentroidY</th>\n",
+       "      <th>Feature.Orientation.Orientation</th>\n",
+       "      <th>...</th>\n",
+       "      <th>Feature.Cytoplasm.Haralick.Entropy.Mean</th>\n",
+       "      <th>Feature.Cytoplasm.Haralick.Entropy.Range</th>\n",
+       "      <th>Feature.Cytoplasm.Haralick.DifferenceVariance.Mean</th>\n",
+       "      <th>Feature.Cytoplasm.Haralick.DifferenceVariance.Range</th>\n",
+       "      <th>Feature.Cytoplasm.Haralick.DifferenceEntropy.Mean</th>\n",
+       "      <th>Feature.Cytoplasm.Haralick.DifferenceEntropy.Range</th>\n",
+       "      <th>Feature.Cytoplasm.Haralick.IMC1.Mean</th>\n",
+       "      <th>Feature.Cytoplasm.Haralick.IMC1.Range</th>\n",
+       "      <th>Feature.Cytoplasm.Haralick.IMC2.Mean</th>\n",
+       "      <th>Feature.Cytoplasm.Haralick.IMC2.Range</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1.0</td>\n",
+       "      <td>522.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>543.0</td>\n",
+       "      <td>7.0</td>\n",
+       "      <td>532.181818</td>\n",
+       "      <td>2.171717</td>\n",
+       "      <td>533.656523</td>\n",
+       "      <td>2.031401</td>\n",
+       "      <td>1.537561</td>\n",
+       "      <td>...</td>\n",
+       "      <td>4.706490</td>\n",
+       "      <td>0.194888</td>\n",
+       "      <td>0.008351</td>\n",
+       "      <td>0.002288</td>\n",
+       "      <td>2.040481</td>\n",
+       "      <td>0.322045</td>\n",
+       "      <td>-0.057505</td>\n",
+       "      <td>0.073408</td>\n",
+       "      <td>0.476290</td>\n",
+       "      <td>0.252285</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2.0</td>\n",
+       "      <td>907.0</td>\n",
+       "      <td>5.0</td>\n",
+       "      <td>917.0</td>\n",
+       "      <td>22.0</td>\n",
+       "      <td>910.981651</td>\n",
+       "      <td>13.155963</td>\n",
+       "      <td>910.756021</td>\n",
+       "      <td>13.072805</td>\n",
+       "      <td>0.042388</td>\n",
+       "      <td>...</td>\n",
+       "      <td>4.975380</td>\n",
+       "      <td>0.256907</td>\n",
+       "      <td>0.008047</td>\n",
+       "      <td>0.001967</td>\n",
+       "      <td>2.072380</td>\n",
+       "      <td>0.319199</td>\n",
+       "      <td>-0.111360</td>\n",
+       "      <td>0.086315</td>\n",
+       "      <td>0.658314</td>\n",
+       "      <td>0.175118</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3.0</td>\n",
+       "      <td>621.0</td>\n",
+       "      <td>16.0</td>\n",
+       "      <td>631.0</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>625.518072</td>\n",
+       "      <td>21.421687</td>\n",
+       "      <td>626.368708</td>\n",
+       "      <td>20.876592</td>\n",
+       "      <td>-0.603565</td>\n",
+       "      <td>...</td>\n",
+       "      <td>4.855255</td>\n",
+       "      <td>0.247903</td>\n",
+       "      <td>0.007793</td>\n",
+       "      <td>0.002020</td>\n",
+       "      <td>2.085567</td>\n",
+       "      <td>0.344207</td>\n",
+       "      <td>-0.067079</td>\n",
+       "      <td>0.091177</td>\n",
+       "      <td>0.521425</td>\n",
+       "      <td>0.290303</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>4.0</td>\n",
+       "      <td>651.0</td>\n",
+       "      <td>31.0</td>\n",
+       "      <td>661.0</td>\n",
+       "      <td>50.0</td>\n",
+       "      <td>655.672414</td>\n",
+       "      <td>40.137931</td>\n",
+       "      <td>655.497753</td>\n",
+       "      <td>40.189438</td>\n",
+       "      <td>-0.144686</td>\n",
+       "      <td>...</td>\n",
+       "      <td>5.415242</td>\n",
+       "      <td>0.192235</td>\n",
+       "      <td>0.006401</td>\n",
+       "      <td>0.001623</td>\n",
+       "      <td>2.382495</td>\n",
+       "      <td>0.307914</td>\n",
+       "      <td>-0.059416</td>\n",
+       "      <td>0.060096</td>\n",
+       "      <td>0.520708</td>\n",
+       "      <td>0.198088</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>5.0</td>\n",
+       "      <td>923.0</td>\n",
+       "      <td>42.0</td>\n",
+       "      <td>937.0</td>\n",
+       "      <td>60.0</td>\n",
+       "      <td>929.307692</td>\n",
+       "      <td>50.487179</td>\n",
+       "      <td>928.986837</td>\n",
+       "      <td>50.980150</td>\n",
+       "      <td>-0.620023</td>\n",
+       "      <td>...</td>\n",
+       "      <td>4.628241</td>\n",
+       "      <td>0.286323</td>\n",
+       "      <td>0.008531</td>\n",
+       "      <td>0.002390</td>\n",
+       "      <td>2.002746</td>\n",
+       "      <td>0.406743</td>\n",
+       "      <td>-0.097690</td>\n",
+       "      <td>0.105828</td>\n",
+       "      <td>0.599820</td>\n",
+       "      <td>0.219931</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 134 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Feature.Label  Feature.Identifier.Xmin  Feature.Identifier.Ymin  \\\n",
+       "0            1.0                    522.0                      0.0   \n",
+       "1            2.0                    907.0                      5.0   \n",
+       "2            3.0                    621.0                     16.0   \n",
+       "3            4.0                    651.0                     31.0   \n",
+       "4            5.0                    923.0                     42.0   \n",
+       "\n",
+       "   Feature.Identifier.Xmax  Feature.Identifier.Ymax  \\\n",
+       "0                    543.0                      7.0   \n",
+       "1                    917.0                     22.0   \n",
+       "2                    631.0                     28.0   \n",
+       "3                    661.0                     50.0   \n",
+       "4                    937.0                     60.0   \n",
+       "\n",
+       "   Feature.Identifier.CentroidX  Feature.Identifier.CentroidY  \\\n",
+       "0                    532.181818                      2.171717   \n",
+       "1                    910.981651                     13.155963   \n",
+       "2                    625.518072                     21.421687   \n",
+       "3                    655.672414                     40.137931   \n",
+       "4                    929.307692                     50.487179   \n",
+       "\n",
+       "   Feature.Identifier.WeightedCentroidX  Feature.Identifier.WeightedCentroidY  \\\n",
+       "0                            533.656523                              2.031401   \n",
+       "1                            910.756021                             13.072805   \n",
+       "2                            626.368708                             20.876592   \n",
+       "3                            655.497753                             40.189438   \n",
+       "4                            928.986837                             50.980150   \n",
+       "\n",
+       "   Feature.Orientation.Orientation  ...  \\\n",
+       "0                         1.537561  ...   \n",
+       "1                         0.042388  ...   \n",
+       "2                        -0.603565  ...   \n",
+       "3                        -0.144686  ...   \n",
+       "4                        -0.620023  ...   \n",
+       "\n",
+       "   Feature.Cytoplasm.Haralick.Entropy.Mean  \\\n",
+       "0                                 4.706490   \n",
+       "1                                 4.975380   \n",
+       "2                                 4.855255   \n",
+       "3                                 5.415242   \n",
+       "4                                 4.628241   \n",
+       "\n",
+       "   Feature.Cytoplasm.Haralick.Entropy.Range  \\\n",
+       "0                                  0.194888   \n",
+       "1                                  0.256907   \n",
+       "2                                  0.247903   \n",
+       "3                                  0.192235   \n",
+       "4                                  0.286323   \n",
+       "\n",
+       "   Feature.Cytoplasm.Haralick.DifferenceVariance.Mean  \\\n",
+       "0                                           0.008351    \n",
+       "1                                           0.008047    \n",
+       "2                                           0.007793    \n",
+       "3                                           0.006401    \n",
+       "4                                           0.008531    \n",
+       "\n",
+       "   Feature.Cytoplasm.Haralick.DifferenceVariance.Range  \\\n",
+       "0                                           0.002288     \n",
+       "1                                           0.001967     \n",
+       "2                                           0.002020     \n",
+       "3                                           0.001623     \n",
+       "4                                           0.002390     \n",
+       "\n",
+       "   Feature.Cytoplasm.Haralick.DifferenceEntropy.Mean  \\\n",
+       "0                                           2.040481   \n",
+       "1                                           2.072380   \n",
+       "2                                           2.085567   \n",
+       "3                                           2.382495   \n",
+       "4                                           2.002746   \n",
+       "\n",
+       "   Feature.Cytoplasm.Haralick.DifferenceEntropy.Range  \\\n",
+       "0                                           0.322045    \n",
+       "1                                           0.319199    \n",
+       "2                                           0.344207    \n",
+       "3                                           0.307914    \n",
+       "4                                           0.406743    \n",
+       "\n",
+       "   Feature.Cytoplasm.Haralick.IMC1.Mean  \\\n",
+       "0                             -0.057505   \n",
+       "1                             -0.111360   \n",
+       "2                             -0.067079   \n",
+       "3                             -0.059416   \n",
+       "4                             -0.097690   \n",
+       "\n",
+       "   Feature.Cytoplasm.Haralick.IMC1.Range  \\\n",
+       "0                               0.073408   \n",
+       "1                               0.086315   \n",
+       "2                               0.091177   \n",
+       "3                               0.060096   \n",
+       "4                               0.105828   \n",
+       "\n",
+       "   Feature.Cytoplasm.Haralick.IMC2.Mean  Feature.Cytoplasm.Haralick.IMC2.Range  \n",
+       "0                              0.476290                               0.252285  \n",
+       "1                              0.658314                               0.175118  \n",
+       "2                              0.521425                               0.290303  \n",
+       "3                              0.520708                               0.198088  \n",
+       "4                              0.599820                               0.219931  \n",
+       "\n",
+       "[5 rows x 134 columns]"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Read CSV file\n",
+    "# This link provides access to a sample CSV file for download. Feel free to replace it with your own customized CSV file.\n",
+    "url = \"https://data.kitware.com/api/v1/file/hashsum/sha512/e8c829b60d316ff84d2ffafb5accd605eb8dcd02dec709105ec9127aa2d7969e2feca74f66394b26f0e90375cd0d1cda3d1831023449f66cf50a637906444578/download\"\n",
+    "df = pd.read_csv(url).fillna(0)\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##### Standardize the data and perform K-means clustering"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/local/KHQ/s.erattakulangara/anaconda3/envs/tiffexp/lib/python3.10/site-packages/sklearn/cluster/_kmeans.py:1412: FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the value of `n_init` explicitly to suppress the warning\n",
+      "  super()._check_params_vs_input(X, default_n_init=10)\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Standardize the data\n",
+    "X = df.values\n",
+    "scaler = StandardScaler()\n",
+    "X_scaled = scaler.fit_transform(X)\n",
+    "\n",
+    "# Perform KMeans clustering\n",
+    "num_clusters = 5  # Number of clusters you want to create\n",
+    "kmeans = KMeans(n_clusters=num_clusters, random_state=42)\n",
+    "cluster_labels = kmeans.fit_predict(X_scaled)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##### Add generated cluster labels to feature file"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3    833\n",
+      "1    737\n",
+      "4    607\n",
+      "2    505\n",
+      "0     40\n",
+      "Name: Cluster, dtype: int64\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Add cluster labels to the original data\n",
+    "df['Cluster'] = cluster_labels\n",
+    "\n",
+    "# Print the count of data points in each cluster\n",
+    "print(df['Cluster'].value_counts())"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In this process we have modified the feature file so that the class labels are also added into it. These labels are required to train the Random forest classifier."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 3 (Train random forest classifier)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##### Convert dataframe to target and labels"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(2722, 134) (2722,)\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Assuming the last column contains the target labels\n",
+    "X = df.iloc[:, :-1]  # Features\n",
+    "y = df.iloc[:, -1]   # Target labels\n",
+    "print(X.shape, y.shape)\n",
+    "\n",
+    "# Convert categorical labels to numerical using LabelEncoder\n",
+    "label_encoder = LabelEncoder()\n",
+    "y_encoded = label_encoder.fit_transform(y)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##### Split the data into training and testing sets"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2, random_state=42)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##### Train a random forest classifier"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy: 0.91\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Create a RandomForestClassifier\n",
+    "classifier = RandomForestClassifier(n_estimators=100, random_state=42)\n",
+    "\n",
+    "# Train the classifier\n",
+    "classifier.fit(X_train, y_train)\n",
+    "\n",
+    "# Predict on the test set\n",
+    "y_pred = classifier.predict(X_test)\n",
+    "\n",
+    "# Convert numerical predictions back to categorical labels\n",
+    "y_pred_labels = label_encoder.inverse_transform(y_pred)\n",
+    "\n",
+    "# Calculate accuracy\n",
+    "accuracy = accuracy_score(y_test, y_pred)\n",
+    "print(f\"Accuracy: {accuracy:.2f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Save the trained model into a pickle file"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Model saved as breast_cancer_classification_model.pkl\n"
+     ]
+    }
+   ],
+   "source": [
+    "model_filename = 'breast_cancer_classification_model.pkl'\n",
+    "with open(model_filename, 'wb') as model_file:\n",
+    "    pickle.dump(classifier, model_file)\n",
+    "\n",
+    "print(f\"Model saved as {model_filename}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This trained model can be used for nuclei classification. The model file should be uploaded to Girder and selected for the \"Input Model File\" in the Classify Nuclei task."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "tiffexp",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.4"
+  },
+  "orig_nbformat": 4
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

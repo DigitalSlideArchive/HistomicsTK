@@ -1,0 +1,6 @@
+API Documentation
+==================
+
+.. toctree::
+
+   histomicstk

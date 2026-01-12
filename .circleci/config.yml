@@ -1,0 +1,448 @@
+version: 2.1
+commands:
+  tox:
+    description: "Run tox"
+    parameters:
+      env:
+        type: string
+    steps:
+      - run:
+          name: Upgrade pip
+          command: pip install -U pip
+      - run:
+          name: Upgrade virtualenv and tox
+          command: pip install -U virtualenv tox
+      - run:
+          name: Install scikit-build
+          command: pip install scikit-build
+      - run:
+          name: Run tests via tox
+          # Piping through cat does less buffering of the output but can
+          # consume the exit code.  Tail a test log to allow slow setup times
+          # from stopping circle
+          command: |
+            (while true; do date; tail -n 3 /tmp/histomicstk_test_girder_log.txt 2>/dev/null || true; sleep 60; done) &
+            tox -e << parameters.env >> | cat; test ${PIPESTATUS[0]} -eq 0
+  docker-compose:
+    description: "Install docker compose extension"
+    steps:
+      - run:
+          name: Install docker compose
+          command: |
+            DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+            mkdir -p $DOCKER_CONFIG/cli-plugins
+            curl -SL https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
+            chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+  upgradepython:
+    description: "Upgrade python"
+    parameters:
+      version:
+        type: string
+    steps:
+      - run:
+          name: Upgrade pyenv
+          command: |
+            sudo rm -rf /opt/circleci/.pyenv
+            sudo bash -c 'curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | PYENV_ROOT=/opt/circleci/.pyenv bash'
+            sudo chmod -R 777 /opt/circleci/.pyenv/
+            pyenv install --list list
+      - run:
+          name: Use pyenv to install python
+          command: |
+            pyenv install << parameters.version >>
+  coverage:
+    description: "Upload coverage"
+    steps:
+      - run:
+          name: Install Codecov client
+          command: |
+              curl -Os https://uploader.codecov.io/latest/linux/codecov
+              chmod +x codecov
+      - run:
+          name: Upload coverage
+          # Retry as codecov can be flaky
+          command: for i in $(seq 1 10); do [ $i -gt 1 ] && echo "retrying $i" && sleep 5; ./codecov --disable search pycov gcov --file .tox/coverage/py_coverage.xml .tox/coverage/cobertura-coverage.xml && s=0 && break || s=$?; done; (exit $s)
+
+jobs:
+  py39:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - checkout
+      - upgradepython:
+          version: "3.9"
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.9
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
+      - tox:
+          env: py39
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
+      - coverage
+  py310:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - checkout
+      - upgradepython:
+          version: "3.10"
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.10
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
+      - tox:
+          env: py310
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
+      - coverage
+  py311:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - checkout
+      - upgradepython:
+          version: "3.11"
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.11
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
+      - tox:
+          env: py311
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
+      - coverage
+  py312:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - checkout
+      - upgradepython:
+          version: "3.12"
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.12
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
+      - tox:
+          env: py312
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
+      - coverage
+  py313:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - checkout
+      - upgradepython:
+          version: "3.13"
+      - run:
+          name: Use pyenv to set python version
+          command: |
+            pyenv versions
+            pyenv global 3.13
+      - docker-compose
+      - restore_cache:
+          name: Restore external data cache
+          keys:
+            - tox-externaldata-{{ checksum "tests/datastore.py" }}
+      - tox:
+          env: py313
+      - save_cache:
+          name: Save external data cache
+          key: tox-externaldata-{{ checksum "tests/datastore.py" }}
+          paths:
+            - ./.tox/externaldata
+      - coverage
+  lint_and_docs:
+    working_directory: ~/project
+    docker:
+      - image: cimg/python:3.11
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: sudo apt-get update -yq && sudo apt install -yq pandoc
+      - tox:
+          env: docs,lint
+      - store_artifacts:
+          path: docs/_build/html
+      - persist_to_workspace:
+          root: docs/_build
+          paths: html
+  docker:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - checkout
+      - run:
+          name: Build HistomicsTK docker
+          command: docker build --force-rm -t dsarchive/histomicstk .
+      - run:
+          name: Get xml for each cli
+          command: |
+            docker run --rm dsarchive/histomicstk:latest --list_cli
+            docker run --rm dsarchive/histomicstk:latest BackgroundIntensity --xml
+            docker run --rm dsarchive/histomicstk:latest ColorDeconvolution --xml
+            docker run --rm dsarchive/histomicstk:latest ComputeNucleiFeatures --xml
+            docker run --rm dsarchive/histomicstk:latest NucleiClassification --xml
+            docker run --rm dsarchive/histomicstk:latest NucleiDetection --xml
+            docker run --rm dsarchive/histomicstk:latest PositivePixelCount --xml
+            docker run --rm dsarchive/histomicstk:latest SeparateStainsMacenkoPCA --xml
+            docker run --rm dsarchive/histomicstk:latest SeparateStainsXuSnmf --xml
+            docker run --rm dsarchive/histomicstk:latest SuperpixelSegmentation --xml
+      - run:
+          name: Archive docker images
+          command: |
+            docker save -o dsa_histomicstk.tar dsarchive/histomicstk:latest
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./dsa_histomicstk.tar
+      - store_artifacts:
+          path: ./dsa_histomicstk.tar
+  publish_docker:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Load archived docker images
+          command: |
+            docker load -i /tmp/workspace/dsa_histomicstk.tar
+      - run:
+          name: Publish images to Docker Hub
+          command: |
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker push dsarchive/histomicstk:latest
+              if [[ $CIRCLE_TAG =~ ^v.*$ ]]; then
+              docker tag dsarchive/histomicstk:latest "dsarchive/histomicstk:$CIRCLE_TAG"
+              docker push "dsarchive/histomicstk:$CIRCLE_TAG"
+              fi
+  wheels:
+    working_directory: ~/project
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - checkout
+      # - setup_remote_docker
+      - run:
+          name: Setup virtual environment
+          command: |
+            if [ ! -d env ]; then python -m virtualenv env || python -m venv env; fi
+            echo ". $CIRCLE_WORKING_DIRECTORY/env/bin/activate" >> $BASH_ENV
+      - run:
+          name: Upgrade pip
+          command: pip install -U pip
+      - run:
+          name: Install python packages
+          command: pip install setuptools_scm
+      - run:
+          name: Build wheels
+          command: ./build_wheels.sh
+      - store_artifacts:
+          path: wheels
+      - store_artifacts:
+          path: dist
+      - run:
+          name: List built wheels
+          command: |
+            ls -al wheels
+      - run:
+          name: Basic import test
+          command: |
+            python3 -m pip install --upgrade pip
+            cd ..
+            python3 -m pip install histomicstk --pre --find-links project/wheels --find-links https://girder.github.io/large_image_wheels
+            python3 -c "import histomicstk"
+  docs-deploy:
+    working_directory: ~/project
+    docker:
+      - image: node
+    steps:
+      - checkout
+      - attach_workspace:
+          at: docs/_build
+      - run:
+          name: Disable jekyll builds
+          command: touch docs/_build/html/.nojekyll
+      - run:
+          name: Install and configure dependencies
+          command: |
+            npm install -g --silent gh-pages
+            git config user.email "ci-build@kitware.com"
+            git config user.name "ci-build"
+      - add_ssh_keys:
+          fingerprints:
+            - "aa:85:57:31:5c:82:aa:6b:52:69:de:e7:ed:74:0f:86"
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: |
+            touch package.json
+            gh-pages --dotfiles --message "[skip ci] Update documentation" --dist docs/_build/html --no-history
+
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - py39:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py310:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py311:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py312:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - py313:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - lint_and_docs:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - docker:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - wheels:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - gh-pages
+      - docs-deploy:
+          requires:
+            - py39
+            - py310
+            - py311
+            - py312
+            - py313
+            - lint_and_docs
+            - wheels
+            - docker
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only:
+                - master
+                - sphinx
+      - publish_docker:
+          requires:
+            - py39
+            - py310
+            - py311
+            - py312
+            - py313
+            - lint_and_docs
+            - docker
+            - wheels
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only:
+                - master
+  periodic:
+    triggers:
+      - schedule:
+          # Run every Tuesday morning at 7 a.m.
+          cron: "0 7 * * 2"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - py39
+      - py310
+      - py311
+      - py312
+      - py313
+      - lint_and_docs
+      - docker
+      - wheels
+      - publish_docker:
+          requires:
+            - py39
+            - py310
+            - py311
+            - py312
+            - py313
+            - lint_and_docs
+            - docker
+            - wheels
