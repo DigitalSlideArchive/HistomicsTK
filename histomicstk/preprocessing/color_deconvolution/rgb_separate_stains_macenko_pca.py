@@ -1,5 +1,38 @@
+import numpy as np
+
+from histomicstk._rust import \
+    py_rgb_separate_stains_macenko_pca  # pylint: disable=no-name-in-module
+
 from ..color_conversion import rgb_to_sda
 from .separate_stains_macenko_pca import separate_stains_macenko_pca
+
+
+def rgb_separate_stains_macenko_pca_rs(
+    im_rgb,
+    I_0,
+    minimum_magnitude=16,
+    min_angle_percentile=0.01,
+    max_angle_percentile=0.99,
+    mask_out=None,
+):
+    """
+    Rust-accelerated version of rgb_separate_stains_macenko_pca.
+    """
+    im = np.asarray(im_rgb, dtype=np.float64, order='C')
+    mask = None
+    if mask_out is not None:
+        mask = np.ascontiguousarray(mask_out, dtype=bool)
+    # Prepare background intensity argument
+    if I_0 is None:
+        im = im + 1.0
+        bg = None
+    elif np.isscalar(I_0):
+        bg = [float(I_0)]
+    else:
+        bg = np.asarray(I_0, dtype=np.float64).ravel().tolist()
+    return py_rgb_separate_stains_macenko_pca(
+        im, bg, minimum_magnitude, min_angle_percentile, max_angle_percentile, mask,
+    )
 
 
 def rgb_separate_stains_macenko_pca(im_rgb, I_0, *args, **kwargs):
