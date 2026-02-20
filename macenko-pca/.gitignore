@@ -1,0 +1,84 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+*.whl
+sdist/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Hatch
+.hatch/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing / Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.pytest_cache/
+.mypy_cache/
+
+# Documentation builds
+site/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Ruff
+.ruff_cache/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Secrets — never commit these
+*.pem
+*.key
+
+# Logs
+*.log
+
+# Type stubs
+.pytype/
+dmypy.json
+
+# Pre-commit
+.pre-commit-cache/
+
+# Rust / Cargo / Maturin
+target/
+**/*.rs.bk
+Cargo.lock
+*.so
+*.dylib
+*.dll
+*.pyd
+
+# Misc
+*.bak
+*.tmp

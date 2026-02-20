@@ -1,0 +1,72 @@
+name: Run Pytest with Maturin
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Test on Python ${{ matrix.python-version }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev pkg-config
+
+      - name: Install system dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install openblas pkg-config
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install maturin pytest pytest-cov coverage
+
+      - name: Build and install extension
+        run: maturin develop --release
+
+      - name: Run pytest and generate coverage report
+        run: pytest --cov=src --cov-report=term-missing --cov-report=xml tests/
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: coverage.xml
+
+      - name: Upload coverage report to Codecov
+        if: ${{ secrets.CODECOV_TOKEN != '' }}
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true
+          files: coverage.xml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Skip Codecov upload (no token)
+        if: ${{ secrets.CODECOV_TOKEN == '' }}
+        run: |
+          echo "CODECOV_TOKEN not found. Skipping Codecov upload."
+          echo ""
+          echo "If you want coverage uploaded to Codecov for protected branches, set a"
+          echo "repository or organization secret named CODECOV_TOKEN with your Codecov token."
+          echo ""
+          echo "Alternatively, you can rely on the uploaded coverage artifact to inspect coverage locally."

@@ -1,0 +1,177 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "macenko-pca"
+dynamic = ["version"]
+description = "High-performance Macenko PCA stain deconvolution powered by Rust"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+keywords = ["stain", "deconvolution", "macenko", "pca", "histology", "pathology"]
+authors = [
+  { name = "barrettMCW", email = "mjbarrett@mcw.edu" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Rust",
+  "Topic :: Scientific/Engineering :: Image Processing",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = ["numpy>=1.22"]
+
+[project.urls]
+Documentation = "https://github.com/LavLabInfrastructure/macenko-pca#readme"
+Issues = "https://github.com/LavLabInfrastructure/macenko-pca/issues"
+Source = "https://github.com/LavLabInfrastructure/macenko-pca"
+
+[tool.maturin]
+python-source = "src"
+module-name = "macenko_pca._rust"
+features = ["pyo3/extension-module"]
+manifest-path = "Cargo.toml"
+
+# ---------------------------------------------------------------------------
+# Hatch environments (dev tooling only — build is handled by maturin)
+# ---------------------------------------------------------------------------
+
+[tool.hatch.version]
+path = "src/macenko_pca/__about__.py"
+
+[tool.hatch.env]
+requires = [
+    "hatch-pip-compile",
+]
+
+[tool.hatch.envs.default]
+type = "pip-compile"
+pip-compile-hashes = true
+dependencies = [
+  "maturin>=1.7,<2.0",
+]
+
+[tool.hatch.envs.default.scripts]
+develop = "maturin develop --release"
+build = "maturin build --release && chmod -R 777 target/wheels/*"
+
+[tool.hatch.envs.test]
+dependencies = [
+  "maturin>=1.7,<2.0",
+  "pytest",
+  "pytest-cov",
+  "coverage[toml]>=6.2",
+]
+[tool.hatch.envs.test.scripts]
+dev = "maturin develop --release"
+test = ["dev", "pytest {args:tests}"]
+cov = ["dev", "pytest --cov=src --cov-report=term-missing --cov-report=xml {args:tests}"]
+
+[tool.hatch.envs.lint]
+dependencies = [
+  "ruff>=0.4.0",
+]
+[tool.hatch.envs.lint.scripts]
+check = "ruff check src tests"
+format = "ruff format src tests"
+format-check = "ruff format src tests --check"
+fix = "ruff check --fix src tests"
+all = ["format", "fix", "check"]
+
+[tool.hatch.envs.types]
+dependencies = [
+  "mypy>=1.0.0",
+  "numpy>=1.22",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/macenko_pca tests}"
+
+[tool.hatch.envs.docs]
+dependencies = [
+  "mkdocs",
+  "mkdocstrings[python]",
+  "mkdocs-material",
+  "mkdocs-autorefs",
+  "mkdocs-minify-plugin",
+  "mkdocs-material-extensions",
+  "mkdocs-git-revision-date-localized-plugin",
+]
+[tool.hatch.envs.docs.scripts]
+build-docs = "mkdocs build"
+serve-docs = "mkdocs serve"
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+# ---------------------------------------------------------------------------
+# Coverage
+# ---------------------------------------------------------------------------
+
+[tool.coverage.run]
+source_pkgs = ["macenko_pca", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/macenko_pca/__about__.py",
+]
+
+[tool.coverage.paths]
+macenko_pca = ["src/macenko_pca", "*/macenko-pca/src/macenko_pca"]
+tests = ["tests", "*/macenko-pca/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+
+# ---------------------------------------------------------------------------
+# Ruff
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "F",      # pyflakes
+  "E", "W", # pycodestyle
+  "I",      # isort
+  "N",      # pep8-naming
+  "UP",     # pyupgrade
+  "B",      # flake8-bugbear
+  "A",      # flake8-builtins
+  "C4",     # flake8-comprehensions
+  "DTZ",    # flake8-datetimez
+  "T20",    # flake8-print (catches stray prints in library code)
+  "RUF",    # ruff-specific rules
+]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["T20"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["macenko_pca"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+xfail_strict = true

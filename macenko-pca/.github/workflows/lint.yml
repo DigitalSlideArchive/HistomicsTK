@@ -1,0 +1,27 @@
+name: Lint and Format with Ruff
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Check formatting with Ruff
+        run: ruff format src tests --check
+
+      - name: Run Ruff linter
+        run: ruff check src tests

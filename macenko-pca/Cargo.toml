@@ -1,0 +1,32 @@
+[package]
+name = "macenko-pca"
+version = "0.1.0"
+edition = "2024"
+description = "High-performance Macenko PCA stain deconvolution via Rust + PyO3"
+license = "MIT"
+authors = ["barrettMCW <mjbarrett@mcw.edu>"]
+repository = "https://github.com/LavLabInfrastructure/macenko-pca"
+
+[dependencies]
+ndarray = { version = "0.16", features = ["rayon"] }
+ndarray-linalg = { version = "0.17", features = ["openblas-system"] }
+cauchy = "0.4"
+lax = "0.17"
+pyo3 = { version = "0.25", features = ["extension-module"] }
+numpy = "0.25"
+rayon = "1.10"
+num-traits = "0.2"
+paste = "1"
+
+[lib]
+name = "_rust"
+path = "rust/lib.rs"
+crate-type = ["cdylib"]
+
+[profile.release]
+lto = true
+opt-level = 3
+
+[features]
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]

@@ -1,0 +1,188 @@
+# Publish to PyPI using trusted publishing (OIDC)
+#
+# Triggered when a GitHub Release is created (which should be done after
+# tagging a version, e.g. `git tag v0.2.0 && git push --tags`).
+#
+# Prerequisites — one-time PyPI setup:
+#   1. Go to https://pypi.org/manage/account/publishing/
+#      (or the org-level page for the "lavlab" org).
+#   2. Add a new "pending publisher" with:
+#        • PyPI project name:  macenko-pca
+#        • Owner:              lavlab  (GitHub org)
+#        • Repository:         macenko-pca
+#        • Workflow name:      publish.yml
+#        • Environment name:   pypi
+#   3. (Optional) Repeat for TestPyPI at https://test.pypi.org/manage/account/publishing/
+#      using environment name "testpypi".
+#
+# No API tokens or secrets are needed — GitHub's OIDC identity token is
+# exchanged directly with PyPI via trusted publishing.
+
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+  # Allow manual dispatch for testing the workflow without creating a release.
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Publish target"
+        required: true
+        default: "testpypi"
+        type: choice
+        options:
+          - testpypi
+          - pypi
+
+# Only one publish job should run at a time for the same ref.
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build wheels for every platform
+  # ---------------------------------------------------------------------------
+  build-wheels:
+    name: Build wheels — ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, macos-13, macos-14, windows-latest]
+        # macos-13 = x86_64, macos-14 = arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build wheels (Linux — manylinux)
+        if: runner.os == 'Linux'
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          manylinux: auto
+          args: --release --out dist
+          sccache: "true"
+          before-script-linux: |
+            yum install -y openblas-devel pkgconfig || \
+            apt-get update && apt-get install -y libopenblas-dev pkg-config || true
+
+      - name: Build wheels (macOS)
+        if: runner.os == 'macOS'
+        uses: PyO3/maturin-action@v1
+        env:
+          # Help pkg-config find Homebrew's openblas on both Intel and ARM runners
+          PKG_CONFIG_PATH: /opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig
+        with:
+          args: --release --out dist
+          sccache: "true"
+          before-script-linux: ""  # no-op for macOS, deps installed below
+
+      - name: Install macOS system deps
+        if: runner.os == 'macOS'
+        run: brew install openblas pkg-config
+
+      - name: Build wheels (Windows)
+        if: runner.os == 'Windows'
+        uses: PyO3/maturin-action@v1
+        with:
+          args: --release --out dist
+          sccache: "true"
+
+      - name: Upload wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: dist/*.whl
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Build source distribution
+  # ---------------------------------------------------------------------------
+  build-sdist:
+    name: Build sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+
+      - name: Upload sdist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Publish to PyPI (production) — runs on GitHub Release
+  # ---------------------------------------------------------------------------
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-latest
+    # Only publish on release events (not manual dispatch to testpypi)
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.target == 'pypi')
+    environment:
+      name: pypi
+      url: https://pypi.org/p/macenko-pca
+    permissions:
+      id-token: write  # Required for trusted publishing OIDC exchange
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -lhR dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # No password needed — trusted publishing uses the OIDC token.
+          print-hash: true
+
+  # ---------------------------------------------------------------------------
+  # Publish to TestPyPI — manual dispatch only
+  # ---------------------------------------------------------------------------
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/macenko-pca
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -lhR dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          print-hash: true
