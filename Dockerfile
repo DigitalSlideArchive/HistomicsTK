@@ -90,6 +90,7 @@ RUN python -m slicer_cli_web.cli_list_entrypoint ColorDeconvolution --help
 # Debug import time
 RUN python -X importtime ColorDeconvolution/ColorDeconvolution.py --help
 
-ENV PYTHONUNBUFFERED=TRUE
+ENV PYTHONUNBUFFERED=TRUE \
+    LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6
 
 ENTRYPOINT ["/bin/bash", "docker-entrypoint.sh"]
