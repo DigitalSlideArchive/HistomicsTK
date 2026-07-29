@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import time
+import warnings
 from pathlib import Path
 
 import large_image
@@ -14,6 +15,9 @@ import histomicstk.segmentation.nuclear as htk_nuclear
 import histomicstk.utils as htk_utils
 from histomicstk.cli import utils as cli_utils
 from histomicstk.cli.utils import CLIArgumentParser
+
+warnings.filterwarnings('once')
+
 
 logging.basicConfig(level=logging.CRITICAL)
 
