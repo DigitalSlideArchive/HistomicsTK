@@ -5,7 +5,6 @@ Created on Mon Sep 23 21:17:43 2019.
 """
 import numpy as np
 from PIL import Image
-from skimage.color import rgb2gray
 
 from histomicstk.annotations_and_masks.annotation_and_mask_utils import \
     get_image_from_htk_response
@@ -103,6 +102,7 @@ class CD_single_tissue_piece:
 
     def set_superpixel_mask(self):
         """Use Simple Linear Iterative Clustering (SLIC) to get superpixels."""
+        from skimage.color import rgb2gray
         from skimage.segmentation import slic
         from skimage.transform import resize
 
@@ -138,6 +138,7 @@ class CD_single_tissue_piece:
     def set_superpixel_features(self):
         """Get superpixel features."""
         from pandas import concat
+        from skimage.color import rgb2gray
         from skimage.measure import regionprops
 
         assert (self.cd.use_intensity or self.cd.use_texture)
