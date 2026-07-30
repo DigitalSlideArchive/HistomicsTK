@@ -1,9 +1,11 @@
 FROM dockcross/manylinux_2_28-x64
 
-# Don't build python < 3.9
+# Don't build python < 3.10
 RUN rm -rf /opt/python/cp36*
 RUN rm -rf /opt/python/cp37*
 RUN rm -rf /opt/python/cp38*
+RUN rm -rf /opt/python/cp39*
+RUN rm -rf /opt/python/cp*t
 RUN rm -rf /opt/python/pp*
 
 RUN for PYBIN in /opt/python/*/bin; do \
@@ -11,19 +13,19 @@ RUN for PYBIN in /opt/python/*/bin; do \
     done
 
 RUN for PYBIN in /opt/python/*/bin; do \
-      if [[ "${PYBIN}" =~ "312" ]]; then \
-        export VERSIONS="numpy==1.26.*"; \
+      if [[ "${PYBIN}" =~ "314" ]]; then \
+        export VERSIONS="numpy>=2"; \
+      elif [[ "${PYBIN}" =~ "313" ]]; then \
+        export VERSIONS="numpy>=2"; \
+      elif [[ "${PYBIN}" =~ "312" ]]; then \
+        export VERSIONS="numpy>=1.26"; \
       elif [[ "${PYBIN}" =~ "311" ]]; then \
-        export VERSIONS="numpy==1.23.*"; \
+        export VERSIONS="numpy>=1.24"; \
       elif [[ "${PYBIN}" =~ "310" ]]; then \
-        export VERSIONS="numpy==1.21.*"; \
-      elif [[ "${PYBIN}" =~ "39" ]]; then \
-        export VERSIONS="numpy==1.19.*"; \
-      elif [[ "${PYBIN}" =~ "38" ]]; then \
-        export VERSIONS="numpy==1.17.*"; \
+        export VERSIONS="numpy>=1.21"; \
       else \
-        # This could be numpy 1.11, but we specify 1.12.1 as our minimum \
-        export VERSIONS="numpy==1.12.*"; \
+        # Fallback for any remaining python versions (e.g. future releases) uses modern defaults \
+        export VERSIONS="numpy>=2"; \
       fi && \
       ${PYBIN}/pip install setuptools-scm 'Cython>=0.25.2' 'scikit-build>=0.8.1' 'cmake>=0.6.0' "${VERSIONS}"; \
     done
@@ -50,8 +52,7 @@ RUN cd $htk_path && \
     # Strip libraries before building any wheels \
     strip --strip-unneeded /usr/local/lib{,64}/*.{so,a} || true && \
     for PYBIN in /opt/python/*/bin; do \
-        # Anything newer requires manylinux2014 \
-        ${PYBIN}/pip install 'opencv-python-headless<4.3' && \
+        ${PYBIN}/pip install opencv-python-headless && \
         ${PYBIN}/pip install --no-cache-dir . && \
         # Remove any previous build artifacts && \
         git clean -fxd && \
