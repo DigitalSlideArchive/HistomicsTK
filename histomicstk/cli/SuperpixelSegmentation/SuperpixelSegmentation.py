@@ -201,7 +201,8 @@ def createSuperPixels(opts):  # noqa
     img.set_type(
         pyvips.GValue.gstr_type, 'image-description',
         json.dumps(dict(
-            {k: v for k, v in vars(opts).items() if k != 'callback'}, indexCount=found)))
+            {k: v for k, v in vars(opts).items() if k != 'callback'}, indexCount=found),
+            default=utils.json_encoder))
     img.write_to_file(
         opts.outputImageFile, tile=True, tile_width=256, tile_height=256, pyramid=True,
         region_shrink=pyvips.RegionShrink.NEAREST,
@@ -268,7 +269,8 @@ def createSuperPixels(opts):  # noqa
             annotation = [annotation, bboxannotation]
         with open(opts.outputAnnotationFile, 'w') as annotation_file:
             try:
-                json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
+                json.dump(annotation, annotation_file, separators=(',', ':'),
+                          sort_keys=False, default=utils.json_encoder)
             except Exception:
                 print('Failed to serialize annotation')
                 print(repr(annotation))

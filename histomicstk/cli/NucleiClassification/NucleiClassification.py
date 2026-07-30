@@ -139,7 +139,7 @@ def process_feature_and_annotation(args):
 
     ts_metadata = ts.getMetadata()
 
-    print(json.dumps(ts_metadata, indent=2))
+    print(json.dumps(ts_metadata, indent=2, default=cli_utils.json_encoder))
 
     src_mu_lab = None
     src_sigma_lab = None
@@ -339,7 +339,8 @@ def main(args):
         },
     })
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
-        json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
+        json.dump(annotation, annotation_file, separators=(',', ':'),
+                  sort_keys=False, default=cli_utils.json_encoder)
 
 
 if __name__ == '__main__':
