@@ -41,7 +41,7 @@ def main(origargs):
     for i, stain in enumerate(w_est.T):
         annotation['attributes'][f'stainColor_{i + 1}'] = stain.tolist()
     with open(args.outputAnnotationFile, 'w') as annotation_file:
-        json.dump(annotation, annotation_file, sort_keys=False)
+        json.dump(annotation, annotation_file, sort_keys=False, default=utils.json_encoder)
 
 
 if __name__ == '__main__':

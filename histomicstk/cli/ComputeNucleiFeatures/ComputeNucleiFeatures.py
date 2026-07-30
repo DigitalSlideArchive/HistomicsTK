@@ -92,7 +92,7 @@ def main(args):  # noqa
 
     ts_metadata = ts.getMetadata()
 
-    print(json.dumps(ts_metadata, indent=2))
+    print(json.dumps(ts_metadata, indent=2, default=cli_utils.json_encoder))
 
     is_wsi = ts_metadata['magnification'] is not None
 
@@ -281,7 +281,8 @@ def main(args):  # noqa
     }
 
     with open(args.outputNucleiAnnotationFile, 'w') as annotation_file:
-        json.dump(annotation, annotation_file, separators=(',', ':'), sort_keys=False)
+        json.dump(annotation, annotation_file, separators=(',', ':'),
+                  sort_keys=False, default=cli_utils.json_encoder)
 
     #
     # Create CSV Feature file

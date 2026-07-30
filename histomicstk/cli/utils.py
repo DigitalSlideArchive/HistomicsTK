@@ -476,13 +476,24 @@ def splitArgs(args, split='_'):
 def sample_pixels(args):
     """Version of histomicstk.utils.sample_pixels that takes a Namespace
     and handles the special default values.
-
     """
     args = (args._asdict() if hasattr(args, '_asdict') else vars(args)).copy()
     for k in 'magnification', 'sample_fraction', 'sample_approximate_total':
         if args[k] == -1:
             del args[k]
     return htk_utils.sample_pixels(**args)
+
+
+def json_encoder(obj):
+    """
+    Default encoder for `json.dump`/`json.dumps` to handle NumPy scalars that
+    fail native serialization (e.g., int64, float64).
+    """
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    raise TypeError
 
 
 __all__ = (
@@ -495,6 +506,7 @@ __all__ = (
     'get_region_dict',
     'get_stain_matrix',
     'get_stain_vector',
+    'json_encoder',
     'sample_pixels',
     'segment_wsi_foreground_at_low_res',
     'splitArgs',

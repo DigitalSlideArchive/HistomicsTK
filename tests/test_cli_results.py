@@ -112,3 +112,73 @@ class TestColorDeconvolution:
             '479066d2016122b2b60575f4e9abe201b4f79d8a894ce76191419e21c7539186',
             'd06317130f4a4aabd155c97f32cec4708ec3eec24d09d16daa2181f18b2051bb',
         }
+
+
+class TestPositivePixelCount:
+    POSITIVE_PIXEL_COUNT_DEFAULTS = [
+        '0.83',      # hue_value
+        '0.15',      # hue_width
+        '0.05',      # saturation_minimum
+        '0.95',      # intensity_upper_limit
+        '0.65',      # intensity_weak_threshold
+        '0.35',      # intensity_strong_threshold
+        '0.05',       # intensity_lower_limit
+    ]
+
+    def _runTest(self, image_file, extra_args=None):
+        """
+        Run PositivePixelCount CLI and return the annotation file contents.
+
+        Plus optional named flags like --image_annotation for output files.
+        """
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            outpath = os.path.join(tmpdirname, 'result.anot')
+            args = [image_file] + self.POSITIVE_PIXEL_COUNT_DEFAULTS
+            args.append('--image_annotation')
+            args.append(outpath)
+            if extra_args:
+                args += extra_args
+            _runCLITest('PositivePixelCount', args)
+            with open(outpath) as f:
+                return json.load(f)
+
+    def test_positive_pixel_count_with_annotation(self):
+        """
+        Test that PositivePixelCount completes and writes valid JSON
+        annotation.
+        """
+        src = datastore.fetch('Easy1.png')
+        annot = self._runTest(src, ['--scheduler=multithreading'])
+
+        assert 'name' in annot
+        assert 'elements' in annot
+        assert 'attributes' in annot
+        assert 'stats' in annot['attributes']
+
+    def test_positive_pixel_count_json_serialization(self):
+        """
+        Directly test that annotation JSON can be parsed.
+        """
+        from histomicstk.cli.PositivePixelCount import PositivePixelCount
+        from histomicstk.cli.utils import CLIArgumentParser
+
+        src = datastore.fetch('Easy1.png')
+
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            outpath = os.path.join(tmpdirname, 'result.anot')
+            args = [src] + self.POSITIVE_PIXEL_COUNT_DEFAULTS  #
+            args.append('--image_annotation')
+            args.append(outpath)
+            parser = CLIArgumentParser(
+                os.path.join(os.path.dirname(PositivePixelCount.__file__),
+                             'PositivePixelCount.xml'),
+            )
+            parsed_args = parser.parse_args(args)
+            PositivePixelCount.main(parsed_args)
+            with open(outpath) as f:
+                annot = json.load(f)
+            stats = annot['attributes']['stats']
+            assert 'NumberWeakPositive' in stats
+            assert 'NumberPositive' in stats
+            assert 'NumberStrongPositive' in stats
+            assert 'NumberTotalPixels' in stats
