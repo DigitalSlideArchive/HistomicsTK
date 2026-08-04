@@ -18,14 +18,18 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     # Runs can be slow, so don't use resources unless we mean to publish
     if: github.repository == 'DigitalSlideArchive/HistomicsTK' && ( startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master' )
     strategy:
       matrix:
         python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: ${{ matrix.python }}
       - name: Install tox
@@ -39,12 +43,16 @@ jobs:
           tox
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.11"
-      - uses: nikeee/setup-pandoc@v1
+      - uses: nikeee/setup-pandoc@96d7406a408cae3f939dfe9222420c5b9ff9cfbb
       - name: Install tox
         run: |
           pip install --upgrade pip
@@ -52,7 +60,7 @@ jobs:
       - name: Run tox for lint and docs
         run: |
           tox -e lint,docs
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: docs
           path: ./docs/_build
@@ -61,6 +69,8 @@ jobs:
     runs-on: ${{ matrix.buildplat[0] }}
     # Don't build external PRs.
     if: github.repository == 'DigitalSlideArchive/HistomicsTK'
+    permissions:
+      contents: read
     strategy:
       matrix:
         # See matplotlib for some of the rationale of this
@@ -72,12 +82,13 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
       - run: git status && git tag --list && pwd
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.x"
       - run: python -m pip install setuptools_scm
@@ -93,30 +104,33 @@ jobs:
       - run: cat pyproject.toml
       - name: Set up QEMU
         if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v4
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.1.1
+        uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c
         env:
           CIBW_BUILD: ${{ matrix.python }}-*
           CIBW_TEST_SKIP: "*-macosx_arm64"
           CIBW_ARCHS: ${{ matrix.buildplat[1] }}
           MACOSX_DEPLOYMENT_TARGET: "11.0"
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: dist-${{ matrix.python }}-${{ startsWith(matrix.buildplat[1], 'macosx') && 'macosx' || matrix.buildplat[1] }}
           path: ./wheelhouse/*.whl
   make_sdist:
     name: Make SDist
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         fetch-depth: 0
         fetch-tags: true
+        persist-credentials: false
     - run: git status && git tag --list && pwd
-    - uses: actions/setup-python@v7
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
       with:
         python-version: "3.x"
     - run: python -m pip install setuptools_scm
@@ -132,7 +146,7 @@ jobs:
     - run: cat pyproject.toml
     - name: Build SDist
       run: pipx run build --sdist
-    - uses: actions/upload-artifact@v7
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         name: dist-sdist
         path: dist/*.tar.gz
@@ -144,12 +158,14 @@ jobs:
 
   test-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs:
       - lint
       - build_wheels
       - make_sdist
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           path: dist
           pattern: dist-*
@@ -159,6 +175,9 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     needs:
       - test
       - lint
@@ -168,14 +187,12 @@ jobs:
     environment:
       name: pypi
       url: https://pypi.org/p/histomicstk
-    permissions:
-      id-token: write
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           path: dist
           pattern: dist-*
           merge-multiple: true
       - name: List dist directory
         run: ls dist
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@a892a5a61159132606e93a2fa6f4358831b04d26
