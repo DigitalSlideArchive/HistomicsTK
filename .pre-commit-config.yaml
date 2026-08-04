@@ -45,7 +45,7 @@ repos:
     files: README.rst
     name: rst-linter of README.rst
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.4.1
+  rev: v2.4.3
   hooks:
   - id: codespell
     additional_dependencies:
@@ -71,8 +71,16 @@ repos:
     - id: flake8
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: v0.15.3
+  rev: v0.16.1
   hooks:
     - id: ruff
       args: [--fix, --exit-non-zero-on-fix]
       types_or: [python, pyi]
+- repo: https://github.com/zizmorcore/zizmor-pre-commit
+  rev: v1.29.0
+  hooks:
+    - id: zizmor
+      args:
+        - --no-progress
+        - --fix
+        - --min-severity=low
