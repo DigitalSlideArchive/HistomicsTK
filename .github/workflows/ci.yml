@@ -195,4 +195,4 @@ jobs:
           merge-multiple: true
       - name: List dist directory
         run: ls dist
-      - uses: pypa/gh-action-pypi-publish@a892a5a61159132606e93a2fa6f4358831b04d26
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33
