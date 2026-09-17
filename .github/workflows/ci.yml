@@ -107,7 +107,7 @@ jobs:
         uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074
+        uses: pypa/cibuildwheel@e090b81e30c4d855ea63bf4b6e59204c09a101ae
         env:
           CIBW_BUILD: ${{ matrix.python }}-*
           CIBW_TEST_SKIP: "*-macosx_arm64"
