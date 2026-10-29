@@ -172,7 +172,7 @@ class TestGetSlideRegionNoMask:
             'TCGA-A2-A0YE_left-58463_top-38203_bottom-39760_right-60379.png',
             'TCGA-A2-A0YE_left-59181_top-33473_bottom-38043_right-63712.png',
             'TCGA-A2-A0YE_left-57584_top-35788_bottom-37425_right-59421.png',
-        }, {os.path.basename(savename['mask']) for savename in savenames}
+        } == {os.path.basename(savename['mask']) for savename in savenames}
 
         # shape & value check
         imname = 'TCGA-A2-A0YE_left-57584_top-35788_bottom-37425_right-59421'
