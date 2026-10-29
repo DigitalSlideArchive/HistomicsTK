@@ -59,7 +59,7 @@ repos:
   hooks:
     - id: pyupgrade
       args:
-        - --py310-plus
+        - --py311-plus
         - --keep-percent-format
 - repo: https://github.com/hhatto/autopep8
   rev: v2.3.2
