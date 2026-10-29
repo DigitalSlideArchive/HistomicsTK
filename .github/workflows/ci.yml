@@ -20,8 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    # Runs can be slow, so don't use resources unless we mean to publish
-    if: github.repository == 'DigitalSlideArchive/HistomicsTK' && ( startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master' )
+    if: github.repository == 'DigitalSlideArchive/HistomicsTK'
     strategy:
       matrix:
         python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
