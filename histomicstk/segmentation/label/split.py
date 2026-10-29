@@ -69,8 +69,8 @@ def split(im_label, conn=8):
         # relabel if necessary
         if Count > 1:
             Template[L == 1] = i
-            for i in np.arange(2, Count + 1):
-                Template[L == i] = Total + 1
+            for j in np.arange(2, Count + 1):
+                Template[L == j] = Total + 1
                 Total += 1
 
     return Split

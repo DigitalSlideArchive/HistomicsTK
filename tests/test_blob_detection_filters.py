@@ -29,8 +29,8 @@ def assert_array_almost_equal_neighborhood_lines(im, gt, decimal=4):
     min_array = np.full_like(im, np.inf)
     for s in shift:
         rolled_image = np.roll(im, s, 1)
-        for s in shift:
-            rolled_gt = np.roll(gt, s, 1)
+        for t in shift:
+            rolled_gt = np.roll(gt, t, 1)
             abs_array = np.abs(rolled_gt - rolled_image)
             min_array = np.minimum(min_array, abs_array)
     np.testing.assert_array_almost_equal(min_array, np.zeros_like(im), decimal=decimal)
